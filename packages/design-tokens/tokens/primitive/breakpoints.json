@@ -1,0 +1,14 @@
+{
+  "breakpoint": {
+    "xs": { "value": "0px", "type": "dimension", "comment": "<=639px, 4 cols, gutter 16px, margin 16px" },
+    "sm": { "value": "640px", "type": "dimension", "comment": "640-767px, 4 cols, gutter 16px, margin 24px" },
+    "md": { "value": "768px", "type": "dimension", "comment": "768-1023px, 8 cols, gutter 24px, margin 32px" },
+    "lg": { "value": "1024px", "type": "dimension", "comment": "1024-1279px, 12 cols, gutter 24px, margin 48px" },
+    "xl": { "value": "1280px", "type": "dimension", "comment": "1280-1535px, 12 cols, gutter 32px, margin 64px" },
+    "2xl": { "value": "1536px", "type": "dimension", "comment": ">=1536px, 12 cols, gutter 32px, margin auto (container capped)" }
+  },
+  "container": {
+    "public-max": { "value": "1440px", "type": "dimension" },
+    "dashboard": { "value": "100%", "type": "dimension" }
+  }
+}

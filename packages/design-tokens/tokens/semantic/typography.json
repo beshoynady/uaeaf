@@ -1,0 +1,20 @@
+{
+  "typography": {
+    "display-xl": { "value": "{font.size.display-xl}", "type": "typography" },
+    "display-l": { "value": "{font.size.display-l}", "type": "typography" },
+    "heading": {
+      "page": { "value": "{font.size.h1}", "type": "typography" },
+      "section": { "value": "{font.size.h2}", "type": "typography" },
+      "subsection": { "value": "{font.size.h3}", "type": "typography" },
+      "group": { "value": "{font.size.h4}", "type": "typography" }
+    },
+    "title": { "value": "{font.size.title}", "type": "typography" },
+    "subtitle": { "value": "{font.size.subtitle}", "type": "typography" },
+    "body-lg": { "value": "{font.size.body-lg}", "type": "typography" },
+    "body": { "value": "{font.size.body}", "type": "typography" },
+    "body-sm": { "value": "{font.size.body-sm}", "type": "typography" },
+    "caption": { "value": "{font.size.caption}", "type": "typography" },
+    "label": { "value": "{font.size.label}", "type": "typography" },
+    "overline": { "value": "{font.size.overline}", "type": "typography" }
+  }
+}

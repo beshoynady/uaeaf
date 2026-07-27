@@ -1,0 +1,8 @@
+{
+  "border": {
+    "width": {
+      "default": { "value": "1px", "type": "borderWidth" },
+      "thick": { "value": "2px", "type": "borderWidth", "comment": "High Contrast theme default border (Chapter 7 §7.3)" }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "button": {
+    "primary": {
+      "background": { "value": "{color.semantic.success}", "type": "color" },
+      "background-hover": { "value": "{color.semantic.success-hover}", "type": "color" },
+      "text": { "value": "{color.text.inverse}", "type": "color" }
+    },
+    "danger": {
+      "background": { "value": "{color.semantic.danger}", "type": "color" },
+      "background-hover": { "value": "{color.semantic.danger-hover}", "type": "color" },
+      "text": { "value": "{color.text.inverse}", "type": "color" }
+    },
+    "radius": { "value": "{radius.sm}", "type": "borderRadius" }
+  }
+}

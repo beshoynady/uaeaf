@@ -1,0 +1,10 @@
+{
+  "name": "@uaeaf/design-tokens",
+  "version": "1.0.0",
+  "private": true,
+  "description": "UAEAF Design System token source (Chapter 3) and generated build output (Chapter 3 §3.9 Export Pipeline).",
+  "main": "build/tokens.json",
+  "scripts": {
+    "build": "node scripts/build.mjs"
+  }
+}

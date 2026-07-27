@@ -1,0 +1,17 @@
+{
+  "motion": {
+    "transition": {
+      "default": { "value": "{motion.duration.base} {motion.easing.standard}", "type": "other" },
+      "overlay": { "value": "{motion.duration.base} {motion.easing.standard}", "type": "other" },
+      "fast": { "value": "{motion.duration.fast} {motion.easing.standard}", "type": "other" },
+      "enter": { "value": "{motion.duration.base} {motion.easing.decelerate}", "type": "other" },
+      "exit": { "value": "{motion.duration.fast} {motion.easing.accelerate}", "type": "other" },
+      "celebratory": { "value": "{motion.duration.slower} {motion.easing.spring}", "type": "other" }
+    }
+  },
+  "a11y": {
+    "motion": {
+      "reduced": { "value": "false", "type": "other", "comment": "Runtime boolean reflecting prefers-reduced-motion (Chapter 5 §5.8) — not a static build value" }
+    }
+  }
+}

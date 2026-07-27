@@ -1,0 +1,9 @@
+{
+  "card": {
+    "background": { "value": "{color.surface.raised}", "type": "color" },
+    "border": { "value": "{color.border.default}", "type": "color" },
+    "radius": { "value": "{radius.md}", "type": "borderRadius" },
+    "shadow": { "value": "{elevation.card}", "type": "boxShadow" },
+    "shadow-hover": { "value": "{elevation.card-hover}", "type": "boxShadow" }
+  }
+}

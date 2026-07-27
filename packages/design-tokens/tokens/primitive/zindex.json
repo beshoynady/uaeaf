@@ -1,0 +1,13 @@
+{
+  "zIndex": {
+    "base": { "value": "0", "type": "number" },
+    "sticky": { "value": "100", "type": "number" },
+    "dropdown": { "value": "200", "type": "number" },
+    "drawer": { "value": "300", "type": "number" },
+    "modal-backdrop": { "value": "400", "type": "number" },
+    "modal": { "value": "410", "type": "number" },
+    "popover": { "value": "500", "type": "number" },
+    "toast": { "value": "600", "type": "number" },
+    "tooltip": { "value": "700", "type": "number", "comment": "Highest layer always (Chapter 5 §5.10.2)" }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "opacity": {
+    "disabled": { "value": "0.5", "type": "opacity" },
+    "hover": { "value": "0.92", "type": "opacity" },
+    "overlay": { "value": "0.6", "type": "opacity" }
+  },
+  "blur": {
+    "glass": { "value": "12px", "type": "blur" }
+  }
+}

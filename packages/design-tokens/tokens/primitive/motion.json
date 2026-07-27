@@ -1,0 +1,18 @@
+{
+  "motion": {
+    "duration": {
+      "instant": { "value": "100ms", "type": "duration" },
+      "fast": { "value": "150ms", "type": "duration" },
+      "base": { "value": "220ms", "type": "duration" },
+      "slow": { "value": "320ms", "type": "duration" },
+      "slower": { "value": "480ms", "type": "duration", "comment": "Hero celebratory motion only" },
+      "comment": "5 values max (Chapter 3 §3.14) — Chapter 5 §5.6"
+    },
+    "easing": {
+      "standard": { "value": "cubic-bezier(0.4,0,0.2,1)", "type": "cubicBezier" },
+      "decelerate": { "value": "cubic-bezier(0,0,0.2,1)", "type": "cubicBezier" },
+      "accelerate": { "value": "cubic-bezier(0.4,0,1,1)", "type": "cubicBezier" },
+      "spring": { "value": "cubic-bezier(0.34,1.56,0.64,1)", "type": "cubicBezier", "comment": "Reserved for record/medal celebratory moments (L8 §SP.7) only" }
+    }
+  }
+}

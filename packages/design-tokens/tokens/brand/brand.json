@@ -1,0 +1,14 @@
+{
+  "color": {
+    "brand": {
+      "primary": { "value": "{color.green.500}", "type": "color" },
+      "secondary": { "value": "{color.red.500}", "type": "color" },
+      "black": { "value": "{color.gray.1000}", "type": "color" },
+      "medal": {
+        "gold": { "value": "{color.gold.500}", "type": "color", "comment": "TDR-002" },
+        "silver": { "value": "{color.silver.500}", "type": "color", "comment": "TDR-002" },
+        "bronze": { "value": "{color.bronze.500}", "type": "color", "comment": "TDR-002" }
+      }
+    }
+  }
+}

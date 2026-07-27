@@ -1,0 +1,81 @@
+{
+  "color": {
+    "green": {
+      "50": { "value": "#DEFFED", "type": "color" },
+      "100": { "value": "#B9FFDA", "type": "color" },
+      "200": { "value": "#71FFB2", "type": "color" },
+      "300": { "value": "#1DFF86", "type": "color" },
+      "400": { "value": "#00CD5F", "type": "color" },
+      "500": { "value": "#00843D", "type": "color", "comment": "DO NOT MODIFY — Official Pantone 348 C Match (Chapter 1 ADR-0003)" },
+      "600": { "value": "#007034", "type": "color" },
+      "700": { "value": "#005C2A", "type": "color" },
+      "800": { "value": "#004821", "type": "color" },
+      "900": { "value": "#003619", "type": "color" }
+    },
+    "red": {
+      "50": { "value": "#FDE4E8", "type": "color" },
+      "100": { "value": "#FBCAD2", "type": "color" },
+      "200": { "value": "#F797A6", "type": "color" },
+      "300": { "value": "#F25B74", "type": "color" },
+      "400": { "value": "#ED2243", "type": "color" },
+      "500": { "value": "#C8102E", "type": "color", "comment": "DO NOT MODIFY — Official Pantone 186 C Match (Chapter 1 ADR-0003)" },
+      "600": { "value": "#A40D26", "type": "color" },
+      "700": { "value": "#810A1E", "type": "color" },
+      "800": { "value": "#5D0715", "type": "color" },
+      "900": { "value": "#3E050E", "type": "color" }
+    },
+    "gray": {
+      "0": { "value": "#FFFFFF", "type": "color" },
+      "25": { "value": "#FBFBFB", "type": "color" },
+      "50": { "value": "#F7F7F8", "type": "color" },
+      "100": { "value": "#EEEFF1", "type": "color" },
+      "200": { "value": "#DEE0E3", "type": "color" },
+      "300": { "value": "#C2C5CB", "type": "color" },
+      "400": { "value": "#9CA1AB", "type": "color" },
+      "500": { "value": "#757C8A", "type": "color" },
+      "600": { "value": "#595E69", "type": "color" },
+      "700": { "value": "#42454D", "type": "color" },
+      "800": { "value": "#2A2D32", "type": "color" },
+      "900": { "value": "#1A1B1E", "type": "color" },
+      "950": { "value": "#101113", "type": "color" },
+      "1000": { "value": "#000000", "type": "color" },
+      "comment": "14-step exception approved for color.gray only (Chapter 3 §3.14) — heavy Light/Dark Mode usage"
+    },
+    "gold": {
+      "50": { "value": "#FCF6E5", "type": "color" },
+      "100": { "value": "#FAEECE", "type": "color" },
+      "200": { "value": "#F5DD9F", "type": "color" },
+      "300": { "value": "#EFCA69", "type": "color" },
+      "400": { "value": "#E9B836", "type": "color" },
+      "500": { "value": "#D4A017", "type": "color", "comment": "TDR-002 — Medal Gold reference (Chapter 1)" },
+      "600": { "value": "#AD8313", "type": "color" },
+      "700": { "value": "#87660F", "type": "color" },
+      "800": { "value": "#60490A", "type": "color" },
+      "900": { "value": "#3F3007", "type": "color" }
+    },
+    "silver": {
+      "50": { "value": "#F2F3F4", "type": "color" },
+      "100": { "value": "#E9EBED", "type": "color" },
+      "200": { "value": "#D6DADE", "type": "color" },
+      "300": { "value": "#C1C6CD", "type": "color" },
+      "400": { "value": "#ADB4BC", "type": "color" },
+      "500": { "value": "#9AA3AD", "type": "color", "comment": "TDR-002 — Medal Silver reference (Chapter 1)" },
+      "600": { "value": "#778391", "type": "color" },
+      "700": { "value": "#5A646F", "type": "color" },
+      "800": { "value": "#3E454C", "type": "color" },
+      "900": { "value": "#262A2E", "type": "color" }
+    },
+    "bronze": {
+      "50": { "value": "#F8F0EA", "type": "color" },
+      "100": { "value": "#F1E3D6", "type": "color" },
+      "200": { "value": "#E4C7AF", "type": "color" },
+      "300": { "value": "#D5A883", "type": "color" },
+      "400": { "value": "#C78A58", "type": "color" },
+      "500": { "value": "#B0703B", "type": "color", "comment": "TDR-002 — Medal Bronze reference (Chapter 1)" },
+      "600": { "value": "#905C30", "type": "color" },
+      "700": { "value": "#704726", "type": "color" },
+      "800": { "value": "#50331B", "type": "color" },
+      "900": { "value": "#342112", "type": "color" }
+    }
+  }
+}

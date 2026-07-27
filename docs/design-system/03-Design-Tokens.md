@@ -232,6 +232,8 @@ Commit → Stylelint (يمنع Hardcoded Colors) → ESLint (قواعد استي
 | Color Shades لكل لون أساسي | 10 درجات (50→900) كحد أقصى |
 | Motion Durations | 5 قيم فقط (instant/fast/base/slow/slower) |
 
+**استثناء موثَّق (مالك المشروع، §3.7):** `color.gray` مسموح له بـ**14 درجة** كحد أقصى (بدل 10)، نظرًا لاستخدامه المكثّف عبر Light/Dark Mode (يحتاج درجات إضافية عند الطرفين: `25` قريبة من الأبيض لأسطح Light الفاتحة جدًا، `950` قريبة من الأسود لأسطح Dark الداكنة جدًا — راجع Chapter 7 §7.3 أمثلة `--color-gray-25` و`--color-gray-950`). هذا الاستثناء يخص `color.gray` فقط؛ كل لون أساسي آخر (Brand/Semantic) يبقى محدودًا بـ10 درجات.
+
 ## 3.15 Token Audit (Quarterly)
 كل ثلاثة أشهر، مراجعة إلزامية تشمل: Unused Tokens (معرّفة وغير مستخدمة) · Duplicate Tokens (قيم متطابقة بأسماء مختلفة) · Dead Tokens · Semantic Tokens غير مستخدمة في أي Component. تُوثَّق النتائج كـTicket في نظام تتبع المشروع (خارج نطاق هذه الوثيقة).
 

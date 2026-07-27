@@ -1,0 +1,49 @@
+{
+  "color": {
+    "text": {
+      "primary": { "value": "#000000", "type": "color" },
+      "secondary": { "value": "#000000", "type": "color" },
+      "disabled": { "value": "{color.gray.700}", "type": "color" },
+      "inverse": { "value": "#FFFFFF", "type": "color" },
+      "link": { "value": "#000000", "type": "color", "comment": "Underline carries the link cue at this contrast level, not color alone" }
+    },
+    "surface": {
+      "base": { "value": "#FFFFFF", "type": "color" },
+      "raised": { "value": "#FFFFFF", "type": "color" },
+      "sunken": { "value": "#FFFFFF", "type": "color" },
+      "skeleton": { "value": "{color.gray.300}", "type": "color" },
+      "overlay": { "value": "#000000", "type": "color" }
+    },
+    "border": {
+      "default": { "value": "#000000", "type": "color" },
+      "strong": { "value": "#000000", "type": "color" }
+    },
+    "semantic": {
+      "success": { "value": "{color.green.700}", "type": "color" },
+      "success-hover": { "value": "{color.green.800}", "type": "color" },
+      "danger": { "value": "{color.red.700}", "type": "color" },
+      "danger-hover": { "value": "{color.red.800}", "type": "color" },
+      "info": { "value": "#000000", "type": "color" },
+      "warning": { "value": "{color.gold.800}", "type": "color" },
+      "neutral": { "value": "#000000", "type": "color" },
+      "medal-gold": { "value": "{color.gold.800}", "type": "color" },
+      "medal-silver": { "value": "{color.silver.800}", "type": "color" },
+      "medal-bronze": { "value": "{color.bronze.800}", "type": "color" }
+    },
+    "avatar": {
+      "fallback-bg": { "value": "#FFFFFF", "type": "color" },
+      "fallback-text": { "value": "#000000", "type": "color" }
+    }
+  },
+  "a11y": {
+    "focus": {
+      "ring": { "value": "#000000", "type": "color" },
+      "ring-width": { "value": "3px", "type": "borderWidth", "comment": "Chapter 7 §7.3 — wider than default 2px" }
+    }
+  },
+  "border": {
+    "width": {
+      "default": { "value": "{border.width.thick}", "type": "borderWidth", "comment": "2px override in High Contrast per Chapter 7 §7.3" }
+    }
+  }
+}
