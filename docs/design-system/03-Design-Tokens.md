@@ -512,6 +512,94 @@ Any file that fails structural validation **MUST NOT** enter the pipeline.
 
 ---
 
+## 3.33 Color System Expansion v1.1 (ADR-0039)
+
+### ADR-0039: Digital Color System Expansion
+
+| Field                       | Details                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Status**                  | Accepted                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| **Authority**               | Product Decision (Project Owner, Chapter 22 §2)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| **Context**                 | §3.14 already reserved a 14-shade allowance for `color.gray` and Chapter 7 §7.3 already referenced runtime variables such as `--color-gray-25`/`--color-gray-950`, and Chapter 8 L1 §CMP-BADGE-001 already referenced `color.semantic.info` — but no chapter had ever published the actual hex values for the gray scale, nor defined `info`/`warning` semantics at all. A verification pass for the Homepage found these gaps blocking real contrast measurement. This ADR closes them.                                                                            |
+| **Decision**                | Publish the full `color.gray` primitive scale (12 of the 14 shades reserved by §3.14's exception; 2 remain available for future intermediate steps) and add two new Brand-Support primitive/brand color pairs — **Support Info** (institutional navy, not a generic SaaS blue) and **Support Warning** (amber, kept visually distinct from Medal Gold per SP.5) — each following the same 500-reference-value + derived-scale methodology as ADR-0003. These remain **Brand-Support tokens**, governed by §3.5 Token Lifecycle like any Brand token — they are not additions to the three official identity colors in Chapter 1, which stay Green/Red/Black exactly as defined.                                       |
+| **Alternatives Considered** | Deriving "info" from a tint of Federation Green — rejected: would make green mean both "success/primary action" and "neutral information," reintroducing the same ambiguity problem ADR-0004 solves for red. Leaving Info/Warning undefined and letting implementers pick ad hoc values — rejected: this is precisely the gap that produced the club-badge color inconsistency flagged by the prior audit.                                                                                                                                                            |
+| **Why This Decision**       | A government/enterprise product needs Info and Warning semantics independent of Success (green) and Danger (red); defining them once, centrally, with published hex values and contrast data, prevents every future screen from inventing its own.                                                                                                                                                                                                                                                                                                                    |
+| **Risks**                   | Adding colors always risks "palette creep." **Mitigation:** exactly two new Brand-Support hues are added (Info, Warning) — no third color is introduced without a new ADR, and §3.14's 10-shade-per-color ceiling still applies to both.                                                                                                                                                                                                                                                                                                                              |
+| **Consequences**            | Chapter 7 §7.9 maps these primitives into Light/Dark/High-Contrast Semantic Tokens. Chapter 8 components referencing `color.semantic.info`/`color.semantic.warning` (already present in L1 §CMP-BADGE-001) now resolve to a real, contrast-verified value instead of a dangling reference.                                                                                                                                                                                                                                                                            |
+
+### 3.33.1 Neutral Scale — `color.gray` (Corrected: a Full 12-Shade Live Scale Already Existed)
+
+**Correction to this ADR's own first draft:** an initial verification pass (via `get_variable_defs` scoped to individual Homepage node subtrees) only surfaced the handful of variables actually *consumed* by the sections it happened to check, and this ADR originally, incorrectly, treated that partial result as "the live palette" and proposed a parallel scale alongside it. A follow-up pass reading the Figma file's **Variable Collections directly** (`figma.variables.getLocalVariableCollectionsAsync`) found a complete, already-published `Primitive` collection with a full `color/gray/25…1000` scale (12 steps), plus `Brand` and three `Semantic/*` (Light/Dark/High Contrast) collections already implementing most of Chapter 7's architecture — none of which had been reflected in this chapter before now. This section is corrected to document that real system, per §3.15 (no Dead Tokens) and this project's documentation-sync policy.
+
+**Live `color.gray` primitive scale (unchanged by this ADR, documented here for the first time):**
+
+| Step | Hex | Step | Hex |
+| --- | --- | --- | --- |
+| 25 | `#FBFBFB` | 500 | `#757C8A` |
+| 50 | `#F7F7F8` | 600 | `#595E69` |
+| 100 | `#EEEFF1` | 700 | `#42454D` |
+| 200 | `#DEE0E3` | 800 | `#2A2D32` |
+| 300 | `#C2C5CB` | 900 | `#1A1B1E` |
+| 400 | `#9CA1AB` | 950 | `#101113` |
+| | | 1000 | `#000000` |
+
+**Live `Semantic/Light` neutral aliases (unchanged by this ADR except `border.strong`, corrected below):**
+
+| Semantic Token | Aliases To | Hex | Contrast on white |
+| --- | --- | --- | --- |
+| `color/text/primary` | `gray/1000` | `#000000` | 21:1 |
+| `color/text/secondary` | `gray/600` | `#595E69` | 6.50:1 — passes AA |
+| `color/text/disabled` | `gray/400` | `#9CA1AB` | 2.59:1 — exempt (disabled state, WCAG 1.4.3) |
+| `color/surface/base`, `color/surface/raised` | `gray/0` | ~white | — (both currently identical, no elevation distinction yet — Known Constraint, not fixed by this ADR) |
+| `color/border/default` | `gray/200` | `#DEE0E3` | 1.32:1 — decorative only, acceptable |
+| `color/border/strong` | ~~`gray/400`~~ **corrected to `gray/500`** | ~~`#9CA1AB` (2.59:1, fails)~~ → **`#757C8A` (4.19:1, passes)** | **Real, confirmed defect, fixed in Figma this session** — `border/strong` was measured aliasing `gray/400` at 2.59:1, failing WCAG 1.4.11 (≥3:1 non-text). Repointed to `gray/500` (4.19:1) in the Semantic/Light collection directly. Dark/High-Contrast modes were not touched (no dark-mode Homepage frame exists to verify against — flagged, not silently assumed fixed). |
+
+No new neutral tokens were needed — the live 12-step scale already covers text/surface/border needs; this ADR's only real neutral change is the `border.strong` fix above.
+
+### 3.33.2 Support Info — Corrected an Existing Mis-Aliased Token, Not a New One
+
+**Correction:** `color/semantic/info` already existed as a token (Semantic/Light, Dark, and High Contrast collections) — but was found, on inspection, aliasing `gray/600` (`#595E69`), i.e. plain secondary-text gray, not a distinct hue. This is a real defect: an "info" state indistinguishable from ordinary secondary text has no signal value. Fixed by adding a genuinely new primitive and re-pointing the alias.
+
+`color/info/500` — **TDR-003** (new Primitive)
+
+```text
+500 value:  #0B4A66 (institutional navy — deliberately deep/muted, not a bright SaaS blue, to stay visually subordinate to Federation Green/Red)
+300 value:  #4FA3C7 (color/info/300 — Dark/High-Contrast-safe variant, 6.66:1 on gray.950; the 500 value only reaches 1.97:1 against a dark surface and MUST NOT be used as dark-mode text/icon color)
+Contrast:   500 on white = 9.61:1 (passes AAA)
+Reason:     color/semantic/info existed but resolved to an indistinguishable-from-text-secondary gray; general informational UI (non-error, non-success notices, filter/help hints) needs a real, distinct hue
+Approved By: Project Owner (§3.7)
+Applied:    color/semantic/info now aliases color/info/500 (Light, High Contrast) / color/info/300 (Dark) — fixed directly in the Figma Variables this session
+```
+
+### 3.33.3 Support Warning — Corrected a Real Governance Conflict, Not a New Token
+
+**Correction:** `color/semantic/warning` already existed too — but was found aliasing `gold/600` (a shade of the *same primitive family* as Medal Gold, `color/brand/medal/gold`). This is exactly the collision Chapter 8 L8 §SP.5 warns against: "[medal colors] MUST have a consistent visual treatment using dedicated tokens rather than general Semantic colors, to avoid conflict" — here it ran the other direction, with Warning silently borrowing the medal family. Fixed the same way as Info: new dedicated primitive, re-pointed alias.
+
+`color/warning/500` and `color/warning/700` — **TDR-004** (new Primitives)
+
+```text
+500 value:  #B8720E (fills/large-text/icon use only — 3.85:1 on white, passes 3:1 non-text/large-text, fails 4.5:1 normal text)
+700 value:  #8A5A00 (normal-text/icon-requiring-AA use — 5.93:1 both directions)
+Reason:     color/semantic/warning existed but resolved to gold/600, colliding with the Medal Gold family per SP.5's explicit anti-conflict rule
+Approved By: Project Owner (§3.7)
+Alternative Rejected: Leaving warning aliased to gold/600 — rejected, this is the exact conflict SP.5 already forbids
+Applied:    color/semantic/warning now aliases color/warning/700 (Light, High Contrast — AA-safe for text) / color/warning/500 (Dark) — fixed directly in the Figma Variables this session
+```
+
+### 3.33.4 Registry Additions (§3.24 format)
+
+```text
+DT-COLOR-003 · Support Info (Navy) · Status: Active · v1.1 · Owner: Design System · References: [ADR-0039, TDR-003] · Related Components: [Badge, Alert, Callout] · Fix: re-pointed existing color/semantic/info alias, was gray/600
+DT-COLOR-004 · Support Warning (Amber) · Status: Active · v1.1 · Owner: Design System · References: [ADR-0039, TDR-004] · Related Components: [Badge, Alert, FormField] · Fix: re-pointed existing color/semantic/warning alias, was gold/600
+DT-COLOR-005 · Semantic Live (Federation Red role) · Status: Active · v1.1 · Owner: Design System · References: [Chapter 1 ADR-0038] · Related Components: [Badge] · New token, created in all 3 Semantic collections
+DT-COLOR-006 · Semantic Achievement (Federation Red role) · Status: Active · v1.1 · Owner: Design System · References: [Chapter 1 ADR-0038] · Related Components: [Badge, AthleteCard] · New token, created in all 3 Semantic collections
+DT-BORDER-002 · border/strong contrast fix · Status: Active · v1.1 · Owner: Design System · References: [ADR-0039] · Fix: re-pointed alias from gray/400 (2.59:1, failed) to gray/500 (4.19:1, passes) in Semantic/Light only — Dark/HC unverified, flagged
+```
+
+Document version bump per Chapter 22 §1: this is a **Minor** change (new content, no prior decision invalidated).
+
+---
+
 ## Do & Don't
 
 **Do:**

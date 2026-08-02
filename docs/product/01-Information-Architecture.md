@@ -648,25 +648,26 @@ Dashboard
 
 ---
 
-## 7. Homepage Breakdown — as built **[B]**
+## 7. Homepage Breakdown — as built **[B]** [Reconciled v0.2.0 — see `02-Homepage-Specification.md` §5/§6]
 
-The homepage is no longer a proposal. Eleven content sections ship in a **fixed order**, each occupying a full viewport height with the header height subtracted so no section is clipped. Recorded here as product fact.
+The homepage is no longer a proposal. Twelve content sections ship in a **fixed order** (reconciled this session against `02-Homepage-Specification.md` §5, by explicit Project Owner ruling), each occupying a full viewport height with the header height subtracted so no section is clipped. Recorded here as product fact. **The Global Header row's nav structure is explicitly excluded from this reconciliation — see `02-Homepage-Specification.md` §9 open-decision note; it is not being asserted as 7 items here, only carried forward unchanged pending that separate ruling.**
 
 | # | Section (as built) | Objective | Business purpose | CMS editable | Reusable | Responsive |
 |---|---|---|---|---|---|---|
-| — | **Global Header** — logo · 7 nav items · search · language · theme | Orient and route | Every domain reachable in one action | ● menu | ● | ● single row ≥1024px, drawer below |
+| — | **Global Header** — logo · nav (item count/structure **OPEN**, see §9 of the Homepage Spec) · search · language · theme | Orient and route | Every domain reachable in one action | ● menu | ● | ● single row ≥1024px, drawer below |
 | — | **Scroll progress lane** under the header | Reading orientation | Perceived quality — **[D]** PR-005 (motion explains state) | ○ | ● | ● |
-| 1 | **Hero carousel** — 5 slides, auto-advance, pause on hover/focus/touch, tab strip, next-event card | First impression | **[D]** Design Goal #1 — an international visitor perceives a modern national institution | ● | ● | ● |
+| 1 | **Hero** — **target state:** 5 slides, auto-advance, pause on hover/focus/touch, tab strip, next-event card (Chapter 8 L6 §CMP-CAROUSEL-001); **current build:** single static slide — open implementation gap, see Homepage Spec §25 Q10 | First impression | **[D]** Design Goal #1 — an international visitor perceives a modern national institution | ● | ● | ● |
 | 2 | **Federation by the Numbers** — count-on-view + trend | Scale and credibility | Institutional trust | ◐ | ● | ● 4-up ≥1024px |
-| 3 | **Featured Athletes** — full-bleed deck, discipline filter | Humanise the sport | **[D]** Design Goal #3 — engagement and reach | ◐ selection | ● | ● |
-| 4 | **Results & Rankings** — tabbed | Deliver the core sporting fact | Primary utility for media and athletes | ○ data | ● | ● |
-| 5 | **Clubs Network** — filter by emirate | National coverage | Membership growth | ◐ | ● | ● 2-up ≥1024px |
-| 6 | **Upcoming Events** — compact rows, live countdown, .ics export, show-more | Forward-looking engagement | Entry conversion + **[D]** Design Goal #2 | ○ data | ● | ● 3 rows then expand |
+| 3 | **Clubs Network** — filter by emirate | National coverage | Membership growth | ◐ | ● | ● 2-up ≥1024px |
+| 4 | **Featured Athletes** — full-bleed deck, discipline filter | Humanise the sport | **[D]** Design Goal #3 — engagement and reach | ◐ selection | ● | ● |
+| 5 | **Results & Rankings + Upcoming Events** — merged split-column section, tabbed results / countdown events + `.ics` export | Deliver the core sporting fact + forward-looking engagement | Primary utility for media/athletes + **[D]** Design Goal #2 | ○ data | ● | ● |
+| 6 | **Live Stream & Videos** — live embed + video shelf *(NEW — Chapter 8 L6 §CMP-LIVESTREAM-001, ADR-0036)* | Real-time brand/engagement proof | **[D]** Design Goal #1/#3 | ● (shelf) / platform-driven (live signal) | ● | ● |
 | 7 | **News** — category filter, lead + list | Communicate | SEO and AI discoverability — **[D]** Design Goal #3 | ● | ● | ● 1.35fr/1fr ≥1024px |
-| 8 | **Media Centre** — full-screen dark mosaic, lightbox, reels | Emotional proof | Brand and broadcast value | ● | ● | ● 4-col auto-rows ≥1024px |
-| 9 | **Sponsors & Partners** — one animated strip, all tiers merged | Honour commercial commitments | Revenue obligation | ● | ● | ● pauses on hover/focus |
-| 10 | **Newsletter** — inline form with success state | Build owned audience | Retention | ● | ● | ● |
-| 11 | **Global Footer** — brand · quick links · location map · contact · affiliations · legal | Complete navigation, trust, compliance | **[D]** PR-003 + Chapter 6 | ● | ● | ● 4-col ≥1024px |
+| 8 | **Sponsors & Partners** — one animated strip, all tiers merged | Honour commercial commitments | Revenue obligation | ● | ● | ● pauses on hover/focus |
+| 9 | **Media Centre** — full-screen dark mosaic, lightbox, reels | Emotional proof | Brand and broadcast value | ● | ● | ● 4-col auto-rows ≥1024px |
+| 10 | **Memberships / International Affiliations** — international governing-body logos *(NEW — Chapter 8 L8 §CMP-AFFILIATIONS-001, ADR-0037)* | Credibility/affiliation proof | **[D]** Design Goal #1 | ● | ● | ● |
+| 11 | **Newsletter** — inline form with success state | Build owned audience | Retention | ● | ● | ● |
+| 12 | **Global Footer** — brand · quick links · location map · contact · affiliations · legal | Complete navigation, trust, compliance | **[D]** PR-003 + Chapter 6 | ● | ● | ● 4-col ≥1024px |
 | — | **Floating social rail** — 4 channels + back-to-top | Owned-audience growth | Reach | ● | ● | ● bottom capsule, side rail ≥1620px |
 
 **Two sections from the original proposal that were deliberately NOT built:**

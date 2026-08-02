@@ -184,6 +184,41 @@ Tailwind Utility: bg-semantic-success, text-semantic-success
 React Component (Chapter 8) consumes the class only
 ```
 
+## 7.9 Extended Semantic Palette (ADR-0038, ADR-0039)
+
+Adds the tokens introduced by Chapter 1 ADR-0038 (Federation Red extended roles) and Chapter 3 §3.33 ADR-0039 (color system expansion), following the same Light/Dark/High-Contrast requirement as §7.1/§7.6 — no token below may ship with fewer than 3 values.
+
+### 7.9.1 UI Neutrals — Correction: These Already Existed as a Complete System
+
+A full read of the file's Variable Collections (not just node-scoped bindings) found that `color/text/*`, `color/surface/*`, and `color/border/*` already exist, complete, in all three `Semantic/Light`, `Semantic/Dark`, and `Semantic/High Contrast` collections — this chapter's original §7.9.1 draft incorrectly treated a partial reading as a gap and proposed redundant new tokens (`bg.canvas`, `text.muted`, `border.functional`) that are **not** how this file is actually structured. Those proposed tokens are withdrawn; see Chapter 3 §3.33.1 for the real, corrected table (12-shade `color/gray` primitive scale + the one genuine defect found and fixed: `color/border/strong` was aliasing `gray/400`, 2.59:1, and has been repointed to `gray/500`, 4.19:1, in Semantic/Light).
+
+### 7.9.1a What Was Actually Missing (Confirmed)
+
+Two tokens were referenced by name elsewhere in this document set (Chapter 8 L1 §CMP-BADGE-001) but resolved to values that didn't do what their name implied — not a structural gap, a **content** defect in two existing tokens:
+
+| Token | Was Aliasing | Problem | Now Aliases (fixed in Figma this session) |
+| --- | --- | --- | --- |
+| `color/semantic/info` | `gray/600` (`#595E69`) | Indistinguishable from `text/secondary` — no signal value | `color/info/500` `#0B4A66` (Light/HC) · `color/info/300` `#4FA3C7` (Dark) |
+| `color/semantic/warning` | `gold/600` | Collided with the Medal Gold family, exactly the conflict Chapter 8 L8 §SP.5 forbids | `color/warning/700` `#8A5A00` (Light/HC, AA-safe) · `color/warning/500` `#B8720E` (Dark) |
+
+### 7.9.2 Extended Semantic Colors
+
+| Semantic Token | Derives From | Light | Dark | Usage / Restriction |
+| --- | --- | --- | --- | --- |
+| `color.semantic.success` | `color.brand.primary` (unchanged) | Green 500 `#00843D` | Green 300 (lightened) | Existing — no change |
+| `color.semantic.danger` | `color.brand.secondary` (unchanged) | Red 500 `#C8102E` | Red 300 (lightened) | Existing — delete/cancel/error only, per ADR-0004, unchanged |
+| `color.semantic.selected` | `color.brand.primary` | Green 500 `#00843D` | Green 300 (lightened) | Active tab/filter/step — reuses Green, no new hue (Chapter 1 ADR-0038 evaluation explicitly rejected a red "selected" state to avoid a two-colors-one-meaning conflict) |
+| `color.semantic.live` | `color.brand.secondary` | Red 500 `#C8102E` | Red 400 (lightened for dark-surface legibility) | **New (ADR-0038).** Live/broadcast indicator only. Always paired with a text label. Max one per component. |
+| `color.semantic.achievement` | `color.brand.secondary` | Red 500 `#C8102E` | Red 400 (lightened) | **New (ADR-0038).** Champion/winner title badge and record-breaking announcement moment only. Max one per card; never applied to numeric rank (that stays Medal Gold/Silver/Bronze per SP.5). |
+| `color.semantic.info` | `color.brand.support.info` | `#0B4A66` (9.61:1 on white) | `#4FA3C7` (6.66:1 on gray.950) | **New (ADR-0039).** Neutral informational notices/hints — was referenced but undefined in Chapter 8 L1 §CMP-BADGE-001 prior to this ADR. |
+| `color.semantic.warning` | `color.brand.support.warning` | `#8A5A00` for text/icon (5.93:1) · `#B8720E` permitted for large-scale fills only (3.85:1) | Lightened equivalents, TBD at implementation (must re-verify against `gray.950`) | **New (ADR-0039).** Non-danger caution states (form validation warnings, soft deadlines). Distinct from Medal Gold per SP.5. |
+
+### 7.9.3 Validation
+
+Both `color.semantic.live` and `color.semantic.achievement` pass §7.6's "exactly one Brand reference" rule (both reference `color.brand.secondary` only) and are registered as **separate** Semantic Tokens from `color.semantic.danger` specifically so that no Component Token for `button.primary.bg` or `button.secondary.bg` can resolve to any of the three red-derived tokens — extending the ADR-0004 enforcement mechanism to cover the two new tokens as well as the original.
+
+---
+
 ## Do & Don't
 
 **Do:** Create every new value as a Semantic Token first, even if it appears temporary · Test every new token across all three themes together.

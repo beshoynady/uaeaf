@@ -132,6 +132,29 @@ Every interactive component **MUST**:
 
 **Critical Principle:** Accessibility Defects **MUST** be treated as Functional Defects in the product — not as optional UX enhancements that can be postponed. A button without a visible Focus Indicator is a broken button, to the same degree as a button that does not respond to clicks.
 
+## G.13 Entity-Owned Brand Colors (ADR-0039 continued)
+
+Applies to any component displaying a third-party or member-entity identity — club badges (Chapter 8 L8 §CMP-CLUBCARD-001), sponsor logos (§M.9 `contain` rule), affiliation marks (§CMP-AFFILIATIONS-001, L8).
+
+**Rule:** Entity-owned brand colors (e.g., a member club's own badge color) **MAY** be used where necessary for entity identification, **provided** their use does not compromise accessibility, readability, hierarchy, or UAEAF brand integrity. This is a deliberate exception to the Chapter 3 §3.10 "no Hardcoded values" / Chapter 1 "no colors outside the approved palette" rules — entity colors are, by definition, not UAEAF Brand or Semantic Tokens, and **MUST NOT** be added to `tokens.json` as if they were.
+
+**A club/entity color is compliant when:**
+
+* It is confined to the entity's own logo/badge/crest asset — it **MUST NOT** be extended to surrounding UI chrome (card border, background fill, section accent) which remains governed by UAEAF Semantic Tokens.
+* It does not appear as free-standing solid color fills disconnected from the entity's actual mark (e.g., a colored circle standing in for a missing logo is a fallback failure, not entity branding — see below).
+* It passes ≥3:1 contrast against its immediate background if it is load-bearing for meaning (Chapter 6 §6.2, non-text contrast) — purely decorative crest coloring inside a properly contrasted container is exempt.
+* No more than one entity-color accent competes for attention within a single card alongside any UAEAF semantic color (Live/Achievement/Selected) — if both are present, the entity color **MUST** visually recede (smaller footprint, e.g., confined to the crest only).
+
+**Non-compliant pattern (the one the prior audit flagged):** a solid-colored circular badge *standing in for* the club crest — using arbitrary hues (blue, purple, orange) with no source in either the entity's real brand or the UAEAF palette — is not "entity branding," it is an unbranded placeholder wearing decorative color. This fails the rule above (color is disconnected from any actual entity mark) and **MUST** be replaced with either the club's real crest/logo asset (`object-fit: contain` per §M.9) or, if the asset is not yet available, a neutral placeholder using `color.semantic.bg.surface.elevated` + the club's initials in `color.semantic.text.primary` (the same Photo → Initials → Icon fallback chain already defined for Avatar, Chapter 8 L1).
+
+**When an entity color fails accessibility:** the component **MUST NOT** silently render it. Fallback order:
+
+1. If only the *fill/background* fails contrast against its container, keep the entity color confined to the logo asset itself (raster/vector with its own internal contrast) rather than as a UI background — this resolves the vast majority of cases.
+2. If the entity's logo asset itself has no safe host (e.g., a light logo with no dark variant on a light card), use a `color.semantic.bg.surface.elevated` or `gray.900` host chip behind it rather than altering the entity's actual colors — never recolor a third party's mark to force compliance.
+3. If neither is possible (rare), fall back to the neutral initials treatment above and flag the asset for replacement — do not ship a known-failing contrast pair.
+
+**Do NOT force all clubs to use UAEAF brand colors** — the whole point of this rule is that member-entity identity is allowed to differ from the federation's own; governance here constrains *where* that color may appear, not whether it may exist.
+
 ---
 
 ## Governance Change Policy

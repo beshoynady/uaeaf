@@ -1,8 +1,8 @@
 # UAEAF Digital Platform — Homepage Specification
 ### Product Specification · Pre-UI Phase — Single Source of Truth for the Homepage
 
-**Document:** UAEAF Product Specification v0.1.0 (Draft for Review)
-**Status:** Draft — awaiting product approval before any Figma/UI work begins
+**Document:** UAEAF Product Specification v0.2.0 (Reconciled with Approved Build)
+**Status:** §5/§6/§8/§11a/§14a reconciled against the approved Homepage build per explicit Project Owner ruling (this session) — supersedes the v0.1.0 fixed order and section inventory below. Superseded content is struck through in context rather than deleted, so the reconciliation is auditable.
 **Source of Truth:** UAEAF Enterprise Design System Framework v1.0.0 (`/docs/design-system`) + `01-Information-Architecture.md` (`/docs/product`)
 **Scope:** Homepage only — purpose, goals, users, hierarchy, content, strategy per domain, accessibility, SEO, performance, responsive, CMS/API requirements, dependencies, metrics, open questions
 **Out of Scope (deliberately):** UI design, layout, components, color, spacing, typography, wireframes, Figma work — this begins only after this document is approved
@@ -89,50 +89,66 @@ Each journey below is validated against the **as-built** section inventory (§6)
 
 ## 5. Homepage Information Hierarchy
 
-Vertical, single-column scroll — **not** a dashboard grid, per ADR-0001. Order is fixed today **[B]** (flagged as a gap in §21). Hierarchy, top to bottom:
+**[Reconciled v0.2.0]** The order below **supersedes** the v0.1.0 order per explicit Project Owner ruling (this session), resolving Open Question §25 Q9 (Section reorder authority) — this *is* the required stakeholder sign-off that question asked for. The v0.1.0 order is preserved in a collapsed note underneath for audit-trail purposes only.
+
+Vertical, single-column scroll — **not** a dashboard grid, per ADR-0001. Hierarchy, top to bottom:
 
 ```
 Global Header (persistent)                — orientation + routing utility
-Scroll progress lane (persistent, under header)
-1.  Hero carousel                         — impression + primary conversion
+1.  Hero                                  — impression + primary conversion (Design Structure: 5-slide carousel per Chapter 8 L6 §CMP-CAROUSEL-001, ADR-0032/0036 compliance in progress — see §25 Q10)
 2.  Federation by the Numbers             — credibility
-3.  Featured Athletes                     — humanize the sport
-4.  Results & Rankings                    — core sporting fact (utility)
-5.  Clubs Network                         — national coverage
-6.  Upcoming Events                       — forward engagement + conversion
+3.  Clubs Network                         — national coverage
+4.  Featured Athletes                     — humanize the sport
+5.  Results & Rankings + Upcoming Events  — core sporting fact + forward engagement (single merged section, tab/split layout)
+6.  Live Stream & Videos                  — real-time brand/engagement proof (NEW — Chapter 8 L6 §CMP-LIVESTREAM-001, ADR-0036)
 7.  News                                  — communication, SEO/AI surface
-8.  Media Centre                          — emotional/brand proof
-9.  Sponsors & Partners                   — commercial obligation
-10. Newsletter                            — owned-audience retention
-11. Global Footer                         — navigation completion + compliance
+8.  Sponsors & Partners                   — commercial obligation
+9.  Media Centre                          — emotional/brand proof
+10. Memberships / International Affiliations — credibility/affiliation proof (NEW — Chapter 8 L8 §CMP-AFFILIATIONS-001, ADR-0037)
+11. Newsletter                            — owned-audience retention
+12. Global Footer                         — navigation completion + compliance
 Floating social rail (persistent, overlay)
 ```
 
-**[D]** Source: `01-Information-Architecture.md` §7 (built, fixed order). This document does not propose reordering — any reorder is a product decision requiring stakeholder sign-off and is logged as Open Question §25.
+**[D]** Source: Project Owner ruling (this session), reconciling `01-Information-Architecture.md` §7 against the approved Figma build. Any *further* reorder beyond this reconciled state again requires stakeholder sign-off per the same rule.
+
+<details>
+<summary>v0.1.0 order (superseded, kept for audit trail)</summary>
+
+```
+1. Hero carousel · 2. Federation by the Numbers · 3. Featured Athletes · 4. Results & Rankings ·
+5. Clubs Network · 6. Upcoming Events · 7. News · 8. Media Centre · 9. Sponsors & Partners ·
+10. Newsletter · 11. Global Footer
+```
+
+</details>
 
 ---
 
-## 6. Section Inventory
+## 6. Section Inventory [Reconciled v0.2.0]
 
-One row per section. This is the authoritative Homepage section list for this document — it **MUST** match `01-Information-Architecture.md` §7 exactly; any divergence must be reconciled there first.
+One row per section, in the §5 reconciled order. **Header nav item count/structure is explicitly OPEN — see §9 note — and is not reconciled by this table.**
 
 | # | Section | Objective | CMS-editable | Reusable component | Evidence |
 |---|---|---|---|---|---|
-| — | Global Header | Orient + route; logo, 7 nav items, search, language, theme | ● menu | ● | **[B]** |
-| 1 | Hero carousel | First impression; 5 slides, auto-advance, pause on hover/focus/touch, next-event card | ● | ● | **[B]** |
+| — | Global Header | Orient + route; logo, nav, search, language, theme | ● menu | ● | **[B]** — nav structure itself **OPEN**, see §9 |
+| 1 | Hero | First impression; **target state:** 5-slide carousel, auto-advance, pause on hover/focus/touch, next-event card (Chapter 8 L6 §CMP-CAROUSEL-001) — **current build is a single static slide, a known open gap, see §25 Q10** | ● | ● | **[B]** structurally / **[NV]** carousel behavior not yet built |
 | 2 | Federation by the Numbers | Scale/credibility; count-on-view + trend | ◐ | ● | **[B]** |
-| 3 | Featured Athletes | Humanize the sport; discipline filter | ◐ selection | ● | **[B]** |
-| 4 | Results & Rankings | Core sporting fact, tabbed | ○ data-driven | ● | **[B]** |
-| 5 | Clubs Network | National coverage; filter by emirate | ◐ | ● | **[B]** |
-| 6 | Upcoming Events | Forward engagement; countdown, `.ics` export, show-more | ○ data-driven | ● | **[B]** |
+| 3 | Clubs Network | National coverage; filter by emirate | ◐ | ● | **[B]** |
+| 4 | Featured Athletes | Humanize the sport; discipline filter | ◐ selection | ● | **[B]** |
+| 5 | Results & Rankings + Upcoming Events | Core sporting fact + forward engagement; merged split-column section, tabbed results / countdown events | ○ data-driven | ● | **[B]** — merged from two v0.1.0 sections into one, confirmed as intentional layout |
+| 6 | Live Stream & Videos | Real-time brand/engagement proof; live embed + video shelf | ● (shelf) / platform-driven (live signal) | ● **NEW** — Chapter 8 L6 §CMP-LIVESTREAM-001 (ADR-0036) | **[B]**, now formally governed |
 | 7 | News | Communication; category filter, lead + list | ● | ● | **[B]** |
-| 8 | Media Centre | Emotional proof; dark mosaic, lightbox, reels | ● | ● | **[B]** |
-| 9 | Sponsors & Partners | Commercial obligation; one merged animated strip | ● | ● | **[B]** |
-| 10 | Newsletter | Retention; inline form + success state | ● | ● | **[B]** |
-| 11 | Global Footer | Navigation completion + compliance | ● | ● | **[B]** |
+| 8 | Sponsors & Partners | Commercial obligation; one merged animated strip | ● | ● | **[B]** — content explicitly verified/approved by Project Owner this session, not re-audited |
+| 9 | Media Centre | Emotional proof; dark mosaic, lightbox, reels | ● | ● | **[B]** |
+| 10 | Memberships / International Affiliations | Credibility/affiliation proof; international governing-body logos | ● | ● **NEW** — Chapter 8 L8 §CMP-AFFILIATIONS-001 (ADR-0037) | **[B]**, now formally governed |
+| 11 | Newsletter | Retention; inline form + success state | ● | ● | **[B]** |
+| 12 | Global Footer | Navigation completion + compliance | ● | ● | **[B]** — Quick Links content **MUST** match Header nav labeling 1:1 once §9's open header decision is finalized (currently mismatched, see §9 note) |
 | — | Floating social rail | Owned-audience growth; 4 channels + back-to-top | ● | ● | **[B]** |
 
 **Deliberately excluded [D]:** Services/Quick Actions block and E-Services footer column — both removed by explicit prior instruction; see §25 for the unresolved product gap this creates.
+
+**Sponsors note:** Sponsor content/legitimacy is treated as verified and approved as of this session — not an open item, not re-litigated by future audits of this document unless the Project Owner explicitly reopens it.
 
 ---
 
@@ -176,7 +192,9 @@ Priority within the viewport and within each section, derived from **[D]** PR-00
 
 ## 9. Navigation Behavior
 
-Fully inherited from `01-Information-Architecture.md` §8, restated here as it applies to the Homepage specifically **[B]**:
+> **[OPEN DESIGN DECISION — this session]** The Header architecture (item count, labels, dropdown count) is under active discussion and is explicitly **not** finalized by this document. The built Homepage currently shows a 9-item header with 4 dropdowns, which does not match the 7-item/2-dropdown structure documented below; neither is being ratified as correct at this time. **Do not** modify the Header in Figma to force it to either state until a separate, explicit ruling closes this item. The one exception: the Header/Footer label mismatch ("Members" vs. "Athletes" for the same destination) is a defect independent of which final structure is chosen and **SHOULD** be corrected for internal consistency once the structure itself is decided.
+
+Fully inherited from `01-Information-Architecture.md` §8, restated here as it applies to the Homepage specifically **[B]** — **subject to the open decision above:**
 
 - **Main nav:** 7 top-level items (Home, About the Federation▾, Clubs, Athletes, Events▾, News, Media Centre). Two carry dropdowns with a one-line description per child. Active item shows a brand-colored underline indicator.
 - **Below 1024px:** the bar collapses into a drawer carrying the identical tree — **MUST NOT** diverge in content from the desktop nav (single source, per §8.1).
@@ -209,6 +227,26 @@ Fully inherited from `01-Information-Architecture.md` §8, restated here as it a
 - **AI-assisted content [D]:** PR-007 — any AI-assisted field in a news object **MUST** pass human review before publish; never auto-published.
 
 ---
+
+## 11a. Live Stream Strategy [NEW — Reconciled v0.2.0]
+
+**Governing component [D]:** `CMP-LIVESTREAM-001`, Chapter 8 L6, added by ADR-0036.
+
+- **Purpose/objective:** real-time brand and engagement proof — see Chapter 8 L6 §CMP-LIVESTREAM-001 for the full purpose/objective/state/CMS/accessibility contract; this section does not repeat it, per this document's own citation convention.
+- **Placement [B]:** position 6 in the §5 reconciled order, between Results & Rankings/Upcoming Events and News.
+- **Priority [D]:** P2 baseline, temporarily functional-P1 only while a broadcast is actually live (§7 ladder, Chapter 8 L6 rule).
+- **Visibility [D]:** section **MUST** hide entirely if zero videos are published; primary slot **MUST NOT** show a false "Live" state when offline (Chapter 8 L6, non-negotiable per Design Goal #1 credibility).
+- **CMS gap flagged for Chapter 13 backlog:** live-channel reference field, consistent with the External Media Channel Reference gap already noted in `01-Information-Architecture.md` §0.5.
+
+## 14a. Memberships / International Affiliations Strategy [NEW — Reconciled v0.2.0]
+
+**Governing component [D]:** `CMP-AFFILIATIONS-001`, Chapter 8 L8, added by ADR-0037.
+
+- **Purpose/objective:** credibility/affiliation proof, structurally distinct from Sponsors (commercial) — see Chapter 8 L8 §CMP-AFFILIATIONS-001 for the full contract.
+- **Placement [B]:** position 10 in the §5 reconciled order, between Media Centre and Newsletter.
+- **Priority [D]:** P2 (§7 ladder), same tier as Federation by the Numbers/Featured Athletes/Media Centre.
+- **CMS gap flagged for Chapter 13 backlog:** `CT-AFFILIATION-001` content type does not yet formally exist (Chapter 8 L8 ADR-0037 §CMS Relationship) — same category of gap as the existing "Homepage Section Instance" and "Sponsor entity" items already tracked in §21/§25.
+- **Explicit boundary [D]:** **MUST NOT** be visually or structurally merged with Sponsors & Partners — the two answer different credibility questions (see Chapter 8 L8 ADR-0037 Decision rationale).
 
 ## 12. Competitions Strategy
 
@@ -350,6 +388,8 @@ Content types the Homepage consumes, per Chapter 13 and `01-Information-Architec
 | Athlete feature flag | — | Controls which athletes appear in Featured Athletes | **[I]** — implied by CMS-editorial-layer rule (§13 of this doc), not a separately named content type yet |
 | Hero Slide | — | 5 hero carousel slides (image/video, headline, CTA target) | **[A]** — no dedicated content type documented; likely a variant of Homepage Section Instance |
 | Newsletter subscriber capture | — | Newsletter section form target | **[NV]** — not a CMS content type; this is a data-capture integration, see §22 |
+| Live Channel Reference | — | Live Stream section primary embed (§11a) | **[NV]** — Chapter 8 L6 ADR-0036 backlog item, not yet a formal Chapter 13 content type |
+| Affiliation | `CT-AFFILIATION-001` (proposed) | Memberships section (§14a) | **[NV]** — Chapter 8 L8 ADR-0037 backlog item, not yet a formal Chapter 13 content type |
 
 **Editorial workflow [D]:** every editable Homepage content object goes through Author → Review → Publish (author ≠ publisher, PR-010 + Chapter 22) — **no exception for Homepage content**, including hero slides and featured selections.
 
@@ -424,15 +464,18 @@ Carried forward from `01-Information-Architecture.md` where Homepage-relevant, p
 | 6 | **Nav-to-section anchoring** — does clicking "Events" in the header ever scroll to the Homepage's own Results & Rankings/Upcoming Events sections, or does it always route to the dedicated screen? Current build behavior is ambiguous from documentation alone. | §9 Navigation Behavior | Product owner |
 | 7 | **Search suggested-queries source** — trending, curated, or both? | §10 Search Behavior | Product owner |
 | 8 | **Homepage Organization/SportsOrganization Schema.org** — inferred as required (§18) but has no explicit row in Chapter 14; confirm before SEO implementation. | §18 | Product owner + Chapter 14 owner |
-| 9 | **Section reorder authority** — if a future business need requires reordering the 11 sections, is that a Homepage Section Instance CMS change (once #2 is resolved) or does it require a new build? | §5 | Product owner |
+| 9 | **Section reorder authority** — if a future business need requires reordering the 12 sections, is that a Homepage Section Instance CMS change (once #2 is resolved) or does it require a new build? | §5 | Product owner — **partially resolved:** this session's reorder ruling (§5) demonstrates the Project Owner is the deciding authority per Chapter 22 §2; the CMS-vs-build mechanism question remains open |
+| 10 | **Hero carousel implementation gap** — §5/§6 now formally require a 5-slide carousel (Chapter 8 L6 §CMP-CAROUSEL-001), but the current Figma build is a single static image. This is a confirmed open implementation gap, not a spec ambiguity. | §5, §6 | Design/Figma implementation — tracked for correction in this session's Phase C |
+| 11 | **Header architecture** — 7-item/2-dropdown (documented) vs. 9-item/4-dropdown (built) — explicitly left open this session, see §9. | §9 | Product owner |
+| 12 | **`CT-AFFILIATION-001` and Live Channel Reference content types** — both newly identified in §11a/§14a, not yet formalized in Chapter 13. | §21 | Product owner + Chapter 13 owner |
 
-**Explicit reminder per governance:** none of the above may be resolved by inventing an answer in Figma. Each requires a product ruling, and where it touches a frozen Design System chapter (e.g., #3, #4 potentially touching Chapter 13), the resolution path is an ADR under Chapter 22, per `01-Information-Architecture.md`'s own governance note (§0.3).
+**Explicit reminder per governance:** none of the above may be resolved by inventing an answer in Figma. Each requires a product ruling, and where it touches a frozen Design System chapter (e.g., #3, #4, #12 potentially touching Chapter 13), the resolution path is an ADR under Chapter 22, per `01-Information-Architecture.md`'s own governance note (§0.3).
 
 ---
 
 ## References
 
-**Normative:** Chapter 0-1 (Introduction & Brand Identity), Chapter 2 (Design Principles, PR-001→PR-010), Chapter 5 (Grid/Layout/Motion), Chapter 6 (Accessibility), Chapter 8 (L1/L5/L6/L8 + Governance), Chapter 9 (Content Design), Chapter 11 (UX Patterns), Chapter 13 (CMS System), Chapter 14 (SEO Guidelines), Chapter 17 (Data Privacy & Identity), Chapter 19 (Calendar & Localization), Chapter 20 (Page Templates, `TMP-HOME-001`), Chapter 21 (Technical Architecture), Chapter 22 (Governance)
+**Normative:** Chapter 0-1 (Introduction & Brand Identity, incl. ADR-0038 Federation Red Extended Roles), Chapter 2 (Design Principles, PR-001→PR-010), Chapter 3 (Design Tokens, incl. §3.33 ADR-0039 Color Expansion), Chapter 5 (Grid/Layout/Motion), Chapter 6 (Accessibility), Chapter 7 (Semantic Tokens, incl. §7.9), Chapter 8 (L1/L5/L6/L8 + Governance, incl. ADR-0036 Live Stream, ADR-0037 Memberships, G.13 Entity Colors), Chapter 9 (Content Design), Chapter 11 (UX Patterns), Chapter 13 (CMS System), Chapter 14 (SEO Guidelines), Chapter 17 (Data Privacy & Identity), Chapter 19 (Calendar & Localization), Chapter 20 (Page Templates, `TMP-HOME-001`), Chapter 21 (Technical Architecture), Chapter 22 (Governance)
 
 **Product:** `01-Information-Architecture.md` (`/docs/product`) — §0-§15, primary source for all **[B]** facts in this document
 
@@ -442,4 +485,4 @@ Chapter 20 → `TMP-HOME-001` is the binding template identifier for everything 
 
 ---
 
-*End of document — v0.1.0 Draft. This is a product specification only. It does not amend the Design System or the Information Architecture document; every conflict or gap it surfaces is logged in §25 and must be resolved by product ruling or ADR before UI/Figma work on the Homepage begins.*
+*End of document — v0.2.0, Reconciled with Approved Build. This is a product specification; §5/§6/§8/§9/§11a/§14a/§21/§25 were updated this session by explicit Project Owner ruling, with corresponding Design System ADRs (Chapter 1 ADR-0038, Chapter 3/7 ADR-0039, Chapter 8 ADR-0036/ADR-0037, Chapter 8 Global Governance G.13) added to keep the Design System and this document in sync, per Chapter 22's change process. Remaining open items (Hero carousel implementation, Header architecture, new CMS content types) are logged in §25 and still require resolution before those specific gaps can be closed.*
