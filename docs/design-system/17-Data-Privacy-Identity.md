@@ -1,116 +1,195 @@
 # Chapter 17 — Data Privacy & Identity Architecture
 
 **Document:** UAEAF Enterprise Design System Framework v1.0.0
-**Chapter Status:** Accepted | **Last Updated:** هذه الجلسة | **Document Owner:** مالك المشروع
+**Chapter Status:** Accepted | **Last Updated:** This Session | **Document Owner:** Project Owner
 
-> **Status: Frozen (Baseline v1.0).** أي تغيير بعد التجميد **MUST** يُدخَل حصريًا عبر ADR جديد أو بند Backlog موثَّق.
+> **Status: Frozen (Baseline v1.0).** Any change after the freeze **MUST** be introduced exclusively through a new ADR or a documented Backlog item.
 
 ## Depends On / Used By
-| Depends On | Used By |
-|---|---|
-| Chapter 0 (Discovery — PDPL، قانون سلامة الطفل الرقمي، UAE PASS) · Chapter 8 L2 (§CMP-SIGNATUREPAD-001 لموافقات الأهل) · Chapter 8 L7 (§EC.4 Audit Logging) · Chapter 8 L8 (§SP.10) · Chapter 16 (§8) | Chapter 21 (Technical Architecture ينفّذ هذا الفصل) · Chapter 22 (Governance) |
+
+| Depends On                                                                                                                                                                                                  | Used By                                                                               |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Chapter 0 (Discovery — PDPL, Child Digital Safety Law, UAE PASS) · Chapter 8 L2 (§CMP-SIGNATUREPAD-001 for parental consent) · Chapter 8 L7 (§EC.4 Audit Logging) · Chapter 8 L8 (§SP.10) · Chapter 16 (§8) | Chapter 21 (Technical Architecture implements this chapter) · Chapter 22 (Governance) |
 
 ## Scope
-**يغطي:** تصنيف البيانات، إدارة الموافقات (خاصة القاصرين)، الاحتفاظ والحذف، حقوق أصحاب البيانات، معمارية الهوية الرقمية وتجريد مزود المصادقة.
-**لا يغطي:** التنفيذ التقني الدقيق (خوارزميات تشفير، بنية قاعدة البيانات — → Chapter 21).
+
+**Covers:** Data classification, consent management — particularly for minors — data retention and deletion, data subject rights, digital identity architecture, and authentication-provider abstraction.
+
+**Does Not Cover:** Detailed technical implementation, including encryption algorithms and database architecture (→ Chapter 21).
 
 ## Definitions
-| المصطلح | التعريف |
-|---|---|
-| **Data Subject** | الشخص الذي تخصّه البيانات الشخصية (لاعب، مدرب، موظف) |
-| **Identity Provider (IdP)** | الجهة/النظام المسؤول عن التحقق من هوية المستخدم عند تسجيل الدخول |
-| **Documented Consent** | موافقة مسجَّلة رسميًا بتاريخ ومصدر واضحين، لا افتراض ضمني |
+
+| Term                        | Definition                                                                                              |
+| --------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **Data Subject**            | The individual to whom personal data relates (e.g., athlete, coach, employee)                           |
+| **Identity Provider (IdP)** | The service or system responsible for verifying a user's identity during authentication                 |
+| **Documented Consent**      | Formally recorded consent with a clearly documented date and source; implicit consent is not sufficient |
 
 ## Purpose
-هذا الفصل يحوّل قرارات Discovery القانونية (PDPL، قانون سلامة الطفل الرقمي) إلى معمارية تقنية ملزمة تحكم كل مكوّن يتعامل مع بيانات شخصية عبر المنصة بأكملها.
+
+This chapter translates the legal decisions established during Discovery — including the **PDPL** and the **Child Digital Safety Law** — into mandatory technical architecture governing every platform component that handles personal data.
 
 ---
 
 ## ADR-0028: Data Privacy Architecture
 
-| الحقل | التفاصيل |
-|---|---|
-| **Status** | Accepted |
-| **Authority** | International/National Standard (PDPL الفدرالي رقم 45/2021 + قانون سلامة الطفل الرقمي رقم 26/2025) |
-| **Context** | المنصة تخزّن بيانات حقيقية لعشرات آلاف اللاعبين، جزء منهم قاصرون (أصغر فئة عمرية "تحت 14" قريبة من عتبة الـ13 القانونية) — قانون سلامة الطفل الرقمي (ساري من يناير 2026) يمنع صراحة معالجة/نشر بيانات طفل تحت 13 بلا موافقة ولي أمر موثّقة وقابلة للسحب |
-| **Decision** | كل بيانات شخصية **MUST** مصنَّفة عند الإدخال (§1) حسب حساسيتها. بيانات أي مستخدم مُصنَّف قاصرًا تحت العتبة القانونية **MUST NOT** تُنشَر علنًا (Chapter 8 L8 §SP.10) دون موافقة ولي أمر موثَّقة رسميًا (§2) قابلة للسحب في أي وقت. كل معالجة بيانات شخصية **MUST** سجل تدقيق (يستهلك Chapter 8 L7 §EC.4 مباشرة) |
-| **Alternatives Considered** | معاملة كل بيانات اللاعبين بنفس المستوى بلا تمييز عمري — رُفض لأنه يخالف القانون صراحة لفئة القاصرين تحت 13 |
-| **Why This Decision** | الامتثال القانوني غير قابل للتفاوض؛ تصميم معماري يفرضه بنيويًا أضمن من الاعتماد على انضباط تشغيلي يدوي |
-| **Risks** | تحديد "من هو قاصر تحت العتبة" يتطلب تاريخ ميلاد دقيق قد لا يكون متوفرًا دائمًا وقت التسجيل الأولي. Mitigation: **MUST** حقل تاريخ الميلاد إلزاميًا (Chapter 8 L2) لكل سجل لاعب جديد من اليوم الأول — لا استثناء |
-| **Consequences** | كل شاشة تسجيل/تعديل بيانات لاعب (Chapter 11 §PT-CRUD-001) **MUST** تتحقق من هذا التصنيف تلقائيًا عند الحفظ |
+| Field                       | Details                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Status**                  | Accepted                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| **Authority**               | International / National Standard (Federal Decree-Law No. 45/2021 — PDPL + Federal Decree-Law No. 26/2025 — Child Digital Safety)                                                                                                                                                                                                                                                                                                                                                      |
+| **Context**                 | The platform stores real data for tens of thousands of athletes, including minors. Some age categories may fall below the legally relevant threshold. The Child Digital Safety Law, effective from January 2026, explicitly restricts the processing/publication of data relating to children below the applicable age threshold without documented and withdrawable parental consent.                                                                                                 |
+| **Decision**                | All personal data **MUST** be classified at the point of entry (§1) according to its sensitivity. Data belonging to any user classified as a minor below the applicable legal threshold **MUST NOT** be publicly disclosed (Chapter 8 L8 §SP.10) without formally documented parental consent (§2), which **MUST** be withdrawable at any time. Every processing activity involving personal data **MUST** be auditable through an audit record consuming Chapter 8 L7 §EC.4 directly. |
+| **Alternatives Considered** | Treating all athlete data under the same privacy classification without age-based distinction — rejected because this would conflict with the legal requirements applicable to minors below the relevant threshold.                                                                                                                                                                                                                                                                    |
+| **Why This Decision**       | Legal compliance is non-negotiable. Enforcing privacy requirements architecturally provides stronger protection than relying solely on manual operational discipline.                                                                                                                                                                                                                                                                                                                  |
+| **Risks**                   | Determining whether an individual is below the applicable legal threshold requires an accurate date of birth, which may not always be available during initial registration. **Mitigation:** Date of birth **MUST** be a mandatory field (Chapter 8 L2) for every new athlete record from day one, without exception.                                                                                                                                                                  |
+| **Consequences**            | Every athlete registration/edit interface (Chapter 11 §PT-CRUD-001) **MUST** automatically evaluate and enforce the applicable classification when the record is saved.                                                                                                                                                                                                                                                                                                                |
 
 ## ADR-0029: Identity Provider Abstraction
 
-| الحقل | التفاصيل |
-|---|---|
-| **Status** | Accepted |
-| **Authority** | Engineering Decision (يطبّق قرار Discovery الأصلي) |
-| **Context** | Discovery حدّد: لا اعتماد حصري على UAE PASS، نظام داخلي + تسجيل تقليدي للإصدار الأول، مع جاهزية لإضافة مزودي هوية إضافيين لاحقًا |
-| **Decision** | معمارية المصادقة **MUST** تُبنى عبر طبقة تجريد (Identity Provider Abstraction) — التطبيق **MUST NOT** يعتمد مباشرة على تفاصيل مزود هوية واحد بعينه في منطق الأعمال. الإصدار الأول: مزود داخلي (Internal IdP) + بريد إلكتروني/كلمة مرور (Chapter 8 L2 §CMP-PASSWORDFIELD-001). إضافة UAE PASS أو أي مزود آخر مستقبلاً **MUST NOT** تتطلب إعادة هيكلة منطق الأعمال، فقط إضافة Provider جديد خلف نفس الطبقة |
-| **Alternatives Considered** | بناء المصادقة مباشرة حول UAE PASS من اليوم الأول — رُفض (Discovery: لا اعتماد حصري، القرار مفتوح) |
-| **Why This Decision** | يحافظ على المرونة الكاملة دون تأخير الإطلاق بانتظار تكامل UAE PASS |
-| **Risks** | طبقة تجريد إضافية قد تُعقّد التنفيذ الأولي البسيط. Mitigation: التجريد يبقى على مستوى العقد (Interface) لا التنفيذ الكامل لعدة مزودين فعليًا من اليوم الأول |
-| **Consequences** | Chapter 21 (لاحقًا) يوثّق التفاصيل التقنية الدقيقة لهذه الطبقة |
+| Field                       | Details                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Status**                  | Accepted                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| **Authority**               | Engineering Decision (implements the original Discovery decision)                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| **Context**                 | Discovery established that the platform must not depend exclusively on UAE PASS. The initial release will use an internal authentication system with traditional registration, while remaining ready to support additional identity providers in the future.                                                                                                                                                                                                                                                |
+| **Decision**                | The authentication architecture **MUST** use an **Identity Provider Abstraction** layer. Application business logic **MUST NOT** depend directly on the implementation details of any single identity provider. Initial release: Internal IdP + email/password authentication (Chapter 8 L2 §CMP-PASSWORDFIELD-001). Adding UAE PASS or any other provider in the future **MUST NOT** require restructuring business logic; it should require only adding a new Provider behind the same abstraction layer. |
+| **Alternatives Considered** | Building the authentication architecture directly around UAE PASS from day one — rejected (Discovery: exclusive dependence is not required and the decision remains intentionally open).                                                                                                                                                                                                                                                                                                                    |
+| **Why This Decision**       | Preserves architectural flexibility without delaying the initial launch while waiting for UAE PASS integration.                                                                                                                                                                                                                                                                                                                                                                                             |
+| **Risks**                   | An additional abstraction layer may introduce unnecessary complexity into an otherwise simple initial implementation. **Mitigation:** The abstraction remains at the contract/interface level rather than requiring multiple fully implemented providers from day one.                                                                                                                                                                                                                                      |
+| **Consequences**            | Chapter 21 will document the detailed technical implementation of this abstraction layer.                                                                                                                                                                                                                                                                                                                                                                                                                   |
 
 ---
 
 ## 1. Data Classification
-| المستوى | أمثلة | القاعدة |
-|---|---|---|
-| **Public** | اسم لاعب، نتيجة بطولة، اسم نادٍ | نشر مفتوح (Chapter 14) |
-| **Restricted** | بيانات اتصال، تفاصيل صحية | لوحة التحكم فقط، صلاحيات محدودة (Chapter 8 L3 §N.19) |
-| **Sensitive/Minor** | بيانات وصور قاصرين تحت العتبة القانونية | يخضع لـADR-0028 كاملاً |
 
-## 2. Consent Management (القاصرون)
-موافقة ولي الأمر **MUST** موثّقة (تاريخ، طريقة الحصول — Chapter 8 L2 §CMP-SIGNATUREPAD-001 أحد الخيارات المتاحة) و**MUST** قابلة للسحب في أي وقت (نفس مبدأ Chapter 6 §6.9 لتفضيلات الوصول، مطبَّقًا هنا على الموافقات القانونية). سحب الموافقة **MUST** يُطبَّق فورًا (إخفاء الصورة الحقيقية، التحول لـInitials Avatar — Chapter 8 L8 §SP.10) لا بعد تأخير معالجة.
+| Classification        | Examples                                                                         | Rule                                                              |
+| --------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| **Public**            | Athlete name, championship result, club name                                     | Publicly publishable (Chapter 14)                                 |
+| **Restricted**        | Contact information, health-related details                                      | Administration panel only; access controlled (Chapter 8 L3 §N.19) |
+| **Sensitive / Minor** | Personal data and images relating to minors below the applicable legal threshold | Fully governed by ADR-0028                                        |
+
+## 2. Consent Management — Minors
+
+Parental consent **MUST** be formally documented, including the date and method by which consent was obtained.
+
+Chapter 8 L2 §CMP-SIGNATUREPAD-001 is one available mechanism for capturing such consent.
+
+Consent **MUST** be withdrawable at any time, following the same principle established in Chapter 6 §6.9 for access preferences, applied here to legally required consent.
+
+Withdrawal of consent **MUST** take effect immediately.
+
+For example, the platform **MUST** immediately hide the actual image and transition to an Initials Avatar (Chapter 8 L8 §SP.10), rather than delaying enforcement until a later processing cycle.
 
 ## 3. Data Retention & Deletion
-كل نوع بيانات **MUST** فترة احتفاظ معلنة صراحة (لا "للأبد" افتراضيًا بلا مراجعة). حذف حساب/سجل **MUST** يتبع نفس تمييز Chapter 13 §6c (Archival ≠ Deletion) — أرشفة داخلية لأغراض قانونية/تدقيق مسموحة، لكن الظهور العلني **MUST** يتوقف فورًا عند طلب حذف موثّق.
 
-## 4. Data Subject Rights (PDPL)
-**MUST** آلية لكل حق أساسي بموجب PDPL: الوصول لبيانات الشخص، تصحيحها، حذفها، تقييد معالجتها، سحب الموافقة. **MUST** استجابة خلال إطار زمني معقول موثَّق (يُحدَّد التفصيل الدقيق في السياسة القانونية للاتحاد، خارج نطاق هذا الفصل التقني).
+Every data category **MUST** have an explicitly defined retention period.
 
-## 5. Identity Provider Abstraction (التطبيق العملي لـADR-0029)
-```
+"Indefinite retention" **MUST NOT** be used as the default without periodic review.
+
+Account or record deletion **MUST** follow the same distinction established in Chapter 13 §6c:
+
+> **Archival ≠ Deletion**
+
+Internal archival for legitimate legal or audit purposes **MAY** be permitted where appropriate.
+
+However, public visibility **MUST** cease immediately upon a verified and valid deletion request where deletion rights apply.
+
+## 4. Data Subject Rights — PDPL
+
+The platform **MUST** provide a mechanism for each applicable fundamental right under the PDPL, including:
+
+* Access to personal data
+* Correction of personal data
+* Deletion of personal data
+* Restriction of processing
+* Withdrawal of consent
+
+Requests **MUST** be handled within a reasonable, documented timeframe.
+
+The exact operational deadlines and procedures **MUST** be defined by the Federation's legal/privacy policy and remain outside the scope of this technical chapter.
+
+## 5. Identity Provider Abstraction
+
+### Practical Application of ADR-0029
+
+```text id="c1k8dp"
 Application Business Logic
-        ↓ (يتعامل مع)
-Identity Abstraction Layer (عقد ثابت: login/logout/currentUser/session)
-        ↓ (خلفها، قابلة للتبديل)
-Internal IdP (الإصدار الأول) | UAE PASS (مستقبلي) | مزود آخر (مستقبلي)
+        ↓
+Identity Abstraction Layer
+(Fixed Contract: login / logout / currentUser / session)
+        ↓
+Pluggable Provider Implementations
+Internal IdP (Initial Release)
+        |
+        ├── UAE PASS (Future)
+        |
+        └── Other Provider (Future)
 ```
+
+The application business layer **MUST** interact with the abstraction contract rather than directly with a specific provider implementation.
 
 ## 6. Session Management
-يستهلك مبادئ Chapter 8 L4 §FB.24 Cross-Tab Synchronization مباشرة — انتهاء الجلسة **MUST** يتزامن عبر كل التبويبات المفتوحة لنفس المستخدم.
+
+The platform directly consumes the principles defined in Chapter 8 L4 §FB.24 Cross-Tab Synchronization.
+
+Session expiration **MUST** be synchronized across all open browser tabs belonging to the same user session.
 
 ## 7. Audit & Compliance Logging
-كل وصول أو تعديل لبيانات مصنَّفة `Restricted` أو `Sensitive/Minor` (§1) **MUST** سجل تدقيق يستهلك Chapter 8 L7 §EC.4 — **MUST** تسجيل من وصل، متى، ولأي بيانات تحديدًا، لا سجل عام غامض.
+
+Every access to or modification of data classified as `Restricted` or `Sensitive/Minor` (§1) **MUST** generate an audit record through Chapter 8 L7 §EC.4.
+
+The audit record **MUST** identify, at minimum:
+
+* **Who** accessed the data
+* **When** the access occurred
+* **Which specific data or record** was accessed or modified
+
+A vague or generic access log **MUST NOT** be considered sufficient for compliance purposes.
 
 ## 8. Third-Party Data Sharing Boundary
-أي مشاركة بيانات مع طرف ثالث (مزود توقيت خارجي محتمل — Chapter 8 L8 ADR-0020، جهة حكومية، World Athletics) **MUST** محدودة للبيانات الضرورية فقط (Data Minimization) — **MUST NOT** مشاركة بيانات `Sensitive/Minor` دون نفس ضوابط §2.
+
+Any sharing of personal data with a third party — such as a potential external timing provider (Chapter 8 L8 ADR-0020), government authority, or World Athletics — **MUST** be limited to the minimum data necessary for the specific purpose (**Data Minimization**).
+
+`Sensitive/Minor` data **MUST NOT** be shared without applying the same consent and privacy controls defined in §2.
 
 ## 9. Data Residency
-**MUST** بيانات المستخدمين الإماراتيين تُخزَّن وفق متطلبات الإقامة القانونية للبيانات في الدولة حيثما ينطبق PDPL — التفاصيل التقنية الدقيقة (موقع الخادم) تُحسَم في Chapter 21 بالتنسيق مع المتطلبات القانونية الفعلية.
+
+Personal data relating to users in the UAE **MUST** be stored in accordance with applicable UAE data-residency requirements where such requirements apply under the PDPL and related regulations.
+
+The exact technical implementation, including hosting/server location, **MUST** be determined in Chapter 21 in coordination with the actual legal requirements applicable to the platform.
 
 ---
 
 ## Do & Don't
-**Do:** صنّف كل بيانات جديدة (§1) عند التصميم لا بعد الإطلاق · تحقق من عمر اللاعب قبل السماح بنشر صورته الحقيقية (ADR-0028)
-**Don't:** لا تنشر صورة/بيانات قاصر دون موافقة موثَّقة قابلة للسحب · لا تربط منطق الأعمال مباشرة بمزود هوية واحد (ADR-0029)
+
+### Do
+
+* Classify every newly introduced data category at the design stage (§1), rather than after launch.
+* Verify the athlete's age before allowing publication of their actual image (ADR-0028).
+
+### Don't
+
+* Do not publish a minor's image or personal data without formally documented, withdrawable consent.
+* Do not couple application business logic directly to a single identity provider (ADR-0029).
 
 ## Success Metrics
-- 100% من بيانات اللاعبين مصنَّفة (§1) عند الإدخال
-- 0 نشر بيانات/صورة قاصر دون موافقة موثَّقة مسجَّلة
-- 100% من الوصول لبيانات Restricted/Sensitive مسجَّل في Audit Log
-- 0 اعتماد مباشر لمنطق الأعمال على تفاصيل مزود هوية بعينه
+
+* **100%** of athlete data is classified (§1) at the point of entry.
+* **0** instances of minor data or images being published without documented consent.
+* **100%** of access to Restricted/Sensitive data is recorded in the Audit Log.
+* **0** instances of business logic directly depending on the implementation details of a specific identity provider.
 
 ## References
+
 **Normative:** Federal Decree-Law No. 45/2021 (PDPL) · Federal Decree-Law No. 26/2025 (Child Digital Safety) · Chapter 0 (Discovery)
-**Implementation:** Chapter 21 (التفاصيل التقنية)
+
+**Implementation:** Chapter 21 (Technical Details)
+
 **Informative:** UAE Data Office Guidelines
 
 ## Related Chapters
+
 Chapter 8 L2/L7/L8 · Chapter 13 · Chapter 16 · Chapter 21 · Chapter 22
 
 ---
 
-*نهاية Chapter 17. الفصل التالي: Chapter 18 — Notifications Architecture.*
+*End of Chapter 17. Next: Chapter 18 — Notifications Architecture.*

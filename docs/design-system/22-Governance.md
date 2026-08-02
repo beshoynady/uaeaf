@@ -1,92 +1,131 @@
 # Chapter 22 — Governance
 
 **Document:** UAEAF Enterprise Design System Framework v1.0.0
-**Chapter Status:** Accepted | **Last Updated:** هذه الجلسة | **Document Owner:** مالك المشروع
+**Chapter Status:** Accepted | **Last Updated:** This Session | **Document Owner:** Project Owner
 
-> **Status: Frozen (Baseline v1.0).** أي تغيير بعد التجميد **MUST** يُدخَل حصريًا عبر ADR جديد أو بند Backlog موثَّق.
+> **Status: Frozen (Baseline v1.0).** Any change after the freeze **MUST** be introduced exclusively through a new ADR or a documented Backlog item.
 
 ## Depends On / Used By
-| Depends On | Used By |
-|---|---|
-| Chapter 0 (Discovery — قرار الحوكمة الأصلي) · Chapter 3 §3.6 (Token Versioning) · Chapter 8 Governance §G.1/§Governance Change Policy | كل الفصول 1-21 (تحكم كيفية تعديلها مستقبلاً) |
+
+| Depends On                                                                                                                                     | Used By                                                             |
+| ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Chapter 0 (Discovery — Original Governance Decision) · Chapter 3 §3.6 (Token Versioning) · Chapter 8 Governance §G.1/§Governance Change Policy | All Chapters 1–21 (controls how they may be modified in the future) |
 
 ## Scope
-**يغطي:** حوكمة الوثيقة نفسها ككل — الإصدار، الملكية، عملية التغيير، وتيرة المراجعة، خطة انتقال الملكية لفريق مستقبلي.
-**لا يغطي:** حوكمة التوكنز التفصيلية (→ Chapter 3 §3.5-3.7)، حوكمة المكونات (→ Chapter 8 Global Governance) — هذا الفصل المظلة العليا فوقهما.
+
+**Covers:** Governance of the document as a whole — versioning, ownership, change process, review cadence, and the ownership transition plan for a future team.
+
+**Does not cover:** Detailed token governance (→ Chapter 3 §3.5–3.7), component governance (→ Chapter 8 Global Governance) — this chapter is the overarching layer above both.
 
 ## Definitions
-| المصطلح | التعريف |
-|---|---|
-| **Document Version** | رقم إصدار الوثيقة الكاملة (مختلف عن إصدار توكن أو مكوّن فردي) |
-| **Baseline Freeze** | حالة فصل مُعتمَد نهائيًا لا يُعدَّل إلا عبر ADR جديد (مُطبَّقة على كل فصل من Chapter 1 حتى الآن) |
+
+| Term                 | Definition                                                                                                                           |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| **Document Version** | The version number of the complete document, distinct from the version of an individual token or component.                          |
+| **Baseline Freeze**  | The state of an approved final chapter that may only be modified through a new ADR (applied to every chapter from Chapter 1 onward). |
 
 ## Purpose
-يُثبِّت قرار Chapter 0 Discovery ("حوكمة خفيفة الآن، موثَّقة باحترافية لفريق مستقبلي") كنظام حوكمة فعلي يحكم الوثيقة بأكملها من هذه اللحظة فصاعدًا.
+
+This chapter formalizes the decision made in Chapter 0 Discovery ("lightweight governance now, professionally documented for a future team") as the actual governance system governing the entire document from this point forward.
 
 ---
 
 ## ADR-0034: Document-Level Governance Model
 
-| الحقل | التفاصيل |
-|---|---|
-| **Status** | Accepted |
-| **Authority** | Product Decision (يُثبِّت Chapter 0 Discovery حرفيًا) |
-| **Context** | مالك المشروع حاليًا الشخص الوحيد المسؤول عن كل الأدوار (Chapter 0 Discovery) — لا فريق منفصل بعد؛ الوثيقة تحتاج نظام حوكمة يعمل بمرونة الآن لكنه صالح لفريق كامل لاحقًا دون إعادة كتابة |
-| **Decision** | الوثيقة الكاملة **MUST** تتبع Semantic Versioning (حاليًا `v1.0.0`) — **Patch** لإصلاحات صياغية لا تغيّر معنى، **Minor** لإضافة محتوى جديد (فصل جديد، ADR جديد) لا يكسر ما سبق، **Major** لأي تغيير يُبطل قرارًا سابقًا (Breaking Change على مستوى الوثيقة). **MUST** كل تغيير على أي فصل مُجمَّد (Baseline Freeze) يمر عبر ADR جديد فقط — **MUST NOT** تعديل مباشر بلا توثيق قرار. مالك المشروع حاليًا **Single Point of Authority** لكل القرارات — لا طبقة موافقات إضافية طالما الفريق فردي |
-| **Alternatives Considered** | حوكمة صارمة بطبقات موافقة متعددة من اليوم الأول — رُفضت (Chapter 0 Discovery: لا داعي بفريق من شخص واحد، يُبطئ التقدم بلا فائدة فعلية) |
-| **Why This Decision** | يوازن بين السرعة الحالية (قرار فردي فوري) والانضباط طويل المدى (كل قرار موثَّق بصيغة قابلة للفهم من أي منضم لاحق) |
-| **Risks** | عند انضمام فريق مستقبلي، الانتقال من "قرار فردي" لـ"مراجعة جماعية" قد يحتاج تعديل هذه الحوكمة نفسها. Mitigation: §3 يوثّق خطة الانتقال مسبقًا |
-| **Consequences** | هذا الفصل **المرجع الأعلى** لأي سؤال حوكمي لا يُجاب عنه في فصل محدَّد |
+| Field                       | Details                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Status**                  | Accepted                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| **Authority**               | Product Decision (formally establishes the Chapter 0 Discovery decision)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| **Context**                 | The Project Owner is currently the sole person responsible for all roles (Chapter 0 Discovery) — there is no separate team yet; the document needs a governance system that works flexibly now while remaining suitable for a full team later without requiring a rewrite.                                                                                                                                                                                                                                                                                                                                                                                                |
+| **Decision**                | The complete document **MUST** follow Semantic Versioning (currently `v1.0.0`) — **Patch** for wording fixes that do not change meaning, **Minor** for adding new content (new chapter, new ADR) that does not break previous decisions, **Major** for any change that invalidates a previous decision (document-level Breaking Change). **MUST** every change to a frozen (Baseline Freeze) chapter go through a new ADR only — **MUST NOT** be directly modified without documenting the decision. The Project Owner is currently the **Single Point of Authority** for all decisions — no additional approval layer is required while the team consists of one person. |
+| **Alternatives Considered** | Strict multi-level approval governance from day one — rejected (Chapter 0 Discovery: unnecessary for a one-person team, as it would slow progress without providing meaningful benefit).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| **Why This Decision**       | Balances current speed (immediate individual decision-making) with long-term discipline (every decision is documented in a format understandable to any future team member).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| **Risks**                   | When a future team joins, transitioning from "individual decision" to "collective review" may require modifying this governance model itself. **Mitigation:** §3 documents the transition plan in advance.                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| **Consequences**            | This chapter is the **highest-level reference** for any governance question not answered by a more specific chapter.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 
 ---
 
 ## 1. Document Versioning
-`v1.0.0` هو إصدار هذه الوثيقة عند اكتمال الفصول 0-20 (طبقة التصميم/المحتوى/التركيب). كل فصل فردي يحمل حالة Baseline Freeze مستقلة (موثَّقة في أعلى كل ملف) — لكن رقم الإصدار الكلي للوثيقة **MUST** يتبع أعلى تغيير حدث في أي فصل (Chapter 3 §3.6 نفس المنطق، مطبَّقًا على مستوى الوثيقة كاملة).
 
-## 2. Roles & Ownership (الحالة الراهنة)
-مالك المشروع: **Product Owner + System Architect + UI/UX Designer + Design System Owner + Frontend/Backend Developer + Technical Lead** معًا (Chapter 0 Discovery) — قرار نهائي بلا حاجة موافقة إضافية.
+`v1.0.0` is the version of this document upon completion of Chapters 0–20 (the design/content/composition layer). Each individual chapter has its own independent Baseline Freeze status (documented at the top of each file) — however, the overall document version **MUST** follow the highest-level change that has occurred in any chapter (Chapter 3 §3.6 follows the same logic, applied at the level of the complete document).
+
+## 2. Roles & Ownership (Current State)
+
+The Project Owner currently acts simultaneously as:
+
+**Product Owner + System Architect + UI/UX Designer + Design System Owner + Frontend/Backend Developer + Technical Lead**
+
+with final decision-making authority and no additional approval required.
 
 ## 3. Future Team Transition Plan
-عند انضمام أعضاء فريق:
-- **MUST** أي عضو جديد يقرأ الفصل المصدر ذي الصلة قبل اقتراح تغيير (لا افتراض معرفة ضمنية)
-- **MUST** اقتراحات التغيير تُقدَّم كـADR مسودة (Draft) للفصل المعني، لا تعديل مباشر
-- **MAY** مالك المشروع (أو من يخلفه كـTechnical Lead) يفوّض حق الموافقة النهائية لدور محدَّد مستقبلاً — هذا التفويض نفسه **MUST** يوثَّق كـADR في هذا الفصل عند حدوثه فعليًا، لا مسبقًا افتراضيًا
 
-## 4. Change Process (يوحّد كل عمليات التغيير عبر الوثيقة)
+When team members join:
+
+* **MUST** any new member read the relevant source chapter before proposing a change (no assumption of implicit knowledge).
+* **MUST** change proposals be submitted as a Draft ADR for the relevant chapter, rather than through direct modification.
+* **MAY** the Project Owner (or their future successor as Technical Lead) delegate final approval authority to a specific role in the future — this delegation itself **MUST** be documented as an ADR in this chapter when it actually occurs, rather than being assumed in advance.
+
+## 4. Change Process
+
+This unifies all change processes across the document:
+
+```text
+Propose Change
+→ Identify the affected source chapter
+→ Draft ADR (Context / Decision / Alternatives / Why / Risks / Status)
+→ Approve
+→ Update the chapter + document version (§1)
 ```
-اقتراح تغيير → تحديد الفصل المصدر المتأثر → صياغة ADR (Context/Decision/Alternatives/Why/Risks/Status) → اعتماد → تحديث الفصل + رقم الإصدار (§1)
-```
-يطابق حرفيًا نفس نمط Chapter 3 §3.5 (Token Lifecycle) وChapter 8 §Governance Change Policy — **مُعمَّم هنا كنمط التغيير الوحيد لأي جزء من الوثيقة**.
+
+This follows exactly the same pattern as Chapter 3 §3.5 (Token Lifecycle) and Chapter 8 §Governance Change Policy — generalized here as the single change pattern for any part of the document.
 
 ## 5. Review Cadence
-**SHOULD** مراجعة دورية (كل إصدار Major أو سنويًا أيهما أقرب) لكل الفصول المُجمَّدة للتحقق من استمرار صلاحيتها (تغيّرات قانونية — Chapter 17، تحديثات معايير الوصول — Chapter 6، تطورات تقنية — Chapter 21).
+
+**SHOULD** conduct a periodic review (every Major release or annually, whichever comes first) of all frozen chapters to verify their continued validity against:
+
+* Legal changes — Chapter 17
+* Accessibility standards updates — Chapter 6
+* Technology developments — Chapter 21
 
 ## 6. Chapter-Level vs Document-Level Governance
-| المستوى | يحكمه |
-|---|---|
-| توكن فردي | Chapter 3 §3.5-3.7 |
-| مكوّن فردي | Chapter 8 Global Governance §G.1-G.2 |
-| نمط (Pattern) | Chapter 11 §Pattern Lifecycle |
-| الوثيقة كاملة | هذا الفصل (22) |
-**MUST** أي تعارض بين مستويين يُحسَم لصالح القاعدة الأكثر تحديدًا (توكن يتبع Chapter 3، لا هذا الفصل العام) — هذا الفصل يحكم فقط ما لا يُغطّى بحوكمة أكثر تحديدًا.
+
+| Level                | Governed By                          |
+| -------------------- | ------------------------------------ |
+| Individual Token     | Chapter 3 §3.5–3.7                   |
+| Individual Component | Chapter 8 Global Governance §G.1–G.2 |
+| Pattern              | Chapter 11 §Pattern Lifecycle        |
+| Complete Document    | This Chapter (22)                    |
+
+**MUST** any conflict between two governance levels be resolved in favor of the more specific rule (a token follows Chapter 3, not this general chapter) — this chapter governs only what is not covered by more specific governance rules.
 
 ---
 
 ## Do & Don't
-**Do:** وثّق أي تغيير كـADR بصرف النظر عن حجمه · حدّث رقم إصدار الوثيقة (§1) مع أي تغيير معتمد
-**Don't:** لا تُعدِّل فصلاً مُجمَّدًا مباشرة بلا ADR · لا تفترض صلاحية موافقة جماعية غير موجودة فعليًا بعد (§2)
+
+**Do:**
+
+* Document every change as an ADR regardless of its size.
+* Update the document version (§1) with every approved change.
+
+**Don't:**
+
+* Do not modify a frozen chapter directly without an ADR.
+* Do not assume collective approval authority exists when it does not yet (§2).
 
 ## Success Metrics
-- 100% من التغييرات اللاحقة على أي فصل موثَّقة كـADR
-- رقم إصدار الوثيقة (§1) متسق دائمًا مع آخر تغيير معتمد فعليًا
-- 0 تعديل مباشر على فصل Frozen بلا ADR مصاحب
+
+* **100%** of subsequent changes to any chapter are documented through an ADR.
+* The document version (§1) is always consistent with the latest actually approved change.
+* **0** direct modifications to a Frozen chapter without an accompanying ADR.
 
 ## References
-**Normative:** Chapter 0 (Discovery) · Chapter 3 §3.5-3.7 · Chapter 8 §Governance Change Policy
+
+**Normative:** Chapter 0 (Discovery) · Chapter 3 §3.5–3.7 · Chapter 8 §Governance Change Policy
 
 ## Related Chapters
-كل الفصول (هذا الفصل يحكم تعديلها جميعًا) · Chapter 3، Chapter 8 (الحوكمة التفصيلية الأدق)
+
+All chapters (this chapter governs their modification) · Chapter 3 · Chapter 8 (more specific governance)
 
 ---
 
-*نهاية Chapter 22. الفصل التالي: Chapter 23 — Checklists.*
+*End of Chapter 22. Next Chapter: Chapter 23 — Checklists.*

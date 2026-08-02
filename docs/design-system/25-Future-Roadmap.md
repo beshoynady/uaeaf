@@ -1,61 +1,78 @@
 # Chapter 25 — Future Roadmap
 
 **Document:** UAEAF Enterprise Design System Framework v1.0.0
-**Chapter Status:** Accepted | **Last Updated:** هذه الجلسة | **Document Owner:** مالك المشروع
+**Chapter Status:** Accepted | **Last Updated:** This Session | **Document Owner:** Project Owner
 
-> **Status: Frozen (Baseline v1.0).** أي تغيير بعد التجميد **MUST** يُدخَل حصريًا عبر ADR جديد أو بند Backlog موثَّق.
-> **ملاحظة طبيعة الفصل:** هذا الفصل **غير ملزم** — يوثّق اتجاهات مستقبلية محتملة بناءً على البنية الممكَّنة عمدًا (PR-008 Built to Scale) عبر الفصول 1-24، لا التزامًا بتنفيذها.
+> **Status: Frozen (Baseline v1.0).** Any change after the freeze **MUST** be introduced exclusively through a new ADR or a documented Backlog item.
+> **Chapter Nature Note:** This chapter is **non-binding** — it documents potential future directions enabled intentionally by the architecture (PR-008 Built to Scale) across Chapters 1–24, and does not constitute a commitment to implementation.
 
 ## Depends On / Used By
-| Depends On | Used By |
-|---|---|
-| Chapter 0 (§Design Goals، رؤية 10 سنوات) · Chapter 24 (القيود الحالية كنقطة انطلاق) | لا فصل لاحق يعتمد معماريًا (Chapter 26 مرجعي فقط) |
+
+| Depends On                                                                                         | Used By                                                                            |
+| -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Chapter 0 (§Design Goals, 10-Year Vision) · Chapter 24 (Current Constraints as the starting point) | No subsequent chapter depends on it architecturally (Chapter 26 is reference-only) |
 
 ## Scope
-**يغطي:** اتجاهات توسع محتملة تستهلك البنية القائمة (Chapter 0 §Design Goals #3: رؤية 10 سنوات) دون الحاجة لإعادة هيكلة أساسية.
-**لا يغطي:** جداول زمنية أو التزامات تنفيذ (خارج نطاق Design System تمامًا، Chapter 24 §7).
+
+**Covers:** Potential expansion directions that consume the existing architecture (Chapter 0 §Design Goals #3: 10-Year Vision) without requiring fundamental re-architecture.
+**Does not cover:** Timelines or implementation commitments (entirely outside the scope of the Design System, Chapter 24 §7).
 
 ## Purpose
-يثبت أن قرارات Chapter 2 §PR-008 (Built to Scale) وChapter 0 (Enterprise Design System Framework عام) لم تكن شعارات، بل مكّنت مسارات نمو حقيقية دون كسر الأساس.
+
+This chapter demonstrates that the decisions documented in Chapter 2 §PR-008 (Built to Scale) and Chapter 0 (General Enterprise Design System Framework) were not merely slogans, but enabled real growth paths without breaking the foundation.
 
 ---
 
 ## 1. AI Evolution (v1.0 AI-Assisted → v2.0 AI-Native)
-Chapter 2 §PR-007 وثّق هذا التطور صراحة (Version History) — تكامل AI أعمق (اقتراحات استباقية، تحليلات تنبؤية) يبني فوق §AI Component Library (Chapter 16 §4) الموجودة، لا يستبدلها.
+
+Chapter 2 §PR-007 explicitly documented this evolution (Version History) — deeper AI integration (proactive suggestions, predictive analytics) builds upon the existing §AI Component Library (Chapter 16 §4) rather than replacing it.
 
 ## 2. Native Mobile Apps
-البنية الحالية (Chapter 0: أولوية موبايل للموقع العام، Design Tokens مستقلة عن المنصة — Chapter 3) تُمكِّن تطبيقًا أصليًا مستقبليًا يستهلك نفس التوكنز (Chapter 3 §3.9 Export Pipeline يدعم منصات إضافية، Chapter 3 §Future v2 وثّق هذا صراحة). Push Notifications (Chapter 18 §1) البنية جاهزة، غير مُفعَّلة.
+
+The current architecture (Chapter 0: mobile-first priority for the public website, platform-independent Design Tokens — Chapter 3) enables a future native application to consume the same tokens (Chapter 3 §3.9 Export Pipeline supports additional platforms, and Chapter 3 §Future v2 explicitly documented this).
+
+Push Notifications (Chapter 18 §1) are architecturally ready but not activated.
 
 ## 3. Self-Service Portals (Coach / Referee / Athlete)
-Chapter 8 L8 (Athlete/Coach/Referee Cards) وChapter 17 (Identity Provider Abstraction) يُمكِّنان بوابات دخول مستقلة لكل فئة (يسجّل المدرب نتائجه بنفسه، اللاعب يحدّث بياناته) — تستهلك نفس Chapter 8 L2 Form Foundation وChapter 11 UX Patterns الموجودة بالكامل، فقط بصلاحيات مختلفة (Chapter 8 L3 §N.19).
+
+Chapter 8 L8 (Athlete/Coach/Referee Cards) and Chapter 17 (Identity Provider Abstraction) enable independent login portals for each category (e.g., a coach records their own results, an athlete updates their own data) — consuming the existing Chapter 8 L2 Form Foundation and Chapter 11 UX Patterns, with different permissions only (Chapter 8 L3 §N.19).
 
 ## 4. Federation & International Integrations
-Chapter 8 L8 ADR-0020 (Normalized Domain Shape) صُمِّم خصيصًا ليُمكِّن تكاملات بيانات مستقبلية (World Athletics، اللجنة الأولمبية، الاتحاد الآسيوي) دون تعديل مكونات العرض — فقط طبقة Adapter تُحوِّل شكل بيانات خارجي لنفس الشكل المُستهلَك بالفعل.
+
+Chapter 8 L8 ADR-0020 (Normalized Domain Shape) was specifically designed to enable future data integrations (World Athletics, the Olympic Committee, Asian Athletics Association) without modifying presentation components — only an Adapter Layer is required to transform an external data structure into the same shape already consumed by the presentation layer.
 
 ## 5. Public API
-Chapter 13 §13 (Integration Boundaries — API محايد بين CMS والموقع العام) نفس النمط قابل للتوسع لواجهة عامة (Public API) لأطراف ثالثة (تطبيقات إعلامية، شركاء بيانات) دون تغيير معماري إضافي.
 
-## 6. Framework Reusability (يعكس Chapter 0)
-الإطار موثَّق عمدًا كـ"Enterprise Design System Framework" عام (Chapter 0)، وUAEAF التطبيق المرجعي الأول — أي اتحاد رياضي آخر قادر نظريًا على تبني نفس الفصول 2-26 مع استبدال Chapter 1 (الهوية البصرية) فقط، دون إعادة بناء الأساس.
+Chapter 13 §13 (Integration Boundaries — API-neutral boundary between the CMS and the public website) follows the same pattern that can be extended into a public API for third parties (media applications, data partners) without requiring additional architectural changes.
+
+## 6. Framework Reusability (Reflecting Chapter 0)
+
+The framework was intentionally documented as a general-purpose **"Enterprise Design System Framework"** (Chapter 0), with UAEAF as the first reference implementation — theoretically, any other sports federation could adopt the same Chapters 2–26 by replacing only Chapter 1 (Visual Identity), without rebuilding the foundation.
 
 ## 7. Advanced Personalization
-Chapter 12 §12.6 (Dashboard Personalization) وChapter 6 (تفضيلات الوصول المحفوظة) يُمهِّدان لتخصيص أعمق (محتوى مقترح، تنبيهات مخصصة) دون تعديل بنية التخزين الأساسية.
+
+Chapter 12 §12.6 (Dashboard Personalization) and Chapter 6 (Saved Accessibility Preferences) lay the groundwork for deeper personalization (recommended content, personalized notifications) without modifying the underlying storage architecture.
 
 ---
 
 ## Do & Don't
-**Do:** راجع هذا الفصل عند التخطيط لأي توسع كبير للتحقق من توافقه مع البنية القائمة
-**Don't:** لا تعتبر أي بند هنا التزامًا بالتنفيذ أو جدولاً زمنيًا (§Scope)
+
+**Do:** Refer to this chapter when planning any major expansion to verify compatibility with the existing architecture.
+
+**Don't:** Treat any item here as an implementation commitment or timeline (§Scope).
 
 ## Success Metrics
-لا مقاييس نجاح إلزامية لهذا الفصل (غير ملزم بطبيعته) — القياس الحقيقي هو مدى سهولة تحقق أي بند هنا مستقبلاً دون كسر الفصول 1-24، وهو ما تضمنه PR-008 بالفعل.
+
+No mandatory success metrics apply to this chapter (non-binding by nature) — the true measure is how easily any item listed here can be realized in the future without breaking Chapters 1–24, which PR-008 already enables.
 
 ## References
-**Normative:** Chapter 0، Chapter 2 §PR-008، Chapter 24
+
+**Normative:** Chapter 0 · Chapter 2 §PR-008 · Chapter 24
 
 ## Related Chapters
-كل الفصول (كل بند هنا يستهلك بنية موجودة بالفعل، لا يخترع جديدة)
+
+All chapters (every item here consumes existing architecture rather than introducing new architecture).
 
 ---
 
-*نهاية Chapter 25. الفصل الأخير: Chapter 26 — Glossary.*
+*End of Chapter 25. Final chapter: Chapter 26 — Glossary.*

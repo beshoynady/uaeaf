@@ -1,215 +1,281 @@
 # UAEAF Enterprise Design System Framework
-## إطار أنظمة تصميم مؤسسي — التطبيق الأول: اتحاد الإمارات لألعاب القوى
 
-**الإصدار 1.0.0** | **الحالة: Chapters 0–1 معتمدة**
+## Enterprise Design System Framework — First Reference Implementation: UAE Athletics Federation
 
-> هذه الوثيقة ليست "Design System خاص بمشروع"، بل **Enterprise Design System Framework** عام قابل لإعادة الاستخدام في أي منصة حكومية أو رياضية أو مؤسسية — واتحاد الإمارات لألعاب القوى (UAEAF) هو **التطبيق الأول والمرجعي** لهذا الإطار. كل قاعدة عامة تُكتب أولاً كمبدأ إطار عام، ثم تُطبَّق على UAEAF كحالة استخدام حقيقية.
+**Version 1.0.0** | **Status: Chapters 0–1 Approved**
+
+> This document is not a project-specific “Design System.” It is a reusable **Enterprise Design System Framework** applicable to any government, sports, or institutional platform — with the UAE Athletics Federation (UAEAF) serving as the **first and reference implementation** of this framework. Every general rule is first defined as a framework principle, then applied to UAEAF as a real-world use case.
 >
-> **منهجية الوثيقة الثابتة:** 27 فصلاً (0–26)، كل فصل يحتوي (حسب الملاءمة): Scope, Definitions, Purpose, Background, Design Goals, Principles, Standards, Guidelines, Best Practices, Do/Don't, Examples, Accessibility/Performance/AI Considerations, Developer Notes, Future Scalability, Success Metrics, References, Related Chapters. القرارات المعمارية المهمة تُوثَّق كـ **ADR** (Context/Decision/Alternatives/Why/Consequences/**Risks**/**Status**). المصطلحات مجمّعة مركزيًا في Chapter 26 (Glossary).
+> **Fixed Document Methodology:** 27 chapters (0–26), with each chapter containing, where applicable: Scope, Definitions, Purpose, Background, Design Goals, Principles, Standards, Guidelines, Best Practices, Do/Don't, Examples, Accessibility/Performance/AI Considerations, Developer Notes, Future Scalability, Success Metrics, References, and Related Chapters. Significant architectural decisions are documented as **ADRs** (Context/Decision/Alternatives/Why/Consequences/**Risks**/**Status**). Terminology is centrally consolidated in Chapter 26 (Glossary).
 
 ---
 
 # Chapter 0 — Introduction & Philosophy
 
 ## Scope
-**يغطي:** سبب وجود الإطار، أهداف UAEAF كتطبيق أول، الفلسفة المزدوجة (Public/Operational)، شخصية العلامة على مستوى المبدأ.
-**لا يغطي:** المبادئ التصميمية القابلة للتنفيذ (→ Chapter 2)، القيم البصرية الفعلية (→ Chapter 1)، تفاصيل الـ Tone of Voice التطبيقية (→ Chapter 9).
+
+**Covers:** The rationale behind the framework, UAEAF objectives as the first implementation, the dual philosophy (Public/Operational), and brand personality at the principle level.
+
+**Does not cover:** Executable design principles (→ Chapter 2), actual visual values (→ Chapter 1), or detailed application-level Tone of Voice (→ Chapter 9).
 
 ## Definitions
-| المصطلح | التعريف |
-|---|---|
-| **Enterprise Design System Framework** | إطار عمل تصميمي عام (لا يخص مشروعًا واحدًا)، قابل للتبني من أي مؤسسة، يوفر منهجية موحّدة للتوكنز، المكونات، الحوكمة، وإمكانية الوصول |
-| **Digital Ecosystem** | مجموعة مترابطة من المنتجات الرقمية تتشارك نفس الهوية والبنية التحتية للتصميم، بعكس "موقع" واحد منعزل |
-| **Experience Layer** | طبقة سلوك UX مستقلة (Public أو Operational) مبنية فوق نفس الـ Design Tokens |
-| **First Reference Implementation** | أول تطبيق فعلي حقيقي للإطار (هنا: UAEAF)، يُستخدم لاختبار وإثبات صلاحية الإطار قبل تعميمه |
+
+| Term                                   | Definition                                                                                                                                                                                 |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Enterprise Design System Framework** | A general design framework, not tied to a single project, that can be adopted by any organization and provides a unified methodology for tokens, components, governance, and accessibility |
+| **Digital Ecosystem**                  | A connected group of digital products sharing the same identity and design infrastructure, as opposed to a single isolated “website”                                                       |
+| **Experience Layer**                   | An independent UX behavior layer (Public or Operational) built on top of the same Design Tokens                                                                                            |
+| **First Reference Implementation**     | The first real-world implementation of the framework (here: UAEAF), used to test and validate the framework before broader adoption                                                        |
 
 ## Purpose
-هذا الفصل يؤسس سبب وجود الإطار قبل أي قاعدة تصميمية. كل قرار في الفصول 2–25 يجب أن يكون قابلاً للربط بسطر واحد على الأقل هنا.
+
+This chapter establishes the rationale behind the framework before defining any design rules. Every decision in Chapters 2–25 must be traceable to at least one statement here.
 
 ## Background
-اتحاد الإمارات لألعاب القوى (UAEAF) يعيد بناء منصته الرقمية بالكامل كـ Digital Ecosystem يخدم كل أصحاب المصلحة. هذا الإطار نشأ من احتياج UAEAF، لكنه مصمَّم من اليوم الأول ليكون قابلاً للتجريد — أي مؤسسة تانية تقدر تتبنّاه بتغيير Chapter 1 (الهوية البصرية) فقط، مع بقاء بقية الفصول (2–26) صالحة كإطار عام.
 
-## Design Goals — أهداف UAEAF كتطبيق أول
+The UAE Athletics Federation (UAEAF) is rebuilding its entire digital platform as a **Digital Ecosystem** serving all stakeholders. Although this framework originated from UAEAF’s needs, it was designed to be abstractable from day one — meaning any other organization can adopt it by replacing only Chapter 1 (Visual Identity), while the remaining chapters (2–26) remain valid as a general framework.
 
-| # | الهدف | الأفق الزمني | مؤشر النجاح |
-|---|---|---|---|
-| 1 | هوية رقمية عالمية | أول سنتين | زائر من خارج الإمارات يشعر أنه أمام مؤسسة رياضية وطنية حديثة |
-| 2 | تحول رقمي كامل | أول سنتين | كل عمليات الاتحاد موحّدة في منصة واحدة |
-| 3 | نشر الرياضة وزيادة التفاعل | مستمر | نمو الظهور في محركات البحث ومحركات الذكاء الاصطناعي |
+## Design Goals — UAEAF as the First Implementation
 
-**رؤية الـ10 سنوات:** كل قرار يُقاس بـ Scalability، Maintainability، Reusability، Accessibility، Performance، International Standards.
+| # | Goal                                    | Time Horizon    | Success Indicator                                                                                |
+| - | --------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------ |
+| 1 | World-Class Digital Identity            | First two years | A visitor from outside the UAE feels they are experiencing a modern national sports organization |
+| 2 | Full Digital Transformation             | First two years | All federation operations are unified within a single platform                                   |
+| 3 | Promote Athletics & Increase Engagement | Ongoing         | Increased visibility across search engines and AI engines                                        |
 
-## Principles (تمهيدية — الترقيم الكامل PR-XXX في Chapter 2)
+**10-Year Vision:** Every decision is measured against Scalability, Maintainability, Reusability, Accessibility, Performance, and International Standards.
+
+## Principles
+
+*(Introductory — full PR-XXX numbering in Chapter 2)*
 
 ### ADR-0001: Dual Experience Architecture
 
-| الحقل | التفاصيل |
-|---|---|
-| **Status** | Accepted |
-| **Context** | المنصة تخدم جمهورين مختلفين جذريًا: عام/إعلامي/دولي يُبهر من أول زيارة، ومستخدمين تشغيليين يوميين يحتاجون إنجاز مهام بأقل خطوات |
-| **Decision** | بناء طبقتي تجربة منفصلتين فوق نفس الـ Design Tokens: Public Experience (عاطفي، ملهم، Premium) وOperational Experience (كفاءة، وضوح، Data-first) |
-| **Alternatives Considered** | نظام واحد موحّد الأسلوب — رُفض لأنه يجبر أحد الطرفين على تنازل. نظامان منفصلان بالكامل بتوكنز مختلفة — رُفض لأنه يكسر الهوية الموحدة |
-| **Why This Decision** | يحقق التوازن: هوية بصرية واحدة، سلوك UX مختلف حسب الجمهور، بدون ازدواجية بنيوية |
-| **Risks** | تسرب زخرفة الموقع العام للوحة التحكم (تبطئ الإنجاز) أو العكس (فقدان قوة الانطباع). Mitigation: كل مكوّن في Chapter 8 يوثّق سلوكه في الطبقتين بوضوح |
-| **Consequences** | كل مكوّن في Chapter 8 يوثّق سلوكه المحتمل المختلف بين الطبقتين |
+| Field                       | Details                                                                                                                                                                                                                                  |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Status**                  | Accepted                                                                                                                                                                                                                                 |
+| **Context**                 | The platform serves two fundamentally different audiences: a public/media/international audience that should be impressed from the first visit, and daily operational users who need to complete tasks in the fewest possible steps      |
+| **Decision**                | Build two separate experience layers on top of the same Design Tokens: **Public Experience** (emotional, inspiring, Premium) and **Operational Experience** (efficient, clear, Data-first)                                               |
+| **Alternatives Considered** | A single unified style — rejected because it would force one audience to compromise. Two completely separate systems with different tokens — rejected because it would break unified identity                                            |
+| **Why This Decision**       | Achieves the balance of one visual identity with audience-specific UX behavior, without structural duplication                                                                                                                           |
+| **Risks**                   | Public-site decoration may leak into the dashboard and slow task completion, or vice versa, reducing the impact of the public experience. **Mitigation:** Every component in Chapter 8 documents its behavior across both layers clearly |
+| **Consequences**            | Every component in Chapter 8 documents its potentially different behavior between the two layers                                                                                                                                         |
 
-**المبدأ التوجيهي:** الجمهور يجب أن ينبهر، والمستخدم اليومي يجب أن ينجز عمله بأقل عدد ممكن من الخطوات.
+**Guiding Principle:** The audience should be impressed, while the daily user should be able to complete their work in the fewest possible steps.
 
-## Brand Personality (كتطبيق أول لـ UAEAF)
-Professional (لا مبالغة بصرية) · Inspiring (Hero أقوى، لحظات احتفالية مقوننة) · Modern (Motion، AI-Ready، Dark Mode من اليوم الأول) · National with Global Standards (الفخر عبر جودة التنفيذ لا الرموز المباشرة)
+## Brand Personality
+
+*(First implementation for UAEAF)*
+
+**Professional** (no visual exaggeration) · **Inspiring** (stronger Hero, governed celebratory moments) · **Modern** (Motion, AI-Ready, Dark Mode from day one) · **National with Global Standards** (national pride expressed through execution quality rather than direct symbolism)
 
 ## Do & Don't
-**Do:** اربط أي قرار لاحق بهدف من Design Goals · استخدم نفس التوكنز عبر الطبقتين · اكتب لهدف الـ10 سنوات
-**Don't:** لا تصمم شاشة بدون ربطها بمبدأ · لا تفرض زخرفة طبقة على الأخرى · لا تعامل الإطار كـ"موقع"
+
+**Do:** Connect every subsequent decision to a Design Goal · Use the same tokens across both layers · Design with the 10-year objective in mind
+
+**Don't:** Do not design a screen without connecting it to a principle · Do not impose one layer’s decoration on the other · Do not treat the framework as merely a “website”
 
 ## Success Metrics
-- كل فصل لاحق يشير لهدف واحد على الأقل من Design Goals
-- لا يوجد مكوّن مصمَّم بدون تحديد طبقة تجربته
-- الإطار (Chapters 2–26) قابل للفصل عن Chapter 1 دون كسر منطقي
+
+* Every subsequent chapter references at least one Design Goal
+* No component is designed without specifying its Experience Layer
+* The framework (Chapters 2–26) can be separated from Chapter 1 without logical breakage
 
 ## References
+
 UAEAF Vision Discovery Interview · World Athletics Digital Platform · IOC Digital Guidelines
 
 ## Related Chapters
-Chapter 1 → Brand Personality. Chapter 2 → يرقّم مبادئ هذا الفصل بمعرّفات PR-XXX. Chapter 9 → يوسّع Tone of Voice. Chapter 25 → يعود لـDesign Goals كمعيار قياس.
+
+Chapter 1 → Brand Personality.
+Chapter 2 → Numbers the principles of this chapter using PR-XXX identifiers.
+Chapter 9 → Expands the Tone of Voice.
+Chapter 25 → Returns to the Design Goals as measurement criteria.
 
 ---
 
 # Chapter 1 — Official Brand Identity
 
 ## Scope
-**يغطي:** الشعار وقواعده، الألوان الرسمية والسلّم الرقمي المشتق منها، مرجع الخط، النمط الزخرفي.
-**لا يغطي:** Design Tokens الكاملة (→ Chapter 3)، نظام الطباعة التفصيلي (→ Chapter 4)، أي مكوّن جاهز (→ Chapter 8).
+
+**Covers:** Logo and its usage rules, official colors and the digital scale derived from them, font reference, and decorative visual pattern.
+
+**Does not cover:** Full Design Tokens (→ Chapter 3), detailed typography system (→ Chapter 4), or any ready-made component (→ Chapter 8).
 
 ## Definitions
-| المصطلح | التعريف |
-|---|---|
-| **Brand Token** | قيمة بصرية خام مرتبطة مباشرة بالهوية الرسمية — الطبقة الأدنى في هرم التوكنز |
-| **Clear Space** | مساحة الأمان الإجبارية حول الشعار، لا يجوز وضع أي عنصر آخر داخلها |
-| **Reference Implementation Color** | القيمة الرقمية (500) في أي سلّم لون، الوحيدة الملزمة بمطابقة Pantone حرفيًا |
+
+| Term                               | Definition                                                                                                |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| **Brand Token**                    | A raw visual value directly tied to the official brand identity — the lowest layer in the token hierarchy |
+| **Clear Space**                    | The mandatory safe area around the logo within which no other element may be placed                       |
+| **Reference Implementation Color** | The digital value (500) in any color scale that is required to match the official Pantone value exactly   |
 
 ## Purpose
-توثيق الهوية البصرية الرسمية لـ UAEAF حرفيًا كما وردت في UAEAF Visual Standard Guide، كمرجع أعلى ملزم لكل قرار بصري لاحق.
+
+To document the official UAEAF visual identity exactly as defined in the UAEAF Visual Standard Guide, serving as the highest-authority reference for every subsequent visual decision.
 
 ## Background
-الدليل الرسمي يغطي: الشعار، الألوان، الخط، الاستخدامات الخاطئة، الأنماط الزخرفية، والتطبيقات المطبوعة. هذا الفصل يستخرج فقط ما ينطبق على المنصات الرقمية.
 
-## Standards — الشعار (Logo)
-التركيبة: الشعار الرمزي (4 خطوط: الجري/الرمي/القفز/المشي) + الشعار النصي. الأشكال: أساسي (افتراضي) / ثانوي (ضيق المساحة). الحد الأدنى للعرض: 20مم (≈96px رقميًا) — تحته بدون النص الكتابي. قاعدة الخلفية: بيضاء/متباينة بوضوح ← ملوّن كامل؛ أي خلفية أخرى ← أحادي اللون.
+The official guide covers the logo, colors, typography, misuse, decorative patterns, and print applications. This chapter extracts only what applies to digital platforms.
+
+## Standards — Logo
+
+**Composition:** Symbolic logo (4 lines representing running, throwing, jumping, and walking) + wordmark.
+
+**Variants:** Primary (default) / Secondary (for limited space).
+
+**Minimum width:** 20mm (≈96px digitally) — below this size, use the symbol without the wordmark.
+
+**Background rule:** White/high-contrast background → full-color logo; any other background → monochrome logo.
 
 ### ADR-0002: Logo Usage on Dark Mode
 
-| الحقل | التفاصيل |
-|---|---|
-| **Status** | Accepted |
-| **Context** | الدليل يشترط الشعار الملوّن فقط على خلفية بيضاء/متباينة بوضوح؛ Dark Mode (Chapter 7) خلفيته داكنة |
-| **Decision** | في Dark Mode، الشعار أحادي اللون الأبيض حصريًا |
-| **Alternatives Considered** | صندوق أبيض خلف الشعار الملوّن — رُفض (يكسر الانسيابية) |
-| **Why This Decision** | التزام حرفي بقاعدة "خلفية متباينة = أحادي اللون"؛ أعلى تباين ممكن |
-| **Risks** | استخدام النسخة الملوّنة خطأً على خلفية داكنة يفقد التباين ويخالف الدليل. Mitigation: توفير الأصل الصحيح فقط في مكتبة المكونات (Chapter 8) |
-| **Consequences** | كل Header/Sidebar في Dark Mode يستخدم أصل SVG منفصل مخصص |
+| Field                       | Details                                                                                                                                                                                 |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Status**                  | Accepted                                                                                                                                                                                |
+| **Context**                 | The guide requires the full-color logo only on white/high-contrast backgrounds; Dark Mode (Chapter 7) uses a dark background                                                            |
+| **Decision**                | In Dark Mode, the **white monochrome logo is used exclusively**                                                                                                                         |
+| **Alternatives Considered** | White container behind the full-color logo — rejected because it disrupts visual continuity                                                                                             |
+| **Why This Decision**       | Literal compliance with the rule “high-contrast background = monochrome”; provides the highest possible contrast                                                                        |
+| **Risks**                   | Incorrectly using the colored version on a dark background reduces contrast and violates the guide. **Mitigation:** Provide only the correct asset in the component library (Chapter 8) |
+| **Consequences**            | Every Header/Sidebar in Dark Mode uses a separate dedicated SVG asset                                                                                                                   |
 
-## Standards — الاستخدامات الممنوعة (Logo Misuse)
-تدوير · تمديد غير نسبي · تغيير الألوان · إضافة ظل · تأطير · تغيير زاوية/ترتيب الخطوط الأربعة — كلها ممنوعة حرفيًا كما في الدليل، لأنها تكسر التعرف الفوري وتخالف الهوية الوطنية والطابع المسطح الحديث (Chapter 6).
+## Standards — Prohibited Logo Misuse
 
-## Standards — الألوان الرسمية
+Rotation · non-proportional stretching · color changes · adding shadows · framing · changing the angle/order of the four lines — all are explicitly prohibited as defined in the guide, because they compromise immediate recognition and violate the national identity and modern flat aesthetic (Chapter 6).
 
-| الاسم | Pantone | HEX | RGB |
-|---|---|---|---|
-| Federation Green | 348 C | #00843D | 0, 132, 61 |
-| Federation Red | 186 C | #C8102E | 200, 16, 46 |
-| Federation Black | Black C | #000000 | 0, 0, 0 |
+## Standards — Official Colors
 
-قاعدة رسمية حرفية: مستوحاة من علم الدولة — الالتزام بها إلزامي في كل التطبيقات.
+| Name             | Pantone | HEX     | RGB         |
+| ---------------- | ------- | ------- | ----------- |
+| Federation Green | 348 C   | #00843D | 0, 132, 61  |
+| Federation Red   | 186 C   | #C8102E | 200, 16, 46 |
+| Federation Black | Black C | #000000 | 0, 0, 0     |
+
+**Official rule:** Inspired by the national flag — adherence is mandatory across all applications.
 
 ### ADR-0003: Digital Color Scale Extension
 
-| الحقل | التفاصيل |
-|---|---|
-| **Status** | Accepted |
-| **Context** | الدليل يحدد 3 ألوان Solid فقط؛ الأنظمة الرقمية تحتاج تدرجات لحالات Hover وحسابات تباين WCAG |
-| **Decision** | سلّم تدرج (50→900) لكل لون، القيمة 500 مطابقة تمامًا لـ Pantone الرسمي، الباقي مُشتق رياضيًا (HSL Lightness) |
-| **Alternatives Considered** | استخدام Opacity بدل تدرجات منفصلة — رُفض (يعقّد حسابات تباين WCAG) |
-| **Why This Decision** | يحافظ على الهوية عند القيمة المرجعية مع إعطاء المرونة الرقمية اللازمة |
-| **Risks** | تعديل القيمة 500 بدون مراجعة الاتحاد يكسر التطابق مع Pantone الرسمي. Mitigation: القيمة 500 محمية في Chapter 3 بتعليق صريح "DO NOT MODIFY — Official Pantone Match" |
-| **Consequences** | Chapter 3 يحتوي السلّم الكامل؛ أي مراجعة تفحص القيمة 500 تحديدًا |
+| Field                       | Details                                                                                                                                                                                                                             |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Status**                  | Accepted                                                                                                                                                                                                                            |
+| **Context**                 | The guide defines only 3 solid colors; digital systems require tonal scales for states such as Hover and for WCAG contrast calculations                                                                                             |
+| **Decision**                | A 50→900 tonal scale for each color, with value 500 matching the official Pantone value exactly; all other values are mathematically derived using HSL Lightness                                                                    |
+| **Alternatives Considered** | Using opacity instead of separate tonal scales — rejected because it complicates WCAG contrast calculations                                                                                                                         |
+| **Why This Decision**       | Preserves brand identity at the reference value while providing the flexibility required for digital interfaces                                                                                                                     |
+| **Risks**                   | Modifying the 500 value without federation review would break its match with the official Pantone color. **Mitigation:** The 500 value is protected in Chapter 3 with an explicit comment: “DO NOT MODIFY — Official Pantone Match” |
+| **Consequences**            | Chapter 3 contains the complete scale; every review specifically verifies the 500 value                                                                                                                                             |
 
 ### ADR-0004: Color Usage Discipline
 
-| الحقل | التفاصيل |
-|---|---|
-| **Status** | Accepted |
-| **Context** | الدليل يذكر الألوان كهوية دون قاعدة استخدام وظيفية رقمية |
-| **Decision** | الأخضر = إجراء أساسي/إيجابي. الأحمر = خطر/حذف/إلغاء فقط. الأسود = نص وعناصر بنيوية |
-| **Alternatives Considered** | استخدام الأحمر كـCTA عادي لكونه لون علامة — رُفض |
-| **Why This Decision** | وضوح الاتصال البصري — لون بمعنى ثابت أفضل من لون بمعاني متعددة (معيار Material Design وNielsen Norman) |
-| **Risks** | لو استُخدم الأحمر كزر Primary عادي، سيقرأه المستخدم لا شعوريًا كتحذير بغض النظر عن نية المصمم، مما يقلل معدل التفاعل مع أزرار مهمة ويربك تجربة الأخطاء الفعلية حين تفقد لونها المميز. Mitigation: فرض القاعدة على مستوى Semantic Tokens (Chapter 7) بحيث button-primary لا يمكن ربطه بـcore-red برمجيًا |
-| **Consequences** | الأزرار الأساسية (Chapter 8) تستخدم الأخضر أو الأسود؛ الأحمر محجوز حصريًا للحذف/الإلغاء/الخطأ |
+| Field                       | Details                                                                                                                                                                                                                                                                                                                                                                                       |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Status**                  | Accepted                                                                                                                                                                                                                                                                                                                                                                                      |
+| **Context**                 | The guide defines the colors as brand identity but does not establish functional digital usage rules                                                                                                                                                                                                                                                                                          |
+| **Decision**                | Green = primary/positive action. Red = danger/delete/cancel only. Black = text and structural elements                                                                                                                                                                                                                                                                                        |
+| **Alternatives Considered** | Using red as a standard CTA because it is a brand color — rejected                                                                                                                                                                                                                                                                                                                            |
+| **Why This Decision**       | Ensures clear visual communication — a color with a consistent meaning is more effective than a color with multiple meanings (Material Design and Nielsen Norman principles)                                                                                                                                                                                                                  |
+| **Risks**                   | If red is used as a standard Primary button, users may subconsciously interpret it as a warning regardless of the designer’s intention, reducing interaction with important actions and weakening the visual distinction of actual error states. **Mitigation:** Enforce the rule at the Semantic Token level (Chapter 7) so `button-primary` cannot be mapped to `core-red` programmatically |
+| **Consequences**            | Primary buttons (Chapter 8) use green or black; red is reserved exclusively for delete/cancel/error                                                                                                                                                                                                                                                                                           |
 
-## Standards — ألوان الميداليات (إضافة معتمدة، خارج الدليل الرسمي)
+## Standards — Medal Colors
 
-| الاسم | HEX (500 مرجعي) | الاستخدام |
-|---|---|---|
-| Medal Gold | #D4A017 | ميدالية ذهبية (Chapter 8 L8 §SP.5) |
-| Medal Silver | #9AA3AD | ميدالية فضية |
-| Medal Bronze | #B0703B | ميدالية برونزية |
+*(Approved addition, outside the official guide)*
+
+| Name         | HEX (Reference 500) | Usage                           |
+| ------------ | ------------------- | ------------------------------- |
+| Medal Gold   | #D4A017             | Gold medal (Chapter 8 L8 §SP.5) |
+| Medal Silver | #9AA3AD             | Silver medal                    |
+| Medal Bronze | #B0703B             | Bronze medal                    |
 
 **TDR-002 — Medal Color Tokens**
-```
+
+```text
 Token:      color.brand.medal.gold / .silver / .bronze
-Decision:   إضافة 3 ألوان Brand جديدة (خارج ألوان الهوية الرسمية Chapter 1 §الألوان الرسمية) مخصصة حصريًا لتمييز الميداليات
-Reason:     Chapter 8 L8 §SP.5 يوجب تمييزًا بصريًا ثابتًا للميداليات الثلاث عبر توكنز مخصصة لا ألوان Semantic العامة
-            (Success/Warning/Danger)، لتفادي تعارض دلالي مع Chapter 1 ADR-0004 — الذهبي/الفضي/البرونزي
-            ألوان احتفالية مستقلة، لا حالات نظام
-Approved By: مالك المشروع (Chapter 3 §3.7 — صلاحية اعتماد Proposal جديد)
-Alternative Rejected: إعادة استخدام درجة من سلّم الأخضر/الأحمر بصريًا كميدالية — رُفض (لا صلة دلالية، يربك القارئ)
-Scale:      سلّم كامل 50→900 (10 درجات، كباقي الألوان الأساسية §3.14) يُشتق من قيمة 500 أعلاه بنفس منهجية ADR-0003
+Decision:   Add 3 new Brand colors (outside the official identity colors in Chapter 1 §Official Colors) dedicated exclusively to distinguishing medals
+Reason:     Chapter 8 L8 §SP.5 requires consistent visual distinction for the three medals through dedicated tokens rather than general Semantic colors
+            (Success/Warning/Danger), to avoid semantic conflict with Chapter 1 ADR-0004 — gold/silver/bronze
+            are independent celebratory colors, not system states
+Approved By: Project Owner (Chapter 3 §3.7 — authority to approve a new Proposal)
+Alternative Rejected: Reusing a shade from the green/red scale visually as a medal — rejected (no semantic relationship and may confuse the reader)
+Scale:      Full 50→900 scale (10 steps, consistent with the other core colors in §3.14), derived from the above 500 value using the same methodology as ADR-0003
 ```
-هذه الألوان طبقة **Brand** (لا الهوية الرسمية للاتحاد نفسها) — تخضع لنفس حوكمة Chapter 3 §3.5 Token Lifecycle كأي توكن Brand آخر، لا لقيود التعديل المزدوجة الخاصة بالهوية الرسمية (§3.7 الفقرة الأخيرة تخص فقط ألوان الهوية الرسمية في هذا الفصل أعلاه: Federation Green/Red/Black).
 
-## Standards — الخط الرسمي (مرجع فقط — التفاصيل الكاملة في Chapter 4)
-الدليل يعتمد The Sans Arabic للشعار والمطبوعات الرسمية. القرار الرقمي الكامل (بديل مجاني للويب) موثّق كـADR-0010 في Chapter 4.
+These colors belong to the **Brand** layer (not the federation’s official identity itself) — they are governed by the same Chapter 3 §3.5 Token Lifecycle as any other Brand token, rather than the dual modification restrictions applicable specifically to the official identity colors (§3.7 final paragraph applies only to the official identity colors defined in this chapter above: Federation Green/Red/Black).
 
-## Standards — النمط الزخرفي (Brand Visual Theme)
-الخطوط المائلة الأربعة المتوازية (زاوية "نقطة الارتقاء") هي العنصر الزخرفي المعتمد للخلفيات والفواصل.
+## Standards — Official Font
+
+*(Reference only — full details in Chapter 4)*
+
+The guide adopts **The Sans Arabic** for the logo and official printed materials. The complete digital decision (free web alternative) is documented as **ADR-0010 in Chapter 4**.
+
+## Standards — Decorative Pattern
+
+*(Brand Visual Theme)*
+
+The four parallel diagonal lines (the “take-off point” angle) are the approved decorative element for backgrounds and dividers.
 
 ### ADR-0005: Theme Pattern as Reusable Asset
 
-| الحقل | التفاصيل |
-|---|---|
-| **Status** | Accepted |
-| **Context** | النمط موجود في الدليل كصور ثابتة داخل تصاميم مطبوعة، غير قابل لإعادة الاستخدام رقميًا كما هو |
-| **Decision** | إعادة إنشاء النمط كـSVG Component: طبقة خلفية شفافية 5-10% للعموم، امتلاء كامل للـHero فقط |
-| **Alternatives Considered** | استخدام الصور الأصلية كخلفيات — رُفض (يضر الأداء، لا يتكيف مع RTL/Responsive) |
-| **Why This Decision** | SVG خفيف، قابل لإعادة التلوين، يتكيف مع أي حجم شاشة، يدعم الانعكاس التلقائي RTL |
-| **Risks** | إعادة إنشاء النمط بزاوية أو تناسب مختلف عن الأصل يفقد الارتباط البصري بالشعار. Mitigation: قياس الزاوية والنسب من ملفات الدليل الأصلية قبل الترميز، ومراجعة بصرية جنبًا لجنب |
-| **Consequences** | Chapter 8 يتضمن هذا كمكوّن "Brand Pattern" أساسي |
+| Field                       | Details                                                                                                                                                                                                                                                                       |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Status**                  | Accepted                                                                                                                                                                                                                                                                      |
+| **Context**                 | The pattern exists in the guide as static images within printed designs and is not directly reusable digitally                                                                                                                                                                |
+| **Decision**                | Recreate the pattern as an **SVG Component**: 5–10% opacity background layer for general use, full fill for Hero sections only                                                                                                                                                |
+| **Alternatives Considered** | Using the original images as backgrounds — rejected because it harms performance and does not adapt to RTL/Responsive layouts                                                                                                                                                 |
+| **Why This Decision**       | SVG is lightweight, recolorable, responsive to any screen size, and supports automatic RTL mirroring                                                                                                                                                                          |
+| **Risks**                   | Recreating the pattern with a different angle or proportion from the original would weaken its visual relationship to the logo. **Mitigation:** Measure the angle and proportions from the original guide files before implementation, followed by side-by-side visual review |
+| **Consequences**            | Chapter 8 includes this as a core “Brand Pattern” component                                                                                                                                                                                                                   |
 
 ## Do & Don't
-**Do:** استخدم القيم حرفيًا كمرجع 500 · استخدم الشعار بصيغه المعتمدة فقط · استخدم النمط الزخرفي كطبقة خفيفة
-**Don't:** لا تبتكر ألوانًا "قريبة" من الرسمية · لا تستخدم الأحمر كـCTA عادي · لا تكسر أي قاعدة Misuse
+
+**Do:** Use the official values literally as the 500 reference · Use only approved logo variants · Use the decorative pattern as a subtle layer
+
+**Don't:** Do not invent colors that are merely “close” to the official colors · Do not use red as a standard CTA · Do not violate any Logo Misuse rule
 
 ## Accessibility Considerations
-تباين الأخضر 500 على أبيض = 4.6:1 (يجتاز AA للنص العادي). تباين الأحمر 500 على أبيض = 5.9:1 (يجتاز AA). كلاهما لا يجتازان AAA — عند الحاجة لـAAA (Chapter 6)، يُستخدم اللون 700 من السلّم.
+
+Green 500 on white = **4.6:1** contrast ratio (passes AA for normal text). Red 500 on white = **5.9:1** (passes AA). Neither passes AAA — when AAA is required (Chapter 6), use 700 from the scale.
 
 ## Developer Notes
-أصول الشعار (SVG) منفصلة لكل حالة: logo-primary-color.svg، logo-secondary-color.svg، logo-mono-white.svg، logo-mono-black.svg، logo-icon-only.svg. لا يُنشأ أي منها بـCSS filters لتفادي نتائج لونية غير دقيقة.
+
+Logo assets (SVG) are provided separately for each state:
+
+* `logo-primary-color.svg`
+* `logo-secondary-color.svg`
+* `logo-mono-white.svg`
+* `logo-mono-black.svg`
+* `logo-icon-only.svg`
+
+None should be created using CSS filters, to avoid inaccurate color rendering.
 
 ## Future Scalability
-لو حدّث الاتحاد الدليل الرسمي، هذا الفصل الوحيد الذي يُعدَّل مباشرة؛ سلّم الألوان يُعاد حسابه آليًا من القيمة 500 الجديدة. لإطار عام: أي مؤسسة تانية تستبدل Chapter 1 بالكامل ببياناتها، وتبقى Chapters 2-26 صالحة كما هي.
+
+If the federation updates its official guide, this is the only chapter that should be directly modified; the color scale is automatically recalculated from the new 500 reference value.
+
+For the general framework: another organization can replace Chapter 1 entirely with its own brand data, while Chapters 2–26 remain valid as-is.
 
 ## Success Metrics
-- كل الشاشات تستخدم الألوان الرسمية (القيمة 500 مطابقة لـPantone) دون استثناء
-- صفر حالات Logo Misuse في أي مراجعة تصميم (Chapter 23.7)
-- الالتزام الكامل بمساحة الأمان حول الشعار في كل تطبيق
-- لا وجود لأي زر Primary عادي بلون أحمر في أي واجهة
+
+* All screens use the official colors (500 value matching Pantone) without exception
+* Zero instances of Logo Misuse in any design review (Chapter 23.7)
+* Full compliance with logo clear space requirements in every implementation
+* No standard Primary button using red in any interface
 
 ## References
-UAEAF Visual Standard Guide (المرجع الأساسي والملزم) · WCAG 2.2 · Material Design Color System
+
+UAEAF Visual Standard Guide (primary and binding reference) · WCAG 2.2 · Material Design Color System
 
 ## Related Chapters
-Chapter 0 → Brand Personality. Chapter 3 → يستهلك القيم هنا مباشرة. Chapter 4 → يوسّع مرجع الخط. Chapter 6 → يستخدم حسابات Accessibility Considerations. Chapter 8 → يستخدم Theme Pattern.
+
+Chapter 0 → Brand Personality.
+Chapter 3 → Directly consumes the values defined here.
+Chapter 4 → Expands the font reference.
+Chapter 6 → Uses the Accessibility Considerations calculations.
+Chapter 8 → Uses the Theme Pattern.
 
 ---
 
-نهاية الفصلين 0 و1 — النسخة المحدّثة بمنهجية Enterprise كاملة. الفصل التالي: Chapter 2 — Design Principles (سيحتوي أول ترقيم PR-XXX رسمي).
+**End of Chapters 0 and 1 — Updated version using the complete Enterprise methodology.**
+
+**Next:** Chapter 2 — Design Principles *(will contain the first official PR-XXX numbering).*

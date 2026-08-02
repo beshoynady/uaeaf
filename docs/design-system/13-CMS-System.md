@@ -1,139 +1,244 @@
 # Chapter 13 — CMS System (CMS Business Domain)
 
 **Document:** UAEAF Enterprise Design System Framework v1.0.0
-**Chapter Status:** Accepted | **Last Updated:** هذه الجلسة | **Document Owner:** مالك المشروع
+**Chapter Status:** Accepted | **Last Updated:** This Session | **Document Owner:** Project Owner
 
-> **Status: Frozen (Baseline v1.0).** أي تغيير بعد التجميد **MUST** يُدخَل حصريًا عبر ADR جديد أو بند Backlog موثَّق.
+> **Status: Frozen (Baseline v1.0).** Any change after the freeze **MUST** be introduced exclusively through a new ADR or a documented Backlog item.
 
 ## Depends On / Used By
-| Depends On | Used By |
-|---|---|
-| Chapter 8 L2 (Form Foundation) · Chapter 8 L7 (Approval Workflow §EC.7) · Chapter 9 (Content Rules) · Chapter 11 (PT-CRUD-001, PT-WIZARD-001) · Chapter 12 (DB-WORKSPACE-001) | Chapter 14 (SEO يستهلك Metadata من هنا) · Chapter 20 (صفحات الموقع العام تستهلك محتوى CMS) |
+
+| Depends On                                                                                                                                                                    | Used By                                                                                                      |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Chapter 8 L2 (Form Foundation) · Chapter 8 L7 (Approval Workflow §EC.7) · Chapter 9 (Content Rules) · Chapter 11 (PT-CRUD-001, PT-WIZARD-001) · Chapter 12 (DB-WORKSPACE-001) | Chapter 14 (SEO consumes Metadata from this chapter) · Chapter 20 (Public Website pages consume CMS content) |
 
 ## 1. Purpose & Scope
-**يغطي:** الـCMS كنظام أعمال (Business Domain) — نموذج المحتوى، دورة حياة النشر، الصلاحيات التحريرية، الجدولة، تعدد اللغات، حدود التكامل مع بقية المنصة.
-**لا يغطي:** أي مكوّن UI جديد (Chapter 8 وحده المصدر) — واجهات المحرر نفسها **MUST** تُبنى من Chapter 8 L2 (Forms) وChapter 12 §DB-WORKSPACE-001 حصريًا.
+
+**Covers:** The CMS as a **Business Domain** — content modeling, publishing lifecycle, editorial permissions, scheduling, localization, and integration boundaries with the rest of the platform.
+
+**Does Not Cover:** Any new UI component (Chapter 8 is the sole source of truth) — editor interfaces **MUST** be built exclusively from Chapter 8 L2 (Forms) and Chapter 12 §DB-WORKSPACE-001.
 
 ## Definitions
-| المصطلح | التعريف |
-|---|---|
-| **Content Type** | نموذج بيانات محتوى محدَّد (خبر، صفحة ثابتة، سيرة لاعب) بحقول ثابتة |
-| **Block** | وحدة محتوى مرنة قابلة للتركيب داخل محرر غني (نص، صورة، اقتباس) |
-| **Headless CMS** | نمط معماري يفصل إدارة المحتوى (الكتابة، الاعتماد) عن طريقة عرضه النهائية (الموقع العام، تطبيق مستقبلي) |
+
+| Term             | Definition                                                                                                                                               |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Content Type** | A defined content data model (e.g., news article, static page, athlete profile) with a fixed set of fields                                               |
+| **Block**        | A flexible, composable content unit within a rich editor (e.g., text, image, quote)                                                                      |
+| **Headless CMS** | An architectural pattern that separates content management (authoring, approval) from the final presentation layer (public website, future applications) |
 
 ---
 
 ## 2. ADR-0024: CMS as a Headless Business Platform
 
-| الحقل | التفاصيل |
-|---|---|
-| **Status** | Accepted |
-| **Authority** | Product Decision (يؤسس لكل قرارات هذا الفصل) |
-| **Context** | المنصة تحتوي وحدات عمل متعددة (أخبار، فعاليات، بطولات، أندية، لاعبين، صفحات ثابتة) — بدون حدود واضحة، كل وحدة قد تبني منطق نشر/جدولة/اعتماد خاصًا بها، فتتحول المنصة إلى "عدة أنظمة CMS صغيرة" غير متسقة |
-| **Decision** | الـCMS **MUST NOT** يُعامَل كمحرر أخبار بسيط — هو **مصدر الحقيقة الوحيد (Single Source of Truth)** لكل محتوى منشور علنًا. أي Module (أخبار/فعاليات/بطولات/أندية/لاعبين/صفحات/وسائط) **MUST NOT** ينشر محتواه مباشرة بمعزل — **MUST** يمر عبر الـCMS عند الحاجة للنشر العام. الـCMS **MUST** مسؤولاً حصريًا عن: Editorial Workflow، Publishing، Scheduling، Versioning، Localization، SEO. الوحدات التشغيلية (Business Modules) **MUST** تبقى مسؤولة فقط عن بياناتها التشغيلية الخام (بيانات اللاعب نفسها، نتيجة المباراة) لا عن كيفية نشرها |
-| **Alternatives Considered** | كل Module يدير نشره الخاص (محرر أخبار منفصل، محرر فعاليات منفصل) — رُفض لأنه يُنتج تجربة تحريرية غير متسقة (Chapter 0 Discovery: CMS هو الأكثر استخدامًا يوميًا، فريق الإعلام يحتاج تجربة واحدة موحّدة لا عدة أدوات) |
-| **Why This Decision** | يطابق نمط Headless CMS القياسي، ويحافظ على Chapter 9 ADR-0021 (اتساق المحتوى) على مستوى معماري لا صياغي فقط |
-| **Risks** | ربط كل نشر بالـCMS قد يُبطئ نشر محتوى تشغيلي بسيط (تحديث نتيجة فورية لا يحتاج مراجعة تحريرية كاملة). Mitigation: §5 Editorial Workflow **MAY** مسارًا مختصرًا (Fast-track) لمحتوى تشغيلي منخفض الخطورة، موثَّقًا صراحة كاستثناء لا كسرًا للمبدأ |
-| **Consequences** | كل قسم لاحق في هذا الفصل (§3-§14) **MUST** يُبنى فوق هذا المبدأ المركزي |
+| Field                       | Details                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Status**                  | Accepted                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| **Authority**               | Product Decision (establishes the foundation for all decisions in this chapter)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| **Context**                 | The platform contains multiple business domains (News, Events, Championships, Clubs, Athletes, Static Pages). Without clear boundaries, each domain could implement its own publishing, scheduling, and approval logic, effectively turning the platform into a collection of inconsistent "mini CMS systems."                                                                                                                                                                                                                                                                                                                                             |
+| **Decision**                | The CMS **MUST NOT** be treated as a simple news editor — it is the **Single Source of Truth** for all publicly published content. No Module (News/Events/Championships/Clubs/Athletes/Pages/Media) **MUST NOT** publish its content independently — public-facing content **MUST** pass through the CMS whenever public publishing is required. The CMS **MUST** be exclusively responsible for: **Editorial Workflow, Publishing, Scheduling, Versioning, Localization, and SEO**. Operational Business Modules **MUST** remain responsible only for their raw operational data (e.g., athlete data, match results), not for how that data is published. |
+| **Alternatives Considered** | Each Module manages its own publishing (separate news editor, separate events editor, etc.) — rejected because it creates an inconsistent editorial experience (Chapter 0 Discovery: the CMS is used daily and extensively; the media team needs one unified experience rather than multiple tools).                                                                                                                                                                                                                                                                                                                                                       |
+| **Why This Decision**       | Aligns with the standard Headless CMS architectural pattern and preserves the intent of Chapter 9 ADR-0021 (Content Consistency) at the architectural level, not merely at the wording level.                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| **Risks**                   | Routing every publication through the CMS may slow down simple operational content updates (e.g., an immediate score update that does not require a full editorial review). **Mitigation:** §5 Editorial Workflow **MAY** provide a shortened **Fast-track** path for low-risk operational content, explicitly documented as an exception rather than a violation of the principle.                                                                                                                                                                                                                                                                        |
+| **Consequences**            | Every subsequent section in this chapter (§3–§14) **MUST** be built upon this central principle.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 
-### Hybrid Entity Boundary (توضيح حاسم لـADR-0024)
-كيانات مثل اللاعب والنادي (Chapter 8 L8) لها **جزءان منفصلان بوضوح**:
+### Hybrid Entity Boundary — Critical Clarification to ADR-0024
+
+Entities such as an Athlete and a Club (Chapter 8 L8) have **two clearly separated dimensions**:
+
+```text
+Operational Data (name, club, age category, results)
+→ Owned by the operational Business Module; does not pass through the Editorial Workflow
+
+Editorial Content (biography, profile article, selected display images)
+→ Fully owned by the CMS; subject to §5 and §6 in their entirety
 ```
-Operational Data (اسم، نادٍ، فئة عمرية، نتائج) → مملوكة للـModule التشغيلي (Business Module)، لا تمر بـEditorial Workflow
-Editorial Content (نبذة تعريفية، مقال تعريفي، صور مختارة للعرض) → مملوكة للـCMS بالكامل، تخضع لـ§5 و§6 حرفيًا
-```
-**MUST** الفصل بين الجزءين واضحًا في تصميم قاعدة البيانات (Chapter 21 لاحقًا) — **MUST NOT** حقل "نبذة اللاعب" يُعدَّل مباشرة من شاشة إدارة اللاعب التشغيلية بمعزل عن دورة اعتماد CMS، حتى لو بدا ذلك أسرع للمستخدم الإداري.
+
+The separation between these two dimensions **MUST** be explicit in the database design (Chapter 21, forthcoming).
+
+The system **MUST NOT** allow a field such as "Athlete Biography" to be edited directly from the operational Athlete Management interface outside the CMS approval lifecycle, even if doing so appears faster for administrative users.
 
 ---
 
 ## 3. CMS Architecture
-الـCMS **MUST** يُبنى كطبقة منفصلة (Headless) يستهلكها الموقع العام (Chapter 20) عبر واجهة بيانات لا اقتران مباشر بالعرض — يتوافق مع Chapter 8 L8 ADR-0020 (نفس منطق تجريد مصدر البيانات، مطبَّقًا هنا على المحتوى التحريري).
+
+The CMS **MUST** be implemented as a separate **Headless layer** consumed by the public website (Chapter 20) through a defined data interface, with no direct coupling to the presentation layer.
+
+This aligns with Chapter 8 L8 ADR-0020, applying the same data-source abstraction principle to editorial content.
 
 ## 4. Content Model
-| Content Type | الوصف |
-|---|---|
-| **Page** | صفحة ثابتة (عن الاتحاد، سياسة الخصوصية) |
-| **Article** | خبر/مقال (Chapter 0 Discovery: الأكثر استخدامًا يوميًا) |
-| **Media Asset** | صورة/فيديو مُدار (يستهلك Chapter 8 L6 Media Foundation) |
-| **Category / Tag** | تصنيف محتوى (يتكامل مع Chapter 9 §CR-8.1 Terminology Registry لمنع تصنيفات مكررة الاسم) |
-| **Block** | وحدة محتوى مرنة داخل محرر غني (Rich Text، Chapter 0 Discovery: WYSIWYG) |
+
+| Content Type       | Description                                                                                                                                |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Page**           | Static page (e.g., About the Federation, Privacy Policy)                                                                                   |
+| **Article**        | News article / editorial article (Chapter 0 Discovery: the most frequently used content type on a daily basis)                             |
+| **Media Asset**    | Managed image/video asset (consumed through Chapter 8 L6 Media Foundation)                                                                 |
+| **Category / Tag** | Content classification mechanism (integrates with Chapter 9 §CR-8.1 Terminology Registry to prevent duplicate or inconsistent terminology) |
+| **Block**          | Flexible content unit within a rich editor (Rich Text; Chapter 0 Discovery: WYSIWYG)                                                       |
 
 ## 5. Editorial Workflow
-يستهلك Chapter 8 L7 §EC.7 Approval Workflow Contract مباشرة — لا إعادة تعريف:
-```
+
+The CMS directly consumes the **Chapter 8 L7 §EC.7 Approval Workflow Contract** — no workflow redefinition is permitted:
+
+```text
 Draft → In Review → Approved | Rejected
 ```
-**MAY** مسار Fast-track لمحتوى تشغيلي منخفض الخطورة (راجع ADR-0024 §Risks) — **MUST** موثَّقًا كاستثناء صريح لكل نوع محتوى يُسمح له بذلك، لا قاعدة عامة ضمنية.
+
+A **Fast-track** path **MAY** be provided for low-risk operational content (see ADR-0024 §Risks).
+
+Such a path **MUST** be explicitly documented as an exception for each content type permitted to use it. It **MUST NOT** become an implicit general rule.
 
 ## 6. Publishing Lifecycle
-قسم مستقل (لا جزء فرعي من §5) لأن Chapter 0 Discovery وChapter 8 L8 وChapter 20 لاحقًا يعتمدون عليه مباشرة:
-```
+
+This is maintained as an independent section rather than a subsection of §5 because Chapter 0 Discovery, Chapter 8 L8, and Chapter 20 rely on it directly:
+
+```text
 Draft → In Review → Approved → Scheduled → Published → Archived
 ```
-**MUST** كل انتقال بين هذه الحالات يُسجَّل عبر Chapter 8 L7 §EC.4 Audit Logging. `Published` **MUST** هي الحالة الوحيدة المرئية للجمهور العام (Chapter 20) — أي حالة أخرى **MUST NOT** تظهر خارج لوحة التحكم مهما كانت الظروف.
+
+Every transition between these states **MUST** be recorded through Chapter 8 L7 §EC.4 Audit Logging.
+
+`Published` **MUST** be the only state visible to the public website (Chapter 20).
+
+Any other state **MUST NOT** be exposed outside the administrative interface under any circumstances.
 
 ### 6a. Content Preview Contract
-قبل أي انتقال لـ`Published`، المحرر/المُعتمِد **MUST** إمكانية معاينة المحتوى **كما سيظهر فعليًا** للجمهور (لا نص خام في نموذج التحرير فقط) — يستهلك Chapter 8 L4 §CMP-DRAWER-001 أو نافذة معاينة مخصصة تُصيِّر نفس قوالب Chapter 20 الفعلية. **MUST NOT** اعتماد محتوى (`Approved`) بدون معاينة بصرية واحدة على الأقل.
+
+Before any transition to `Published`, the editor/approver **MUST** be able to preview the content **exactly as it will appear to the public audience**, rather than viewing raw content only inside the editing form.
+
+The preview **MUST** consume Chapter 8 L4 §CMP-DRAWER-001 or a dedicated preview window that renders the actual Chapter 20 page templates.
+
+Content **MUST NOT** be approved (`Approved`) without at least one visual preview.
 
 ### 6b. Draft Autosave Contract
-مسودة قيد الكتابة **SHOULD** حفظ تلقائي دوري (يستهلك مبدأ Chapter 8 L2 §F.10 Form Submission Contract بصيغة صامتة لا تتطلب ضغط زر) — **MUST NOT** فقدان محتوى غير محفوظ عند انقطاع الاتصال أو إغلاق غير مقصود للمتصفح.
 
-### 6c. Archival vs. Deletion (تمييز حاسم)
-`Archived` **MUST NOT** تُعامَل كمرادف لـ"محذوف": المحتوى المؤرشف **MUST** يبقى موجودًا بالكامل (قابلاً للاسترجاع، Chapter 8 L7 §EC.11 مبدأ مشابه) لكن غير ظاهر للجمهور العام — الحذف الفعلي النهائي **MUST** إجراء منفصل تمامًا يخضع لـChapter 8 L7 §EC.3 Destructive Action وConfirmation Dialog، لا نتيجة تلقائية للأرشفة.
+A draft currently being edited **SHOULD** be periodically autosaved (consuming the principle defined in Chapter 8 L2 §F.10 Form Submission Contract in a silent form that does not require an explicit button press).
+
+Unsaved content **MUST NOT** be lost due to connectivity interruption or an unintended browser closure.
+
+### 6c. Archival vs. Deletion — Critical Distinction
+
+`Archived` **MUST NOT** be treated as synonymous with "Deleted."
+
+Archived content **MUST** remain fully preserved and recoverable (consistent with the principle established in Chapter 8 L7 §EC.11), while remaining invisible to the public website.
+
+Permanent deletion **MUST** be an entirely separate operation governed by Chapter 8 L7 §EC.3 Destructive Action and the Confirmation Dialog contract.
+
+Archiving **MUST NOT** automatically result in permanent deletion.
 
 ## 7. Content Relationships
-محتوى CMS (خاصة `Article`) غالبًا **MUST** قابلاً للربط بكيانات تشغيلية (Chapter 8 L8): خبر عن فوز لاعب **MUST** يدعم ربطًا صريحًا بسجل ذلك اللاعب (`Athlete Reference`) — **MUST NOT** ذكر اسم اللاعب كنص حر فقط دون رابط بيانات فعلي، لضمان ظهور الخبر تلقائيًا في صفحة ملف اللاعب (تكامل مباشر يخدم Chapter 14 SEO وتجربة المستخدم دون عمل يدوي مضاعف).
+
+CMS content — particularly `Article` — **MUST** generally support explicit relationships with operational entities (Chapter 8 L8).
+
+For example, a news article about an athlete's victory **MUST** support an explicit relationship to that athlete's record (`Athlete Reference`).
+
+The athlete's name **MUST NOT** be stored solely as free-form text without an actual data relationship.
+
+This ensures that the article can automatically appear on the athlete's profile page, providing direct integration that supports Chapter 14 SEO and improves the user experience without requiring duplicate manual work.
 
 ## 8. Scheduling & Publishing
-Chapter 0 Discovery قرّر عدم الحاجة لجدولة نشر معقدة (اكتفاء بمسودة/انتظار موافقة/نشر) — لكن Chapter 8 L7 §EC.12 Long-Running Operation Contract يوفّر الأساس التقني لو احتيج لاحقًا (`Scheduled` في §6 محجوزة بنيويًا، غير مُفعَّلة بالضرورة في الإصدار الأول).
+
+Chapter 0 Discovery determined that complex publishing schedules are not currently required, with the initial workflow being limited to draft → approval → publication.
+
+However, Chapter 8 L7 §EC.12 Long-Running Operation Contract provides the technical foundation should scheduling be required in the future.
+
+`Scheduled` in §6 is therefore structurally reserved but **NOT necessarily activated in the initial release**.
 
 ## 9. Localization / Multi-language Content
-يطابق Chapter 0 Discovery وChapter 9 §CR-1.6 حرفيًا: **MUST NOT** ترجمة آلية — كل Content Type **MUST** حقلي محتوى منفصلين (عربي/إنجليزي) بمحتوى احترافي مستقل لكل لغة، لا نسخة واحدة مترجمة تلقائيًا.
+
+This follows Chapter 0 Discovery and Chapter 9 §CR-1.6 exactly:
+
+The system **MUST NOT** use machine translation.
+
+Every Content Type **MUST** provide separate Arabic and English content fields, with professionally authored and independently maintained content for each language.
+
+A single source version **MUST NOT** be automatically translated into the other language.
 
 ## 10. Media Management
-يستهلك Chapter 8 L6 Media Foundation بالكامل + Chapter 8 L2 §CMP-FILEUPLOAD-001/ImageUpload — **MUST NOT** منطق رفع أو معالجة صور موازٍ يُبتكَر هنا.
+
+The CMS fully consumes Chapter 8 L6 Media Foundation and Chapter 8 L2 §CMP-FILEUPLOAD-001/ImageUpload.
+
+No parallel image-upload or image-processing logic **MUST** be introduced within this chapter.
 
 ## 11. Permissions & Editorial Roles
-يبني فوق نظام الأدوار والصلاحيات العام (Chapter 0 Discovery: الأدوار الوظيفية داخل لوحة التحكم — سؤال كان مفتوحًا، يُحسم في Chapter 22 لاحقًا) — أدوار تحريرية نموذجية: `Editor` (يكتب، يُرسل للمراجعة) · `Reviewer/Approver` (يعتمد، Chapter 8 L7 §EC.7) · `Publisher` (صلاحية النشر النهائي، قد تتطابق مع Approver أو تنفصل حسب هيكل الاتحاد). **MUST** يطبّق Chapter 8 L3 §N.19 Authorization Boundary — عنصر تحرير لا يملكه المستخدم صلاحيته **MUST NOT** يظهر أصلاً.
+
+The CMS builds upon the platform-wide roles and permissions system (Chapter 0 Discovery: functional roles within the administration panel — previously open and to be finalized in Chapter 22).
+
+Typical editorial roles include:
+
+* `Editor` — authors content and submits it for review.
+* `Reviewer/Approver` — reviews and approves content through Chapter 8 L7 §EC.7.
+* `Publisher` — holds final publishing authority; this role **MAY** be combined with the Approver role or separated depending on the Federation's organizational structure.
+
+The system **MUST** enforce Chapter 8 L3 §N.19 Authorization Boundary.
+
+Any editorial element for which the current user does not have permission **MUST NOT** be rendered or exposed in the first place.
 
 ## 12. SEO & Metadata
-كل `Article`/`Page` **MUST** حقول Metadata مخصصة (Meta Title، Meta Description، صورة مشاركة) منفصلة عن العنوان/المحتوى الظاهر — يُفصَّل التطبيق التقني الكامل في Chapter 14 (SEO)، هذا القسم يوثّق فقط أن الحقول **MUST** موجودة في Content Model (§4).
+
+Every `Article` and `Page` **MUST** provide dedicated Metadata fields, including:
+
+* Meta Title
+* Meta Description
+* Social Sharing Image
+
+These fields **MUST** remain separate from the visible title and content.
+
+The complete technical implementation is defined in Chapter 14 (SEO).
+
+This section documents only the requirement that these fields **MUST** exist within the Content Model (§4).
 
 ## 13. Integration Boundaries
-الموقع العام (Chapter 20) **MUST** يستهلك محتوى CMS عبر واجهة بيانات محدَّدة (API محايد، Chapter 8 L8 ADR-0020 بنفس المنطق) — **MUST NOT** اقتران مباشر بين طبقة عرض الموقع العام وقاعدة بيانات CMS الداخلية. يضمن قابلية تغيير تنفيذ الـCMS مستقبلاً دون كسر الموقع العام.
+
+The public website (Chapter 20) **MUST** consume CMS content through a defined data interface (API-agnostic, following the same abstraction principle established by Chapter 8 L8 ADR-0020).
+
+There **MUST NOT** be direct coupling between the public website presentation layer and the internal CMS database.
+
+This ensures that the CMS implementation can be replaced or evolved in the future without breaking the public website.
 
 ## 14. CMS Registry
-مرجع مركزي لأنواع المحتوى (نفس منطق Chapter 11/12 Registries):
 
-| Content Type ID | الاسم | حالة النشر المدعومة |
-|---|---|---|
-| CT-ARTICLE-001 | Article/News | Full Lifecycle (§6) |
-| CT-PAGE-001 | Static Page | Full Lifecycle |
-| CT-MEDIA-001 | Media Asset | Simplified (لا Editorial Workflow كامل، يخضع لـChapter 8 L6 فقط) |
+A centralized registry of content types, following the same registry principle established in Chapters 11 and 12:
+
+| Content Type ID | Name           | Supported Publishing Lifecycle                                         |
+| --------------- | -------------- | ---------------------------------------------------------------------- |
+| CT-ARTICLE-001  | Article / News | Full Lifecycle (§6)                                                    |
+| CT-PAGE-001     | Static Page    | Full Lifecycle                                                         |
+| CT-MEDIA-001    | Media Asset    | Simplified (No full Editorial Workflow; governed by Chapter 8 L6 only) |
 
 ---
 
 ## Do & Don't
-**Do:** مرّر أي نشر جديد عبر ADR-0024 (هل يجب أن يمر بالـCMS؟) · استهلك Chapter 8 L7 §EC.7 لأي حالة اعتماد بدل ابتكار Workflow جديد
-**Don't:** لا تُنشئ نظام نشر مستقل لأي Module (أخبار، فعاليات) بمعزل عن CMS · لا تُظهر حالة غير `Published` للجمهور العام مهما كان السبب
+
+### Do
+
+* Route every new publication decision through ADR-0024: **"Does this content need to pass through the CMS?"**
+* Consume Chapter 8 L7 §EC.7 for every approval state rather than creating a new workflow.
+
+### Don't
+
+* Do not create an independent publishing system for any Module (News, Events, etc.) outside the CMS.
+* Do not expose any state other than `Published` to the public website, regardless of the reason.
 
 ## Success Metrics
-- 100% من المحتوى المنشور علنًا يمر عبر Editorial Workflow (§5) أو Fast-track موثَّق صراحة
-- 0 حالة محتوى غير `Published` مرئية للجمهور العام
-- 100% من أنواع المحتوى تحمل حقول SEO Metadata منفصلة (§12)
-- 0 اقتران مباشر بين الموقع العام وقاعدة بيانات CMS الداخلية (§13)
-- 0 اعتماد محتوى (`Approved`) بدون معاينة بصرية مسبقة (§6a)
-- 0 فقدان محتوى بسبب انقطاع اتصال دون Autosave (§6b)
-- 0 محتوى مؤرشف يُعامَل أو يُحذَف تلقائيًا كأنه Deletion فعلي (§6c)
-- 100% من الأخبار المرتبطة بلاعب/نادٍ تحمل Content Relationship صريح لا نصًا حرًا فقط (§7)
+
+* **100%** of publicly published content passes through the Editorial Workflow (§5) or an explicitly documented Fast-track path.
+* **0** instances of content in a non-`Published` state being visible to the public website.
+* **100%** of Content Types contain separate SEO Metadata fields (§12).
+* **0** direct coupling between the public website and the internal CMS database (§13).
+* **0** content approvals (`Approved`) without a prior visual preview (§6a).
+* **0** content loss caused by connectivity interruptions without Autosave protection (§6b).
+* **0** archived content being automatically treated or deleted as permanent Deletion (§6c).
+* **100%** of news articles associated with an athlete or club contain an explicit Content Relationship rather than relying solely on free-form text (§7).
 
 ## References
+
 **Normative:** Chapter 0 (Discovery) · Chapter 8 L2/L6/L7 · Chapter 9
-**Informative:** Headless CMS Architecture Patterns (مرجع مفاهيمي عام)
+
+**Informative:** Headless CMS Architecture Patterns (General Conceptual Reference)
 
 ## Related Chapters
-Chapter 8 (كل الاعتماديات) · Chapter 9 · Chapter 11/12 (التركيب) · Chapter 14 (SEO) · Chapter 20 (الاستهلاك النهائي) · Chapter 22 (الأدوار والصلاحيات الكاملة)
+
+Chapter 8 (All Dependencies) · Chapter 9 · Chapter 11/12 (Composition) · Chapter 14 (SEO) · Chapter 20 (Final Consumption) · Chapter 22 (Complete Roles & Permissions Model)
 
 ---
 
-*نهاية Chapter 13. الفصل التالي: Chapter 14 — SEO & AI Search Guidelines.*
+*End of Chapter 13. Next: Chapter 14 — SEO & AI Search Guidelines.*

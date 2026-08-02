@@ -1,253 +1,479 @@
 # Chapter 9 — Content Design System (Content Governance Framework)
 
 **Document:** UAEAF Enterprise Design System Framework v1.0.0
-**Chapter Status:** Accepted | **Last Updated:** هذه الجلسة | **Document Owner:** مالك المشروع
+**Chapter Status:** Accepted | **Last Updated:** This Session | **Document Owner:** Project Owner
 
-> **Status: Frozen (Baseline v1.0).** أي تغيير بعد التجميد **MUST** يُدخَل حصريًا عبر ADR جديد أو بند Backlog موثَّق.
+> **Status: Frozen (Baseline v1.0).** Any change after freeze **MUST** be introduced exclusively through a new ADR or a documented Backlog item.
 
 ## Depends On / Used By
-| Depends On | Used By |
-|---|---|
-| Chapter 0 (§0.6 Tone of Voice، §Brand Personality) · Chapter 4 (Typography) · Chapter 6 (Accessibility — رسائل الأخطاء) · Chapter 8 (كل المستويات L1-L8 — كل نص فيها يشير هنا) | Chapter 11 (UX Patterns) · Chapter 13 (CMS Editorial) · Chapter 16 (AI Content) · Chapter 20 (Page Templates) |
+
+| Depends On                                                                                                                                                                                 | Used By                                                                                                       |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| Chapter 0 (§0.6 Tone of Voice, §Brand Personality) · Chapter 4 (Typography) · Chapter 6 (Accessibility — Error Messages) · Chapter 8 (all levels L1-L8 — all text within them refers here) | Chapter 11 (UX Patterns) · Chapter 13 (CMS Editorial) · Chapter 16 (AI Content) · Chapter 20 (Page Templates) |
 
 ## Scope
-**يغطي:** إطار حوكمة المحتوى الكامل بثماني مستويات — من الصوت والنبرة إلى مصطلحات ألعاب القوى الموحّدة.
-**لا يغطي:** المحتوى التحريري الفعلي (أخبار، مقالات — تلك مسؤولية فريق الإعلام)، الترجمة الآلية (Chapter 0 Discovery: مرفوضة، محتوى منفصل لكل لغة).
+
+**Covers:** The complete content governance framework across eight levels — from voice and tone to standardized athletics terminology.
+
+**Does not cover:** Actual editorial content (news, articles — the responsibility of the Media Team), or automated translation (Chapter 0 Discovery: rejected; separate content is maintained for each language).
 
 ## Definitions
-| المصطلح | التعريف |
-|---|---|
-| **Content Rule (CR)** | قاعدة صياغة ملزمة لنوع محتوى معيّن، معرَّفة مرة واحدة ومُستهلَكة من كل مكوّن (Chapter 8) بدل تكرارها |
-| **Plain Language** | كتابة بمستوى قراءة بسيط يفهمه أوسع جمهور ممكن دون تبسيط مخل بالدقة |
-| **Terminology Governance** | قائمة مركزية معتمدة للمصطلحات المتكررة (اسم فعالية، نوع نتيجة) تمنع الصياغات المتعددة لنفس المفهوم |
+
+| Term                       | Definition                                                                                                                               |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **Content Rule (CR)**      | A mandatory writing rule for a specific content type, defined once and consumed by every component (Chapter 8) instead of being repeated |
+| **Plain Language**         | Writing at a simple reading level that can be understood by the broadest possible audience without compromising accuracy                 |
+| **Terminology Governance** | A centralized approved list of recurring terms (event name, result type) that prevents multiple phrasings for the same concept           |
 
 ## Purpose
-Chapter 8 حدّد "ما هي المكونات"؛ هذا الفصل يحدد "كيف تتحدث". كل نص في أي مكوّن من الفصول 8 (Button label، Error Message، Empty State) **MUST** يتبع قاعدة من هنا، لا صياغة حرة لحظية.
+
+Chapter 8 defined **“what the components are”**; this chapter defines **“how they speak.”** Every piece of text in any Chapter 8 component (Button label, Error Message, Empty State) **MUST** follow a rule defined here, rather than being freely written ad hoc.
 
 ---
 
-## ADR-0021: Content Consistency Strategy
+# ADR-0021: Content Consistency Strategy
 
-| الحقل | التفاصيل |
-|---|---|
-| **Status** | Accepted |
-| **Authority** | Product Decision (يكمل Chapter 8 ADR-0020 مباشرة) |
-| **Context** | عشرات المكونات (Chapter 8) تحتاج نصوصًا — بدون مصدر مركزي، نفس الحالة (خطأ شبكة، نجاح حفظ) ستُصاغ بعشرات الطرق المختلفة عبر الوقت والمساهمين |
-| **Decision** | كل النصوص **MUST** تأتي من Content Rules موثَّقة هنا — **MUST NOT** أي نص Hardcoded داخل منطق مكوّن (Chapter 8 §Component API Contract يستهلك نص كـProp/Message Key، لا يُضمَّنه). كل الرسائل **MUST** قابلة للترجمة (i18n-ready بنيويًا حتى لو المحتوى الفعلي عربي/إنجليزي فقط حاليًا، Chapter 0 Discovery). **المحتوى مستقل عن التنفيذ** — تغيير نص لا يتطلب تعديل كود مكوّن. نفس الحالة **MUST** تستخدم نفس الرسالة حرفيًا في كل أنحاء النظام (لا "تم الحفظ" في مكان و"تم الحفظ بنجاح" في آخر لنفس الحدث بالضبط) |
-| **Alternatives Considered** | ترك الصياغة لتقدير كل مطوّر/محرر وقت الكتابة — رُفض (نفس منطق رفض Chapter 8 ADR-0016 ترك اختيار مستوى Feedback بلا حوكمة) |
-| **Why This Decision** | يضمن اتساق الصوت (Chapter 0 §0.6) عبر مئات نقاط التواصل مع المستخدم بمرور السنوات ومساهمين متعددين |
-| **Risks** | مركزية زائدة قد تبطئ كتابة نص عاجل لمرة واحدة. Mitigation: مسار Proposal مبسّط (مشابه Chapter 3 §3.5) لإضافة Content Rule جديدة بسرعة عند الحاجة الفعلية |
-| **Consequences** | كل قسم مكوّن في Chapter 8 (رجعيًا) **MUST** يُحدَّث ليشير لقاعدة محتوى من هنا بدل النص المباشر المذكور كمثال توضيحي |
+| Field                       | Details                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Status**                  | Accepted                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| **Authority**               | Product Decision (directly complements Chapter 8 ADR-0020)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| **Context**                 | Dozens of components (Chapter 8) require text — without a central source, the same state (network error, save success) would be phrased in dozens of different ways over time and across contributors                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| **Decision**                | All text **MUST** come from Content Rules documented here — **MUST NOT** have any text hardcoded inside component logic (Chapter 8 §Component API Contract consumes text as a Prop/Message Key rather than embedding it). All messages **MUST** be structurally translation-ready (i18n-ready), even if the actual content currently exists only in Arabic/English (Chapter 0 Discovery). **Content MUST remain independent from implementation** — changing text must not require modifying component code. The same state **MUST** use exactly the same message throughout the system (not “Saved” in one place and “Changes saved successfully” in another for the exact same event) |
+| **Alternatives Considered** | Leaving wording to the discretion of each developer/editor at writing time — rejected (same rationale as Chapter 8 ADR-0016 rejecting leaving Feedback Level selection without governance)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| **Why This Decision**       | Ensures consistent voice (Chapter 0 §0.6) across hundreds of user touchpoints over the years and across multiple contributors                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| **Risks**                   | Excessive centralization may slow down writing urgent one-off copy. **Mitigation:** A simplified Proposal path (similar to Chapter 3 §3.5) for quickly adding a new Content Rule when genuinely needed                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| **Consequences**            | Every component section in Chapter 8 (retroactively) **MUST** be updated to reference a Content Rule from this chapter instead of directly embedding the example text                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 
 ---
 
-## Level 1 — Content Foundations
+# Level 1 — Content Foundations
 
 ### CR-1.1 Voice & Tone
-يطبّق Chapter 0 §0.6 حرفيًا: واثقة، واضحة (جمل قصيرة)، محترمة، محفزة دون مبالغة، إنسانية.
+
+Applies Chapter 0 §0.6 literally: **confident, clear (short sentences), respectful, motivating without exaggeration, and human.**
 
 ### CR-1.2 Writing Principles
-الوضوح قبل الإبداع · الدقة قبل السرعة · الاحترافية قبل الاستعراض (Chapter 0). جملة واحدة = فكرة واحدة.
+
+Clarity before creativity · Accuracy before speed · Professionalism before showmanship (Chapter 0).
+
+**One sentence = one idea.**
 
 ### CR-1.3 Plain Language
-**MUST** تجنّب المصطلحات التقنية في نصوص الجمهور العام (استخدم "لم نتمكن من حفظ التغييرات" لا "فشل طلب PATCH"). لوحة التحكم (Operational) **MAY** مصطلحات تقنية أدق لجمهور متخصص.
+
+**MUST** avoid technical terminology in content intended for the general public (use “We couldn’t save your changes” rather than “PATCH request failed”).
+
+The Operational Dashboard **MAY** use more precise technical terminology for specialized audiences.
 
 ### CR-1.4 Reading Level
-**SHOULD** جمل ≤20 كلمة في نصوص الواجهة العامة؛ فقرات تحريرية طويلة (أخبار) مستثناة (خارج نطاق هذا الفصل، Scope).
+
+**SHOULD** use sentences of ≤20 words in general public-facing UI copy.
+
+Long editorial paragraphs (news) are exempt, as they are outside the scope of this chapter.
 
 ### CR-1.5 Inclusive Language
-**MUST NOT** افتراضات جندرية أو ثقافية في المخاطبة العامة ("مرحبًا بك" محايد لا "مرحبًا بك سيدي").
+
+**MUST NOT** make gender or cultural assumptions in general addressing (“Welcome” is neutral rather than “Welcome, Sir”).
 
 ### CR-1.6 Arabic / English Consistency
-كل رسالة **MUST** موجودة بالعربي والإنجليزي معًا بنفس المعنى (لا ترجمة حرفية آلية، Chapter 0) — النبرة قد تختلف قليلاً بما يناسب طبيعة كل لغة طالما المعنى والدقة محفوظان.
+
+Every message **MUST** exist in both Arabic and English with the same meaning (no literal machine translation, Chapter 0).
+
+The tone **MAY** differ slightly to suit the nature of each language, as long as meaning and accuracy are preserved.
 
 ### CR-1.7 Terminology Governance
-مصطلح واحد لكل مفهوم عبر كل المنصة، مسجَّل في سجل مصطلحات مركزي (يتقاطع مع Level 8). مثال إلزامي: **"سباق 100 متر"** هو الصياغة المعتمدة الوحيدة — **MUST NOT** "100م" أو "سباق 100M" كبديل عشوائي في مكان آخر.
+
+One term per concept across the entire platform, registered in a centralized terminology registry (intersects with Level 8).
+
+Mandatory example: **“100-meter race”** is the only approved wording — **MUST NOT** randomly substitute it elsewhere with “100m” or “100M race.”
 
 ### CR-1.8 Capitalization
-الإنجليزية: Sentence case للأزرار والعناوين الفرعية (`Save changes` لا `Save Changes`)، Title Case فقط لأسماء العلم (اسم بطولة رسمي). العربية: لا مفهوم Capitalization — الانضباط هنا عبر التشكيل والهمزات الصحيحة فقط.
+
+**English:** Use Sentence case for buttons and subheadings (`Save changes`, not `Save Changes`), and Title Case only for proper names (official competition names).
+
+**Arabic:** Capitalization does not apply as a concept — discipline here is maintained through correct diacritics and Hamza spelling only.
 
 ### CR-1.9 Date / Time Formatting
-يستهلك Chapter 19 (Calendar & Localization) مباشرة — **MUST NOT** إعادة تعريف صيغة تاريخ هنا.
+
+Directly consumes Chapter 19 (Calendar & Localization) — **MUST NOT** redefine date formatting here.
 
 ### CR-1.10 Number Formatting
-أرقام إنجليزية غربية دائمًا (Chapter 4 Backlog قرار مبدئي)، فواصل الآلاف حسب لغة العرض، الأزمنة الرياضية بصيغة ثابتة (`00:12.45`) بصرف النظر عن اللغة (Chapter 8 L2 §NumberInput يحيل لهذا القسم).
+
+Use Western Arabic numerals consistently (Chapter 4 Backlog preliminary decision), with thousands separators according to the display language.
+
+Sports times use a fixed format (`00:12.45`) regardless of language (Chapter 8 L2 §NumberInput refers to this section).
 
 ### CR-1.11 Sentence Length by Context
-**SHOULD** طول الجملة يتكيّف مع السياق لا رقمًا ثابتًا واحدًا للنظام كله: عناوين وأزرار (Chapter 8 L1) ≤6 كلمات · رسائل حالة (§CR-2.7) ≤15 كلمة · نص مساعد (§CR-2.3) ≤20 كلمة · محتوى تحريري طويل خارج نطاق هذا الفصل بالكامل (Scope).
+
+**SHOULD** adapt sentence length to context rather than enforcing one fixed number across the entire system:
+
+* Headings and buttons (Chapter 8 L1): ≤6 words
+* Status messages (§CR-2.7): ≤15 words
+* Helper text (§CR-2.3): ≤20 words
+* Long-form editorial content is entirely outside this chapter’s scope.
 
 ---
 
-## Level 2 — UI Content
+# Level 2 — UI Content
 
 ### CR-2.1 Labels
-فعل أو اسم واضح، لا صياغة مبهمة ("النادي" لا "الاسم" في حقل اسم النادي بسياق غامض).
+
+Use a clear verb or noun; avoid ambiguous wording (“Club” rather than “Name” for a club-name field in an ambiguous context).
 
 ### CR-2.2 Field Help / Placeholder Rules
-**MUST NOT** Placeholder كبديل عن Label (Chapter 8 L2 §F.1 — يتوافق حرفيًا). Placeholder **MAY** مثال توضيحي فقط ("مثال: نادي دبي لألعاب القوى").
+
+**MUST NOT** use Placeholder as a replacement for a Label (Chapter 8 L2 §F.1 — directly aligned).
+
+Placeholder **MAY** be used only as an illustrative example (“Example: Dubai Athletics Club”).
 
 ### CR-2.3 Helper Text
-جملة واحدة قصيرة تحت الحقل (Chapter 8 L2 §F.5) — لا فقرة شرح طويلة.
+
+One short sentence beneath the field (Chapter 8 L2 §F.5) — not a long explanatory paragraph.
 
 ### CR-2.4 Tooltips
-عبارة مختصرة جدًا (Chapter 8 L4 §Tooltip) — **MUST NOT** معلومة ضرورية لإكمال المهمة (يكرر Chapter 8 L4 القاعدة، لا يُعاد شرحها هنا).
+
+Extremely concise wording (Chapter 8 L4 §Tooltip) — **MUST NOT** contain information essential to completing the task.
+
+This repeats the Chapter 8 L4 rule and is not redefined here.
 
 ### CR-2.5 Empty States
-نمط ثابت: وصف الحالة + دعوة لإجراء ("لا يوجد أندية مسجَّلة بعد. أضف أول نادٍ للبدء.") — لا رسالة سلبية مجردة ("لا يوجد بيانات").
+
+Use a consistent pattern:
+
+**State description + invitation to act**
+
+Example: “No clubs are registered yet. Add the first club to get started.”
+
+Do not use merely negative messages such as “No data available.”
 
 ### CR-2.6 Loading Messages
-عادة بلا نص (Skeleton كافٍ، Chapter 8 L1) — نص **MAY** فقط لعمليات طويلة تحديدًا ("جاري معالجة الاستيراد...").
+
+Normally no text is needed (Skeleton is sufficient, Chapter 8 L1).
+
+Text **MAY** be used specifically for long-running operations (“Processing import…”).
 
 ### CR-2.7 Success / Warning / Error / Confirmation Messages
-**نمط ثابت إلزامي (MUST):** [ماذا حدث] + [الأثر إن وُجد] + [الإجراء التالي إن وُجد]. مثال معتمد: "تم حفظ التغييرات بنجاح" لا "تم بنجاح" (Chapter 0 Discovery — مثال أصلي مذكور صراحة). رسالة خطأ: "تعذّر حفظ التغييرات. يرجى المحاولة مرة أخرى" لا "خطأ" أو رمز حالة خام.
+
+**Mandatory fixed pattern (MUST):**
+
+**[What happened] + [Impact, if any] + [Next action, if any]**
+
+Approved example: “Changes saved successfully,” rather than “Successfully completed” (Chapter 0 Discovery — explicitly cited original example).
+
+Error example:
+
+“Couldn’t save your changes. Please try again.”
+
+Not simply “Error” or a raw status code.
 
 ### CR-2.8 Null / Undefined Content Policy
-حقل بلا قيمة **MUST NOT** يُعرض فارغًا بصمت (يبدو كخطأ تصميم) — **MUST** نص بديل ثابت حسب السياق: `"—"` (شرطة) للجداول المضغوطة (Chapter 8 L5) · `"غير متوفر"` للحقول الوصفية (Chapter 8 L5 §CMP-DESCRIPTIONLIST-001، يتوافق مع §DD.10 Partial State) · `"منتسب مباشرة للاتحاد"` تحديدًا لحالة النادي الفارغ للاعب مستقل (Chapter 8 L8 §SP.8 — لا نص عام هنا، بل الصياغة المحدَّدة هناك حرفيًا).
+
+A field with no value **MUST NOT** be displayed silently as empty, as this may appear to be a design error.
+
+**MUST** use a fixed contextual fallback:
+
+* `"—"` (dash) for dense tables (Chapter 8 L5)
+* `"Not available"` for descriptive fields (Chapter 8 L5 §CMP-DESCRIPTIONLIST-001, aligned with §DD.10 Partial State)
+* `"Directly affiliated with the Federation"` specifically for an unattached athlete with no club (Chapter 8 L8 §SP.8 — no generic text here; the wording is defined there explicitly)
 
 ---
 
-## Level 3 — Forms Content
+# Level 3 — Forms Content
 
 ### CR-3.1 Validation Messages
-وصفية كاملة دائمًا (Chapter 8 L2 §F.3) — تذكر الحقل والمشكلة معًا ("البريد الإلكتروني غير صالح" لا "خطأ").
+
+Always fully descriptive (Chapter 8 L2 §F.3) — mention both the field and the problem:
+
+“Invalid email address” rather than “Error.”
 
 ### CR-3.2 Required / Optional Fields
-لا نص "اختياري" متكرر على كل حقل غير إلزامي — **SHOULD** الإشارة على الإلزامي فقط (Chapter 8 L2 §F.4) مع ملاحظة عامة واحدة أعلى النموذج.
+
+Do not repeatedly label every non-required field as “Optional.”
+
+**SHOULD** indicate required fields only (Chapter 8 L2 §F.4), with one general note at the top of the form.
 
 ### CR-3.3 Password Guidelines
-شروط واضحة مسبقًا لا بعد الفشل ("8 أحرف على الأقل، حرف كبير وحرف صغير ورقم") — Chapter 8 L2 §CMP-PASSWORDFIELD-001.
+
+Clearly state requirements before failure rather than after it:
+
+“At least 8 characters, one uppercase letter, one lowercase letter, and one number.”
+
+See Chapter 8 L2 §CMP-PASSWORDFIELD-001.
 
 ### CR-3.4 Upload Instructions
-نوع الملف المقبول والحجم الأقصى **MUST** مذكوران قبل محاولة الرفع لا بعد الفشل (Chapter 8 L2 §CMP-FILEUPLOAD-001).
+
+Accepted file type and maximum size **MUST** be stated before the upload attempt, not only after failure (Chapter 8 L2 §CMP-FILEUPLOAD-001).
 
 ### CR-3.5 Search Hints
-Placeholder يقترح نوع البحث ("ابحث باسم اللاعب أو رقم القيد") لا "بحث" فقط.
+
+Placeholder text should suggest the type of search:
+
+“Search by athlete name or registration number”
+
+rather than simply “Search.”
 
 ### CR-3.6 Inline Errors / Summary Errors
-Inline (Chapter 8 L2 §F.3) دقيق لحقل واحد؛ Summary (Chapter 8 L2 §F.10 Form Submission Contract) يُلخّص العدد ويشير لكل حقل ("يوجد 3 أخطاء: البريد الإلكتروني، رقم الهاتف، تاريخ الميلاد").
+
+**Inline** (Chapter 8 L2 §F.3): precise error for a single field.
+
+**Summary** (Chapter 8 L2 §F.10 Form Submission Contract): summarize the number of errors and identify each affected field:
+
+“There are 3 errors: email address, phone number, and date of birth.”
 
 ---
 
-## Level 4 — Actions
+# Level 4 — Actions
 
 ### CR-4.1 CTA / Button Text Rules
-فعل أمر واضح (Chapter 8 L1 §Button) — "نشر" لا "موافق"، "حذف النادي" لا "حذف" بمعزل عن السياق عند الحاجة للوضوح الإضافي (Chapter 8 L4 §CMP-CONFIRMATIONDIALOG-001).
+
+Use a clear imperative verb (Chapter 8 L1 §Button):
+
+* “Publish” rather than “OK”
+* “Delete club” rather than simply “Delete” when additional context is needed for clarity (Chapter 8 L4 §CMP-CONFIRMATIONDIALOG-001)
 
 ### CR-4.2 Link Text
-يصف الوجهة (Chapter 8 L1 §Link) — "عرض كل النتائج" لا "اضغط هنا".
+
+Describe the destination (Chapter 8 L1 §Link):
+
+“View all results” rather than “Click here.”
 
 ### CR-4.3 Destructive Actions Copy
-**MUST** ذكر الأثر صراحة ("سيتم حذف هذا النادي و15 لاعبًا مرتبطًا به نهائيًا" — يتكامل مع Chapter 8 L7 §EC.14 Cross-Entity Impact Preview) — لا "هل أنت متأكد؟" مجردة.
+
+**MUST** explicitly state the impact:
+
+“This will permanently delete this club and its 15 associated athletes.”
+
+Integrates with Chapter 8 L7 §EC.14 Cross-Entity Impact Preview.
+
+Do not use a generic “Are you sure?” message.
 
 ### CR-4.4 Confirmation Dialog Copy
-عنوان يصف الإجراء + نص يوضّح الأثر (§CR-4.3) + زرّا الإجراء بفعل واضح لا "نعم/لا" عام ("حذف" لا "نعم").
+
+The title describes the action + the body explains the impact (§CR-4.3) + action buttons use explicit verbs rather than generic “Yes/No.”
+
+Example: **“Delete”** rather than **“Yes.”**
 
 ### CR-4.5 Loading Button Text
-زر أثناء التنفيذ (Chapter 8 L1 §Button Loading State) **SHOULD** نص فعل مستمر يعكس نفس الإجراء ("جارِ الحفظ..." للزر الذي كان "حفظ") لا نص عام ثابت ("جارِ التحميل...") لكل الأزرار بلا تمييز — يحافظ على وضوح ماذا يحدث تحديدًا.
+
+The button during execution (Chapter 8 L1 §Button Loading State) **SHOULD** use a continuous-action label reflecting the same action:
+
+“Saving…” for a button that was “Save”
+
+rather than a generic fixed label such as “Loading…” across all buttons.
+
+This preserves clarity about exactly what is happening.
 
 ---
 
-## Level 5 — Data Content
+# Level 5 — Data Content
 
 ### CR-5.1 Metadata / Status Labels / Badges
-مصطلح ثابت لكل حالة عبر كل النظام (Pending/Approved/Rejected — Chapter 8 L7 §CMP-APPROVALSTATUS-001) — لا "قيد الانتظار" في مكان و"معلّق" في آخر لنفس الحالة بالضبط.
 
-### CR-5.2 Tables (رؤوس الأعمدة)
-رأس عمود قصير ودقيق (Chapter 8 L5) — "الترتيب" لا "ترتيب اللاعب في هذه الفعالية بالتحديد".
+Use one consistent term for each state throughout the system:
+
+Pending / Approved / Rejected
+
+(Chapter 8 L7 §CMP-APPROVALSTATUS-001).
+
+Do not use “Pending” in one location and “On hold” in another for the exact same state.
+
+### CR-5.2 Tables — Column Headers
+
+Column headers should be short and precise (Chapter 8 L5):
+
+“Rank” rather than “Athlete ranking in this specific event.”
 
 ### CR-5.3 Numbers & Units
-الوحدة **MUST** ملحقة بوضوح أول ظهور على الأقل في كل جدول ("12.45 ثانية"، "6.20 متر") — يتكامل مع §CR-1.10.
+
+The unit **MUST** be clearly attached at least to the first occurrence in each table:
+
+* “12.45 seconds”
+* “6.20 meters”
+
+Integrates with §CR-1.10.
 
 ### CR-5.4 Athlete Results & Competition Metadata
-يتكامل مباشرة مع Level 8 (Sports Domain Terminology) — لا يُعاد شرحه هنا.
+
+Directly integrates with Level 8 (Sports Domain Terminology) — not redefined here.
 
 ### CR-5.5 Timestamp Language
-طوابع زمنية نسبية (Chapter 8 L5 §DD.11 Data Freshness "Last Updated") **MUST** بصيغة موحّدة: "قبل X دقيقة/ساعة/يوم" — **MUST** تتحول تلقائيًا لتاريخ مطلق (Chapter 19) بعد تجاوز 24 ساعة، لا "قبل 3 أيام" مستمرة إلى ما لا نهاية.
+
+Relative timestamps (Chapter 8 L5 §DD.11 Data Freshness “Last Updated”) **MUST** use a consistent format:
+
+“X minutes/hours/days ago.”
+
+After 24 hours, it **MUST** automatically transition to an absolute date (Chapter 19), rather than continuing indefinitely as “3 days ago.”
 
 ---
 
-## Level 6 — Notifications
+# Level 6 — Notifications
 
 ### CR-6.1 Toast / Snackbar Copy
-قصير جدًا (Chapter 8 L4) — يتبع §CR-2.7 لكن مُختصرًا لسطر واحد.
+
+Very short (Chapter 8 L4) — follows §CR-2.7 but condensed to a single line.
 
 ### CR-6.2 Email / SMS / Push / In-App Notifications
-كل قناة (Chapter 18 Notifications لاحقًا) **MUST** نفس المعنى الجوهري للحدث، بصياغة مكيَّفة لطول القناة (SMS أقصر من Email) — لا معلومة متناقضة بين القنوات لنفس الحدث.
+
+Every channel (Chapter 18 Notifications, forthcoming) **MUST** communicate the same core meaning of the event, with wording adapted to the channel’s length:
+
+SMS is shorter than Email.
+
+There **MUST NOT** be contradictory information between channels for the same event.
 
 ### CR-6.3 Notification Grouping Copy
-عند تجميع إشعارات متعددة (Chapter 8 L4 §FB.23 Rate Limiting — "12 تحديثًا جديدًا"): **MUST** الرقم دائمًا في الصياغة صراحة، لا "عدة تحديثات" مبهمة — يحافظ على شفافية الحجم الفعلي للمستخدم.
+
+When multiple notifications are grouped (Chapter 8 L4 §FB.23 Rate Limiting):
+
+“12 new updates”
+
+The number **MUST** always be explicitly stated rather than using vague wording such as “Several updates.”
+
+This preserves transparency about the actual volume for the user.
 
 ---
 
-## Level 7 — AI Content
+# Level 7 — AI Content
 
 ### CR-7.1 AI Disclosure
-أي محتوى مُولَّد أو مُقترَح بواسطة AI (Chapter 8 L1 §AI Badge، Chapter 16) **MUST** إشارة واضحة "اقتراح AI" — **MUST NOT** يظهر كمحتوى بشري دون تمييز (يطابق Chapter 0 Discovery §مبادئ حوكمة AI: الشفافية).
+
+Any content generated or suggested by AI (Chapter 8 L1 §AI Badge, Chapter 16) **MUST** carry a clear indicator such as:
+
+**“AI suggestion”**
+
+It **MUST NOT** appear as human-generated content without disclosure, matching Chapter 0 Discovery’s AI Governance principle of transparency.
 
 ### CR-7.2 AI Suggestions Copy
-صياغة اقتراح لا أمر ("هل تريد استخدام هذا العنوان المقترح؟" لا "العنوان هو...").
+
+Use suggestion language rather than commands:
+
+“Would you like to use this suggested headline?”
+
+rather than:
+
+“The headline is…”
 
 ### CR-7.3 Confidence Messages
-**MUST NOT** لغة مؤكِّدة زائدة عن دقة النموذج الفعلية ("قد يكون" لا "بالتأكيد") عند عدم توفر درجة ثقة رقمية.
+
+**MUST NOT** use language that conveys more certainty than the model’s actual accuracy supports:
+
+“May be” rather than “Definitely”
+
+when no numerical confidence score is available.
 
 ### CR-7.4 Explainability
-اقتراح AI مهم (تصنيف تلقائي، إلخ) **SHOULD** جملة قصيرة توضّح السبب ("يُقترح بناءً على محتوى مشابه سابق") حيث ممكن تقنيًا.
+
+An important AI suggestion (automatic classification, etc.) **SHOULD** include a short explanation of why it was suggested:
+
+“Suggested based on similar previous content.”
+
+where technically possible.
 
 ### CR-7.5 Human Review Required
-أي مسار يتطلب اعتماد بشري (Chapter 0 Discovery: Human-in-the-Loop إلزامي) **MUST** نص صريح ("بانتظار مراجعتك قبل النشر") لا افتراض ضمني بالموافقة.
+
+Any workflow requiring human approval (Chapter 0 Discovery: Human-in-the-Loop is mandatory) **MUST** explicitly state:
+
+“Awaiting your review before publishing.”
+
+Do not rely on implicit approval.
 
 ### CR-7.6 AI Error/Failure Copy
-فشل عملية AI (تعذّر توليد اقتراح، انتهت مهلة الطلب) **MUST NOT** يُعرض كخطأ نظام عام مخيف (§CR-2.7 القياسي) — **SHOULD** صياغة أهدأ تحديدًا تعكس طبيعة الميزة الاختيارية ("تعذّر إنشاء اقتراح الآن، يمكنك المتابعة يدويًا") — يوضّح أن الوظيفة الأساسية لم تتأثر، فقط الميزة المساعدة.
+
+Failure of an AI operation (unable to generate a suggestion, request timeout) **MUST NOT** be presented as a frightening generic system error (§CR-2.7 standard).
+
+It **SHOULD** use calmer wording specific to the optional nature of the feature:
+
+“Couldn’t generate a suggestion right now. You can continue manually.”
+
+This clarifies that the core functionality has not been affected; only the assistive feature is unavailable.
 
 ---
 
-## Level 8 — Sports Domain Terminology
+# Level 8 — Sports Domain Terminology
 
-### CR-8.1 Terminology Registry (يكمل §CR-1.7)
-سجل مصطلحات موحّد نهائي لكل مفهوم رياضي متكرر — **MUST** مرجعًا واحدًا يُستشار قبل كتابة أي نص جديد يخص:
-- أسماء الفعاليات الفرعية (سباقات، قفز، رمي، مشي)
-- أنواع النتائج (زمن، مسافة، نقاط)
-- أنواع الميداليات (ذهبية/فضية/برونزية — Chapter 8 L8 §SP.5)
-- حالات التأهل (Chapter 8 L8 §CMP-QUALIFICATIONSTATUS-001)
-- مصطلحات الأرقام القياسية (رقم قياسي وطني/شخصي — Chapter 8 L8 §SP.7)
-- مصطلحات الحكام (مستوى الرخصة، Discipline — Chapter 8 L8 §CMP-REFEREECARD-001)
-- مصطلحات المدربين والتسجيل الاتحادي (رقم القيد — Chapter 0 Discovery سؤال مفتوح، يُحسم لاحقًا لكن الصياغة موحَّدة بمجرد الحسم)
+### CR-8.1 Terminology Registry
 
-**قاعدة (MUST):** أي مصطلح رياضي جديد **MUST** يُضاف لهذا السجل عبر نفس مسار Content Rule Proposal (يوازي Chapter 3 §3.5) قبل استخدامه في أي مكوّن — لا صياغة حرة لحظية حتى لو بدت بديهية للكاتب.
+Complements §CR-1.7.
+
+A final standardized terminology registry for every recurring sports concept **MUST** be the single reference consulted before writing any new text related to:
+
+* Sub-event names (races, jumps, throws, race walking)
+* Result types (time, distance, points)
+* Medal types (Gold/Silver/Bronze — Chapter 8 L8 §SP.5)
+* Qualification statuses (Chapter 8 L8 §CMP-QUALIFICATIONSTATUS-001)
+* Record terminology (National Record / Personal Record — Chapter 8 L8 §SP.7)
+* Officials’ terminology (license level, Discipline — Chapter 8 L8 §CMP-REFEREECARD-001)
+* Coaches and federation registration terminology (registration number — Chapter 0 Discovery open question; to be finalized later, but wording becomes standardized once finalized)
+
+**Rule (MUST):** Any new sports term **MUST** be added to this registry through the same Content Rule Proposal path (parallel to Chapter 3 §3.5) before being used in any component.
+
+No ad hoc wording is permitted, even if it appears obvious to the writer.
 
 ### CR-8.2 Abbreviation Policy
-اختصارات رياضية شائعة (م للمتر، ث للثانية) **MUST** سياستها موحّدة عبر السجل: **MUST NOT** اختصار في أول ظهور داخل أي جدول/صفحة (يُكتب "متر" كاملة أول مرة)، **MAY** اختصار في الاستخدامات المتكررة اللاحقة داخل نفس الجدول لتوفير المساحة (Chapter 8 L5 كثافة العرض، §DD.3). القرار لكل اختصار يُسجَّل في §CR-8.1 لا يُترك لتقدير كل جدول.
+
+Common sports abbreviations (m for meter, s for second) **MUST** follow a consistent policy throughout the registry:
+
+**MUST NOT** abbreviate on first occurrence within any table/page.
+
+Write “meter” in full the first time.
+
+**MAY** abbreviate subsequent occurrences within the same table to save space (Chapter 8 L5 display density, §DD.3).
+
+The decision for each abbreviation **MUST** be recorded in §CR-8.1 rather than left to the discretion of each table.
 
 ---
 
-## Content QA Checklist
-☐ هل كل نص يستهلك Content Rule من هنا لا صياغة حرة؟
-☐ هل نفس الحالة (نجاح/خطأ/حذف) تستخدم نفس الصياغة المعتمدة سابقًا في مكان آخر بالمنصة؟
-☐ هل الرسالة موجودة بالعربي والإنجليزي معًا؟
-☐ هل أي مصطلح رياضي جديد أُضيف لـ§CR-8.1 قبل استخدامه؟
-☐ هل محتوى AI (إن وُجد) يحمل إشارة إفصاح (§CR-7.1)؟
-☐ هل حقل بلا قيمة يعرض نصًا بديلًا محدَّدًا لا فراغًا صامتًا (§CR-2.8)؟
+# Content QA Checklist
 
-## Do & Don't (عام)
-**Do:** استشر Terminology Registry (§CR-1.7/CR-8.1) قبل كتابة أي نص جديد · اتبع نمط §CR-2.7 لكل رسالة حالة
-**Don't:** لا نص Hardcoded داخل منطق مكوّن (ADR-0021) · لا صياغتان مختلفتان لنفس الحالة بالضبط
+☐ Does every piece of text consume a Content Rule from this chapter rather than using ad hoc wording?
 
-## Success Metrics
-- 0 نص Hardcoded داخل منطق أي مكوّن (Chapter 8، يُفحص في مراجعات الكود)
-- 100% من الرسائل المتكررة (حفظ/خطأ/حذف) موحّدة الصياغة عبر كل المنصة
-- 100% من محتوى AI (Level 7) يحمل إشارة إفصاح واضحة
-- 0 مصطلح رياضي له أكثر من صياغة معتمدة واحدة في السجل (§CR-8.1)
-- 0 حقل يعرض فراغًا صامتًا دون نص بديل محدَّد (§CR-2.8)
-- 100% من Content QA Checklist مُطبَّق قبل أي إصدار محتوى جديد
+☐ Does the same state (success/error/delete) use the same approved wording already established elsewhere on the platform?
 
-## References
-**Normative:** Chapter 0 (§0.6) · Chapter 6 (§6.5 رسائل الأخطاء) · Chapter 8 (كل المستويات)
-**Implementation:** i18n libraries (مرجع محايد، Chapter 21 يوثّق التفاصيل التقنية)
-**Informative:** Plain Language Guidelines (مبادئ عامة، ليست مصدر قواعد مباشر)
+☐ Does the message exist in both Arabic and English?
 
-## Related Chapters
-Chapter 0 · Chapter 4 · Chapter 6 · Chapter 8 (كل المستويات يشيرون هنا رجعيًا) · Chapter 11 (UX Patterns) · Chapter 13 (CMS) · Chapter 16 (AI) · Chapter 19 (Calendar)
+☐ Has any new sports term been added to §CR-8.1 before being used?
+
+☐ Does AI-generated content, if present, carry a disclosure indicator (§CR-7.1)?
+
+☐ Does a field with no value display a defined fallback rather than silently appearing empty (§CR-2.8)?
 
 ---
 
-*نهاية Chapter 9 — Content Governance Framework (8 مستويات + ADR-0021). الفصل التالي: Chapter 10 — Sports-Specific Components (توسيع تفصيلي لـChapter 8 L8).*
+# Do & Don’t — General
+
+**Do:**
+
+Consult the Terminology Registry (§CR-1.7/CR-8.1) before writing any new text · Follow the §CR-2.7 pattern for every status message.
+
+**Don’t:**
+
+Do not hardcode text inside component logic (ADR-0021) · Do not use two different phrasings for exactly the same state.
+
+---
+
+# Success Metrics
+
+* **0** hardcoded text strings inside the logic of any component (Chapter 8, verified through code reviews)
+* **100%** of recurring messages (save/error/delete) use consistent wording across the entire platform
+* **100%** of AI-generated content (Level 7) carries a clear disclosure indicator
+* **0** sports terms have more than one approved phrasing in the registry (§CR-8.1)
+* **0** fields display silently empty without a defined fallback (§CR-2.8)
+* **100%** of the Content QA Checklist is applied before any new content release
+
+---
+
+# References
+
+**Normative:** Chapter 0 (§0.6) · Chapter 6 (§6.5 Error Messages) · Chapter 8 (all levels)
+
+**Implementation:** i18n libraries (implementation-neutral reference; Chapter 21 documents the technical details)
+
+**Informative:** Plain Language Guidelines (general principles, not a direct source of rules)
+
+---
+
+# Related Chapters
+
+Chapter 0 · Chapter 4 · Chapter 6 · Chapter 8 (all levels refer back to this chapter) · Chapter 11 (UX Patterns) · Chapter 13 (CMS) · Chapter 16 (AI) · Chapter 19 (Calendar)
+
+---
+
+*End of Chapter 9 — Content Governance Framework (8 levels + ADR-0021). Next chapter: Chapter 10 — Sports-Specific Components (detailed expansion of Chapter 8 L8).*

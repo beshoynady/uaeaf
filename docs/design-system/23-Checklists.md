@@ -1,102 +1,169 @@
 # Chapter 23 — Checklists
 
 **Document:** UAEAF Enterprise Design System Framework v1.0.0
-**Chapter Status:** Accepted | **Last Updated:** هذه الجلسة | **Document Owner:** مالك المشروع
+**Chapter Status:** Accepted | **Last Updated:** This Session | **Document Owner:** Project Owner
 
-> **Status: Frozen (Baseline v1.0).** أي تغيير بعد التجميد **MUST** يُدخَل حصريًا عبر ADR جديد أو بند Backlog موثَّق.
+> **Status: Frozen (Baseline v1.0).** Any change after the freeze **MUST** be introduced exclusively through a new ADR or a documented Backlog item.
 
 ## Depends On / Used By
-| Depends On | Used By |
-|---|---|
-| كل الفصول 1-21 (مصدر كل بند) | فريق التطوير/المراجعة مباشرة قبل أي إصدار |
+
+| Depends On                                         | Used By                                               |
+| -------------------------------------------------- | ----------------------------------------------------- |
+| All Chapters 1–21 (source of every checklist item) | Development / Review Team directly before any release |
 
 ## Scope
-**يغطي:** 8 قوائم مراجعة عملية جاهزة للاستخدام المباشر (UX، UI، Accessibility، SEO، Performance، Responsive، Design Review، Dev Handoff).
-**لا يغطي:** أي قاعدة جديدة — كل بند هنا **استشهاد** ببند موجود بالفعل في فصله المصدر.
+
+**Covers:** 8 practical checklists ready for direct use (UX, UI, Accessibility, SEO, Performance, Responsive, Design Review, Dev Handoff).
+
+**Does not cover:** Any new rule — every item here is a **reference** to an existing rule in its source chapter.
 
 ## Purpose
-الفصول 1-22 وثّقت القواعد؛ هذا الفصل يجمعها في قوائم عملية قابلة للاستخدام مباشرة أثناء المراجعة، دون الحاجة لتصفح 22 فصلاً منفصلاً وقت الحاجة الفعلية.
+
+Chapters 1–22 document the rules; this chapter consolidates them into practical checklists that can be used directly during review, without needing to browse through 22 separate chapters when an actual review is required.
 
 ---
 
 ## ADR-0035: Checklist Consolidation Exception
 
-| الحقل | التفاصيل |
-|---|---|
-| **Status** | Accepted |
-| **Authority** | Product Decision |
-| **Context** | ADR-0013 (Chapter 8) يمنع تكرار القواعد عبر الفصول — لكن قائمة مراجعة عملية تحتاج كل بنودها في مكان واحد وقت الاستخدام الفعلي، لا تنقّلاً بين 22 فصلاً أثناء مراجعة عاجلة قبل إصدار |
-| **Decision** | هذا الفصل وحده **استثناء موثَّق** من منع التكرار العام: **MUST** كل بند هنا يحمل استشهادًا صريحًا بمصدره (رقم الفصل والقسم) — إعادة الصياغة هنا **MUST NOT** تُعتبر تعريفًا جديدًا للقاعدة، فقط تذكيرًا عمليًا بها. عند أي تعارض بين نص هنا ونص الفصل المصدر، **المصدر هو المرجع الملزم دائمًا**، لا هذه القائمة |
-| **Alternatives Considered** | الاكتفاء بروابط لكل فصل بلا نص فعلي هنا — رُفض لأنه يفقد الفصل قيمته العملية كأداة مراجعة سريعة |
-| **Why This Decision** | يوازن بين الحاجة العملية (سرعة المراجعة) والانضباط المعماري (مصدر حقيقة واحد) عبر الاستشهاد الصريح |
-| **Risks** | نسخة هنا قد "تتقادم" لو تغيّر الفصل المصدر ولم يُحدَّث هذا الفصل بالتوازي. Mitigation: Chapter 22 §5 Review Cadence يشمل هذا الفصل تحديدًا كأولوية مراجعة |
-| **Consequences** | كل بند أدناه **MUST** مرجعه مذكورًا |
+| Field                       | Details                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Status**                  | Accepted                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| **Authority**               | Product Decision                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| **Context**                 | ADR-0013 (Chapter 8) prohibits duplicating rules across chapters — however, a practical checklist requires all its items to be available in one place during actual use, rather than navigating across 22 chapters during an urgent pre-release review.                                                                                                                                                                                                    |
+| **Decision**                | This chapter is the **only documented exception** to the general prohibition against duplication: **MUST** every item here carry an explicit citation to its source (chapter number and section) — any restatement here **MUST NOT** be considered a new definition of the rule, but only a practical reminder. If there is any conflict between the text here and the source chapter, **the source is always the binding reference**, not this checklist. |
+| **Alternatives Considered** | Providing only links to each chapter without the actual text — rejected because this would undermine the chapter's practical value as a quick-review tool.                                                                                                                                                                                                                                                                                                 |
+| **Why This Decision**       | Balances practical needs (review speed) with architectural discipline (single source of truth) through explicit source citations.                                                                                                                                                                                                                                                                                                                          |
+| **Risks**                   | The version here may become outdated if the source chapter changes and this chapter is not updated in parallel. **Mitigation:** Chapter 22 §5 Review Cadence explicitly includes this chapter as a review priority.                                                                                                                                                                                                                                        |
+| **Consequences**            | Every item below **MUST** have its source reference identified.                                                                                                                                                                                                                                                                                                                                                                                            |
 
 ---
 
 ## 23.1 UX Checklist
-☐ هل الشاشة تتبع Pattern موثَّق (Chapter 11) بدل تصميم حر؟
-☐ هل أقل مستوى تصعيد تغذية راجعة كافٍ استُخدم (Chapter 8 L4 ADR-0016)؟
-☐ هل فحص الصلاحية سبق ظهور المحتوى (Chapter 11 §PT-PERMISSION-001)؟
-☐ هل حالة Empty/Loading/Error موثَّقة لكل عنصر بيانات (Chapter 8 L5 §DD.10)؟
+
+☐ Does the screen follow a documented Pattern (Chapter 11) rather than a free-form design?
+
+☐ Has the lowest sufficient feedback escalation level been used (Chapter 8 L4 ADR-0016)?
+
+☐ Has permission validation occurred before content is displayed (Chapter 11 §PT-PERMISSION-001)?
+
+☐ Are Empty / Loading / Error states documented for every data-bearing element (Chapter 8 L5 §DD.10)?
+
+---
 
 ## 23.2 UI Checklist
-☐ هل كل قيمة بصرية من توكن معرَّف، لا قيمة حرة (Chapter 3 §3.10)؟
-☐ هل الكثافة (Comfortable/Compact) مطابقة لطبقة التجربة الصحيحة (Chapter 8 L1 §Visual Density)؟
-☐ هل زر Danger محجوز حصريًا للحذف/الإلغاء (Chapter 1 ADR-0004)؟
-☐ هل الشعار مستخدَم بصيغته الصحيحة حسب الخلفية (Chapter 1 §1.5)؟
 
-## 23.3 Accessibility Checklist (مرجعي من Chapter 6 §6.12)
-☐ تباين كل نص ≥4.5:1 (أو ≥3:1 للنص الكبير)؟
-☐ كل وظيفة تعمل بالكيبورد وحده؟
-☐ Focus Trap يعمل في كل Modal/Drawer؟
-☐ كل صورة محتوى لها Alt Text وصفي؟
-☐ تم اختبار الصفحة فعليًا بقارئ شاشة واحد على الأقل؟
+☐ Is every visual value derived from a defined token rather than a free-form value (Chapter 3 §3.10)?
 
-## 23.4 SEO Checklist (مرجعي من Chapter 14/15)
-☐ Structured Data مطابقة تمامًا للمحتوى المرئي (Chapter 14 §4، Chapter 15 §3)؟
-☐ Metadata كاملة (Chapter 13 §12)؟
-☐ الصفحة تبدأ بحقيقة جوهرية واضحة (Chapter 15 §1)؟
-☐ hreflang صحيح للنسختين اللغويتين (Chapter 14 §10)؟
+☐ Does the density (Comfortable/Compact) match the correct experience layer (Chapter 8 L1 §Visual Density)?
 
-## 23.5 Performance Checklist (مرجعي من Chapter 21 §21.7)
-☐ LCP < 2.5s، INP < 200ms، CLS < 0.1؟
-☐ Lazy Loading مطبَّق لكل وسائط تحت الطية (Chapter 8 L6 §M.5)؟
-☐ Virtualization مطبَّقة للجداول الكبيرة (Chapter 8 L5 §DD.12)؟
+☐ Is the Danger button reserved exclusively for deletion/cancellation (Chapter 1 ADR-0004)?
 
-## 23.6 Responsive Checklist (مرجعي من Chapter 5 §5.10.3)
-☐ لا Overflow أفقي غير مقصود على أي Breakpoint؟
-☐ الشبكة لا تنكسر عند أي عرض شاشة؟
-☐ أهداف اللمس ≥44px على الشاشات الصغيرة؟
-☐ Safe Area مطبَّقة على العناصر الثابتة؟
+☐ Is the logo used in the correct form according to the background (Chapter 1 §1.5)?
+
+---
+
+## 23.3 Accessibility Checklist
+
+**Reference: Chapter 6 §6.12**
+
+☐ Does every text element have a contrast ratio of ≥4.5:1 (or ≥3:1 for large text)?
+
+☐ Can every function be operated using the keyboard alone?
+
+☐ Does Focus Trap work correctly in every Modal/Drawer?
+
+☐ Does every content image have descriptive Alt Text?
+
+☐ Has the page been actually tested with at least one screen reader?
+
+---
+
+## 23.4 SEO Checklist
+
+**Reference: Chapter 14 / Chapter 15**
+
+☐ Does the Structured Data exactly match the visible content (Chapter 14 §4, Chapter 15 §3)?
+
+☐ Is the Metadata complete (Chapter 13 §12)?
+
+☐ Does the page begin with a clear, essential fact (Chapter 15 §1)?
+
+☐ Is `hreflang` correctly implemented for both language versions (Chapter 14 §10)?
+
+---
+
+## 23.5 Performance Checklist
+
+**Reference: Chapter 21 §21.7**
+
+☐ LCP < 2.5s, INP < 200ms, CLS < 0.1?
+
+☐ Is Lazy Loading applied to all below-the-fold media (Chapter 8 L6 §M.5)?
+
+☐ Is Virtualization applied to large tables (Chapter 8 L5 §DD.12)?
+
+---
+
+## 23.6 Responsive Checklist
+
+**Reference: Chapter 5 §5.10.3**
+
+☐ Is there no unintended horizontal overflow at any breakpoint?
+
+☐ Does the grid remain intact at every screen width?
+
+☐ Are touch targets ≥44px on small screens?
+
+☐ Is Safe Area applied to fixed-position elements?
+
+---
 
 ## 23.7 Design Review Checklist
-☐ هل التصميم يطابق المكوّن الموثَّق في Chapter 8 حرفيًا (لا انحراف غير موثَّق)؟
-☐ هل أي مكوّن/نمط/محتوى جديد مرّ بـArchitecture Review (Chapter 8 ADR-0013)؟
-☐ هل صفر حالات Logo Misuse (Chapter 1 §1.4)؟
+
+☐ Does the design match the documented component in Chapter 8 exactly, with no undocumented deviation?
+
+☐ Has any new component / pattern / content gone through Architecture Review (Chapter 8 ADR-0013)?
+
+☐ Are there zero instances of Logo Misuse (Chapter 1 §1.4)?
+
+---
 
 ## 23.8 Development Handoff Checklist
-☐ هل كل توكن مستهلك من Semantic Layer لا Primitive مباشرة (Chapter 7 §7.7)؟
-☐ هل المكوّن يحمل Storybook ID مطابق (Chapter 8 §G.7)؟
-☐ هل `data-testid`/`data-component` موجودان (Chapter 8 §G.5)؟
-☐ هل التوثيق (Component API Contract) مكتمل قبل التسليم (Chapter 8 L1 §Button نموذجًا)؟
+
+☐ Is every token consumed from the Semantic Layer rather than directly from the Primitive Layer (Chapter 7 §7.7)?
+
+☐ Does the component have a matching Storybook ID (Chapter 8 §G.7)?
+
+☐ Are `data-testid` / `data-component` attributes present (Chapter 8 §G.5)?
+
+☐ Is the documentation (Component API Contract) complete before handoff (Chapter 8 §L1 — Button as an example)?
 
 ---
 
 ## Do & Don't
-**Do:** ارجع للفصل المصدر عند أي شك في تفسير بند هنا (ADR-0035) · استخدم هذه القوائم قبل كل إصدار
-**Don't:** لا تعتبر نص هذا الفصل تعريفًا نهائيًا للقاعدة عند التعارض مع المصدر
+
+**Do:**
+
+* Refer back to the source chapter whenever there is any uncertainty about the interpretation of an item in this checklist (ADR-0035).
+* Use these checklists before every release.
+
+**Don't:**
+
+* Do not treat the text of this chapter as the definitive definition of a rule when it conflicts with the source chapter.
 
 ## Success Metrics
-- 100% من البنود هنا تحمل استشهادًا صريحًا بمصدرها
-- استخدام فعلي لكل قائمة قبل كل إصدار (Chapter 22 §5 Review Cadence)
+
+* **100%** of the items in this chapter carry an explicit reference to their source.
+* Every checklist is actually used before each release (Chapter 22 §5 Review Cadence).
 
 ## References
-**Normative:** كل الفصول 1-21 (المصدر الفعلي لكل بند)
+
+**Normative:** All Chapters 1–21 (the actual source of every checklist item).
 
 ## Related Chapters
-كل الفصول 1-21
+
+All Chapters 1–21
 
 ---
 
-*نهاية Chapter 23. الفصل التالي: Chapter 24 — Known Constraints.*
+*End of Chapter 23. Next Chapter: Chapter 24 — Known Constraints.*

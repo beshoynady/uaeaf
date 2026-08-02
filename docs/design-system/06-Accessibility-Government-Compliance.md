@@ -1,182 +1,203 @@
 # Chapter 6 — UAE Digital Accessibility & Government Compliance
 
 **Document:** UAEAF Enterprise Design System Framework v1.0.0
-**Chapter Status:** Accepted | **Last Updated:** هذه الجلسة | **Document Owner:** مالك المشروع
+**Chapter Status:** Accepted | **Last Updated:** This Session | **Document Owner:** Project Owner
 
 ## Depends On / Used By
-| Depends On | Used By |
-|---|---|
-| Chapter 1 (§1.9 تباين الألوان) · Chapter 2 (PR-003) · Chapter 4 (§4.10) · Chapter 5 (§5.8, §5.10.1) | Chapter 7 (Semantic A11y Tokens) · Chapter 8/10 (Components) · Chapter 23.3 (Accessibility Checklist) |
+
+| Depends On                                                                                           | Used By                                                                                               |
+| ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Chapter 1 (§1.9 Color Contrast) · Chapter 2 (PR-003) · Chapter 4 (§4.10) · Chapter 5 (§5.8, §5.10.1) | Chapter 7 (Semantic A11y Tokens) · Chapter 8/10 (Components) · Chapter 23.3 (Accessibility Checklist) |
 
 ## Scope
-**يغطي:** استراتيجية الوصول الكاملة (WCAG 2.2 AA + التوافق الوطني الإماراتي)، مبادئ POUR، قواعد اللون/الكيبورد/قارئ الشاشة/النماذج/الوسائط، خط أنابيب الاختبار، ميزانية الجودة، مصفوفة الامتثال.
-**لا يغطي:** تطبيق كل قاعدة داخل مكوّن محدد بالتفصيل (→ Chapter 8)، تصميم لوحة إعدادات الوصول التفصيلي (يُوثَّق هنا كقرار، يُنفَّذ في Chapter 8).
+
+**Covers:** Complete accessibility strategy (WCAG 2.2 AA + UAE national compliance), POUR principles, color/keyboard/screen reader/forms/media rules, testing pipeline, quality budget, and compliance matrix.
+**Does not cover:** Detailed implementation of every rule inside a specific component (→ Chapter 8), or detailed design of the accessibility settings panel (documented here as a decision, implemented in Chapter 8).
 
 ## Definitions
-| المصطلح | التعريف |
-|---|---|
-| **POUR** | إطار WCAG الأساسي: Perceivable (قابل للإدراك)، Operable (قابل للتشغيل)، Understandable (قابل للفهم)، Robust (متين تقنيًا) |
-| **Focus Trap** | حصر التنقل بالـTab داخل عنصر تراكبي (Modal) لمنع الهروب لمحتوى خلفه |
-| **Live Region** | منطقة HTML تُعلن تحديثاتها تلقائيًا لقارئ الشاشة دون تحريك تركيز المستخدم |
-| **Accessible Name** | النص الذي يقرأه قارئ الشاشة لعنصر تفاعلي (قد يختلف عن النص المرئي) |
+
+| Term                | Definition                                                                                                           |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **POUR**            | The core WCAG framework: Perceivable, Operable, Understandable, Robust                                               |
+| **Focus Trap**      | Restricting Tab navigation within an overlay element (Modal) to prevent focus from escaping to the content behind it |
+| **Live Region**     | An HTML region that automatically announces its updates to a screen reader without moving the user's focus           |
+| **Accessible Name** | The text announced by a screen reader for an interactive element (which may differ from its visible text)            |
 
 ## Purpose
-هذا الفصل يحوّل PR-003 (Chapter 2) من مبدأ عام إلى **التزامات قانونية وهندسية قابلة للاختبار**. هو المرجع الوحيد لكل قاعدة وصول — الفصول اللاحقة تشير إليه ولا تكرره.
+
+This chapter transforms PR-003 (Chapter 2) from a general principle into **testable legal and engineering obligations**. It is the sole reference for all accessibility rules — subsequent chapters reference it rather than repeating it.
 
 ---
 
 ## ADR-0010: Accessibility Strategy
 
-| الحقل | التفاصيل |
-|---|---|
-| **Status** | Accepted |
-| **Authority** | International Standard + Product Decision |
-| **Context** | المنصة رسمية وطنية (Chapter 0)، تخدم جمهورًا عامًا واسعًا يشمل كبار السن وأصحاب الهمم، وتخضع لتوجهات TDRA (Discovery Phase) |
-| **Decision** | **Accessibility by Default** (PR-003) كمبدأ غير قابل للتفاوض. الامتثال لـ**WCAG 2.2 Level AA** كحد أدنى إلزامي على كل المنصة. التوافق مع توجهات **UAE Design System/TDRA** حيث مناسب (Chapter 0 Discovery — نموذج 3 مستويات: دولي إلزامي / وطني / تدريجي اختياري). أي استثناء عن أي قاعدة هنا **MUST** يُوثَّق كـADR منفصل يشرح السبب والتعويض البديل |
-| **Alternatives Considered** | استهداف WCAG AAA بالكامل — رُفض (Chapter 0 Discovery) لأنه يقيّد الهوية البصرية في حالات معينة دون مبرر كافٍ لمنصة عامة. الاكتفاء بـLighthouse Score فقط — رُفض لأنه يغطي ~30-40% فقط من معايير الوصول الحقيقية |
-| **Why This Decision** | AA هو المعيار الذي تعتمده أغلب الحكومات والمؤسسات الرياضية الدولية (World Athletics، IOC)، ومتوافق مع توجه TDRA الحالي (WCAG 2.1/2.2 AA) |
-| **Risks** | فريق تطوير مستقبلي قد "يوفّر وقتًا" بتجاهل قاعدة هنا تحت ضغط تسليم. Mitigation: §6.10 Testing Pipeline يرفض أي Build يخالف §6.11 Accessibility Budget آليًا، لا يعتمد على انضباط بشري فقط |
-| **Consequences** | كل مكوّن (Chapter 8) **MUST** يجتاز §6.12 QA Checklist قبل الدمج في الإنتاج |
+| Field                       | Details                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Status**                  | Accepted                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| **Authority**               | International Standard + Product Decision                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| **Context**                 | The platform is a national official platform (Chapter 0), serving a broad public audience including older adults and People of Determination, and is subject to TDRA directions (Discovery Phase)                                                                                                                                                                                                                                                                                |
+| **Decision**                | **Accessibility by Default** (PR-003) as a non-negotiable principle. Compliance with **WCAG 2.2 Level AA** as the mandatory minimum across the entire platform. Alignment with **UAE Design System/TDRA** directions where applicable (Chapter 0 Discovery — three-level model: mandatory international / national / progressive optional). Any exception to a rule here **MUST** be documented as a separate ADR explaining the reason and the alternative compensating measure |
+| **Alternatives Considered** | Targeting full WCAG AAA — rejected (Chapter 0 Discovery) because it constrains the visual identity in certain cases without sufficient justification for a public platform. Relying solely on Lighthouse Score — rejected because it covers only ~30–40% of actual accessibility criteria                                                                                                                                                                                        |
+| **Why This Decision**       | AA is the standard adopted by most governments and international sports organizations (World Athletics, IOC), and is aligned with current TDRA direction (WCAG 2.1/2.2 AA)                                                                                                                                                                                                                                                                                                       |
+| **Risks**                   | A future development team may "save time" by ignoring a rule under delivery pressure. Mitigation: §6.10 Testing Pipeline automatically rejects any Build violating §6.11 Accessibility Budget; it does not rely solely on human discipline                                                                                                                                                                                                                                       |
+| **Consequences**            | Every component (Chapter 8) **MUST** pass §6.12 QA Checklist before being merged into production                                                                                                                                                                                                                                                                                                                                                                                 |
 
 ---
 
 ## 6.1 Accessibility Principles (POUR) ↔ Chapter 2 Principles
 
-| مبدأ WCAG | المعنى | مرتبط بـ |
-|---|---|---|
-| **Perceivable** | المحتوى قابل للإدراك بأي حاسة (بصر/سمع/لمس) | PR-001 (Clarity)، PR-004 (Content First) |
-| **Operable** | كل وظيفة قابلة للتشغيل بالكيبورد وحده | PR-003 |
-| **Understandable** | السلوك واللغة متوقعان وواضحان | PR-004، Chapter 9 (Content Design) |
-| **Robust** | متوافق مع تقنيات مساعدة حالية ومستقبلية (Semantic HTML) | PR-008 (Built to Scale) |
+| WCAG Principle     | Meaning                                                                   | Related To                               |
+| ------------------ | ------------------------------------------------------------------------- | ---------------------------------------- |
+| **Perceivable**    | Content can be perceived through any sense (sight/hearing/touch)          | PR-001 (Clarity), PR-004 (Content First) |
+| **Operable**       | Every function can be operated using the keyboard alone                   | PR-003                                   |
+| **Understandable** | Behavior and language are predictable and clear                           | PR-004, Chapter 9 (Content Design)       |
+| **Robust**         | Compatible with current and future assistive technologies (Semantic HTML) | PR-008 (Built to Scale)                  |
 
 ## 6.2 Color & Contrast
-- نص عادي: **MUST** تباين ≥4.5:1 (WCAG 1.4.3)
-- نص كبير (≥24px أو ≥19px Bold): **MUST** تباين ≥3:1
-- عناصر غير نصية (حدود Input، أيقونات وظيفية): **MUST** تباين ≥3:1 (Non-text Contrast، WCAG 1.4.11)
-- Focus Indicators: **MUST** تباين ≥3:1 مع الخلفية المجاورة
-- **MUST NOT** الاعتماد على اللون وحده للتمييز (حالة خطأ/نجاح **MUST** تُرفق بأيقونة أو نص، لا لون فقط — يخدم أيضًا Chapter 1 §1.9)
+
+* Normal text: **MUST** have a contrast ratio of ≥4.5:1 (WCAG 1.4.3)
+* Large text (≥24px or ≥19px Bold): **MUST** have a contrast ratio of ≥3:1
+* Non-text elements (Input borders, functional icons): **MUST** have a contrast ratio of ≥3:1 (Non-text Contrast, WCAG 1.4.11)
+* Focus Indicators: **MUST** have a contrast ratio of ≥3:1 against the adjacent background
+* **MUST NOT** rely on color alone for differentiation (Error/Success states **MUST** be accompanied by an icon or text, not color alone — also supporting Chapter 1 §1.9)
 
 ## 6.3 Keyboard Accessibility
-| القاعدة | التفصيل |
-|---|---|
-| Tab Order | **MUST** يتبع الترتيب البصري المنطقي (يمين→يسار في RTL) دون `tabindex` موجب يدوي |
-| Focus Trap | **MUST** في كل Modal/Drawer (Chapter 8) — Tab لا يهرب خارج العنصر التراكبي حتى الإغلاق |
-| Skip Links | **MUST** رابط "تخطي إلى المحتوى الرئيسي" أول عنصر قابل للتركيز في كل صفحة |
-| Escape Behavior | **MUST** مفتاح `Esc` يُغلق أي Modal/Drawer/Dropdown مفتوح |
-| Logical Navigation | **MUST** لا عنصر تفاعلي "مخفي" عن الكيبورد بينما ظاهر بصريًا |
+
+| Rule               | Detail                                                                                                               |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| Tab Order          | **MUST** follow the logical visual order (right-to-left in RTL) without manually assigned positive `tabindex` values |
+| Focus Trap         | **MUST** be implemented in every Modal/Drawer (Chapter 8) — Tab focus must not escape the overlay until it is closed |
+| Skip Links         | **MUST** be the first focusable element on every page, providing a "Skip to main content" link                       |
+| Escape Behavior    | **MUST** allow the `Esc` key to close any open Modal/Drawer/Dropdown                                                 |
+| Logical Navigation | **MUST** ensure no interactive element is visually visible while being hidden from keyboard navigation               |
 
 ## 6.4 Screen Reader Rules
-- Semantic HTML: **MUST** استخدام العناصر الصحيحة (`<button>` لا `<div onClick>`، `<nav>`, `<main>`, `<article>`) قبل أي حل بـARIA
-- ARIA: **MUST NOT** يُستخدم إلا عند غياب بديل HTML دلالي (قاعدة W3C الذهبية: "No ARIA is better than Bad ARIA")
-- Landmark Regions: **MUST** كل صفحة تحتوي `<header>`, `<nav>`, `<main>`, `<footer>` بوضوح
-- Live Regions: **MUST** لتحديثات ديناميكية مهمة (نتيجة مباشرة، رسالة Toast) عبر `aria-live="polite"` (أو `assertive` للأخطاء الحرجة فقط)
-- Accessible Names: **MUST** لكل عنصر تفاعلي بلا نص مرئي كافٍ (أيقونة زر) عبر `aria-label` واضح
+
+* Semantic HTML: **MUST** use the correct elements (`<button>` instead of `<div onClick>`, `<nav>`, `<main>`, `<article>`) before using any ARIA solution
+* ARIA: **MUST NOT** be used when a semantic HTML alternative exists (W3C golden rule: "No ARIA is better than Bad ARIA")
+* Landmark Regions: **MUST** clearly define `<header>`, `<nav>`, `<main>`, and `<footer>` on every page
+* Live Regions: **MUST** be used for important dynamic updates (live results, Toast messages) through `aria-live="polite"` (or `assertive` for critical errors only)
+* Accessible Names: **MUST** be provided for every interactive element without sufficient visible text (such as an icon-only button) through a clear `aria-label`
 
 ## 6.5 Forms Accessibility
-| القاعدة | التفصيل |
-|---|---|
-| Labels | **MUST** كل حقل له `<label>` مرتبط فعليًا (لا Placeholder كبديل للـLabel) |
-| Required Fields | **MUST** تُعلَّم بصريًا ونصيًا وبـ`aria-required` معًا |
-| Error Messages | **MUST** وصفية وقابلة للربط بالحقل عبر `aria-describedby` (يتوافق مع Chapter 9 Microcopy) |
-| Validation | **SHOULD** تحدث عند `blur` لا أثناء الكتابة (يمنع إزعاج مستخدم قارئ الشاشة) |
-| Autocomplete | **SHOULD** سمة `autocomplete` معيارية للحقول الشائعة (الاسم، البريد، الهاتف) |
-| Input Purpose | **SHOULD** توضيح الغرض من الحقل ببيانات وصفية حيثما أمكن (WCAG 1.3.5) |
 
-## 6.6 Motion Accessibility (يرتبط بـChapter 5)
-راجع Chapter 5 §5.8 (Reduced Motion) للتفاصيل التقنية الكاملة. هنا إضافة قانونية: **MUST NOT** أي حركة تومض أكثر من 3 مرات في الثانية (WCAG 2.3.1 — يمنع نوبات الصرع الضوئية) — قيد مطلق لا استثناء له حتى بموافقة تصميمية.
+| Rule            | Detail                                                                                                                               |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Labels          | **MUST** have a `<label>` properly associated with every field (Placeholder is not a substitute for a Label)                         |
+| Required Fields | **MUST** be indicated visually, textually, and through `aria-required`                                                               |
+| Error Messages  | **MUST** be descriptive and programmatically associated with the field through `aria-describedby` (aligned with Chapter 9 Microcopy) |
+| Validation      | **SHOULD** occur on `blur`, not while typing (prevents disruption for screen reader users)                                           |
+| Autocomplete    | **SHOULD** use the standard `autocomplete` attribute for common fields (name, email, phone)                                          |
+| Input Purpose   | **SHOULD** clarify the purpose of the field through metadata where possible (WCAG 1.3.5)                                             |
+
+## 6.6 Motion Accessibility (related to Chapter 5)
+
+Refer to Chapter 5 §5.8 (Reduced Motion) for the complete technical details. Additional legal requirement here: **MUST NOT** allow any animation to flash more than 3 times per second (WCAG 2.3.1 — prevents photosensitive seizures) — an absolute restriction with no exceptions, even with design approval.
 
 ## 6.7 Responsive Accessibility
-- Zoom 200%: **MUST** يبقى المحتوى كاملاً وقابلاً للاستخدام دون فقدان وظيفة أو تراكب نص (WCAG 1.4.4)
-- Reflow: **MUST** لا Horizontal Scroll عند عرض 320px (WCAG 1.4.10)
-- Touch Targets: **MUST** ≥44×44px (يتوافق مع Chapter 0 Discovery)
-- Orientation: **MUST NOT** تقييد الاستخدام باتجاه واحد فقط (عمودي/أفقي) إلا لضرورة وظيفية موثّقة
+
+* Zoom 200%: **MUST** keep all content complete and usable without loss of functionality or text overlap (WCAG 1.4.4)
+* Reflow: **MUST NOT** introduce horizontal scrolling at a width of 320px (WCAG 1.4.10)
+* Touch Targets: **MUST** be ≥44×44px (aligned with Chapter 0 Discovery)
+* Orientation: **MUST NOT** restrict usage to a single orientation (portrait/landscape) unless there is a documented functional necessity
 
 ## 6.8 Media Accessibility
-| القاعدة | التفصيل |
-|---|---|
-| Alt Text | **MUST** لكل صورة محتوى (لاعب، فعالية، نادي) — وصفي بالعربي والإنجليزي |
-| Decorative Images | **MUST** `alt=""` فارغ صراحة (لا حذف السمة) للصور الزخرفية البحتة |
-| Captions | **SHOULD** لكل فيديو يحتوي حوارًا/تعليقًا صوتيًا مهمًا |
-| Transcripts | **MAY** لمحتوى فيديو طويل (مقابلات، مؤتمرات صحفية) |
-| Icons | **MUST** أيقونة وظيفية (لا زخرفية) لها `aria-label` أو نص مرافق دائمًا |
+
+| Rule              | Detail                                                                                                       |
+| ----------------- | ------------------------------------------------------------------------------------------------------------ |
+| Alt Text          | **MUST** be provided for every content image (athlete, event, club) — descriptive in both Arabic and English |
+| Decorative Images | **MUST** explicitly use an empty `alt=""` attribute (do not omit the attribute) for purely decorative images |
+| Captions          | **SHOULD** be provided for every video containing important dialogue/voice commentary                        |
+| Transcripts       | **MAY** be provided for long-form video content (interviews, press conferences)                              |
+| Icons             | **MUST** provide an `aria-label` or accompanying text for every functional (non-decorative) icon             |
 
 ## 6.9 Government Compliance (UAE)
 
-**المعايير المرجعية:** WCAG 2.2 AA (Chapter 0 Discovery) · WAI-ARIA 1.2 · HTML Living Standard · توجهات TDRA National Digital Accessibility Policy وUAE Design System (راجع Chapter 0 لنتائج البحث الكاملة حول القانون الاتحادي والسياسة الوطنية).
+**Reference standards:** WCAG 2.2 AA (Chapter 0 Discovery) · WAI-ARIA 1.2 · HTML Living Standard · TDRA National Digital Accessibility Policy and UAE Design System directions (refer to Chapter 0 for the complete findings from research concerning federal law and national policy).
 
-**نقطة الدخول الوحيدة (من Discovery Phase — القرار النهائي):** Floating Accessibility Button أنيق (زاوية سفلية، متوافق Light/Dark وRTL/LTR) يفتح Drawer منظم بأقسام: **Vision** (تباين، حجم خط، تباعد نص، ارتفاع سطر) · **Reading** (استمع — Text-to-Speech عبر واجهة متصفح قياسية أو أي مزود يحقق نفس الهدف، لا تقنية مفروضة) · **Motion** (تقليل الحركة، إيقاف الحركات الزخرفية) · **Theme** (نظام/فاتح/داكن) · **Language**. التفضيلات تُحفظ محليًا للزوار، وبالحساب للمسجَّلين. سلوك الزر أثناء التمرير: يبقى ظاهرًا دائمًا، قد يصغر أو تقل شفافيته، يعود لحالته الطبيعية عند التوقف — يُلغى هذا السلوك بالكامل مع Reduce Motion (Chapter 5 §5.8).
+**The single entry point** (from the Discovery Phase — final decision): An elegant **Floating Accessibility Button** (bottom corner, compatible with Light/Dark and RTL/LTR) opens an organized Drawer with sections: **Vision** (contrast, font size, text spacing, line height) · **Reading** (Listen — Text-to-Speech through a standard browser interface or any provider achieving the same objective; no specific technology mandated) · **Motion** (reduce motion, disable decorative animations) · **Theme** (system/light/dark) · **Language**. Preferences are stored locally for visitors and with the account for authenticated users. Button behavior while scrolling: remains visible at all times, may shrink or become more transparent, and returns to its normal state when scrolling stops — this behavior is fully disabled with Reduce Motion (Chapter 5 §5.8).
 
-**تصنيف الميزات (من Discovery):** *Recommended:* Text-to-Speech، Contrast Toggle، Font Size Controls، Text Spacing Controls. *Optional:* Text Alignment Controls (فقط لو أضافت قيمة فعلية دون كسر اتساق Chapter 5).
+**Feature classification** (from Discovery): *Recommended:* Text-to-Speech, Contrast Toggle, Font Size Controls, Text Spacing Controls. *Optional:* Text Alignment Controls (only if they provide real value without breaking Chapter 5 consistency).
 
 ## 6.10 Accessibility Testing Pipeline
 
+```text
+Commit → axe-core (automated check during development) → Lighthouse Accessibility (CI) → Playwright (automated keyboard tests) → Manual Keyboard Testing (before every Release) → Screen Reader Testing (NVDA on Windows / VoiceOver on macOS/iOS) → Merge
 ```
-Commit → axe-core (فحص آلي أثناء التطوير) → Lighthouse Accessibility (CI) → Playwright (اختبارات كيبورد آلية) → Manual Keyboard Testing (قبل كل Release) → Screen Reader Testing (NVDA على Windows / VoiceOver على macOS/iOS) → Merge
-```
-أي فحص آلي (axe-core/Lighthouse) يكتشف مشكلة **Critical** أو **Serious** **MUST** يوقف الـBuild (يتكامل مع Chapter 3 §3.13 CI Pipeline).
 
-## 6.11 Accessibility Budget (قابل للقياس، لا توصية)
+Any automated check (axe-core/Lighthouse) that detects a **Critical** or **Serious** issue **MUST** block the Build (integrated with Chapter 3 §3.13 CI Pipeline).
 
-| المقياس | الحد المطلوب |
-|---|---|
-| Critical Accessibility Issues | 0 |
-| Serious Accessibility Issues | 0 |
-| Lighthouse Accessibility Score | ≥95 |
-| axe-core Critical Violations | 0 |
-| Keyboard Coverage (كل وظيفة قابلة للتشغيل بالكيبورد) | 100% |
-| Focus Visibility (كل عنصر تفاعلي له حلقة تركيز مرئية) | 100% |
+## 6.11 Accessibility Budget (measurable, not a recommendation)
+
+| Metric                                                                     | Required Threshold |
+| -------------------------------------------------------------------------- | ------------------ |
+| Critical Accessibility Issues                                              | 0                  |
+| Serious Accessibility Issues                                               | 0                  |
+| Lighthouse Accessibility Score                                             | ≥95                |
+| axe-core Critical Violations                                               | 0                  |
+| Keyboard Coverage (every function operable by keyboard)                    | 100%               |
+| Focus Visibility (every interactive element has a visible focus indicator) | 100%               |
 
 ## 6.12 Accessibility QA Checklist
-☐ تباين كل نص ≥4.5:1 (أو ≥3:1 للنص الكبير)؟
-☐ كل وظيفة تعمل بالكيبورد وحده بدون فأرة؟
-☐ Focus Trap يعمل في كل Modal/Drawer؟
-☐ Skip Link موجود وفعّال؟
-☐ كل صورة محتوى لها Alt Text وصفي؟
-☐ كل حقل نموذج له Label مرتبط؟
-☐ الصفحة تعمل كاملة عند Zoom 200%؟
-☐ لا Horizontal Scroll عند 320px؟
-☐ تم اختبار الصفحة فعليًا بقارئ شاشة واحد على الأقل؟
+
+☐ Is the contrast of all text ≥4.5:1 (or ≥3:1 for large text)?
+☐ Does every function work using the keyboard alone without a mouse?
+☐ Does Focus Trap work in every Modal/Drawer?
+☐ Is a Skip Link present and functional?
+☐ Does every content image have descriptive Alt Text?
+☐ Does every form field have an associated Label?
+☐ Does the page work completely at 200% Zoom?
+☐ Is there no horizontal scrolling at 320px?
+☐ Has the page been actually tested with at least one screen reader?
 
 ## 6.13 Accessibility Anti-Patterns
-❌ `outline: none` بدون بديل Focus مرئي (يخالف §6.3 مباشرة)
-❌ استخدام اللون وحده للتمييز بين حالتين (§6.2)
-❌ `<div onClick>` بدل `<button>` (§6.4)
-❌ Placeholder كبديل كامل عن Label (§6.5)
-❌ فيديو تلقائي التشغيل بصوت بلا تحكم مستخدم
-❌ حركة وامضة أكثر من 3 مرات/ثانية (§6.6 — قيد مطلق)
+
+❌ `outline: none` without a visible Focus alternative (directly violates §6.3)
+❌ Using color alone to distinguish between states (§6.2)
+❌ `<div onClick>` instead of `<button>` (§6.4)
+❌ Placeholder as a complete substitute for Label (§6.5)
+❌ Autoplaying video with sound without user controls
+❌ Animation flashing more than 3 times/second (§6.6 — absolute restriction)
 
 ## 6.14 Accessibility Registry
-كل قاعدة وصول مسجَّلة بمعرّف مرجعي (يُستخدم في Chapter 8 عند تطبيقها على مكوّن محدد): مثال `A11Y-CONTRAST-001 · Text Contrast ≥4.5:1 · WCAG 1.4.3 · Related Components: [كل مكوّن نصي]`.
+
+Every accessibility rule is registered with a reference identifier (used in Chapter 8 when applying it to a specific component): e.g. `A11Y-CONTRAST-001 · Text Contrast ≥4.5:1 · WCAG 1.4.3 · Related Components: [all text components]`.
 
 ## 6.15 Future Accessibility Roadmap (Backlog)
-دعم تدريجي لميزات Progressive الإضافية من Discovery (Text Alignment Controls) · تحسين تجربة Screen Reader للـData Grid المعقد (لوحة التحكم) · استكشاف WCAG 2.2 AAA لصفحات مختارة عالية الحساسية (مثل نتائج البطولات الرسمية) دون فرضها على كامل المنصة.
+
+Progressive support for additional features from Discovery (Text Alignment Controls) · Improved Screen Reader experience for complex Data Grids (Dashboard) · Exploration of WCAG 2.2 AAA for selected high-sensitivity pages (such as official competition results) without imposing it across the entire platform.
 
 ## 6.16 Compliance Matrix
 
-| Rule | WCAG | WAI-ARIA | UAE Policy | Related Chapter |
-|---|---|---|---|---|
-| Contrast | 1.4.3, 1.4.11 | — | ✓ | Ch1, Ch6 |
-| Focus Visible | 2.4.7 | ✓ | ✓ | Ch6, Ch8 |
-| Keyboard Access | 2.1.1, 2.1.2 | ✓ | ✓ | Ch6, Ch8 |
-| Motion/Flashing | 2.3.1, 2.3.3 | — | ✓ | Ch5, Ch6 |
-| Reflow/Zoom | 1.4.4, 1.4.10 | — | ✓ | Ch5, Ch6 |
-| Forms/Labels | 1.3.1, 3.3.2 | ✓ | ✓ | Ch6, Ch8 |
-| Alt Text | 1.1.1 | — | ✓ | Ch6, Ch9 |
-| Live Regions | 4.1.3 | ✓ | — | Ch6, Ch8 |
+| Rule            | WCAG          | WAI-ARIA | UAE Policy | Related Chapter |
+| --------------- | ------------- | -------- | ---------- | --------------- |
+| Contrast        | 1.4.3, 1.4.11 | —        | ✓          | Ch1, Ch6        |
+| Focus Visible   | 2.4.7         | ✓        | ✓          | Ch6, Ch8        |
+| Keyboard Access | 2.1.1, 2.1.2  | ✓        | ✓          | Ch6, Ch8        |
+| Motion/Flashing | 2.3.1, 2.3.3  | —        | ✓          | Ch5, Ch6        |
+| Reflow/Zoom     | 1.4.4, 1.4.10 | —        | ✓          | Ch5, Ch6        |
+| Forms/Labels    | 1.3.1, 3.3.2  | ✓        | ✓          | Ch6, Ch8        |
+| Alt Text        | 1.1.1         | —        | ✓          | Ch6, Ch9        |
+| Live Regions    | 4.1.3         | ✓        | —          | Ch6, Ch8        |
 
 ## Do & Don't
-**Do:** طبّق §6.12 Checklist على كل شاشة قبل التسليم · استخدم Semantic HTML أولاً دائمًا
-**Don't:** لا تكسر §6.6 (Flashing) مهما كان المبرر الإبداعي · لا "تؤجل" الوصول لمرحلة لاحقة (PR-003)
+
+**Do:** Apply the §6.12 Checklist to every screen before delivery · Always use Semantic HTML first.
+
+**Don't:** Do not violate §6.6 (Flashing) regardless of the creative justification · Do not "postpone" accessibility to a later stage (PR-003).
 
 ## Success Metrics
-راجع §6.11 Accessibility Budget حرفيًا — هذه هي مقاييس نجاح الفصل.
+
+Refer literally to §6.11 Accessibility Budget — these are the chapter's success metrics.
 
 ## References
+
 WCAG 2.2 (W3C) · WAI-ARIA 1.2 · TDRA National Digital Accessibility Policy · UAE Design System (dgov.tdra.gov.ae) · Federal Law No. 29/2006 (People of Determination)
 
 ## Related Chapters
-Chapter 1 (§1.9) · Chapter 2 (PR-003) · Chapter 4 (§4.10) · Chapter 5 (§5.8, §5.10.1) · Chapter 8 (تطبيق تفصيلي لكل مكوّن) · Chapter 23.3 (Accessibility Checklist النهائي)
+
+Chapter 1 (§1.9) · Chapter 2 (PR-003) · Chapter 4 (§4.10) · Chapter 5 (§5.8, §5.10.1) · Chapter 8 (Detailed implementation for every component) · Chapter 23.3 (Final Accessibility Checklist)
 
 ---
 
-*نهاية Chapter 6 — Foundation Layer (الفصول 0-6) مكتملة بالكامل. الفصل التالي: Chapter 7 — Semantic Tokens & Theming.*
+*End of Chapter 6 — Foundation Layer (Chapters 0–6) is now fully completed. Next: Chapter 7 — Semantic Tokens & Theming.*

@@ -1,103 +1,165 @@
 # Chapter 16 — AI Platform Strategy
 
 **Document:** UAEAF Enterprise Design System Framework v1.0.0
-**Chapter Status:** Accepted | **Last Updated:** هذه الجلسة | **Document Owner:** مالك المشروع
+**Chapter Status:** Accepted | **Last Updated:** This Session | **Document Owner:** Project Owner
 
-> **Status: Frozen (Baseline v1.0).** أي تغيير بعد التجميد **MUST** يُدخَل حصريًا عبر ADR جديد أو بند Backlog موثَّق.
+> **Status: Frozen (Baseline v1.0).** Any change after the freeze **MUST** be introduced exclusively through a new ADR or a documented Backlog item.
 
 ## Depends On / Used By
-| Depends On | Used By |
-|---|---|
-| Chapter 0 (Discovery — مبادئ حوكمة AI الأصلية) · Chapter 2 (PR-007 AI-Ready by Design) · Chapter 8 L1 (AI Badge، Chapter 9 §CR-7.x) · Chapter 13 (CMS — أعلى أولوية استهلاك) | Chapter 17 (خصوصية بيانات AI) · Chapter 20 · تطبيقات مستقبلية |
+
+| Depends On                                                                                                                                                                                        | Used By                                                         |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Chapter 0 (Discovery — foundational AI governance principles) · Chapter 2 (PR-007 AI-Ready by Design) · Chapter 8 L1 (AI Badge, Chapter 9 §CR-7.x) · Chapter 13 (CMS — highest-priority consumer) | Chapter 17 (AI Data Privacy) · Chapter 20 · Future Applications |
 
 ## Scope
-**يغطي:** استراتيجية الذكاء الاصطناعي **داخل** المنصة بالكامل — الأولويات، الحوكمة، المكونات، الثقة والتفسير، حدود الاستخدام.
-**لا يغطي:** قابلية قراءة المنصة من محركات AI خارجية (→ Chapter 15، معالَج بالكامل هناك).
+
+**Covers:** The complete strategy for Artificial Intelligence **inside** the platform — priorities, governance, components, trust and explainability, and usage boundaries.
+
+**Does Not Cover:** The platform's external readability by AI-powered search systems (→ Chapter 15, fully addressed there).
 
 ## Definitions
-| المصطلح | التعريف |
-|---|---|
-| **AI-Assisted** | AI يقترح، الإنسان يقرر ويعتمد — بعكس AI-Controlled حيث AI ينفّذ بلا تدخل |
-| **Confidence Indicator** | إشارة بصرية لمستوى يقين اقتراح AI في نتيجته |
+
+| Term                     | Definition                                                                                                                                     |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **AI-Assisted**          | AI proposes or recommends; a human reviews, decides, and approves — in contrast to AI-Controlled, where AI executes without human intervention |
+| **Confidence Indicator** | A visual signal representing the level of confidence associated with an AI-generated recommendation or result                                  |
 
 ## Purpose
-هذا الفصل **موحّد** لكل قرارات AI المتناثرة عبر الفصول 0-15 (Chapter 0 Discovery، Chapter 2 PR-007، Chapter 9 §CR-7.x) في استراتيجية واحدة متماسكة — لا فصل AI جديد من الصفر، بل تجميع وتوسيع.
+
+This chapter **consolidates** AI-related decisions distributed across Chapters 0–15 — including Chapter 0 Discovery, Chapter 2 PR-007, and Chapter 9 §CR-7.x — into one coherent strategy.
+
+It is **not** a new AI strategy created from scratch; rather, it consolidates, formalizes, and extends previously established principles.
 
 ---
 
 ## ADR-0027: AI Governance Consolidation
 
-| الحقل | التفاصيل |
-|---|---|
-| **Status** | Accepted |
-| **Authority** | Product Decision (يُثبِّت قرارات Chapter 0 Discovery كمرجع معماري رسمي) |
-| **Context** | مبادئ AI (Human-in-the-Loop، الشفافية) وُثِّقت في Discovery وتكرر ذكرها عبر فصول متعددة (Chapter 2، 8، 9) — دون فصل مركزي واحد، خطر التشتت والتناقض التدريجي بين الفصول يزداد مع الوقت |
-| **Decision** | **AI-Assisted لا AI-Controlled** هو المبدأ الحاكم المطلق لكل ميزة AI في المنصة دون استثناء — **MUST** كل مخرج AI قابل للمراجعة والتعديل والاعتماد البشري قبل أي أثر نهائي (Chapter 0 Discovery حرفيًا). هذا الفصل **المرجع الوحيد** لأولويات AI وحوكمتها؛ أي فصل آخر يذكر AI **MUST** يشير هنا بدل تكرار المبدأ |
-| **Alternatives Considered** | ترك كل ميزة AI (CMS، بحث، شات بوت) توثّق حوكمتها بمعزل — رُفض لخطر التناقض التدريجي |
-| **Why This Decision** | يضمن اتساق حوكمة AI عبر أي ميزة تُضاف مستقبلاً، بصرف النظر عن أي فريق يبنيها |
-| **Risks** | مركزية الحوكمة قد تبدو عائقًا لميزة AI بسيطة عاجلة. Mitigation: §3 يوضّح أن Human-in-the-Loop لا يعني بالضرورة بطئًا — المراجعة قد تكون لحظية (زر قبول/رفض) |
-| **Consequences** | كل ميزة AI مستقبلية **MUST** تُصنَّف ضمن §2 الأولويات السبع قبل التطوير |
+| Field                       | Details                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Status**                  | Accepted                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| **Authority**               | Product Decision (formalizes the decisions established in Chapter 0 Discovery as the official architectural reference)                                                                                                                                                                                                                                                                                                                                                                                                   |
+| **Context**                 | AI principles such as Human-in-the-Loop and transparency were established during Discovery and subsequently referenced across multiple chapters (Chapter 2, Chapter 8, Chapter 9). Without a single centralized reference, the risk of fragmentation and gradual inconsistency between chapters increases over time.                                                                                                                                                                                                     |
+| **Decision**                | **AI-Assisted, not AI-Controlled** is the absolute governing principle for every AI capability within the platform, without exception. Every AI output **MUST** be reviewable, editable where applicable, and subject to human approval before producing any final effect (Chapter 0 Discovery, explicitly). This chapter is the **single authoritative reference** for AI priorities and governance. Any other chapter that references AI **MUST** point to this chapter rather than restating the governing principle. |
+| **Alternatives Considered** | Allowing each AI capability (CMS, Search, Chatbot, etc.) to define and document its own governance independently — rejected due to the risk of gradual inconsistency across AI capabilities.                                                                                                                                                                                                                                                                                                                             |
+| **Why This Decision**       | Ensures consistent AI governance across any future capability, regardless of which team or module implements it.                                                                                                                                                                                                                                                                                                                                                                                                         |
+| **Risks**                   | Centralized governance may appear to create friction for simple or urgent AI features. **Mitigation:** §3 clarifies that Human-in-the-Loop does not inherently imply a slow process; review may be instantaneous, such as a single Accept/Reject action.                                                                                                                                                                                                                                                                 |
+| **Consequences**            | Every future AI capability **MUST** be classified against the seven priorities defined in §2 before development begins.                                                                                                                                                                                                                                                                                                                                                                                                  |
 
 ---
 
 ## 1. AI Layer Architecture
-AI **MUST** طبقة قابلة للتفعيل التدريجي عبر كل المنصة (Chapter 2 §PR-007 AI-Ready by Design) — لا ميزة مُدمَجة بإحكام (Hardcoded) في مكوّن واحد. كل نقطة تمديد AI **MUST** تبقى غير مرئية (Progressive Disclosure) حتى تُفعَّل فعليًا (Chapter 2 §PR-007 مثال Anti-Pattern).
 
-## 2. AI Priorities (مرجعي من Discovery — 7 أولويات)
-| # | الأولوية | الوصف |
-|---|---|---|
-| 1 | **AI for CMS** | اقتراح عناوين، تحسين كتابة، تلخيص، Meta Title/Description، كلمات مفتاحية (Chapter 13) |
-| 2 | **AI Search** | بحث بلغة طبيعية داخل المنصة |
-| 3 | **AI Assistant** | مساعدة موظفي الاتحاد (شرح صفحات، تلخيص تقارير) |
-| 4 | **AI Chatbot** | للجمهور، يعتمد حصريًا على بيانات الموقع الرسمية — لا معرفة عامة خارجية قد تكون غير دقيقة عن الاتحاد |
-| 5 | **AI Analytics** | تحليل أداء لاعبين، توصيات لا قرارات نهائية (Chapter 8 L8 §CMP-PERFORMANCEINDICATOR-001) |
-| 6 | **AI Notifications** | اقتراح محتوى للنشر، محتوى ناقص، صور بلا Alt Text |
-| 7 | **AI Translation** | بمراجعة بشرية إلزامية قبل النشر — **MUST NOT** استبدال المحتوى ثنائي اللغة المستقل (Chapter 0 Discovery، Chapter 9 §CR-1.6) |
+AI **MUST** be implemented as a progressively activatable layer across the platform (Chapter 2 §PR-007 AI-Ready by Design).
+
+AI functionality **MUST NOT** be hardcoded tightly into a single component or feature.
+
+Every AI extension point **MUST** remain hidden through **Progressive Disclosure** until the corresponding AI capability is actually enabled (Chapter 2 §PR-007 Anti-Pattern).
+
+## 2. AI Priorities
+
+### Discovery Reference — Seven Priorities
+
+| # | Priority             | Description                                                                                                                                                                     |
+| - | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 | **AI for CMS**       | Title suggestions, writing enhancement, summarization, Meta Title/Description generation, keyword suggestions (Chapter 13)                                                      |
+| 2 | **AI Search**        | Natural-language search across the platform                                                                                                                                     |
+| 3 | **AI Assistant**     | Assistance for Federation staff, including page explanations and report summarization                                                                                           |
+| 4 | **AI Chatbot**       | Public-facing assistant relying exclusively on official website data — no unsupported external general knowledge that could provide inaccurate information about the Federation |
+| 5 | **AI Analytics**     | Athlete performance analysis and recommendations; **NOT** final decisions (Chapter 8 L8 §CMP-PERFORMANCEINDICATOR-001)                                                          |
+| 6 | **AI Notifications** | Suggestions for content publication, detection of incomplete content, and identification of images without Alt Text                                                             |
+| 7 | **AI Translation**   | Human review is mandatory before publication — **MUST NOT** replace independently authored bilingual content (Chapter 0 Discovery, Chapter 9 §CR-1.6)                           |
 
 ## 3. Human-in-the-Loop Contract
-**MUST** بلا استثناء: أي محتوى/قرار من AI **MUST** يمر بموافقة بشرية قبل أي أثر نهائي مرئي للجمهور. **MUST NOT** نشر تلقائي لمخرج AI. المراجعة **MAY** لحظية (نقرة قبول واحدة لاقتراح بسيط) — Human-in-the-Loop لا يعني بالضرورة عملية طويلة، بل يعني وجود نقطة قرار بشرية واحدة على الأقل دائمًا.
 
-## 4. AI Component Library (مرجعي — موزّعة عبر Chapter 8)
-| المكوّن | الموقع |
-|---|---|
-| AI Badge/Generated Label | Chapter 8 L1 (يستهلك §CMP-BADGE-001) |
-| Confidence Indicator | مكوّن جديد يُضاف لـChapter 8 L1 عند التفعيل الفعلي (خارج Baseline الحالي — Backlog) |
-| Review Before Publish Dialog | يستهلك Chapter 8 L4 §CMP-CONFIRMATIONDIALOG-001 مباشرة |
-| AI Suggestions Card | يستهلك Chapter 8 L5 §CMP-CARD-001 |
-| AI Chat Interface | يبني فوق Chapter 8 L2 (نموذج إدخال) + Chapter 8 L5 (عرض محادثة كـList) |
-**MUST NOT** مكوّن AI جديد يُبتكَر خارج هذا الجدول دون المرور بـChapter 8 §Architecture Review (يطابق Chapter 8 ADR-0013).
+Without exception, any AI-generated content, recommendation, or decision **MUST** pass through human approval before producing any final public-facing or otherwise consequential effect.
+
+AI-generated output **MUST NOT** be published automatically.
+
+Human review **MAY** be instantaneous — for example, a single Accept action for a simple suggestion.
+
+**Human-in-the-Loop does not necessarily mean a lengthy workflow; it means that at least one explicit human decision point MUST always exist.**
+
+## 4. AI Component Library
+
+### Reference Components Distributed Across Chapter 8
+
+| Component                        | Location                                                                                                   |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **AI Badge / Generated Label**   | Chapter 8 L1 (consumes §CMP-BADGE-001)                                                                     |
+| **Confidence Indicator**         | New component to be added to Chapter 8 L1 when actually activated (outside the current Baseline — Backlog) |
+| **Review Before Publish Dialog** | Directly consumes Chapter 8 L4 §CMP-CONFIRMATIONDIALOG-001                                                 |
+| **AI Suggestions Card**          | Consumes Chapter 8 L5 §CMP-CARD-001                                                                        |
+| **AI Chat Interface**            | Builds upon Chapter 8 L2 (Input/Form foundation) + Chapter 8 L5 (conversation presentation as a List)      |
+
+A new AI component **MUST NOT** be introduced outside this library without passing through the Chapter 8 §Architecture Review process, consistent with Chapter 8 ADR-0013.
 
 ## 5. Confidence & Explainability
-اقتراح AI **SHOULD** درجة ثقة أو تفسير مختصر حيث ممكن تقنيًا ("يُقترح بناءً على محتوى مشابه سابق" — Chapter 9 §CR-7.4) — **MUST NOT** لغة مؤكِّدة زائدة عن الدقة الفعلية (Chapter 9 §CR-7.3).
 
-## 6. AI Transparency (الإفصاح)
-يستهلك Chapter 9 §CR-7.1 مباشرة — **MUST** أي محتوى AI مُعلَم بوضوح، لا يظهر كمحتوى بشري دون تمييز.
+An AI recommendation **SHOULD** provide a confidence indicator or a concise explanation where technically feasible.
+
+For example:
+
+> "Suggested based on previously published similar content."
+
+This aligns with Chapter 9 §CR-7.4.
+
+AI interfaces **MUST NOT** use language that implies a level of certainty greater than the actual reliability of the generated result (Chapter 9 §CR-7.3).
+
+## 6. AI Transparency & Disclosure
+
+The platform directly consumes Chapter 9 §CR-7.1.
+
+Any AI-generated content **MUST** be clearly identified as AI-generated.
+
+AI-generated content **MUST NOT** be presented as human-authored content without appropriate disclosure.
 
 ## 7. AI Safety & Content Boundaries
-AI Chatbot (الأولوية 4) **MUST** يرفض الإجابة بدل تخمين معلومة غير موجودة في بيانات الموقع الرسمية (منع Hallucination بقدر الإمكان، يكمّل Chapter 15 §7 من الجهة الداخلية). **MUST NOT** AI يتخذ قرارات إدارية/رياضية نهائية (اعتماد نتيجة، قبول تسجيل) بدون تدخل بشري — يطابق Chapter 8 L7 §EC.7 Approval Workflow حرفيًا.
 
-## 8. AI Privacy Boundary (يمهّد Chapter 17)
-ميزات AI **MUST NOT** تُعالج بيانات القاصرين الحساسة (Chapter 8 L8 §SP.10) دون نفس ضوابط الموافقة المطبَّقة على أي معالجة أخرى — التفاصيل الكاملة في Chapter 17.
+The public AI Chatbot (Priority 4) **MUST** refuse to answer rather than fabricate or guess information that does not exist in the Federation's official website data.
+
+This is intended to minimize hallucination and complements the external AI-readability controls defined in Chapter 15 §7 from the internal platform side.
+
+AI **MUST NOT** make final administrative or sports decisions — such as approving a result or accepting a registration — without human intervention.
+
+This requirement aligns directly with Chapter 8 L7 §EC.7 Approval Workflow.
+
+## 8. AI Privacy Boundary
+
+AI capabilities **MUST NOT** process sensitive data belonging to minors (Chapter 8 L8 §SP.10) without applying the same consent and privacy controls required for any other form of processing.
+
+The complete privacy and identity architecture is defined in Chapter 17.
 
 ---
 
 ## Do & Don't
-**Do:** صنّف أي ميزة AI جديدة ضمن §2 الأولويات السبع أولاً · اربط أي حوكمة AI بهذا الفصل بدل تكرارها
-**Don't:** لا تسمح بنشر تلقائي لمخرج AI بلا مراجعة بشرية (§3) · لا تدع AI Chatbot يخمّن معلومة غير موثّقة (§7)
+
+### Do
+
+* Classify every new AI capability against the seven priorities in §2 before development begins.
+* Reference this chapter as the authoritative AI governance source instead of duplicating AI governance rules elsewhere.
+
+### Don't
+
+* Do not allow automatic publication of AI-generated output without human review (§3).
+* Do not allow the AI Chatbot to guess or fabricate unsupported information (§7).
 
 ## Success Metrics
-- 100% من ميزات AI مصنَّفة ضمن الأولويات السبع (§2)
-- 0 نشر تلقائي لمحتوى AI بلا اعتماد بشري
-- 100% من محتوى AI يحمل إشارة إفصاح (§6)
-- 0 قرار إداري/رياضي نهائي متخذ بواسطة AI فقط
+
+* **100%** of AI capabilities are classified within the seven priorities (§2).
+* **0** instances of AI-generated content being published automatically without human approval.
+* **100%** of AI-generated content carries an appropriate disclosure indicator (§6).
+* **0** final administrative or sports decisions made solely by AI.
 
 ## References
-**Normative:** Chapter 0 (Discovery) · Chapter 2 (§PR-007) · Chapter 9 (§CR-7.x) · Chapter 8 (كل المستويات)
-**Informative:** Responsible AI Guidelines (مبادئ عامة، ليست مصدر قواعد مباشر)
+
+**Normative:** Chapter 0 (Discovery) · Chapter 2 (§PR-007) · Chapter 9 (§CR-7.x) · Chapter 8 (All Levels)
+
+**Informative:** Responsible AI Guidelines (General principles; not a direct source of platform rules)
 
 ## Related Chapters
-Chapter 0 · Chapter 2 · Chapter 8 · Chapter 9 · Chapter 13 (أعلى أولوية استهلاك) · Chapter 15 (القراءة من الخارج، بعكس هذا الفصل) · Chapter 17 (الخصوصية)
+
+Chapter 0 · Chapter 2 · Chapter 8 · Chapter 9 · Chapter 13 (Highest-Priority Consumer) · Chapter 15 (External AI Readability, fundamentally different from this chapter) · Chapter 17 (Privacy)
 
 ---
 
-*نهاية Chapter 16. الفصل التالي: Chapter 17 — Data Privacy & Identity Architecture.*
+*End of Chapter 16. Next: Chapter 17 — Data Privacy & Identity Architecture.*

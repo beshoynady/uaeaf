@@ -1,138 +1,188 @@
 # Chapter 12 — Dashboard Patterns (Dashboard Composition Layer)
 
 **Document:** UAEAF Enterprise Design System Framework v1.0.0
-**Chapter Status:** Accepted | **Last Updated:** هذه الجلسة | **Document Owner:** مالك المشروع
+**Chapter Status:** Accepted | **Last Updated:** This session | **Document Owner:** Project Owner
 
-> **Status: Frozen (Baseline v1.0).** أي تغيير بعد التجميد **MUST** يُدخَل حصريًا عبر ADR جديد أو بند Backlog موثَّق.
+> **Status: Frozen (Baseline v1.0).** Any change after freezing **MUST** be introduced exclusively through a new ADR or a documented Backlog item.
 
 ## Depends On / Used By
-| Depends On | Used By |
-|---|---|
-| Chapter 8 (كل المستويات) · Chapter 11 (كل الأنماط، خصوصًا PT-CRUD-001, PT-PERMISSION-001, PT-EMPTYLOADINGERROR-001) | Chapter 13 (CMS يخصّص هذه التخطيطات) · Chapter 20 (Page Templates يُركِّب الشاشات النهائية) |
+
+| Depends On                                                                                                              | Used By                                                                                             |
+| ----------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Chapter 8 (all levels) · Chapter 11 (all patterns, especially PT-CRUD-001, PT-PERMISSION-001, PT-EMPTYLOADINGERROR-001) | Chapter 13 (CMS specializes these layouts) · Chapter 20 (Page Templates composes the final screens) |
 
 ## Scope
-**يغطي:** كيف تُبنى شاشة لوحة تحكم كاملة من مكونات Chapter 8 وأنماط Chapter 11 معًا — أنواع التخطيط، المناطق الثابتة، قواعد ترتيب العناصر، الاستجابة، دورة حياة الشاشة الكاملة، التخصيص، والأداء.
-**لا يغطي:** أي مكوّن أو نمط تفاعل جديد (Chapter 8/11 وحدهما المصدر) — هذا فصل **تركيب (Composition)** بحت.
+
+**Covers:** How a complete Dashboard screen is built from Chapter 8 components and Chapter 11 patterns together — layout types, fixed zones, element ordering rules, responsiveness, full-screen lifecycle, personalization, and performance.
+
+**Does not cover:** Any new component or interaction pattern (Chapters 8/11 are the sole sources) — this chapter is purely a **Composition** layer.
 
 ## Definitions
-| المصطلح | التعريف |
-|---|---|
-| **Dashboard Zone** | منطقة ثابتة الموضع داخل أي شاشة لوحة تحكم (رأس، تنقل، مساحة عمل رئيسية) |
-| **Widget** | أي مكوّن Chapter 8 (Card، Table، Chart) عند استهلاكه داخل منطقة لوحة تحكم محددة |
+
+| Term               | Definition                                                                                 |
+| ------------------ | ------------------------------------------------------------------------------------------ |
+| **Dashboard Zone** | A fixed-position area within any Dashboard screen (header, navigation, main workspace)     |
+| **Widget**         | Any Chapter 8 component (Card, Table, Chart) when consumed within a defined Dashboard Zone |
 
 ## Purpose
-Chapter 11 عرّف "كيف تتصرف المكونات معًا في مهمة"؛ هذا الفصل يعرّف "كيف تُرتَّب في شاشة لوحة تحكم كاملة" — طبقة تركيب أعلى، لا تفاعل جديد.
+
+Chapter 11 defined **“how components behave together within a task”**; this chapter defines **“how they are arranged within a complete Dashboard screen”** — a higher-level composition layer, with no new interaction behavior.
 
 ---
 
 ## ADR-0023: Dashboard Composition Strategy
 
-| الحقل | التفاصيل |
-|---|---|
-| **Status** | Accepted |
-| **Authority** | Engineering Decision |
-| **Context** | لوحة التحكم تخدم أدوارًا مختلفة جذريًا (Chapter 0: Operational Experience) بمهام مختلفة (إدارة كيانات، متابعة إحصائيات، مراقبة حية) — شاشة واحدة بتخطيط واحد لا تناسب الكل |
-| **Decision** | لوحة التحكم **MUST** تُبنى من **أنواع تخطيط محدودة معروفة** (§12.1) لا تخطيط حر لكل شاشة، وكل نوع **MUST** يُركِّب حصريًا من مناطق ثابتة (§12.2) ومكونات Chapter 8 — **لا مكوّن أو نمط جديد يُبتكَر في هذا الفصل** (يطابق Chapter 8 ADR-0013 وChapter 11 ADR-0022 بنفس الروح، مطبَّقًا على مستوى الشاشة الكاملة) |
-| **Alternatives Considered** | ترك كل Module (لاعبين، إحصائيات، بطولات) يصمم تخطيطه الخاص — رُفض لأنه يُنتج لوحة تحكم غير متسقة يصعب التنقل فيها بثقة |
-| **Why This Decision** | مستخدم تعلّم تخطيط "إدارة كيانات" مرة (لاعبين) يفهم فورًا تخطيط أي كيان آخر (أندية، حكام) بلا تعلّم جديد |
-| **Risks** | تخطيط ثابت قد لا يناسب حالة استثنائية نادرة. Mitigation: أي انحراف **MUST** ADR منفصل موثَّق |
-| **Consequences** | كل شاشة لوحة تحكم جديدة **MUST** تبدأ باختيار نوع من §12.1 قبل أي تصميم تفصيلي |
+| Field                       | Details                                                                                                                                                                                                                                                                                                                                                                                      |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Status**                  | Accepted                                                                                                                                                                                                                                                                                                                                                                                     |
+| **Authority**               | Engineering Decision                                                                                                                                                                                                                                                                                                                                                                         |
+| **Context**                 | The Dashboard serves fundamentally different roles (Chapter 0: Operational Experience) with different tasks (entity management, statistics monitoring, live monitoring) — a single layout does not fit all use cases                                                                                                                                                                         |
+| **Decision**                | The Dashboard **MUST** be built from a **limited set of known layout types** (§12.1), not a free-form layout for every screen. Each type **MUST** be composed exclusively from fixed zones (§12.2) and Chapter 8 components — **no new component or pattern may be invented in this chapter** (consistent with Chapter 8 ADR-0013 and Chapter 11 ADR-0022, applied at the full-screen level) |
+| **Alternatives Considered** | Allowing each Module (Players, Statistics, Competitions) to design its own layout — rejected because it produces an inconsistent Dashboard that is difficult to navigate confidently                                                                                                                                                                                                         |
+| **Why This Decision**       | A user who learns the “Entity Management” layout once (e.g., Players) can immediately understand the layout of any other entity (Clubs, Officials) without additional learning                                                                                                                                                                                                               |
+| **Risks**                   | A fixed layout may not fit a rare exceptional case. **Mitigation:** Any deviation **MUST** be documented through a separate ADR                                                                                                                                                                                                                                                              |
+| **Consequences**            | Every new Dashboard screen **MUST** begin by selecting a layout type from §12.1 before any detailed design work                                                                                                                                                                                                                                                                              |
 
 ---
 
 ## 12.1 Dashboard Layout Types
-| النوع | الاستخدام | المكونات النموذجية |
-|---|---|---|
-| **Entity Management Dashboard** | إدارة قائمة كيانات (لاعبين، أندية، حكام) | يستهلك Chapter 11 §PT-CRUD-001 مباشرة: Toolbar (L7) + DataGrid (L5) |
-| **Analytics Dashboard** | متابعة إحصائيات ومؤشرات | KPI Cards (L5 §CMP-STATCARD-001) + Charts |
-| **Monitoring Dashboard** | متابعة حية أثناء بطولة | Live indicators (Chapter 8 L5 §DD.10 Live-Updating) + EventSchedule (L8) |
-| **Workspace Dashboard** | مهمة تحريرية مركّزة (محرر خبر، CMS) | يُفصَّل في Chapter 13 |
 
-## 12.2 Dashboard Zones (مناطق ثابتة، لا مكونات جديدة)
-```
+| Type                            | Usage                                                   | Typical Components                                                       |
+| ------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------ |
+| **Entity Management Dashboard** | Managing lists of entities (Athletes, Clubs, Officials) | Directly consumes Chapter 11 §PT-CRUD-001: Toolbar (L7) + DataGrid (L5)  |
+| **Analytics Dashboard**         | Monitoring statistics and KPIs                          | KPI Cards (L5 §CMP-STATCARD-001) + Charts                                |
+| **Monitoring Dashboard**        | Live monitoring during a competition                    | Live indicators (Chapter 8 L5 §DD.10 Live-Updating) + EventSchedule (L8) |
+| **Workspace Dashboard**         | Focused editorial task (News Editor, CMS)               | Detailed in Chapter 13                                                   |
+
+---
+
+## 12.2 Dashboard Zones (Fixed Zones, No New Components)
+
+```text
 ┌─────────────────────────────────────────┐
-│ Global Header (شعار، بحث عام، حساب المستخدم)│
+│ Global Header (logo, global search, user account) │
 ├──────────┬──────────────────────────────┤
-│ Module   │ Context Toolbar (فلاتر/بحث/إجراءات)│
+│ Module   │ Context Toolbar (filters/search/actions) │
 │ Nav      ├──────────────────────────────┤
-│ (Sidebar,│ KPI Area (اختياري)              │
+│ (Sidebar,│ KPI Area (optional)          │
 │  Ch8 L3) ├──────────────────────────────┤
-│          │ Main Workspace (المحتوى الأساسي) │
+│          │ Main Workspace (primary content) │
 │          ├──────────────────────────────┤
-│          │ Side Panel (اختياري، تفاصيل سريعة)│
+│          │ Side Panel (optional, quick details) │
 └──────────┴──────────────────────────────┘
-Notification Area: عائمة فوق كل شيء (Chapter 8 L4 Z-Order)
+
+Notification Area: floating above everything (Chapter 8 L4 Z-Order)
 ```
-كل منطقة **MUST** تُملأ بمكونات Chapter 8 القائمة فقط — Global Header يستهلك Chapter 8 L3 §CMP-TOPNAV-001، Module Nav يستهلك §CMP-SIDEBAR-001، إلخ.
+
+Each zone **MUST** be populated using existing Chapter 8 components only — Global Header consumes Chapter 8 L3 §CMP-TOPNAV-001, Module Nav consumes §CMP-SIDEBAR-001, etc.
+
+---
 
 ## 12.3 Widget Placement Rules
-**MUST** ترتيب ثابت لا يتغيّر بين الشاشات:
-1. KPI Area **MUST** أعلى Main Workspace دائمًا (لا أسفله ولا بينه وبين Charts)
-2. Filters (Chapter 11 §PT-FILTER-001) **MUST** تسبق DataGrid/Table مباشرة
-3. Charts **MUST NOT** تسبق مؤشرات KPI الرقمية المباشرة — الرقم أولاً، الرسم التوضيحي بعده
-4. Action Bar (Chapter 8 L7 §CMP-ACTIONBAR-001) **MUST** يظهر فقط بعد وجود Selection فعلي (Chapter 11 §PT-BULKACTION-001) — لا يحجز مساحة دائمة فارغة
 
-## 12.4 Responsive Dashboard Behavior (مستوى الشاشة الكاملة)
-| الحجم | السلوك |
-|---|---|
-| Desktop/Laptop (Chapter 5 `lg`+) | كل المناطق (§12.2) ظاهرة معًا، Sidebar موسّع |
-| Tablet (`md`) | Sidebar يتحول لـNavigation Rail (Chapter 8 L3 §CMP-NAVRAIL-001)، Side Panel يصبح Drawer عند الطلب |
-| Mobile (`xs`/`sm`) | إدارة لوحة التحكم **MAY** محدودة الدعم (Chapter 0: أولوية الموبايل للموقع العام لا لوحة التحكم) — إن دُعمت، Module Nav يتحول لـNavigation Drawer (Chapter 8 L3) كامل الشاشة عند الفتح |
+The following order **MUST** remain consistent across screens:
 
-## 12.5 Dashboard State Flow (مستوى الصفحة الكاملة)
-يوسّع Chapter 11 §PT-EMPTYLOADINGERROR-001 وChapter 11 §PT-PERMISSION-001 معًا في تسلسل واحد لمستوى لوحة التحكم الكاملة:
+1. KPI Area **MUST** always appear at the top of the Main Workspace (never below it or between it and Charts).
+2. Filters (Chapter 11 §PT-FILTER-001) **MUST** directly precede the DataGrid/Table.
+3. Charts **MUST NOT** precede direct numerical KPI indicators — the number comes first, followed by the explanatory visualization.
+4. Action Bar (Chapter 8 L7 §CMP-ACTIONBAR-001) **MUST** appear only after an actual Selection exists (Chapter 11 §PT-BULKACTION-001) — it must not permanently reserve empty space.
+
+---
+
+## 12.4 Responsive Dashboard Behavior (Full-Screen Level)
+
+| Size                                 | Behavior                                                                                                                                                                                                    |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Desktop/Laptop (Chapter 5 `lg`+)** | All zones (§12.2) are visible together, with an expanded Sidebar                                                                                                                                            |
+| **Tablet (`md`)**                    | Sidebar becomes a Navigation Rail (Chapter 8 L3 §CMP-NAVRAIL-001); Side Panel becomes a Drawer on demand                                                                                                    |
+| **Mobile (`xs`/`sm`)**               | Dashboard support **MAY** be limited (Chapter 0: mobile priority is for the public website, not the Dashboard). If supported, Module Nav becomes a full-screen Navigation Drawer (Chapter 8 L3) when opened |
+
+---
+
+## 12.5 Dashboard State Flow (Full-Page Level)
+
+Extends Chapter 11 §PT-EMPTYLOADINGERROR-001 and Chapter 11 §PT-PERMISSION-001 into a single flow for the complete Dashboard:
+
+```text
+Loading → Permission Check (§PT-PERMISSION-001) → Empty | Populated → Realtime Updates (if applicable, L5 §DD.11) → Error (§FB.19 Retry)
 ```
-Loading → Permission Check (§PT-PERMISSION-001) → Empty | Populated → Realtime Updates (إن انطبق، L5 §DD.11) → Error (§FB.19 Retry)
-```
-**MUST** فحص الصلاحية **قبل** حالة التحميل الظاهرة للمستخدم — لا وميض محتوى ثم اختفاؤه لعدم امتلاك صلاحية (Race Condition بين Loading وPermission).
+
+The permission check **MUST** occur **before** any visible loading/content state is shown to the user — there must be no content flicker followed by disappearance due to insufficient permission (race condition between Loading and Permission).
+
+---
 
 ## 12.6 Dashboard Personalization
-ضمن نطاق المشروع الحالي (Chapter 0):
-- **MAY** ترتيب بطاقات KPI قابل لإعادة الترتيب من المستخدم
-- **MAY** إظهار/إخفاء Widgets اختيارية داخل Analytics Dashboard
-- **SHOULD** حفظ تفضيل التخطيط لكل مستخدم (يتوافق مع Chapter 8 L3 §N.9 Navigation Persistence بنفس الروح، مطبَّقًا على تخطيط الشاشة لا التنقل)
-هذه القدرات **MAY** غير مُفعَّلة في الإصدار الأول — البنية تحتملها دون إعادة تصميم لاحقًا (PR-008 Built to Scale).
+
+Within the current project scope (Chapter 0):
+
+* KPI card ordering **MAY** be user-reorderable.
+* Optional Widgets within an Analytics Dashboard **MAY** be shown/hidden.
+* Layout preferences **SHOULD** be persisted per user (consistent with Chapter 8 L3 §N.9 Navigation Persistence, applied here to screen layout rather than navigation).
+
+These capabilities **MAY** remain disabled in the first release — the architecture must accommodate them without requiring a later redesign (PR-008 Built to Scale).
+
+---
 
 ## 12.7 Dashboard Performance Rules
-تطبيق مباشر لـPR-002 على مستوى الشاشة الكاملة لا المكوّن المفرد:
-- **MUST** Lazy Loading لأي منطقة (§12.2) غير ظاهرة فوق الطية عند التحميل الأول (Side Panel، أقسام مطوية)
-- **MUST** Virtualization لأي DataGrid كبير (Chapter 8 L5 §DD.12)
-- **MUST** Skeleton قبل أي رسم بياني (لا وميض فارغ ثم ظهور مفاجئ)
-- **MUST NOT** إعادة تحميل الصفحة كاملة عند تحديث Widget واحد (تحديث حي جزئي فقط، Chapter 8 L5 §DD.10 Independent Component Lifecycle)
+
+Direct application of PR-002 at the full-screen level rather than the individual component level:
+
+* **MUST** use Lazy Loading for any zone (§12.2) that is not visible above the fold during initial loading (Side Panel, collapsed sections).
+* **MUST** use Virtualization for any large DataGrid (Chapter 8 L5 §DD.12).
+* **MUST** display a Skeleton before any chart (no empty flash followed by sudden rendering).
+* **MUST NOT** reload the entire page when a single Widget is updated (partial live update only, Chapter 8 L5 §DD.10 Independent Component Lifecycle).
+
+---
 
 ## 12.8 Dashboard Refresh Strategy
-يوسّع §12.7 — لا كل Widget بنفس معدل التحديث:
 
-| Widget | معدل التحديث النموذجي |
-|---|---|
-| KPI Cards | 30-60 ثانية |
-| Live Competition (Chapter 8 L5 §DD.10 Live-Updating) | فوري (WebSocket/Push) |
-| Analytics Charts | يدوي أو كل 5 دقائق |
-| Tables | عند الفلترة/التحديث اليدوي فقط |
+Extends §12.7 — not every Widget requires the same refresh rate:
 
-**قاعدة (MUST):** كل Widget **MUST** يُعلن سياسة تحديثه الخاصة صراحة — **MUST NOT** تحديث اللوحة بالكامل لمجرد أن Widget واحد يحتاج بيانات أحدث (يطابق §12.7 Independent Lifecycle حرفيًا، هذا القسم يفصّل المعدلات الفعلية).
+| Widget                                               | Typical Refresh Rate             |
+| ---------------------------------------------------- | -------------------------------- |
+| KPI Cards                                            | 30–60 seconds                    |
+| Live Competition (Chapter 8 L5 §DD.10 Live-Updating) | Immediate (WebSocket/Push)       |
+| Analytics Charts                                     | Manual or every 5 minutes        |
+| Tables                                               | On filtering/manual refresh only |
+
+**Rule (MUST):** Every Widget **MUST** explicitly declare its own refresh policy — the entire Dashboard **MUST NOT** refresh merely because one Widget requires fresher data (consistent with §12.7 Independent Lifecycle; this section defines the actual refresh rates).
+
+---
 
 ## 12.9 Widget Failure Isolation
-فشل Widget واحد (خطأ تحميل رسم بياني مثلاً) **MUST NOT** ينتشر لبقية اللوحة:
-```
+
+Failure of one Widget (e.g., a chart loading error) **MUST NOT** propagate to the rest of the Dashboard:
+
+```text
 Dashboard
-├─ KPI ✔ (يعمل بشكل طبيعي)
+├─ KPI ✔ (working normally)
 ├─ Table ✔
-├─ Chart ✘ (Chapter 8 L4 §CMP-ERRORSTATE-001 محلي لهذا الـWidget فقط)
+├─ Chart ✘ (Chapter 8 L4 §CMP-ERRORSTATE-001 local to this Widget only)
 └─ News ✔
 ```
-**MUST** كل منطقة (§12.2) تُعامَل كوحدة عزل مستقلة (Error Boundary) — فشل واحدة **MUST NOT** يُسقط اللوحة كاملة إلى حالة خطأ عامة.
+
+Each zone (§12.2) **MUST** be treated as an independent isolation unit (**Error Boundary**) — failure of one **MUST NOT** cause the entire Dashboard to fall into a global error state.
+
+---
 
 ## 12.10 Dashboard Context Boundary
-كل لوحة تحكم **MUST** تُعلن سياقًا أساسيًا واحدًا (لاعبون، بطولات، إحصائيات عامة) — **MUST NOT** تتحول لمجموعة معلومات عشوائية غير مترابطة:
+
+Every Dashboard **MUST** declare one primary context (Players, Competitions, General Statistics) — it **MUST NOT** become a random collection of unrelated information:
+
+```text
+Players Dashboard → Widgets MUST serve the Players context
+(statistics about players, player list, player alerts)
 ```
-Players Dashboard → Widgets MUST تخدم سياق اللاعبين (إحصائيات لاعبين، قائمة لاعبين، تنبيهات لاعبين)
-```
-عرض Widget من سياق مختلف تمامًا (مؤشرات بطولة داخل لوحة اللاعبين) **MUST** مبررًا موثَّقًا صراحة (لماذا هذا الاستثناء) — لا إضافة حرة بدون سبب معلن.
+
+Displaying a Widget from a completely different context (e.g., competition metrics inside the Players Dashboard) **MUST** be explicitly documented with a justification explaining why the exception exists — no arbitrary additions without a stated reason.
+
+---
 
 ## 12.11 Widget Loading Priority
-ترتيب تحميل ثابت **MUST** يُحترَم لكل شاشة، يمنع ظهور المحتوى بترتيب عشوائي مربك:
-```
+
+A fixed loading order **MUST** be respected for every screen to prevent content from appearing in a confusing arbitrary sequence:
+
+```text
 1. Global Header (§12.2)
 2. Module Navigation
 3. KPI Area
@@ -140,80 +190,109 @@ Players Dashboard → Widgets MUST تخدم سياق اللاعبين (إحصا�
 5. Side Panel
 6. Optional/Secondary Widgets
 ```
-**MUST NOT** ظهور رسم بياني أو محتوى ثانوي قبل اكتمال الهيكل الأساسي (Header/Navigation) — يخالف توقع المستخدم البصري الطبيعي لتحميل الصفحة.
+
+Charts or secondary content **MUST NOT** appear before the core structure (Header/Navigation) is established — this violates the user's natural visual expectation of page loading.
+
+---
 
 ## 12.12 Dashboard Data Dependency
-كل شاشة لوحة تحكم **MUST** تُعلن صراحة طبيعة اعتمادية البيانات بين Widgets المكوّنة لها — لا تبعية ضمنية تُكتشف بالصدفة لاحقًا:
-```
-MUST يُعلن كل Widget هل:
-- يشارك مصدر بيانات مع Widgets أخرى (Shared Dataset)
-- يستقل بنقطة استدعاء خاصة به (Independent Endpoint)
-- يعتمد على نتيجة Widget آخر (Dependent — يتطلب توثيقًا خاصًا لسبب الاعتماد)
 
-MUST NOT تبعيات تشغيلية خفية (Hidden Runtime Dependencies) غير معلنة في تصميم الشاشة.
+Every Dashboard screen **MUST** explicitly declare the nature of data dependencies between its composed Widgets — no implicit dependencies that are discovered accidentally later:
+
+```text
+Each Widget MUST declare whether it:
+
+- Shares a data source with other Widgets (Shared Dataset)
+- Has its own independent request endpoint (Independent Endpoint)
+- Depends on another Widget's result (Dependent — requires special documentation explaining the reason)
+
+Hidden Runtime Dependencies MUST NOT exist without being explicitly documented.
 ```
-**السبب:** بدون هذا الإعلان الصريح، قد تتحول شاشة متوازية التحميل (§12.7) تدريجيًا إلى سلسلة تحميل متتالية (Chart ينتظر KPI ينتظر Table) دون أن ينتبه أحد للانحدار التدريجي في الأداء.
+
+**Reason:** Without this explicit declaration, a screen designed for parallel loading (§12.7) may gradually become a sequential loading chain (Chart waits for KPI, which waits for Table) without anyone noticing the progressive performance degradation.
+
+---
 
 ## 12.13 Cross-Widget Communication
-تفاعل شائع في لوحات التحكم الحديثة (الضغط على KPI يُصفّي الجدول أدناه، نقطة في رسم بياني تُصفّي النتائج) — هذا **سلوك لوحة تحكم (Dashboard Behavior)**، لا مكوّن (Chapter 8) ولا نمط تفاعل عام (Chapter 11):
-```
-Widget MAY ينشر سياقًا (Publish Context) عند تفاعل المستخدم معه.
-Widgets أخرى MAY تشترك (Subscribe) في هذا السياق وتتفاعل معه.
-هذا التفاعل MUST يبقى اختياريًا (Optional) دائمًا — أي Widget MUST يعمل بشكل صحيح ومستقل حتى لو لم يستهلك أي سياق منشور من غيره.
-```
-**قاعدة (MUST NOT):** Widgets **MUST NOT** تصبح مرتبطة ارتباطًا وثيقًا إلزاميًا (Tightly Coupled) — لا Widget يتطلب وجود Widget آخر ليعمل أصلاً (يخالف §12.9 Widget Failure Isolation ضمنيًا لو حدث).
 
-## 12.14 Dashboard Context Provider (مبدأ لا تنفيذ)
-قيم سياقية مشتركة عبر كل Widgets في نفس الشاشة (الموسم المختار، البطولة المختارة، النادي المختار) **MUST** مصدرًا واحدًا مشتركًا على مستوى الصفحة — **MUST NOT** كل Widget يجلب نفس القيمة بشكل مستقل (يُنتج طلبات API مكررة لنفس البيانات بلا داعٍ، يخالف §12.7 الأداء). **التوثيق هنا مبدأ معماري فقط** — آلية التنفيذ الدقيقة (React Context، Global Store، إلخ) **MUST NOT** تُحسَم في هذا الفصل، بل في Chapter 21 (Technical Architecture).
+A common interaction in modern Dashboards is clicking a KPI to filter the table below, or clicking a point in a chart to filter results. This is a **Dashboard Behavior**, not a component (Chapter 8) or a general interaction pattern (Chapter 11):
+
+```text
+A Widget MAY publish context when the user interacts with it.
+Other Widgets MAY subscribe to that context and respond to it.
+
+This interaction MUST always remain optional — every Widget MUST
+function correctly and independently even if it does not consume
+any context published by another Widget.
+```
+
+**Rule (MUST NOT):** Widgets **MUST NOT** become tightly coupled — no Widget may require another Widget to exist in order to function at all (which would implicitly violate §12.9 Widget Failure Isolation).
 
 ---
 
-## Dashboard Template Registry
-مرجع مركزي سريع (نفس منطق Chapter 11 §Pattern Registry) — يُستهلَك من Chapter 20 بالمعرّف لا الاسم النصي:
+## 12.14 Dashboard Context Provider (Principle, Not Implementation)
 
-| ID | Layout | الحالة |
-|---|---|---|
-| DB-ENTITY-001 | Entity Management Dashboard | Stable v1.0 |
-| DB-ANALYTICS-001 | Analytics Dashboard | Stable v1.0 |
-| DB-MONITORING-001 | Monitoring Dashboard | Stable v1.0 |
-| DB-WORKSPACE-001 | Workspace Dashboard | Stable v1.0 (يُفصَّل في Chapter 13) |
+Shared contextual values across all Widgets on the same screen (selected season, selected competition, selected club) **MUST** have one shared source at the page level — **MUST NOT** have every Widget independently fetch the same value (which creates duplicate API requests for the same data unnecessarily and violates §12.7 performance principles).
 
-## Widget Registry (بنية مرجعية، غير مُفعَّلة الآن)
-لكل Widget جديد يُضاف مستقبلاً، **SHOULD** يُسجَّل بالحقول التالية (يُستهلَك من Chapter 20 لاحقًا لتركيب الشاشات آليًا):
+**This chapter documents only the architectural principle** — the exact implementation mechanism (React Context, Global Store, etc.) **MUST NOT** be decided here, but rather in Chapter 21 (Technical Architecture).
 
-| الحقل | الوصف |
-|---|---|
-| Widget ID | معرّف فريد (يتبع نمط `WG-{NAME}-001`) |
-| Supported Dashboard Types | أي من §Dashboard Template Registry يقبل هذا الـWidget |
-| Zone | أي منطقة من §12.2 ينتمي لها |
-| Priority | ترتيبه ضمن §12.11 Widget Loading Priority |
-| Refresh Policy | من §12.8 |
+---
 
-**غير مُفعَّل إلزاميًا في هذا الإصدار** — البنية موثَّقة الآن لتفادي إعادة تصميم لاحقة (PR-008 Built to Scale)، والتفعيل الفعلي حين يحتاجه Chapter 20.
+# Dashboard Template Registry
+
+A central quick reference (following the same logic as Chapter 11 §Pattern Registry) — consumed by Chapter 20 through the ID rather than the textual name:
+
+| ID                | Layout                      | Status                               |
+| ----------------- | --------------------------- | ------------------------------------ |
+| DB-ENTITY-001     | Entity Management Dashboard | Stable v1.0                          |
+| DB-ANALYTICS-001  | Analytics Dashboard         | Stable v1.0                          |
+| DB-MONITORING-001 | Monitoring Dashboard        | Stable v1.0                          |
+| DB-WORKSPACE-001  | Workspace Dashboard         | Stable v1.0 (detailed in Chapter 13) |
+
+# Widget Registry (Reference Structure, Not Currently Activated)
+
+For every new Widget added in the future, it **SHOULD** be registered using the following fields (to be consumed later by Chapter 20 for automated screen composition):
+
+| Field                     | Description                                                             |
+| ------------------------- | ----------------------------------------------------------------------- |
+| Widget ID                 | Unique identifier (following the `WG-{NAME}-001` pattern)               |
+| Supported Dashboard Types | Which Dashboard Template Registry entries from §12.1 accept this Widget |
+| Zone                      | Which zone from §12.2 it belongs to                                     |
+| Priority                  | Its position within §12.11 Widget Loading Priority                      |
+| Refresh Policy            | As defined in §12.8                                                     |
+
+**Not mandatory in this release** — the structure is documented now to avoid future redesign (PR-008 Built to Scale), with actual activation when Chapter 20 requires it.
+
+---
 
 ## Do & Don't
-**Do:** اختر نوع تخطيط من §12.1 أولاً قبل أي تصميم تفصيلي · طبّق §12.3 ترتيب العناصر حرفيًا في كل شاشة جديدة
-**Don't:** لا تصمم تخطيطًا حرًا خارج §12.1 · لا تعرض محتوى محميًا للحظة قبل فحص الصلاحية (§12.5)
+
+**Do:** Select a layout type from §12.1 first before any detailed design work · Apply the element ordering rules in §12.3 literally to every new screen.
+
+**Don't:** Do not design a free-form layout outside §12.1 · Do not expose protected content even momentarily before checking permissions (§12.5).
 
 ## Success Metrics
-- 100% من شاشات لوحة التحكم الجديدة تختار نوعًا من §12.1 صراحة
-- 0 شاشة تعرض محتوى محظورًا للحظة قبل فحص الصلاحية
-- 100% من الجداول الكبيرة تستخدم Virtualization
-- 0 إعادة تحميل صفحة كاملة لتحديث Widget واحد
-- 100% من الـWidgets تُعلن سياسة تحديثها الخاصة (§12.8)
-- 0 فشل Widget ينتشر لبقية اللوحة (§12.9)
-- 100% من اللوحات تُعلن سياقًا أساسيًا واحدًا (§12.10)
-- 100% من الشاشات تُعلن طبيعة اعتمادية بيانات Widgets صراحة (§12.12)
-- 0 Widget يتطلب وجود Widget آخر ليعمل أصلاً (§12.13)
-- 0 طلب API مكرر لنفس القيمة السياقية عبر Widgets مختلفة (§12.14)
+
+* 100% of new Dashboard screens explicitly select a type from §12.1.
+* 0 screens expose restricted content even momentarily before permission checks.
+* 100% of large tables use Virtualization.
+* 0 full-page reloads for updating a single Widget.
+* 100% of Widgets explicitly declare their own refresh policy (§12.8).
+* 0 Widget failures propagate to the rest of the Dashboard (§12.9).
+* 100% of Dashboards declare one primary context (§12.10).
+* 100% of screens explicitly declare the data dependency nature of their Widgets (§12.12).
+* 0 Widgets require another Widget to exist in order to function (§12.13).
+* 0 duplicate API requests for the same contextual value across different Widgets (§12.14).
 
 ## References
-**Normative:** Chapter 8 (كل المستويات) · Chapter 11 (كل الأنماط)
-**Informative:** Common Enterprise Dashboard Patterns (Grafana، Power BI — مرجع مفاهيمي عام، ليس مصدر قواعد)
+
+**Normative:** Chapter 8 (all levels) · Chapter 11 (all patterns)
+**Informative:** Common Enterprise Dashboard Patterns (Grafana, Power BI — general conceptual references, not sources of design rules)
 
 ## Related Chapters
-Chapter 8 · Chapter 11 · Chapter 13 (CMS يخصّص Workspace Dashboard) · Chapter 20 (التجميع النهائي)
+
+Chapter 8 · Chapter 11 · Chapter 13 (CMS specializes Workspace Dashboard) · Chapter 20 (Final Composition)
 
 ---
 
-*نهاية Chapter 12. الفصل التالي: Chapter 13 — CMS System.*
+*End of Chapter 12. Next chapter: Chapter 13 — CMS System.*

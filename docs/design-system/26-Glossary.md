@@ -1,156 +1,184 @@
 # Chapter 26 — Glossary
 
 **Document:** UAEAF Enterprise Design System Framework v1.0.0
-**Chapter Status:** Accepted | **Last Updated:** هذه الجلسة | **Document Owner:** مالك المشروع
+**Chapter Status:** Accepted | **Last Updated:** This Session | **Document Owner:** Project Owner
 
-> **Status: Frozen (Baseline v1.0).** أي تغيير بعد التجميد **MUST** يُدخَل حصريًا عبر ADR جديد أو بند Backlog موثَّق.
+> **Status: Frozen (Baseline v1.0).** Any change after the freeze **MUST** be introduced exclusively through a new ADR or a documented Backlog item.
 
 ## Scope
-**يغطي:** كل مصطلح عُرِّف عبر الفصول 0-25، مجمَّعًا أبجديًا بمرجعه الأصلي — لا تعريف جديد، استشهاد فقط (نفس منطق Chapter 23 ADR-0035).
-**لا يغطي:** أي مصطلح لم يُعرَّف رسميًا في فصله — الغياب هنا يعني الحاجة لتعريفه أولاً في فصله المناسب، لا إضافته هنا مباشرة.
+
+**Covers:** Every term defined across Chapters 0–25, consolidated alphabetically with its original reference — no new definitions, references only (following the same principle as Chapter 23 ADR-0035).
+**Does not cover:** Any term that was not formally defined in its source chapter — absence here means the term must first be defined in its appropriate source chapter, not added directly here.
 
 ## Purpose
-هذا الفصل **المرجع الأبجدي الوحيد** لكل مصطلح تقني في الوثيقة — نقطة بحث سريعة واحدة بدل تصفح 25 فصلاً.
+
+This chapter is the **single alphabetical reference** for every technical term used throughout the document — providing one quick lookup point instead of navigating through 25 chapters.
 
 ---
 
 ## A
-- **Accessible Name** — النص الذي يقرأه قارئ الشاشة لعنصر تفاعلي (Chapter 6)
-- **AI-Assisted** — AI يقترح، الإنسان يقرر ويعتمد (Chapter 16)
-- **AI Extraction** — استخراج نموذج AI لحقيقة محددة من صفحة لعرضها كإجابة (Chapter 15)
-- **Alias Token** — اسم مستعار مختصر بين Primitive وتوكن نهائي، لأغراض البناء الداخلي فقط (Chapter 3)
-- **Anatomy** — التشريح البصري لمكوّن، الأجزاء الفرعية المكوِّنة له (Chapter 8)
-- **Answer-First Content** — أسلوب كتابة يضع الإجابة الجوهرية في أول الفقرة (Chapter 15)
-- **Anti-Pattern** — تطبيق شائع وخاطئ لمبدأ، يُذكر لمنع تكراره (Chapter 2)
-- **Audit Record** — سجل غير قابل للتعديل يوثّق من فعل ماذا ومتى (Chapter 8 L7)
+
+* **Accessible Name** — The text announced by a screen reader for an interactive element (Chapter 6)
+* **AI-Assisted** — AI suggests; a human decides and approves (Chapter 16)
+* **AI Extraction** — The extraction of a specific fact from a page by an AI model for presentation as an answer (Chapter 15)
+* **Alias Token** — A shortened alias between a Primitive and a final token, used for internal construction purposes only (Chapter 3)
+* **Anatomy** — The visual anatomy of a component: the sub-parts that make up the component (Chapter 8)
+* **Answer-First Content** — A writing approach that places the core answer at the beginning of the paragraph (Chapter 15)
+* **Anti-Pattern** — A common but incorrect implementation of a principle, documented to prevent its repetition (Chapter 2)
+* **Audit Record** — An immutable record documenting who did what and when (Chapter 8 L7)
 
 ## B
-- **Baseline Freeze** — حالة فصل مُعتمَد نهائيًا لا يُعدَّل إلا عبر ADR جديد (Chapter 22)
-- **Behavior Layer** — طبقة منطق المكوّن والوصول، منفصلة عن المظهر (Chapter 8 ADR-0012)
-- **Blocking Feedback** — تغذية راجعة تمنع أي تفاعل آخر حتى الاستجابة (Chapter 8 L4)
-- **Block** — وحدة محتوى مرنة قابلة للتركيب داخل محرر غني (Chapter 13)
-- **Brand Token** — Primitive معاد تسميته بمعنى العلامة التجارية (Chapter 1، Chapter 3)
-- **Breakpoint** — عرض شاشة يتغيّر عنده عدد أعمدة الشبكة/التخطيط (Chapter 5)
-- **Bulk Action** — إجراء يُطبَّق على أكثر من عنصر مُختار في وقت واحد (Chapter 8 L7)
+
+* **Baseline Freeze** — The state of a chapter after final approval, where changes are permitted only through a new ADR (Chapter 22)
+* **Behavior Layer** — The component logic and accessibility layer, separated from presentation (Chapter 8 ADR-0012)
+* **Blocking Feedback** — Feedback that prevents any further interaction until it is addressed (Chapter 8 L4)
+* **Block** — A flexible content unit that can be composed inside a rich-text editor (Chapter 13)
+* **Brand Token** — A Primitive renamed with brand-specific meaning (Chapter 1, Chapter 3)
+* **Breakpoint** — A screen width at which the number of grid/layout columns changes (Chapter 5)
+* **Bulk Action** — An action applied simultaneously to more than one selected item (Chapter 8 L7)
 
 ## C
-- **Canonical URL** — الرابط المرجعي الرسمي الوحيد لمحتوى قد يكون متاحًا بأكثر من مسار (Chapter 14)
-- **Channel** — وسيلة توصيل إشعار (Chapter 18)
-- **Choreography** — تسلسل زمني منسّق لحركة عناصر متعددة (Chapter 5)
-- **Clear Space** — مساحة الأمان الإجبارية حول الشعار (Chapter 1)
-- **Component (CMP)** — وحدة واجهة قابلة لإعادة الاستخدام، موثَّقة في Chapter 8
-- **Component Token** — توكن خاص بمكوّن واحد فقط (Chapter 3)
-- **Confidence Indicator** — إشارة بصرية لمستوى يقين اقتراح AI (Chapter 16)
-- **Content Rule (CR)** — قاعدة صياغة ملزمة لنوع محتوى معيّن (Chapter 9)
-- **Content Type** — نموذج بيانات محتوى محدَّد بحقول ثابتة (Chapter 13)
-- **Current Route** — التمثيل المجرّد للموقع الحالي في التطبيق (Chapter 8 L3)
+
+* **Canonical URL** — The single official reference URL for content that may be accessible through more than one path (Chapter 14)
+* **Channel** — A means of delivering a notification (Chapter 18)
+* **Choreography** — A coordinated timeline governing the movement of multiple elements (Chapter 5)
+* **Clear Space** — The mandatory protected space around the logo (Chapter 1)
+* **Component (CMP)** — A reusable interface unit documented in Chapter 8
+* **Component Token** — A token specific to a single component only (Chapter 3)
+* **Confidence Indicator** — A visual indicator of the confidence level of an AI suggestion (Chapter 16)
+* **Content Rule (CR)** — A mandatory writing rule for a specific content type (Chapter 9)
+* **Content Type** — A defined content data model with fixed fields (Chapter 13)
+* **Current Route** — The abstract representation of the application's current location (Chapter 8 L3)
 
 ## D
-- **Dashboard Zone** — منطقة ثابتة الموضع داخل شاشة لوحة تحكم (Chapter 12)
-- **Data Subject** — الشخص الذي تخصّه البيانات الشخصية (Chapter 17)
-- **Date-only Value** — قيمة تاريخ بلا وقت، مستقلة عن المنطقة الزمنية (Chapter 19)
-- **Dead Token** — توكن مُعرَّف لكنه غير مستخدم في أي مكان بالكود (Chapter 3)
-- **Delivery Guarantee** — مستوى الضمان بأن إشعارًا وصل فعليًا (Chapter 18)
-- **Density** — مقدار التباعد داخل عنصر عرض بيانات (Chapter 8 L5)
-- **Destructive Action** — إجراء ذو أثر لا رجعة فيه أو يصعب التراجع عنه (Chapter 8 L7)
-- **Discipline Group** — تصنيف لعبة فرعية حسب طبيعة قياس نتيجتها (Chapter 10)
-- **Documented Consent** — موافقة مسجَّلة رسميًا بتاريخ ومصدر واضحين (Chapter 17)
-- **Domain Component** — مكوّن يجمع عدة مكونات أساسية بتركيبة خاصة بمجال معيّن (Chapter 8 L8)
+
+* **Dashboard Zone** — A fixed-position area within a dashboard screen (Chapter 12)
+* **Data Subject** — The person to whom personal data relates (Chapter 17)
+* **Date-only Value** — A date value without a time component, independent of timezone (Chapter 19)
+* **Dead Token** — A token that is defined but unused anywhere in the codebase (Chapter 3)
+* **Delivery Guarantee** — The level of assurance that a notification was actually delivered (Chapter 18)
+* **Density** — The amount of spacing within a data-display element (Chapter 8 L5)
+* **Destructive Action** — An action with an irreversible or difficult-to-reverse effect (Chapter 8 L7)
+* **Discipline Group** — A classification of a sub-discipline based on the nature of how its result is measured (Chapter 10)
+* **Documented Consent** — Formally recorded consent with a clear date and source (Chapter 17)
+* **Domain Component** — A component that combines multiple foundational components into a composition specific to a particular domain (Chapter 8 L8)
 
 ## E
-- **Easing Curve** — منحنى رياضي يصف تسارع/تباطؤ الحركة (Chapter 5)
-- **Escalation Level** — درجة "قوة المقاطعة" لنوع تغذية راجعة (Chapter 8 L4)
-- **Experience Layer** — طبقة سلوك UX مستقلة مبنية فوق نفس التوكنز (Chapter 0)
+
+* **Easing Curve** — A mathematical curve describing the acceleration/deceleration of motion (Chapter 5)
+* **Escalation Level** — The degree of "interruption strength" associated with a feedback type (Chapter 8 L4)
+* **Experience Layer** — An independent UX behavior layer built on top of the same tokens (Chapter 0)
 
 ## F
-- **Field** — الوحدة الكاملة: Label + Input + Help Text + Error معًا (Chapter 8 L2)
-- **Field Event** — فعالية قياسها مسافة أو ارتفاع (Chapter 10)
-- **First Reference Implementation** — أول تطبيق فعلي حقيقي للإطار (UAEAF، Chapter 0)
-- **Flow** — مسار مستخدم عبر عدة حالات شاشة متتابعة (Chapter 11)
-- **Fluid Typography** — تغيّر حجم الخط تدريجيًا مع عرض الشاشة (Chapter 4)
+
+* **Field** — The complete unit consisting of Label + Input + Help Text + Error (Chapter 8 L2)
+* **Field Event** — An event measured by distance or height (Chapter 10)
+* **First Reference Implementation** — The first real-world implementation of the framework (UAEAF, Chapter 0)
+* **Flow** — A user journey through multiple sequential screen states (Chapter 11)
+* **Fluid Typography** — Typography whose font size changes gradually with the screen width (Chapter 4)
 
 ## H
-- **Headless CMS** — نمط يفصل إدارة المحتوى عن طريقة عرضه النهائية (Chapter 13)
+
+* **Headless CMS** — An architecture pattern that separates content management from its final presentation method (Chapter 13)
 
 ## I
-- **Identity Provider (IdP)** — الجهة/النظام المسؤول عن التحقق من هوية المستخدم (Chapter 17)
+
+* **Identity Provider (IdP)** — The entity/system responsible for verifying a user's identity (Chapter 17)
 
 ## L
-- **Live Region** — منطقة HTML تُعلن تحديثاتها تلقائيًا لقارئ الشاشة (Chapter 6)
-- **Locale** — مجموعة إعدادات لغة+منطقة تحدد التنسيق والاتجاه معًا (Chapter 19)
+
+* **Live Region** — An HTML region whose updates are automatically announced to a screen reader (Chapter 6)
+* **Locale** — A set of language and regional settings that together determine formatting and direction (Chapter 19)
 
 ## M
-- **Monorepo** — مستودع كود واحد يحوي حزمًا متعددة بإدارة تبعيات مشتركة (Chapter 21)
+
+* **Monorepo** — A single code repository containing multiple packages managed with shared dependencies (Chapter 21)
 
 ## N
-- **Navigation** — أي عنصر واجهة وظيفته الانتقال بين حالات/صفحات، لا تنفيذ إجراء (Chapter 8 L3)
-- **Notification Engine** — خدمة مركزية مستقلة تستقبل أحداثًا وتوزّعها عبر القنوات (Chapter 18)
+
+* **Navigation** — Any interface element whose purpose is to move between states/pages rather than execute an action (Chapter 8 L3)
+* **Notification Engine** — A centralized independent service that receives events and distributes them through channels (Chapter 18)
 
 ## O
-- **Object Fit** — كيفية ملء صورة/فيديو لحاوية بأبعاد مختلفة (Chapter 8 L6)
-- **Offline Snapshot** — آخر بيانات معروفة محليًا تُعرض أثناء انقطاع الاتصال (Chapter 8 L5)
-- **Optical Size** — تعديل تفاصيل رسم الحرف تلقائيًا حسب حجم العرض (Chapter 4)
+
+* **Object Fit** — How an image/video fills a container with different dimensions (Chapter 8 L6)
+* **Offline Snapshot** — The latest known local data displayed while the connection is unavailable (Chapter 8 L5)
+* **Optical Size** — Automatic adjustment of letterform drawing details according to display size (Chapter 4)
 
 ## P
-- **Page Template (TMP)** — تركيب موثَّق نهائي لصفحة كاملة قابلة للتنفيذ (Chapter 20)
-- **Partial Data** — استجابة وصلت لكنها غير مكتملة (Chapter 8 L5)
-- **Plain Language** — كتابة بمستوى قراءة بسيط يفهمه أوسع جمهور (Chapter 9)
-- **POUR** — إطار WCAG: Perceivable, Operable, Understandable, Robust (Chapter 6)
-- **Presentation Layer** — طبقة المظهر المنفصلة عن منطق المكوّن (Chapter 8 ADR-0012)
-- **Primitive Token** — القيمة الخام المطلقة، بلا معنى وظيفي (Chapter 3)
-- **Principle (PR)** — قاعدة توجيهية عليا غير قابلة للتفاوض (Chapter 2)
+
+* **Page Template (TMP)** — A documented final composition for a complete, implementable page (Chapter 20)
+* **Partial Data** — A response that has arrived but is incomplete (Chapter 8 L5)
+* **Plain Language** — Writing at a simple reading level that can be understood by the broadest possible audience (Chapter 9)
+* **POUR** — The WCAG framework: Perceivable, Operable, Understandable, Robust (Chapter 6)
+* **Presentation Layer** — The presentation layer separated from component logic (Chapter 8 ADR-0012)
+* **Primitive Token** — An absolute raw value without functional meaning (Chapter 3)
+* **Principle (PR)** — A high-level, non-negotiable guiding rule (Chapter 2)
 
 ## R
-- **Read-only** — القيمة مرئية وغير قابلة للتعديل لكن قابلة للتحديد والنسخ (Chapter 8 L2)
-- **Reference Implementation Color** — القيمة الرقمية (500) الملزمة بمطابقة Pantone حرفيًا (Chapter 1)
-- **Roving Tabindex** — نمط WAI-ARIA حيث عنصر واحد فقط من مجموعة له `tabindex="0"` (Chapter 8 L3)
-- **Runtime Token** — القيمة الفعلية في المتصفح (CSS Custom Property) (Chapter 3)
+
+* **Read-only** — A value that is visible and cannot be modified, but can be selected and copied (Chapter 8 L2)
+* **Reference Implementation Color** — The mandatory numeric value (500) required to match Pantone exactly (Chapter 1)
+* **Roving Tabindex** — A WAI-ARIA pattern in which only one element within a group has `tabindex="0"` (Chapter 8 L3)
+* **Runtime Token** — The actual value used by the browser (CSS Custom Property) (Chapter 3)
 
 ## S
-- **Semantic Token** — توكن بمعنى وظيفي، لا يُستخدم من Primitive مباشرة (Chapter 3، Chapter 7)
-- **Stale Data** — بيانات معروضة صحيحة سابقًا لكن يُحتمل عدم تحديثها (Chapter 8 L5)
-- **State** — حالة تفاعلية مؤقتة لنفس المكوّن (Chapter 8)
-- **Structured Data** — بيانات مُرمَّزة (Schema.org/JSON-LD) تصف محتوى الصفحة بدقة (Chapter 14)
+
+* **Semantic Token** — A token with functional meaning that is not consumed directly from a Primitive (Chapter 3, Chapter 7)
+* **Stale Data** — Data that was previously correct but may no longer be up to date (Chapter 8 L5)
+* **State** — A temporary interactive state of the same component (Chapter 8)
+* **Structured Data** — Encoded data (Schema.org/JSON-LD) that describes page content accurately (Chapter 14)
 
 ## T
-- **Terminology Governance** — قائمة مركزية معتمدة للمصطلحات المتكررة (Chapter 9)
-- **Theme** — مجموعة كاملة من قيم Runtime لكل Semantic Token (Chapter 7)
-- **Theme Resolution** — العملية التي يحدد بها المتصفح القيمة الفعلية بناءً على الثيم النشط (Chapter 7)
-- **Type Scale** — سلّم أحجام خط ثابت ومترابط رياضيًا (Chapter 4)
+
+* **Terminology Governance** — A centrally approved list of recurring terminology (Chapter 9)
+* **Theme** — A complete set of Runtime values for every Semantic Token (Chapter 7)
+* **Theme Resolution** — The process through which the browser determines the actual value based on the active theme (Chapter 7)
+* **Type Scale** — A fixed, mathematically interconnected scale of font sizes (Chapter 4)
 
 ## U
-- **Unattached Athlete** — رياضي مسجَّل مباشرة لدى الاتحاد دون انتساب لنادٍ (Chapter 8 L8)
-- **UX Pattern (PT)** — تسلسل تفاعل موثَّق يُركِّب عدة مكونات لإنجاز مهمة كاملة (Chapter 11)
+
+* **Unattached Athlete** — An athlete registered directly with the federation without affiliation to a club (Chapter 8 L8)
+* **UX Pattern (PT)** — A documented interaction sequence that combines multiple components to accomplish a complete task (Chapter 11)
 
 ## V
-- **Variant** — نسخة بديلة من نفس المكوّن بغرض مختلف (Chapter 8)
-- **Variable Font** — ملف خط واحد يحتوي كل الأوزان بدل ملفات منفصلة (Chapter 4)
-- **Verified Badge** — إشارة ثقة تدل أن بيانات لاعب/نادٍ معتمدة رسميًا (Chapter 8 L8)
+
+* **Variant** — An alternative version of the same component intended for a different purpose (Chapter 8)
+* **Variable Font** — A single font file containing all weights instead of separate files (Chapter 4)
+* **Verified Badge** — A trust indicator showing that an athlete/club's data has been officially verified (Chapter 8 L8)
 
 ## W
-- **Widget** — أي مكوّن Chapter 8 عند استهلاكه داخل منطقة لوحة تحكم محددة (Chapter 12)
+
+* **Widget** — Any Chapter 8 component when consumed within a specific dashboard zone (Chapter 12)
 
 ---
 
 ## Do & Don't
-**Do:** ابحث هنا أولاً عند مواجهة مصطلح غير مألوف · أضف أي مصطلح جديد لفصله المصدر أولاً، ثم استشهد به هنا
-**Don't:** لا تُعرِّف مصطلحًا جديدًا هنا مباشرة دون فصل مصدر
+
+**Do:** Search here first when encountering an unfamiliar term · Add any new term to its source chapter first, then reference it here.
+
+**Don't:** Define a new term here directly without a source chapter.
 
 ## Success Metrics
-- 100% من المصطلحات المُعرَّفة عبر الفصول 0-25 موجودة هنا
-- 0 تعريف مصطلح يظهر هنا أولاً دون مصدر
+
+* 100% of terms defined across Chapters 0–25 are present here
+* 0 term definitions appear here first without a source
 
 ## References
-**Normative:** كل الفصول 0-25 (كل مصطلح هنا استشهاد لا تعريف أصلي)
+
+**Normative:** All Chapters 0–25 (every term here is a reference, not an original definition)
 
 ## Related Chapters
-كل الفصول
+
+All chapters
 
 ---
 
-*نهاية Chapter 26 — الفصل الأخير.*
+*End of Chapter 26 — Final Chapter.*
 
-## 🏁 نهاية الوثيقة
-**UAEAF Enterprise Design System Framework v1.0.0** — 27 فصلاً (0-26) مكتملة ومُجمَّدة بالكامل كـBaseline v1.0. أي تطوير لاحق يمر عبر Chapter 22 (Governance) حصريًا.
+## 🏁 End of Document
 
-**الخطوة التالية المقترحة (خارج نطاق الفصول 0-26):** "Design System Review & Consolidation" — مراجعة شاملة نهائية لاتساق كل المعرّفات (ADR/PR/DT/CMP/CR/PT/DB/CT/TMP) والإحالات المتبادلة عبر الوثيقة كاملة قبل التسليم النهائي للتنفيذ.
+**UAEAF Enterprise Design System Framework v1.0.0** — 27 chapters (0–26) completed and fully frozen as **Baseline v1.0**. Any subsequent development **MUST** pass exclusively through Chapter 22 (Governance).
+
+**Next Recommended Step (Outside the Scope of Chapters 0–26):**
+**"Design System Review & Consolidation"** — a comprehensive final review of the consistency of all identifiers (ADR/PR/DT/CMP/CR/PT/DB/CT/TMP) and all cross-references throughout the entire document before final delivery for implementation.

@@ -1,220 +1,319 @@
 # Chapter 8 — Component Inventory
+
 ## Level 5: Data Display Components (Data Display Foundation)
 
 **Document:** UAEAF Enterprise Design System Framework v1.0.0
-**Chapter Status:** In Progress (L5 of 8) | **Last Updated:** هذه الجلسة | **Document Owner:** مالك المشروع
+**Chapter Status:** In Progress (L5 of 8) | **Last Updated:** This Session | **Document Owner:** Project Owner
 
-> **Status: Frozen (Baseline v1.0).** أي تغيير بعد التجميد **MUST** يُدخَل حصريًا عبر ADR جديد أو بند Backlog موثَّق.
+> **Status: Frozen (Baseline v1.0).** Any change after freezing **MUST** be introduced exclusively through a new ADR or a documented Backlog item.
 
 ## Depends On / Used By
-| Depends On | Used By |
-|---|---|
-| Chapter 5 (Motion, Grid) · Chapter 6 (Accessibility) · Chapter 7 (Semantic Tokens) · Chapter 8 L1 (Skeleton, Badge, Avatar) · Chapter 8 L3 (Pagination موثَّق هناك، Tree View/Accordion موثَّقان هناك) · Chapter 8 L4 (Empty/Error/Loading State) | L7 (Enterprise Components: Data Toolbar, Filters) · L8 (Sports Components: Results Table, Medal Table) · Chapter 12 (Dashboard Patterns) · Chapter 13 (CMS Listings) |
+
+| Depends On                                                                                                                                                                                                                                                | Used By                                                                                                                                                              |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chapter 5 (Motion, Grid) · Chapter 6 (Accessibility) · Chapter 7 (Semantic Tokens) · Chapter 8 L1 (Skeleton, Badge, Avatar) · Chapter 8 L3 (Pagination documented there, Tree View/Accordion documented there) · Chapter 8 L4 (Empty/Error/Loading State) | L7 (Enterprise Components: Data Toolbar, Filters) · L8 (Sports Components: Results Table, Medal Table) · Chapter 12 (Dashboard Patterns) · Chapter 13 (CMS Listings) |
 
 ## Scope
-**يغطي:** L5 كـ**Data Display Foundation** (تعريف، تصنيف، كثافة، استجابة، فرز، فلترة، بحث، اختيار، تكامل حالات، تحديث حي، Virtualization، وصول، Analytics، تركيب) + **Data State Contract** المركزي + مكونات عرض البيانات الفعلية.
-**لا يغطي:** Pagination الكاملة (موثَّقة في L3 §CMP-PAGINATION-001)، Tree View وAccordion (موثَّقان في L3 كـContext Navigation)، أدوات الفلترة المتقدمة كواجهة مستقلة (→ L7 Filter Bar).
+
+**Covers:** L5 as the complete **Data Display Foundation** (definition, taxonomy, density, responsiveness, sorting, filtering, search, selection, state integration, live updates, virtualization, accessibility, analytics, composition) + the centralized **Data State Contract** + the actual data display components.
+
+**Does Not Cover:** Full Pagination (documented in L3 §CMP-PAGINATION-001), Tree View and Accordion (documented in L3 as Context Navigation), advanced filtering tools as a standalone interface (→ L7 Filter Bar).
 
 ## Definitions
-| المصطلح | التعريف |
-|---|---|
-| **Stale Data** | بيانات معروضة صحيحة سابقًا لكن يُحتمل أنها لم تعد محدَّثة (نتيجة Cache قديم) |
-| **Partial Data** | استجابة وصلت لكنها غير مكتملة (بعض الحقول فشلت في التحميل بينما نجحت أخرى) |
-| **Offline Snapshot** | آخر بيانات معروفة محليًا تُعرض أثناء انقطاع الاتصال |
-| **Density** | مقدار التباعد الرأسي/الأفقي داخل عنصر عرض بيانات — يؤثر على عدد الصفوف/العناصر الظاهرة دفعة واحدة |
+
+| Term                 | Definition                                                                                                                   |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Stale Data**       | Data that was previously correct but may no longer be up to date (e.g., the result of an outdated cache).                    |
+| **Partial Data**     | A response that has arrived but is incomplete (some fields failed to load while others succeeded).                           |
+| **Offline Snapshot** | The most recently known local data displayed while the connection is unavailable.                                            |
+| **Density**          | The amount of vertical/horizontal spacing within a data display element — affecting how many rows/items are visible at once. |
 
 ## Purpose
-"Data Display Foundation" هو العقد الوحيد لكيفية عرض أي مجموعة بيانات في المنصة — وعلى عكس L2/L3/L4، محوره المركزي ليس تفاعلًا واحدًا، بل **Data State Contract**: كيف يتصرف أي مكوّن عرض عند كل حالة ممكنة للبيانات نفسها.
+
+The **Data Display Foundation** is the single contract governing how any dataset is presented across the platform. Unlike L2/L3/L4, its central concern is not a single interaction, but the **Data State Contract**: how any display component behaves under every possible state of the underlying data.
 
 ---
 
 ## ADR-0017: Data Display Architecture & Data State Contract
 
-| الحقل | التفاصيل |
-|---|---|
-| **Status** | Accepted |
-| **Authority** | Engineering Decision |
-| **Context** | L5 يخدم أكبر عدد من الشاشات (كل قوائم الأندية، اللاعبين، النتائج، لوحات CMS) — يحتاج عقدًا موحّدًا لحالات البيانات قبل أي مكوّن فردي، وإلا كل شاشة تتعامل مع "لا بيانات بعد" أو "بيانات قديمة" بمنطق مختلف |
-| **Decision** | كل مكوّن عرض بيانات **MUST** يُعرِّف صراحة سلوكه لكل حالة من **Data State Contract** الموحّد: `Loading → Empty | Populated → Partial | Stale | Live-Updating → Error → Offline Snapshot`. لا مكوّن **MUST NOT** يفترض أن البيانات "دائمًا كاملة وحديثة" كحالة افتراضية وحيدة |
-| **Alternatives Considered** | ترك كل مكوّن (Table، Card، Timeline) يعرّف حالاته بمعزل — رُفض لأنه يُنتج تجربة غير متسقة (بعض الجداول تُظهر Skeleton، أخرى Spinner، لنفس حالة التحميل) |
-| **Why This Decision** | يوحّد التجربة عبر كل مكونات L5، ويجعل التكامل مع L4 (Empty/Error/Loading State) تلقائيًا لا قرارًا متكررًا |
-| **Risks** | تعقيد إضافي لمكونات بسيطة لا تحتاج كل الحالات (مثال: Description List الثابت). Mitigation: الحالات غير المنطبقة **MAY** تُهمَل صراحة بدل تطبيقها قسرًا — التوثيق يذكر أيها ينطبق لكل مكوّن |
-| **Consequences** | كل قسم مكوّن أدناه **MUST** يحتوي جدول "Data State Behavior" صريحًا |
+| Field                       | Details                                                                                                                                                                                                                                                                                                                              |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Status**                  | Accepted                                                                                                                                                                                                                                                                                                                             |
+| **Authority**               | Engineering Decision                                                                                                                                                                                                                                                                                                                 |
+| **Context**                 | L5 serves the largest number of screens (all club lists, players, results, and CMS dashboards). It therefore requires a unified contract for data states before defining any individual component; otherwise, each screen will handle “no data yet” or “stale data” differently.                                                     |
+| **Decision**                | Every data display component **MUST** explicitly define its behavior for each state in the unified **Data State Contract**: `Loading → Empty \| Populated → Partial \| Stale \| Live-Updating → Error → Offline Snapshot`. No component **MUST NOT** assume that data is “always complete and up to date” as its only default state. |
+| **Alternatives Considered** | Allowing each component (Table, Card, Timeline) to define its states independently — rejected because it produces an inconsistent experience (some tables show Skeleton, others Spinner, for the same loading state).                                                                                                                |
+| **Why This Decision**       | It unifies the experience across all L5 components and makes integration with L4 (Empty/Error/Loading State) automatic rather than a repeated decision.                                                                                                                                                                              |
+| **Risks**                   | Additional complexity for simple components that do not need every state (e.g., a static Description List). **Mitigation:** Non-applicable states **MAY** be explicitly omitted instead of being forcibly implemented — documentation must state which states apply to each component.                                               |
+| **Consequences**            | Every component section below **MUST** contain an explicit “Data State Behavior” table.                                                                                                                                                                                                                                              |
 
 ---
 
-## Data Display Foundation — الأقسام المشتركة
+# Data Display Foundation — Shared Sections
 
 ### DD.1 Data Display Definition
-**Data Display MUST** يقتصر على عرض بيانات موجودة — **MUST NOT** يشمل إدخال بيانات جديدة (ذلك L2) أو تنقلًا بين صفحات مستقلة (ذلك L3)، حتى لو احتوى عناصر قابلة للنقر داخله (نقر صف جدول للانتقال لتفاصيل = تكامل مع L3، لا وظيفة L5 نفسها).
+
+**Data Display MUST** be limited to displaying existing data — it **MUST NOT** include entering new data (that belongs to L2) or navigation between independent pages (that belongs to L3), even if it contains clickable elements (e.g., clicking a table row to navigate to details is an integration with L3, not an L5 function itself).
 
 ### DD.2 Display Taxonomy
-| النوع | الوصف | أمثلة |
-|---|---|---|
-| **Tabular** | صفوف/أعمدة منظّمة | Table، Data Grid |
-| **Collection** | عناصر متكررة الشكل | List، Card Grid |
-| **Hierarchical** | بيانات متداخلة | (Tree View → L3) |
-| **Temporal** | بيانات مرتبطة بالزمن | Timeline |
-| **Summary** | رقم/مؤشر مكثّف | Statistic Card، Metric |
-| **Structured Pair** | مفتاح-قيمة | Description List |
+
+| Type                | Description                                       | Examples               |
+| ------------------- | ------------------------------------------------- | ---------------------- |
+| **Tabular**         | Structured rows/columns                           | Table, Data Grid       |
+| **Collection**      | Repeated items with a consistent visual structure | List, Card Grid        |
+| **Hierarchical**    | Nested data                                       | Tree View → L3         |
+| **Temporal**        | Time-related data                                 | Timeline               |
+| **Summary**         | Compact number/indicator                          | Statistic Card, Metric |
+| **Structured Pair** | Key-value representation                          | Description List       |
 
 ### DD.3 Density Model
-`Comfortable` (تباعد مريح، الموقع العام) · `Compact` (كثافة أعلى، لوحة التحكم — Chapter 0 ADR-0001 Dual Experience) — يُطبَّق نفس مبدأ Chapter 8 L1 §Visual Density، هنا مُلزَم لكل مكوّن L5 تحديدًا.
+
+`Comfortable` (comfortable spacing, public website) · `Compact` (higher density, dashboard — Chapter 0 ADR-0001 Dual Experience) — the same principle from Chapter 8 L1 §Visual Density applies here and is mandatory for every L5 component specifically.
 
 ### DD.4 Responsive Display Strategy
-جدول معقّد (أعمدة كثيرة) **SHOULD** يتحول لعرض بطاقات (Card List) تحت `md` (Chapter 5 §5.10 Reflow) — لا Scroll أفقي مخفي كحل افتراضي وحيد.
+
+A complex table (many columns) **SHOULD** switch to a card-based display (Card List) below `md` (Chapter 5 §5.10 Reflow) — horizontal scrolling should not be the sole default solution.
 
 ### DD.5 Sorting Contract
-**MUST** مؤشر بصري واضح لعمود الفرز النشط واتجاهه (تصاعدي/تنازلي) · **MUST** الفرز يُعلَن لقارئ الشاشة (`aria-sort`) · فرز متعدد الأعمدة **MAY** بترتيب أولوية معلن (رقم صغير بجانب كل عمود مفروز).
+
+There **MUST** be a clear visual indicator for the active sort column and its direction (ascending/descending) · Sorting **MUST** be announced to screen readers (`aria-sort`) · Multi-column sorting **MAY** be supported with an explicitly declared priority order (a small number beside each sorted column).
 
 ### DD.6 Filtering Contract
-الفلاتر النشطة **MUST** تكون مرئية ومُلخَّصة فوق البيانات (يتكامل مع L1 Chip) — لا فلتر "خفي" غيّر النتائج دون أثر مرئي. مسح الفلاتر **MUST** إجراء واحد واضح ("مسح الكل").
+
+Active filters **MUST** be visible and summarized above the data (integrates with L1 Chip) — no “hidden” filter may change the results without a visible indication. Clearing filters **MUST** be a single, clearly identifiable action (“Clear All”).
 
 ### DD.7 Searching Contract
-البحث داخل عرض بيانات (لا صفحة بحث كاملة) **MUST** يستهلك CMP-SEARCHINPUT-001 (Chapter 8 L2) مباشرة — لا إعادة تعريف سلوك بحث مختلف.
+
+Search within a data display (not a full search page) **MUST** consume `CMP-SEARCHINPUT-001` (Chapter 8 L2) directly — search behavior must not be redefined independently.
 
 ### DD.8 Pagination Contract
-يُستهلَك من Chapter 8 L3 §CMP-PAGINATION-001 مباشرة — **MUST NOT** يُعاد تعريفه هنا. القرار الوحيد المحلي لكل مكوّن: أي Variant (Numbered/Load More/Infinite Scroll) يناسب سياقه.
+
+Pagination is consumed directly from Chapter 8 L3 §CMP-PAGINATION-001 — it **MUST NOT** be redefined here. The only local decision for each component is which Variant (`Numbered` / `Load More` / `Infinite Scroll`) best fits its context.
 
 ### DD.9 Selection Model
-| النمط | الاستخدام |
-|---|---|
-| `None` | عرض فقط، بلا اختيار |
-| `Single` | اختيار عنصر واحد (فتح تفاصيل) |
-| `Multiple` | اختيار متعدد (Bulk Actions، يُعِد لـL7) |
 
-**MUST** حالة الاختيار مرئية بوضوح (خلفية مميزة + Checkbox عند Multiple) لا اعتمادًا على لون خفيف فقط (Chapter 6 §6.2).
+| Pattern    | Usage                                                    |
+| ---------- | -------------------------------------------------------- |
+| `None`     | Display only, no selection                               |
+| `Single`   | Selecting one item (opening details)                     |
+| `Multiple` | Selecting multiple items (Bulk Actions, delegated to L7) |
 
-**Selection Persistence Policy (MUST):** الاختيار (خصوصًا `Multiple`) **MUST** يبقى محفوظًا عبر عمليات الفرز (§DD.5) والفلترة (§DD.6) وتغيير الصفحة (§DD.8) طالما العناصر المختارة لا تزال موجودة منطقيًا — لا يُفقَد الاختيار لمجرد أن العرض تغيّر. الاعتماد إلزاميًا على §DD.17 Display Identity (لا فهرس الصف/الصفحة) لتحقيق هذا.
+The selection state **MUST** be clearly visible (distinct background + Checkbox for Multiple), rather than relying on subtle color alone (Chapter 6 §6.2).
 
-### DD.10 Data State Contract (المحور المركزي — راجع ADR-0017)
+**Selection Persistence Policy (MUST):** Selection — especially `Multiple` — **MUST** persist through sorting (§DD.5), filtering (§DD.6), and page changes (§DD.8) as long as the selected items still logically exist. Selection **MUST NOT** be lost merely because the display changed. This **MUST** rely on §DD.17 Display Identity (not row/page index) to achieve this.
+
+### DD.10 Data State Contract (Central Principle — See ADR-0017)
+
+```text
+Loading → Empty | Populated → (Partial | Stale | Live-Updating applies to Populated) → Error → Offline Snapshot
 ```
-Loading → Empty | Populated → (Partial | Stale | Live-Updating يطرأ على Populated) → Error → Offline Snapshot
-```
-| الحالة | السلوك الموحّد الافتراضي |
-|---|---|
-| **Loading** | Skeleton (Chapter 8 L1) مطابق لشكل المحتوى المتوقع تمامًا — لا Spinner لعرض بيانات جدولي/تجميعي |
-| **Empty** | يستهلك CMP-EMPTYSTATE-001 (Chapter 8 L4) |
-| **Populated** | العرض الطبيعي الكامل |
-| **Partial** | **MUST** إشارة بصرية واضحة على الحقول/الصفوف الناقصة (لا فراغ صامت يبدو كخطأ في التصميم) |
-| **Stale** | راجع §DD.11 Data Freshness Contract التفصيلي |
-| **Live-Updating** | **MUST** تغيير سلس (لا قفزة تخطيط، Chapter 5 CLS) عند وصول بيانات جديدة |
-| **Error** | يستهلك CMP-ERRORSTATE-001 (Chapter 8 L4) + Retry Contract (Chapter 8 L4 §FB.19) |
-| **Offline Snapshot** | **MUST** إشارة صريحة "بيانات محفوظة محليًا، قد لا تكون محدَّثة" — لا عرضها كأنها حية |
 
-**Independent Component Lifecycle (Partial Rendering، MUST):** في صفحة تحتوي عدة مكونات عرض بيانات مستقلة (مثال: Statistic Cards + Table في نفس الشاشة)، كل مكوّن **MUST** يملك دورة حياة Data State خاصة به لا مشتركة قسرًا — إحصائيات جاهزة (`Populated`) **MUST** تظهر فور اكتمالها حتى لو كان الجدول المجاور لا يزال `Loading`. **MUST NOT** انتظار أبطأ مكوّن في الصفحة لعرض أي شيء (يخالف PR-002 Performance First).
+| State                | Unified Default Behavior                                                                                                       |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **Loading**          | Skeleton (Chapter 8 L1) matching the expected content structure exactly — no Spinner for tabular/collection data displays.     |
+| **Empty**            | Consumes `CMP-EMPTYSTATE-001` (Chapter 8 L4).                                                                                  |
+| **Populated**        | Normal, complete display.                                                                                                      |
+| **Partial**          | **MUST** provide a clear visual indication for missing fields/rows (not silent empty space that appears to be a design error). |
+| **Stale**            | See the detailed §DD.11 Data Freshness Contract.                                                                               |
+| **Live-Updating**    | **MUST** update smoothly (no layout jump, Chapter 5 CLS) when new data arrives.                                                |
+| **Error**            | Consumes `CMP-ERRORSTATE-001` (Chapter 8 L4) + Retry Contract (Chapter 8 L4 §FB.19).                                           |
+| **Offline Snapshot** | **MUST** explicitly indicate “Locally cached data; may not be up to date” — it must not be presented as live data.             |
+
+**Independent Component Lifecycle (Partial Rendering, MUST):** On a page containing multiple independent data display components (e.g., Statistic Cards + Table on the same screen), each component **MUST** have its own Data State lifecycle rather than being forcibly synchronized. Ready statistics (`Populated`) **MUST** appear as soon as they are available even if the adjacent table is still `Loading`. The page **MUST NOT** wait for the slowest component before displaying anything (violates PR-002 Performance First).
 
 ### DD.11 Refresh & Live Update Contract (Data Freshness)
-تحديث يدوي (زر Refresh) **MUST** يحافظ على موضع التمرير والاختيار الحالي (§DD.9) ما أمكن. تحديث حي (WebSocket/Polling) **MUST** يتبع Chapter 8 L4 §FB.25 Idempotency لمنع تكرار الصفوف عند وصول نفس الحدث مرتين.
 
-**عقد الطزاجة الكامل (MUST يُعرَض صراحة، لا Stale فقط):**
-| العنصر | القاعدة |
-|---|---|
-| `Last Updated` | طابع زمني نسبي ("قبل 5 دقائق") **MUST** ظاهر لأي بيانات قابلة للتقادم |
-| `Refreshing` | حالة انتقالية أثناء إعادة الجلب — **MUST NOT** إخفاء البيانات القديمة أثناءها (يُعرض مؤشر خفيف فوقها لا استبدال بـSkeleton) |
-| `Auto Refresh` | **MAY** للوحات النتائج المباشرة، بفاصل زمني معلن للمستخدم (مثال: "يتحدّث كل 30 ثانية") |
-| `Manual Refresh` | **MUST** متاح دائمًا كخيار صريح حتى مع تفعيل Auto Refresh |
+Manual refresh (Refresh button) **MUST** preserve the current scroll position and selection (§DD.9) whenever possible. Live updates (WebSocket/Polling) **MUST** follow Chapter 8 L4 §FB.25 Idempotency to prevent duplicate rows when the same event arrives twice.
+
+**Full Freshness Contract (MUST be explicitly represented, not just Stale):**
+
+| Element          | Rule                                                                                                                                                        |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Last Updated`   | A relative timestamp (“5 minutes ago”) **MUST** be visible for any data that may become stale.                                                              |
+| `Refreshing`     | Transitional state during refetch — **MUST NOT** hide existing data during refresh (show a subtle indicator over it instead of replacing it with Skeleton). |
+| `Auto Refresh`   | **MAY** be used for live results dashboards, with a user-visible interval (e.g., “Updates every 30 seconds”).                                               |
+| `Manual Refresh` | **MUST** always be available as an explicit option even when Auto Refresh is enabled.                                                                       |
 
 ### DD.12 Huge Dataset Strategy
-مجموعات بيانات كبيرة **MUST** تُعالَج بأحد الأساليب التالية، لا Pagination وحدها كحل افتراضي شامل:
-| الأسلوب | متى يُستخدم |
-|---|---|
-| **Pagination** (§DD.8) | الحالة الافتراضية لمعظم القوائم — تقسيم واضح للمستخدم |
-| **Virtualization / Windowing** | جداول/قوائم كثيفة تحتاج Scroll مستمر (>500 عنصر — يتوافق مع Chapter 8 L2 §Combobox threshold) — عرض العناصر المرئية فقط في DOM |
-| **Progressive Rendering** | تحميل أولي سريع لجزء من البيانات، ثم إكمال الباقي في الخلفية دون حجب التفاعل الأولي |
 
-تطبيق مباشر لـChapter 2 PR-008 Built to Scale — الاختيار بين الثلاثة **MUST** يُعلَن صراحة لكل مكوّن حسب طبيعة بياناته، لا افتراضًا واحدًا للجميع.
+Large datasets **MUST** be handled using one of the following strategies rather than Pagination alone as a universal default:
+
+| Strategy                       | When to Use                                                                                                                                                         |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Pagination** (§DD.8)         | Default for most lists — clear segmentation for the user.                                                                                                           |
+| **Virtualization / Windowing** | Dense tables/lists requiring continuous scrolling (>500 items — consistent with the Chapter 8 L2 §Combobox threshold) — only visible items are rendered in the DOM. |
+| **Progressive Rendering**      | Fast initial rendering of a portion of the data, followed by loading the remainder in the background without blocking initial interaction.                          |
+
+This is a direct application of Chapter 2 PR-008 **Built to Scale** — the choice among the three **MUST** be explicitly declared for each component according to its data characteristics rather than using one universal assumption.
 
 ### DD.13 Accessibility
-**MUST** بنية جدول دلالية صحيحة (`<table>`, `<th scope="col">`) لا `<div>` مقلَّدة بصريًا لجدول · Data Grid المعقّد **MUST** دعم تنقل بالأسهم بين الخلايا (نمط WAI-ARIA Grid) · كل مؤشر حالة (Live/Stale) **MUST** له نص بديل لا اعتماد على أيقونة/لون فقط.
+
+A proper semantic table structure **MUST** be used (`<table>`, `<th scope="col">`) rather than visually imitating a table using `<div>` elements · A complex Data Grid **MUST** support arrow-key navigation between cells (WAI-ARIA Grid pattern) · Every state indicator (Live/Stale) **MUST** have a textual alternative and must not rely solely on an icon/color.
 
 ### DD.14 Data Display Analytics Boundary
-نفس مبدأ L3 §N.16 وL4 §FB.14: أي مكوّن عرض **MUST NOT** يرسل Analytics مباشرة — يُصدر أحداثًا (`onSort`, `onFilter`, `onSelect`) فقط.
+
+The same principle from L3 §N.16 and L4 §FB.14 applies: no display component **MUST** send Analytics directly — it only emits events (`onSort`, `onFilter`, `onSelect`).
 
 ### DD.15 Composition
-```
+
+```text
 <DataDisplay>
-  ├── Toolbar (اختياري — بحث/فلترة/إجراءات، يُعِد لـL7)
-  ├── Header (رؤوس أعمدة/تسميات)
-  ├── Body (المحتوى الفعلي — يتبع Data State Contract §DD.10)
-  ├── Footer (Pagination، ملخّص عدد النتائج)
-  └── Overlay States (Loading/Empty/Error يُركَّبون فوق Body، لا يستبدلون البنية الكاملة إلا عند Empty/Error التامّين)
+  ├── Toolbar (optional — search/filter/actions, delegated to L7)
+  ├── Header (column headers/labels)
+  ├── Body (actual content — follows Data State Contract §DD.10)
+  ├── Footer (Pagination, result-count summary)
+  └── Overlay States (Loading/Empty/Error are composed over Body, not replacing the entire structure except for complete Empty/Error states)
 ```
 
 ### DD.16 Display Identity
-كل عنصر معروض (صف جدول، بطاقة، حدث Timeline) **MUST** يحمل معرّفًا مستقرًا وفريدًا (`rowId`, `cardId`, `timelineEventId`) مُشتقًا من هوية البيانات الفعلية (معرّف قاعدة البيانات) — **MUST NOT** الاعتماد على الفهرس (Index) في المصفوفة المعروضة كمعرّف. هذا أساس §DD.9 Selection Persistence وDD.11 Idempotency، ويمنع أخطاء React الشهيرة الناتجة عن تغيّر ترتيب العناصر بعد فرز/فلترة (إعادة تصيير خاطئة أو فقدان حالة داخلية لعنصر).
+
+Every displayed item (table row, card, Timeline event) **MUST** carry a stable, unique identifier (`rowId`, `cardId`, `timelineEventId`) derived from the actual data identity (database ID) — it **MUST NOT** rely on the array index as an identifier.
+
+This is the foundation for §DD.9 Selection Persistence and DD.11 Idempotency, and prevents common React issues caused by item ordering changing after sorting/filtering (incorrect re-rendering or loss of an item's internal state).
 
 ---
 
-## Tabular
+# Tabular
 
 ## CMP-TABLE-001 — Table
-**Purpose:** عرض بيانات منظّمة صفوف/أعمدة بسيطة نسبيًا (قائمة أندية). **Data State Behavior:** يطبّق §DD.10 كاملاً؛ Loading = صفوف Skeleton بعدد مطابق للصفحة الحالية. **Related Governance:** DD.5 (Sort)، DD.13 (`<table>` دلالي).
+
+**Purpose:** Display relatively simple structured data in rows/columns (e.g., club list).
+
+**Data State Behavior:** Applies §DD.10 in full; Loading = Skeleton rows matching the number of rows on the current page.
+
+**Related Governance:** DD.5 (Sort), DD.13 (semantic `<table>`).
 
 ## CMP-DATAGRID-001 — Data Grid
-**Purpose:** جدول متقدم (لوحة التحكم) بفرز/فلترة/تحديد متعدد/تجميد أعمدة (نتائج بطولة كاملة بمئات الصفوف). **الفرق عن Table:** Data Grid يدعم DD.9 Multiple Selection وDD.12 Virtualization دائمًا تقريبًا؛ Table البسيط غالبًا لا يحتاجهما. **Related Governance:** DD.9، DD.12، DD.13 (WAI-ARIA Grid Pattern كامل)، يُعِد لـL7 (Data Toolbar).
+
+**Purpose:** Advanced table for dashboards with sorting/filtering/multiple selection/frozen columns (e.g., complete competition results with hundreds of rows).
+
+**Difference from Table:** Data Grid supports DD.9 Multiple Selection and DD.12 Virtualization in most cases; a simple Table generally does not need them.
+
+**Related Governance:** DD.9, DD.12, DD.13 (full WAI-ARIA Grid Pattern), prepares for L7 (Data Toolbar).
 
 ## CMP-LIST-001 — List
-**Purpose:** عرض عناصر متكررة الشكل بلا أعمدة صريحة (قائمة إشعارات، قائمة مبسّطة للاعبين على الموبايل). **Data State Behavior:** Loading = عناصر Skeleton مكرَّرة. **Related Governance:** DD.4 (البديل الطبيعي لـTable على الموبايل).
+
+**Purpose:** Display repeated items without explicit columns (e.g., notification list, simplified player list on mobile).
+
+**Data State Behavior:** Loading = repeated Skeleton items.
+
+**Related Governance:** DD.4 (the natural alternative to Table on mobile).
 
 ## CMP-DESCRIPTIONLIST-001 — Description List
-**Purpose:** عرض أزواج مفتاح-قيمة ثابتة (تفاصيل ملف لاعب: الاسم، النادي، الفئة العمرية). **Data State Behavior:** Partial ينطبق هنا تحديدًا (بعض الحقول متاحة، أخرى "—" أو "غير متوفر" بدل فراغ صامت). **Related Governance:** DD.10 §Partial.
+
+**Purpose:** Display static key-value pairs (e.g., player profile details: name, club, age category).
+
+**Data State Behavior:** Partial applies specifically here (some fields available, others show “—” or “Not Available” instead of silent empty space).
+
+**Related Governance:** DD.10 §Partial.
 
 ---
 
-## Collection & Summary
+# Collection & Summary
 
-## CMP-CARD-001 — Card (عرض بيانات)
-**Purpose:** وحدة عرض مركّبة لعنصر واحد (نادٍ، خبر، فعالية) ضمن شبكة. **Anatomy:** صورة/أيقونة + عنوان + وصف مختصر + Metadata + إجراء اختياري. **Related Governance:** DD.15، Chapter 8 L1 (Avatar/Badge/Chip كأجزاء داخلية شائعة).
+## CMP-CARD-001 — Card (Data Display)
+
+**Purpose:** A composite display unit for a single item (club, news article, event) within a grid.
+
+**Anatomy:** Image/Icon + Title + Short Description + Metadata + Optional Action.
+
+**Related Governance:** DD.15, Chapter 8 L1 (Avatar/Badge/Chip as common internal parts).
 
 ## CMP-STATCARD-001 — Statistic Card
-**Purpose:** عرض رقم إحصائي بارز مع سياق (عدد اللاعبين، عدد الميداليات). **Anatomy:** رقم كبير + تسمية + مؤشر اتجاه اختياري (▲/▼ مقارنة بفترة سابقة). **Data State Behavior:** Loading = Skeleton بحجم الرقم نفسه لمنع CLS. **Related Governance:** DD.10، Chapter 4 (Numeric Typography — Backlog Ch4 v1.1).
+
+**Purpose:** Display a prominent statistical number with context (e.g., number of players, number of medals).
+
+**Anatomy:** Large Number + Label + Optional Trend Indicator (▲/▼ compared with a previous period).
+
+**Data State Behavior:** Loading = Skeleton matching the size of the number itself to prevent CLS.
+
+**Related Governance:** DD.10, Chapter 4 (Numeric Typography — Backlog Ch4 v1.1).
 
 ## CMP-METRIC-001 — Metric
-**Purpose:** نسخة مصغّرة من Statistic Card لعرض مضغوط داخل مساحات أصغر (شريط ملخّص). **Related Governance:** يبني فوق CMP-STATCARD-001.
+
+**Purpose:** A compact version of Statistic Card for dense display within smaller spaces (e.g., a summary bar).
+
+**Related Governance:** Builds upon CMP-STATCARD-001.
 
 ## CMP-KEYVALUE-001 — Key-Value Display
-**Purpose:** عرض زوج مفتاح-قيمة منفرد (خارج سياق قائمة كاملة كـDescription List) — يُستخدم كوحدة بناء أصغر. **Related Governance:** يُستهلك داخل CMP-DESCRIPTIONLIST-001 وCMP-CARD-001.
+
+**Purpose:** Display a single key-value pair outside the context of a complete list such as a Description List — used as a smaller building block.
+
+**Related Governance:** Consumed inside CMP-DESCRIPTIONLIST-001 and CMP-CARD-001.
 
 ## CMP-AVATARGROUP-001 — Avatar Group
-**Purpose:** عرض مجموعة صور مصغّرة متراكبة (المدربون المرتبطون بنادٍ). **Anatomy:** يبني فوق CMP-AVATAR-001 (Chapter 8 L1) + عداد "+N" عند تجاوز حد العرض. **Related Governance:** DD.12 (لا Virtualization غالبًا، العدد محدود طبيعيًا).
+
+**Purpose:** Display a group of overlapping thumbnail images (e.g., coaches associated with a club).
+
+**Anatomy:** Builds upon CMP-AVATAR-001 (Chapter 8 L1) + a “+N” counter when the display limit is exceeded.
+
+**Related Governance:** DD.12 (Virtualization is generally unnecessary because the count is naturally limited).
 
 ## CMP-EMPTYCOLLECTION-001 — Empty Collection
-**Purpose:** حالة خاصة من CMP-EMPTYSTATE-001 (Chapter 8 L4) مخصصة لسياق "مجموعة بيانات فارغة" تحديدًا (لا فشل تحميل) — الفرق دلالي: Empty Collection = لا يوجد محتوى بعد بشكل طبيعي؛ Error State = فشل تقني. **Related Governance:** يبني فوق CMP-EMPTYSTATE-001.
+
+**Purpose:** A specialized case of `CMP-EMPTYSTATE-001` (Chapter 8 L4) specifically for an empty dataset context (not a loading failure).
+
+The semantic distinction is:
+
+* **Empty Collection:** No content exists yet as a normal state.
+* **Error State:** A technical failure occurred.
+
+**Related Governance:** Builds upon CMP-EMPTYSTATE-001.
 
 ---
 
-## Temporal & Feed
+# Temporal & Feed
 
 ## CMP-TIMELINE-001 — Timeline
-**Purpose:** عرض تسلسل زمني لأحداث (مراحل تسجيل لاعب، تاريخ إنجازات). **Data State Behavior:** Live-Updating شائع هنا (سجل تدقيق حي). **Related Governance:** DD.10 §Live-Updating، DD.11.
+
+**Purpose:** Display a chronological sequence of events (e.g., stages of player registration, achievement history).
+
+**Data State Behavior:** Live-Updating is common here (e.g., a live audit log).
+
+**Related Governance:** DD.10 §Live-Updating, DD.11.
 
 ## CMP-ACTIVITYFEED-001 — Activity Feed
-**Purpose:** قائمة زمنية من الأحداث الأحدث أولاً (نشاط لوحة التحكم: "أحمد عدّل بيانات نادٍ"). **الفرق عن Timeline:** Feed يُركّز على الترتيب الزمني للأحداث المتغيرة باستمرار؛ Timeline غالبًا لمسار ثابت محدود (مراحل عملية واحدة). **Related Governance:** DD.11 (Live)، Chapter 8 L4 §FB.25 (Idempotency لمنع أحداث مكررة).
+
+**Purpose:** A chronological list of events, newest first (e.g., dashboard activity: “Ahmed updated a club’s data”).
+
+**Difference from Timeline:** Feed focuses on continuously changing chronological events; Timeline is generally intended for a fixed, limited process path.
+
+**Related Governance:** DD.11 (Live), Chapter 8 L4 §FB.25 (Idempotency to prevent duplicate events).
 
 ---
 
-## Do & Don't (L5 عام)
-**Do:** طبّق Data State Contract (§DD.10) كاملاً على أي مكوّن جديد قبل التصميم البصري · استخدم Skeleton لا Spinner لأي تحميل جدولي/تجميعي
-**Don't:** لا تُعِد تعريف Pagination أو Search (استهلكهما من L2/L3) · لا تترك حالة Partial/Stale صامتة بصريًا
+# Do & Don't (L5 General)
+
+**Do:**
+
+* Apply the complete Data State Contract (§DD.10) to any new component before visual design.
+* Use Skeleton rather than Spinner for any tabular/collection loading state.
+
+**Don't:**
+
+* Do not redefine Pagination or Search (consume them from L2/L3).
+* Do not leave Partial/Stale states visually silent.
 
 ## Success Metrics
-- 100% من مكونات L5 توثّق سلوكها لكل حالة من Data State Contract صراحة
-- 0 إعادة تعريف لمنطق Pagination/Search خارج L2/L3
-- 100% من الجداول المعقّدة (>500 صف) تستخدم Virtualization أو Progressive Rendering (DD.12)
-- 0 حالة Stale/Offline معروضة كأنها بيانات حية دون إشارة صريحة
-- 100% من الاختيارات المتعددة تبقى محفوظة عبر الفرز/الفلترة/تغيير الصفحة (DD.9)
-- 100% من العناصر المعروضة تستخدم معرّف مستقر لا فهرس مصفوفة (DD.16)
-- 0 مكوّن ينتظر أبطأ مكوّن مجاور في نفس الصفحة لعرض بياناته الجاهزة (Partial Rendering، DD.10)
+
+* 100% of L5 components explicitly document their behavior for every applicable Data State Contract state.
+* 0 redefinitions of Pagination/Search logic outside L2/L3.
+* 100% of complex tables (>500 rows) use Virtualization or Progressive Rendering (DD.12).
+* 0 Stale/Offline states presented as live data without explicit indication.
+* 100% of multiple selections persist across sorting/filtering/page changes (DD.9).
+* 100% of displayed items use a stable identifier rather than an array index (DD.16).
+* 0 components wait for the slowest adjacent component on the same page before displaying data that is already ready (Partial Rendering, DD.10).
 
 ## References
+
 **Normative:** Chapter 2 (PR-008) · Chapter 6 (§DD.13) · Chapter 8 L1/L3/L4 Governance
-**Implementation:** WAI-ARIA APG (Grid, Table patterns) · TanStack Table/Virtual (مرجع تنفيذي محايد)
+**Implementation:** WAI-ARIA APG (Grid, Table patterns) · TanStack Table/Virtual (technology-neutral implementation reference)
 **Informative:** WCAG 2.2
 
 ## Related Chapters
-Chapter 8 L1 (Skeleton/Badge/Avatar) · Chapter 8 L3 (§Pagination، §Tree View/Accordion) · Chapter 8 L4 (§Empty/Error State، §FB.25) · Chapter 7 · L7 (Enterprise: Data Toolbar/Bulk Actions) · L8 (Sports: Results/Medal Table)
+
+Chapter 8 L1 (Skeleton/Badge/Avatar) · Chapter 8 L3 (§Pagination, §Tree View/Accordion) · Chapter 8 L4 (§Empty/Error State, §FB.25) · Chapter 7 · L7 (Enterprise: Data Toolbar/Bulk Actions) · L8 (Sports: Results/Medal Table)
 
 ---
 
-*نهاية L5 Data Display (Data Display Foundation DD.1-DD.16 + 12 مكوّن، بالإضافة لـ4 مكونات مُستهلَكة من L1/L3/L4). التالي: L6 Media Components.*
+*End of L5 Data Display (Data Display Foundation DD.1-DD.16 + 12 components, in addition to 4 components consumed from L1/L3/L4). Next: L6 Media Components.*

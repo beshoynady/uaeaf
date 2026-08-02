@@ -1,118 +1,229 @@
 # Chapter 14 — SEO Guidelines
 
 **Document:** UAEAF Enterprise Design System Framework v1.0.0
-**Chapter Status:** Accepted | **Last Updated:** هذه الجلسة | **Document Owner:** مالك المشروع
+**Chapter Status:** Accepted | **Last Updated:** This Session | **Document Owner:** Project Owner
 
-> **Status: Frozen (Baseline v1.0).** أي تغيير بعد التجميد **MUST** يُدخَل حصريًا عبر ADR جديد أو بند Backlog موثَّق.
+> **Status: Frozen (Baseline v1.0).** Any change after the freeze **MUST** be introduced exclusively through a new ADR or a documented Backlog item.
 
 ## Depends On / Used By
-| Depends On | Used By |
-|---|---|
-| Chapter 8 L8 (الكيانات: لاعب/نادٍ/بطولة/فعالية/حكم/مدرب) · Chapter 13 §12 (SEO Metadata في Content Model) · Chapter 5 (Performance) | Chapter 15 (AI Readability يبني فوق نفس البنية) · Chapter 20 (Page Templates ينفّذ هذا الفصل فعليًا) |
+
+| Depends On                                                                                                                                                   | Used By                                                                                                                                  |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Chapter 8 L8 (Entities: Athlete / Club / Championship / Event / Official / Coach) · Chapter 13 §12 (SEO Metadata in Content Model) · Chapter 5 (Performance) | Chapter 15 (AI Readability builds upon the same structural foundation) · Chapter 20 (Page Templates implements this chapter in practice) |
 
 ## Scope
-**يغطي:** بنية المعلومات، التسلسل الهرمي للعناوين، Metadata، البيانات المنظّمة (Schema.org)، استراتيجية الروابط، الربط الداخلي، SEO للصور/الفيديو، علاقة الأداء بالـSEO، متطلبات Google News.
-**لا يغطي:** تهيئة محركات بحث الذكاء الاصطناعي تحديدًا (→ Chapter 15، فصل منفصل عمدًا).
+
+**Covers:** Information architecture, heading hierarchy, Metadata, Structured Data (Schema.org), URL strategy, internal linking, image/video SEO, the relationship between performance and SEO, and Google News requirements.
+
+**Does Not Cover:** AI-specific search engine optimization (→ Chapter 15, intentionally maintained as a separate chapter).
 
 ## Definitions
-| المصطلح | التعريف |
-|---|---|
-| **Structured Data** | بيانات مُرمَّزة بصيغة قياسية (Schema.org/JSON-LD) تصف محتوى الصفحة لمحركات البحث بدقة تفوق النص العادي |
-| **Canonical URL** | الرابط المرجعي الرسمي الوحيد لمحتوى قد يكون متاحًا بأكثر من مسار |
+
+| Term                | Definition                                                                                                                                         |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Structured Data** | Data encoded in a standardized format (Schema.org/JSON-LD) that describes page content to search engines with greater precision than ordinary text |
+| **Canonical URL**   | The single authoritative URL representing content that may otherwise be accessible through multiple paths                                          |
 
 ## Purpose
-هذا الفصل يحوّل هدف Chapter 0 §Design Goals #1 (هوية رقمية عالمية) وأهداف Discovery الأصلية (Official Brand Authority، أرشفة كل كيان) إلى قواعد تقنية قابلة للتنفيذ.
+
+This chapter translates the objective defined in Chapter 0 §Design Goals #1 (**Global Digital Identity**) and the original Discovery objectives (**Official Brand Authority**, indexing every entity) into technically enforceable implementation rules.
 
 ---
 
 ## ADR-0025: SEO Architecture Strategy
 
-| الحقل | التفاصيل |
-|---|---|
-| **Status** | Accepted |
-| **Authority** | Product Decision (يطبّق قرارات Chapter 0 Discovery مباشرة) |
-| **Context** | Chapter 0 Discovery حدّد أولويات SEO واضحة: سلطة العلامة الرسمية، أرشفة كل كيان، تأهل لـGoogle News، صفحة مستقلة لكل بطولة، محتوى دائم — بحاجة لبنية تقنية موحّدة تُطبّق هذه الأولويات عبر كل الكيانات بدل حل مخصص لكل صفحة |
-| **Decision** | كل كيان قابل للأرشفة (Chapter 8 L8: لاعب/نادٍ/حكم/مدرب/بطولة/فعالية) **MUST** صفحة مستقلة بمسار نظيف قابل للقراءة (`/athletes/{slug}` لا `/page?id=123`) + Structured Data مطابقة (Schema.org) + Metadata كاملة (Chapter 13 §12). **MUST NOT** صفحة فارغة أو جدول بيانات مجرد بلا محتوى نصي وصفي (Chapter 0 Discovery — قرار صريح) |
-| **Alternatives Considered** | الاعتماد على Popups/Modals لعرض تفاصيل الكيانات (كما كان في النظام القديم) — رُفض صراحة في Discovery لأنه غير قابل للأرشفة إطلاقًا |
-| **Why This Decision** | صفحة مستقلة قابلة للفهرسة هي الشرط الأساسي لتحقيق هدف "سلطة العلامة الرسمية" — محتوى غير مؤرشف لا وجود له لمحركات البحث بغض النظر عن جودته |
-| **Risks** | عدد كبير من الصفحات (آلاف اللاعبين عبر السنوات) قد يُنتج محتوى رقيق (Thin Content) لو لم تُدار الجودة. Mitigation: §5 Internal Linking وMinimum Content Threshold يضمنان قيمة كل صفحة |
-| **Consequences** | كل قالب صفحة كيان (Chapter 20 لاحقًا) **MUST** يلتزم بهذا الفصل حرفيًا |
+| Field                       | Details                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Status**                  | Accepted                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| **Authority**               | Product Decision (directly applies the decisions established in Chapter 0 Discovery)                                                                                                                                                                                                                                                                                                                                                                  |
+| **Context**                 | Chapter 0 Discovery established clear SEO priorities: official brand authority, indexing every entity, eligibility for Google News, a dedicated page for every championship, and evergreen content. These priorities require a unified technical architecture that applies consistently across all entities rather than a custom solution for each page.                                                                                              |
+| **Decision**                | Every indexable entity (Chapter 8 L8: Athlete / Club / Official / Coach / Championship / Event) **MUST** have a dedicated page with a clean, human-readable URL (`/athletes/{slug}` rather than `/page?id=123`) + matching Structured Data (Schema.org) + complete Metadata (Chapter 13 §12). A page **MUST NOT** consist solely of an empty state or a raw data table without descriptive textual content (Chapter 0 Discovery — explicit decision). |
+| **Alternatives Considered** | Relying on Popups/Modals to present entity details (as in the legacy system) — explicitly rejected during Discovery because such content is not reliably indexable.                                                                                                                                                                                                                                                                                   |
+| **Why This Decision**       | A dedicated, indexable page is a fundamental requirement for achieving **Official Brand Authority** — content that cannot be indexed effectively has little or no discoverability value to search engines regardless of its underlying quality.                                                                                                                                                                                                       |
+| **Risks**                   | A large number of pages (thousands of athletes accumulated over the years) may result in Thin Content if quality is not managed. **Mitigation:** §5 Internal Linking and the Minimum Content Threshold ensure that every page provides meaningful value.                                                                                                                                                                                              |
+| **Consequences**            | Every entity page template introduced in Chapter 20 **MUST** comply with this chapter in full.                                                                                                                                                                                                                                                                                                                                                        |
 
 ---
 
 ## 1. Information Architecture
-تسلسل المسارات **MUST** يعكس Chapter 8 L8 §SP.2 Entity Relationship Model (`/clubs/{slug}/athletes/{slug}` منطقيًا لا مسطّح عشوائي) — يخدم Chapter 11 §PT-NAVIGATION-001 Breadcrumb تلقائيًا بنفس البنية.
+
+URL paths **MUST** reflect the entity relationship structure defined in Chapter 8 L8 §SP.2 Entity Relationship Model.
+
+For example, `/clubs/{slug}/athletes/{slug}` is preferred where the relationship is structurally meaningful over arbitrary flat URL structures.
+
+This also enables Chapter 11 §PT-NAVIGATION-001 Breadcrumbs to be generated automatically from the same hierarchy.
 
 ## 2. Page Templates & Heading Hierarchy
-كل قالب صفحة (Chapter 20) **MUST** `<h1>` واحد فقط يطابق اسم الكيان بدقة، وتسلسل هرمي صحيح `<h2>-<h6>` بلا تخطي مستوى (يطابق Chapter 8 L1 §CMP-TYPOGRAPHY-001 حرفيًا، Chapter 6 §6.4).
+
+Every page template (Chapter 20) **MUST** contain exactly one `<h1>` that accurately matches the entity name.
+
+Heading levels **MUST** follow a valid hierarchical sequence from `<h2>` through `<h6>` without skipping levels.
+
+This requirement aligns directly with Chapter 8 L1 §CMP-TYPOGRAPHY-001 and Chapter 6 §6.4.
 
 ## 3. Metadata Standards
-يستهلك Chapter 13 §12 SEO Metadata مباشرة (Meta Title، Meta Description، صورة مشاركة) — **MUST** لكل صفحة بلا استثناء، بما فيها الصفحات المُولَّدة من بيانات تشغيلية (ملف لاعب) لا مقالات CMS فقط.
+
+The CMS directly consumes the SEO Metadata defined in Chapter 13 §12:
+
+* Meta Title
+* Meta Description
+* Social Sharing Image
+
+These fields **MUST** exist for every page without exception, including pages generated from operational data (such as an athlete profile), not only CMS-authored articles.
 
 ## 4. Structured Data (Schema.org)
-| الكيان | نوع Schema المناسب |
-|---|---|
-| لاعب (Chapter 8 L8) | `Person` + خصائص رياضية مخصصة |
-| نادٍ | `SportsOrganization` |
-| بطولة/فعالية | `SportsEvent` |
-| خبر (Chapter 13) | `NewsArticle` |
 
-**MUST** JSON-LD مضمَّن في كل صفحة كيان يطابق البيانات الفعلية المعروضة تمامًا (لا Structured Data منفصلة عن المحتوى المرئي — يخالف إرشادات محركات البحث ويُعرِّض الصفحة لعقوبة).
+| Entity                 | Appropriate Schema Type                        |
+| ---------------------- | ---------------------------------------------- |
+| Athlete (Chapter 8 L8) | `Person` + relevant sports-specific properties |
+| Club                   | `SportsOrganization`                           |
+| Championship / Event   | `SportsEvent`                                  |
+| Article (Chapter 13)   | `NewsArticle`                                  |
+
+Every entity page **MUST** contain embedded JSON-LD that accurately matches the data actually presented on the page.
+
+Structured Data **MUST NOT** describe information that is not visibly represented in the corresponding page content, as this would conflict with search engine guidelines and may expose the page to search-engine penalties.
 
 ## 5. URL Strategy & Internal Linking
-مسارات نظيفة دائمًا (§ADR-0025) + Canonical URL **MUST** لكل صفحة (يمنع محتوى مكرر عند وجود أكثر من مسار وصول). **MUST** ربط داخلي غني: صفحة لاعب **MUST** روابط لناديه، بطولاته، أخباره المرتبطة (Chapter 13 §7 Content Relationships يغذّي هذا مباشرة تلقائيًا).
 
-## 6. Image/Video SEO
-يستهلك Chapter 8 L6 Media Foundation §M.7 (Alt Text) مباشرة + `sitemap` منفصل للصور/الفيديو **SHOULD** حيثما دعمته البنية التقنية (Chapter 21).
+All URLs **MUST** follow the clean URL strategy defined in ADR-0025.
+
+Every page **MUST** define a Canonical URL to prevent duplicate-content issues when the same content is accessible through multiple paths.
+
+The platform **MUST** provide rich internal linking.
+
+For example, an athlete profile **MUST** link to the athlete's:
+
+* Club
+* Championships
+* Related articles
+
+Chapter 13 §7 Content Relationships directly enables these links to be generated automatically.
+
+## 6. Image / Video SEO
+
+The platform directly consumes Chapter 8 L6 Media Foundation §M.7 (Alt Text).
+
+A dedicated image/video sitemap **SHOULD** be provided where supported by the technical architecture (Chapter 21).
 
 ## 7. Performance & SEO Relationship
-Core Web Vitals (Chapter 0 §Design Goals، Chapter 5) **MUST** تُعامَل كمعيار SEO مباشر لا مجرد تجربة مستخدم — محرك البحث يُرتِّب الصفحات البطيئة أدنى بغض النظر عن جودة المحتوى.
+
+Core Web Vitals (Chapter 0 §Design Goals, Chapter 5) **MUST** be treated as a direct SEO consideration, not merely as a user-experience concern.
+
+Page performance is therefore considered part of the platform's search visibility strategy, alongside content quality and technical SEO.
 
 ## 8. Google News & Discover Eligibility
-أخبار CMS (Chapter 13 §CT-ARTICLE-001) المؤهلة **MUST** طابع زمني دقيق (تاريخ نشر/تعديل)، `NewsArticle` Schema (§4)، وصورة عالية الجودة (Chapter 8 L6) — متطلبات تقنية إلزامية لأهلية الظهور في Google News (Chapter 0 Discovery: أولوية معلنة).
+
+Eligible CMS news content (Chapter 13 §CT-ARTICLE-001) **MUST** include:
+
+* Accurate publication and modification timestamps
+* `NewsArticle` Structured Data (§4)
+* A high-quality image managed through Chapter 8 L6
+
+These requirements establish the technical foundation for eligibility in Google News and related discovery surfaces, consistent with the priority established in Chapter 0 Discovery.
 
 ## 9. Evergreen Content Strategy
-محتوى دائم (تاريخ الاتحاد، اللوائح، السجلات) **SHOULD** صفحات `Page` مستقلة (Chapter 13 §CT-PAGE-001) لا مدفونة داخل صفحة "عن الاتحاد" واحدة — يبني سلطة الموقع طويلة المدى (Chapter 0 Discovery).
+
+Evergreen content — such as Federation history, regulations, and records — **SHOULD** be maintained as dedicated `Page` entities (Chapter 13 §CT-PAGE-001) rather than being buried within a single "About the Federation" page.
+
+This structure supports long-term authority, discoverability, and information architecture consistency, as established in Chapter 0 Discovery.
 
 ## 10. hreflang & Bilingual SEO
-كل صفحة بنسختيها (عربي/إنجليزي، Chapter 0 Discovery: لا ترجمة آلية) **MUST** علامات `hreflang` متبادلة تربط النسختين — يمنع محركات البحث من معاملتهما كمحتوى مكرر أو متنافس.
 
-## 11. Minimum Content Threshold (يقفل Risk في ADR-0025)
-لمنع "Thin Content" مع نمو عدد صفحات الكيانات (آلاف اللاعبين عبر السنوات): كل صفحة كيان **MUST** حد أدنى من المحتوى الوصفي الفعلي (لا حقول فارغة أو "—" فقط، Chapter 9 §CR-2.8) قبل نشرها/فهرستها — **SHOULD** على الأقل: نبذة نصية (Chapter 13 Hybrid Entity Boundary)، صورة واحدة، وربط داخلي واحد فعّال (§5) كحد أدنى مطلق. صفحة كيان بلا هذا الحد الأدنى **MAY** تبقى موجودة داخليًا لكن **SHOULD** `noindex` مؤقتًا حتى اكتمالها.
+Every bilingual page (Arabic / English; Chapter 0 Discovery: no machine translation) **MUST** implement reciprocal `hreflang` annotations connecting the two language versions.
+
+This ensures that search engines correctly understand the language relationship between equivalent pages and reduces the risk of treating the versions as duplicate or competing content.
+
+## 11. Minimum Content Threshold
+
+### Closing the Thin Content Risk Identified in ADR-0025
+
+To prevent **Thin Content** as the number of entity pages grows (including thousands of athletes accumulated over the years), every entity page **MUST** meet a minimum threshold of meaningful descriptive content before it is published and/or indexed.
+
+A page **MUST NOT** rely solely on empty fields, placeholders, or `"—"` values.
+
+At an absolute minimum, an entity page **SHOULD** contain:
+
+* A meaningful textual biography or description (Chapter 13 Hybrid Entity Boundary)
+* At least one image
+* At least one functional internal link (§5)
+
+An entity page that does not meet this threshold **MAY** exist internally within the platform but **SHOULD** remain temporarily `noindex` until the required content is complete.
 
 ## 12. Redirect & URL Change Policy
-عند تغيير مسار كيان (تغيير slug، دمج ناديين، حذف حساب لاعب) **MUST** إعادة توجيه 301 دائمة من المسار القديم للجديد — **MUST NOT** رابط قديم مفهرَس يتحول لصفحة 404 صامتة (يفقد قيمة SEO مكتسبة ويكسر تجربة المستخدم القادم من نتيجة بحث). يتكامل مع Chapter 8 L7 §EC.13 (Conflict Resolution) عند دمج كيانين لهما مسارات مستقلة سابقًا.
+
+When an entity URL changes — including a slug change, club merger, or athlete account removal — the system **MUST** issue a permanent **301 Redirect** from the previous URL to the new canonical destination.
+
+An indexed legacy URL **MUST NOT** silently resolve to a 404 page when a valid successor exists.
+
+This preserves accumulated SEO equity and prevents broken experiences for users arriving from search results.
+
+This policy integrates with Chapter 8 L7 §EC.13 (Conflict Resolution) when two entities are merged and previously maintained independent URLs.
 
 ## 13. XML Sitemap Contract
-**MUST** Sitemap مقسّم حسب نوع الكيان (لا ملف واحد ضخم لكل الموقع) — `sitemap-athletes.xml`, `sitemap-news.xml`, `sitemap-clubs.xml` إلخ، مُحدَّثة تلقائيًا عند أي نشر جديد (Chapter 13 §6 `Published`). **MUST NOT** صفحات بحالة غير `Published` (Chapter 13 §6) تظهر في أي Sitemap.
 
-## 14. Duplicate Content Prevention (يوسّع §5 Canonical)
-عروض متعددة لنفس البيانات (صفحة نتائج مفلترة بعدة طرق، صفحات مُرقَّمة Pagination) **MUST** Canonical تشير جميعها للنسخة غير المفلترة/الأساسية — **MUST NOT** كل تركيبة فلتر تُفهرَس كصفحة منفصلة (يُنتج آلاف الصفحات شبه المكررة تُضعف سلطة الموقع بدل تقويتها).
+The platform **MUST** maintain separate sitemaps by entity/content type rather than relying on a single massive sitemap for the entire website.
+
+Examples include:
+
+```text id="8wq3mr"
+sitemap-athletes.xml
+sitemap-news.xml
+sitemap-clubs.xml
+...
+```
+
+Sitemaps **MUST** be updated automatically when new content is published (Chapter 13 §6 `Published`).
+
+Content in any state other than `Published` (Chapter 13 §6) **MUST NOT** appear in any Sitemap.
+
+## 14. Duplicate Content Prevention
+
+### Extending the Canonical Requirement in §5
+
+Multiple representations of the same underlying data — such as filtered result pages or paginated views — **MUST** use a Canonical URL pointing to the primary, unfiltered version where appropriate.
+
+The system **MUST NOT** allow every filter combination to be independently indexed as a separate page.
+
+Otherwise, thousands of near-duplicate URLs may be generated, weakening rather than strengthening the site's overall authority.
 
 ---
 
 ## Do & Don't
-**Do:** تحقق من وجود Structured Data صحيحة قبل نشر أي قالب صفحة جديد · اربط كل كيان بكياناته المرتبطة داخليًا (§5)
-**Don't:** لا تنشر صفحة كيان فارغة أو جدول بيانات مجرد (ADR-0025) · لا تنسَ `hreflang` عند إضافة نسخة لغة جديدة
+
+### Do
+
+* Validate that correct Structured Data exists before publishing any new page template.
+* Link every entity to its related entities through internal linking (§5).
+
+### Don't
+
+* Do not publish an empty entity page or a page consisting solely of a raw data table without descriptive content (ADR-0025).
+* Do not omit `hreflang` when introducing a new language version.
 
 ## Success Metrics
-- 100% من صفحات الكيانات (Chapter 8 L8) لها Structured Data مطابقة
-- 0 صفحة فارغة أو جدول بيانات مجرد بلا محتوى وصفي
-- 100% من أخبار CMS المؤهلة لـGoogle News تحمل NewsArticle Schema
-- 100% من الصفحات ثنائية اللغة تحمل hreflang متبادل صحيح
-- 0 صفحة كيان مفهرَسة دون الحد الأدنى من المحتوى (§11)
-- 0 رابط قديم مفهرَس يؤدي لـ404 بدل 301 Redirect (§12)
-- 0 صفحة بحالة غير Published تظهر في أي Sitemap (§13)
-- 0 تضخم صفحات مفهرَسة بسبب تركيبات الفلاتر (§14)
+
+* **100%** of entity pages (Chapter 8 L8) contain matching Structured Data.
+* **0** empty pages or raw data-table pages without descriptive content.
+* **100%** of CMS news articles eligible for Google News contain `NewsArticle` Schema.
+* **100%** of bilingual pages implement correct reciprocal `hreflang`.
+* **0** indexed entity pages fall below the minimum content threshold (§11).
+* **0** indexed legacy URLs resolve to 404 when a valid 301 Redirect is required (§12).
+* **0** non-`Published` pages appear in any Sitemap (§13).
+* **0** index bloat caused by filter combinations (§14).
 
 ## References
+
 **Normative:** Chapter 0 (Discovery) · Chapter 8 L8 · Chapter 13 §12
+
 **Implementation:** Schema.org · Google Search Central Documentation
+
 **Informative:** Google News Publisher Guidelines
 
 ## Related Chapters
-Chapter 8 L8 · Chapter 13 · Chapter 15 (AI Readability) · Chapter 20 (التنفيذ الفعلي)
+
+Chapter 8 L8 · Chapter 13 · Chapter 15 (AI Readability) · Chapter 20 (Final Implementation)
 
 ---
 
-*نهاية Chapter 14. الفصل التالي: Chapter 15 — AI Readability.*
+*End of Chapter 14. Next: Chapter 15 — AI Readability.*
