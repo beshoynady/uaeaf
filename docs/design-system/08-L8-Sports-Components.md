@@ -204,7 +204,7 @@ The logo uses `object-fit: contain` according to Chapter 8 L6 §M.9.
 }
 ```
 
-**Related Governance:** SP.4, SP.5.
+**Related Governance:** SP.4, SP.5. City-name label inside the club crest is governed by Chapter 4 ADR-0041's Club Shield City-Name Exception (scoped, non-generalizable sub-13px allowance) — not a general permission for small text elsewhere in this component.
 
 ---
 
@@ -478,7 +478,7 @@ This component also prepares for future AI Analytics integration (Chapter 16), w
 | **Accessibility** | Each logo **MUST** carry descriptive `alt` text (organization name, not "logo image" — §M.7) · carousel pagination **MUST** be keyboard-operable (Chapter 8 Global Governance §G.12) · this is a static/non-auto-advancing carousel by default (no `CMP-CAROUSEL-001` auto-advance requirement applies unless explicitly implemented, in which case the full §CMP-CAROUSEL-001 pause/reduced-motion contract applies without exception). |
 | **Content Governance** | Chapter 9 content rules apply to any accompanying section copy (heading/subheading) — no factual claims beyond "member of X" without source backing (PR-010 spirit extended by analogy). |
 | **Relationship with Clubs, Athletes, Federation Services** | This section documents the federation's *own* upward affiliations (federation → international bodies) — it is the structural inverse of Clubs Network (federation → domestic member clubs, downward). The two **MUST NOT** be visually merged or confused; they answer different credibility questions ("who recognizes us" vs. "who do we govern"). |
-| **Related Governance** | Chapter 8 Global Governance (G.1–G.12) · §M.9 Object Fit (logo integrity) · Chapter 8 L6 §CMP-CAROUSEL-001 (if auto-advance is implemented) |
+| **Related Governance** | Chapter 8 Global Governance (G.1–G.12) · §M.9 Object Fit (logo integrity) · Chapter 8 L6 §CMP-CAROUSEL-001 (if auto-advance is implemented) · bilingual organization caption typography (12.5px Arabic / 10.5px English) is governed by Chapter 4 ADR-0041's Membership Caption Exception (scoped, non-generalizable sub-13px allowance) |
 
 ---
 

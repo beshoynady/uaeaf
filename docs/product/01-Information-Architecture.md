@@ -739,7 +739,7 @@ A four-column grid at ≥1024px, preceded by the newsletter panel and closed by 
 | Affiliations strip | World Athletics · Asian Athletics Association · National Olympic Committee |
 | Legal strip | **Accessibility** · **Sitemap** · language switch · copyright |
 
-**Change from the original proposal:** the *E-Services* column was **removed** and replaced by the location map. **[D]** The Accessibility Statement remains a required footer item (Chapter 6, PR-003) and is present. Privacy · Terms · Cookies are **[P]** — they are P0 in §11 but have **no footer link yet** (see §15.2).
+**Change from the original proposal:** the *E-Services* column was **removed** and replaced by the location map. **[D]** The Accessibility Statement remains a required footer item (Chapter 6, PR-003) and is present. **[B]** Privacy Policy and Terms of Use are now present in the footer legal strip, confirmed against the current Homepage build — the earlier **[P]** "no footer link yet" note is retired for these two. Cookie Notice / Preferences remains **[P]** — still P0 in §11 with no footer link yet (see §15.2).
 
 ### 8.4 Dashboard Navigation
 
@@ -980,11 +980,33 @@ Where the **built design [B]** and this **planning document** disagree, and whic
 | **Recommendation** | **(c)** — it preserves the clean public bar, honours **[D]** ADR-0001 layer separation (a transaction is operational, not promotional), and still satisfies Design Goal #2. |
 | **Status** | ⏳ **Awaiting a product ruling.** §4.6 and §11 currently assume services exist at P1–P2. |
 
+### 15.1a Product decision — RESOLVED — "UAEAF in the Media" (الاتحاد في الإعلام) placement ✅
+
+**Decision history preserved below** — the original open item (three options: top-level nav / nested / Homepage-only) was raised in a prior session pass and is recorded here in full before its resolution, per this document's own audit-trail convention (§5).
+
+**Original gap (as first raised):** No decision yet on (1) top-level nav item vs. nested under News/Media vs. Homepage-only with no dedicated nav entry; (2) dedicated route/archive page vs. Homepage-preview-only; (3) canonical URL (AR/EN); (4) whether a listing/archive page is indexable (Chapter 14); (5) Homepage exposure and position relative to News/Media Centre.
+
+**Original options considered:** **(a)** New top-level nav item — highest discoverability, but adds scope to the already-open Header decision (§9 of the Homepage Spec). **(b)** Nest under News or Media Centre — lower nav cost, but risks exactly the News/Media-Centre conflation ADR-0042 warns against. **(c)** Homepage-preview-only, discoverable only from Home, no dedicated nav entry or archive route.
+
+**Final decision (this session, Product Owner ruling):**
+
+| Question | Resolution |
+|---|---|
+| **Product/UX name (locked)** | English **"UAEAF in the Media"**, Arabic **"الاتحاد في الإعلام"**. "External Media Coverage" remains the technical/governance description only (ADR-0042) and **MUST NOT** appear as user-facing copy. |
+| **Dedicated destination** | **Approved.** Archive route: `/media-coverage`. Individual external articles do **not** get a UAEAF detail page — each item links directly to the original publisher; the user leaves the UAEAF site only when opening the actual article. |
+| **Bilingual routing** | No platform-wide `/ar/`-vs-`/en/` URL-prefix convention exists anywhere in this document (every other documented route — `/clubs/{slug}`, `/athletes/{slug}`, etc. — is given as one language-neutral path, with language rendered by the active locale per Chapter 19 §4, not a separate URL per language). `/media-coverage` follows the same existing pattern: one route, not two — this is a pre-existing platform-wide convention, not a new decision invented for this feature. |
+| **Homepage exposure** | **LOCKED — Product Owner decision.** Position 8 of 13 in the reconciled order (`02-Homepage-Specification.md` §5/§11b) — immediately after News, before Sponsors & Partners, as a standalone content block (not inside News, not inside Media Centre, not the Footer, not a sidebar, not an inline module on Article Detail pages). **Presentation is also locked:** an animated horizontal card carousel (reuses `CMP-CAROUSEL-001`, Chapter 8 L6, unchanged — not a new component), not a static grid — full motion/accessibility/RTL contract in the Homepage Specification §11b. |
+| **Navigation (Header / Footer)** | **Remains coupled to the existing Header architecture decision** (`02-Homepage-Specification.md` §9/§25 Q11) — explicitly **not** resolved by this entry. No Header item and no Footer Quick Link are added in this pass; the Homepage section's own "View all coverage" CTA is the sole approved entry point into `/media-coverage` for now. This is the one genuine remaining open dependency — it is not re-opened here, only correctly left where it already lived. |
+| **Archive indexability** | **Recommended indexable.** The archive is a genuine UAEAF-owned curated collection (UAEAF-authored framing, source attribution, publication metadata per entry) — not a thin reproduction of any single external article. Reasoned by direct analogy to `TMP-NEWSLIST-001`'s indexability despite listing individual articles (Chapter 14 §11 Minimum Content Threshold: meaningful text + image + functional link per entry). No canonical URL on the UAEAF site claims ownership of, or canonical status over, any external publisher's article. Full reasoning in `02-Homepage-Specification.md` §18. |
+| **Relationship to News / Media Centre** | Both boundaries are settled by ADR-0042 and restated in `02-Homepage-Specification.md` §11b — News is UAEAF-authored, Media Centre is UAEAF-owned assets, this section is external/reference-only. The three **MUST NOT** be merged or nested into one another. |
+
+**Status:** ✅ **Resolved**, except the single Header/Footer navigation-treatment dependency noted above, which remains genuinely open and tracked under the existing Header decision, not duplicated here.
+
 ### 15.2 Gaps the build reveals
 
 | # | Gap | Severity | Fix |
 |---|---|---|---|
-| 1 | **Privacy Policy · Terms · Cookie notice have no link anywhere** | 🔴 P0 in §11 — legal exposure | Add to the footer legal strip beside Accessibility and Sitemap |
+| 1 | **Cookie notice has no link anywhere** — Privacy Policy and Terms of Use are now confirmed present in the footer legal strip (**[B]**, retired from this gap) | 🔴 P0 in §11 — legal exposure | Add Cookie Notice / Preferences to the footer legal strip beside Accessibility and Sitemap |
 | 2 | **Homepage section order is hard-coded** | 🟠 blocks CMS handover | Promote to *Homepage Section Instance* content type (§5.4) before CMS build |
 | 3 | **Anti-Doping has no destination** | 🟠 regulatory expectation | Either a child of About, or restore the *Athletics* branch |
 | 4 | **Coaches and Officials have no public entry point** | 🟡 P2 in §11 | Confirm whether phase one carries them at all |

@@ -117,7 +117,7 @@ These represent intentional improvements that were deliberately excluded from Ba
 
 Key examples include:
 
-* Detailed Font Weight Policy — Chapter 4.
+* Detailed Font Weight Policy — Chapter 4 — **RESOLVED, see ADR-0040** (Semantic Typography Roles / "Model E"). The four-part evidence test and the initial approved role registry (§4.15a) are now authoritative; individual future role proposals still require their own evidence review under that same test.
 * Input Mask and Mobile Keyboard Hints — Chapter 8 L2.
 * Accessible Components Matrix and Color Blind Validation — Chapter 8 L1/L6, linked to Chapter 6.
 * Multi-Window Synchronization and AI Navigation — Chapter 8 L3.

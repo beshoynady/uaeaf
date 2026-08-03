@@ -227,7 +227,7 @@ This is the foundation for §DD.9 Selection Persistence and DD.11 Idempotency, a
 
 **Data State Behavior:** Loading = Skeleton matching the size of the number itself to prevent CLS.
 
-**Related Governance:** DD.10, Chapter 4 (Numeric Typography — Backlog Ch4 v1.1).
+**Related Governance:** DD.10, Chapter 4 (Numeric Typography — Backlog Ch4 v1.1, **status confirmed still open** — this component's large-number typography remains deferred to that dedicated work; it was reviewed but not resolved during the ADR-0040 typography-architecture pass, since it requires new size/weight values rather than a recombination of existing primitives). Chapter 4 §4.15a `TY-MICROBODY` role applies to this component's secondary/supporting label text.
 
 ## CMP-METRIC-001 — Metric
 

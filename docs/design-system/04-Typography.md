@@ -203,13 +203,67 @@ Every typographic style is registered using the same logic as Chapter 3 §3.24:
 
 `TY-H1 · Heading Level 1 · Token: DT-FONT-SIZE-H1 · Usage: Main Page Headings · Components: [PageHeader, ArticleTitle] · Introduced: v1.0`
 
+Semantic Typography Roles (weight variants, ADR-0040, §4.15a) are registered the same way:
+
+`TY-EYEBROW · Hero Eyebrow · Tokens: DT-FONT-SIZE-SUBTITLE + DT-FONT-WEIGHT-BOLD · Usage: Hero kicker text · Components: [Hero] · Introduced: ADR-0040`
+`TY-CTALABEL · CTA Label · Tokens: DT-FONT-SIZE-SUBTITLE + DT-FONT-WEIGHT-BOLD · Usage: Button/link label text · Components: [CMP-BUTTON-001] · Introduced: ADR-0040`
+`TY-METADATA-COMPACT · Compact Metadata · Tokens: DT-FONT-SIZE-BODY-SM + DT-FONT-WEIGHT-MEDIUM · Usage: Combined title/location-style metadata · Components: [Event/News/Results cards] · Introduced: ADR-0040`
+`TY-MICROBODY · Micro Body · Tokens: DT-FONT-SIZE-OVERLINE + DT-FONT-WEIGHT-REGULAR · Usage: Small plain supporting text (non-kicker) · Components: [CMP-STATCARD-001] · Introduced: ADR-0040`
+
 ## 4.16 Future — Typography 2.0 (Backlog, Not Implemented Now)
 
 **Fluid Typography** (gradual font-size scaling across viewport widths using `clamp()` instead of Breakpoint jumps) · **Optical Size** (leveraging additional Variable Font axes for automatic glyph-level refinements) · **AI Typography Assistant** (automatically suggesting a typographic hierarchy when raw content is pasted — Chapter 16) · **Dynamic Reading Modes** (a dedicated reading mode for users with low vision, expanding Chapter 6).
 
+---
+
+# ADR-0040: Font Weight Policy — Semantic Typography Roles (Model E)
+
+**Resolves the "Detailed Font Weight Policy" Backlog v1.1 item recorded in Chapter 24 §6.**
+
+| Field | Details |
+| --- | --- |
+| **Status** | Accepted |
+| **Authority** | Product Decision (Project Owner) |
+| **Context** | §4.4's Type Scale pairs exactly one weight with each size/role, mirrored 1:1 into the live Figma Text Styles. Real component usage (Hero kicker text, Button/CTA labels, compact card metadata, Stat Card secondary labels) legitimately requires a different weight at an already-canonical size for emphasis or de-emphasis. Chapter 3 §3.4 already documents `DT-FONT-WEIGHT-*` as an independent primitive token category from `DT-FONT-SIZE-*` — the primitives already support this; only the semantic/style layer did not. |
+| **Decision** | Adopt a 4-layer typography architecture, made explicit as governance: `Primitive Tokens (DT-FONT-SIZE-*, DT-FONT-WEIGHT-*) → Semantic Typography Roles → Figma Text Styles/Variables → Components`. Components **MUST** consume a named Semantic Typography Role — never an undocumented local combination of raw primitives (this is not superseded by the fact that primitives are independently tokenized; independence of primitives does **NOT** authorize arbitrary component-level combinations). A new Semantic Typography Role **MAY** be registered only when **all** of the following hold: (1) its semantic meaning is genuinely distinct from every existing role: (2) its usage recurs across components or is architecturally significant, not a single incidental instance; (3) no existing role can legitimately represent it; (4) registering it does not create unnecessary proliferation (no full size×weight matrix, no per-component one-off styles). |
+| **Alternatives Considered** | (A) Leave one-weight-per-size as-is, forcing every emphasis need through ad hoc unbound text — rejected, this is the defect being fixed. (B) Full size×weight matrix (up to 42 style combinations) — rejected, violates the anti-proliferation principle and creates a picker most combinations never use. (D) Allow components to freely compose primitive size+weight without any named role — rejected, this would let typography decisions leak into individual components ungoverned, defeating the purpose of a semantic layer. |
+| **Why This Decision** | Preserves semantic governance (every typographic choice remains traceable to a named, documented role) while removing the artificial one-weight-per-size constraint that has no primitive-token basis — `DT-FONT-WEIGHT-*` was already independent, the Text Style layer just hadn't caught up. |
+| **Risks** | Uncontrolled role creation could still lead to proliferation over time. **Mitigation:** the four-part evidence test above is a **MUST**, not a guideline; any future role proposal is reviewed against it (Chapter 3 §3.5 Token Lifecycle applies equally to semantic typography roles). |
+| **Consequences** | The roles registered in §4.15a below are the first application of this policy. Any UI element needing a weight not covered by an existing size's default pairing **MUST** either map to one of §4.15a's roles or be flagged as `DESIGN SYSTEM GAP` pending its own evidence review — it **MUST NOT** be given an ad hoc raw fontSize/weight combination. |
+
+## 4.15a Approved Semantic Typography Roles (Weight Variants)
+
+Evidence-reviewed against real component usage (UAEAF Homepage, this review cycle). Each role reuses only already-approved `DT-FONT-SIZE-*`/`DT-FONT-WEIGHT-*` primitives — no new pixel or weight values were introduced.
+
+| Role | Size | Weight | Basis | Distinct From | Evidence |
+| --- | ---: | --- | --- | --- | --- |
+| `Type/Eyebrow` | 16px | Bold | `DT-FONT-SIZE-SUBTITLE` + `DT-FONT-WEIGHT-BOLD` | `Type/Overline` (12px/Bold/tracked — a smaller badge-scale kicker; Eyebrow is a larger Hero-scale kicker, different context and size) | Hero kicker text; kicker/eyebrow patterns are architecturally expected to recur beyond the Hero across other feature-style sections. |
+| `Type/CTA Label` | 16px | Bold | `DT-FONT-SIZE-SUBTITLE` + `DT-FONT-WEIGHT-BOLD` | `Type/Subtitle` (same size, Medium weight — CTA Label is the emphasis variant for actionable text) | Button/link label text; 6 independent instances confirmed on a single page, and `CMP-BUTTON-001` (Chapter 8 L1) is a platform-wide component — strongest recurrence evidence of any role reviewed. |
+| `Type/Compact Metadata` | 14px | Medium | `DT-FONT-SIZE-BODY-SM` + `DT-FONT-WEIGHT-MEDIUM` | `Type/Body Small` (same size, Regular weight — Compact Metadata is the emphasis variant for combined title+context strings) | Combined title/location-style metadata strings; this compact-combination pattern is architecturally common to Event, News, and Results card metadata, not unique to one instance. |
+| `Type/Micro Body` | 12px | Regular | `DT-FONT-SIZE-OVERLINE` + `DT-FONT-WEIGHT-REGULAR` | `Type/Overline` (same size, Bold + letter-spacing — a kicker/label treatment; Micro Body is plain small supporting text with no kicker styling) | Stat Card secondary supporting label; a genuinely distinct treatment from Overline's kicker role, expected to recur wherever small plain supporting text is needed. |
+
+**Explicitly left unresolved (insufficient evidence, not guessed):** a "Day Number" style text role (16px/Bold, observed once, in a countdown/calendar context) was reviewed and **rejected** for its own role — single-instance usage does not meet criterion (2) above, and it must not be silently folded into `Type/CTA Label` either, since a calendar numeral is not semantically a call-to-action. This specific usage remains flagged `DESIGN SYSTEM GAP — recurrence evidence required` pending a second confirmed usage elsewhere in the platform.
+
+## 4.15b Scoped Typography Exceptions
+
+# ADR-0041: Scoped Micro-Typography Exceptions
+
+| Field | Details |
+| --- | --- |
+| **Status** | Accepted |
+| **Authority** | Product Decision (Project Owner) |
+| **Context** | Two Homepage components carry typography below the general §4.10 13px minimum: (1) club-shield city-name labels (`CMP-CLUBCARD-001`, Chapter 8 L8), measured at ≈9px inside a 63.6px-diameter crest circle — a 13px label was tested and confirmed to visually overlap the crest icon; (2) bilingual organization captions (`CMP-AFFILIATIONS-001`, Chapter 8 L8, ADR-0037), at 12.5px Arabic / 10.5px English, in a compact five-card logo row. §4.4 already establishes one precedent for a sub-general-floor size: `Overline` at 12px is itself an approved exception to a stricter reading (§4.10's 13px floor exists precisely because Overline was deliberately set at 12px as the system's smallest approved role) — establishing that narrowly-scoped micro-typography exceptions are not unprecedented in this system, provided they are named, bounded, and non-generalizable. |
+| **Decision** | Formalize two **narrowly scoped, non-transferable** exceptions to §4.10's 13px minimum: **(1) Club Shield City-Name Exception** — permitted **only** inside `CMP-CLUBCARD-001`'s crest-circle city-name label, at its existing measured size (≈9px, pending exact confirmation during Figma implementation); **(2) Membership Caption Exception** — permitted **only** inside `CMP-AFFILIATIONS-001`'s bilingual organization caption pair, at 12.5px (Arabic) / 10.5px (English). Neither exception applies to any other component, any other text role, or any future component merely because it is visually small — each new candidate for a sub-13px size **MUST** undergo its own evidence review and, if approved, receive its own named exception entry here. |
+| **Alternatives Considered** | (A) Enlarge the crest / reflow the membership row to accommodate 13px — rejected for now: no evidence review of the resulting layout change has occurred, and this ADR's scope is to formalize the *existing approved* composition, not to redesign it. (C, generalized) A blanket "micro-label" permission for any component under 13px — explicitly rejected; this would erode §4.10 into a suggestion rather than a rule. |
+| **Why This Decision** | Preserves §4.10's general floor as a real, enforced minimum for the platform while acknowledging — honestly, not by silent omission — that these two specific, already-shipped compositions cannot currently meet it without a layout change that has not been separately evidenced or approved. |
+| **Risks** | Two named exceptions could be cited as precedent to justify unrelated future micro-typography requests. **Mitigation:** this ADR's language explicitly scopes each exception to its exact component and role by name — any future request **MUST** cite its own evidence, not this ADR, per the same four-part test in ADR-0040. |
+| **Consequences** | `CMP-CLUBCARD-001` and `CMP-AFFILIATIONS-001` (Chapter 8 L8) are updated with a cross-reference to this ADR in their Related Governance rows. Neither component's Homepage-visible values change as a result of this documentation — this ADR records the existing approved state, it does not authorize new work. |
+
+---
+
 ## Do & Don't
 
-**Do:** Use only the sizes/weights defined in §4.4 · Follow §4.9 for every newly added typeface.
+**Do:** Use only the sizes/weights defined in §4.4, or a registered Semantic Typography Role from §4.15a · Follow §4.9 for every newly added typeface.
 
 **Don't:** Do not load more than two font families (Arabic + Latin) on any page · Do not violate §4.6, even for a "special" design.
 
