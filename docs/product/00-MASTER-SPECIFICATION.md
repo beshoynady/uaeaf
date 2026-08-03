@@ -109,7 +109,7 @@ Home
 └── Footer-only: Contact, Help Centre, Newsletter, Affiliations, Accessibility Statement, Sitemap
 ```
 
-**Header architecture is OPEN** (§52 OPEN-004) — built Header has 9 items/4 dropdowns; the tree above (7/2) is what IA documents. Neither ratified.
+**Header architecture is RESOLVED** (§52 OPEN-004) — 9 items, 4 dropdowns, ratified by Product Owner. The 7/2 tree elsewhere in this document is superseded historical record; see `01-Information-Architecture.md` §8.1 for the current, binding structure and full per-item content.
 
 ### 06.2 The "Event" Overloading Problem (re-verified, unchanged from prior session)
 
@@ -135,7 +135,7 @@ The Homepage's "Results & Rankings + Upcoming Events" section **may** aggregate 
 
 ```
 ┌─────────────────────────────────────────────┐
-│ Header (OPEN — §52 OPEN-004)                 │
+│ Header (RESOLVED — §52 OPEN-004, IA §8.1)     │
 ├─────────────────────────────────────────────┤
 │ Page Content (§08 Page Taxonomy)             │
 ├─────────────────────────────────────────────┤
@@ -144,7 +144,7 @@ The Homepage's "Results & Rankings + Upcoming Events" section **may** aggregate 
 Floating social rail — persistent overlay, Homepage Spec §5
 ```
 
-Component behavior (Header/Footer/nav interaction) fully governed by Chapter 8 L3 — not restated. What Chapter 8 L3 does not decide is the actual item structure (§52 OPEN-004).
+Component behavior (Header/Footer/nav interaction) fully governed by Chapter 8 L3 — not restated. The actual item structure, previously undecided, is now resolved (§52 OPEN-004, `01-Information-Architecture.md` §8.1).
 
 ---
 
@@ -535,7 +535,7 @@ Fully governed by `02-Homepage-Specification.md` (13 sections, current order bel
 | 10 | Media Centre | Media Asset | §16 | COMPLETE |
 | 11 | Memberships | Affiliation (proposed) | §14a | Spec COMPLETE / CT- GAP |
 | 12 | Newsletter | n/a (data capture) | §5/§6 | COMPLETE |
-| 13 | Footer | n/a | §6 | Labels coupled to §52 OPEN-004 |
+| 13 | Footer | n/a | §6 | Labels must be updated to match the now-resolved 9-item Header (§52 OPEN-004) — not yet done |
 
 ## 33. Governance / Organization Pages
 
@@ -703,7 +703,7 @@ UAEAF in the Media (exists, locked) ──requires nothing further──> ready 
 | OPEN-001 | Formal CMS/Platform Roles & Permissions model | GOVERNANCE GAP | Product Owner + DS owner | **P0** |
 | OPEN-002 | Referee vs. Official vs. Technical Official | OPEN PRODUCT DECISION | Product Owner | P1 |
 | OPEN-003 | `CLAUDE.md`'s unsourced "Tournament" claim | DOCUMENTATION DRIFT | Product Owner | P3 |
-| OPEN-004 | Header architecture (9 vs. 7 item) | OPEN PRODUCT DECISION | Product Owner | P1 |
+| OPEN-004 | ~~Header architecture (9 vs. 7 item)~~ — **RESOLVED**, 9-item/4-dropdown structure ratified by Product Owner, full content in `01-Information-Architecture.md` §8.1 | RESOLVED | Product Owner | n/a |
 | OPEN-005 | "Events" nav-label clarity rename | OPEN PRODUCT DECISION | Product Owner | P3 |
 | OPEN-006/021 | `PT-NAVIGATION-001`/`PT-PERMISSION-001` cited, never defined; Master Index claims 9 patterns, 7 exist | DOCUMENTATION DRIFT | DS owner | P3 |
 | OPEN-007 | Sponsor entity/component — never formally specified | DESIGN SYSTEM GAP | DS owner | **P0** |

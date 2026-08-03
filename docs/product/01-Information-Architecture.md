@@ -694,7 +694,33 @@ The homepage is no longer a proposal. Twelve content sections ship in a **fixed 
 
 > **[NV]** Chapter 8-L3 (Navigation Components, `N.` prefix) is missing. This section defines the **navigation model** (what exists, where, and why) — component selection is deferred to L3.
 
-### 8.1 Main Navigation (Public) — as built **[B]**
+### 8.1 Main Navigation (Public) — **[RESOLVED — Product Owner ruling, resolves Master Spec §52 OPEN-004]**
+
+**This supersedes the "seven items, two dropdowns" description below, which is preserved as historical record only — do not build against it.** The Header architecture question (7-item/2-dropdown documented vs. 9-item/4-dropdown built, left open across multiple prior audits this engagement) is now closed. Nine top-level items; four carry a dropdown (one uses a single-column flyout/submenu pattern rather than parallel columns — see behaviour note below):
+
+| # | Item | Type | Children |
+|---|---|---|---|
+| 1 | الرئيسية / Home | link | — |
+| 2 | عن الاتحاد / About the Federation | **dropdown** (flyout) | نبذة عن الاتحاد، رئيس الاتحاد، مجلس الإدارة، اللجان، الهيكل التنظيمي (flat) + **الحوكمة والاستراتيجية** (flyout submenu: الرؤية والرسالة، الخطة الاستراتيجية، السياسات واللوائح) |
+| 3 | الأندية / Clubs | link | — routes to a filtered listing page (= General Assembly members, per client clarification; no separate "General Assembly" page/entity exists) |
+| 4 | الأعضاء / Members | **dropdown** (flyout) | الرياضيون، المدربون، الحكام (flat, direct links) + **المواهب والمتطوعون** (flyout submenu: المواهب، المتطوعون). *(Simplified from an earlier 3-category draft — "Development & Licensing" dropped, "Sports Community" wrapper removed, Athletes/Coaches/Officials promoted to direct links.)* |
+| 5 | البطولات / Championships | link | — routes to a filtered listing page (local/international, current/upcoming/past) |
+| 6 | الفاعليات / Events | link | — routes to a filtered listing page. **Confirmed to remain a distinct, independent item** despite its content overlapping with Championships' own Archive — not merged |
+| 7 | الأخبار والمقالات / News & Articles | **dropdown** (flat, no flyout — only 2 items) | الأخبار والمقالات (one destination — News and Article remain one content type, `CT-ARTICLE-001`, per Ch.13) · **الاتحاد في الإعلام / UAEAF in the Media** (resolves the Homepage's previously-deferred nav placement, ADR-0042) |
+| 8 | المركز الإعلامي / Media Centre | **dropdown** (flat, no flyout — only 2 items) | ألبوم الصور / Photo Album · الفيديوهات / Videos |
+| 9 | تواصل معنا / Contact | link | — |
+
+**Also resolved in the same conversation:** Press Releases (`PAGE-119`) is **not** a separate content type — same `CT-ARTICLE-001` as News, filtered/tagged, consistent with the existing "one content type, not two" rule (§52 OPEN-011 narrowed accordingly, still needs the tag/filter mechanism itself designed).
+
+**Interaction pattern:** the four dropdowns are single-column, not multi-column mega-menus. Two (About, Members) use a nested flyout — hovering/focusing a category row (e.g. "الحوكمة والاستراتيجية") reveals its own sub-list rather than showing every column at once. The other two (News & Articles, Media Centre) are flat two-item lists with no further nesting, since neither item has children of its own. This nested-flyout pattern is already covered by existing keyboard/accessibility governance (Chapter 8 L3 §N.5/§N.7, WAI-ARIA APG nested-menu pattern) — no new governance required, only a different arrangement of already-approved content.
+
+**Footer coupling:** per §9 below, Footer Quick Links must mirror this 9-item structure 1:1 — the previous 7-item Footer list is now stale and needs updating to match.
+
+---
+
+#### Historical record — superseded, do not build against
+
+*(Preserved per this document's own audit-trail convention, not deleted.)* The following described the Header as built prior to this resolution:
 
 Seven top-level items; two carry a descriptive dropdown (label + one-line description per child):
 

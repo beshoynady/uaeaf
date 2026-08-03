@@ -130,11 +130,11 @@ Floating social rail (persistent, overlay)
 
 ## 6. Section Inventory [Reconciled v0.2.0]
 
-One row per section, in the §5 reconciled order. **Header nav item count/structure is explicitly OPEN — see §9 note — and is not reconciled by this table.**
+One row per section, in the §5 reconciled order. **Header nav item count/structure is now RESOLVED — see §9 note and `01-Information-Architecture.md` §8.1** — not reconciled row-by-row in this table, which covers Homepage sections, not the Header itself.
 
 | # | Section | Objective | CMS-editable | Reusable component | Evidence |
 |---|---|---|---|---|---|
-| — | Global Header | Orient + route; logo, nav, search, language, theme | ● menu | ● | **[B]** — nav structure itself **OPEN**, see §9 |
+| — | Global Header | Orient + route; logo, nav, search, language, theme | ● menu | ● | **[B]** — nav structure **RESOLVED**, see §9 / IA §8.1 |
 | 1 | Hero | First impression; **target state:** 5-slide carousel, auto-advance, pause on hover/focus/touch, next-event card (Chapter 8 L6 §CMP-CAROUSEL-001) — **current build is a single static slide, a known open gap, see §25 Q10** | ● | ● | **[B]** structurally / **[NV]** carousel behavior not yet built |
 | 2 | Federation by the Numbers | Scale/credibility; count-on-view + trend | ◐ | ● | **[B]** |
 | 3 | Clubs Network | National coverage; filter by emirate | ◐ | ● | **[B]** |
@@ -147,7 +147,7 @@ One row per section, in the §5 reconciled order. **Header nav item count/struct
 | 10 | Media Centre | Emotional proof; dark mosaic, lightbox, reels | ● | ● | **[B]** — reconciled this session: the Figma build had drifted to a light card grid; corrected to match this spec (§16), rather than the spec being loosened to match the drift |
 | 11 | Memberships / International Affiliations | Credibility/affiliation proof; international governing-body logos | ● | ● **NEW** — Chapter 8 L8 §CMP-AFFILIATIONS-001 (ADR-0037) | **[B]**, now formally governed |
 | 12 | Newsletter | Retention; inline form + success state | ● | ● | **[B]** |
-| 13 | Global Footer | Navigation completion + compliance | ● | ● | **[B]** — Quick Links content **MUST** match Header nav labeling 1:1 once §9's open header decision is finalized (currently mismatched, see §9 note). "UAEAF in the Media" is **deliberately not added here yet** — footer Quick Links placement is coupled to the same open Header decision (§9), not decided independently by this section |
+| 13 | Global Footer | Navigation completion + compliance | ● | ● | **[B]** — Header decision now resolved (§9); Quick Links content **MUST** be updated to match the new 9-item Header 1:1 — **not yet done**, still shows the old 7-item list. "UAEAF in the Media" is now placed under the Header's "الأخبار والمقالات" dropdown (IA §8.1) — Footer's Quick Links update should include it too, for consistency |
 | — | Floating social rail | Owned-audience growth; 4 channels + back-to-top | ● | ● | **[B]** |
 
 **Deliberately excluded [D]:** Services/Quick Actions block and E-Services footer column — both removed by explicit prior instruction; see §25 for the unresolved product gap this creates.
@@ -197,14 +197,14 @@ Priority within the viewport and within each section, derived from **[D]** PR-00
 
 ## 9. Navigation Behavior
 
-> **[OPEN DESIGN DECISION — this session]** The Header architecture (item count, labels, dropdown count) is under active discussion and is explicitly **not** finalized by this document. The built Homepage currently shows a 9-item header with 4 dropdowns, which does not match the 7-item/2-dropdown structure documented below; neither is being ratified as correct at this time. **Do not** modify the Header in Figma to force it to either state until a separate, explicit ruling closes this item. The one exception: the Header/Footer label mismatch ("Members" vs. "Athletes" for the same destination) is a defect independent of which final structure is chosen and **SHOULD** be corrected for internal consistency once the structure itself is decided.
+> **[RESOLVED — Product Owner ruling, resolves Master Spec §52 OPEN-004]** The Header architecture is now closed. Nine top-level items, four carrying a dropdown (two using a single-column flyout/submenu pattern, two flat two-item lists — see `01-Information-Architecture.md` §8.1 for the full structure and per-item content). The Header/Footer label mismatch is resolved as part of the same ruling: Footer Quick Links must be updated to the new 9-item structure (see below), not the old 7-item one.
 
-Fully inherited from `01-Information-Architecture.md` §8, restated here as it applies to the Homepage specifically **[B]** — **subject to the open decision above:**
+Fully inherited from `01-Information-Architecture.md` §8.1 (now resolved), restated here as it applies to the Homepage specifically **[B]**:
 
-- **Main nav:** 7 top-level items (Home, About the Federation▾, Clubs, Athletes, Events▾, News, Media Centre). Two carry dropdowns with a one-line description per child. Active item shows a brand-colored underline indicator.
+- **Main nav:** 9 top-level items — الرئيسية، عن الاتحاد▾، الأندية، الأعضاء▾، البطولات، الفاعليات، الأخبار والمقالات▾، المركز الإعلامي▾، تواصل معنا. Four carry dropdowns (see `01-Information-Architecture.md` §8.1 for exact per-item content and interaction pattern). Active item shows a brand-colored underline indicator.
 - **Below 1024px:** the bar collapses into a drawer carrying the identical tree — **MUST NOT** diverge in content from the desktop nav (single source, per §8.1).
 - **Persistent utilities beside nav (not nav items):** Search overlay, Language (AR↔EN), Appearance (light/dark/high-contrast).
-- **Footer nav:** mirrors the 7 main-nav items as "Quick Links" — single source, two surfaces; plus Federation Location, Contact, Newsletter, Affiliations strip, Legal strip (Accessibility, Sitemap, language switch, copyright).
+- **Footer nav:** mirrors the 9 main-nav items as "Quick Links" — single source, two surfaces; plus Federation Location, Contact, Newsletter, Affiliations strip, Legal strip (Accessibility, Sitemap, language switch, copyright). **The Footer's current Quick Links list (7 items, still referencing the old structure) needs updating to match** — not yet done as of this ruling.
 - **Scroll behavior:** a scroll-progress lane sits under the header for reading orientation — **[D]** PR-005 (motion explains state), not decorative.
 - **Section anchors:** none of the 11 sections currently expose deep-link anchors from the main nav — the nav routes to dedicated screens (§4 of IA doc), not to Homepage section positions. **[A]** — confirm this is intended before Figma; an alternative is nav items scrolling to their Homepage preview section on Home itself. Logged as Open Question §25.
 
@@ -311,6 +311,8 @@ Presented on the Homepage via two sections: **Results & Rankings** and **Upcomin
 ## 15. Sponsors Strategy
 
 **[Reconciled v0.2.1 — this session, Project Owner ruling]** The section below replaces the retired "one merged animated strip" description with the approved built pattern. This is a **documentation correction, not a design change** — the current Figma implementation is the approved source of truth (§0 evidence convention **[B]**); nothing in Figma was modified to produce this reconciliation.
+
+> **[Amended v0.2.2 — Project Owner ruling, resolving a client-requested conflict]** The Homepage Sponsors Grid described in this entire section is **retained unchanged** — nothing below is reversed or reopened. A **separate, new, sitewide persistent component**, `CMP-GLOBALSPONSORSTRIP-001` (compact, continuously moving, logo + concise sponsor text, across public website pages), has been approved as a secondary, non-replacing addition — governed by **Chapter 8 L8 ADR-0043**, not by this section. Several implementation questions (exact placement, whether it also appears on this Homepage alongside the Grid, the exact sponsor-text field) remain **DESIGN DECISION REQUIRED** per ADR-0043 and are not resolved here. See `docs/product/05-Client-Requirements-Register-2026-08.md` item 7 for the originating conflict.
 
 - **Section structure [B]:** three parts, top to bottom —
   1. **Partner Stats** — a 3-metric trio (sponsored championships per year, years of longest partnership, count of official sponsors/partners), same visual language as "Federation by the Numbers" (§2 of this doc).
@@ -520,7 +522,7 @@ Carried forward from `01-Information-Architecture.md` where Homepage-relevant, p
 | 8 | **Homepage Organization/SportsOrganization Schema.org** — inferred as required (§18) but has no explicit row in Chapter 14; confirm before SEO implementation. | §18 | Product owner + Chapter 14 owner |
 | 9 | **Section reorder authority** — if a future business need requires reordering the 12 sections, is that a Homepage Section Instance CMS change (once #2 is resolved) or does it require a new build? | §5 | Product owner — **partially resolved:** this session's reorder ruling (§5) demonstrates the Project Owner is the deciding authority per Chapter 22 §2; the CMS-vs-build mechanism question remains open |
 | 10 | **Hero carousel implementation gap — corrected finding.** §5/§6 require a 5-slide carousel (Chapter 8 L6 §CMP-CAROUSEL-001). Direct Figma node inspection this session (superseding the earlier "single static image" description, which was based on a screenshot's pagination-dot count rather than the slide nodes themselves) confirms the **carousel architecture is already correctly built**: 5 real slide frames exist with working pagination/arrows/next-event card. The actual gap is narrower than previously stated — it is a **content/photography production gap**, not a structural one: Slide 1 has real (pre-final) photography, Slides 2–5 are explicit, hidden placeholders awaiting approved photography (`hero-images-brief.md`, §23). No Figma change was made or is needed for the architecture itself. | §5, §6, §23 | Content/asset production only — commission and approve photography for Slides 2–5 and a clean re-shoot for Slide 1; no design/Figma work required |
-| 11 | **Header architecture** — 7-item/2-dropdown (documented) vs. 9-item/4-dropdown (built) — explicitly left open this session, see §9. | §9 | Product owner |
+| 11 | ~~**Header architecture** — 7-item/2-dropdown (documented) vs. 9-item/4-dropdown (built)~~ — **RESOLVED, Product Owner ruling**: 9-item header, 4 dropdowns (2 flyout, 2 flat), full content in `01-Information-Architecture.md` §8.1. Footer Quick Links still needs updating to match (tracked as a new, separate to-do, not an open decision). | §9 | Closed |
 | 12 | **`CT-AFFILIATION-001` and Live Channel Reference content types** — both newly identified in §11a/§14a, not yet formalized in Chapter 13. | §21 | Product owner + Chapter 13 owner |
 
 **Explicit reminder per governance:** none of the above may be resolved by inventing an answer in Figma. Each requires a product ruling, and where it touches a frozen Design System chapter (e.g., #3, #4, #12 potentially touching Chapter 13), the resolution path is an ADR under Chapter 22, per `01-Information-Architecture.md`'s own governance note (§0.3).

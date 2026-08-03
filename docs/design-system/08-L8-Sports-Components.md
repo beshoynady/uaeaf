@@ -482,6 +482,39 @@ This component also prepares for future AI Analytics integration (Chapter 16), w
 
 ---
 
+# ADR-0043: Global Sponsors Strip — Site-Wide Secondary Sponsor Component
+
+| Field | Details |
+| --- | --- |
+| **Status** | Accepted |
+| **Authority** | Product Decision (Project Owner, Chapter 22 §2) — resolves a direct conflict between a client requirement and the already-locked Homepage Sponsors Grid (`02-Homepage-Specification.md` §15) |
+| **Context** | A client requirement ("sponsors in a continuously moving strip on every page") directly conflicted with this engagement's own locked decision that the Homepage Sponsors & Partners section is a **static grid** (VIP banner + tiered cards, no continuous motion, Homepage-only — §15, reconciled and locked earlier this engagement). Logged as a Critical Conflict in `docs/product/05-Client-Requirements-Register-2026-08.md` (item 7) pending Product Owner ruling, rather than silently resolved either direction. |
+| **Decision** | **Both exist, as two distinct components with different jobs.** The Homepage Sponsors Grid is **retained unchanged** — same static, tiered, VIP-banner treatment, same section, same locked status. A **new, separate, sitewide persistent component**, `CMP-GLOBALSPONSORSTRIP-001`, is introduced: compact, continuously moving, combining sponsor logo + concise sponsor text, appearing across website pages. It is explicitly a **secondary global brand-support component** — it does not replace, duplicate, or compete with the Homepage Grid's tier badges, VIP treatment, or Partnership CTA. |
+| **Alternatives Considered** | (A) Replace the Homepage Grid with the moving strip — rejected; would reverse an already-locked, evidence-based decision and lose the richer tiered/VIP treatment a grid supports, which the Product Owner did not ask for. (B) Add the strip only on non-Homepage pages — not what was decided; the Product Owner's wording keeps the Grid on the Homepage while introducing the Strip site-wide, without carving out an exception, so this ADR does not assume one (see Open Sub-Questions below). |
+| **Why This Decision** | Satisfies the client's actual request (persistent, sitewide brand-support visibility for sponsors) without discarding the Homepage Grid's already-approved, more detailed treatment. Follows the same layering pattern already established for global chrome (Header/Footer/Search overlay) coexisting with page-specific rich sections. |
+| **Risks** | (1) The Sponsor/Partner entity (`§52 OPEN-007` in `00-MASTER-SPECIFICATION.md` / `§8.14` in `03-Content-Data-Structuring-Document.md`) is still the single highest-priority Design System gap — **no `CT-SPONSOR-001` exists**. This decision now makes that gap block *two* components instead of one; it does not resolve it. (2) Continuous motion sitewide carries a larger accessibility surface than a single Homepage section — `prefers-reduced-motion` must be honored on every page load, not once. (3) Two sponsor displays visible simultaneously on the Homepage (Grid + Strip, if the Strip is not excluded there — see Open Sub-Questions) risks message redundancy if not visually differentiated. |
+| **Consequences** | New component backlog entry: `CMP-GLOBALSPONSORSTRIP-001` (spec below). Client Requirements Register item 7 marked RESOLVED. Sponsor entity gap (OPEN-007) escalated in urgency, not closed. |
+
+## CMP-GLOBALSPONSORSTRIP-001 — Global Sponsors Strip
+
+| Section | Details |
+| --- | --- |
+| **Purpose** | Continuous, lightweight, sitewide reminder of the Federation's sponsors/partners — brand-support visibility beyond the Homepage's dedicated section. |
+| **Relationship to Homepage Sponsors Grid** | Explicitly secondary and non-replacing (this ADR). The Grid remains the authoritative, detailed, tiered display (Strategic/Official/Supporting, VIP banner, Partnership CTA — §15, unchanged). This component **MUST NOT** duplicate the Grid's tier badges, VIP treatment, or CTA — it is a lighter-weight signal only. |
+| **Placement** | A new, independent, persistent global element — **NOT** merged into the Header or Footer component definitions; both remain untouched. Exact position (immediately below Header vs. immediately above Footer vs. elsewhere) is **not** decided by this ADR. **DESIGN DECISION REQUIRED** before Figma. |
+| **Scope — which pages** | "Across all website pages" is interpreted as the full **public website** (every public page template) — not the CMS/Admin Dashboard, consistent with ADR-0001's Public/Operational separation. **DESIGN DECISION REQUIRED:** whether "all pages" includes the Homepage itself (Grid + Strip both present) or excludes it (Strip only on non-Homepage pages) — the Product Owner's wording does not resolve this and it is not assumed here either way. |
+| **Content** | Sponsor logo + "concise sponsor text." The exact text field (tagline? partnership category? name only?) is **not** specified by the decision. **DESIGN DECISION REQUIRED** before CMS/content-model work on this field. |
+| **Motion** | Continuous horizontal motion ("compact, continuously moving"). Reuses the existing `CMP-CAROUSEL-001` motion contract already applied to Club Marquee and the "UAEAF in the Media" carousel: pause on hover/focus/touch, full `prefers-reduced-motion` compliance (Ch.5 §5.8) — motion **MUST** stop entirely, not merely slow, with no exception for being a "secondary" component. |
+| **RTL Behavior** | Inherits an already-open, unresolved question rather than resolving it unilaterally: this engagement's existing moving-strip precedent (Club Marquee) does not have a uniformly settled continuation/fade direction in RTL. **DESIGN DECISION REQUIRED** at the Design-System level — affects Club Marquee too, not only this new component. |
+| **CMS Relationship** | Depends on the Sponsor/Partner entity gap already flagged as the highest-priority Design System gap (`§52 OPEN-007` / Content-Data-Structuring `§8.14`) — no `CT-SPONSOR-001` exists. This component increases the urgency of that gap; it does not close it. |
+| **Accessibility** | Full keyboard operability for any interactive element (Chapter 8 Global Governance §G.12); descriptive `alt` text per logo (organization name, §M.7); `prefers-reduced-motion` compliance is mandatory given sitewide exposure. |
+| **Empty / Unavailable State** | Zero published sponsors → hidden entirely, same governing principle as `CMP-AFFILIATIONS-001`/`CMP-LIVESTREAM-001` (never render an empty persistent strip). |
+| **Object Fit** | §M.9 `object-fit: contain` applies identically — sponsor logos are never cropped or recolored, same rule as the Homepage Grid. |
+| **Visual Weight** | "Compact" per the Product Owner's own wording — **MUST** read as visually secondary to the Homepage Grid, not competing with it. Exact height/typography is a Figma-phase decision, not fixed here. |
+| **Related Governance** | Ch.5 §5.8 (reduced motion) · Chapter 8 L6 §CMP-CAROUSEL-001 (motion contract) · §M.9 (object-fit) · §M.7 (alt text) · ADR-0001 (Public/Operational boundary) · ADR-0037 (nearest sibling — **MUST NOT** be merged with Memberships/Affiliations, same non-merger rationale: commercial/contractual vs. governance/credibility) · `00-MASTER-SPECIFICATION.md` §52 OPEN-007 / `03-Content-Data-Structuring-Document.md` §8.14 (Sponsor entity gap) |
+
+---
+
 # Do & Don't — L8 General
 
 ### Do
