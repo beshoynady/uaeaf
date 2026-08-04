@@ -600,6 +600,58 @@ Document version bump per Chapter 22 §1: this is a **Minor** change (new conten
 
 ---
 
+## 3.34 Color Usage Hierarchy & Per-Page Visual Personality (ADR-0050)
+
+### ADR-0050: Brand Palette Is a Foundation, Not a Uniform Application Rule
+
+| Field                       | Details                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Status**                  | Accepted                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| **Authority**               | Product Owner Decision                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| **Context**                 | UAEAF's official identity has exactly three colors (Chapter 1: Green, Red, Black/Neutral). Several pages built this session applied brand color as a literal, uniform ratio per section (e.g. a fully flat green or black hero on every page regardless of that page's content personality), which — while technically token-compliant — produces a "poster," not an enterprise product. This ADR does not add colors; it governs *how much of the UI surface* the existing three-color identity is allowed to occupy, and clarifies that photography/gradient/typography/composition/motion carry the remaining visual weight.                                                                            |
+| **Decision**                | (1) Each of the three identity colors is assigned a **functional role**, not a decorative one (§3.34.1). (2) A page's overall color surface **SHOULD** trend toward **roughly 70–80% neutral, 15–20% Federation Green, ≤5% Federation Red** — approximate proportions, not a literal per-pixel quota, enforced by design review rather than tooling. (3) Every page/section is assigned one of the **content-personality categories** in §3.34.2, which governs both its color proportion and its hero strategy — not every page gets the same treatment. (4) A page's Hero is where boldness is allowed, but boldness **SHOULD** come from photography, gradients derived from `brand/primary`, cropping, masking, large typography, motion, and a *small* red accent — **not** from filling the entire hero surface with one flat brand color as the default move. A flat brand-color hero (as built for the Contact Us page earlier this session) remains an acceptable *occasional* choice for a "Quiet/Service" page specifically, not the universal hero pattern for every page. (5) The global governing sentence (§3.34.3) is binding for all future page work.                                                                                                                                        |
+| **Alternatives Considered** | Mandating a strict pixel-counted color ratio enforced by a linter — rejected, impossible to define objectively for photography-heavy pages and would produce false failures. Leaving color proportion undocumented / "designer's taste" — rejected, this is exactly what produced the flat-color-per-section pattern this ADR corrects.                                                                                                                                                                                                                                                                                                                                                                        |
+| **Why This Decision**       | A national federation's digital identity needs to read as *premium and institutional* first, with brand color as a recognition signal rather than a wash — matching how the token architecture (§3.2 Primitive → Brand → Semantic) already separates "the three official values" from "everything the UI actually renders," which this ADR makes an explicit usage rule rather than leaving implicit.                                                                                                                                                                                                                                                                                                       |
+| **Risks**                   | "Approximate ratio, not a hard rule" could be read as unenforceable. **Mitigation:** §3.34.2's per-page table gives a concrete, checkable default per page type; any page visibly dominated by a flat brand-color fill outside the "Quiet/Service" category should be flagged in QA per §Final Verification (root CLAUDE.md §24), not treated as compliant merely because it uses governed tokens.                                                                                                                                                                                                                                                                                                            |
+| **Consequences**            | The Contact Us page's current flat-black hero (built earlier this session, before this ADR) is **not automatically wrong** — Contact is categorized "Service/Trust" below, where a restrained, mostly-neutral hero is the default — but the flat black fill should be reassessed against §3.34.2's "Neutral, Green CTA only, Red only for errors" guidance in the next revision pass. No other already-built page is modified by this ADR alone; each page is brought into alignment individually as work continues, per [[project_flat_color_graphic_direction]].                                                                                                                                            |
+
+### 3.34.1 Functional Role per Identity Color
+
+| Color | Token | Functional Role | Explicitly NOT |
+| --- | --- | --- | --- |
+| 🟢 Federation Green | `brand/primary` | Primary buttons, important links, active/selected states, status indicators, sparing accents | A full-section background wash |
+| ⚪ White / Neutral | `color/surface/*`, `color/text/*`, gray scale (§3.33.1) | Dominant surface — cards, main content areas, whitespace, text on dark backgrounds. **Owns the largest visual area on every page.** | Treated as "leftover space" rather than the primary surface |
+| 🔴 Federation Red / Accent | `brand/secondary`, `color/semantic/danger` | Rare highlights, competitive/results emphasis, error/critical states, small Hero accents | A standard CTA color (already prohibited, Chapter 1 §Do & Don't) or a section background |
+
+### 3.34.2 Per-Page Color Personality (Default Assignments)
+
+| Page / Content Type | Personality | Color Treatment | Hero Strategy |
+| --- | --- | --- | --- |
+| Board of Directors, Committees, Policies, Strategic Plan | Quiet / Institutional | White + Green only; Red virtually absent | Typography-led or portrait-led, minimal color |
+| Championships, Results, live/major events | Dynamic / Athletic | Green-dominant accents, Red for highlights/urgency | Photography + motion + countdowns, boldest register on the site |
+| Clubs (Directory + Profile) | Editorial / Community | White + Green; club identity marks | Photography/crest-led, horizontal movement, hover interaction |
+| News / Media Centre | Editorial | Neutral background, Green typography accents, large imagery, Red only for rare highlights | One dominant image + supporting list (already established this session, §Chapter 27 precedent) |
+| Contact Us | Service / Trust | Neutral-dominant; Green reserved for CTA/links; Red only for form error states | Restrained — typography/whitespace-led by default; a flat dark hero is an acceptable occasional exception for this category specifically, not elsewhere |
+| Homepage | Cinematic (highest register) | Full range available, still Green-sparingly per §3.34.1 | Photography/motion-led, the site's single boldest moment |
+
+This table extends, and must be read together with, the page-level motion/art-direction assignments already established in the Global Visual & Motion Direction policy (Quiet/Editorial/Cinematic levels) — color personality and motion level travel together per page, they are not independent decisions.
+
+### 3.34.3 Global Governing Rule (Binding Text)
+
+> **English:** The UAEAF digital experience MUST derive its visual identity from the federation's approved brand palette while avoiding uniform color application across all pages. Brand colors SHALL establish recognition and hierarchy, while neutral surfaces, photography, typography, composition, depth, motion, and contextual accents SHALL provide visual variation according to the purpose and content of each page.
+
+> **العربية:** يجب أن تستمد التجربة الرقمية لـ UAEAF هويتها من لوحة الألوان الرسمية للاتحاد، دون تطبيق الألوان بنفس الأسلوب أو النسبة على جميع الصفحات. تُستخدم ألوان الهوية لبناء التعرّف البصري والهرمية، بينما توفر الخلفيات المحايدة، والتصوير، والطباعة، والتكوين، والعمق، والحركة، والعناصر السياقية التنوع البصري بما يتناسب مع وظيفة ومحتوى كل صفحة.
+
+### 3.34.4 Registry Addition
+
+```text
+DT-GOVERNANCE-001 · Color Usage Hierarchy · Status: Active · v1.2 · Owner: Design System · References: [ADR-0050] · Applies to: every page template (Chapter 20)
+```
+
+Document version bump per Chapter 22 §1: this is a **Minor** change (new governing rule, no prior token value changed).
+
+---
+
 ## Do & Don't
 
 **Do:**

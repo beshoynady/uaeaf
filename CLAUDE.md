@@ -684,7 +684,49 @@ They do NOT override UAEAF project governance or approved design documentation.
 
 ---
 
-# 22. FIND-SKILLS
+# 22. GLOBAL UAEAF VISUAL DESIGN GOVERNANCE
+
+Before creating or modifying ANY page, component, section, visual asset, background, animation specification, or Figma design:
+
+MUST READ:
+
+`docs/design-system/UAEAF-GLOBAL-VISUAL-DESIGN-PROTOCOL.md`
+
+Before evaluating, recommending, or reacting to ANY design proposal — including proposals from the Product Owner — MUST ALSO READ:
+
+`docs/design-system/UAEAF-DESIGN-CRITIQUE-JURY-PROTOCOL.md`
+
+That protocol requires objective evaluation against a 12-dimension framework before implementation, forbids agreeing merely because a change was requested, and defines Jury Mode (analysis only, no modification) for explicit "review this" / "give me your honest opinion" requests.
+
+This protocol governs:
+
+* UAEAF color usage
+* page-specific visual personalities
+* RTL/LTR behavior
+* image mirroring
+* logo protection
+* Figma Agent usage
+* Skills usage
+* motion philosophy
+* interaction states
+* accessibility
+* responsive design
+* visual asset generation
+* source/master component editing
+* visual QA
+* documentation and ADR governance
+
+The protocol is GLOBAL and applies to every future UAEAF design task.
+
+Its navigational index (mapping each topic to the one existing chapter/ADR that is already authoritative for it, so this file never duplicates chapter content) lives at:
+
+`docs/design-system/UAEAF-VISUAL-GOVERNANCE-INDEX.md`
+
+When the protocol conflicts with an individual task request, the conflict MUST be reported before implementation — consistent with §1 Source of Truth Hierarchy and §23 No-Guessing Rule below.
+
+---
+
+# 23. FIND-SKILLS
 
 Use find-skills when:
 
@@ -698,7 +740,7 @@ A new skill must have a clear purpose related to the current task.
 
 ---
 
-# 23. NO-GUESSING RULE
+# 24. NO-GUESSING RULE
 
 If evidence is insufficient:
 
@@ -719,7 +761,7 @@ with:
 
 ---
 
-# 24. FINAL VERIFICATION
+# 25. FINAL VERIFICATION
 
 Before declaring a task complete, verify:
 
@@ -778,7 +820,7 @@ Before declaring a task complete, verify:
 
 ---
 
-# 25. FINAL REPORT FORMAT
+# 26. FINAL REPORT FORMAT
 
 Every major audit/remediation must finish with:
 
@@ -820,7 +862,7 @@ Never inflate minor issues into blockers.
 
 ---
 
-# 26. CURRENT HOMEPAGE HANDOFF
+# 27. CURRENT HOMEPAGE HANDOFF
 
 Current Homepage status:
 
@@ -848,7 +890,7 @@ The Homepage is otherwise considered structurally safe for implementation.
 
 ---
 
-# 27. AGENT BEHAVIOR
+# 28. AGENT BEHAVIOR
 
 Think before editing.
 
