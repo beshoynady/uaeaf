@@ -204,7 +204,22 @@ The logo uses `object-fit: contain` according to Chapter 8 L6 §M.9.
 }
 ```
 
-**Related Governance:** SP.4, SP.5. City-name label inside the club crest is governed by Chapter 4 ADR-0041's Club Shield City-Name Exception (scoped, non-generalizable sub-13px allowance) — not a general permission for small text elsewhere in this component.
+**Related Governance:** SP.4, SP.5. City-name label inside the club crest is governed by Chapter 4 ADR-0041's Club Shield City-Name Exception (scoped, non-generalizable sub-13px allowance) — not a general permission for small text elsewhere in this component. Detail-page composition governed by ADR-0049.
+
+---
+
+# ADR-0049: Club Directory & Profile — CT-CLUB-001 Extension for TMP-CLUBLIST-001/TMP-CLUBDETAIL-001
+
+| Field | Details |
+| --- | --- |
+| **Status** | Accepted |
+| **Authority** | Product Decision (Project Owner, this session), scoping the Figma build of `TMP-CLUBLIST-001`/`TMP-CLUBDETAIL-001` (already named in Chapter 20 §20.1, previously unbuilt) |
+| **Context** | `ENT-009 Club` (product doc §8.4) already covers identity/registration/admin-contact fields, but a public-facing directory + profile page needs several fields that entity never anticipated: a public `type` (رياضي/مؤسسة/أكاديمية), public contact channels distinct from the RESTRICTED admin contact, social links, a cover image, and a `disciplines[]` list. The Product Owner also confirmed the live production site already has a 28-club directory, but flagged its visible data as placeholder/test-quality — this ADR treats the *structure* as validated by that precedent, not the *data*. |
+| **Decision** | Extend `CT-CLUB-001` (formalizing `ENT-009` as a full content type) with: `type` (enum, PUBLIC), `coverImage?` (Media Asset, PUBLIC), `website?`/`publicEmail?`/`publicPhone?` (PUBLIC — explicitly separate fields from the existing RESTRICTED administrative contact, never the same value by default), `socialLinks?[]` (PUBLIC), `disciplines?[]` (PUBLIC, reference → Chapter 9 Discipline taxonomy, ENT-017). `TMP-CLUBLIST-001` composes `CMP-CLUBCARD-001` + Chapter 11 §PT-SEARCH-001/§PT-FILTER-001 (Emirate + Type filters, reused pattern). `TMP-CLUBDETAIL-001` composes: Club Hero, Overview (only-populated-fields-render, per §6 below), Athletics (disciplines, only if non-empty), Athletes/Coaches (via existing Athlete→Club/Coach→Club relationships, ENT-035/ENT-036 — no new relationship invented), Championships/Results (existing ENT-005 Result filtered by club), Achievements (curated highlight subset of the same Result data, not a new entity), Upcoming Events (existing Event entity filtered by club, once ENT-004/Event↔Club relationship is confirmed to exist), Location, Contact, cross-sell CTA. |
+| **Alternatives Considered** | (A) Model the Club detail page as flat `CT-PAGE-001` content — rejected: identical reasoning to ADR-0046/0047, a club's athletes/results/achievements are queries over existing structured entities, not editorial prose. (B) Invent a new `Achievement` entity — rejected: the Product Owner's own outline describes achievements as "بطولة + سنة + مركز," which is exactly what `ENT-005 Result` already models; a curated/featured subset of existing results avoids a duplicate data source. |
+| **Why This Decision** | Keeps one entity (`ENT-009`) as the single source of club identity while composing the detail page from *existing* relationships (Athlete, Coach, Result, Event) rather than duplicating data into the Club record — directly implements the Product Owner's own stated Club→Athletes→Competitions→Results→Events relationship model. |
+| **Risks** | (1) Same data-provenance class as every prior ADR this session: zero verified club records exist yet; the Figma build proceeds with a small number of clearly-generic illustrative examples (not real or real-sounding UAE club names), per explicit Product Owner instruction not to fabricate institutional data. (2) `publicPhone`/`publicEmail`/`website` being separate from the existing RESTRICTED admin contact is a new distinction — editorial workflow must ensure someone actually populates the *public* fields; they do **not** default from the admin contact. (3) Event↔Club relationship is assumed but not yet confirmed to exist as a modeled reference — flagged, not resolved, here. |
+| **Consequences** | `docs/product/03-Content-Data-Structuring-Document.md` §8.4 gains the new fields listed above. No existing `ENT-009` field changes meaning or visibility. |
 
 ---
 
@@ -271,6 +286,86 @@ A coach may be associated with multiple clubs.
 Chapter 0 Discovery leaves open the question of whether a coach can belong to only one club. This structure supports both cases without making a premature decision, in accordance with ADR-0020.
 
 **Related Governance:** SP.2, SP.4, ADR-0020.
+
+---
+
+# Administration & Governance
+
+## CMP-BOARDMEMBERCARD-001 — Board Member Card
+
+**Purpose:** A compact representation of a Federation Board of Directors member, used in the Board Grid on the "مجلس الإدارة" (Board of Directors) static page. Introduced by ADR-0046.
+
+**Anatomy:** Built on Chapter 8 L1 §CMP-AVATAR-001 (`xl` = 96px for regular members; the single Chairman-feature position instead uses `2xl` = 160px per ADR-0045 and is laid out separately from the grid, not as a grid card) + name + position text — no Badge (license/verification badges are sports-officiating concepts; a board member's authority comes from `isChairman`/`order`, rendered through layout hierarchy, not a badge).
+
+**Data Shape:**
+
+```ts
+{
+  id,
+  name: { ar, en },
+  position: { ar, en },
+  photo?,
+  bio?: { ar, en },
+  term: { from, to },
+  order,
+  isChairman,
+  isActive
+}
+```
+
+Mirrors `CT-BOARDMEMBER-001` (Chapter 13 §17, ADR-0046) field-for-field — this component is the presentation layer; the content type is the data layer. `order` drives grid position (ascending); `isChairman` routes the record to the page's Chairman-feature slot instead of the grid; `isActive` filters records out of both without deleting historical data (supports the term-based CMS update flow ADR-0046 describes).
+
+**Visual Rule (ADR-0046):** Not every board position is rendered with equal visual weight — the Chairman feature uses `2xl` Avatar + H3-level name/title typography in a standalone intro layout; regular member cards in the grid all share one equal visual weight regardless of position title (Vice-Chairman, Secretary-General, Committee Chair, etc. all render identically in the grid) — title text differentiates them, not card size or shadow weight, consistent with Chapter 15 §Visual Quality Bar's restraint principle (no arbitrary visual hierarchy beyond what the content itself justifies).
+
+**Related Governance:** SP.2, SP.4, ADR-0020, ADR-0045, ADR-0046.
+
+## CMP-COMMITTEECARD-001 — Committee Card
+
+**Purpose:** A compact, numbered representation of a Federation Committee used in the Committees Overview grid on the "اللجان" (Committees) static page. Introduced by ADR-0047.
+
+**Anatomy:** Built on the same governance-card pattern as `CMP-BOARDMEMBERCARD-001` (light border, `card/radius`, no heavy shadow) plus: a small `order` index badge (01–08), a generic domain line-icon slot (**not yet a documented icon set** — see ADR-0047 Risks), bilingual committee name (`name.ar`/`name.en`), chair name + "رئيس/رئيسة اللجنة" role text, and a "عرض التفاصيل ←" affordance whose destination is **not yet decided** (no committee-detail template exists — ADR-0047 does not invent one).
+
+**Data Shape:**
+
+```ts
+{
+  id,
+  name: { ar, en },
+  description?: { ar, en },
+  chair: BoardMemberRef,      // reference → CT-BOARDMEMBER-001, not a duplicated name field
+  order,
+  isActive
+}
+```
+
+**States:** `Default` / `Hover` (border → `brand/primary`, order badge → `brand/primary`, icon shifts 2–4px, CTA arrow shifts in reading direction, 180–240ms transition — same restrained-motion principle as ADR-0046, Chapter 5 §5.8 reduced-motion applies).
+
+**Related Governance:** SP.2, SP.4, ADR-0020, ADR-0045, ADR-0046, ADR-0047.
+
+## CMP-DOCUMENTCARD-001 — Governance Document Card
+
+**Purpose:** A compact representation of a governance document (regulation, policy, guide, form, decision) used in the Document Library on the "السياسات واللوائح" static page. Introduced by ADR-0048.
+
+**Anatomy:** Generic file/PDF icon + document title + `type` badge + optional short description + metadata row (`version`, `lastUpdated`) + primary "عرض الوثيقة" action + secondary "تحميل PDF" action.
+
+**Data Shape:**
+
+```ts
+{
+  id,
+  title: { ar, en },
+  type,          // لائحة / سياسة / دليل / نموذج / قرار — draft taxonomy, ADR-0048 Risks
+  description?: { ar, en },
+  version?,
+  effectiveDate?,
+  lastUpdated,
+  file,          // reference → CT-MEDIA-001 (provisional, ADR-0048)
+  status,
+  order
+}
+```
+
+**Related Governance:** ADR-0048, Chapter 11 §PT-SEARCH-001/§PT-FILTER-001 (search/filter chrome around the card grid), Chapter 8 L6 §M.7 (file/document accessible naming).
 
 ---
 
@@ -512,6 +607,51 @@ This component also prepares for future AI Analytics integration (Chapter 16), w
 | **Object Fit** | §M.9 `object-fit: contain` applies identically — sponsor logos are never cropped or recolored, same rule as the Homepage Grid. |
 | **Visual Weight** | "Compact" per the Product Owner's own wording — **MUST** read as visually secondary to the Homepage Grid, not competing with it. Exact height/typography is a Figma-phase decision, not fixed here. |
 | **Related Governance** | Ch.5 §5.8 (reduced motion) · Chapter 8 L6 §CMP-CAROUSEL-001 (motion contract) · §M.9 (object-fit) · §M.7 (alt text) · ADR-0001 (Public/Operational boundary) · ADR-0037 (nearest sibling — **MUST NOT** be merged with Memberships/Affiliations, same non-merger rationale: commercial/contractual vs. governance/credibility) · `00-MASTER-SPECIFICATION.md` §52 OPEN-007 / `03-Content-Data-Structuring-Document.md` §8.14 (Sponsor entity gap) |
+
+---
+
+# ADR-0046: Board of Directors Page — Board Member Content Type & Card Component
+
+| Field | Details |
+| --- | --- |
+| **Status** | Accepted |
+| **Authority** | Product Decision (Project Owner, this session), scoping the Figma build of the "مجلس الإدارة" (Board of Directors) page under `TMP-STATICPAGE-001` |
+| **Context** | The Board of Directors page needs a structured, repeatable list of people (Chairman + members) with name, position, photo, and term — the same shape problem `CT-PAGE-001`/`TMP-STATICPAGE-001` alone cannot represent (it models one page's own title/body, not a list of sub-records within it). No existing Chapter 8 L8 card matches: `CMP-ATHLETECARD-001`/`CMP-COACHCARD-001`/`CMP-REFEREECARD-001` are sports-domain cards (license/verification badges, club refs) that don't fit an administrative/governance role. The Product Owner explicitly requested this be modeled as CMS data, not hardcoded page content, so that a board turnover (new electoral term) doesn't require redesigning the page. |
+| **Decision** | Two paired artifacts, introduced together: (1) `CT-BOARDMEMBER-001` (Chapter 13 §17) — a new content type with fields `name{ar,en}`, `position{ar,en}`, `photo` (optional Media Asset), `bio{ar,en}` (optional), `term{from,to}`, `order`, `isChairman`, `isActive`. (2) `CMP-BOARDMEMBERCARD-001` (this chapter, above) — the presentation component consuming it, with a dedicated Chairman-feature layout (`isChairman: true`, `2xl` Avatar per ADR-0045) rendered separately from the equal-weight member grid (`isActive: true`, `isChairman: false`, sorted by `order`). `TMP-STATICPAGE-001`'s Board of Directors instance composes: Header → Breadcrumb → Title/Intro → Chairman Feature (1 record) → Board Grid (`CMP-BOARDMEMBERCARD-001` × N) → Governance links (reuses the existing "الحوكمة والاستراتيجية" flyout's 3 destinations: الرؤية والرسالة / الخطة الاستراتيجية / السياسات واللوائح — no new IA) → cross-sell CTA row (existing approved nav destinations: الاندية / الرياضيون / البطولات / الاخبار و المقالات) → Footer. |
+| **Alternatives Considered** | (A) Hardcode board members directly into the static page design/content — rejected per explicit Product Owner instruction: a board's composition changes on each electoral term, and hardcoding would force a redesign instead of a CMS content update. (B) Reuse `CMP-COACHCARD-001` or a generic `CMP-CARD-001` as-is — rejected: neither carries `isChairman`/`order`/`term` semantics, and forcing sports-domain fields (qualifications, club refs) onto a governance role invites confusing empty fields. (C) Model the Chairman as a separate, standalone content type from regular members — rejected: `isChairman` as a boolean flag on the same type is simpler, keeps one editorial workflow, and avoids two schemas for what is fundamentally one entity (a board member) with one differently-laid-out record. |
+| **Why This Decision** | Matches this engagement's established pattern (ADR-0044 did the same for the optional static-page image): extend the data model with a minimal, purpose-built addition rather than force-fitting an unrelated existing shape or hardcoding content that is known to change on a fixed cycle (electoral term). |
+| **Risks** | Data provenance: names/positions for the current board must be confirmed from an official Federation source before publication — press/search-sourced drafts are not sufficient (Product Owner's own explicit caution, this session). **Mitigation:** treat any board-member record entered before official confirmation as a draft/example and flag it as such at the Figma stage; `isActive` allows a term's roster to be retired without deleting historical records once officially superseded. **Standing governance flag not yet closed:** `docs/product/03-Content-Data-Structuring-Document.md` §8.1 already logged Board Member (`ENT-013`) as an open question — "whether Board Member/Committee become real structured entities... or remain permanent flat content" — explicitly marked **غير محسوم — يتطلب اعتماد الاتحاد** (unresolved, requires actual UAEAF Federation approval, not merely this session's Product Owner). This ADR proceeds on this session's explicit Product Owner instruction (build it as CMS data, not hardcoded), which Chapter-governance ranks as the highest-priority source for the current task — but the underlying Federation-level sign-off that §8.1 called for is still outstanding and **MUST** be obtained before production launch, tracked as a separate item from this ADR's Figma/schema work. Committee (`ENT-14`) is deliberately left out of this ADR's scope and remains fully open, pending the official committee list (Product Owner, this session: "wait"). |
+| **Consequences** | `docs/product/03-Content-Data-Structuring-Document.md` gains a `CT-BOARDMEMBER-001` entity entry (§17, cross-referenced from Chapter 13). `20-Page-Templates.md`'s `TMP-STATICPAGE-001` row gains a composition note for this specific page instance. This ADR does not decide the actual current board roster — that is editorial/content data, confirmed per-record through the normal Author → Review → Publish workflow (Chapter 13 §5/§6), not a design-system rule. |
+
+---
+
+# ADR-0047: Committees Page — Committee Content Type & Card Component
+
+| Field | Details |
+| --- | --- |
+| **Status** | Accepted |
+| **Authority** | Product Decision (Project Owner, this session), extending ADR-0046's same reasoning to the "اللجان" (Committees) static page |
+| **Context** | `docs/product/03-Content-Data-Structuring-Document.md` §8.1 already logged `ENT-014 Committee` as "**GAP** — same as ENT-013 [Board Member]," paired with the identical standing flag: **غير محسوم — يتطلب اعتماد الاتحاد**. ADR-0046 resolved the Board Member half of that pairing; this ADR resolves the Committee half, on the same explicit Product Owner instruction basis and carrying forward the identical outstanding-approval caveat. |
+| **Decision** | Two paired artifacts: (1) `CT-COMMITTEE-001` (Chapter 13, product doc §8.1) — `name{ar,en}`, `description?{ar,en}`, `chair` (reference → `CT-BOARDMEMBER-001`, **not** a duplicated name/title field — a committee's chair is a board member wearing a second hat, per the source data itself where e.g. the Investment Committee chair is also the Board Vice-Chairman), `order`, `isActive`. (2) `CMP-COMMITTEECARD-001` (Chapter 8 L8, above). The `chair` field being a *reference* rather than a copy is deliberate: it keeps one editorial source of truth per person (Board Member record) instead of two records drifting out of sync when a chair's name/title changes. |
+| **Alternatives Considered** | (A) Duplicate chair name/title as flat strings on the Committee record — rejected: this session's own source data already shows two committee chairs (Investment, Strategy) who are simultaneously Board officers (Vice-Chairman, Secretary-General) — a flat copy would need manual updating in two places on any change. (B) Model Committee as a sub-type of Board Member instead of its own type — rejected: cardinality is wrong, a committee is not a person; keeping them as two types joined by a reference matches the actual relationship. |
+| **Why This Decision** | Identical rationale to ADR-0046, applied to the paired entity ADR-0046 explicitly left open (product doc §8.1's relationship table already anticipated a Board Member ↔ Committee "belongs to" link, previously blocked on Committee not existing at all). |
+| **Risks** | (1) Same data-provenance caveat as ADR-0046: committee names/chairs sourced from a press report (dated 2025-09-26 per this session) covering the 2025–2028 term, **not yet confirmed by the Federation directly** — treat as draft/example content until confirmed, same `isActive`-based retirement mechanism as Board Member records. (2) The descriptive "committee mission" paragraphs used on the Figma page are **explicitly UX draft copy authored for this design pass, not a transcription of any official committee charter/regulation** — this distinction was raised directly by the Product Owner this session and **MUST** be preserved: do not present these paragraphs as official text in any future handoff without separate editorial/legal confirmation. (3) No documented committee-domain icon set exists in Chapter 8 — the Figma card uses simple generic line marks as placeholders, not a governed icon system; a real icon set (or a decision to drop icons in favor of the number badge alone) is an open item. (4) The card's "عرض التفاصيل" (view details) affordance has no destination — no committee-detail page template exists in Chapter 20; this ADR does not invent one, consistent with ADR-0032's own rule against improvised template decisions. |
+| **Consequences** | `docs/product/03-Content-Data-Structuring-Document.md` §8.1 updated: `ENT-014` moves from "GAP — same as ENT-013" to "Adopted, ADR-0047," with the same outstanding-Federation-approval caveat as ENT-013. The Board Member ↔ Committee relationship row (previously blocked on ENT-014 not existing) is now modelable via the `chair` reference field. Whether committee cards ever get individual detail pages is a future Chapter 20 template decision, not resolved here. |
+
+---
+
+# ADR-0048: Policies & Regulations — Governance Document Content Type & Card Component
+
+| Field | Details |
+| --- | --- |
+| **Status** | Accepted |
+| **Authority** | Product Decision (Project Owner, this session), scoping the Figma build of the "السياسات واللوائح" (Policies & Regulations) static page |
+| **Context** | The Product Owner explicitly rejected a flat text/link-list treatment for this page in favor of a "Document Library" pattern (search + type filters + document cards), and explicitly instructed against inventing regulation/policy names before official documents exist — the CMS, not the Figma design, must be the source of truth once real documents are onboarded. No content type for governed documents (regulations, policies, guides, forms, decisions) exists anywhere in Chapter 13 today. |
+| **Decision** | `CT-GOVDOCUMENT-001` (Chapter 13): `title{ar,en}`, `type` (enum: لائحة/سياسة/دليل/نموذج/قرار — **draft categorization, not Federation-confirmed**, see Risks), `description?{ar,en}`, `version?`, `effectiveDate?`, `lastUpdated`, `file` (reference → `CT-MEDIA-001`, or a new document-asset type if `CT-MEDIA-001` proves image/video-specific on inspection), `status` (enum: Published/Draft/Archived), `order`. Consuming component: `CMP-DOCUMENTCARD-001` (icon + title + type badge + description + metadata row [version, lastUpdated] + primary "عرض الوثيقة" CTA + secondary "تحميل PDF" action). The page composes a `PT-SEARCH-001`/`PT-FILTER-001` pattern (Chapter 11, already documented for `TMP-NEWSLIST-001` — reused, not invented) over a list of `CT-GOVDOCUMENT-001` records, grouped into "اللوائح" and "السياسات" sections by `type`. |
+| **Alternatives Considered** | (A) Static text page listing regulation names as plain links — explicitly rejected by the Product Owner as unfit for a legal/regulatory page's long-term maintainability. (B) Populate the page now with invented regulation names/numbers to fill the Document Library visually — rejected: this is precisely the fabrication this framework's governance model exists to prevent (Chapter 22 §2); the page ships with the *pattern* only, no invented documents. |
+| **Why This Decision** | Mirrors ADR-0046/0047's established approach: introduce the minimal CMS-backed content type a page genuinely needs, rather than hardcoding content that is inherently expected to change (new policy versions, newly published regulations) without a redesign. |
+| **Risks** | (1) The `type` taxonomy (لائحة/سياسة/دليل/نموذج/قرار) is the Product Owner's own proposed draft, explicitly **not** confirmed against actual document types the Federation maintains — treat as a starting filter set, not a locked enum, until confirmed. (2) Zero real documents exist at design time; the Figma page necessarily ships with illustrative example cards (realistic titles/metadata, not literal lorem ipsum, per this session's content-status policy — see chat record, not an on-canvas label) that **MUST** be replaced by real CMS records before production, not treated as an approved regulations list. (3) `file` referencing `CT-MEDIA-001` is provisional — if Media Asset (Chapter 8 L6) turns out to be scoped strictly to image/video, a dedicated document/file content type is a follow-up gap, not resolved here. |
+| **Consequences** | `docs/product/03-Content-Data-Structuring-Document.md` gains a `CT-GOVDOCUMENT-001` entity entry, same session. `20-Page-Templates.md`'s `TMP-STATICPAGE-001` row gains a composition note for the Policies & Regulations instance, same pattern as ADR-0046's Board of Directors note. |
 
 ---
 

@@ -130,8 +130,8 @@ Twenty-six domains (A–Z) as scoped by this task's brief, consolidated above in
 | ENT-010 | Coach | المدرب | E | Core | Partial | Partial | Exists |
 | ENT-011 | Official | الحكم / المسؤول الفني | F | Core | Partial | Partial | Exists; internal role-type structure **غير محسوم — يتطلب اعتماد الاتحاد** |
 | ENT-012 | Venue | الملعب / المكان | H | Reference Data | Yes | No | **GAP** — only a text field on Championship today |
-| ENT-013 | Board Member | عضو مجلس الإدارة | A | Core | Yes (name/role only) | Partial | **GAP** — currently flat static content only |
-| ENT-014 | Committee | اللجنة | A | Core | Yes | No | **GAP** — same as ENT-013 |
+| ENT-013 | Board Member | عضو مجلس الإدارة | A | Core | Yes | Partial | **Adopted, ADR-0046 (Ch.8 L8)** — structured `CT-BOARDMEMBER-001`, this session; formal UAEAF Federation sign-off on the model still outstanding (see §8.1) |
+| ENT-014 | Committee | اللجنة | A | Core | Yes | No | **Adopted, ADR-0047 (Ch.8 L8)** — structured `CT-COMMITTEE-001`, this session; formal UAEAF Federation sign-off on the model still outstanding (see §8.1) |
 | ENT-015 | Article / News | الخبر / المقال | M | Content Entity, Workflow Entity | Yes (once published) | No | Exists, fully governed |
 | ENT-016 | Media Asset | الملف الإعلامي | O | Content Entity | Yes (once published) | No | Exists, covers image/video/album |
 | ENT-017 | Discipline | التخصص الرياضي | I | Reference Data | Yes | No | Taxonomy value only |
@@ -155,6 +155,7 @@ Twenty-six domains (A–Z) as scoped by this task's brief, consolidated above in
 | ENT-035 | Athlete–Club Affiliation History | سجل انتقالات الرياضي | D | Relationship Entity, Audit-adjacent | Partial | No | **NEW** — separates transfer history from the current-affiliation field |
 | ENT-036 | Coach–Club Assignment | ارتباط المدرب بالنادي | E | Relationship Entity | Yes | No | **NEW** — cardinality **غير محسوم — يتطلب اعتماد الاتحاد** |
 | ENT-037 | Official Assignment | تعيين الحكم | F | Relationship Entity | Yes | No | **NEW** — granularity **غير محسوم — يتطلب اعتماد الاتحاد** |
+| ENT-038 | Governance Document (Regulation/Policy/Guide/Form/Decision) | الوثيقة التنظيمية | A | Content Entity, Workflow Entity | Yes (once published) | No | **Adopted, ADR-0048 (Ch.8 L8)** — `CT-GOVDOCUMENT-001`, this session; `type` taxonomy is Product Owner draft, **not** Federation-confirmed; zero real documents exist yet — page ships with illustrative examples only, not an approved regulations list |
 
 Thirty-seven entities. Every ID above is expanded in §8; none is mentioned only in passing.
 
@@ -185,20 +186,33 @@ An entity may carry more than one classification (e.g., Participation is both a 
 
 **ENT-001 Federation** — singleton, the anchor for `Organization`/`SportsOrganization` SEO schema (Ch.14). No field table needed beyond name/logo/vision/mission text, already covered by Static Pages (§8.19).
 
-**ENT-013 Board Member** and **ENT-014 Committee** — currently **not structured entities**; both exist only as free-form content inside `CT-PAGE-001` static pages (`/about/board`, `/about/committees`). Proposed structured model, **مقترح — يحتاج اعتماد الاتحاد**, not built:
+**ENT-013 Board Member** — **now a structured entity, `CT-BOARDMEMBER-001`, adopted this session via ADR-0046 (Ch.8 L8)** on explicit Product Owner instruction (build as CMS data, not hardcoded page content, so an electoral-term board turnover doesn't require a redesign). **Standing flag, not yet closed:** this section previously logged the Board Member/Committee structuring question as **غير محسوم — يتطلب اعتماد الاتحاد** (unresolved, requires actual UAEAF Federation approval); that Federation-level sign-off is still outstanding for Board Member and **MUST** be obtained before production launch — this session's adoption is a Figma/schema-design decision, not a substitute for it. **ENT-014 Committee is likewise now adopted, `CT-COMMITTEE-001`, via ADR-0047 (Ch.8 L8)**, same session, same outstanding-approval caveat, same data-provenance caveat (committee/chair data sourced from a press report dated 2025-09-26 covering the 2025–2028 term, not yet Federation-confirmed).
 
 | Field | الاسم بالعربية | Type | Required? | Visibility | Multilingual? | Source | Calculated? | Notes |
 |---|---|---|---|---|---|---|---|---|
-| Full name | الاسم الكامل | String | Yes | PUBLIC | Yes | Manual | No | Proposed only |
-| Photo | الصورة | File | No | PUBLIC | n/a | Manual | No | Proposed only |
-| Title/Position | المنصب | String | Yes | PUBLIC | Yes | Manual | No | Proposed only |
-| Term start/end | تاريخ بداية ونهاية العضوية | Date | No | PUBLIC | n/a | Manual | No | Proposed only |
-| Committee membership(s) | اللجان المنتمي إليها | Reference[] → Committee | No | PUBLIC | n/a | Manual | No | Requires ENT-014 to exist first |
-| Bio | نبذة تعريفية | Rich Text | No | PUBLIC | Yes | Manual | No | Proposed only |
+| Full name | الاسم الكامل | String | Yes | PUBLIC | Yes | Manual | No | **Adopted, ADR-0046** |
+| Photo | الصورة | File | No | PUBLIC | n/a | Manual | No | **Adopted, ADR-0046** |
+| Title/Position | المنصب | String | Yes | PUBLIC | Yes | Manual | No | **Adopted, ADR-0046** |
+| Term start/end | تاريخ بداية ونهاية العضوية | Date | No | PUBLIC | n/a | Manual | No | **Adopted, ADR-0046** — `term.from`/`term.to` |
+| Display order | ترتيب العرض | Number | Yes | ADMIN_ONLY | n/a | Manual | No | **NEW, ADR-0046** — drives Board Grid ordering |
+| Is Chairman | هل هو رئيس المجلس | Boolean | Yes | Derived | n/a | Manual | No | **NEW, ADR-0046** — routes record to the Chairman-feature layout instead of the grid |
+| Is Active | نشط حاليًا | Boolean | Yes | Derived | n/a | Manual | No | **NEW, ADR-0046** — retires a term's roster without deleting historical records |
+| Committee membership(s) | اللجان المنتمي إليها | Reference[] → Committee | No | PUBLIC | n/a | Manual | No | **Now modelable, ADR-0047** — inverse of `CT-COMMITTEE-001.chair`; ENT-014 now exists |
+| Bio | نبذة تعريفية | Rich Text | No | PUBLIC | Yes | Manual | No | **Adopted, ADR-0046** |
+
+**ENT-014 Committee** (`CT-COMMITTEE-001`, ADR-0047):
+
+| Field | الاسم بالعربية | Type | Required? | Visibility | Multilingual? | Source | Calculated? | Notes |
+|---|---|---|---|---|---|---|---|---|
+| Committee name | اسم اللجنة | String | Yes | PUBLIC | Yes | Manual | No | **Adopted, ADR-0047** |
+| Description | الوصف | Rich Text | No | PUBLIC | Yes | Manual | No | **Adopted, ADR-0047** — **UX draft copy on the current Figma page, not official charter text** (Product Owner's explicit distinction, this session); requires separate editorial confirmation before treating as authoritative |
+| Chair | رئيس/رئيسة اللجنة | Reference → ENT-013 (Board Member) | Yes | PUBLIC | n/a | Manual | No | **NEW, ADR-0047** — reference, not a duplicated name field; a chair may simultaneously hold a Board officer title (e.g. Vice-Chairman chairing the Investment Committee) |
+| Display order | ترتيب العرض | Number | Yes | ADMIN_ONLY | n/a | Manual | No | **NEW, ADR-0047** |
+| Is Active | نشط حاليًا | Boolean | Yes | Derived | n/a | Manual | No | **NEW, ADR-0047** |
 
 **ENT-025 Department** — named only as a "Departments Directory" static listing in IA (`PAGE-108`); no structured entity exists. Proposed fields (department name, function summary, contact) are **مقترح — يحتاج اعتماد الاتحاد**, not detailed further until the Federation confirms this should be structured data at all rather than a static page.
 
-**Open decision governing this entire section:** whether Board Member/Committee become real structured entities (enabling listing+detail pages, `Person` schema, and real Committee relationships) or remain permanent flat content — **غير محسوم — يتطلب اعتماد الاتحاد** (§24, Governance group).
+**Open decision, updated status:** Both Board Member (ADR-0046) and Committee (ADR-0047) are now structured entities, this session, on explicit Product Owner instruction — pending formal UAEAF Federation sign-off before production for both (§24, Governance group; **غير محسوم — يتطلب اعتماد الاتحاد** at the Federation level, not resolved by this session's design work).
 
 ### 8.2 Institutional Memberships
 
@@ -252,6 +266,13 @@ Covered above (§8.2, ENT-026) — this document does not duplicate the table. O
 | Internal notes | ملاحظات إدارية | Text | No | ADMIN_ONLY | n/a | Manual | No | — |
 | Athlete count | عدد الرياضيين المسجَّلين | Number | n/a | PUBLIC | n/a | — | **Yes** | Derived from Athlete→Club (§19) |
 | Coach count | عدد المدربين | Number | n/a | PUBLIC | n/a | — | **Yes** | Derived (§19) |
+| Club type | نوع النادي | Enum | Yes | PUBLIC | n/a | Manual | No | **NEW, ADR-0049 (Ch.8 L8)** — نادي رياضي / مؤسسة رياضية / أكاديمية |
+| Cover image | صورة الغلاف | Reference → ENT-016 | No | PUBLIC | n/a | Manual | No | **NEW, ADR-0049** |
+| Website | الموقع الإلكتروني | URL | No | PUBLIC | n/a | Manual | No | **NEW, ADR-0049** |
+| Public email | البريد الإلكتروني العام | String | No | PUBLIC | n/a | Manual | No | **NEW, ADR-0049** — distinct from restricted admin contact above, never defaults from it |
+| Public phone | الهاتف العام | String | No | PUBLIC | n/a | Manual | No | **NEW, ADR-0049** — distinct from restricted admin contact above |
+| Social links | روابط التواصل الاجتماعي | Reference[] | No | PUBLIC | n/a | Manual | No | **NEW, ADR-0049** |
+| Disciplines | الفعاليات/التخصصات المتاحة | Reference[] → ENT-017 | No | PUBLIC | n/a | Manual | No | **NEW, ADR-0049** — renders only if non-empty, never a default full list |
 
 ### 8.5 Athletes
 
@@ -546,16 +567,17 @@ Sponsor (ENT-020) ──sponsors──> Sponsorship (ENT-028) ──targets─�
 
 ### 8.19 Static Pages
 
-**ENT-022 Static Page** (`CT-PAGE-001` — About, President's Message, Privacy Policy, Terms, and, currently, Board of Directors/Committees per §8.1):
+**ENT-022 Static Page** (`CT-PAGE-001` — About, President's Message, Privacy Policy, Terms; the Board of Directors page also uses this content type for its own title/intro/body, but the board roster itself is now `CT-BOARDMEMBER-001` (ENT-013, ADR-0046, §8.1), not flat page content — Committees (ENT-014) remains flat/unstructured per §8.1):
 
 | Field | الاسم بالعربية | Type | Required? | Visibility | Multilingual? | Source | Calculated? | Notes |
 |---|---|---|---|---|---|---|---|---|
 | Page title | عنوان الصفحة | String | Yes | PUBLIC | Yes | Manual | No | — |
 | Body content | المحتوى الكامل | Rich Text | Yes | PUBLIC (once published) | Yes | Manual | No | — |
+| Featured image | الصورة المميزة | Reference → ENT-016 (Media Asset) | No | PUBLIC (once published) | n/a (image has no language) | Manual | No | **NEW — ADR-0044 (Ch.13 §16).** Optional. Used for pages needing a fixed-position portrait/banner (e.g. President's Message); absent on pages that don't need one (e.g. Privacy Policy). Template must render cleanly either way. |
 | Last modified | تاريخ آخر تعديل | DateTime | Yes | ADMIN_ONLY | n/a | System | **Yes** | — |
 | Modified by | من قام بالتعديل | Reference → ENT-023 | Yes | ADMIN_ONLY | n/a | System | **Yes** | — |
 | Publication state | حالة النشر | Enum, same lifecycle as ENT-015 | Yes | Derived | n/a | System | Partial | — |
-| SEO slug/title/meta | بيانات السيو | String | Yes | PUBLIC | Yes | Manual | No | §17 |
+| SEO slug/title/meta | بيانات السيو | String | Yes | PUBLIC | Yes | Manual | No | §17. OG image MAY default to Featured Image if not separately set (ADR-0044). |
 
 ### 8.20 Users
 
@@ -675,7 +697,7 @@ Not stored entities — derived/calculated views over the entities above. Fully 
 | External Media Coverage (ENT-018) | External Publisher (ENT-019) | attributes to | N:1 | Yes | No | محكوم بواسطة Master Specification / ADR / Design System (ADR-0042) |
 | Federation (ENT-001) | Institutional Membership (ENT-021) | holds | 1:N | No | Yes | Partially governed (ADR-0037), expanded here |
 | Institutional Membership (ENT-021) | External Organization (ENT-026) | with | N:1 | Yes | No | **NEW split, مقترح — يحتاج اعتماد الاتحاد** |
-| Board Member (ENT-013) | Committee (ENT-014) | belongs to | Unmodeled — proposed only | n/a | n/a | **GAP** |
+| Committee (ENT-014) | Board Member (ENT-013) | chaired by | N:1 | Yes | No | **Now modelable, ADR-0047** — `CT-COMMITTEE-001.chair` reference; both entities exist |
 | Athlete (ENT-008) | Guardian (ENT-034) | has (if minor) | 1:0..N | Conditional | Yes (consent record) | **NEW, غير محسوم — يتطلب اعتماد الاتحاد** |
 | All entities with sensitive/admin changes | Audit Log Entry (ENT-031) | logged by | 1:N | Yes, for Restricted/Sensitive data (Ch.17) | Yes (append-only) | محكوم بواسطة Master Specification / ADR / Design System (Ch.17 requirement) |
 

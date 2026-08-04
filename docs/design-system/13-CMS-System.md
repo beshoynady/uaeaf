@@ -205,6 +205,15 @@ A centralized registry of content types, following the same registry principle e
 | CT-PAGE-001     | Static Page    | Full Lifecycle                                                         |
 | CT-MEDIA-001    | Media Asset    | Simplified (No full Editorial Workflow; governed by Chapter 8 L6 only) |
 | CT-EXTERNALMEDIA-001 | External Media Coverage | Full Lifecycle (§6) — **NEW, ADR-0042 (§15)** |
+| CT-BOARDMEMBER-001 | Board of Directors Member | Full Lifecycle (§6) — **NEW, ADR-0046 (Chapter 8 L8)** |
+| CT-COMMITTEE-001 | Committee | Full Lifecycle (§6) — **NEW, ADR-0047 (Chapter 8 L8)** |
+| CT-GOVDOCUMENT-001 | Governance Document (Regulation/Policy/Guide/Form/Decision) | Full Lifecycle (§6) — **NEW, ADR-0048 (Chapter 8 L8)** |
+
+`CT-PAGE-001` field set amended by **ADR-0044 (§16)** — optional `featured_image` field added.
+
+`CT-BOARDMEMBER-001` fields: `name{ar,en}`, `position{ar,en}`, `photo?`, `bio?{ar,en}`, `term{from,to}`, `order`, `isChairman`, `isActive`. Full definition, rationale, and consuming component (`CMP-BOARDMEMBERCARD-001`) live in Chapter 8 L8 ADR-0046 (kept with the component to avoid duplicating the same content in two chapters) — this row exists so the CMS Registry stays a complete index of every content type.
+
+`CT-COMMITTEE-001` fields: `name{ar,en}`, `description?{ar,en}`, `chair` (reference → `CT-BOARDMEMBER-001`), `order`, `isActive`. Full definition, rationale, and consuming component (`CMP-COMMITTEECARD-001`) live in Chapter 8 L8 ADR-0047.
 
 ---
 
@@ -222,6 +231,23 @@ A centralized registry of content types, following the same registry principle e
 | **Why This Decision** | Gives the Federation a governed way to curate third-party credibility signals without ever implying it authored or owns content it did not write — preserving the same authorship-integrity principle Chapter 13's Hybrid Entity Boundary already established for Athlete/Club editorial content, applied here to an external-authorship case instead of an internal one. |
 | **Risks** | A CMS user could still author a framing excerpt that reads as if UAEAF wrote the original article. **Mitigation:** editorial review (§5/§6, point 3 above) is mandatory, not optional, and the rendered UI **MUST** visually distinguish "Featured in the Media" entries from "Official UAEAF News" (Chapter 9 terminology consistency, §CR-1.7 applies — one clear registered term for this concept, not several). |
 | **Consequences** | `CT-EXTERNALMEDIA-001` is added to §4 and §14 of this chapter. **This ADR does NOT decide:** (a) the navigation/route/URL for a listing or archive of these entries, (b) whether such a listing is itself indexable, (c) whether this content appears on the Homepage, or (d) the feature's public-facing name in either language. Those are Information Architecture and Homepage decisions, logged as an open item in `01-Information-Architecture.md` §15, not invented here. No Page Template (Chapter 20) is registered until that IA decision is made — registering a `TMP-` id without a resolved route would be exactly the kind of invented decision this framework's governance model exists to prevent. |
+
+---
+
+## 16. ADR-0044: Static Page Featured Image — Optional Field Addition to CT-PAGE-001
+
+**Trigger (verbatim intent):** while scoping the Figma build of `TMP-STATICPAGE-001`, a concrete content need surfaced that the original `CT-PAGE-001` field set (Title, Body Rich Text, admin/SEO metadata — no dedicated page-level image) could not represent: the President's Message page requires a portrait photo of the Federation President in a fixed, predictable position, not merely an image floated somewhere inside a body paragraph.
+
+| Field | Details |
+| --- | --- |
+| **Status** | Accepted |
+| **Authority** | Product Decision (Project Owner, this session), in response to a confirmed content requirement |
+| **Context** | `CT-PAGE-001` (§14) as originally specified has no field for a page-level image. Some static pages under `TMP-STATICPAGE-001` (e.g. President's Message) need a person portrait rendered in a consistent template position; others (Privacy Policy, Terms of Use, Sitemap-adjacent legal pages) have no legitimate need for any image at all. A single shared template/schema for all static pages (per this chapter's own §14 design intent) must accommodate both cases without forking into two content types. |
+| **Decision** | Add one new **optional** field to `CT-PAGE-001`: `featured_image` (Media Asset reference → `CT-MEDIA-001`, optional, PUBLIC visibility once Published, not multilingual — an image has no language). When present, `TMP-STATICPAGE-001` renders it in the page's header/intro area (see Chapter 20 template note). When absent, the template collapses cleanly to a text-only header with no reserved gap — presence of this field is a per-record editorial choice, not a per-template mode. This field is distinct from the SEO Open Graph image (§17): the OG image is for social-share previews only and is independently overridable, though it **MAY** default to reusing `featured_image` when no separate OG image is set, to avoid double-uploading the same asset. |
+| **Alternatives Considered** | (A) Rely solely on inline images inside the Rich Text body — rejected: inline-body image placement/sizing is uncontrolled per editor and cannot guarantee the consistent portrait position a page like President's Message needs. (B) Require an image field to be filled on every static page — rejected: decorative/unnecessary for policy and legal pages, and contradicts Chapter 27 §39.4's restraint principle (resist adding elements without a real need). (C) Split into two content types ("static page with image" vs. "static page without") — rejected: adds structural complexity and a second workflow to maintain for what is only ever a single optional field, contradicting this chapter's own single-shared-model intent for static pages. |
+| **Why This Decision** | A minimal, backward-compatible schema addition: every existing/future `CT-PAGE-001` record with no image continues to render unchanged, while pages that genuinely need one (President's Message, confirmed; potentially About the Federation, at editorial discretion) gain a governed, consistent place to put it — one template, one schema, optional field. |
+| **Risks** | Inconsistent editorial usage — an editor adds a decorative image to a page that doesn't need one, or omits one from a page that should have it (e.g. a future President's Message update). **Mitigation:** this is a content-quality judgment call at editorial review (§5/§6, already mandatory before `Published`), not a new workflow or a new review gate. |
+| **Consequences** | `docs/product/03-Content-Data-Structuring-Document.md` §8.19 (`ENT-022 Static Page`) field table is amended to add this field. `TMP-STATICPAGE-001` (Chapter 20) **MUST** support both image-present and image-absent render states cleanly — no fixed gap, no broken layout either way. No change to Publication State/Workflow (§5/§6 unchanged). This ADR does **not** decide which specific existing/future static pages should populate this field — that remains an editorial/content decision made per page, not a design-system rule. |
 
 ---
 

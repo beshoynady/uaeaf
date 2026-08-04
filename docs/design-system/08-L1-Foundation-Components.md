@@ -213,7 +213,7 @@ This section is the first practical application of all rules established in Chap
 | **Purpose**              | Visual representation of a person (athlete, coach, staff member) — photo or fallback initials                                                                                                                                                                                |
 | **Anatomy**              | Circular Container (`radius.full`) ← Image or Fallback (initials + colored background)                                                                                                                                                                                       |
 | **Variants**             | `Photo` · `Initials Fallback` (when the photo is unavailable) · `Icon Fallback` (for generic cases without a specific identity)                                                                                                                                              |
-| **Sizes**                | `xs` (24px) · `sm` (32px) · `md` (40px) · `lg` (56px) · `xl` (96px, for detailed athlete profile pages)                                                                                                                                                                      |
+| **Sizes**                | `xs` (24px) · `sm` (32px) · `md` (40px) · `lg` (56px) · `xl` (96px, for detailed athlete profile pages) · `2xl` (160px, ADR-0045 — institutional leadership portraits only: Federation President, Board Chairman; **not** for athlete/coach/referee profiles, which stop at `xl`)                                                                                                                                                                      |
 | **States**               | No interactive states by itself (may be placed inside a clickable button)                                                                                                                                                                                                    |
 | **Content Rules**        | Initials Fallback: first two letters of the full name                                                                                                                                                                                                                        |
 | **Behavior**             | If the image fails to load, it **MUST** automatically transition to the Fallback smoothly (never display a broken-image icon). **Official Fallback Chain:** `Photo` → (load failure/404) → `Initials Fallback` → (no name available) → `Icon Fallback` (generic person icon) |
@@ -351,6 +351,23 @@ Every component carries a maturity state:
 * **Deprecated** — has a replacement and is within a grace period, following the logic of Chapter 3 §Token Deprecation Policy but applied to components.
 
 All L1 components are currently: **Stable v1.0**.
+
+---
+
+## ADR-0045: Avatar Scale Extension — "2xl" for Institutional Leadership Portraits
+
+**Trigger (verbatim intent):** while building the President's Message static page, a portrait was needed at 160px — larger than the documented `xl` (96px) ceiling — and the same need immediately recurred for the Board of Directors page (Chairman feature). Two independent pages hitting the same undocumented value confirmed this is a real, recurring size class, not a one-off exception.
+
+| Field | Details |
+| --- | --- |
+| **Status** | Accepted |
+| **Authority** | Product Decision (Project Owner, this session), in response to a confirmed recurring content requirement |
+| **Context** | `CMP-AVATAR-001` (this chapter) tops out at `xl` (96px), sized for "detailed athlete profile pages." Institutional leadership portraits (Federation President, Board Chairman) are used in a different context — a single, prominent, editorially-curated feature within a static page header, not a dense profile/list context — and read as under-scaled at 96px relative to the surrounding H1/H3 typography already used on those pages. |
+| **Decision** | Add one new Avatar size, `2xl` = 160px, scoped explicitly to institutional leadership portraits (Federation President, Board Chairman/Vice-Chairman feature positions). `xs`/`sm`/`md`/`lg`/`xl` remain unchanged and continue to govern athlete/coach/referee/club-logo contexts (`CMP-ATHLETECARD-001`, `CMP-COACHCARD-001`, `CMP-REFEREECARD-001`). Regular board members (non-Chairman) in a grid use `xl` (96px), not `2xl` — `2xl` is reserved for the single featured leadership portrait per page, preserving the visual hierarchy the Chairman-feature layout depends on. |
+| **Alternatives Considered** | (A) Cap leadership portraits at `xl` (96px) — rejected: already shipped at 96px it visibly under-weights the Chairman/President relative to the page's own H1 (40px) and H3 (24px) scale, undermining the "institutional trust" quality bar (Chapter 15 §Visual Quality Bar). (B) Treat it as a one-off, undocumented exception on two pages only — rejected: this is exactly the ADR-0041-style pattern this framework exists to prevent; a value used twice without documentation becomes silent scale drift. (C) A fully custom, unscaled "Hero Portrait" image component outside the Avatar family — rejected: unnecessary complexity for a single size-token gap; the existing Avatar anatomy (circular container, fallback chain, alt-text rule) already fits this use case unchanged. |
+| **Why This Decision** | Extends the existing scale by one deliberate step rather than inventing a parallel component; keeps the Fallback chain, accessibility rule, and token binding (`radius.full`) identical to every other Avatar size — the only change is the numeric ceiling, scoped narrowly enough that it cannot drift into general UI use. |
+| **Risks** | Scope creep — a future editor or designer reaches for `2xl` for a non-leadership use case (e.g. a featured athlete). **Mitigation:** the size's documented scope ("institutional leadership portraits only") is explicit in the Sizes row above; any such usage outside that scope is a governance violation to flag on sight, not a precedent to follow. |
+| **Consequences** | The President's Message page portrait (already shipped at 160px) is now retroactively compliant, no rework needed. The Board of Directors page Chairman-feature portrait uses `2xl` per this ADR; the Board Grid's regular member cards use `xl` (96px) per `CMP-BOARDMEMBERCARD-001` (Chapter 8 L8, ADR-0046). |
 
 ---
 
