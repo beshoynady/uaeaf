@@ -88,6 +88,8 @@ The three medal types (Gold/Silver/Bronze) **MUST** have a consistent visual tre
 
 Gold/Silver/Bronze are not Success/Warning/Danger states; they are independent celebratory colors that should be added as additional Brand Tokens.
 
+**Usage scope (ADR-0051):** Medal Gold is not restricted to a single "#1 / Featured" slot — it MAY be used for any genuinely celebratory/achievement context (medal display, championship title, featured-athlete emphasis, honor/award badges), consistent with its role as a dedicated brand token rather than a decoration color. It MUST NOT be applied as a generic accent outside these celebratory contexts, and MUST NOT replace `brand/primary` (green) for ordinary action/active/current states — the distinction is semantic (achievement vs. action), not positional (first item vs. rest).
+
 ### SP.6 Results Data Source Abstraction
 
 Refer to ADR-0020.
@@ -180,6 +182,39 @@ No complex domain-specific internal state
 ```
 
 **Related Governance:** SP.2, SP.3, SP.4, SP.8, SP.10.
+
+---
+
+# ADR-0051: Athlete Card Extended Data Shape, Image Overflow Pattern, and Pending Content Component
+
+| Field | Details |
+| --- | --- |
+| **Status** | Accepted |
+| **Authority** | Product Decision (Project Owner), resolving the Athletes Directory / Athlete Profile Figma audit findings |
+| **Context** | The Athletes Directory built this session composes `CMP-ATHLETECARD-001` with additional performance fields (`discipline`, `personalBest`, `ranking`, `achievement`) that the original minimal data shape (identity/club/verification only) does not cover. The same build also introduced two reusable visual/structural patterns not previously documented: (1) athlete photography intentionally overflowing its card/hero boundary rather than being contained in a rectangle, and (2) a consistent "content pending federation verification" card used wherever real data does not yet exist, so a section keeps its structure instead of collapsing or displaying an empty/fabricated value. |
+| **Decision** | **(1) Extended Data Shape:** `CMP-ATHLETECARD-001`'s Data Shape gains optional fields: `discipline?`, `personalBest?`, `ranking?`, `achievement?`. These are documented as *semantic fields*, not fixed values — any current sample content in Figma is Temporary/Sample Content per this session's data-governance principle and does not constitute a Design-System rule about specific athletes, times, or ranks. **(2) Image Overflow / Boundary Break:** documented as an approved compositional technique for `CMP-ATHLETECARD-001` and its Featured variant — the athlete photograph MAY extend beyond its nominal card/hero region via an absolutely-positioned image layer with `STRETCH` constraints on any overlaid text/badge elements, so the component remains resizable without the photo, badge, or text shifting position. This does not apply to every image sitewide — it is scoped to athlete/featured-editorial imagery, not a general layout rule. **(3) Pending Content:** new component `CMP-PENDINGCONTENT-001` — a bordered card (existing `brand/primary` accent, existing surface/text tokens) carrying a short heading + explanatory line, used in place of a data section when the underlying record is not yet verified/published, instead of leaving a section empty or inventing a value. |
+| **Alternatives Considered** | (A) Leave the Athlete Card data shape minimal and push all performance stats into a separate, undocumented ad-hoc composition — rejected: performance fields are already in active use across two pages and are reasonable to standardize now rather than let drift undocumented. (B) Treat image overflow as a one-off Figma technique without documentation — rejected: it is already reused across the Featured Athlete card and the standard grid card, meeting the reusability bar for a documented pattern (Chapter 8 governance). |
+| **Why This Decision** | Matches this engagement's established pattern (ADR-0046 through ADR-0049): document what real, reused work already introduced, keep the Design System data-agnostic (field shapes, not sample values), and avoid forcing an already-stronger visual pattern to regress to an older, more restrictive spec. |
+| **Risks** | (1) All current athlete names/photos/stats visible in Figma remain Temporary/Sample Content until confirmed against an official Federation source — same standing caveat as ADR-0046/0047. (2) `CMP-PENDINGCONTENT-001` has no icon set assigned yet (same open item already logged for `CMP-COMMITTEECARD-001` in ADR-0047) — a generic mark is used until a governed icon system exists. |
+| **Consequences** | `CMP-ATHLETECARD-001`'s Data Shape above is superseded by the extended shape in this ADR. No existing field changes meaning. |
+
+**Extended Data Shape (supersedes the shape above for this component):**
+
+```ts
+{
+  id,
+  name,
+  photo?,
+  club?,
+  ageCategory,
+  verified,
+  isMinor,
+  discipline?,
+  personalBest?,
+  ranking?,
+  achievement?
+}
+```
 
 ---
 

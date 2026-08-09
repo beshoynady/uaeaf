@@ -1,5 +1,6 @@
 # dependencies
 node_modules/
+.claude/*
 /.pnp
 .pnp.*
 .yarn/*
