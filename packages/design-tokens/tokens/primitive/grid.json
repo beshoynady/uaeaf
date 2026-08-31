@@ -1,0 +1,32 @@
+{
+  "grid": {
+    "columns": {
+      "xs": { "value": "4", "type": "number", "comment": "<=639px — promoted from breakpoint.xs comment (Chapter 5 §5.x), Public site mobile-first base" },
+      "sm": { "value": "4", "type": "number", "comment": "640-767px" },
+      "md": { "value": "8", "type": "number", "comment": "768-1023px" },
+      "lg": { "value": "12", "type": "number", "comment": "1024-1279px" },
+      "xl": { "value": "12", "type": "number", "comment": "1280-1535px" },
+      "2xl": { "value": "12", "type": "number", "comment": ">=1536px" }
+    },
+    "gutter": {
+      "xs": { "value": "16px", "type": "dimension" },
+      "sm": { "value": "16px", "type": "dimension" },
+      "md": { "value": "24px", "type": "dimension" },
+      "lg": { "value": "24px", "type": "dimension" },
+      "xl": { "value": "32px", "type": "dimension" },
+      "2xl": { "value": "32px", "type": "dimension" }
+    },
+    "margin": {
+      "xs": { "value": "16px", "type": "dimension" },
+      "sm": { "value": "24px", "type": "dimension" },
+      "md": { "value": "32px", "type": "dimension" },
+      "lg": { "value": "48px", "type": "dimension" },
+      "xl": { "value": "64px", "type": "dimension" },
+      "2xl": { "value": "auto", "type": "dimension", "comment": "container capped at container.public-max" }
+    },
+    "dashboard": {
+      "columns": { "value": "12", "type": "number", "comment": "ADR-0052 — desktop-first: fixed 12-col from `lg` upward, does not scale down through xs/sm/md like the public grid; below `lg` the dashboard falls back to a single stacked column rather than 4/8-col intermediate steps (operational UI, not content layout)" }
+    },
+    "comment": "columns/gutter/margin values were already documented as comments on primitive/breakpoints.json before ADR-0052 — this file promotes them to real, consumable tokens; no new numbers invented."
+  }
+}

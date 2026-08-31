@@ -3,7 +3,8 @@
     "text": {
       "primary": { "value": "#000000", "type": "color" },
       "secondary": { "value": "#000000", "type": "color" },
-      "disabled": { "value": "{color.gray.700}", "type": "color" },
+      "muted": { "value": "{color.neutral-warm.700}", "type": "color", "comment": "ADR-0051 — new; 9.04:1 on white, gives a third tier below primary/secondary without leaving max-contrast philosophy" },
+      "disabled": { "value": "{color.neutral-warm.700}", "type": "color" },
       "inverse": { "value": "#FFFFFF", "type": "color" },
       "link": { "value": "#000000", "type": "color", "comment": "Underline carries the link cue at this contrast level, not color alone" }
     },
@@ -11,20 +12,24 @@
       "base": { "value": "#FFFFFF", "type": "color" },
       "raised": { "value": "#FFFFFF", "type": "color" },
       "sunken": { "value": "#FFFFFF", "type": "color" },
-      "skeleton": { "value": "{color.gray.300}", "type": "color" },
+      "skeleton": { "value": "{color.neutral-warm.300}", "type": "color" },
       "overlay": { "value": "#000000", "type": "color" }
     },
     "border": {
       "default": { "value": "#000000", "type": "color" },
       "strong": { "value": "#000000", "type": "color" }
     },
+    "focus": {
+      "default": { "value": "#000000", "type": "color" },
+      "offset": { "value": "#FFFFFF", "type": "color" }
+    },
     "semantic": {
-      "success": { "value": "{color.green.700}", "type": "color" },
-      "success-hover": { "value": "{color.green.800}", "type": "color" },
-      "danger": { "value": "{color.red.700}", "type": "color" },
-      "danger-hover": { "value": "{color.red.800}", "type": "color" },
-      "info": { "value": "#000000", "type": "color" },
-      "warning": { "value": "{color.gold.800}", "type": "color" },
+      "success": { "value": "{color.success.800}", "type": "color", "comment": "ADR-0051 — repointed from {color.green.700}" },
+      "success-hover": { "value": "{color.success.900}", "type": "color" },
+      "error": { "value": "{color.error.800}", "type": "color", "comment": "ADR-0051 — renamed from `danger`, repointed from {color.red.700}" },
+      "error-hover": { "value": "{color.error.900}", "type": "color" },
+      "warning": { "value": "{color.warning.800}", "type": "color", "comment": "ADR-0051 — repointed from {color.gold.800}" },
+      "info": { "value": "{color.info.800}", "type": "color", "comment": "ADR-0051 — was hardcoded #000000" },
       "neutral": { "value": "#000000", "type": "color" },
       "medal-gold": { "value": "{color.gold.800}", "type": "color" },
       "medal-silver": { "value": "{color.silver.800}", "type": "color" },
@@ -35,10 +40,18 @@
       "fallback-text": { "value": "#000000", "type": "color" }
     }
   },
+  "elevation": {
+    "card": { "value": "none", "type": "boxShadow", "comment": "ADR-0052 — High Contrast carries elevation via solid borders only (already Chapter 7 §7.3 philosophy), never soft shadows" },
+    "card-hover": { "value": "none", "type": "boxShadow", "comment": "ADR-0052" },
+    "dropdown": { "value": "none", "type": "boxShadow", "comment": "ADR-0052" },
+    "modal": { "value": "none", "type": "boxShadow", "comment": "ADR-0052" }
+  },
   "a11y": {
     "focus": {
-      "ring": { "value": "#000000", "type": "color" },
-      "ring-width": { "value": "3px", "type": "borderWidth", "comment": "Chapter 7 §7.3 — wider than default 2px" }
+      "ring": { "value": "{color.focus.default}", "type": "color" },
+      "ring-width": { "value": "3px", "type": "borderWidth", "comment": "Chapter 7 §7.3 — wider than default 2px" },
+      "offset": { "value": "{color.focus.offset}", "type": "color", "comment": "ADR-0051 — new" },
+      "offset-width": { "value": "2px", "type": "borderWidth", "comment": "ADR-0051 — new" }
     }
   },
   "border": {

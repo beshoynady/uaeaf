@@ -514,6 +514,8 @@ Any file that fails structural validation **MUST NOT** enter the pipeline.
 
 ## 3.33 Color System Expansion v1.1 (ADR-0039)
 
+> **Partially superseded by ADR-0051** (§3.35) — `color.semantic.info` and `color.semantic.warning` now resolve to the dedicated `color.info.*`/`color.warning.*` families defined by the UAEAF Digital UI Brand Guide v1.0, replacing the institutional-navy Info and anti-Medal-Gold-collision Warning values below. The *mechanism* (dedicated Brand-Support hue rather than a borrowed token) is unchanged.
+
 ### ADR-0039: Digital Color System Expansion
 
 | Field                       | Details                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
@@ -602,6 +604,8 @@ Document version bump per Chapter 22 §1: this is a **Minor** change (new conten
 
 ## 3.34 Color Usage Hierarchy & Per-Page Visual Personality (ADR-0050)
 
+> **Ratio target superseded by ADR-0051** (§3.35) — the binding rule is now a qualitative visual-hierarchy target (neutral dominant/foundation, brand subordinate-but-significant, semantic conditional-only — never a fixed percentage), not the 70–80/15–20/≤5 numeric target below. The functional-role table (§3.34.1) and per-page personality assignments (§3.34.2) are otherwise unaffected and still apply.
+
 ### ADR-0050: Brand Palette Is a Foundation, Not a Uniform Application Rule
 
 | Field                       | Details                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
@@ -649,6 +653,100 @@ DT-GOVERNANCE-001 · Color Usage Hierarchy · Status: Active · v1.2 · Owner: D
 ```
 
 Document version bump per Chapter 22 §1: this is a **Minor** change (new governing rule, no prior token value changed).
+
+---
+
+## 3.35 UAEAF Digital UI Brand Guide v1.0 Adopted as Baseline (ADR-0051)
+
+### ADR-0051: Digital Semantic Color System — Baseline Adoption
+
+| Field | Details |
+| --- | --- |
+| **Status** | Accepted |
+| **Authority** | Product Owner Decision — external governing document **"UAEAF Digital UI Brand Guide v1.0"** (Google Doc, an official extension of the UAEAF Visual Standard Guide) approved and adopted as binding Baseline for all color, semantic-role, interaction-state, accessibility, and governance decisions, superseding any conflicting prior decision in this chapter. |
+| **Context** | v1.0/v1.1/ADR-0050 left `color.semantic.success`/`danger` as literal aliases of `color.brand.primary`/`secondary`, no `color.focus.default`, no Role/Accent layer, and a Neutral scale that merged Black/White into the same primitive family as the gray ramp. A dedicated external document was authored to close these gaps with full governance rigor (a 5-layer token architecture, an explicit forbidden-patterns checklist, a measured WCAG contrast matrix, and a Governance Matrix defining exactly when an ADR is required) and was approved as the project's Baseline for this domain. |
+| **Decision** | Adopt the Brand Guide's 5-layer architecture (**Primitive → Brand → Semantic → Role/Accent → Component**) exactly as specified: independent `color.success/error/warning/info` hues (no longer aliasing brand colors), an independent `color.focus.default`/`color.focus.offset` pair, three new Role/Accent tokens (`color.accent.information/classification/featured`), and a Neutral architecture split into `color.neutral-warm.{50-950}` (12 steps) plus independent `color.black`/`color.white` Brand Neutral primitives. |
+| **Alternatives Considered** | Treating the Brand Guide as guidance rather than a binding Baseline, layering it alongside the old ADR-0004/0038/0039/0050 model — rejected by explicit Product Owner instruction; the whole point of commissioning the document was to resolve the ambiguity those ADRs left, not add a second, competing interpretation. |
+| **Why This Decision** | The prior model's single well-documented failure mode — brand-recognition color and system-state color sharing one token — is exactly what caused the "green/red overuse" pattern flagged in ADR-0050's own diagnosis. The Brand Guide's architecture makes that collision structurally impossible (§1's "critical rule": `color.brand.secondary` and `color.semantic.error` may never share a token) rather than relying on usage discipline alone. |
+| **Risks** | Renaming `color.semantic.danger` → `color.semantic.error` and splitting the neutral primitive family are breaking renames for any future consumer expecting the old names — mitigated by the fact that no application code exists yet (`apps/web` is still the default Next.js scaffold; verified empty of custom components during Phase 1 audit), so the blast radius today is zero. |
+| **Consequences** | ADR-0004, ADR-0038 (Chapter 1), ADR-0039, ADR-0050 (this chapter) are each **partially superseded** exactly where marked at their own headings above — the parts not marked remain in force. Chapter 7 §7.9 must be updated to match (tracked as follow-up). |
+
+### 3.35.1 Explicit Supersession Register
+
+| Prior ADR | Superseded Clause | What Changes | What Still Stands |
+| --- | --- | --- | --- |
+| ADR-0004 | Green = primary/positive action as one non-forking meaning | `color.semantic.success` → independent `color.success.*` | Green remains the only Primary Brand Action / CTA color |
+| ADR-0038 | All red-adjacent roles derive from `color.brand.secondary` | Generic `color.semantic.error` (renamed from `danger`) → independent `color.error.*` | `live`/`achievement`/"Secondary Brand Accent" role still on `color.brand.secondary` |
+| ADR-0039 | Info = institutional navy; Warning ≠ Medal Gold (SP.5) | `color.semantic.info`/`warning` → new dedicated `color.info.*`/`color.warning.*` families (Warning now intentionally close to Medal Gold — always paired with a text label per Chapter 6 §6.2) | Dedicated-hue mechanism itself unchanged |
+| ADR-0050 | 70–80/15–20/≤5 numeric ratio target | Qualitative hierarchy target (Brand Guide §6): neutral = dominant/foundation, brand = subordinate-but-significant, semantic = conditional-only, no percentage treated as a "budget" | Functional-role table (§3.34.1) and per-page personality (§3.34.2) unaffected |
+
+### 3.35.2 New/Changed Token Summary
+
+| Layer | Token | Value | Note |
+| --- | --- | --- | --- |
+| Primitive | `color.neutral-warm.{50-950}` (12 steps) | New family, replaces the cool `color.gray.*` curve | Brand Guide §4 |
+| Primitive | `color.black` / `color.white` | `#000000` / `#FFFFFF` | Independent of `neutral-warm`, per Brand Guide §4's explicit architectural correction |
+| Primitive | `color.steel-blue/teal/desert-sand.{50-900}` | New | Backs the three Role/Accent tokens below |
+| Primitive | `color.success/error/warning/info.{50-900}` | New, full scales | Brand Guide §5 (originally only `.500`, gap closed in the Brand Guide itself during this task's Phase 1 audit — see §3.35.4) |
+| Brand | `color.brand.white` | `= color.white` | New, completes Brand Neutral alongside existing `color.brand.black` |
+| Role/Accent | `color.accent.information` / `.classification` / `.featured` | Steel Blue / Teal / Desert Sand `.500` | New 4th layer; no Semantic/Component token forced — allocate per real component need (§3.5.1) |
+| Semantic | `color.semantic.success/error/warning/info` | Independent `.500` values | No longer aliases `brand.primary`/`brand.secondary` |
+| Semantic | `color.focus.default` / `color.focus.offset` | Light: black/white · Dark: white/black · HC: black/white | New — see §3.35.3 for the assumption behind the exact values |
+| Semantic | `color.text.muted` | `neutral-warm.500` (light) / `.500` (dark) | New slot |
+| Component | `button.primary.background` | `{color.brand.primary}` | **Fixed** — was incorrectly `{color.semantic.success}` |
+| Component | `button.danger.background` | `{color.semantic.error}` | **Fixed** — was incorrectly `{color.semantic.danger}` = `{color.brand.secondary}` |
+| Component | `button.disabled.*`, `button.focus.*` | New | Brand Guide §8.2/§9 |
+
+### 3.35.3 Documented Assumptions (No Explicit Value Given by the Brand Guide)
+
+The Brand Guide specifies the *requirement* for `color.focus.default` (§9: independent of `color.brand.*`, must contrast against green/red/neutral element backgrounds alike) but not an exact hex — inventing a new hue for it would itself violate §11.3's "no undocumented purple/blue" rule. **Assumption made:** use the two colors already in the approved palette with the widest possible contrast against every other color in the system — `color.black`/`color.white` (Brand Neutral) — as a ring + offset pair (`focus.default` + `focus.offset`), inverted between Light and Dark themes. This is flagged here explicitly for Product Owner review, per this task's reporting requirement, rather than presented as if the Brand Guide had specified it.
+
+`color.border.strong` and `color.text.muted` are not given explicit values in the Brand Guide (it specifies `neutral.300` for a *disabled button border*, not a general-purpose "strong border" role). **Assumption made:** retain `neutral-warm.500` for both, verified at 4.68:1 (light) / 4.00:1 (dark) against their respective surfaces — reusing the same values already verified in this project's own prior contrast pass rather than the unverified `neutral.300` (1.90:1, would fail WCAG 1.4.11) that a literal reading of the disabled-button row might otherwise suggest.
+
+### 3.35.4 Full Success/Error/Warning/Info Scales — Provenance
+
+The Brand Guide's first draft specified only the `.500` reference value for these four families (plus `.700` for Info) despite its own §11.3 explicitly forbidding derived/interpolated shades. This gap was identified during this task's Phase 1 audit and closed **in the Brand Guide document itself** (not silently in code) — the Product Owner added the full 10-step tables plus two additional contrast findings (`success.500`/`warning.500` both fail white-text contrast, mirroring the `info.500` failure the Brand Guide had already caught) directly into the source document before Phase 2 implementation began. The values in `packages/design-tokens/tokens/primitive/colors.json` are transcribed from that finalized document, not independently derived.
+
+### 3.35.5 Registry Additions
+
+```text
+DT-COLOR-013 · Success/Error/Warning/Info (independent hues) · Status: Active · v2.0 · Owner: Design System · References: [ADR-0051] · Supersedes: ADR-0004/ADR-0038 brand-alias mechanism
+DT-COLOR-014 · Neutral Warm / Black / White split · Status: Active · v2.0 · Owner: Design System · References: [ADR-0051]
+DT-COLOR-015 · Role/Accent layer (Steel Blue/Teal/Desert Sand) · Status: Active, Semantic-pending · v2.0 · Owner: Design System · References: [ADR-0051] · No Semantic/Component token yet (§3.5.1)
+DT-COLOR-016 · color.focus.default/offset · Status: Active · v2.0 · Owner: Design System · References: [ADR-0051] · Exact hex is a documented assumption (§3.35.3), not Brand-Guide-specified
+DT-GOVERNANCE-003 · Qualitative Visual Hierarchy (replaces numeric ratio) · Status: Active · v2.0 · Owner: Design System · References: [ADR-0051] · Supersedes: DT-GOVERNANCE-001/002
+```
+
+Document version bump per Chapter 22 §1: this is a **Major** change (supersedes four prior accepted decisions; renames `color.semantic.danger` → `color.semantic.error`).
+
+---
+
+## 3.36 Content-Category Accent Tokens (ADR-0053)
+
+### ADR-0053: `accent.category.*` — Content-Type Identity Color Coding
+
+| Field | Details |
+| --- | --- |
+| **Status** | Accepted |
+| **Authority** | Product Owner decision, made during a Figma remediation pass after 16 hardcoded placeholder-tint colors were found across `Section/Upcoming Championships`, `Section/News`, and `Section/Media Gallery` with no matching documented token |
+| **Context** | These three sections each render image-not-yet-loaded placeholder tiles using one of three recurring dark tints (a dark green, a dark blue, and a dark brown/gold), applied per-item rather than per-section. No existing token in the `accent.*` role/accent layer (§3.5.1: Steel Blue/Teal/Desert Sand, Semantic-pending per ADR-0051) covered this use case, and the three raw hex values were hardcoded with no Variable binding. |
+| **Decision** | Define three new Brand-collection tokens under the existing `accent.*` layer — no new parallel layer, no new hex values: `accent.category.championship` (aliases `color.green.800`), `accent.category.news` (aliases `color.steel-blue.800`), `accent.category.media` (aliases `color.desert-sand.700`). Each is the closest existing primitive step to the cluster of hardcoded values actually found (Euclidean nearest-match on the dark 700–900 steps of the three candidate families), not an independently invented shade. All 16 flagged positions were rebound to whichever of the three tokens matches their **current, unchanged** color — this task tokenizes the existing visual output, it does not reassign which placeholder tile shows which tint. |
+| **Honest Finding** | The per-section naming implied by the three category names does **not** cleanly hold in the current file: e.g. `Section / News`'s own 2 placeholder rectangles both use the green-cluster tint (→ `accent.category.championship`), not the blue-cluster tint their section name would suggest. This indicates the original placeholder-tint assignment was likely a rotating/arbitrary pattern rather than a strict content-type identity system already in force. Tokenizing was done faithfully to *current pixels*, not to the *section name* — reassigning individual placeholders to match their section's category color is a content/composition decision out of scope for this ADR and is flagged below as an open follow-up. |
+| **Rule — When To Use A Category Color** | Use `accent.category.*` only for placeholder/identity tinting of not-yet-loaded media tied to a specific content type (tournament/championship media, news media, general media gallery). Do not use for UI chrome, text, borders, or any non-content-identity purpose — those remain governed by the existing `brand.*` / `semantic.*` / `accent.information|classification|featured` tables (§4.2 mandatory color-usage table). |
+| **Rule — Adding A Future Category** | A new category token may only be added when (a) a real, recurring content type needs its own placeholder identity, and (b) its color is derived from an existing primitive family's documented step — never a new hex. Get Product Owner sign-off and a numbered ADR amendment before adding, per this same pattern. |
+| **Alternatives Considered** | Leaving the three tints as hardcoded literals — rejected, direct violation of Chapter 3's "no hardcoded color" rule, already the mechanism used to catch this gap. Deriving three brand-new hex values tuned to look nicer — rejected: Chapter 3 §3.4.1's "no invented values" rule applies identically to this layer. |
+| **Risks** | The News-section-shows-green finding above suggests the *actual* per-content-type mapping the Product Owner wants (§1 of this decision's originating task literally states "championship=green, news=blue, media=brown") is not yet fully realized in the live file — only the tokens exist and are correctly bound to current pixels. A follow-up content pass to align each placeholder to its true category is a separate, explicitly out-of-scope task. |
+| **Consequences** | Any future placeholder tile for these three content types must bind to one of these three tokens, never a new hardcoded tint. |
+
+**Verification:** All 3 tokens exist in the `Brand` Figma Variable collection, each a `VARIABLE_ALIAS` to its named primitive (no literal color value stored at this layer). All 16 previously-hardcoded fills across the three sections now carry a `boundVariables.fills` reference to one of the three tokens; zero unbound fills remain in this color family after the fix.
+
+### 3.36.1 Registry Additions
+
+```text
+DT-COLOR-017 · accent.category.championship (→ color.green.800) · Status: Active · v1.0 · Owner: Design System · References: [ADR-0053]
+DT-COLOR-018 · accent.category.news (→ color.steel-blue.800) · Status: Active · v1.0 · Owner: Design System · References: [ADR-0053]
+DT-COLOR-019 · accent.category.media (→ color.desert-sand.700) · Status: Active · v1.0 · Owner: Design System · References: [ADR-0053] · Open follow-up: per-item category alignment (§3.36 "Honest Finding") not yet resolved
+```
 
 ---
 

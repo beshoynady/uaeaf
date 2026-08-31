@@ -156,7 +156,29 @@ function main() {
   // not by omitting them from the build).
   const invariantResolved = resolveTree(structuredClone(primitives));
   const baseVars = { ...flatten(invariantResolved, [], {}), ...flatten({ color: { brand: brandResolved.color.brand } }, [], {}) };
-  writeFileSync(join(BUILD_DIR, 'css', 'base.css'), cssBlock(':root', baseVars));
+  let baseCss = cssBlock(':root', baseVars);
+
+  // ADR-0052 — mandatory prefers-reduced-motion support (Chapter 5 §5.8, already-documented rule,
+  // implemented here for the first time). The universal `*` reset is the primary, robust mechanism
+  // (catches hardcoded transition/animation declarations too, not just token consumers). The token
+  // zeroing is defense-in-depth for any JS that reads --motion-duration-* directly via getComputedStyle
+  // rather than relying on the CSS animation/transition shorthand.
+  const reducedMotionVars = Object.fromEntries(
+    Object.keys(baseVars)
+      .filter((name) => name.startsWith('--motion-duration-'))
+      .map((name) => [name, '0ms'])
+  );
+  baseCss +=
+    '\n@media (prefers-reduced-motion: reduce) {\n' +
+    '  * {\n' +
+    '    animation-duration: 0.01ms !important;\n' +
+    '    transition-duration: 0.01ms !important;\n' +
+    '  }\n' +
+    (Object.keys(reducedMotionVars).length > 0
+      ? '  :root {\n' + Object.entries(reducedMotionVars).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => `    ${k}: ${v};`).join('\n') + '\n  }\n'
+      : '') +
+    '}\n';
+  writeFileSync(join(BUILD_DIR, 'css', 'base.css'), baseCss);
 
   const themes = {
     light: { selector: ':root, [data-theme="light"]', file: 'colors.light.json' },

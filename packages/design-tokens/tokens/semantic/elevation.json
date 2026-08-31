@@ -1,10 +1,4 @@
 {
-  "elevation": {
-    "card": { "value": "{elevation.1}", "type": "boxShadow" },
-    "card-hover": { "value": "{elevation.2}", "type": "boxShadow" },
-    "dropdown": { "value": "{elevation.2}", "type": "boxShadow" },
-    "modal": { "value": "{elevation.4}", "type": "boxShadow" }
-  },
   "border": {
     "input": {
       "default": { "value": "{border.width.default}", "type": "borderWidth" }

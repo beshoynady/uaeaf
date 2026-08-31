@@ -2,6 +2,9 @@
 node_modules/
 .claude/*
 .agents/*
+.codex/*
+.specify
+my-project
 /.pnp
 .pnp.*
 .yarn/*

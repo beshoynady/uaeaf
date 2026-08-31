@@ -3,12 +3,18 @@
     "brand": {
       "primary": { "value": "{color.green.500}", "type": "color" },
       "secondary": { "value": "{color.red.500}", "type": "color" },
-      "black": { "value": "{color.gray.1000}", "type": "color" },
+      "black": { "value": "{color.black}", "type": "color", "comment": "ADR-0051 — repointed from {color.gray.1000} to the independent Brand Neutral primitive" },
+      "white": { "value": "{color.white}", "type": "color", "comment": "ADR-0051 — new, completes Brand Neutral (Black/White) per UAEAF Digital UI Brand Guide v1.0 §2/§4" },
       "medal": {
         "gold": { "value": "{color.gold.500}", "type": "color", "comment": "TDR-002" },
         "silver": { "value": "{color.silver.500}", "type": "color", "comment": "TDR-002" },
         "bronze": { "value": "{color.bronze.500}", "type": "color", "comment": "TDR-002" }
       }
+    },
+    "accent": {
+      "information": { "value": "{color.steel-blue.500}", "type": "color", "comment": "ADR-0051 — Role/Accent Token, restricted to content-statistics use only (Brand Guide v1.0 §3)" },
+      "classification": { "value": "{color.teal.500}", "type": "color", "comment": "ADR-0051 — Role/Accent Token, restricted to tags/sport-specialty use only" },
+      "featured": { "value": "{color.desert-sand.500}", "type": "color", "comment": "ADR-0051 — Role/Accent Token, restricted to editorial/heritage content only — never CTAs, forms, or generic cards/badges" }
     }
   }
 }

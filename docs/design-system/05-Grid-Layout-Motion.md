@@ -209,6 +209,31 @@ Tooltip (z-tooltip) ← highest layer always
 
 Visual Regression for every Breakpoint (§5.2) · Actual FPS measurement for any new animation (target ≥55fps, Chapter 2 §PR-005 KPI) · Automated CLS check after any new animation is added to production.
 
+## 5.14 Foundations Completion — Grid Tokens, Dark-Mode Elevation, Reduced Motion (ADR-0052)
+
+### ADR-0052: Promoting §5.2/§5.8 From Documented Rule to Implemented Token/Build Behavior
+
+| Field | Details |
+| --- | --- |
+| **Status** | Accepted |
+| **Authority** | Engineering Decision, filling gaps flagged during ADR-0051's Phase 1 audit (§5.2's grid table, §5.8's reduced-motion rule, and the dark-mode elevation principle implied by the UAEAF Digital UI Brand Guide v1.0 §11.1 existed as *documentation* but had no corresponding token/build artifact) |
+| **Context** | §5.2 already tabulated columns/gutter/margin per breakpoint and §5.8 already specified the exact `prefers-reduced-motion` CSS pattern — but neither existed as an actual `packages/design-tokens` token or generated CSS rule. `semantic/elevation.json` was theme-invariant, so Dark Mode reused the same low-opacity light-mode shadow values, which barely register against a dark surface — a real gap, not previously documented at all. |
+| **Decision** | (1) Promote §5.2's table into a new `primitive/grid.json` (`grid.columns/gutter/margin.{xs-2xl}`, plus `grid.dashboard.columns` for the fixed desktop-first Operational grid per §5.4/§3 Container rule) — no new numbers, only tokenizing already-approved values. (2) Move `elevation.card/card-hover/dropdown/modal` out of the theme-invariant `semantic/elevation.json` into each `semantic/colors.{light,dark,high-contrast}.json`, with Dark using markedly higher shadow opacity (0.4–0.55 vs Light's 0.06–0.12) and High Contrast using `none` (elevation communicated by solid borders only, consistent with its existing philosophy). (3) Implement §5.8's exact CSS pattern for the first time in `scripts/build.mjs`'s generated `base.css`, plus a token-level `--motion-duration-*: 0ms` override as defense-in-depth for any future JS reading the custom property directly. |
+| **Alternatives Considered** | Inverting Dark elevation shadows to a lighter/white glow — rejected, not how any existing surface in this system signals elevation and would be a new, undocumented pattern. Leaving reduced-motion as documentation-only until a real animated component exists — rejected: the build pipeline can enforce it globally today at zero cost, and doing so now means no future component can ship without it by omission. |
+| **Why This Decision** | Same principle already established for color (Brand Guide v1.0 §11.1: surfaces adapt per theme, identity values don't) extended to elevation, which had never had that principle actually applied. |
+| **Risks** | The exact Dark elevation opacities (0.4/0.45/0.45/0.55) are a reasonable, common-practice starting point, not independently user-tested — flagged for visual QA once real dark-mode surfaces exist to check against. |
+| **Consequences** | `packages/design-tokens/tokens/semantic/elevation.json` no longer defines `elevation.card` etc. directly (theme-specific files do) — any future consumer must resolve elevation through the theme-scoped semantic layer, not the old shared file. |
+
+**Verification:** `node scripts/build.mjs` succeeds; `build/css/light.css` → `--elevation-card: 0px 1px 2px rgba(0,0,0,0.06)`, `dark.css` → `rgba(0,0,0,0.4)`, `high-contrast.css` → `none`; `build/css/base.css` ends with the `@media (prefers-reduced-motion: reduce)` block (universal `*` reset + token zeroing); `--grid-columns-lg: 12` etc. present in `base.css`.
+
+### 5.14.1 Registry Additions
+
+```text
+DT-GRID-001 · Grid columns/gutter/margin per breakpoint · Status: Active · v1.0 · Owner: Design System · References: [ADR-0052] · Promotes §5.2 from documentation to token (DT-GRID-* identifier reserved since Chapter 3 §3.4)
+DT-ELEVATION-002 · Theme-aware elevation (Light/Dark/HC) · Status: Active · v1.0 · Owner: Design System · References: [ADR-0052] · Fix: Dark no longer reuses Light's shadow opacity
+DT-MOTION-005 · prefers-reduced-motion build implementation · Status: Active · v1.0 · Owner: Design System · References: [ADR-0052] · Implements §5.8 for the first time
+```
+
 ## Accessibility Considerations
 
 See Chapter 6 for full details; here: every interactive animation **MUST** have a static alternative (Static State) that works without motion and provides the same full functionality.

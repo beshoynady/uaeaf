@@ -1,44 +1,57 @@
 {
   "color": {
     "text": {
-      "primary": { "value": "{color.gray.25}", "type": "color" },
-      "secondary": { "value": "{color.gray.400}", "type": "color" },
-      "disabled": { "value": "{color.gray.700}", "type": "color" },
-      "inverse": { "value": "{color.gray.1000}", "type": "color" },
+      "primary": { "value": "{color.neutral-warm.50}", "type": "color" },
+      "secondary": { "value": "{color.neutral-warm.400}", "type": "color" },
+      "muted": { "value": "{color.neutral-warm.500}", "type": "color" },
+      "disabled": { "value": "{color.neutral-warm.700}", "type": "color" },
+      "inverse": { "value": "{color.black}", "type": "color" },
       "link": { "value": "{color.green.400}", "type": "color", "comment": "Lighter step for AA contrast on dark surface" }
     },
     "surface": {
-      "base": { "value": "{color.gray.950}", "type": "color" },
-      "raised": { "value": "{color.gray.900}", "type": "color" },
-      "sunken": { "value": "{color.gray.1000}", "type": "color" },
-      "skeleton": { "value": "{color.gray.800}", "type": "color" },
-      "overlay": { "value": "{color.gray.1000}", "type": "color" }
+      "base": { "value": "{color.neutral-warm.950}", "type": "color" },
+      "raised": { "value": "{color.neutral-warm.900}", "type": "color" },
+      "sunken": { "value": "{color.black}", "type": "color" },
+      "skeleton": { "value": "{color.neutral-warm.800}", "type": "color" },
+      "overlay": { "value": "{color.black}", "type": "color" }
     },
     "border": {
-      "default": { "value": "{color.gray.800}", "type": "color" },
-      "strong": { "value": "{color.gray.600}", "type": "color" }
+      "default": { "value": "{color.neutral-warm.800}", "type": "color" },
+      "strong": { "value": "{color.neutral-warm.500}", "type": "color", "comment": "ADR-0051 — corrected from neutral-warm.600 (2.97:1 on neutral-warm.950, fails); .500 measures 4.00:1" }
+    },
+    "focus": {
+      "default": { "value": "{color.white}", "type": "color", "comment": "ADR-0051 — inverted for dark surfaces" },
+      "offset": { "value": "{color.black}", "type": "color", "comment": "ADR-0051" }
     },
     "semantic": {
-      "success": { "value": "{color.green.400}", "type": "color" },
-      "success-hover": { "value": "{color.green.300}", "type": "color" },
-      "danger": { "value": "{color.red.400}", "type": "color" },
-      "danger-hover": { "value": "{color.red.300}", "type": "color" },
-      "info": { "value": "{color.gray.400}", "type": "color" },
-      "warning": { "value": "{color.gold.400}", "type": "color" },
-      "neutral": { "value": "{color.gray.600}", "type": "color" },
+      "success": { "value": "{color.success.400}", "type": "color" },
+      "success-hover": { "value": "{color.success.300}", "type": "color" },
+      "error": { "value": "{color.error.400}", "type": "color", "comment": "ADR-0051 — renamed from `danger`" },
+      "error-hover": { "value": "{color.error.300}", "type": "color" },
+      "warning": { "value": "{color.warning.400}", "type": "color" },
+      "info": { "value": "{color.info.400}", "type": "color" },
+      "neutral": { "value": "{color.neutral-warm.600}", "type": "color" },
       "medal-gold": { "value": "{color.gold.400}", "type": "color" },
       "medal-silver": { "value": "{color.silver.400}", "type": "color" },
       "medal-bronze": { "value": "{color.bronze.400}", "type": "color" }
     },
     "avatar": {
-      "fallback-bg": { "value": "{color.gray.800}", "type": "color" },
-      "fallback-text": { "value": "{color.gray.300}", "type": "color" }
+      "fallback-bg": { "value": "{color.neutral-warm.800}", "type": "color" },
+      "fallback-text": { "value": "{color.neutral-warm.300}", "type": "color" }
     }
+  },
+  "elevation": {
+    "card": { "value": "0px 1px 2px rgba(0,0,0,0.4)", "type": "boxShadow", "comment": "ADR-0052 — dark-mode shadows need much higher opacity than light-mode (0.06) to register against an already-dark surface; the surface adapts, brand colors don't invert (Brand Guide v1.0 §11.1 principle applied to elevation)" },
+    "card-hover": { "value": "0px 2px 8px rgba(0,0,0,0.45)", "type": "boxShadow", "comment": "ADR-0052" },
+    "dropdown": { "value": "0px 2px 8px rgba(0,0,0,0.45)", "type": "boxShadow", "comment": "ADR-0052" },
+    "modal": { "value": "0px 8px 24px rgba(0,0,0,0.55)", "type": "boxShadow", "comment": "ADR-0052" }
   },
   "a11y": {
     "focus": {
-      "ring": { "value": "{color.green.400}", "type": "color" },
-      "ring-width": { "value": "2px", "type": "borderWidth" }
+      "ring": { "value": "{color.focus.default}", "type": "color" },
+      "ring-width": { "value": "2px", "type": "borderWidth" },
+      "offset": { "value": "{color.focus.offset}", "type": "color", "comment": "ADR-0051 — new" },
+      "offset-width": { "value": "2px", "type": "borderWidth", "comment": "ADR-0051 — new" }
     }
   }
 }

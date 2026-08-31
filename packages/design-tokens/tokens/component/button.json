@@ -1,14 +1,24 @@
 {
   "button": {
     "primary": {
-      "background": { "value": "{color.semantic.success}", "type": "color" },
-      "background-hover": { "value": "{color.semantic.success-hover}", "type": "color" },
+      "background": { "value": "{color.brand.primary}", "type": "color", "comment": "ADR-0051 — corrected from {color.semantic.success}, was violating Brand Guide v1.0 §11.3 (\"do not use Brand Green as Success\" applied in reverse: Primary must not ride on the Success token)" },
+      "background-hover": { "value": "{color.green.600}", "type": "color", "comment": "ADR-0051 — direct primitive step per Brand Guide v1.0 §8.2, not routed through semantic.success-hover" },
+      "background-pressed": { "value": "{color.green.700}", "type": "color", "comment": "ADR-0051" },
       "text": { "value": "{color.text.inverse}", "type": "color" }
     },
     "danger": {
-      "background": { "value": "{color.semantic.danger}", "type": "color" },
-      "background-hover": { "value": "{color.semantic.danger-hover}", "type": "color" },
+      "background": { "value": "{color.semantic.error}", "type": "color", "comment": "ADR-0051 — corrected from {color.semantic.danger} (which aliased {color.brand.secondary}), was violating Brand Guide v1.0 §11.3 (\"do not use Brand Red as Error\"). This is the `Destructive` variant per Brand Guide §8.1." },
+      "background-hover": { "value": "{color.error.600}", "type": "color", "comment": "ADR-0051" },
+      "background-pressed": { "value": "{color.error.700}", "type": "color", "comment": "ADR-0051" },
       "text": { "value": "{color.text.inverse}", "type": "color" }
+    },
+    "disabled": {
+      "background": { "value": "{color.neutral-warm.300}", "type": "color", "comment": "ADR-0051 — new, shared by all button variants per Brand Guide v1.0 §8.2" },
+      "text": { "value": "{color.neutral-warm.500}", "type": "color", "comment": "ADR-0051 — color alone is not the disabled signal; consuming components MUST also apply reduced opacity, cursor: not-allowed, and aria-disabled per §8.2" }
+    },
+    "focus": {
+      "ring": { "value": "{a11y.focus.ring}", "type": "color", "comment": "ADR-0051 — new, independent of button color per Brand Guide v1.0 §9" },
+      "offset": { "value": "{a11y.focus.offset}", "type": "color", "comment": "ADR-0051 — new" }
     },
     "radius": { "value": "{radius.sm}", "type": "borderRadius" }
   }

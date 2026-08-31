@@ -1,44 +1,57 @@
 {
   "color": {
     "text": {
-      "primary": { "value": "{color.gray.1000}", "type": "color" },
-      "secondary": { "value": "{color.gray.600}", "type": "color" },
-      "disabled": { "value": "{color.gray.400}", "type": "color" },
-      "inverse": { "value": "{color.gray.0}", "type": "color" },
+      "primary": { "value": "{color.black}", "type": "color", "comment": "ADR-0051 — repointed from {color.gray.1000}" },
+      "secondary": { "value": "{color.neutral-warm.600}", "type": "color" },
+      "muted": { "value": "{color.neutral-warm.500}", "type": "color", "comment": "ADR-0051 — 4.68:1 on white; do not use neutral-warm.400 here (2.72:1, fails)" },
+      "disabled": { "value": "{color.neutral-warm.400}", "type": "color" },
+      "inverse": { "value": "{color.white}", "type": "color" },
       "link": { "value": "{color.brand.primary}", "type": "color" }
     },
     "surface": {
-      "base": { "value": "{color.gray.0}", "type": "color" },
-      "raised": { "value": "{color.gray.0}", "type": "color" },
-      "sunken": { "value": "{color.gray.50}", "type": "color" },
-      "skeleton": { "value": "{color.gray.100}", "type": "color" },
-      "overlay": { "value": "{color.gray.1000}", "type": "color" }
+      "base": { "value": "{color.white}", "type": "color" },
+      "raised": { "value": "{color.white}", "type": "color" },
+      "sunken": { "value": "{color.neutral-warm.50}", "type": "color" },
+      "skeleton": { "value": "{color.neutral-warm.100}", "type": "color" },
+      "overlay": { "value": "{color.black}", "type": "color" }
     },
     "border": {
-      "default": { "value": "{color.gray.200}", "type": "color" },
-      "strong": { "value": "{color.gray.400}", "type": "color" }
+      "default": { "value": "{color.neutral-warm.200}", "type": "color" },
+      "strong": { "value": "{color.neutral-warm.500}", "type": "color", "comment": "4.68:1, clears WCAG 1.4.11 non-text 3:1 minimum" }
+    },
+    "focus": {
+      "default": { "value": "{color.black}", "type": "color", "comment": "ADR-0051 — new, independent of color.brand.primary per Brand Guide v1.0 §9 (must contrast against green/red/neutral element backgrounds alike)" },
+      "offset": { "value": "{color.white}", "type": "color", "comment": "ADR-0051 — halo/offset ring, ensures visibility of focus.default against any background including green.500/red.500" }
     },
     "semantic": {
-      "success": { "value": "{color.brand.primary}", "type": "color" },
-      "success-hover": { "value": "{color.green.600}", "type": "color" },
-      "danger": { "value": "{color.brand.secondary}", "type": "color" },
-      "danger-hover": { "value": "{color.red.600}", "type": "color" },
-      "info": { "value": "{color.gray.600}", "type": "color" },
-      "warning": { "value": "{color.gold.600}", "type": "color" },
-      "neutral": { "value": "{color.gray.400}", "type": "color" },
+      "success": { "value": "{color.success.500}", "type": "color", "comment": "ADR-0051 — independent hue, no longer aliases color.brand.primary" },
+      "success-hover": { "value": "{color.success.600}", "type": "color" },
+      "error": { "value": "{color.error.500}", "type": "color", "comment": "ADR-0051 — renamed from `danger`, independent hue, no longer aliases color.brand.secondary" },
+      "error-hover": { "value": "{color.error.600}", "type": "color" },
+      "warning": { "value": "{color.warning.500}", "type": "color", "comment": "ADR-0051" },
+      "info": { "value": "{color.info.500}", "type": "color", "comment": "ADR-0051" },
+      "neutral": { "value": "{color.neutral-warm.400}", "type": "color" },
       "medal-gold": { "value": "{color.brand.medal.gold}", "type": "color" },
       "medal-silver": { "value": "{color.brand.medal.silver}", "type": "color" },
       "medal-bronze": { "value": "{color.brand.medal.bronze}", "type": "color" }
     },
     "avatar": {
-      "fallback-bg": { "value": "{color.gray.200}", "type": "color" },
-      "fallback-text": { "value": "{color.gray.700}", "type": "color" }
+      "fallback-bg": { "value": "{color.neutral-warm.200}", "type": "color" },
+      "fallback-text": { "value": "{color.neutral-warm.700}", "type": "color" }
     }
+  },
+  "elevation": {
+    "card": { "value": "{elevation.1}", "type": "boxShadow" },
+    "card-hover": { "value": "{elevation.2}", "type": "boxShadow" },
+    "dropdown": { "value": "{elevation.2}", "type": "boxShadow" },
+    "modal": { "value": "{elevation.4}", "type": "boxShadow" }
   },
   "a11y": {
     "focus": {
-      "ring": { "value": "{color.brand.primary}", "type": "color" },
-      "ring-width": { "value": "2px", "type": "borderWidth" }
+      "ring": { "value": "{color.focus.default}", "type": "color", "comment": "ADR-0051 — repointed from {color.brand.primary} per Brand Guide v1.0 §9" },
+      "ring-width": { "value": "2px", "type": "borderWidth" },
+      "offset": { "value": "{color.focus.offset}", "type": "color", "comment": "ADR-0051 — new" },
+      "offset-width": { "value": "2px", "type": "borderWidth", "comment": "ADR-0051 — new" }
     }
   }
 }

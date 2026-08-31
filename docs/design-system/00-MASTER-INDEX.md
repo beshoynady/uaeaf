@@ -53,6 +53,8 @@
 
 ✅ **ADR-0001 through ADR-0035** — Continuous sequence with no gaps or duplicates across the entire framework. Each identifier corresponds to exactly one decision within one chapter.
 
+**Later amendment ADRs (post-dating this audit's original ADR-0001→0035 sweep, added directly to their governing chapters rather than renumbering the table above):** ADR-0038 (Chapter 1, Federation Red extended roles), ADR-0039 (Chapter 3 §3.33, color system expansion), ADR-0050 (Chapter 3 §3.34, color usage hierarchy), ADR-0051 (Chapter 3 §3.35, UAEAF Digital UI Brand Guide v1.0 adopted as Baseline — supersedes ADR-0004/0038/0039/0050 in part), ADR-0052 (Chapter 5 §5.14, grid tokens/dark-mode elevation/reduced-motion build implementation), **ADR-0053 (Chapter 3 §3.36, `accent.category.*` content-type placeholder tokens)**. This list is not re-verified for uniqueness/gaps against ADR-0001→0035 by this audit; treat it as a pointer, not a completed consolidation pass.
+
 ## 2. Principle Identifier Uniqueness
 
 ✅ **PR-001 through PR-010** (Chapter 2) — No conflicts. PR-011 is explicitly registered in the v2.0 Backlog only and has **not** been officially adopted.
