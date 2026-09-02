@@ -24,6 +24,7 @@ out/
 # nestjs / node build output
 dist/
 build/
+documentation/
 
 # env files
 .env
