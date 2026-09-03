@@ -25,7 +25,7 @@ export class Coach extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   fullName: LocalizedText;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true })
   slug: string;
 
   @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
@@ -34,12 +34,13 @@ export class Coach extends BaseSchema {
   @Prop({ type: String, enum: LICENSE_LEVELS, required: true })
   licenseLevel: LicenseLevel;
 
-  /** `unique`/`trim` added (schema-audit-2026-09-04.md §3.3/§9.5, P1
-   *  finding): `athleteProfiles`/`officialProfiles.registrationNumber`
-   *  already carry this exact constraint for the same "official
-   *  issuing-authority number" concept — `coaches` had never been given
-   *  the equivalent treatment. */
-  @Prop({ required: true, unique: true, trim: true })
+  /** Uniqueness added (schema-audit-2026-09-04.md §3.3/§9.5, P1 finding):
+   *  `athleteProfiles`/`officialProfiles.registrationNumber` already carry
+   *  this exact constraint for the same "official issuing-authority
+   *  number" concept — `coaches` had never been given the equivalent
+   *  treatment. Declared as a partial index below, not `unique: true`
+   *  here — see that index's comment. */
+  @Prop({ required: true, trim: true })
   registrationNumber: string;
 
   @Prop({ type: Types.ObjectId, ref: 'Club', default: null })
@@ -65,3 +66,11 @@ export class Coach extends BaseSchema {
 }
 
 export const CoachSchema = SchemaFactory.createForClass(Coach);
+// Partial (not a plain `unique: true` @Prop) so a soft-deleted coach's
+// slug/registrationNumber don't permanently block a corrected re-creation
+// (schema-audit-2026-09-04.md §9.2, P1 finding).
+CoachSchema.index({ slug: 1 }, { unique: true, partialFilterExpression: { archivedAt: null } });
+CoachSchema.index(
+  { registrationNumber: 1 },
+  { unique: true, partialFilterExpression: { archivedAt: null } },
+);
