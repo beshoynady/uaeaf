@@ -60,3 +60,7 @@ export class Notification extends BaseSchema {
 }
 
 export const NotificationSchema = SchemaFactory.createForClass(Notification);
+// Notification Centre: "unread notifications for this user, newest first"
+// (docs/product/06-Database-Architecture.md §11; schema-audit-2026-09-04.md
+// §3.2/§7, P1 finding).
+NotificationSchema.index({ recipientId: 1, readState: 1, timestamp: -1 });

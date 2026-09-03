@@ -18,6 +18,7 @@ describe('AuditLogsRepository', () => {
   beforeAll(async () => {
     server = await connectTestDatabase();
     model = mongoose.model<AuditLogDocument>('AuditLog', AuditLogSchema);
+    await model.ensureIndexes();
     repository = new AuditLogsRepository(model);
   });
 
@@ -65,5 +66,20 @@ describe('AuditLogsRepository', () => {
     expect(surface.deleteOne).toBeUndefined();
     expect(surface.findByIdAndUpdate).toBeUndefined();
     expect(typeof surface.create).toBe('function');
+  });
+
+  /**
+   * Both named query patterns this collection exists to serve — per-record
+   * history and per-actor activity — were previously unindexed
+   * (schema-audit-2026-09-04.md §3.2/§7, P1 finding). Asserted directly
+   * against the built indexes rather than only the schema source, so an
+   * accidental future removal of either `.index()` call fails this test.
+   */
+  it('has the entityType+entityId+timestamp and actorId+timestamp indexes', async () => {
+    const indexes = await model.collection.indexes();
+    const indexKeys = indexes.map((index) => index.key);
+
+    expect(indexKeys).toContainEqual({ entityType: 1, entityId: 1, timestamp: -1 });
+    expect(indexKeys).toContainEqual({ actorId: 1, timestamp: -1 });
   });
 });
