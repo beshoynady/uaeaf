@@ -513,10 +513,29 @@ Mirrors the agreed build order exactly — not resequenced here.
 - [x] Domain 6: Documents (`documents`, wired into Week 2's Workflow engine — already anticipated in `WORKFLOW_ENTITY_TYPES`/`PUBLICATION_ENTITY_TYPES`)
 
 ### Week 4 (2026-09-23 → 2026-09-29) — Federation & Governance, CMS, Public Communication
-- [ ] Domain 1: all 14 Federation & Governance collections, now workflow-governed via Week 2's engine
-- [ ] Domain 11: CMS & Page Composition
-- [ ] Domain 10: Public Communication (`contactMessages`)
-- [ ] Wire the already-built, already-tested `toPublicResponse()` (`AthletesService`/`OfficialsService`) and `getPublicBySlug()` (`AthleteProfilesService`/`OfficialProfilesService`) to real unauthenticated `@Public()` routes (e.g. `GET /athletes/public/:slug`, `GET /officials/public/:slug`) — deliberately deferred here during the 2026-09-03 Athlete/AthleteProfile correction rather than built then, since the public HTTP surface itself is Week 4/CMS scope. The resolution logic and public-safe DTOs already exist and are unit-tested; only the route wiring is outstanding. Do not let this get lost among Week 4's CMS/governance scope.
+**Completed 2026-09-03** (ahead of schedule; the whole 4-week plan landed in two calendar days). All 28 collections built and registered, 249 routes mapped, 174 unit tests / 36 suites, 5 e2e suites, real-boot smoke-tested.
+- [x] Domain 1: all 14 Federation & Governance collections (`federation`, `electionCycles`, `federationPersonnel`, `federationAppointments`, `committees`, `committeesPage`, `boardMembersPage`, `organizationalStructure`, `visionMissionPage`, `strategicPlansPage`, `governanceDocuments`, `aboutFederationPage`, `presidentMessagePage`, `contactUsPage`)
+- [x] Domain 11: CMS & Page Composition — all 13 (`siteSettings`, `navigationMenus`, `navigationItems`, `pages`, `pageSections`, `heroSlides`, and the 7 `*Page` hero wrappers)
+- [x] Domain 10: Public Communication (`contactMessages`)
+- [x] Wired `toPublicResponse()`/`getPublicBySlug()` to real `@Public()` routes — the Week 3 carry-over item, now closed: `GET /athletes/public`, `/officials/public`, `/athlete-profiles/public/:slug`, `/officials-profiles/public/:slug`.
+
+**Week 4 implementation notes:**
+- **Workflow wiring**: exactly 8 of the 28 are in List A (re-verified verbatim against domain note `100:7435`; Week 2's `workflow-entity-types.ts` needed ZERO changes, a second confirmation that Week 2 was genuinely forward-compatible). The 7 List-A+B ones (`committees`, `organizationalStructure`, `governanceDocuments`, `visionMissionPage`, `strategicPlansPage`, `aboutFederationPage`, `presidentMessagePage`) each expose `getPublicSnapshot()`/`assertHardDeletable()` delegating to `PublicationsService`/`RevisionsService`, copied from Week 3's `documents` reference implementation. `contactMessages` is List A but NOT List B, so it deliberately has **no** `getPublicSnapshot()` — copying the reference shape wholesale would have been wrong. It instead implements the board's entity-specific `hardDeleteEligibleAt` PII cooldown gate.
+- **Exemption verified per collection, not assumed**: none of the other 20 carries a `publicationState` or appears in either closed list. `pages.status` (`Draft|Published`) is explicitly "structural routing status, distinct from the 13-type workflow publicationState system" on the board.
+- **Singletons (decision #8)**: enforced structurally via a shared `SingletonPageService` (`upsert()` can never insert a second row) for `siteSettings` + the 10 hero-wrapper pages. Proven against real MongoDB in `athletes-page.service.integration.spec.ts` and again over HTTP in the Week 4 e2e. Deliberately NOT applied to the 4 workflow-governed content pages — see the flags below.
+- **New shared `common/` extractions** (all ≥2 consumers): `constants/publication-states.ts` (8 consumers; `documents`' local copy now re-exports it), `schemas/hero-page.schema.ts` + `dto/hero-page.dto.ts` (10), `schemas/content-block.schema.ts` + `dto/content-block.dto.ts` (4 and 2), `services/singleton-page.service.ts` (11), `utils/hierarchy.util.ts` (2 — `organizationalStructure` and `navigationItems` both needed cycle prevention).
+- **Public surface**: 20 `@Public()` paths. Workflow-governed content reads only through `publications → revisions.snapshotData`; non-workflow page furniture is served directly; `[RESTRICTED]` data is stripped by distinct response DTOs (`SiteSettingsPublicResponseDto`, `FederationPersonnelPublicResponseDto`) rather than conditional serialisation.
+- **`POST /contact-messages` is the platform's first unauthenticated write** (the citizen contact form). Verified live end-to-end.
+
+**Flagged for owner decision (not guessed):**
+1. `federationAppointments.status`'s board note still describes the OLD implicit roleType-based auto-close that `supersedesAppointmentId` explicitly replaced — stale text; explicit succession implemented, no implicit close.
+2. `organizationalStructure.nodeType`'s note references `committeeId`/`departmentId`, neither of which is a field on the collection (departments was deleted 2026-09-02) — implemented to the field list.
+3. `pageSections.configuration`'s note documents a `LIVE_STREAM` shape, but `LIVE_STREAM` was merged into `VIDEO_LIBRARY` and is no longer in the enum.
+4. `pageSections.items` is a bare `[ObjectId]` with no per-entry type discriminator, unlike `documents.ownerType`/`ownerId` and `ContentAssociation` — target type is inferable only from `sectionType`.
+5. `siteSettings.sessionTimeoutMinutes`/`maxLoginAttempts` duplicate Week 1's fixed `config/auth.config.ts` constants. Stored as data; nothing reads them — wiring auth to DB settings would change Week 1-2 behaviour, which was out of scope.
+6. Anonymous contact-form submissions produce **no** `auditLogs` row: `AuditLogInterceptor` skips requests with no `request.user`, and `auditLogs.actorId` is a required ref → users. The submission itself is still recorded as its own row.
+7. `revisionId` exists on `visionMissionPage`/`strategicPlansPage` but not on the other five workflow-governed Domain 1 collections — implemented per collection as listed, not normalised.
+8. `federation` and the 4 workflow-governed `*Page` collections were NOT singleton-enforced: the board states no such constraint, and `strategicPlansPage`'s `periodStart`/`periodEnd`/`documentVersion` suggest successive plan periods may legitimately coexist.
 
 **Explicitly out of this 4-week plan:** Domain 3's championship/results/records collections, Domain 4 Content (`articles`/`externalMediaCoverage`), Domain 9 Sponsorship.
 

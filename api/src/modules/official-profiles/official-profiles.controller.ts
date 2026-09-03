@@ -3,6 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../common/decorators/permissions.decorator.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
+import { Public } from '../../common/decorators/public.decorator.js';
 import type { AuthenticatedUser } from '../../common/interfaces/jwt-payload.interface.js';
 import { OfficialProfilesService } from './official-profiles.service.js';
 import { CreateOfficialProfileDto } from './dto/create-official-profile.dto.js';
@@ -23,6 +24,14 @@ export class OfficialProfilesController {
   @RequirePermission('officialProfiles', 'Read')
   findAll() {
     return this.service.findAll();
+  }
+
+  /** Public official page: `/officials/:slug` resolves here —
+   *  officialProfiles.slug → officialId → officials. */
+  @Get('public/:slug')
+  @Public()
+  getPublicBySlug(@Param('slug') slug: string) {
+    return this.service.getPublicBySlug(slug);
   }
 
   @Get(':id')

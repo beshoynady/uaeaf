@@ -3,6 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../common/decorators/permissions.decorator.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
+import { Public } from '../../common/decorators/public.decorator.js';
 import type { AuthenticatedUser } from '../../common/interfaces/jwt-payload.interface.js';
 import { AthleteProfilesService } from './athlete-profiles.service.js';
 import { CreateAthleteProfileDto } from './dto/create-athlete-profile.dto.js';
@@ -23,6 +24,16 @@ export class AthleteProfilesController {
   @RequirePermission('athleteProfiles', 'Read')
   findAll() {
     return this.service.findAll();
+  }
+
+  /** Public athlete page: `/athletes/:slug` resolves here —
+   *  athleteProfiles.slug → athleteId → athletes. Returns public-safe DTOs
+   *  only (no `restricted`, no `dateOfBirth`); `null` for an unknown slug,
+   *  and for any Guest athlete, who has no profile row by design. */
+  @Get('public/:slug')
+  @Public()
+  getPublicBySlug(@Param('slug') slug: string) {
+    return this.service.getPublicBySlug(slug);
   }
 
   @Get(':id')

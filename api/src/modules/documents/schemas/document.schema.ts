@@ -2,6 +2,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../common/schemas/base.schema.js';
+import { PUBLICATION_STATES } from '../../../common/constants/publication-states.js';
+import type { PublicationState } from '../../../common/constants/publication-states.js';
 import { DocumentFile, DocumentFileSchema } from './document-file.schema.js';
 
 export type DocumentDocument = HydratedDocument<Document>;
@@ -28,8 +30,11 @@ export const DOCUMENT_OWNER_TYPES = [
 ] as const;
 export type DocumentOwnerType = (typeof DOCUMENT_OWNER_TYPES)[number];
 
-export const DOCUMENT_PUBLICATION_STATES = ['Draft', 'Live', 'Unpublished', 'Archived'] as const;
-export type DocumentPublicationState = (typeof DOCUMENT_PUBLICATION_STATES)[number];
+/** @deprecated Use the shared `PUBLICATION_STATES` from
+ *  `common/constants/publication-states.ts` — identical 4-value enum,
+ *  promoted there in Week 4 once eight more collections needed it. */
+export const DOCUMENT_PUBLICATION_STATES = PUBLICATION_STATES;
+export type DocumentPublicationState = PublicationState;
 
 /**
  * Implements: documents collection, Domain 6 (FigJam node `94:7374`,

@@ -42,6 +42,13 @@ export class OfficialsService {
     return official.disciplineIds;
   }
 
+  /** Every official in public-safe form — backs the public officials
+   *  listing. */
+  async findAllPublic(): Promise<OfficialPublicResponseDto[]> {
+    const officials = await this.repository.find();
+    return officials.map((official) => this.toPublicResponse(official));
+  }
+
   /** Maps a full `Official` document to its public-safe shape. */
   toPublicResponse(official: OfficialDocument): OfficialPublicResponseDto {
     return {

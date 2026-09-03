@@ -41,6 +41,34 @@ import { AthleteGuardianRelationshipsModule } from './modules/athlete-guardian-r
 import { AlbumsModule } from './modules/albums/albums.module.js';
 import { VideosModule } from './modules/videos/videos.module.js';
 import { DocumentsModule } from './modules/documents/documents.module.js';
+import { FederationsModule } from './modules/federation/federation.module.js';
+import { ElectionCyclesModule } from './modules/election-cycles/election-cycles.module.js';
+import { FederationPersonnelsModule } from './modules/federation-personnel/federation-personnel.module.js';
+import { FederationAppointmentsModule } from './modules/federation-appointments/federation-appointments.module.js';
+import { CommitteesModule } from './modules/committees/committees.module.js';
+import { OrganizationalStructureNodesModule } from './modules/organizational-structure/organizational-structure.module.js';
+import { GovernanceDocumentsModule } from './modules/governance-documents/governance-documents.module.js';
+import { VisionMissionPagesModule } from './modules/vision-mission-page/vision-mission-page.module.js';
+import { StrategicPlansPagesModule } from './modules/strategic-plans-page/strategic-plans-page.module.js';
+import { AboutFederationPagesModule } from './modules/about-federation-page/about-federation-page.module.js';
+import { PresidentMessagePagesModule } from './modules/president-message-page/president-message-page.module.js';
+import { CommitteesPagesModule } from './modules/committees-page/committees-page.module.js';
+import { BoardMembersPageModule } from './modules/board-members-page/board-members-page.module.js';
+import { ContactUsPagesModule } from './modules/contact-us-page/contact-us-page.module.js';
+import { SiteSettingsModule } from './modules/site-settings/site-settings.module.js';
+import { NavigationMenusModule } from './modules/navigation-menus/navigation-menus.module.js';
+import { NavigationItemsModule } from './modules/navigation-items/navigation-items.module.js';
+import { PagesModule } from './modules/pages/pages.module.js';
+import { PageSectionsModule } from './modules/page-sections/page-sections.module.js';
+import { HeroSlidesModule } from './modules/hero-slides/hero-slides.module.js';
+import { AthletesPageModule } from './modules/athletes-page/athletes-page.module.js';
+import { CoachesPageModule } from './modules/coaches-page/coaches-page.module.js';
+import { ResultsRankingsPageModule } from './modules/results-rankings-page/results-rankings-page.module.js';
+import { RecordsPageModule } from './modules/records-page/records-page.module.js';
+import { NewsPageModule } from './modules/news-page/news-page.module.js';
+import { ClubsPageModule } from './modules/clubs-page/clubs-page.module.js';
+import { DisciplinesPageModule } from './modules/disciplines-page/disciplines-page.module.js';
+import { ContactMessagesModule } from './modules/contact-messages/contact-messages.module.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from './common/guards/permissions.guard.js';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor.js';
@@ -89,6 +117,37 @@ import { AppController } from './app.controller.js';
     AlbumsModule,
     VideosModule,
     DocumentsModule,
+    // Week 4 — Domain 1 Federation & Governance
+    FederationsModule,
+    ElectionCyclesModule,
+    FederationPersonnelsModule,
+    FederationAppointmentsModule,
+    CommitteesModule,
+    OrganizationalStructureNodesModule,
+    GovernanceDocumentsModule,
+    VisionMissionPagesModule,
+    StrategicPlansPagesModule,
+    AboutFederationPagesModule,
+    PresidentMessagePagesModule,
+    CommitteesPagesModule,
+    BoardMembersPageModule,
+    ContactUsPagesModule,
+    // Week 4 — Domain 11 CMS & Page Composition
+    SiteSettingsModule,
+    NavigationMenusModule,
+    NavigationItemsModule,
+    PagesModule,
+    PageSectionsModule,
+    HeroSlidesModule,
+    AthletesPageModule,
+    CoachesPageModule,
+    ResultsRankingsPageModule,
+    RecordsPageModule,
+    NewsPageModule,
+    ClubsPageModule,
+    DisciplinesPageModule,
+    // Week 4 — Domain 10 Public Communication
+    ContactMessagesModule,
   ],
   controllers: [AppController],
   providers: [

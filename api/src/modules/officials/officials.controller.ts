@@ -3,6 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../common/decorators/permissions.decorator.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
+import { Public } from '../../common/decorators/public.decorator.js';
 import type { AuthenticatedUser } from '../../common/interfaces/jwt-payload.interface.js';
 import { OfficialsService } from './officials.service.js';
 import { CreateOfficialDto } from './dto/create-official.dto.js';
@@ -23,6 +24,13 @@ export class OfficialsController {
   @RequirePermission('officials', 'Read')
   findAll() {
     return this.service.findAll();
+  }
+
+  /** Public official listing — public-safe shape only. */
+  @Get('public')
+  @Public()
+  findAllPublic() {
+    return this.service.findAllPublic();
   }
 
   @Get(':id')

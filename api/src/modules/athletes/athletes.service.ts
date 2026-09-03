@@ -47,6 +47,13 @@ export class AthletesService {
     return athlete.disciplineIds;
   }
 
+  /** Every athlete in public-safe form — backs the public athletes
+   *  listing. */
+  async findAllPublic(): Promise<AthletePublicResponseDto[]> {
+    const athletes = await this.repository.find();
+    return athletes.map((athlete) => this.toPublicResponse(athlete));
+  }
+
   /** Maps a full `Athlete` document to its public-safe shape (excludes
    *  `dateOfBirth`) — the only form an unauthenticated reader may see. */
   toPublicResponse(athlete: AthleteDocument): AthletePublicResponseDto {

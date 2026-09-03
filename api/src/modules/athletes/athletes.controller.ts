@@ -3,6 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../common/decorators/permissions.decorator.js';
 import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
+import { Public } from '../../common/decorators/public.decorator.js';
 import type { AuthenticatedUser } from '../../common/interfaces/jwt-payload.interface.js';
 import { AthletesService } from './athletes.service.js';
 import { CreateAthleteDto } from './dto/create-athlete.dto.js';
@@ -23,6 +24,14 @@ export class AthletesController {
   @RequirePermission('athletes', 'Read')
   findAll() {
     return this.service.findAll();
+  }
+
+  /** Public athlete listing — public-safe shape only, structurally without
+   *  `dateOfBirth` (`[SENSITIVE-MINOR]`, ADR-0028). */
+  @Get('public')
+  @Public()
+  findAllPublic() {
+    return this.service.findAllPublic();
   }
 
   @Get(':id')
