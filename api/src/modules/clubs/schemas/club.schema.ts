@@ -35,7 +35,13 @@ export class Club extends BaseSchema {
   @Prop({ type: Types.ObjectId, ref: 'Country', required: true })
   emirateId: Types.ObjectId;
 
-  @Prop({ required: true })
+  /** `unique`/`trim` added (schema-audit-2026-09-04.md §3.3/§9.5, P1
+   *  finding): `athleteProfiles`/`officialProfiles.registrationNumber`
+   *  already carry this exact constraint for the same "official
+   *  issuing-authority number" concept — `clubs` had never been given the
+   *  equivalent treatment, so two clubs with the same registration number
+   *  were silently accepted. */
+  @Prop({ required: true, unique: true, trim: true })
   registrationNumber: string;
 
   @Prop({ type: String, enum: CLUB_TYPES, required: true })
