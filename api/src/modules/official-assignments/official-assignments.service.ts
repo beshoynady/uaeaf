@@ -13,6 +13,7 @@ export class OfficialAssignmentsService {
   async create(dto: CreateOfficialAssignmentDto): Promise<OfficialAssignmentDocument> {
     return this.repository.create({
       officialId: new Types.ObjectId(dto.officialId),
+      role: dto.role,
       targetType: dto.targetType,
       targetId: new Types.ObjectId(dto.targetId),
     });

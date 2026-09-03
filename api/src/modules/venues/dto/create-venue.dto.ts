@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsMongoId, IsOptional, ValidateNested } from 'class-validator';
+import { IsMongoId, IsNumber, IsOptional, ValidateNested } from 'class-validator';
 import { LocalizedTextDto } from '../../../common/dto/localized-text.dto.js';
 
 /** Request body for POST /venues. */
@@ -18,4 +18,14 @@ export class CreateVenueDto {
   @IsOptional()
   @IsMongoId()
   ownerClubId?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsNumber()
+  latitude?: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsNumber()
+  longitude?: number;
 }

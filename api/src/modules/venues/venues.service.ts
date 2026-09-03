@@ -15,6 +15,8 @@ export class VenuesService {
       name: dto.name,
       countryId: new Types.ObjectId(dto.countryId),
       ownerClubId: dto.ownerClubId ? new Types.ObjectId(dto.ownerClubId) : null,
+      latitude: dto.latitude ?? null,
+      longitude: dto.longitude ?? null,
     });
   }
 

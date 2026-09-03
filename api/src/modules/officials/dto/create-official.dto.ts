@@ -4,8 +4,8 @@ import { IsArray, IsIn, IsMongoId, IsOptional, ValidateNested } from 'class-vali
 import { LocalizedTextDto } from '../../../common/dto/localized-text.dto.js';
 import { LICENSE_LEVELS } from '../../../common/constants/license-levels.js';
 import type { LicenseLevel } from '../../../common/constants/license-levels.js';
-import { OFFICIAL_ROLE_TYPES } from '../schemas/official.schema.js';
-import type { OfficialRoleType } from '../schemas/official.schema.js';
+import { OFFICIAL_ROLE_TYPES } from '../../../common/constants/official-role-types.js';
+import type { OfficialRoleType } from '../../../common/constants/official-role-types.js';
 import { RESIDENCY_TYPES } from '../../../common/constants/residency-types.js';
 import type { ResidencyType } from '../../../common/constants/residency-types.js';
 

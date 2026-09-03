@@ -7,11 +7,10 @@ import { LICENSE_LEVELS } from '../../../common/constants/license-levels.js';
 import type { LicenseLevel } from '../../../common/constants/license-levels.js';
 import { RESIDENCY_TYPES } from '../../../common/constants/residency-types.js';
 import type { ResidencyType } from '../../../common/constants/residency-types.js';
+import { OFFICIAL_ROLE_TYPES } from '../../../common/constants/official-role-types.js';
+import type { OfficialRoleType } from '../../../common/constants/official-role-types.js';
 
 export type OfficialDocument = HydratedDocument<Official>;
-
-export const OFFICIAL_ROLE_TYPES = ['Referee', 'Judge', 'Starter', 'Timekeeper', 'TechnicalDelegate', 'Other'] as const;
-export type OfficialRoleType = (typeof OFFICIAL_ROLE_TYPES)[number];
 
 /** Implements: officials collection, Domain 2 — People & Organizations
  *  (FigJam node `80:6182`, re-read fresh 2026-09-03; finalized per the
