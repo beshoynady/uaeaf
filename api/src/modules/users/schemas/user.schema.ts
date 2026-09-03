@@ -24,8 +24,13 @@ export class User extends BaseSchema {
   name: LocalizedText;
 
   /** `unique: true` is an implementation-necessary addition, not stated on
-   *  the board's Notes cell — login-by-email is not well-defined without it. */
-  @Prop({ required: true, unique: true })
+   *  the board's Notes cell — login-by-email is not well-defined without it.
+   *  `lowercase`/`trim` normalize on write so the unique index is actually
+   *  meaningful (without them, "Admin@uaeaf.ae" and "admin@uaeaf.ae" could
+   *  both be created as distinct accounts) — `UsersRepository.findByEmail()`
+   *  normalizes its query input to match (schema-audit-2026-09-04.md
+   *  §3.1, P1 finding). */
+  @Prop({ required: true, unique: true, lowercase: true, trim: true })
   email: string;
 
   @Prop({ type: [Types.ObjectId], ref: 'Role', default: [] })
