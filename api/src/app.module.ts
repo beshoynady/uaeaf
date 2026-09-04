@@ -70,7 +70,7 @@ import { ClubsPageModule } from './modules/clubs-page/clubs-page.module.js';
 import { DisciplinesPageModule } from './modules/disciplines-page/disciplines-page.module.js';
 import { AlbumsPageModule } from './modules/albums-page/albums-page.module.js';
 import { VideosPageModule } from './modules/videos-page/videos-page.module.js';
-import { ContactMessagesModule } from './modules/contact-messages/contact-messages.module.js';
+import { ContactMessagesModule } from './modules/public-communication/contact-messages/contact-messages.module.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from './common/guards/permissions.guard.js';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor.js';

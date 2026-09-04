@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
-import { BaseSchema } from '../../../common/schemas/base.schema.js';
+import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 
 export type ContactMessageDocument = HydratedDocument<ContactMessage>;
 
