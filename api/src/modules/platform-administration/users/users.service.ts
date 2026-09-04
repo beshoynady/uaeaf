@@ -4,7 +4,7 @@ import { Types } from 'mongoose';
 import { UsersRepository } from './users.repository.js';
 import type { UserDocument } from './schemas/user.schema.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
-import { LOCKOUT_DURATION_MINUTES, LOCKOUT_THRESHOLD } from '../../config/auth.config.js';
+import { LOCKOUT_DURATION_MINUTES, LOCKOUT_THRESHOLD } from '../../../config/auth.config.js';
 
 const PASSWORD_HASH_ROUNDS = 10;
 

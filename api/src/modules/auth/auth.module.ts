@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { UsersModule } from '../users/users.module.js';
-import { RolesModule } from '../roles/roles.module.js';
-import { PermissionsModule } from '../permissions/permissions.module.js';
+import { UsersModule } from '../platform-administration/users/users.module.js';
+import { RolesModule } from '../platform-administration/roles/roles.module.js';
+import { PermissionsModule } from '../platform-administration/permissions/permissions.module.js';
 import { AuthService } from './auth.service.js';
 import { AuthController } from './auth.controller.js';
 import { JwtStrategy } from './strategies/jwt.strategy.js';

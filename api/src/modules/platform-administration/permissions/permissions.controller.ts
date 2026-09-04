@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { RequirePermission } from '../../common/decorators/permissions.decorator.js';
+import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
 import { PermissionsService } from './permissions.service.js';
 import { CreatePermissionDto } from './dto/create-permission.dto.js';
 

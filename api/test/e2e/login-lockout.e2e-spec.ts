@@ -24,7 +24,7 @@ describe('Login brute-force lockout (e2e)', () => {
     const request = (await import('supertest')).default;
 
     const { AppModule } = await import('../../src/app.module.js');
-    const { User } = await import('../../src/modules/users/schemas/user.schema.js');
+    const { User } = await import('../../src/modules/platform-administration/users/schemas/user.schema.js');
     const bcrypt = (await import('bcryptjs')).default;
 
     const moduleFixture = await Test.createTestingModule({ imports: [AppModule] }).compile();

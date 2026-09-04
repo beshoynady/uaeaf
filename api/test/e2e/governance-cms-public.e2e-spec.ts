@@ -24,9 +24,9 @@ describe('Week 4 — Governance, CMS and the public surface (e2e)', () => {
     const request = (await import('supertest')).default;
 
     const { AppModule } = await import('../../src/app.module.js');
-    const { Role } = await import('../../src/modules/roles/schemas/role.schema.js');
-    const { Permission } = await import('../../src/modules/permissions/schemas/permission.schema.js');
-    const { User } = await import('../../src/modules/users/schemas/user.schema.js');
+    const { Role } = await import('../../src/modules/platform-administration/roles/schemas/role.schema.js');
+    const { Permission } = await import('../../src/modules/platform-administration/permissions/schemas/permission.schema.js');
+    const { User } = await import('../../src/modules/platform-administration/users/schemas/user.schema.js');
     const bcrypt = (await import('bcryptjs')).default;
 
     const moduleFixture = await Test.createTestingModule({ imports: [AppModule] }).compile();

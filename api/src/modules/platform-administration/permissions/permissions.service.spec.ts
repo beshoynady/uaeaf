@@ -4,7 +4,7 @@ import {
   connectTestDatabase,
   disconnectTestDatabase,
   clearTestDatabase,
-} from '../../../test/utils/mongo-memory-server.js';
+} from '../../../../test/utils/mongo-memory-server.js';
 import { Permission, PermissionSchema } from './schemas/permission.schema.js';
 import { PermissionsRepository } from './permissions.repository.js';
 import { PermissionsService } from './permissions.service.js';

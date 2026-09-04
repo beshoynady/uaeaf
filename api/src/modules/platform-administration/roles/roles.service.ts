@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 import { RolesRepository } from './roles.repository.js';
 import type { RoleDocument } from './schemas/role.schema.js';
 import { CreateRoleDto } from './dto/create-role.dto.js';
-import type { LocalizedTextDto } from '../../common/dto/localized-text.dto.js';
+import type { LocalizedTextDto } from '../../../common/dto/localized-text.dto.js';
 
 /** Implements: roles collection, Domain 8 — Platform Administration
  *  (FigJam node 103:7869). */

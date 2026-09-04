@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
-import { RequirePermission } from '../../common/decorators/permissions.decorator.js';
-import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
-import type { AuthenticatedUser } from '../../common/interfaces/jwt-payload.interface.js';
+import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
+import { CurrentUser } from '../../../common/decorators/current-user.decorator.js';
+import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 import { UsersService } from './users.service.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { AssignRolesDto } from './dto/assign-roles.dto.js';

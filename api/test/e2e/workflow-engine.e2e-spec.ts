@@ -25,9 +25,9 @@ describe('Workflow engine (e2e)', () => {
     const { Types } = await import('mongoose');
 
     const { AppModule } = await import('../../src/app.module.js');
-    const { Role } = await import('../../src/modules/roles/schemas/role.schema.js');
-    const { Permission } = await import('../../src/modules/permissions/schemas/permission.schema.js');
-    const { User } = await import('../../src/modules/users/schemas/user.schema.js');
+    const { Role } = await import('../../src/modules/platform-administration/roles/schemas/role.schema.js');
+    const { Permission } = await import('../../src/modules/platform-administration/permissions/schemas/permission.schema.js');
+    const { User } = await import('../../src/modules/platform-administration/users/schemas/user.schema.js');
     const { Publication } = await import('../../src/modules/publications/schemas/publication.schema.js');
     const { WorkflowActionHistory } = await import(
       '../../src/modules/workflow-action-history/schemas/workflow-action-history.schema.js'

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsIn, IsString, MinLength, ValidateNested } from 'class-validator';
-import { LocalizedTextDto } from '../../../common/dto/localized-text.dto.js';
+import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
 import { PERMISSION_ACTIONS } from '../schemas/permission.schema.js';
 import type { PermissionAction } from '../schemas/permission.schema.js';
 

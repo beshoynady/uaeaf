@@ -29,9 +29,9 @@ describe('Auth + RBAC (e2e)', () => {
     const { Types } = await import('mongoose');
 
     const { AppModule } = await import('../../src/app.module.js');
-    const { Role } = await import('../../src/modules/roles/schemas/role.schema.js');
-    const { Permission } = await import('../../src/modules/permissions/schemas/permission.schema.js');
-    const { User } = await import('../../src/modules/users/schemas/user.schema.js');
+    const { Role } = await import('../../src/modules/platform-administration/roles/schemas/role.schema.js');
+    const { Permission } = await import('../../src/modules/platform-administration/permissions/schemas/permission.schema.js');
+    const { User } = await import('../../src/modules/platform-administration/users/schemas/user.schema.js');
     const bcrypt = await import('bcryptjs');
 
     const moduleFixture = await Test.createTestingModule({ imports: [AppModule] }).compile();
