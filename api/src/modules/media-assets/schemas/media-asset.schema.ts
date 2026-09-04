@@ -24,6 +24,30 @@ export class MediaAsset extends BaseSchema {
 
   @Prop({ type: LocalizedTextSchema, required: true })
   altText: LocalizedText;
+
+  /** Manual sort position within the parent album's CMS drag-and-drop
+   *  grid. Required (not defaulted) so every asset is placed deliberately
+   *  at creation time rather than silently piling up at the same
+   *  position (2026-09-04 media-gallery hardening pass). */
+  @Prop({ type: Number, required: true })
+  displayOrder: number;
+
+  /** Whether this asset appears in public-facing album views. Lets Media
+   *  Center staff hide a specific image without archiving (removing) it
+   *  entirely. */
+  @Prop({ type: Boolean, default: true })
+  isVisible: boolean;
+
+  /** Marks an asset for prominent placement (e.g. a homepage/album
+   *  spotlight slot) — independent of `Album.coverImageId`, which is a
+   *  single designated cover, not a "featured" flag on the asset itself. */
+  @Prop({ type: Boolean, default: false })
+  isFeatured: boolean;
 }
 
 export const MediaAssetSchema = SchemaFactory.createForClass(MediaAsset);
+// Both support the album detail page's ordered asset grid; the second
+// additionally supports filtering that grid to visible-only assets without
+// an in-memory sort (2026-09-04 media-gallery hardening pass).
+MediaAssetSchema.index({ albumId: 1, displayOrder: 1 });
+MediaAssetSchema.index({ albumId: 1, isVisible: 1, displayOrder: 1 });

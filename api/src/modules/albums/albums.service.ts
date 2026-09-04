@@ -39,6 +39,8 @@ export class AlbumsService {
         associations: (dto.associations ?? []).map((association) => ({
           ownerType: association.ownerType,
           ownerId: new Types.ObjectId(association.ownerId),
+          role: association.role ?? 'Related',
+          displayOrder: association.displayOrder ?? 0,
         })),
         coverImageId: dto.coverImageId ? new Types.ObjectId(dto.coverImageId) : null,
         displayOrder: dto.displayOrder,

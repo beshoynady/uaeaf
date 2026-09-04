@@ -23,6 +23,8 @@ export class VideosService {
       associations: (dto.associations ?? []).map((association) => ({
         ownerType: association.ownerType,
         ownerId: new Types.ObjectId(association.ownerId),
+        role: association.role ?? 'Related',
+        displayOrder: association.displayOrder ?? 0,
       })),
       tags: dto.tags ?? [],
     });

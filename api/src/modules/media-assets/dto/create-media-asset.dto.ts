@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsMongoId, IsOptional, ValidateNested } from 'class-validator';
+import { IsBoolean, IsInt, IsMongoId, IsOptional, ValidateNested } from 'class-validator';
 import { LocalizedTextDto } from '../../../common/dto/localized-text.dto.js';
 import { MediaFileDto } from './media-file.dto.js';
 
@@ -25,4 +25,18 @@ export class CreateMediaAssetDto {
   @ValidateNested()
   @Type(() => LocalizedTextDto)
   altText: LocalizedTextDto;
+
+  @ApiProperty({ description: 'Manual sort position within the parent album.' })
+  @IsInt()
+  displayOrder: number;
+
+  @ApiProperty({ default: true, required: false })
+  @IsOptional()
+  @IsBoolean()
+  isVisible?: boolean;
+
+  @ApiProperty({ default: false, required: false })
+  @IsOptional()
+  @IsBoolean()
+  isFeatured?: boolean;
 }
