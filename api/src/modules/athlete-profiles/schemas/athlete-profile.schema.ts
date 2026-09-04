@@ -27,19 +27,26 @@ export type AthleteProfileStatus = (typeof ATHLETE_PROFILE_STATUSES)[number];
  *  previously missing despite being described as unique — fixed alongside
  *  this correction as a directly-related gap). `clubId` is the athlete's
  *  CURRENT club only — never overwritten to preserve history; history
- *  lives in `athleteClubHistory`, unaffected by this correction. */
+ *  lives in `athleteClubHistory`, unaffected by this correction.
+ *
+ *  `athleteId`/`slug`/`registrationNumber`'s unique indexes are declared
+ *  below as partial indexes (`partialFilterExpression: {archivedAt:
+ *  null}`), not via `unique: true` on the `@Prop`s — otherwise a
+ *  soft-deleted profile would permanently block a corrected re-creation
+ *  of the same athlete's profile (schema-audit-2026-09-04.md §9.2, P1
+ *  finding). */
 @Schema({ collection: 'athleteProfiles' })
 export class AthleteProfile extends BaseSchema {
-  @Prop({ type: Types.ObjectId, ref: 'Athlete', required: true, unique: true })
+  @Prop({ type: Types.ObjectId, ref: 'Athlete', required: true })
   athleteId: Types.ObjectId;
 
-  @Prop({ required: true, unique: true, trim: true })
+  @Prop({ required: true, trim: true })
   slug: string;
 
   @Prop({ type: Types.ObjectId, ref: 'Club', default: null })
   clubId: Types.ObjectId | null;
 
-  @Prop({ required: true, unique: true, trim: true })
+  @Prop({ required: true, trim: true })
   registrationNumber: string;
 
   @Prop({ type: RestrictedProfileInfoSchema, required: true })
@@ -59,3 +66,12 @@ export class AthleteProfile extends BaseSchema {
 }
 
 export const AthleteProfileSchema = SchemaFactory.createForClass(AthleteProfile);
+AthleteProfileSchema.index(
+  { athleteId: 1 },
+  { unique: true, partialFilterExpression: { archivedAt: null } },
+);
+AthleteProfileSchema.index({ slug: 1 }, { unique: true, partialFilterExpression: { archivedAt: null } });
+AthleteProfileSchema.index(
+  { registrationNumber: 1 },
+  { unique: true, partialFilterExpression: { archivedAt: null } },
+);
