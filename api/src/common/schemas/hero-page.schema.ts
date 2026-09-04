@@ -5,11 +5,12 @@ import { LocalizedText, LocalizedTextSchema } from './localized-text.schema.js';
 
 /**
  * The hero-wrapper trio (`heroImageId`, `heroTitle`, `heroSubtitle`)
- * carried verbatim and identically by ten Domain 1/11 listing-page
- * collections on the live FigJam board (`athletesPage`, `coachesPage`,
- * `resultsRankingsPage`, `recordsPage`, `newsPage`, `clubsPage`,
- * `disciplinesPage`, `boardMembersPage`, `committeesPage`,
- * `contactUsPage`, re-read fresh 2026-09-03).
+ * carried verbatim and identically by twelve Domain 1/5/11 listing-page
+ * collections: the ten on the live FigJam board (`athletesPage`,
+ * `coachesPage`, `resultsRankingsPage`, `recordsPage`, `newsPage`,
+ * `clubsPage`, `disciplinesPage`, `boardMembersPage`, `committeesPage`,
+ * `contactUsPage`, re-read fresh 2026-09-03), plus `albumsPage`/
+ * `videosPage` (added 2026-09-04, same pattern, Domain 5 — Media Center).
  *
  * Extracted here rather than hand-rolled ten times, same reasoning as
  * `LocalizedText`/`SocialLink`. Concrete collections extend this and add

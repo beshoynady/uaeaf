@@ -4,7 +4,7 @@ import { IsMongoId, IsOptional, ValidateNested } from 'class-validator';
 import { LocalizedTextDto } from './localized-text.dto.js';
 
 /**
- * Request-body base for the ten hero-wrapper listing pages — mirrors
+ * Request-body base for the twelve hero-wrapper listing pages — mirrors
  * `HeroPageSchema`. Concrete page DTOs extend this and add their own
  * fields; `class-validator` walks the prototype chain, so inherited
  * decorators still apply.
