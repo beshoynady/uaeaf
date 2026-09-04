@@ -3,6 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator.js';
+import { Public } from '../../../common/decorators/public.decorator.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 import { NavigationMenusService } from './navigation-menus.service.js';
 import { CreateNavigationMenuDto } from './dto/create-navigation-menus.dto.js';
@@ -23,6 +24,15 @@ export class NavigationMenusController {
   @RequirePermission('navigationMenus', 'Read')
   findAll() {
     return this.service.findAll();
+  }
+
+  /** Public lookup by stable `key` — declared ahead of `GET :id` so
+   *  `public` is never swallowed as an `:id` value (matches the
+   *  established route-ordering convention — see `albums.controller.ts`). */
+  @Get('public/by-key/:key')
+  @Public()
+  findPublicByKey(@Param('key') key: string) {
+    return this.service.findPublicByKey(key);
   }
 
   @Get(':id')

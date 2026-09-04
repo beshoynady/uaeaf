@@ -3,6 +3,7 @@ import { Types } from 'mongoose';
 import { HeroSlidesRepository } from './hero-slides.repository.js';
 import type { HeroSlideDocument } from './schemas/hero-slides.schema.js';
 import { CreateHeroSlideDto } from './dto/create-hero-slides.dto.js';
+import type { HeroSlidePublicResponseDto } from './dto/hero-slide-public-response.dto.js';
 import { MediaAssetsService } from '../../media-center/media-assets/media-assets.service.js';
 
 /** Implements: heroSlides collection, Domain 11 — CMS & Page Composition. */
@@ -63,5 +64,36 @@ export class HeroSlidesService {
 
   async remove(id: string, archivedBy: Types.ObjectId): Promise<HeroSlideDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  /** The slides a public visitor should see for one HERO `pageSection`, in
+   *  display order: `active` and inside their `scheduledFrom`/`scheduledTo`
+   *  window at `now` — mirrors `PageSectionsService.findPublicByPage()`'s
+   *  filtering convention (2026-09-04, public-routes closure: this was the
+   *  one missing link in the otherwise-fully-public
+   *  pages → page-sections → heroSlides composition chain). */
+  async findPublicBySection(pageSectionId: string, now: Date = new Date()): Promise<HeroSlidePublicResponseDto[]> {
+    const slides = await this.repository.find({ pageSectionId: new Types.ObjectId(pageSectionId), active: true });
+    return slides
+      .filter((slide) => !slide.scheduledFrom || slide.scheduledFrom <= now)
+      .filter((slide) => !slide.scheduledTo || slide.scheduledTo >= now)
+      .sort((a, b) => a.displayOrder - b.displayOrder)
+      .map((slide) => this.toPublicResponse(slide));
+  }
+
+  /** Maps a full `HeroSlide` document to its public-safe shape (excludes
+   *  the visibility-gate fields — see the DTO's doc comment). */
+  toPublicResponse(slide: HeroSlideDocument): HeroSlidePublicResponseDto {
+    return {
+      id: slide._id.toString(),
+      mediaType: slide.mediaType,
+      imageAssetId: slide.imageAssetId ? slide.imageAssetId.toString() : null,
+      videoId: slide.videoId ? slide.videoId.toString() : null,
+      title: slide.title,
+      subtitle: slide.subtitle,
+      ctaText: slide.ctaText,
+      ctaUrl: slide.ctaUrl,
+      displayOrder: slide.displayOrder,
+    };
   }
 }

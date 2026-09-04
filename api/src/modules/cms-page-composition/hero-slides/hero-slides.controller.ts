@@ -3,6 +3,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator.js';
+import { Public } from '../../../common/decorators/public.decorator.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 import { HeroSlidesService } from './hero-slides.service.js';
 import { CreateHeroSlideDto } from './dto/create-hero-slides.dto.js';
@@ -23,6 +24,16 @@ export class HeroSlidesController {
   @RequirePermission('heroSlides', 'Read')
   findAll() {
     return this.service.findAll();
+  }
+
+  /** Public composition read: the active, in-window slides of one HERO
+   *  section, in displayOrder. Declared ahead of `GET :id` so `public` is
+   *  never swallowed as an `:id` value (matches the established
+   *  route-ordering convention — see `albums.controller.ts`). */
+  @Get('public/by-section/:pageSectionId')
+  @Public()
+  findPublicBySection(@Param('pageSectionId') pageSectionId: string) {
+    return this.service.findPublicBySection(pageSectionId);
   }
 
   @Get(':id')

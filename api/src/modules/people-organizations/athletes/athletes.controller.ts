@@ -1,9 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator.js';
 import { Public } from '../../../common/decorators/public.decorator.js';
+import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 import { AthletesService } from './athletes.service.js';
 import { CreateAthleteDto } from './dto/create-athlete.dto.js';
@@ -27,11 +28,12 @@ export class AthletesController {
   }
 
   /** Public athlete listing — public-safe shape only, structurally without
-   *  `dateOfBirth` (`[SENSITIVE-MINOR]`, ADR-0028). */
+   *  `dateOfBirth` (`[SENSITIVE-MINOR]`, ADR-0028). Paginated via
+   *  `page`/`limit` query params (2026-09-04, public-routes closure). */
   @Get('public')
   @Public()
-  findAllPublic() {
-    return this.service.findAllPublic();
+  findAllPublic(@Query() query: PaginationQueryDto) {
+    return this.service.findAllPublic(query.page, query.limit);
   }
 
   @Get(':id')

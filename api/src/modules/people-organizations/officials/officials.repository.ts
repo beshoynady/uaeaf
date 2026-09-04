@@ -11,4 +11,15 @@ export class OfficialsRepository extends BaseRepository<OfficialDocument> {
   constructor(@InjectModel(Official.name) model: Model<OfficialDocument>) {
     super(model);
   }
+
+  /** Backs the paginated `GET /officials/public` listing — mirrors
+   *  `AthletesRepository.findPaginated()`. */
+  async findPaginated(skip: number, limit: number): Promise<{ items: OfficialDocument[]; total: number }> {
+    const filter = { archivedAt: null };
+    const [items, total] = await Promise.all([
+      this.model.find(filter).skip(skip).limit(limit).exec(),
+      this.model.countDocuments(filter).exec(),
+    ]);
+    return { items, total };
+  }
 }

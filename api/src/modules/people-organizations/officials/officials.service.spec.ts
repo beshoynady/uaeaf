@@ -6,7 +6,7 @@ import { OfficialsRepository } from './officials.repository.js';
 
 describe('OfficialsService', () => {
   const makeRepository = () =>
-    ({ findById: jest.fn() }) as unknown as jest.Mocked<OfficialsRepository>;
+    ({ findById: jest.fn(), findPaginated: jest.fn() }) as unknown as jest.Mocked<OfficialsRepository>;
 
   describe('getDisciplineIds', () => {
     it('returns the official disciplineIds', async () => {
@@ -46,6 +46,44 @@ describe('OfficialsService', () => {
 
       expect(result.id).toBe(official._id.toString());
       expect(result.roleType).toBe('Referee');
+    });
+  });
+
+  describe('findAllPublic', () => {
+    it('maps each item through toPublicResponse and passes through page/limit/total', async () => {
+      const repository = makeRepository();
+      const official = {
+        _id: new Types.ObjectId(),
+        fullName: { en: 'John', ar: 'جون' },
+        roleType: 'Referee',
+        licenseLevel: 'Level1',
+        disciplineIds: [],
+        nationalityId: new Types.ObjectId(),
+        residencyType: 'Local',
+        federationName: null,
+      };
+      repository.findPaginated.mockResolvedValue({ items: [official] as never, total: 1 });
+      const service = new OfficialsService(repository);
+
+      const result = await service.findAllPublic(2, 10);
+
+      expect(repository.findPaginated).toHaveBeenCalledWith(10, 10);
+      expect(result).toEqual({
+        items: [service.toPublicResponse(official as never)],
+        total: 1,
+        page: 2,
+        limit: 10,
+      });
+    });
+
+    it('defaults to page 1 / limit 50 when not provided', async () => {
+      const repository = makeRepository();
+      repository.findPaginated.mockResolvedValue({ items: [], total: 0 });
+      const service = new OfficialsService(repository);
+
+      await service.findAllPublic();
+
+      expect(repository.findPaginated).toHaveBeenCalledWith(0, 50);
     });
   });
 });

@@ -4,6 +4,7 @@ import { AthletesRepository } from './athletes.repository.js';
 import type { AthleteDocument } from './schemas/athlete.schema.js';
 import { CreateAthleteDto } from './dto/create-athlete.dto.js';
 import { AthletePublicResponseDto } from './dto/athlete-public-response.dto.js';
+import type { AthletePublicListResponseDto } from './dto/athlete-public-list-response.dto.js';
 
 /** Implements: athletes collection, Domain 2 — People & Organizations
  *  (FigJam node `80:6020`). Plain CRUD — the Local/Guest profile-linkage
@@ -47,11 +48,13 @@ export class AthletesService {
     return athlete.disciplineIds;
   }
 
-  /** Every athlete in public-safe form — backs the public athletes
-   *  listing. */
-  async findAllPublic(): Promise<AthletePublicResponseDto[]> {
-    const athletes = await this.repository.find();
-    return athletes.map((athlete) => this.toPublicResponse(athlete));
+  /** Every athlete in public-safe form, paginated — backs
+   *  `GET /athletes/public`. No pagination convention existed before this
+   *  session; `page`/`limit` mirror `PaginationQueryDto`'s defaults. */
+  async findAllPublic(page = 1, limit = 50): Promise<AthletePublicListResponseDto> {
+    const skip = (page - 1) * limit;
+    const { items, total } = await this.repository.findPaginated(skip, limit);
+    return { items: items.map((athlete) => this.toPublicResponse(athlete)), total, page, limit };
   }
 
   /** Maps a full `Athlete` document to its public-safe shape (excludes

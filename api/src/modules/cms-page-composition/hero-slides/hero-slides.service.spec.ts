@@ -7,7 +7,7 @@ import { MediaAssetsService } from '../../media-center/media-assets/media-assets
 
 describe('HeroSlidesService', () => {
   const makeRepository = () =>
-    ({ create: jest.fn() }) as unknown as jest.Mocked<HeroSlidesRepository>;
+    ({ create: jest.fn(), find: jest.fn() }) as unknown as jest.Mocked<HeroSlidesRepository>;
   const makeMediaAssets = () =>
     ({ assertUsableImage: jest.fn() }) as unknown as jest.Mocked<MediaAssetsService>;
 
@@ -84,5 +84,66 @@ describe('HeroSlidesService', () => {
         imageAssetId: new Types.ObjectId().toString(),
       }),
     ).rejects.toThrow(BadRequestException);
+  });
+
+  describe('findPublicBySection', () => {
+    const pageSectionId = new Types.ObjectId().toString();
+
+    function makeSlide(overrides: Partial<Record<string, unknown>> = {}) {
+      return {
+        _id: new Types.ObjectId(),
+        mediaType: 'IMAGE',
+        imageAssetId: new Types.ObjectId(),
+        videoId: null,
+        title: { en: 'T', ar: 'ع' },
+        subtitle: { en: 'S', ar: 'ع' },
+        ctaText: { en: 'Go', ar: 'اذهب' },
+        ctaUrl: '/somewhere',
+        displayOrder: 1,
+        active: true,
+        scheduledFrom: null,
+        scheduledTo: null,
+        ...overrides,
+      };
+    }
+
+    it('excludes the visibility-gate fields from the mapped shape', async () => {
+      const repository = makeRepository();
+      const slide = makeSlide();
+      repository.find.mockResolvedValue([slide] as never);
+      const service = new HeroSlidesService(repository, makeMediaAssets());
+
+      const result = await service.findPublicBySection(pageSectionId);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).not.toHaveProperty('active');
+      expect(result[0]).not.toHaveProperty('scheduledFrom');
+      expect(result[0]).not.toHaveProperty('scheduledTo');
+      expect(result[0]).not.toHaveProperty('pageSectionId');
+      expect(result[0].id).toBe(slide._id.toString());
+    });
+
+    it('excludes a slide outside its scheduled window', async () => {
+      const repository = makeRepository();
+      const future = new Date(Date.now() + 86_400_000);
+      repository.find.mockResolvedValue([makeSlide({ scheduledFrom: future })] as never);
+      const service = new HeroSlidesService(repository, makeMediaAssets());
+
+      const result = await service.findPublicBySection(pageSectionId);
+
+      expect(result).toEqual([]);
+    });
+
+    it('orders slides by displayOrder', async () => {
+      const repository = makeRepository();
+      const second = makeSlide({ displayOrder: 2 });
+      const first = makeSlide({ displayOrder: 1 });
+      repository.find.mockResolvedValue([second, first] as never);
+      const service = new HeroSlidesService(repository, makeMediaAssets());
+
+      const result = await service.findPublicBySection(pageSectionId);
+
+      expect(result.map((slide) => slide.id)).toEqual([first._id.toString(), second._id.toString()]);
+    });
   });
 });

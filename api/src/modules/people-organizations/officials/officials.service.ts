@@ -4,6 +4,7 @@ import { OfficialsRepository } from './officials.repository.js';
 import type { OfficialDocument } from './schemas/official.schema.js';
 import { CreateOfficialDto } from './dto/create-official.dto.js';
 import { OfficialPublicResponseDto } from './dto/official-public-response.dto.js';
+import type { OfficialPublicListResponseDto } from './dto/official-public-list-response.dto.js';
 
 /** Implements: officials collection, Domain 2 — People & Organizations
  *  (FigJam node `80:6182`). Plain CRUD — the Local/Guest profile-linkage
@@ -42,11 +43,12 @@ export class OfficialsService {
     return official.disciplineIds;
   }
 
-  /** Every official in public-safe form — backs the public officials
-   *  listing. */
-  async findAllPublic(): Promise<OfficialPublicResponseDto[]> {
-    const officials = await this.repository.find();
-    return officials.map((official) => this.toPublicResponse(official));
+  /** Every official in public-safe form, paginated — backs
+   *  `GET /officials/public`. Mirrors `AthletesService.findAllPublic()`. */
+  async findAllPublic(page = 1, limit = 50): Promise<OfficialPublicListResponseDto> {
+    const skip = (page - 1) * limit;
+    const { items, total } = await this.repository.findPaginated(skip, limit);
+    return { items: items.map((official) => this.toPublicResponse(official)), total, page, limit };
   }
 
   /** Maps a full `Official` document to its public-safe shape. */
