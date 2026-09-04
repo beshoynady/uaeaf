@@ -1,9 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
-import { BaseSchema } from '../../../common/schemas/base.schema.js';
-import { PUBLICATION_STATES } from '../../../common/constants/publication-states.js';
-import type { PublicationState } from '../../../common/constants/publication-states.js';
+import { BaseSchema } from '../../../../common/schemas/base.schema.js';
+import { PUBLICATION_STATES } from '../../../../common/constants/publication-states.js';
+import type { PublicationState } from '../../../../common/constants/publication-states.js';
 import { DocumentFile, DocumentFileSchema } from './document-file.schema.js';
 
 export type DocumentDocument = HydratedDocument<Document>;

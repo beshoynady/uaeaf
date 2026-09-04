@@ -6,7 +6,7 @@ import { GovernanceDocumentsService } from './governance-documents.service.js';
 import { GovernanceDocumentsController } from './governance-documents.controller.js';
 import { PublicationsModule } from '../publications/publications.module.js';
 import { RevisionsModule } from '../revisions/revisions.module.js';
-import { DocumentsModule } from '../documents/documents.module.js';
+import { DocumentsModule } from '../documents/documents/documents.module.js';
 
 @Module({
   imports: [

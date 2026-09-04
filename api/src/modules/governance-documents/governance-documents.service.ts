@@ -5,7 +5,7 @@ import type { GovernanceDocumentDocument } from './schemas/governance-documents.
 import { CreateGovernanceDocumentDto } from './dto/create-governance-documents.dto.js';
 import { PublicationsService } from '../publications/publications.service.js';
 import { RevisionsService } from '../revisions/revisions.service.js';
-import { DocumentsService } from '../documents/documents.service.js';
+import { DocumentsService } from '../documents/documents/documents.service.js';
 
 /** Implements: governanceDocuments collection, Domain 1 — Federation &
  *  Governance. Workflow-governed (List A + List B), wired like Week 3's

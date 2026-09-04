@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { BaseRepository } from '../../common/repositories/base.repository.js';
+import { BaseRepository } from '../../../common/repositories/base.repository.js';
 import { Document } from './schemas/document.schema.js';
 import type { DocumentDocument, DocumentOwnerType } from './schemas/document.schema.js';
 

@@ -40,7 +40,7 @@ import { ClubTeamsModule } from './modules/club-teams/club-teams.module.js';
 import { AthleteGuardianRelationshipsModule } from './modules/athlete-guardian-relationships/athlete-guardian-relationships.module.js';
 import { AlbumsModule } from './modules/albums/albums.module.js';
 import { VideosModule } from './modules/videos/videos.module.js';
-import { DocumentsModule } from './modules/documents/documents.module.js';
+import { DocumentsModule } from './modules/documents/documents/documents.module.js';
 import { FederationsModule } from './modules/federation/federation.module.js';
 import { ElectionCyclesModule } from './modules/election-cycles/election-cycles.module.js';
 import { FederationPersonnelsModule } from './modules/federation-personnel/federation-personnel.module.js';
