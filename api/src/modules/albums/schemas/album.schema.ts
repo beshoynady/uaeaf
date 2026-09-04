@@ -97,3 +97,11 @@ AlbumSchema.index({ publicationState: 1, displayOrder: 1 });
 // Supports "published albums in category X" listing queries — the CMS's
 // per-category album grid (2026-09-04 media-gallery hardening pass).
 AlbumSchema.index({ contentCategoryId: 1, publicationState: 1 });
+// Supports the individual album page's "related albums" $elemMatch lookup
+// (AlbumsRepository.findRelated()) — 2026-09-04 follow-on to ADR-0054.
+AlbumSchema.index({
+  'associations.ownerType': 1,
+  'associations.ownerId': 1,
+  publicationState: 1,
+  archivedAt: 1,
+});

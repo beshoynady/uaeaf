@@ -4,6 +4,7 @@ import { Model, Types } from 'mongoose';
 import { MediaAssetsRepository } from './media-assets.repository.js';
 import type { MediaAssetDocument } from './schemas/media-asset.schema.js';
 import { CreateMediaAssetDto } from './dto/create-media-asset.dto.js';
+import { MediaAssetPublicResponseDto } from './dto/media-asset-public-response.dto.js';
 import { Album } from '../albums/schemas/album.schema.js';
 import type { AlbumDocument } from '../albums/schemas/album.schema.js';
 
@@ -77,5 +78,33 @@ export class MediaAssetsService {
       await this.albumModel.updateOne({ _id: asset.albumId }, { $inc: { assetCount: -1 } }).exec();
     }
     return asset;
+  }
+
+  /** The individual public album page's photo grid: visible assets only,
+   *  in display order, mapped to their public-safe shape (2026-09-04
+   *  follow-on to ADR-0054). */
+  async findPublicByAlbum(albumId: Types.ObjectId): Promise<MediaAssetPublicResponseDto[]> {
+    const assets = await this.repository.findVisibleByAlbum(albumId);
+    return assets.map((asset) => this.toPublicResponse(asset));
+  }
+
+  /** Maps a full `MediaAsset` document to its public-safe shape (excludes
+   *  `albumId`, `isVisible`, and the internal `originalName`/`storageKey`/
+   *  `checksum` file fields). */
+  toPublicResponse(asset: MediaAssetDocument): MediaAssetPublicResponseDto {
+    return {
+      id: asset._id.toString(),
+      file: {
+        url: asset.file.url,
+        mimeType: asset.file.mimeType,
+        width: asset.file.width,
+        height: asset.file.height,
+        size: asset.file.size,
+      },
+      caption: asset.caption,
+      altText: asset.altText,
+      displayOrder: asset.displayOrder,
+      isFeatured: asset.isFeatured,
+    };
   }
 }

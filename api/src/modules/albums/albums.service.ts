@@ -3,13 +3,22 @@ import { Types } from 'mongoose';
 import { AlbumsRepository } from './albums.repository.js';
 import type { AlbumDocument } from './schemas/album.schema.js';
 import { CreateAlbumDto } from './dto/create-album.dto.js';
+import { AlbumPublicResponseDto, RelatedAlbumSummaryDto } from './dto/album-public-response.dto.js';
 import { MediaAssetsService } from '../media-assets/media-assets.service.js';
+import { MediaAssetPublicResponseDto } from '../media-assets/dto/media-asset-public-response.dto.js';
 import { isDuplicateKeyError, duplicateKeyField } from '../../common/utils/mongo-errors.util.js';
 
 /** `tags[]` cleanup bounds. Confirmed final (2026-09-03) — not a
  *  placeholder. */
 export const ALBUM_MAX_TAGS = 20;
 export const ALBUM_MAX_TAG_LENGTH = 40;
+
+/** Related-albums strip cap — a flat shared-target match, not a paginated
+ *  endpoint. Relevance ranking (e.g. weighting by how many targets are
+ *  shared, or by `Primary`-role targets specifically) is a genuine future
+ *  enhancement, not built speculatively here (2026-09-04 follow-on to
+ *  ADR-0054). */
+export const ALBUM_RELATED_LIMIT = 8;
 
 /** Implements: albums collection, Domain 5 — Media Center (FigJam node
  *  `92:7224`). `publicationState` is self-published by Media Center staff,
@@ -79,6 +88,59 @@ export class AlbumsService {
 
   async remove(id: string, archivedBy: Types.ObjectId): Promise<AlbumDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  /** The individual public album page: `null` (not a thrown error) when
+   *  `slug` doesn't resolve to a `Published` album, mirroring
+   *  `AthleteProfilesService.getPublicBySlug()`'s convention — the caller
+   *  maps that to a 404. Otherwise returns the album's public-safe shape,
+   *  its visible photos in display order, and a "related albums" strip of
+   *  other published albums sharing any association target (2026-09-04
+   *  follow-on to ADR-0054). */
+  async getPublicBySlug(slug: string): Promise<{
+    album: AlbumPublicResponseDto;
+    mediaAssets: MediaAssetPublicResponseDto[];
+    relatedAlbums: RelatedAlbumSummaryDto[];
+  } | null> {
+    const album = await this.repository.findPublishedBySlug(slug);
+    if (!album) {
+      return null;
+    }
+    const [mediaAssets, related] = await Promise.all([
+      this.mediaAssetsService.findPublicByAlbum(album._id),
+      this.repository.findRelated(album.associations, album._id, ALBUM_RELATED_LIMIT),
+    ]);
+    return {
+      album: this.toPublicResponse(album),
+      mediaAssets,
+      relatedAlbums: related.map((relatedAlbum) => this.toRelatedSummary(relatedAlbum)),
+    };
+  }
+
+  /** Maps a full `Album` document to its public-safe shape (excludes
+   *  `associations` and the audit-trail fields from `BaseSchema`). */
+  toPublicResponse(album: AlbumDocument): AlbumPublicResponseDto {
+    return {
+      id: album._id.toString(),
+      title: album.title,
+      slug: album.slug,
+      description: album.description,
+      contentCategoryId: album.contentCategoryId.toString(),
+      coverImageId: album.coverImageId ? album.coverImageId.toString() : null,
+      publishedAt: album.publishedAt,
+      tags: album.tags,
+      assetCount: album.assetCount,
+    };
+  }
+
+  private toRelatedSummary(album: AlbumDocument): RelatedAlbumSummaryDto {
+    return {
+      id: album._id.toString(),
+      title: album.title,
+      slug: album.slug,
+      coverImageId: album.coverImageId ? album.coverImageId.toString() : null,
+      publishedAt: album.publishedAt,
+    };
   }
 
   private cleanTags(tags: string[] | undefined): string[] {
