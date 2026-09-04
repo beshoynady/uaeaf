@@ -3,8 +3,8 @@ import { Types } from 'mongoose';
 import { CommitteesRepository } from './committees.repository.js';
 import type { CommitteeDocument } from './schemas/committees.schema.js';
 import { CreateCommitteeDto } from './dto/create-committees.dto.js';
-import { PublicationsService } from '../publications/publications.service.js';
-import { RevisionsService } from '../revisions/revisions.service.js';
+import { PublicationsService } from '../workflow/publications/publications.service.js';
+import { RevisionsService } from '../workflow/revisions/revisions.service.js';
 
 /** Implements: committees collection, Domain 1 — Federation & Governance.
  *  Workflow-governed (List A + List B) — wired exactly like Week 3's

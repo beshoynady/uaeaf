@@ -4,7 +4,7 @@ import { Types } from 'mongoose';
 import { REQUIRED_PERMISSION_KEY } from '../decorators/permissions.decorator.js';
 import type { RequiredPermission } from '../decorators/permissions.decorator.js';
 import type { AuthenticatedUser } from '../interfaces/jwt-payload.interface.js';
-import { AuditLogsService } from '../../modules/audit-logs/audit-logs.service.js';
+import { AuditLogsService } from '../../modules/workflow/audit-logs/audit-logs.service.js';
 import { extractRequestContext } from '../utils/request-context.util.js';
 
 interface DenialRequest {

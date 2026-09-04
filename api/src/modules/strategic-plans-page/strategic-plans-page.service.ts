@@ -3,8 +3,8 @@ import { Types } from 'mongoose';
 import { StrategicPlansPagesRepository } from './strategic-plans-page.repository.js';
 import type { StrategicPlansPageDocument } from './schemas/strategic-plans-page.schema.js';
 import { CreateStrategicPlansPageDto } from './dto/create-strategic-plans-page.dto.js';
-import { PublicationsService } from '../publications/publications.service.js';
-import { RevisionsService } from '../revisions/revisions.service.js';
+import { PublicationsService } from '../workflow/publications/publications.service.js';
+import { RevisionsService } from '../workflow/revisions/revisions.service.js';
 import { MediaAssetsService } from '../media-center/media-assets/media-assets.service.js';
 
 /** Implements: strategicPlansPage collection, Domain 1 — Federation &

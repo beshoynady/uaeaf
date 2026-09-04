@@ -3,8 +3,8 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { OrganizationalStructureNodesService } from './organizational-structure.service.js';
 import { OrganizationalStructureNodesRepository } from './organizational-structure.repository.js';
-import { PublicationsService } from '../publications/publications.service.js';
-import { RevisionsService } from '../revisions/revisions.service.js';
+import { PublicationsService } from '../workflow/publications/publications.service.js';
+import { RevisionsService } from '../workflow/revisions/revisions.service.js';
 
 describe('OrganizationalStructureNodesService', () => {
   const makeRepository = () =>

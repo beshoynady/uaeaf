@@ -4,7 +4,7 @@ import { CallHandler, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Types } from 'mongoose';
 import { AuditLogInterceptor } from './audit-log.interceptor.js';
-import { AuditLogsService } from '../../modules/audit-logs/audit-logs.service.js';
+import { AuditLogsService } from '../../modules/workflow/audit-logs/audit-logs.service.js';
 
 describe('AuditLogInterceptor', () => {
   let auditLogsService: jest.Mocked<AuditLogsService>;

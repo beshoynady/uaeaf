@@ -3,8 +3,8 @@ import { Types } from 'mongoose';
 import { DocumentsRepository } from './documents.repository.js';
 import type { DocumentDocument, DocumentOwnerType } from './schemas/document.schema.js';
 import { CreateDocumentDto } from './dto/create-document.dto.js';
-import { PublicationsService } from '../../publications/publications.service.js';
-import { RevisionsService } from '../../revisions/revisions.service.js';
+import { PublicationsService } from '../../workflow/publications/publications.service.js';
+import { RevisionsService } from '../../workflow/revisions/revisions.service.js';
 
 /**
  * Implements: documents collection, Domain 6 (FigJam node `94:7374`).

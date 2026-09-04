@@ -2,8 +2,8 @@ import { jest } from '@jest/globals';
 import { Types } from 'mongoose';
 import { CommitteesService } from './committees.service.js';
 import { CommitteesRepository } from './committees.repository.js';
-import { PublicationsService } from '../publications/publications.service.js';
-import { RevisionsService } from '../revisions/revisions.service.js';
+import { PublicationsService } from '../workflow/publications/publications.service.js';
+import { RevisionsService } from '../workflow/revisions/revisions.service.js';
 
 describe('CommitteesService (workflow wiring)', () => {
   const makeRepository = () =>

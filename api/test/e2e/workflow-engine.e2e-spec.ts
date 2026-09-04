@@ -28,12 +28,12 @@ describe('Workflow engine (e2e)', () => {
     const { Role } = await import('../../src/modules/platform-administration/roles/schemas/role.schema.js');
     const { Permission } = await import('../../src/modules/platform-administration/permissions/schemas/permission.schema.js');
     const { User } = await import('../../src/modules/platform-administration/users/schemas/user.schema.js');
-    const { Publication } = await import('../../src/modules/publications/schemas/publication.schema.js');
+    const { Publication } = await import('../../src/modules/workflow/publications/schemas/publication.schema.js');
     const { WorkflowActionHistory } = await import(
-      '../../src/modules/workflow-action-history/schemas/workflow-action-history.schema.js'
+      '../../src/modules/workflow/workflow-action-history/schemas/workflow-action-history.schema.js'
     );
-    const { AuditLog } = await import('../../src/modules/audit-logs/schemas/audit-log.schema.js');
-    const { RevisionsService } = await import('../../src/modules/revisions/revisions.service.js');
+    const { AuditLog } = await import('../../src/modules/workflow/audit-logs/schemas/audit-log.schema.js');
+    const { RevisionsService } = await import('../../src/modules/workflow/revisions/revisions.service.js');
     const bcrypt = (await import('bcryptjs')).default;
 
     const moduleFixture = await Test.createTestingModule({ imports: [AppModule] }).compile();

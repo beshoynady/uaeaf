@@ -4,8 +4,8 @@ import { Committee, CommitteeSchema } from './schemas/committees.schema.js';
 import { CommitteesRepository } from './committees.repository.js';
 import { CommitteesService } from './committees.service.js';
 import { CommitteesController } from './committees.controller.js';
-import { PublicationsModule } from '../publications/publications.module.js';
-import { RevisionsModule } from '../revisions/revisions.module.js';
+import { PublicationsModule } from '../workflow/publications/publications.module.js';
+import { RevisionsModule } from '../workflow/revisions/revisions.module.js';
 
 @Module({
   imports: [

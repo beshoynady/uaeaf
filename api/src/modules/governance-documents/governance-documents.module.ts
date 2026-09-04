@@ -4,8 +4,8 @@ import { GovernanceDocument, GovernanceDocumentSchema } from './schemas/governan
 import { GovernanceDocumentsRepository } from './governance-documents.repository.js';
 import { GovernanceDocumentsService } from './governance-documents.service.js';
 import { GovernanceDocumentsController } from './governance-documents.controller.js';
-import { PublicationsModule } from '../publications/publications.module.js';
-import { RevisionsModule } from '../revisions/revisions.module.js';
+import { PublicationsModule } from '../workflow/publications/publications.module.js';
+import { RevisionsModule } from '../workflow/revisions/revisions.module.js';
 import { DocumentsModule } from '../documents/documents/documents.module.js';
 
 @Module({

@@ -3,8 +3,8 @@ import { Types } from 'mongoose';
 import { PresidentMessagePagesRepository } from './president-message-page.repository.js';
 import type { PresidentMessagePageDocument } from './schemas/president-message-page.schema.js';
 import { CreatePresidentMessagePageDto } from './dto/create-president-message-page.dto.js';
-import { PublicationsService } from '../publications/publications.service.js';
-import { RevisionsService } from '../revisions/revisions.service.js';
+import { PublicationsService } from '../workflow/publications/publications.service.js';
+import { RevisionsService } from '../workflow/revisions/revisions.service.js';
 import { MediaAssetsService } from '../media-center/media-assets/media-assets.service.js';
 
 /** Implements: presidentMessagePage collection, Domain 1 — Federation &

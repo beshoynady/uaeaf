@@ -3,8 +3,8 @@ import { Types } from 'mongoose';
 import { VisionMissionPagesRepository } from './vision-mission-page.repository.js';
 import type { VisionMissionPageDocument } from './schemas/vision-mission-page.schema.js';
 import { CreateVisionMissionPageDto } from './dto/create-vision-mission-page.dto.js';
-import { PublicationsService } from '../publications/publications.service.js';
-import { RevisionsService } from '../revisions/revisions.service.js';
+import { PublicationsService } from '../workflow/publications/publications.service.js';
+import { RevisionsService } from '../workflow/revisions/revisions.service.js';
 import { MediaAssetsService } from '../media-center/media-assets/media-assets.service.js';
 
 /** Implements: visionMissionPage collection, Domain 1 — Federation &

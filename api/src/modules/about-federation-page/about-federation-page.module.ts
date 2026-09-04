@@ -4,8 +4,8 @@ import { AboutFederationPage, AboutFederationPageSchema } from './schemas/about-
 import { AboutFederationPagesRepository } from './about-federation-page.repository.js';
 import { AboutFederationPagesService } from './about-federation-page.service.js';
 import { AboutFederationPagesController } from './about-federation-page.controller.js';
-import { PublicationsModule } from '../publications/publications.module.js';
-import { RevisionsModule } from '../revisions/revisions.module.js';
+import { PublicationsModule } from '../workflow/publications/publications.module.js';
+import { RevisionsModule } from '../workflow/revisions/revisions.module.js';
 import { MediaAssetsModule } from '../media-center/media-assets/media-assets.module.js';
 
 @Module({

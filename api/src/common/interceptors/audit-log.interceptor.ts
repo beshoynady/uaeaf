@@ -2,8 +2,8 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nes
 import { Reflector } from '@nestjs/core';
 import { Observable, concatMap } from 'rxjs';
 import { Types } from 'mongoose';
-import { AuditLogsService } from '../../modules/audit-logs/audit-logs.service.js';
-import type { AuditAction } from '../../modules/audit-logs/schemas/audit-log.schema.js';
+import { AuditLogsService } from '../../modules/workflow/audit-logs/audit-logs.service.js';
+import type { AuditAction } from '../../modules/workflow/audit-logs/schemas/audit-log.schema.js';
 import type { AuthenticatedUser } from '../interfaces/jwt-payload.interface.js';
 import { SKIP_AUDIT_LOG_KEY } from '../decorators/skip-audit-log.decorator.js';
 import { extractRequestContext } from '../utils/request-context.util.js';

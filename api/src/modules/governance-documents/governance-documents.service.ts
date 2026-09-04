@@ -3,8 +3,8 @@ import { Types } from 'mongoose';
 import { GovernanceDocumentsRepository } from './governance-documents.repository.js';
 import type { GovernanceDocumentDocument } from './schemas/governance-documents.schema.js';
 import { CreateGovernanceDocumentDto } from './dto/create-governance-documents.dto.js';
-import { PublicationsService } from '../publications/publications.service.js';
-import { RevisionsService } from '../revisions/revisions.service.js';
+import { PublicationsService } from '../workflow/publications/publications.service.js';
+import { RevisionsService } from '../workflow/revisions/revisions.service.js';
 import { DocumentsService } from '../documents/documents/documents.service.js';
 
 /** Implements: governanceDocuments collection, Domain 1 — Federation &

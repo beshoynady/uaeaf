@@ -4,8 +4,8 @@ import { StrategicPlansPage, StrategicPlansPageSchema } from './schemas/strategi
 import { StrategicPlansPagesRepository } from './strategic-plans-page.repository.js';
 import { StrategicPlansPagesService } from './strategic-plans-page.service.js';
 import { StrategicPlansPagesController } from './strategic-plans-page.controller.js';
-import { PublicationsModule } from '../publications/publications.module.js';
-import { RevisionsModule } from '../revisions/revisions.module.js';
+import { PublicationsModule } from '../workflow/publications/publications.module.js';
+import { RevisionsModule } from '../workflow/revisions/revisions.module.js';
 import { MediaAssetsModule } from '../media-center/media-assets/media-assets.module.js';
 
 @Module({

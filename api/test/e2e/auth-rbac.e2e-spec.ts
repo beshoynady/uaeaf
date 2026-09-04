@@ -41,7 +41,7 @@ describe('Auth + RBAC (e2e)', () => {
     );
     await app.init();
 
-    const { AuditLog } = await import('../../src/modules/audit-logs/schemas/audit-log.schema.js');
+    const { AuditLog } = await import('../../src/modules/workflow/audit-logs/schemas/audit-log.schema.js');
     const roleModel = moduleFixture.get(getModelToken(Role.name));
     const permissionModel = moduleFixture.get(getModelToken(Permission.name));
     const userModel = moduleFixture.get(getModelToken(User.name));

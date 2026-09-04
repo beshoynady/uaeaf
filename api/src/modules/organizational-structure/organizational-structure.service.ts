@@ -6,8 +6,8 @@ import {
   CreateOrganizationalStructureNodeDto,
   SetParentNodeDto,
 } from './dto/create-organizational-structure.dto.js';
-import { PublicationsService } from '../publications/publications.service.js';
-import { RevisionsService } from '../revisions/revisions.service.js';
+import { PublicationsService } from '../workflow/publications/publications.service.js';
+import { RevisionsService } from '../workflow/revisions/revisions.service.js';
 import { assertNotDescendant } from '../../common/utils/hierarchy.util.js';
 
 /** Implements: organizationalStructure collection, Domain 1 — Federation &
