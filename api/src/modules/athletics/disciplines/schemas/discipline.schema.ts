@@ -17,7 +17,7 @@ export class Discipline extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   name: LocalizedText;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true })
   slug: string;
 
   @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
@@ -34,3 +34,7 @@ export class Discipline extends BaseSchema {
 }
 
 export const DisciplineSchema = SchemaFactory.createForClass(Discipline);
+// Partial (not a plain `unique: true` @Prop) so a soft-deleted discipline's
+// slug doesn't permanently block a corrected re-creation
+// (schema-audit-2026-09-04.md §9.2, P1 finding).
+DisciplineSchema.index({ slug: 1 }, { unique: true, partialFilterExpression: { archivedAt: null } });

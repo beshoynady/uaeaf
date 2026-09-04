@@ -94,6 +94,28 @@ describe('AuditLogInterceptor', () => {
     expect(call.entityId.toString()).toBe(targetId);
   });
 
+  it('converts a multi-word kebab-case route into the camelCase entityType used by the workflow subsystem', async () => {
+    const createdId = new Types.ObjectId().toString();
+    const request = {
+      method: 'POST',
+      url: '/athlete-profiles',
+      params: {},
+      headers: {},
+      user: { userId, permissions: [] },
+    };
+    const context = makeContext(request);
+    const responseBody = { _id: createdId };
+
+    await new Promise<void>((resolve) => {
+      interceptor.intercept(context, makeHandler(responseBody)).subscribe(() => resolve());
+    });
+    await Promise.resolve();
+
+    expect(auditLogsService.write).toHaveBeenCalledWith(
+      expect.objectContaining({ entityType: 'athleteProfiles' }),
+    );
+  });
+
   it('does nothing when the route is marked @SkipAuditLog', async () => {
     reflector.getAllAndOverride.mockReturnValue(true);
     const request = {

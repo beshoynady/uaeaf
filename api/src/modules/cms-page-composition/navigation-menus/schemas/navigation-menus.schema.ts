@@ -18,7 +18,10 @@ export type NavigationMenuLocation = (typeof NAVIGATION_MENU_LOCATIONS)[number];
  *  Not workflow-governed and not a singleton (several menus coexist). */
 @Schema({ collection: 'navigationMenus' })
 export class NavigationMenu extends BaseSchema {
-  @Prop({ required: true, unique: true, trim: true })
+  /** Uniqueness declared below as a partial index, not `unique: true`
+   *  here — see that index's comment (schema-audit-2026-09-04.md §9.2,
+   *  P1 finding). */
+  @Prop({ required: true, trim: true })
   key: string;
 
   @Prop({ type: String, enum: NAVIGATION_MENU_LOCATIONS, required: true })
@@ -26,3 +29,6 @@ export class NavigationMenu extends BaseSchema {
 }
 
 export const NavigationMenuSchema = SchemaFactory.createForClass(NavigationMenu);
+// Partial so a soft-deleted menu's key doesn't permanently block a
+// corrected re-creation (schema-audit-2026-09-04.md §9.2, P1 finding).
+NavigationMenuSchema.index({ key: 1 }, { unique: true, partialFilterExpression: { archivedAt: null } });

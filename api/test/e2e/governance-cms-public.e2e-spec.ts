@@ -96,6 +96,28 @@ describe('Week 4 — Governance, CMS and the public surface (e2e)', () => {
     expect(submission.body.workflowInstanceId).toBeNull();
     const messageId = submission.body._id as string;
 
+    // An over-limit anonymous submission is rejected before it ever
+    // reaches the database (schema-audit-2026-09-04.md §3.7, P1 finding:
+    // this route previously had no @MaxLength() on any free-text field).
+    await request(app.getHttpServer())
+      .post('/contact-messages')
+      .send({
+        messageType: 'Complaint',
+        senderName: 'A'.repeat(201),
+        senderEmail: 'citizen@example.com',
+        messageBody: 'Short but the name above is over the 200-char cap.',
+      })
+      .expect(400);
+    await request(app.getHttpServer())
+      .post('/contact-messages')
+      .send({
+        messageType: 'Complaint',
+        senderName: 'Citizen Tester',
+        senderEmail: 'citizen@example.com',
+        messageBody: 'B'.repeat(5001),
+      })
+      .expect(400);
+
     // Reading the citizen's PII back is NOT public.
     await request(app.getHttpServer()).get('/contact-messages').expect(401);
     await request(app.getHttpServer()).get('/contact-messages').set(auth()).expect(200);

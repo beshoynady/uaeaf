@@ -26,19 +26,26 @@ export type OfficialProfileStatus = (typeof OFFICIAL_PROFILE_STATUSES)[number];
  *  has no profile row and therefore no individual public page, which is
  *  intentional. `clubId` is the official's CURRENT club only — never
  *  overwritten to preserve history; history lives in `officialClubHistory`,
- *  unaffected by this correction. */
+ *  unaffected by this correction.
+ *
+ *  `officialId`/`slug`/`registrationNumber`'s unique indexes are declared
+ *  below as partial indexes (`partialFilterExpression: {archivedAt:
+ *  null}`), not via `unique: true` on the `@Prop`s — otherwise a
+ *  soft-deleted profile would permanently block a corrected re-creation
+ *  of the same official's profile (schema-audit-2026-09-04.md §9.2, P1
+ *  finding). */
 @Schema({ collection: 'officialProfiles' })
 export class OfficialProfile extends BaseSchema {
-  @Prop({ type: Types.ObjectId, ref: 'Official', required: true, unique: true })
+  @Prop({ type: Types.ObjectId, ref: 'Official', required: true })
   officialId: Types.ObjectId;
 
-  @Prop({ required: true, unique: true, trim: true })
+  @Prop({ required: true, trim: true })
   slug: string;
 
   @Prop({ type: Types.ObjectId, ref: 'Club', default: null })
   clubId: Types.ObjectId | null;
 
-  @Prop({ required: true, unique: true, trim: true })
+  @Prop({ required: true, trim: true })
   registrationNumber: string;
 
   @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
@@ -55,3 +62,12 @@ export class OfficialProfile extends BaseSchema {
 }
 
 export const OfficialProfileSchema = SchemaFactory.createForClass(OfficialProfile);
+OfficialProfileSchema.index(
+  { officialId: 1 },
+  { unique: true, partialFilterExpression: { archivedAt: null } },
+);
+OfficialProfileSchema.index({ slug: 1 }, { unique: true, partialFilterExpression: { archivedAt: null } });
+OfficialProfileSchema.index(
+  { registrationNumber: 1 },
+  { unique: true, partialFilterExpression: { archivedAt: null } },
+);

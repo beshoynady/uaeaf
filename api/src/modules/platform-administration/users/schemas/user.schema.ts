@@ -23,9 +23,15 @@ export class User extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   name: LocalizedText;
 
-  /** `unique: true` is an implementation-necessary addition, not stated on
-   *  the board's Notes cell — login-by-email is not well-defined without it. */
-  @Prop({ required: true, unique: true })
+  /** Uniqueness is an implementation-necessary addition, not stated on the
+   *  board's Notes cell — login-by-email is not well-defined without it.
+   *  `lowercase`/`trim` normalize on write so the unique index is actually
+   *  meaningful (without them, "Admin@uaeaf.ae" and "admin@uaeaf.ae" could
+   *  both be created as distinct accounts) — `UsersRepository.findByEmail()`
+   *  normalizes its query input to match (schema-audit-2026-09-04.md
+   *  §3.1, P1 finding). The unique index itself is declared below as a
+   *  partial index, not via `unique: true` here — see that index's comment. */
+  @Prop({ required: true, lowercase: true, trim: true })
   email: string;
 
   @Prop({ type: [Types.ObjectId], ref: 'Role', default: [] })
@@ -61,3 +67,7 @@ export class User extends BaseSchema {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+// Partial (not a plain `unique: true` @Prop) so a soft-deleted user's
+// email doesn't permanently block a new/reissued account from using it
+// (schema-audit-2026-09-04.md §9.2, P1 finding).
+UserSchema.index({ email: 1 }, { unique: true, partialFilterExpression: { archivedAt: null } });

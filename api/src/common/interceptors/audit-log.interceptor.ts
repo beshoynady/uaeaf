@@ -7,6 +7,7 @@ import type { AuditAction } from '../../modules/workflow/audit-logs/schemas/audi
 import type { AuthenticatedUser } from '../interfaces/jwt-payload.interface.js';
 import { SKIP_AUDIT_LOG_KEY } from '../decorators/skip-audit-log.decorator.js';
 import { extractRequestContext } from '../utils/request-context.util.js';
+import { kebabToCamel } from '../utils/kebab-to-camel.util.js';
 
 const METHOD_TO_ACTION: Partial<Record<string, AuditAction>> = {
   POST: 'Create',
@@ -18,9 +19,14 @@ const METHOD_TO_ACTION: Partial<Record<string, AuditAction>> = {
 /**
  * Writes to `auditLogs` on every successful mutating request (POST/PATCH/
  * PUT/DELETE), registered globally via APP_INTERCEPTOR (BE-PLAN-010 §4.5).
- * `entityType` is read off the first URL path segment (matches the
- * FigJam collection-name convention every controller route already
- * follows, e.g. `/roles/:id` -> `roles`); `entityId` comes from the route's
+ * `entityType` is read off the first URL path segment and converted from
+ * the controller's kebab-case route (e.g. `/athlete-profiles/:id` ->
+ * `athlete-profiles`) to the camelCase Mongoose collection name every
+ * other `entityType`-bearing collection uses (`athleteProfiles` — see
+ * `kebabToCamel()`), so this collection's `entityType` values are always
+ * joinable against `workflowInstances`/`revisions`/`publications`/
+ * `workflowPolicies.entityType` for the same record
+ * (schema-audit-2026-09-04.md §3.2/§9.4). `entityId` comes from the route's
  * `:id` param, falling back to the created document's id in the response
  * body for POST. A request with no authenticated actor (login itself, or
  * any route that legitimately has none) is skipped rather than guessed.
@@ -86,7 +92,8 @@ export class AuditLogInterceptor implements NestInterceptor {
       return;
     }
 
-    const entityType = request.url.split('/').filter(Boolean)[0];
+    const routeSegment = request.url.split('/').filter(Boolean)[0];
+    const entityType = routeSegment ? kebabToCamel(routeSegment) : routeSegment;
     const rawEntityId =
       request.params?.id ?? (responseBody as { _id?: string; id?: string } | null)?._id ?? (responseBody as { id?: string } | null)?.id;
     if (!entityType || !rawEntityId) {

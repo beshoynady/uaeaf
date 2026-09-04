@@ -74,3 +74,9 @@ export class AuditLog extends BaseSchema {
 }
 
 export const AuditLogSchema = SchemaFactory.createForClass(AuditLog);
+// Per-record audit trail ("history for this record") and per-actor
+// activity ("what did this user do") — the two named query patterns this
+// collection exists to serve (docs/product/06-Database-Architecture.md
+// §11; schema-audit-2026-09-04.md §3.2/§7, P1 finding).
+AuditLogSchema.index({ entityType: 1, entityId: 1, timestamp: -1 });
+AuditLogSchema.index({ actorId: 1, timestamp: -1 });

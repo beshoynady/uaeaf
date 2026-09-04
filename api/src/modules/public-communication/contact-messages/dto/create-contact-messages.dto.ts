@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsIn, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsIn, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 import { CONTACT_MESSAGE_TYPES, CONTACT_MESSAGE_REPLY_CHANNELS } from '../schemas/contact-messages.schema.js';
 import type { ContactMessageType, ContactMessageReplyChannel } from '../schemas/contact-messages.schema.js';
 
@@ -9,7 +9,13 @@ import type { ContactMessageType, ContactMessageReplyChannel } from '../schemas/
  *  operational field — `status`, `hardDeleteEligibleAt`, `assignedToId`,
  *  `assignedToType`, `workflowInstanceId`, and all four reply fields — is
  *  server- or staff-controlled and is NOT accepted here, so an anonymous
- *  submitter can never pre-set triage state or forge a reply record. */
+ *  submitter can never pre-set triage state or forge a reply record.
+ *
+ *  `@MaxLength()` on every free-text field (schema-audit-2026-09-04.md
+ *  §3.7, P1 finding): this is the platform's only unauthenticated write
+ *  route — an anonymous caller had no bound on `senderName`/`messageBody`
+ *  length beyond the framework's request-body size default (see also the
+ *  explicit body-size limit added in `main.ts`). */
 export class CreateContactMessageDto {
   @ApiProperty({ enum: CONTACT_MESSAGE_TYPES })
   @IsIn(CONTACT_MESSAGE_TYPES)
@@ -18,20 +24,24 @@ export class CreateContactMessageDto {
   @ApiProperty()
   @IsString()
   @MinLength(1)
+  @MaxLength(200)
   senderName: string;
 
   @ApiProperty()
   @IsEmail()
+  @MaxLength(254)
   senderEmail: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
+  @MaxLength(30)
   senderPhone?: string;
 
   @ApiProperty()
   @IsString()
   @MinLength(1)
+  @MaxLength(5000)
   messageBody: string;
 }
 
@@ -40,6 +50,7 @@ export class ReplyToContactMessageDto {
   @ApiProperty({ description: 'The reply text. Recording only — the system does not send it.' })
   @IsString()
   @MinLength(1)
+  @MaxLength(5000)
   replyBody: string;
 
   @ApiProperty({ enum: CONTACT_MESSAGE_REPLY_CHANNELS })

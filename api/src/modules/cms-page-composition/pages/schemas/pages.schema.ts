@@ -36,7 +36,10 @@ export const PageSeoSchema = SchemaFactory.createForClass(PageSeo);
  *  Not workflow-governed — see the `PAGE_STATUSES` note. */
 @Schema({ collection: 'pages' })
 export class Page extends BaseSchema {
-  @Prop({ required: true, unique: true, trim: true })
+  /** Uniqueness declared below as a partial index, not `unique: true`
+   *  here — see that index's comment (schema-audit-2026-09-04.md §9.2,
+   *  P1 finding). */
+  @Prop({ required: true, trim: true })
   slug: string;
 
   @Prop({ type: LocalizedTextSchema, required: true })
@@ -50,3 +53,6 @@ export class Page extends BaseSchema {
 }
 
 export const PageSchema = SchemaFactory.createForClass(Page);
+// Partial so a soft-deleted page's slug doesn't permanently block a
+// corrected re-creation (schema-audit-2026-09-04.md §9.2, P1 finding).
+PageSchema.index({ slug: 1 }, { unique: true, partialFilterExpression: { archivedAt: null } });

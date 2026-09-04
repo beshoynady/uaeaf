@@ -4,6 +4,7 @@ import { Types } from 'mongoose';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator.js';
 import { Public } from '../../../common/decorators/public.decorator.js';
+import { RateLimit } from '../../../common/decorators/rate-limit.decorator.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 import { ContactMessagesService } from './contact-messages.service.js';
 import {
@@ -35,6 +36,7 @@ export class ContactMessagesController {
    *  a Week 1-2 schema change this week's brief explicitly excludes. */
   @Post()
   @Public()
+  @RateLimit(5, 60)
   create(@Body() dto: CreateContactMessageDto) {
     return this.service.create(dto);
   }

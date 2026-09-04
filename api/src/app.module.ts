@@ -73,6 +73,7 @@ import { VideosPageModule } from './modules/media-center/videos-page/videos-page
 import { ContactMessagesModule } from './modules/public-communication/contact-messages/contact-messages.module.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from './common/guards/permissions.guard.js';
+import { RateLimitGuard } from './common/guards/rate-limit.guard.js';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor.js';
 import { AppController } from './app.controller.js';
 
@@ -155,8 +156,11 @@ import { AppController } from './app.controller.js';
   ],
   controllers: [AppController],
   providers: [
-    // JwtAuthGuard runs first (populates request.user), then PermissionsGuard
-    // reads it — order here is the execution order.
+    // RateLimitGuard runs first — reject abusive traffic as cheaply as
+    // possible, before JWT verification work. JwtAuthGuard then populates
+    // request.user, and PermissionsGuard reads it — order here is the
+    // execution order (schema-audit-2026-09-04.md §3.7/§6.7, P1 finding).
+    { provide: APP_GUARD, useClass: RateLimitGuard },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: PermissionsGuard },
     { provide: APP_INTERCEPTOR, useClass: AuditLogInterceptor },

@@ -51,7 +51,10 @@ export class Album extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   title: LocalizedText;
 
-  @Prop({ required: true, unique: true, trim: true })
+  /** Uniqueness declared below as a partial index, not `unique: true`
+   *  here — see that index's comment (schema-audit-2026-09-04.md §9.2,
+   *  P1 finding). */
+  @Prop({ required: true, trim: true })
   slug: string;
 
   @Prop({ type: LocalizedTextSchema, default: null })
@@ -93,6 +96,9 @@ export class Album extends BaseSchema {
 }
 
 export const AlbumSchema = SchemaFactory.createForClass(Album);
+// Partial so a soft-deleted album's slug doesn't permanently block a
+// corrected re-creation (schema-audit-2026-09-04.md §9.2, P1 finding).
+AlbumSchema.index({ slug: 1 }, { unique: true, partialFilterExpression: { archivedAt: null } });
 AlbumSchema.index({ publicationState: 1, displayOrder: 1 });
 // Supports "published albums in category X" listing queries — the CMS's
 // per-category album grid (2026-09-04 media-gallery hardening pass).
