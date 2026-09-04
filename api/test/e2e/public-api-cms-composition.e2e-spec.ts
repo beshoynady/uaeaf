@@ -10,7 +10,7 @@ let mongoServer: MongoMemoryServer;
 beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create();
   process.env.MONGODB_URI = mongoServer.getUri('uaeaf-e2e-public-cms-composition');
-});
+}, 30000);
 
 afterAll(async () => {
   await mongoServer.stop();
