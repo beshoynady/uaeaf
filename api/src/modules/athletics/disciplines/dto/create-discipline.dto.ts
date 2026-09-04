@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsMongoId, IsOptional, IsString, MinLength, ValidateNested } from 'class-validator';
-import { LocalizedTextDto } from '../../../common/dto/localized-text.dto.js';
+import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
 
 /** Request body for POST /disciplines. */
 export class CreateDisciplineDto {

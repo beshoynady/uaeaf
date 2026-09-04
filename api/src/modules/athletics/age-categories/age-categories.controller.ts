@@ -1,9 +1,9 @@
 import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
-import { RequirePermission } from '../../common/decorators/permissions.decorator.js';
-import { CurrentUser } from '../../common/decorators/current-user.decorator.js';
-import type { AuthenticatedUser } from '../../common/interfaces/jwt-payload.interface.js';
+import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
+import { CurrentUser } from '../../../common/decorators/current-user.decorator.js';
+import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 import { AgeCategoriesService } from './age-categories.service.js';
 import { CreateAgeCategoryDto } from './dto/create-age-category.dto.js';
 

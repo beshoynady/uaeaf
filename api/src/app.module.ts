@@ -20,8 +20,8 @@ import { PublicationsModule } from './modules/publications/publications.module.j
 import { WorkflowPoliciesModule } from './modules/workflow-policies/workflow-policies.module.js';
 import { NotificationsModule } from './modules/notifications/notifications.module.js';
 import { CountriesModule } from './modules/countries/countries.module.js';
-import { AgeCategoriesModule } from './modules/age-categories/age-categories.module.js';
-import { DisciplinesModule } from './modules/disciplines/disciplines.module.js';
+import { AgeCategoriesModule } from './modules/athletics/age-categories/age-categories.module.js';
+import { DisciplinesModule } from './modules/athletics/disciplines/disciplines.module.js';
 import { VenuesModule } from './modules/venues/venues.module.js';
 import { MediaAssetsModule } from './modules/media-assets/media-assets.module.js';
 import { ClubsModule } from './modules/clubs/clubs.module.js';
