@@ -4,7 +4,7 @@ import { Page, PageSchema } from './schemas/pages.schema.js';
 import { PagesRepository } from './pages.repository.js';
 import { PagesService } from './pages.service.js';
 import { PagesController } from './pages.controller.js';
-import { MediaAssetsModule } from '../media-assets/media-assets.module.js';
+import { MediaAssetsModule } from '../media-center/media-assets/media-assets.module.js';
 
 @Module({
   imports: [

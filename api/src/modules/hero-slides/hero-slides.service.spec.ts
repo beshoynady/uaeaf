@@ -3,7 +3,7 @@ import { BadRequestException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { HeroSlidesService } from './hero-slides.service.js';
 import { HeroSlidesRepository } from './hero-slides.repository.js';
-import { MediaAssetsService } from '../media-assets/media-assets.service.js';
+import { MediaAssetsService } from '../media-center/media-assets/media-assets.service.js';
 
 describe('HeroSlidesService', () => {
   const makeRepository = () =>

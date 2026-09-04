@@ -4,7 +4,7 @@ import { BoardMembersPage, BoardMembersPageSchema } from './schemas/board-member
 import { BoardMembersPageRepository } from './board-members-page.repository.js';
 import { BoardMembersPageService } from './board-members-page.service.js';
 import { BoardMembersPageController } from './board-members-page.controller.js';
-import { MediaAssetsModule } from '../media-assets/media-assets.module.js';
+import { MediaAssetsModule } from '../media-center/media-assets/media-assets.module.js';
 
 @Module({
   imports: [

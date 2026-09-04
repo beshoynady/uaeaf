@@ -5,7 +5,7 @@ import { AthleteProfilesRepository } from './athlete-profiles.repository.js';
 import { AthleteProfilesService } from './athlete-profiles.service.js';
 import { AthleteProfilesController } from './athlete-profiles.controller.js';
 import { AthletesModule } from '../athletes/athletes.module.js';
-import { MediaAssetsModule } from '../media-assets/media-assets.module.js';
+import { MediaAssetsModule } from '../media-center/media-assets/media-assets.module.js';
 
 @Module({
   imports: [

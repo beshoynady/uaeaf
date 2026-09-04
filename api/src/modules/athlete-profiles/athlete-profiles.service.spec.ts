@@ -4,7 +4,7 @@ import { Types } from 'mongoose';
 import { AthleteProfilesService } from './athlete-profiles.service.js';
 import { AthleteProfilesRepository } from './athlete-profiles.repository.js';
 import { AthletesService } from '../athletes/athletes.service.js';
-import { MediaAssetsService } from '../media-assets/media-assets.service.js';
+import { MediaAssetsService } from '../media-center/media-assets/media-assets.service.js';
 
 describe('AthleteProfilesService', () => {
   const athleteId = new Types.ObjectId().toString();

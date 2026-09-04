@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 import { FederationsRepository } from './federation.repository.js';
 import type { FederationDocument } from './schemas/federation.schema.js';
 import { CreateFederationDto } from './dto/create-federation.dto.js';
-import { MediaAssetsService } from '../media-assets/media-assets.service.js';
+import { MediaAssetsService } from '../media-center/media-assets/media-assets.service.js';
 
 /** Implements: federation collection, Domain 1 — Federation & Governance.
  *

@@ -6,7 +6,7 @@ import { CreateOfficialProfileDto } from './dto/create-official-profile.dto.js';
 import { OfficialProfilePublicResponseDto } from './dto/official-profile-public-response.dto.js';
 import { OfficialsService } from '../officials/officials.service.js';
 import type { OfficialPublicResponseDto } from '../officials/dto/official-public-response.dto.js';
-import { MediaAssetsService } from '../media-assets/media-assets.service.js';
+import { MediaAssetsService } from '../media-center/media-assets/media-assets.service.js';
 import { isDuplicateKeyError, duplicateKeyField } from '../../common/utils/mongo-errors.util.js';
 
 /** Implements: officialProfiles collection, Domain 2 — People & Organizations

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { SingletonPageService } from '../../common/services/singleton-page.service.js';
-import { MediaAssetsService } from '../media-assets/media-assets.service.js';
+import { MediaAssetsService } from '../media-center/media-assets/media-assets.service.js';
 import { BoardMembersPageRepository } from './board-members-page.repository.js';
 import type { BoardMembersPageDocument } from './schemas/board-members-page.schema.js';
 import { UpsertBoardMembersPageDto } from './dto/upsert-board-members-page.dto.js';

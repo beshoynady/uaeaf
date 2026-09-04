@@ -4,7 +4,7 @@ import { FederationPersonnelsRepository } from './federation-personnel.repositor
 import type { FederationPersonnelDocument } from './schemas/federation-personnel.schema.js';
 import { CreateFederationPersonnelDto } from './dto/create-federation-personnel.dto.js';
 import { FederationPersonnelPublicResponseDto } from './dto/federation-personnel-public-response.dto.js';
-import { MediaAssetsService } from '../media-assets/media-assets.service.js';
+import { MediaAssetsService } from '../media-center/media-assets/media-assets.service.js';
 
 /** Implements: federationPersonnel collection, Domain 1 — Federation &
  *  Governance. `toPublicResponse()` is the only shape an unauthenticated

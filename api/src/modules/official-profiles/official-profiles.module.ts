@@ -5,7 +5,7 @@ import { OfficialProfilesRepository } from './official-profiles.repository.js';
 import { OfficialProfilesService } from './official-profiles.service.js';
 import { OfficialProfilesController } from './official-profiles.controller.js';
 import { OfficialsModule } from '../officials/officials.module.js';
-import { MediaAssetsModule } from '../media-assets/media-assets.module.js';
+import { MediaAssetsModule } from '../media-center/media-assets/media-assets.module.js';
 
 @Module({
   imports: [

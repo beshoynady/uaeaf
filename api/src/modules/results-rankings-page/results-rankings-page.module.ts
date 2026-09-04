@@ -4,7 +4,7 @@ import { ResultsRankingsPage, ResultsRankingsPageSchema } from './schemas/result
 import { ResultsRankingsPageRepository } from './results-rankings-page.repository.js';
 import { ResultsRankingsPageService } from './results-rankings-page.service.js';
 import { ResultsRankingsPageController } from './results-rankings-page.controller.js';
-import { MediaAssetsModule } from '../media-assets/media-assets.module.js';
+import { MediaAssetsModule } from '../media-center/media-assets/media-assets.module.js';
 
 @Module({
   imports: [

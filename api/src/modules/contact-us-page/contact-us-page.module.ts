@@ -4,7 +4,7 @@ import { ContactUsPage, ContactUsPageSchema } from './schemas/contact-us-page.sc
 import { ContactUsPagesRepository } from './contact-us-page.repository.js';
 import { ContactUsPagesService } from './contact-us-page.service.js';
 import { ContactUsPagesController } from './contact-us-page.controller.js';
-import { MediaAssetsModule } from '../media-assets/media-assets.module.js';
+import { MediaAssetsModule } from '../media-center/media-assets/media-assets.module.js';
 
 @Module({
   imports: [

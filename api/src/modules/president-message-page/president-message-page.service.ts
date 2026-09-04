@@ -5,7 +5,7 @@ import type { PresidentMessagePageDocument } from './schemas/president-message-p
 import { CreatePresidentMessagePageDto } from './dto/create-president-message-page.dto.js';
 import { PublicationsService } from '../publications/publications.service.js';
 import { RevisionsService } from '../revisions/revisions.service.js';
-import { MediaAssetsService } from '../media-assets/media-assets.service.js';
+import { MediaAssetsService } from '../media-center/media-assets/media-assets.service.js';
 
 /** Implements: presidentMessagePage collection, Domain 1 — Federation &
  *  Governance. Workflow-governed (List A + List B), wired like Week 3's

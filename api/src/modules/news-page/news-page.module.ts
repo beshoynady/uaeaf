@@ -4,7 +4,7 @@ import { NewsPage, NewsPageSchema } from './schemas/news-page.schema.js';
 import { NewsPageRepository } from './news-page.repository.js';
 import { NewsPageService } from './news-page.service.js';
 import { NewsPageController } from './news-page.controller.js';
-import { MediaAssetsModule } from '../media-assets/media-assets.module.js';
+import { MediaAssetsModule } from '../media-center/media-assets/media-assets.module.js';
 
 @Module({
   imports: [

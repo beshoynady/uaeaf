@@ -4,7 +4,7 @@ import { Types } from 'mongoose';
 import { OfficialProfilesService } from './official-profiles.service.js';
 import { OfficialProfilesRepository } from './official-profiles.repository.js';
 import { OfficialsService } from '../officials/officials.service.js';
-import { MediaAssetsService } from '../media-assets/media-assets.service.js';
+import { MediaAssetsService } from '../media-center/media-assets/media-assets.service.js';
 
 describe('OfficialProfilesService', () => {
   const officialId = new Types.ObjectId().toString();

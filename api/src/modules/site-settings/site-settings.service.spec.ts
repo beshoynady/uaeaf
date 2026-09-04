@@ -2,7 +2,7 @@ import { jest } from '@jest/globals';
 import { Types } from 'mongoose';
 import { SiteSettingsService } from './site-settings.service.js';
 import { SiteSettingsRepository } from './site-settings.repository.js';
-import { MediaAssetsService } from '../media-assets/media-assets.service.js';
+import { MediaAssetsService } from '../media-center/media-assets/media-assets.service.js';
 
 describe('SiteSettingsService', () => {
   const makeRepository = () =>

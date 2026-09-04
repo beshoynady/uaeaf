@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 import { PagesRepository } from './pages.repository.js';
 import type { PageDocument } from './schemas/pages.schema.js';
 import { CreatePageDto } from './dto/create-pages.dto.js';
-import { MediaAssetsService } from '../media-assets/media-assets.service.js';
+import { MediaAssetsService } from '../media-center/media-assets/media-assets.service.js';
 import { isDuplicateKeyError, duplicateKeyField } from '../../common/utils/mongo-errors.util.js';
 
 /** Implements: pages collection, Domain 11 — CMS & Page Composition. */

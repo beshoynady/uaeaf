@@ -7,7 +7,7 @@ import { AthleteProfilePublicResponseDto } from './dto/athlete-profile-public-re
 import type { SocialLinkDto } from '../clubs/dto/social-link.dto.js';
 import { AthletesService } from '../athletes/athletes.service.js';
 import type { AthletePublicResponseDto } from '../athletes/dto/athlete-public-response.dto.js';
-import { MediaAssetsService } from '../media-assets/media-assets.service.js';
+import { MediaAssetsService } from '../media-center/media-assets/media-assets.service.js';
 import { SOCIAL_LINK_PLATFORMS } from '../../common/constants/social-platforms.js';
 import type { SocialLinkPlatform } from '../../common/constants/social-platforms.js';
 import { isDuplicateKeyError, duplicateKeyField } from '../../common/utils/mongo-errors.util.js';

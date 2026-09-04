@@ -6,7 +6,7 @@ import { AthletesPageSchema } from './schemas/athletes-page.schema.js';
 import type { AthletesPageDocument } from './schemas/athletes-page.schema.js';
 import { AthletesPageRepository } from './athletes-page.repository.js';
 import { AthletesPageService } from './athletes-page.service.js';
-import { MediaAssetsService } from '../media-assets/media-assets.service.js';
+import { MediaAssetsService } from '../media-center/media-assets/media-assets.service.js';
 import {
   connectTestDatabase,
   disconnectTestDatabase,

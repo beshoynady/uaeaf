@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { SingletonPageService } from '../../common/services/singleton-page.service.js';
-import { MediaAssetsService } from '../media-assets/media-assets.service.js';
+import { MediaAssetsService } from '../media-center/media-assets/media-assets.service.js';
 import { NewsPageRepository } from './news-page.repository.js';
 import type { NewsPageDocument } from './schemas/news-page.schema.js';
 import { UpsertNewsPageDto } from './dto/upsert-news-page.dto.js';

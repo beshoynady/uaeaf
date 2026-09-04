@@ -4,7 +4,7 @@ import { AthletesPage, AthletesPageSchema } from './schemas/athletes-page.schema
 import { AthletesPageRepository } from './athletes-page.repository.js';
 import { AthletesPageService } from './athletes-page.service.js';
 import { AthletesPageController } from './athletes-page.controller.js';
-import { MediaAssetsModule } from '../media-assets/media-assets.module.js';
+import { MediaAssetsModule } from '../media-center/media-assets/media-assets.module.js';
 
 @Module({
   imports: [

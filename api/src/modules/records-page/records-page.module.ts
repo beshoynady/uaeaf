@@ -4,7 +4,7 @@ import { RecordsPage, RecordsPageSchema } from './schemas/records-page.schema.js
 import { RecordsPageRepository } from './records-page.repository.js';
 import { RecordsPageService } from './records-page.service.js';
 import { RecordsPageController } from './records-page.controller.js';
-import { MediaAssetsModule } from '../media-assets/media-assets.module.js';
+import { MediaAssetsModule } from '../media-center/media-assets/media-assets.module.js';
 
 @Module({
   imports: [

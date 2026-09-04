@@ -6,7 +6,7 @@ import { PresidentMessagePagesService } from './president-message-page.service.j
 import { PresidentMessagePagesController } from './president-message-page.controller.js';
 import { PublicationsModule } from '../publications/publications.module.js';
 import { RevisionsModule } from '../revisions/revisions.module.js';
-import { MediaAssetsModule } from '../media-assets/media-assets.module.js';
+import { MediaAssetsModule } from '../media-center/media-assets/media-assets.module.js';
 
 @Module({
   imports: [

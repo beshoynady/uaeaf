@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { SingletonPageService } from '../../common/services/singleton-page.service.js';
-import { MediaAssetsService } from '../media-assets/media-assets.service.js';
+import { MediaAssetsService } from '../media-center/media-assets/media-assets.service.js';
 import { ClubsPageRepository } from './clubs-page.repository.js';
 import type { ClubsPageDocument } from './schemas/clubs-page.schema.js';
 import { UpsertClubsPageDto } from './dto/upsert-clubs-page.dto.js';

@@ -4,7 +4,7 @@ import { CoachesPage, CoachesPageSchema } from './schemas/coaches-page.schema.js
 import { CoachesPageRepository } from './coaches-page.repository.js';
 import { CoachesPageService } from './coaches-page.service.js';
 import { CoachesPageController } from './coaches-page.controller.js';
-import { MediaAssetsModule } from '../media-assets/media-assets.module.js';
+import { MediaAssetsModule } from '../media-center/media-assets/media-assets.module.js';
 
 @Module({
   imports: [

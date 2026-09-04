@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { SingletonPageService } from '../../common/services/singleton-page.service.js';
-import { MediaAssetsService } from '../media-assets/media-assets.service.js';
+import { MediaAssetsService } from '../media-center/media-assets/media-assets.service.js';
 import { DisciplinesPageRepository } from './disciplines-page.repository.js';
 import type { DisciplinesPageDocument } from './schemas/disciplines-page.schema.js';
 import { UpsertDisciplinesPageDto } from './dto/upsert-disciplines-page.dto.js';

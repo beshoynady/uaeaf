@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 import { HeroSlidesRepository } from './hero-slides.repository.js';
 import type { HeroSlideDocument } from './schemas/hero-slides.schema.js';
 import { CreateHeroSlideDto } from './dto/create-hero-slides.dto.js';
-import { MediaAssetsService } from '../media-assets/media-assets.service.js';
+import { MediaAssetsService } from '../media-center/media-assets/media-assets.service.js';
 
 /** Implements: heroSlides collection, Domain 11 — CMS & Page Composition. */
 @Injectable()
