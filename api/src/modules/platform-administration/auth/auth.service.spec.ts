@@ -6,9 +6,9 @@ import { ConfigService } from '@nestjs/config';
 import bcrypt from 'bcryptjs';
 import { Types } from 'mongoose';
 import { AuthService } from './auth.service.js';
-import { UsersService } from '../platform-administration/users/users.service.js';
-import { RolesService } from '../platform-administration/roles/roles.service.js';
-import { PermissionsService } from '../platform-administration/permissions/permissions.service.js';
+import { UsersService } from '../users/users.service.js';
+import { RolesService } from '../roles/roles.service.js';
+import { PermissionsService } from '../permissions/permissions.service.js';
 
 describe('AuthService', () => {
   let service: AuthService;

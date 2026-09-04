@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import type { JwtPayload, AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
+import type { JwtPayload, AuthenticatedUser } from '../../../../common/interfaces/jwt-payload.interface.js';
 
 /** Verifies the access token's signature/expiry (passport-jwt handles both
  *  before `validate` runs) and maps its payload onto `request.user`. Does

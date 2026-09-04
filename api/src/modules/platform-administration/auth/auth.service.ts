@@ -4,11 +4,11 @@ import { ConfigService } from '@nestjs/config';
 import bcrypt from 'bcryptjs';
 import { Types } from 'mongoose';
 import type { StringValue } from 'ms';
-import { UsersService } from '../platform-administration/users/users.service.js';
-import { RolesService } from '../platform-administration/roles/roles.service.js';
-import { PermissionsService } from '../platform-administration/permissions/permissions.service.js';
-import type { JwtPayload } from '../../common/interfaces/jwt-payload.interface.js';
-import type { RequiredPermission } from '../../common/decorators/permissions.decorator.js';
+import { UsersService } from '../users/users.service.js';
+import { RolesService } from '../roles/roles.service.js';
+import { PermissionsService } from '../permissions/permissions.service.js';
+import type { JwtPayload } from '../../../common/interfaces/jwt-payload.interface.js';
+import type { RequiredPermission } from '../../../common/decorators/permissions.decorator.js';
 import { LoginDto } from './dto/login.dto.js';
 import type { TokenResponse } from './interfaces/token-response.interface.js';
 

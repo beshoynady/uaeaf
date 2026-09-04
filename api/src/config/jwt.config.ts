@@ -8,7 +8,7 @@ import type { StringValue } from 'ms';
  *   DB lookup (see common/guards/permissions.guard.ts).
  * - refreshExpiry: 7 days. The refresh token carries no permissions — it only
  *   mints a new access token, re-resolving roleIds/permissionIds/accountStatus
- *   at that moment (see modules/auth/auth.service.ts).
+ *   at that moment (see modules/platform-administration/auth/auth.service.ts).
  */
 export const jwtConfig = registerAs('jwt', () => ({
   secret: process.env.JWT_SECRET,
