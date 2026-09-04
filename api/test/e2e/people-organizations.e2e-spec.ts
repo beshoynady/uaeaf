@@ -27,7 +27,7 @@ describe('People & Organizations + Documents (e2e)', () => {
     const { Role } = await import('../../src/modules/platform-administration/roles/schemas/role.schema.js');
     const { Permission } = await import('../../src/modules/platform-administration/permissions/schemas/permission.schema.js');
     const { User } = await import('../../src/modules/platform-administration/users/schemas/user.schema.js');
-    const { Country } = await import('../../src/modules/countries/schemas/country.schema.js');
+    const { Country } = await import('../../src/modules/people-organizations/countries/schemas/country.schema.js');
     const bcrypt = (await import('bcryptjs')).default;
 
     const moduleFixture = await Test.createTestingModule({ imports: [AppModule] }).compile();

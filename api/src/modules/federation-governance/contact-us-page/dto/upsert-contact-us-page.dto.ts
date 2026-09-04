@@ -10,7 +10,7 @@ import {
 } from 'class-validator';
 import { HeroPageDto } from '../../../../common/dto/hero-page.dto.js';
 import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
-import { SocialLinkDto } from '../../../clubs/dto/social-link.dto.js';
+import { SocialLinkDto } from '../../../people-organizations/clubs/dto/social-link.dto.js';
 
 /** Request shape for one `phones[]` entry. */
 export class LabelledPhoneDto {

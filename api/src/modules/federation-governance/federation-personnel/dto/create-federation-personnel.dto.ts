@@ -9,7 +9,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
-import { SocialLinkDto } from '../../../clubs/dto/social-link.dto.js';
+import { SocialLinkDto } from '../../../people-organizations/clubs/dto/social-link.dto.js';
 import { FEDERATION_PERSONNEL_STATUSES } from '../schemas/federation-personnel.schema.js';
 import type { FederationPersonnelStatus } from '../schemas/federation-personnel.schema.js';
 
