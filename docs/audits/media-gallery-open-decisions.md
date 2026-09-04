@@ -25,3 +25,16 @@ What it would take: a decision on whether a photographer maps to an existing `Us
 No EXIF or GPS data is read, stored, or stripped anywhere in the upload/storage path today. This is a genuine privacy consideration, not just a missing feature: many phone photos embed GPS coordinates, and if any future workflow (e.g. athlete-submitted photos) allows public-facing uploads to keep their original EXIF data, that could unintentionally expose a location.
 
 What it would take: an explicit internal-vs-public data policy decided *before* any EXIF field is added anywhere — specifically, whether EXIF/GPS data is (a) never read at all, (b) read and stored internally but stripped before any public-facing `url`/response, or (c) read and selectively exposed. Adding an EXIF field without that policy decided first would risk shipping a privacy leak by default.
+
+## 5. `ownerType`/`ownerId` casing divergence between `ContentAssociation` and `documents`
+
+Deferred from the 2026-09-04 `albumsPage`/`videosPage` + individual-album-page follow-on (not the original hardening pass).
+
+Two different collections share the exact same field-name pair, `ownerType`/`ownerId`, for the same conceptual purpose — a polymorphic reference to an owning entity — but use two different, mutually inconsistent casing conventions for the *values*:
+
+- `ContentAssociation.ownerType` (shared by `albums`/`videos`, `common/schemas/content-association.schema.ts`): camelCase, plural, collection-name style — `championships | athletes | clubs | publicEvents`. This matches the platform's general `entityType` casing convention (`workflowInstances`, `revisions`, `publications`, and the `auditLogs.entityType` casing fix from the 2026-09-04 P0/P1 hardening pass).
+- `documents.ownerType` (`modules/documents/schemas/document.schema.ts`): PascalCase, singular, display-label style — `Club | Athlete | Coach | Official | Championship | Membership | Sponsorship`.
+
+Both are correct-as-implemented per their own schema's documentation and the live FigJam board (confirmed on the board itself, not just in code) — this is not a bug in either collection individually, and neither was changed as part of this session's work. It is flagged here as a genuine cross-schema consistency gap: a developer working across both collections has to remember which casing convention applies to which field, with no structural guard against mixing them up.
+
+What it would take: a decision on which convention is canonical going forward (the camelCase/collection-name style has more adopters platform-wide, per the collections listed above) and whether `documents.ownerType`'s existing values are worth a breaking migration to match, or whether the divergence is accepted permanently as a documented exception (similar in spirit to ADR-0041's scoped typography exceptions, but for a data-modeling convention rather than a visual one). Not decided here — do not silently normalize either field as a side effect of unrelated work.
