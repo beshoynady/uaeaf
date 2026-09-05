@@ -80,6 +80,27 @@ describe('RateLimitGuard', () => {
     jest.spyOn(Date, 'now').mockRestore();
   });
 
+  it('sweeps expired buckets off the map so a stopped client does not leak memory forever', () => {
+    jest.useFakeTimers();
+    try {
+      const guard = new RateLimitGuard(makeReflector({ limit: 1, windowSeconds: 60 }));
+      guard.canActivate(makeContext('1.1.1.1'));
+      expect((guard as unknown as { buckets: Map<string, unknown> }).buckets.size).toBe(1);
+
+      jest.advanceTimersByTime(61_000 + 60_000);
+
+      expect((guard as unknown as { buckets: Map<string, unknown> }).buckets.size).toBe(0);
+      guard.onModuleDestroy();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('onModuleDestroy clears the sweep timer without throwing', () => {
+    const guard = new RateLimitGuard(makeReflector({ limit: 1, windowSeconds: 60 }));
+    expect(() => guard.onModuleDestroy()).not.toThrow();
+  });
+
   it('reads the RATE_LIMIT_KEY metadata from the handler and class', () => {
     const reflector = makeReflector({ limit: 5, windowSeconds: 60 });
     const guard = new RateLimitGuard(reflector);

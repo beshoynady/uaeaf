@@ -30,6 +30,7 @@ describe('Public API — People & Organizations (e2e)', () => {
     const { Test } = await import('@nestjs/testing');
     const { ValidationPipe, INestApplication } = await import('@nestjs/common');
     const { getModelToken } = await import('@nestjs/mongoose');
+    const { Types } = await import('mongoose');
     const request = (await import('supertest')).default;
 
     const { AppModule } = await import('../../src/app.module.js');
@@ -59,7 +60,7 @@ describe('Public API — People & Organizations (e2e)', () => {
     const localAthlete = await athleteModel.create({
       name: { en: 'Jane Runner', ar: 'جين العداءة' },
       dateOfBirth: new Date('2005-03-01'), // [SENSITIVE-MINOR] — must never reach a public response
-      nationalityId: new (await import('mongoose')).Types.ObjectId(),
+      nationalityId: new Types.ObjectId(),
       disciplineIds: [],
       gender: 'Female',
       residencyType: 'Local',
@@ -68,7 +69,7 @@ describe('Public API — People & Organizations (e2e)', () => {
     await athleteModel.create({
       name: { en: 'Guest Sprinter', ar: 'عداء ضيف' },
       dateOfBirth: new Date('1998-06-15'),
-      nationalityId: new (await import('mongoose')).Types.ObjectId(),
+      nationalityId: new Types.ObjectId(),
       disciplineIds: [],
       gender: 'Male',
       residencyType: 'Guest',
@@ -144,7 +145,7 @@ describe('Public API — People & Organizations (e2e)', () => {
       roleType: 'Referee',
       licenseLevel: 'Level1',
       disciplineIds: [],
-      nationalityId: new (await import('mongoose')).Types.ObjectId(),
+      nationalityId: new Types.ObjectId(),
       residencyType: 'Local',
       federationName: null,
     });

@@ -23,6 +23,23 @@ export abstract class BaseRepository<T> {
     return this.model.find({ ...filter, archivedAt: null } as QueryFilter<T>).exec();
   }
 
+  /** DB-level skip/limit plus the matching total — not an in-memory slice
+   *  of `find()` — so a paginated listing scales past what fits in memory.
+   *  Shared by every paginated public listing rather than reimplemented
+   *  per repository. */
+  async findPaginated(
+    skip: number,
+    limit: number,
+    filter: QueryFilter<T> = {},
+  ): Promise<{ items: T[]; total: number }> {
+    const scoped = { ...filter, archivedAt: null } as QueryFilter<T>;
+    const [items, total] = await Promise.all([
+      this.model.find(scoped).skip(skip).limit(limit).exec(),
+      this.model.countDocuments(scoped).exec(),
+    ]);
+    return { items, total };
+  }
+
   async create(data: Partial<T>): Promise<T> {
     return this.model.create(data);
   }

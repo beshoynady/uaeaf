@@ -3,6 +3,7 @@ import { Types } from 'mongoose';
 import { PageSectionsRepository } from './page-sections.repository.js';
 import type { PageSectionDocument } from './schemas/page-sections.schema.js';
 import { CreatePageSectionDto } from './dto/create-page-sections.dto.js';
+import { selectVisibleInWindow } from '../../../common/utils/visibility-window.util.js';
 
 /** Implements: pageSections collection, Domain 11 — CMS & Page
  *  Composition. */
@@ -57,10 +58,12 @@ export class PageSectionsService {
       enabled: true,
       visibility: 'Everyone',
     });
-    return sections
-      .filter((section) => !section.visibleFrom || section.visibleFrom <= now)
-      .filter((section) => !section.visibleUntil || section.visibleUntil >= now)
-      .sort((a, b) => a.displayOrder - b.displayOrder);
+    return selectVisibleInWindow(
+      sections,
+      now,
+      (section) => section.visibleFrom,
+      (section) => section.visibleUntil,
+    );
   }
 
   async remove(id: string, archivedBy: Types.ObjectId): Promise<PageSectionDocument | null> {

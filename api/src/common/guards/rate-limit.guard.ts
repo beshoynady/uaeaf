@@ -1,4 +1,11 @@
-import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { RATE_LIMIT_KEY } from '../decorators/rate-limit.decorator.js';
 import type { RateLimitOptions } from '../decorators/rate-limit.decorator.js';
@@ -10,6 +17,12 @@ import type { RateLimitOptions } from '../decorators/rate-limit.decorator.js';
  *  so this guard exists in its place rather than force-installing an
  *  untested peer-dependency combination). */
 const DEFAULT_OPTIONS: RateLimitOptions = { limit: 100, windowSeconds: 60 };
+
+/** How often expired buckets are swept from memory. Registered globally,
+ *  so without this a bucket for every distinct route+IP pair ever seen
+ *  would live forever, even after its window closed and it stopped being
+ *  requested — unbounded growth for a public-facing API. */
+const SWEEP_INTERVAL_MS = 60_000;
 
 interface Bucket {
   count: number;
@@ -35,10 +48,30 @@ interface Bucket {
  *   is exceeded for that route+IP pair.
  */
 @Injectable()
-export class RateLimitGuard implements CanActivate {
+export class RateLimitGuard implements CanActivate, OnModuleDestroy {
   private readonly buckets = new Map<string, Bucket>();
 
+  /** `.unref()` so this timer alone never keeps the process (or a test's
+   *  Jest process) alive; `onModuleDestroy` below still clears it
+   *  explicitly for a clean guard lifecycle — e.g. this guard is
+   *  re-instantiated once per `AppModule` boot in the e2e suite, which
+   *  runs many boots in one process. */
+  private readonly sweepTimer = setInterval(() => this.sweep(), SWEEP_INTERVAL_MS).unref();
+
   constructor(private readonly reflector: Reflector) {}
+
+  onModuleDestroy(): void {
+    clearInterval(this.sweepTimer);
+  }
+
+  private sweep(): void {
+    const now = Date.now();
+    for (const [key, bucket] of this.buckets) {
+      if (bucket.resetAt <= now) {
+        this.buckets.delete(key);
+      }
+    }
+  }
 
   canActivate(context: ExecutionContext): boolean {
     const options = this.reflector.getAllAndOverride<RateLimitOptions>(RATE_LIMIT_KEY, [
