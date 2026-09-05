@@ -19,6 +19,7 @@ export class AuthMethod {
   @Prop()
   providerId?: string;
 
+  /** OAuth providers only. */
   @Prop({ type: Date, default: Date.now })
   linkedAt: Date;
 }
