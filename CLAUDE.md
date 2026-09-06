@@ -928,3 +928,29 @@ SCALABLE
 IMPLEMENTABLE
 UAEAF-COMPLIANT
 PRODUCTION-READY
+
+---
+
+# 29. ENGINEERING OPERATING MODEL (PROCESS GOVERNANCE)
+
+Sections 1–28 above govern **what is visually/structurally correct** — design tokens, layout, typography, IA, accessibility, and Figma composition — via the Source of Truth Hierarchy in §1.
+
+A separate, complementary document governs **how any change gets executed** — business-workflow understanding, architecture, TDD, security review, git hygiene, scope control, and pre-implementation communication cadence — for both frontend and backend engineering work:
+
+MUST READ before backend/API/schema/workflow/auth work, and before frontend implementation work:
+
+`docs/engineering/UAEAF-ENGINEERING-OPERATING-MODEL.md`
+
+Division of authority:
+
+* This file (§1–28) is the sole authority for what is visually/structurally correct. The engineering document never overrides a design-system rule, token, or approved composition.
+* The engineering document is the sole authority for development process and business-logic rigor. This file does not define workflow states, authorization rules, or testing standards for backend features.
+* Neither document silently overrides the other. A genuine conflict between them is reported per §1 and §24, not guessed.
+
+Explicit cross-references (so the two documents never duplicate or silently contradict each other):
+
+* Engineering document §13 (Figma/FigJam synchronization — *when* an engineering task should touch Figma) is a companion to this file's §18 Figma Safety (*how* to safely edit once inside a Figma file). Both apply together whenever an engineering task triggers a Figma edit.
+* Engineering document §16 Git Safety formalizes existing project git practice; it does not change it.
+* Engineering document §21 Communication Style (pre-implementation feature presentation: understanding/workflow/architecture/decisions/risks/plan) is a companion to this file's §26 Final Report Format (post-implementation/audit report). They apply at different points in the lifecycle and both stay in force.
+
+The engineering document's Superpowers-specific steps apply only when the Superpowers plugin is available in the current session (it is a global/user-level plugin, not installed under this repository's `.claude/skills/`). When unavailable, the document's lifecycle and standards still govern the work directly, without the named skill invocations.
