@@ -8,6 +8,7 @@ import type { AuthenticatedUser } from '../interfaces/jwt-payload.interface.js';
 import { SKIP_AUDIT_LOG_KEY } from '../decorators/skip-audit-log.decorator.js';
 import { extractRequestContext } from '../utils/request-context.util.js';
 import { kebabToCamel } from '../utils/kebab-to-camel.util.js';
+import { API_GLOBAL_PREFIX } from '../constants/api-versioning.constant.js';
 
 const METHOD_TO_ACTION: Partial<Record<string, AuditAction>> = {
   POST: 'Create',
@@ -92,7 +93,19 @@ export class AuditLogInterceptor implements NestInterceptor {
       return;
     }
 
-    const routeSegment = request.url.split('/').filter(Boolean)[0];
+    // The URL now starts with /api/v1/... (the api/v1 prefix rollout,
+    // 2026-09-06), so the entity's own route segment is no longer index 0 --
+    // strip the global prefix and the version segment (by name/pattern, not
+    // a hardcoded position, so this keeps working if the version format
+    // ever changes) before reading off the entity segment.
+    const urlSegments = request.url.split('/').filter(Boolean);
+    if (urlSegments[0] === API_GLOBAL_PREFIX) {
+      urlSegments.shift();
+      if (/^v\d+$/.test(urlSegments[0] ?? '')) {
+        urlSegments.shift();
+      }
+    }
+    const routeSegment = urlSegments[0];
     const entityType = routeSegment ? kebabToCamel(routeSegment) : routeSegment;
     const rawEntityId =
       request.params?.id ?? (responseBody as { _id?: string; id?: string } | null)?._id ?? (responseBody as { id?: string } | null)?.id;

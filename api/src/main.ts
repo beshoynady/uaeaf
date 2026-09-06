@@ -6,6 +6,7 @@ import { RequestMethod, ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module.js';
+import { API_DEFAULT_VERSION, API_GLOBAL_PREFIX } from './common/constants/api-versioning.constant.js';
 
 /** Bootstraps the HTTP application: security middleware, global validation,
  *  Swagger documentation, then starts listening. */
@@ -19,8 +20,8 @@ async function bootstrap(): Promise<void> {
   // marked VERSION_NEUTRAL on the controller) because it's an
   // uptime-monitoring endpoint, not a versioned API route — infra
   // shouldn't have to track API version bumps just to keep probing it.
-  app.setGlobalPrefix('api', { exclude: [{ path: 'health', method: RequestMethod.GET }] });
-  app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
+  app.setGlobalPrefix(API_GLOBAL_PREFIX, { exclude: [{ path: 'health', method: RequestMethod.GET }] });
+  app.enableVersioning({ type: VersioningType.URI, defaultVersion: API_DEFAULT_VERSION });
 
   app.use(helmet());
   app.use(compression());

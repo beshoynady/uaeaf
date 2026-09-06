@@ -2,8 +2,8 @@
 
 Every route below is decorated `@Public()` in the current codebase (verified
 by reading each controller directly, not inferred from naming — a couple of
-routes with "public" in their URL, like `GET /documents/:id/public` and
-`GET /publications/:entityType/:entityId/public`, are actually RBAC-gated and
+routes with "public" in their URL, like `GET /api/v1/documents/:id/public` and
+`GET /api/v1/publications/:entityType/:entityId/public`, are actually RBAC-gated and
 are correctly **excluded** from this list). No request needs an
 `Authorization` header for anything listed here; every other route in the
 API requires a valid JWT.
@@ -13,6 +13,15 @@ this API against seeded test data (2026-09-05) — none are hand-typed. The
 full machine-readable OpenAPI document (path/method/DTO shapes for the whole
 API, not just the public surface) lives at [`api/openapi.json`](../../api/openapi.json),
 exported from the same running instance.
+
+**All routes below now live under the `/api/v1` prefix** (single shared API
+version, no public/admin split — added 2026-09-06, before any frontend
+exists so the path move was cheap). `GET /health` is the sole exception:
+it stays at the bare, unversioned `/health`, since it's an uptime-monitoring
+endpoint, not part of the versioned API surface. Every path/status pairing
+below was re-verified with real requests against a freshly booted instance
+after the prefix was added (2026-09-06) — not a blind find-and-replace on
+the path strings.
 
 This document covers the public surface as it exists **today**. It is a
 snapshot, not a live contract — re-export `api/openapi.json` and re-run the
@@ -34,16 +43,16 @@ capture before relying on exact field lists for a production integration.
 
 ## People & Organizations
 
-### `GET /athletes/public`
+### `GET /api/v1/athletes/public`
 
 Paginated list of athletes in public-safe form. **New this session**: no
 pagination convention existed anywhere in this codebase before — `page`
 (default `1`) and `limit` (default `50`, max `200`) are introduced here and
-apply only to this route and `GET /officials/public`.
+apply only to this route and `GET /api/v1/officials/public`.
 
 Structurally excludes `dateOfBirth` (`[SENSITIVE-MINOR]`, ADR-0028 / Federal
 Law 26/2025) — a Guest athlete has no individual public page (no `slug`
-exists on `Athlete` since 2026-09-03; see `GET /athlete-profiles/public/:slug`
+exists on `Athlete` since 2026-09-03; see `GET /api/v1/athlete-profiles/public/:slug`
 below).
 
 Query params: `page` (integer ≥ 1), `limit` (integer 1–200).
@@ -67,7 +76,7 @@ Query params: `page` (integer ≥ 1), `limit` (integer 1–200).
 }
 ```
 
-### `GET /athlete-profiles/public/:slug`
+### `GET /api/v1/athlete-profiles/public/:slug`
 
 The individual public athlete page: resolves `athleteProfiles.slug` →
 `athleteId` → `athletes`, and returns both in public-safe form in one call.
@@ -100,9 +109,9 @@ serialized this way — see [Notes](#notes-for-frontend-integration)).
 }
 ```
 
-### `GET /officials/public`
+### `GET /api/v1/officials/public`
 
-Paginated list of officials, mirroring `GET /athletes/public` exactly (same
+Paginated list of officials, mirroring `GET /api/v1/athletes/public` exactly (same
 `page`/`limit` query params, same envelope shape). `Official` carries no
 field equivalent to `dateOfBirth`'s sensitivity, so nothing is excluded
 beyond the standard "never return the raw document" DTO discipline.
@@ -127,9 +136,9 @@ beyond the standard "never return the raw document" DTO discipline.
 }
 ```
 
-### `GET /official-profiles/public/:slug`
+### `GET /api/v1/official-profiles/public/:slug`
 
-Mirrors `GET /athlete-profiles/public/:slug`. `officialProfiles` has no
+Mirrors `GET /api/v1/athlete-profiles/public/:slug`. `officialProfiles` has no
 `restricted` PII object at all (a real content asymmetry vs. `athleteProfiles`,
 confirmed on the schema, not an omission).
 
@@ -163,7 +172,7 @@ confirmed on the schema, not an omission).
 
 ## Media Center
 
-### `GET /albums/public/:slug`
+### `GET /api/v1/albums/public/:slug`
 
 The individual public album page. Only a `Published` album resolves; Draft/
 Archived or an unknown slug returns `{}`. Excludes `associations` (internal
@@ -188,20 +197,20 @@ grouping metadata) and audit-trail fields.
 ```
 
 `coverImageId` is a plain id, not a resolved URL — there is no public
-`GET /media-assets/:id`, a pre-existing site-wide gap, out of scope for this
+`GET /api/v1/media-assets/:id`, a pre-existing site-wide gap, out of scope for this
 session.
 
-### `GET /albums-page`
+### `GET /api/v1/albums-page`
 
 Singleton page-furniture wrapper (hero title/subtitle/image for the Albums
 landing page). `{}` before it is ever configured via the admin
-`PUT /albums-page`.
+`PUT /api/v1/albums-page`.
 
 ```json
 {}
 ```
 
-### `GET /videos-page`
+### `GET /api/v1/videos-page`
 
 Same singleton pattern as `/albums-page`, for the Videos landing page.
 
@@ -213,7 +222,7 @@ Same singleton pattern as `/albums-page`, for the Videos landing page.
 
 ## CMS & Page Composition
 
-### `GET /pages/public/:slug`
+### `GET /api/v1/pages/public/:slug`
 
 Public routing lookup for a routable CMS page. Only `status: "Published"`
 resolves. Returns the raw `pages` document (not yet passed through a
@@ -236,7 +245,7 @@ collection today).
 }
 ```
 
-### `GET /page-sections/public/by-page/:pageId`
+### `GET /api/v1/page-sections/public/by-page/:pageId`
 
 The enabled, `visibility: "Everyone"` sections of one page, inside their
 visibility window, in `displayOrder`. Same pre-existing no-DTO note as
@@ -271,7 +280,7 @@ visibility window, in `displayOrder`. Same pre-existing no-DTO note as
 ]
 ```
 
-### `GET /hero-slides/public/by-section/:pageSectionId` — new this session
+### `GET /api/v1/hero-slides/public/by-section/:pageSectionId` — new this session
 
 Closes the one missing link in the `pages → pageSections → heroSlides`
 public composition chain (`pages` and `pageSections` already had `@Public()`
@@ -297,11 +306,11 @@ display data) and `pageSectionId`.
 ]
 ```
 
-### `GET /navigation-menus/public/by-key/:key` — new this session
+### `GET /api/v1/navigation-menus/public/by-key/:key` — new this session
 
 Resolves a stable, frontend-known `key` (e.g. `"main-nav"`, `"footer-quick-links"`)
 to the menu's `id` — the missing link a frontend needed to reach the
-pre-existing `GET /navigation-items/public/by-menu/:menuId` route below,
+pre-existing `GET /api/v1/navigation-items/public/by-menu/:menuId` route below,
 since a frontend has no legitimate way to already know an internal
 `navigationMenus` ObjectId. Returns `{}` for an unknown key.
 
@@ -309,7 +318,7 @@ since a frontend has no legitimate way to already know an internal
 { "id": "6a9b3f4f0d8390d2968c576a", "key": "main-nav", "location": "Header" }
 ```
 
-### `GET /navigation-items/public/by-menu/:menuId`
+### `GET /api/v1/navigation-items/public/by-menu/:menuId`
 
 Pre-existing route (not touched this session beyond being the destination of
 the new by-key lookup above). Every active item of one menu, no
@@ -334,7 +343,7 @@ the new by-key lookup above). Every active item of one menu, no
 ]
 ```
 
-### `GET /site-settings/public`
+### `GET /api/v1/site-settings/public`
 
 The `[RESTRICTED]`-free projection of the single `siteSettings` row —
 structurally omits `isMaintenanceMode`, `googleAnalyticsId`, `metaPixelId`,
@@ -352,9 +361,9 @@ Shape once configured (`SiteSettingsPublicResponseDto`): `defaultSeo`,
 
 ### The 7 singleton "*Page" hero wrappers
 
-`GET /athletes-page`, `GET /clubs-page`, `GET /coaches-page`,
-`GET /disciplines-page`, `GET /news-page`, `GET /records-page`,
-`GET /results-rankings-page` — all identical pattern: singleton row, no
+`GET /api/v1/athletes-page`, `GET /api/v1/clubs-page`, `GET /api/v1/coaches-page`,
+`GET /api/v1/disciplines-page`, `GET /api/v1/news-page`, `GET /api/v1/records-page`,
+`GET /api/v1/results-rankings-page` — all identical pattern: singleton row, no
 `:id`, GET is public, PUT (admin-only) upserts it. `{}` before first
 configured (all seven returned `{}` in this capture, since none has been
 set up on this fresh instance):
@@ -372,10 +381,10 @@ Shape once configured (`HeroPageDto`-based): `heroImageId` (ref →
 
 ### The 7 workflow-governed `:id/public` snapshot routes
 
-`GET /committees/:id/public`, `GET /organizational-structure/:id/public`,
-`GET /governance-documents/:id/public`, `GET /about-federation-page/:id/public`,
-`GET /vision-mission-page/:id/public`, `GET /strategic-plans-page/:id/public`,
-`GET /president-message-page/:id/public` all share one mechanism: the
+`GET /api/v1/committees/:id/public`, `GET /api/v1/organizational-structure/:id/public`,
+`GET /api/v1/governance-documents/:id/public`, `GET /api/v1/about-federation-page/:id/public`,
+`GET /api/v1/vision-mission-page/:id/public`, `GET /api/v1/strategic-plans-page/:id/public`,
+`GET /api/v1/president-message-page/:id/public` all share one mechanism: the
 **sole** public read path for a workflow-governed entity is
 `publications → revisions.snapshotData` — never the entity's own collection
 row directly ("Approved ≠ Published"). Each returns `{}` when there is no
@@ -406,7 +415,7 @@ has been published for them yet on this fresh instance; their populated
 shape mirrors their own entity's editable fields, the same way `committees`'
 does above.
 
-### `GET /federation-personnel/public`
+### `GET /api/v1/federation-personnel/public`
 
 Not workflow-governed — served directly. Active personnel only, structurally
 excludes `internalContact` (`[RESTRICTED]`: personal email, ID number).
@@ -440,7 +449,7 @@ All three returned `{}` in this capture (not yet configured):
 
 ## Public Communication
 
-### `POST /contact-messages`
+### `POST /api/v1/contact-messages`
 
 The platform's **only unauthenticated write route** — the citizen-facing
 contact form. Every operational field (`status`, `assignedToId`,
@@ -498,7 +507,7 @@ reaches the database.
 
 ## Platform Administration
 
-### `POST /auth/login`
+### `POST /api/v1/auth/login`
 
 Rate-limited to 10 requests/60s per IP (`@RateLimit(10, 60)`), independently
 of the account-level lockout (`LOCKOUT_THRESHOLD`) — the rate limit protects
@@ -524,7 +533,7 @@ JWT in both fields:
 Both fail with `401` on bad credentials, `429` once the rate limit is
 exceeded.
 
-### `POST /auth/refresh`
+### `POST /api/v1/auth/refresh`
 
 Not independently captured this session (no rate limit applied, unlike
 `login`). Request body: `{ "refreshToken": "<token>" }`. Returns the same
@@ -561,7 +570,7 @@ inferred from the route name.
   live data-exposure issue, but it is a structural inconsistency with the
   "always go through a `*PublicResponse` DTO" discipline used everywhere
   else in this document. Pre-existing; not introduced or fixed this session.
-- `POST /contact-messages`'s `201` response is likewise the raw document.
+- `POST /api/v1/contact-messages`'s `201` response is likewise the raw document.
   Same reasoning: not a live leak (it's an echo of the caller's own
   submission), but structurally inconsistent.
 - `clubs`, `coaches`, and `disciplines` (the entity collections, not their
@@ -578,11 +587,11 @@ inferred from the route name.
   this document is a real `200` with an empty object body — check for an
   empty object, not a `404` status, when handling "nothing here yet."
 - **Pagination** (`page`/`limit` query params, `{items, total, page, limit}`
-  envelope) exists only on `GET /athletes/public` and `GET /officials/public`
+  envelope) exists only on `GET /api/v1/athletes/public` and `GET /api/v1/officials/public`
   as of this session — it is a new convention with no other precedent in
   this API yet.
 - The full OpenAPI document at [`api/openapi.json`](../../api/openapi.json)
-  covers path/method/tag information for the entire API (156 routes as of
+  covers path/method/tag information for the entire API (158 routes as of
   this export), not just the public surface documented here — cross-check
   it for anything not covered above. Note that most routes in this API,
   public or not, are not decorated with explicit `@nestjs/swagger` response

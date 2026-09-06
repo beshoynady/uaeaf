@@ -1,5 +1,6 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { apiPath } from './support/api-path.js';
+import { configureTestApp } from './support/test-app.js';
 
 process.env.MONGODB_URI ??= 'placeholder-overwritten-below';
 process.env.JWT_SECRET ??= 'e2e-test-secret-at-least-32-characters-long';
@@ -32,7 +33,7 @@ describe('Week 4 — Governance, CMS and the public surface (e2e)', () => {
 
     const moduleFixture = await Test.createTestingModule({ imports: [AppModule] }).compile();
     const app: InstanceType<typeof INestApplication> = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true }));
+    configureTestApp(app);
     await app.init();
 
     const roleModel = moduleFixture.get(getModelToken(Role.name));

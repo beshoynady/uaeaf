@@ -32,7 +32,7 @@ describe('AuditLogInterceptor', () => {
   }
 
   it('does not write to auditLogs for a GET request', async () => {
-    const request = { method: 'GET', url: '/roles', params: {}, headers: {} };
+    const request = { method: 'GET', url: '/api/v1/roles', params: {}, headers: {} };
     const context = makeContext(request);
 
     await new Promise<void>((resolve) => {
@@ -46,7 +46,7 @@ describe('AuditLogInterceptor', () => {
     const createdId = new Types.ObjectId().toString();
     const request = {
       method: 'POST',
-      url: '/roles',
+      url: '/api/v1/roles',
       params: {},
       headers: { 'user-agent': 'jest' },
       ip: '127.0.0.1',
@@ -75,7 +75,7 @@ describe('AuditLogInterceptor', () => {
     const targetId = new Types.ObjectId().toString();
     const request = {
       method: 'DELETE',
-      url: `/roles/${targetId}`,
+      url: `/api/v1/roles/${targetId}`,
       params: { id: targetId },
       headers: {},
       user: { userId, permissions: [] },
@@ -98,7 +98,7 @@ describe('AuditLogInterceptor', () => {
     const createdId = new Types.ObjectId().toString();
     const request = {
       method: 'POST',
-      url: '/athlete-profiles',
+      url: '/api/v1/athlete-profiles',
       params: {},
       headers: {},
       user: { userId, permissions: [] },
@@ -120,7 +120,7 @@ describe('AuditLogInterceptor', () => {
     reflector.getAllAndOverride.mockReturnValue(true);
     const request = {
       method: 'POST',
-      url: '/workflow-instances/abc/approve',
+      url: '/api/v1/workflow-instances/abc/approve',
       params: {},
       headers: {},
       user: { userId, permissions: [] },
@@ -136,7 +136,7 @@ describe('AuditLogInterceptor', () => {
   });
 
   it('does not throw and does not write when there is no authenticated user', async () => {
-    const request = { method: 'POST', url: '/auth/login', params: {}, headers: {} };
+    const request = { method: 'POST', url: '/api/v1/auth/login', params: {}, headers: {} };
     const context = makeContext(request);
 
     await new Promise<void>((resolve) => {
@@ -145,5 +145,30 @@ describe('AuditLogInterceptor', () => {
     await Promise.resolve();
 
     expect(auditLogsService.write).not.toHaveBeenCalled();
+  });
+
+  // Regression test for the api/v1 prefix rollout (2026-09-06): before the
+  // fix, entityType was read off url.split('/')[0], which used to be the
+  // real entity segment ('roles') but became the literal prefix ('api')
+  // once every route moved under /api/v1/... -- this would have silently
+  // mislabeled every audit log entry going forward.
+  it('strips the /api/v1 prefix so entityType is the real route segment, not "api"', async () => {
+    const createdId = new Types.ObjectId().toString();
+    const request = {
+      method: 'POST',
+      url: '/api/v1/roles',
+      params: {},
+      headers: {},
+      user: { userId, permissions: [] },
+    };
+    const context = makeContext(request);
+    const responseBody = { _id: createdId };
+
+    await new Promise<void>((resolve) => {
+      interceptor.intercept(context, makeHandler(responseBody)).subscribe(() => resolve());
+    });
+    await Promise.resolve();
+
+    expect(auditLogsService.write).toHaveBeenCalledWith(expect.objectContaining({ entityType: 'roles' }));
   });
 });
