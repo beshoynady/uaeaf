@@ -39,6 +39,17 @@ describe('validationSchema', () => {
     expect(result.success).toBe(false);
   });
 
+  // Locks in the local-to-Atlas migration: the schema must accept
+  // `mongodb+srv://` (Atlas's DNS-seedlist scheme), not just `mongodb://`.
+  it('accepts a mongodb+srv:// URI (Atlas connection string format)', () => {
+    const result = validationSchema.safeParse({
+      ...validEnv,
+      MONGODB_URI: 'mongodb+srv://user:pass@cluster0.abcde.mongodb.net/uaeaf?retryWrites=true&w=majority',
+    });
+
+    expect(result.success).toBe(true);
+  });
+
   it('fails fast when JWT_SECRET is missing', () => {
     const { JWT_SECRET: _omit, ...withoutSecret } = validEnv;
 

@@ -4,6 +4,7 @@ import { Types } from 'mongoose';
 import { UsersRepository } from './users.repository.js';
 import type { UserDocument } from './schemas/user.schema.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
+import type { UserResponseDto } from './dto/user-response.dto.js';
 import { LOCKOUT_DURATION_MINUTES, LOCKOUT_THRESHOLD } from '../../../config/auth.config.js';
 
 const PASSWORD_HASH_ROUNDS = 10;
@@ -40,6 +41,21 @@ export class UsersService {
 
   async assignRoles(id: string, roleIds: Types.ObjectId[]): Promise<UserDocument | null> {
     return this.repository.updateById(id, { roleIds });
+  }
+
+  /** Maps a full `User` document to its allowlist response shape — the
+   *  controller boundary that must never let `authMethods` (or the raw
+   *  document at all) escape (auth-security-audit-2026-09-05.md P0 #1). */
+  toResponse(user: UserDocument): UserResponseDto {
+    return {
+      id: user._id.toString(),
+      name: user.name,
+      email: user.email,
+      roleIds: user.roleIds.map((id) => id.toString()),
+      personId: user.personId ? user.personId.toString() : null,
+      accountStatus: user.accountStatus,
+      lastLogin: user.lastLogin,
+    };
   }
 
   async recordSuccessfulLogin(id: string): Promise<void> {

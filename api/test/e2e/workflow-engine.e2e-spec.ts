@@ -1,4 +1,5 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import { apiPath } from './support/api-path.js';
 
 process.env.MONGODB_URI ??= 'placeholder-overwritten-below';
 process.env.JWT_SECRET ??= 'e2e-test-secret-at-least-32-characters-long';
@@ -88,7 +89,7 @@ describe('Workflow engine (e2e)', () => {
       authMethods: [{ provider: 'Local', passwordHash, linkedAt: new Date() }],
     });
     const login = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post(apiPath('/auth/login'))
       .send({ email: 'operator@uaeaf.ae', password: 'correct horse battery staple' })
       .expect(200);
     const token = login.body.accessToken as string;
@@ -98,14 +99,14 @@ describe('Workflow engine (e2e)', () => {
     // assignee, directly exercising the confirmed self-approval-via-
     // assigneeIds rule (BE-PLAN-010 Week 2 §9) ---
     const definitionResponse = await request(app.getHttpServer())
-      .post('/workflow-definitions')
+      .post(apiPath('/workflow-definitions'))
       .set(auth())
       .send({ name: { en: 'Article Approval', ar: 'اعتماد المقالة' }, entityType: 'articles' })
       .expect(201);
     const workflowDefinitionId = definitionResponse.body._id as string;
 
     await request(app.getHttpServer())
-      .post('/workflow-steps')
+      .post(apiPath('/workflow-steps'))
       .set(auth())
       .send({
         workflowDefinitionId,
@@ -123,7 +124,7 @@ describe('Workflow engine (e2e)', () => {
     const entityIdA = new Types.ObjectId().toString();
 
     const revisionAResponse = await request(app.getHttpServer())
-      .post('/revisions')
+      .post(apiPath('/revisions'))
       .set(auth())
       .send({ entityType: 'articles', entityId: entityIdA, snapshotData: { title: 'Draft title A' } })
       .expect(201);
@@ -131,7 +132,7 @@ describe('Workflow engine (e2e)', () => {
     expect(revisionAResponse.body.versionNumber).toBe(1);
 
     const instanceAResponse = await request(app.getHttpServer())
-      .post('/workflow-instances')
+      .post(apiPath('/workflow-instances'))
       .set(auth())
       .send({ workflowDefinitionId, entityType: 'articles', entityId: entityIdA, revisionId: revisionAId })
       .expect(201);
@@ -139,7 +140,7 @@ describe('Workflow engine (e2e)', () => {
     expect(instanceAResponse.body.status).toBe('InProgress');
 
     const approveAResponse = await request(app.getHttpServer())
-      .post(`/workflow-instances/${instanceAId}/approve`)
+      .post(apiPath(`/workflow-instances/${instanceAId}/approve`))
       .set(auth())
       .send({})
       .expect(201);
@@ -172,14 +173,14 @@ describe('Workflow engine (e2e)', () => {
     // ============================================================
     const entityIdB = new Types.ObjectId().toString();
     const revisionB1Response = await request(app.getHttpServer())
-      .post('/revisions')
+      .post(apiPath('/revisions'))
       .set(auth())
       .send({ entityType: 'articles', entityId: entityIdB, snapshotData: { title: 'Draft title B v1' } })
       .expect(201);
     const revisionB1Id = revisionB1Response.body._id as string;
 
     const instanceBResponse = await request(app.getHttpServer())
-      .post('/workflow-instances')
+      .post(apiPath('/workflow-instances'))
       .set(auth())
       .send({ workflowDefinitionId, entityType: 'articles', entityId: entityIdB, revisionId: revisionB1Id })
       .expect(201);
@@ -188,19 +189,19 @@ describe('Workflow engine (e2e)', () => {
     // A second submission for the SAME entity while one is still active
     // must be rejected (BE-PLAN-010 Week 2 §4).
     await request(app.getHttpServer())
-      .post('/workflow-instances')
+      .post(apiPath('/workflow-instances'))
       .set(auth())
       .send({ workflowDefinitionId, entityType: 'articles', entityId: entityIdB, revisionId: revisionB1Id })
       .expect(409);
 
     await request(app.getHttpServer())
-      .post(`/workflow-instances/${instanceBId}/reject`)
+      .post(apiPath(`/workflow-instances/${instanceBId}/reject`))
       .set(auth())
       .send({ reason: 'Needs a stronger lede' })
       .expect(201);
 
     const revisionB2Response = await request(app.getHttpServer())
-      .post('/revisions')
+      .post(apiPath('/revisions'))
       .set(auth())
       .send({ entityType: 'articles', entityId: entityIdB, snapshotData: { title: 'Draft title B v2' } })
       .expect(201);
@@ -208,7 +209,7 @@ describe('Workflow engine (e2e)', () => {
     expect(revisionB2Response.body.versionNumber).toBe(2);
 
     const resubmitResponse = await request(app.getHttpServer())
-      .post(`/workflow-instances/${instanceBId}/resubmit`)
+      .post(apiPath(`/workflow-instances/${instanceBId}/resubmit`))
       .set(auth())
       .send({ revisionId: revisionB2Id })
       .expect(201);
@@ -217,7 +218,7 @@ describe('Workflow engine (e2e)', () => {
     expect(resubmitResponse.body._id).toBe(instanceBId);
 
     await request(app.getHttpServer())
-      .post(`/workflow-instances/${instanceBId}/approve`)
+      .post(apiPath(`/workflow-instances/${instanceBId}/approve`))
       .set(auth())
       .send({})
       .expect(201);

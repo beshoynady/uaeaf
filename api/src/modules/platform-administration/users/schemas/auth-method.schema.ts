@@ -11,8 +11,11 @@ export class AuthMethod {
   @Prop({ required: true, type: String, enum: AUTH_PROVIDERS })
   provider: AuthProvider;
 
-  /** Local provider only. */
-  @Prop()
+  /** Local provider only. `select: false` so no query returns this by
+   *  default (auth-security-audit-2026-09-05.md P0 #1 — the bcrypt hash was
+   *  leaking through GET /users*); UsersRepository.findByEmail() opts back
+   *  in explicitly for the one place that legitimately needs it (login). */
+  @Prop({ select: false })
   passwordHash?: string;
 
   /** OAuth providers only. */

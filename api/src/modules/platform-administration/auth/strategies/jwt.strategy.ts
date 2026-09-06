@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
 import { ExtractJwt, Strategy } from 'passport-jwt';
@@ -19,7 +19,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
+  /** @throws UnauthorizedException for anything but an access token — a
+   *  refresh token (no `permissions`, `type: 'refresh'`) has a valid
+   *  signature too, so without this explicit check it would otherwise pass
+   *  straight through as an authenticated request (auth-security-audit-
+   *  2026-09-05.md P1: full access on routes with no @RequirePermission(),
+   *  an unhandled crash on routes that have one). */
   validate(payload: JwtPayload): AuthenticatedUser {
+    if (payload.type !== 'access') {
+      throw new UnauthorizedException('Invalid access token.');
+    }
     return { userId: payload.sub, permissions: payload.permissions };
   }
 }

@@ -1,4 +1,5 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import { apiPath } from './support/api-path.js';
 
 process.env.MONGODB_URI ??= 'placeholder-overwritten-below';
 process.env.JWT_SECRET ??= 'e2e-test-secret-at-least-32-characters-long';
@@ -88,7 +89,7 @@ describe('Public API — People & Organizations (e2e)', () => {
     });
 
     // ---- GET /athletes/public — paginated listing ----
-    const athletesPage1 = await request(app.getHttpServer()).get('/athletes/public?page=1&limit=1').expect(200);
+    const athletesPage1 = await request(app.getHttpServer()).get(apiPath('/athletes/public?page=1&limit=1')).expect(200);
     expect(athletesPage1.body).toEqual({
       items: expect.any(Array),
       total: 2,
@@ -101,7 +102,7 @@ describe('Public API — People & Organizations (e2e)', () => {
     );
     expect(athletesPage1.body.items[0]).not.toHaveProperty('dateOfBirth');
 
-    const athletesDefault = await request(app.getHttpServer()).get('/athletes/public').expect(200);
+    const athletesDefault = await request(app.getHttpServer()).get(apiPath('/athletes/public')).expect(200);
     expect(athletesDefault.body.total).toBe(2);
     expect(athletesDefault.body.items).toHaveLength(2);
     for (const item of athletesDefault.body.items) {
@@ -110,7 +111,7 @@ describe('Public API — People & Organizations (e2e)', () => {
 
     // ---- GET /athlete-profiles/public/:slug — the individual public page ----
     const publicProfile = await request(app.getHttpServer())
-      .get(`/athlete-profiles/public/${athleteProfile.slug}`)
+      .get(apiPath(`/athlete-profiles/public/${athleteProfile.slug}`))
       .expect(200);
     expect(Object.keys(publicProfile.body.profile).sort()).toEqual(
       ['id', 'athleteId', 'slug', 'clubId', 'registrationNumber', 'status', 'photoId', 'bio', 'socialLinks'].sort(),
@@ -125,15 +126,15 @@ describe('Public API — People & Organizations (e2e)', () => {
     // same observed (and already relied-upon) behavior as the pre-existing
     // committees `getPublicSnapshot` public-route test.
     const unknownProfile = await request(app.getHttpServer())
-      .get('/athlete-profiles/public/does-not-exist')
+      .get(apiPath('/athlete-profiles/public/does-not-exist'))
       .expect(200);
     expect(unknownProfile.body).toEqual({});
 
     // No auth header was ever sent above; explicitly confirm the admin-only
     // sibling route still rejects an anonymous caller, proving the public
     // route's openness is a deliberate exception, not a broken guard.
-    await request(app.getHttpServer()).get('/athletes').expect(401);
-    await request(app.getHttpServer()).get('/athlete-profiles').expect(401);
+    await request(app.getHttpServer()).get(apiPath('/athletes')).expect(401);
+    await request(app.getHttpServer()).get(apiPath('/athlete-profiles')).expect(401);
 
     // ============================================================
     // Officials: same pattern, no restricted PII field exists on this
@@ -160,14 +161,14 @@ describe('Public API — People & Organizations (e2e)', () => {
       status: 'Active',
     });
 
-    const officialsList = await request(app.getHttpServer()).get('/officials/public').expect(200);
+    const officialsList = await request(app.getHttpServer()).get(apiPath('/officials/public')).expect(200);
     expect(officialsList.body).toEqual({ items: expect.any(Array), total: 1, page: 1, limit: 50 });
     expect(Object.keys(officialsList.body.items[0]).sort()).toEqual(
       ['id', 'fullName', 'roleType', 'licenseLevel', 'disciplineIds', 'nationalityId', 'residencyType', 'federationName'].sort(),
     );
 
     const publicOfficialProfile = await request(app.getHttpServer())
-      .get(`/official-profiles/public/${officialProfile.slug}`)
+      .get(apiPath(`/official-profiles/public/${officialProfile.slug}`))
       .expect(200);
     expect(Object.keys(publicOfficialProfile.body.profile).sort()).toEqual(
       ['id', 'officialId', 'slug', 'clubId', 'registrationNumber', 'photoId', 'bio', 'gender', 'status'].sort(),
@@ -176,8 +177,8 @@ describe('Public API — People & Organizations (e2e)', () => {
       ['id', 'fullName', 'roleType', 'licenseLevel', 'disciplineIds', 'nationalityId', 'residencyType', 'federationName'].sort(),
     );
 
-    await request(app.getHttpServer()).get('/officials').expect(401);
-    await request(app.getHttpServer()).get('/official-profiles').expect(401);
+    await request(app.getHttpServer()).get(apiPath('/officials')).expect(401);
+    await request(app.getHttpServer()).get(apiPath('/official-profiles')).expect(401);
 
     await app.close();
   }, 90000);

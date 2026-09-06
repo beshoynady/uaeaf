@@ -16,8 +16,17 @@ export class UsersRepository extends BaseRepository<UserDocument> {
    *  (`email`'s `lowercase`/`trim`) — Mongoose's setters apply to document
    *  writes, not to a raw query filter, so this method must normalize its
    *  own input or a differently-cased login attempt would silently miss
-   *  an existing account. */
+   *  an existing account.
+   *
+   *  Bypasses the generic `findOne()` to add `.select('+authMethods.passwordHash')`:
+   *  that field is `select: false` on the schema (auth-security-audit-2026-09-05.md
+   *  P0 #1) so it never leaks via GET /users*, but this is the one legitimate
+   *  internal caller (AuthService.login()) that must read it to compare the
+   *  submitted password — every other caller of this repository never sees it. */
   async findByEmail(email: string): Promise<UserDocument | null> {
-    return this.findOne({ email: email.toLowerCase().trim() });
+    return this.model
+      .findOne({ email: email.toLowerCase().trim(), archivedAt: null })
+      .select('+authMethods.passwordHash')
+      .exec();
   }
 }

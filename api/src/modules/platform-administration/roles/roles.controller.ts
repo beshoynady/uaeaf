@@ -15,10 +15,15 @@ import { UpdateRolePermissionsDto } from './dto/update-role-permissions.dto.js';
 export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 
+  // create/updatePermissions take @CurrentUser() to enforce "you cannot
+  // grant a permission you don't hold yourself" (auth-security-audit-
+  // 2026-09-05.md P0 #2) — the actor's own permission set already lives in
+  // their JWT, so this reads it from the request context rather than
+  // re-deriving it insecurely.
   @Post()
   @RequirePermission('roles', 'Create')
-  create(@Body() dto: CreateRoleDto) {
-    return this.rolesService.create(dto);
+  create(@Body() dto: CreateRoleDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.rolesService.create(dto, user.permissions);
   }
 
   @Get()
@@ -42,10 +47,15 @@ export class RolesController {
 
   @Patch(':id/permissions')
   @RequirePermission('roles', 'Update')
-  updatePermissions(@Param('id') id: string, @Body() dto: UpdateRolePermissionsDto) {
+  updatePermissions(
+    @Param('id') id: string,
+    @Body() dto: UpdateRolePermissionsDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
     return this.rolesService.updatePermissions(
       id,
       dto.permissionIds.map((permissionId) => new Types.ObjectId(permissionId)),
+      user.permissions,
     );
   }
 

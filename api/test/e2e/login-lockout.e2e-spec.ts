@@ -1,4 +1,5 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import { apiPath } from './support/api-path.js';
 
 process.env.MONGODB_URI ??= 'placeholder-overwritten-below';
 process.env.JWT_SECRET ??= 'e2e-test-secret-at-least-32-characters-long';
@@ -48,7 +49,7 @@ describe('Login brute-force lockout (e2e)', () => {
     // Attempts 1-4: wrong password, still under threshold.
     for (let attempt = 1; attempt <= 4; attempt += 1) {
       await request(app.getHttpServer())
-        .post('/auth/login')
+        .post(apiPath('/auth/login'))
         .send({ email: 'lockout@uaeaf.ae', password: 'wrong password' })
         .expect(401);
     }
@@ -58,7 +59,7 @@ describe('Login brute-force lockout (e2e)', () => {
 
     // 5th attempt: crosses the threshold, sets lockedUntil.
     const fifthAttempt = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post(apiPath('/auth/login'))
       .send({ email: 'lockout@uaeaf.ae', password: 'wrong password' })
       .expect(401);
     const afterFive = await userModel.findById(seeded._id);
@@ -69,7 +70,7 @@ describe('Login brute-force lockout (e2e)', () => {
     // 6th attempt, during active lockout, with the CORRECT password: still
     // rejected, with a distinct message, and does not increment further.
     const sixthAttempt = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post(apiPath('/auth/login'))
       .send({ email: 'lockout@uaeaf.ae', password: correctPassword })
       .expect(401);
     expect(sixthAttempt.body.message).not.toBe(fifthAttempt.body.message);
@@ -82,7 +83,7 @@ describe('Login brute-force lockout (e2e)', () => {
 
     // A correct-password login now succeeds and resets the counters.
     const recovered = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post(apiPath('/auth/login'))
       .send({ email: 'lockout@uaeaf.ae', password: correctPassword })
       .expect(200);
     expect(recovered.body.accessToken).toEqual(expect.any(String));

@@ -1,4 +1,5 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import { apiPath } from './support/api-path.js';
 
 process.env.MONGODB_URI ??= 'placeholder-overwritten-below';
 process.env.JWT_SECRET ??= 'e2e-test-secret-at-least-32-characters-long';
@@ -46,9 +47,9 @@ describe('Rate limiting — POST /contact-messages (e2e)', () => {
     };
 
     for (let i = 0; i < 5; i += 1) {
-      await request(app.getHttpServer()).post('/contact-messages').send(payload).expect(201);
+      await request(app.getHttpServer()).post(apiPath('/contact-messages')).send(payload).expect(201);
     }
-    await request(app.getHttpServer()).post('/contact-messages').send(payload).expect(429);
+    await request(app.getHttpServer()).post(apiPath('/contact-messages')).send(payload).expect(429);
 
     await app.close();
   }, 60000);

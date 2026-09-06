@@ -1,4 +1,5 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import { apiPath } from './support/api-path.js';
 
 process.env.MONGODB_URI ??= 'placeholder-overwritten-below';
 process.env.JWT_SECRET ??= 'e2e-test-secret-at-least-32-characters-long';
@@ -97,17 +98,17 @@ describe('Public API — CMS composition chain and navigation (e2e)', () => {
       active: false,
     });
 
-    const publicPage = await request(app.getHttpServer()).get(`/pages/public/${page.slug}`).expect(200);
+    const publicPage = await request(app.getHttpServer()).get(apiPath(`/pages/public/${page.slug}`)).expect(200);
     expect(publicPage.body._id).toBe(page._id.toString());
 
     const publicSections = await request(app.getHttpServer())
-      .get(`/page-sections/public/by-page/${page._id.toString()}`)
+      .get(apiPath(`/page-sections/public/by-page/${page._id.toString()}`))
       .expect(200);
     expect(publicSections.body).toHaveLength(1);
     expect(publicSections.body[0]._id).toBe(heroSection._id.toString());
 
     const publicSlides = await request(app.getHttpServer())
-      .get(`/hero-slides/public/by-section/${heroSection._id.toString()}`)
+      .get(apiPath(`/hero-slides/public/by-section/${heroSection._id.toString()}`))
       .expect(200);
     expect(publicSlides.body).toHaveLength(1);
     expect(publicSlides.body[0].id).toBe(visibleSlide._id.toString());
@@ -117,9 +118,9 @@ describe('Public API — CMS composition chain and navigation (e2e)', () => {
     expect(publicSlides.body[0]).not.toHaveProperty('active');
     expect(publicSlides.body[0]).not.toHaveProperty('pageSectionId');
 
-    await request(app.getHttpServer()).get('/pages').expect(401);
-    await request(app.getHttpServer()).get('/page-sections').expect(401);
-    await request(app.getHttpServer()).get('/hero-slides').expect(401);
+    await request(app.getHttpServer()).get(apiPath('/pages')).expect(401);
+    await request(app.getHttpServer()).get(apiPath('/page-sections')).expect(401);
+    await request(app.getHttpServer()).get(apiPath('/hero-slides')).expect(401);
 
     // ============================================================
     // navigationMenus (public-by-key, new) -> navigationItems
@@ -144,22 +145,22 @@ describe('Public API — CMS composition chain and navigation (e2e)', () => {
       isActive: false,
     });
 
-    const publicMenu = await request(app.getHttpServer()).get('/navigation-menus/public/by-key/main-nav').expect(200);
+    const publicMenu = await request(app.getHttpServer()).get(apiPath('/navigation-menus/public/by-key/main-nav')).expect(200);
     expect(publicMenu.body).toEqual({ id: menu._id.toString(), key: 'main-nav', location: 'Header' });
 
     const publicItems = await request(app.getHttpServer())
-      .get(`/navigation-items/public/by-menu/${publicMenu.body.id}`)
+      .get(apiPath(`/navigation-items/public/by-menu/${publicMenu.body.id}`))
       .expect(200);
     expect(publicItems.body).toHaveLength(1);
     expect(publicItems.body[0]._id).toBe(activeItem._id.toString());
 
     // A `null` service return is serialized through supertest as `{}` — see
     // the matching note in public-api-people-organizations.e2e-spec.ts.
-    const unknownMenu = await request(app.getHttpServer()).get('/navigation-menus/public/by-key/does-not-exist').expect(200);
+    const unknownMenu = await request(app.getHttpServer()).get(apiPath('/navigation-menus/public/by-key/does-not-exist')).expect(200);
     expect(unknownMenu.body).toEqual({});
 
-    await request(app.getHttpServer()).get('/navigation-menus').expect(401);
-    await request(app.getHttpServer()).get('/navigation-items').expect(401);
+    await request(app.getHttpServer()).get(apiPath('/navigation-menus')).expect(401);
+    await request(app.getHttpServer()).get(apiPath('/navigation-items')).expect(401);
 
     await app.close();
   }, 90000);

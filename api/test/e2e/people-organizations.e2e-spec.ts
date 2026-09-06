@@ -1,4 +1,5 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import { apiPath } from './support/api-path.js';
 
 process.env.MONGODB_URI ??= 'placeholder-overwritten-below';
 process.env.JWT_SECRET ??= 'e2e-test-secret-at-least-32-characters-long';
@@ -75,7 +76,7 @@ describe('People & Organizations + Documents (e2e)', () => {
       authMethods: [{ provider: 'Local', passwordHash, linkedAt: new Date() }],
     });
     const login = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post(apiPath('/auth/login'))
       .send({ email: 'people-operator@uaeaf.ae', password: 'correct horse battery staple' })
       .expect(200);
     const token = login.body.accessToken as string;
@@ -88,7 +89,7 @@ describe('People & Organizations + Documents (e2e)', () => {
     // Scenario 1: a Local athlete gets a linked profile end-to-end.
     // ============================================================
     const localAthleteResponse = await request(app.getHttpServer())
-      .post('/athletes')
+      .post(apiPath('/athletes'))
       .set(auth())
       .send({
         name: { en: 'Local Athlete', ar: 'رياضي محلي' },
@@ -101,7 +102,7 @@ describe('People & Organizations + Documents (e2e)', () => {
     const localAthleteId = localAthleteResponse.body._id as string;
 
     const profileResponse = await request(app.getHttpServer())
-      .post('/athlete-profiles')
+      .post(apiPath('/athlete-profiles'))
       .set(auth())
       .send({
         athleteId: localAthleteId,
@@ -115,7 +116,7 @@ describe('People & Organizations + Documents (e2e)', () => {
 
     // A second profile for the same Local athlete must be rejected (1:1).
     await request(app.getHttpServer())
-      .post('/athlete-profiles')
+      .post(apiPath('/athlete-profiles'))
       .set(auth())
       .send({
         athleteId: localAthleteId,
@@ -131,7 +132,7 @@ describe('People & Organizations + Documents (e2e)', () => {
     // structurally rejected if attempted.
     // ============================================================
     const guestAthleteResponse = await request(app.getHttpServer())
-      .post('/athletes')
+      .post(apiPath('/athletes'))
       .set(auth())
       .send({
         name: { en: 'Guest Athlete', ar: 'رياضي ضيف' },
@@ -145,7 +146,7 @@ describe('People & Organizations + Documents (e2e)', () => {
     const guestAthleteId = guestAthleteResponse.body._id as string;
 
     await request(app.getHttpServer())
-      .post('/athlete-profiles')
+      .post(apiPath('/athlete-profiles'))
       .set(auth())
       .send({
         athleteId: guestAthleteId,
@@ -160,7 +161,7 @@ describe('People & Organizations + Documents (e2e)', () => {
     // Scenario 3: documents upload-and-attach-to-club flow (mode b).
     // ============================================================
     const clubResponse = await request(app.getHttpServer())
-      .post('/clubs')
+      .post(apiPath('/clubs'))
       .set(auth())
       .send({
         name: { en: 'Test Club', ar: 'نادي الاختبار' },
@@ -175,7 +176,7 @@ describe('People & Organizations + Documents (e2e)', () => {
     const clubId = clubResponse.body._id as string;
 
     const documentResponse = await request(app.getHttpServer())
-      .post('/documents')
+      .post(apiPath('/documents'))
       .set(auth())
       .send({
         file: {
@@ -192,7 +193,7 @@ describe('People & Organizations + Documents (e2e)', () => {
     const documentId = documentResponse.body._id as string;
 
     const attachedDocuments = await request(app.getHttpServer())
-      .get('/documents')
+      .get(apiPath('/documents'))
       .query({ ownerType: 'Club', ownerId: clubId })
       .set(auth())
       .expect(200);

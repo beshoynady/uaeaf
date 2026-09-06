@@ -1,4 +1,5 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import { apiPath } from './support/api-path.js';
 
 process.env.MONGODB_URI ??= 'placeholder-overwritten-below';
 process.env.JWT_SECRET ??= 'e2e-test-secret-at-least-32-characters-long';
@@ -83,36 +84,36 @@ describe('Auth + RBAC (e2e)', () => {
 
     // --- login: wrong password -> 401 ---
     await request(app.getHttpServer())
-      .post('/auth/login')
+      .post(apiPath('/auth/login'))
       .send({ email: 'no-permissions@uaeaf.ae', password: 'wrong password entirely' })
       .expect(401);
 
     // --- login: suspended account, correct password -> 401 ---
     await request(app.getHttpServer())
-      .post('/auth/login')
+      .post(apiPath('/auth/login'))
       .send({ email: 'suspended@uaeaf.ae', password: 'correct horse battery staple' })
       .expect(401);
 
     // --- login: success -> 200 with tokens ---
     const noPermissionsLogin = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post(apiPath('/auth/login'))
       .send({ email: 'no-permissions@uaeaf.ae', password: 'correct horse battery staple' })
       .expect(200);
     expect(noPermissionsLogin.body.accessToken).toEqual(expect.any(String));
     const noPermissionsToken = noPermissionsLogin.body.accessToken as string;
 
     const viewerLogin = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post(apiPath('/auth/login'))
       .send({ email: 'viewer@uaeaf.ae', password: 'correct horse battery staple' })
       .expect(200);
     const viewerToken = viewerLogin.body.accessToken as string;
 
     // --- GET /users/me: no token -> 401 ---
-    await request(app.getHttpServer()).get('/users/me').expect(401);
+    await request(app.getHttpServer()).get(apiPath('/users/me')).expect(401);
 
     // --- GET /users/me: valid token -> 200, correct identity ---
     const me = await request(app.getHttpServer())
-      .get('/users/me')
+      .get(apiPath('/users/me'))
       .set('Authorization', `Bearer ${noPermissionsToken}`)
       .expect(200);
     expect(me.body.email).toBe('no-permissions@uaeaf.ae');
@@ -121,7 +122,7 @@ describe('Auth + RBAC (e2e)', () => {
     // AccessDenied row is written with entityId: null (entityId is optional
     // on the live board specifically for this case) ---
     await request(app.getHttpServer())
-      .get('/roles')
+      .get(apiPath('/roles'))
       .set('Authorization', `Bearer ${noPermissionsToken}`)
       .expect(403);
     const collectionLevelDenials = await auditLogModel.find({
@@ -135,7 +136,7 @@ describe('Auth + RBAC (e2e)', () => {
     // --- GET /roles/:id: token WITHOUT roles:Read -> 403, AND this time a
     // concrete :id is known, so it's a real AccessDenied row in auditLogs ---
     await request(app.getHttpServer())
-      .get(`/roles/${viewerRole._id.toString()}`)
+      .get(apiPath(`/roles/${viewerRole._id.toString()}`))
       .set('Authorization', `Bearer ${noPermissionsToken}`)
       .expect(403);
     const denialEntries = await auditLogModel.find({ entityId: viewerRole._id, action: 'AccessDenied' });
@@ -145,12 +146,14 @@ describe('Auth + RBAC (e2e)', () => {
 
     // --- GET /roles: token WITH roles:Read -> 200 ---
     const rolesResponse = await request(app.getHttpServer())
-      .get('/roles')
+      .get(apiPath('/roles'))
       .set('Authorization', `Bearer ${viewerToken}`)
       .expect(200);
     expect(Array.isArray(rolesResponse.body)).toBe(true);
 
-    // --- GET /health: public, no token needed ---
+    // --- GET /health: public, no token needed, and deliberately NOT under
+    // /api/v1 — it's an uptime-monitoring endpoint, not part of the
+    // versioned API surface (see main.ts's setGlobalPrefix/exclude) ---
     await request(app.getHttpServer()).get('/health').expect(200);
 
     // --- creating a role writes an auditLogs entry (needs roles:Create,
@@ -165,13 +168,13 @@ describe('Auth + RBAC (e2e)', () => {
       $push: { permissionIds: createRolesPermission._id },
     });
     const refreshed = await request(app.getHttpServer())
-      .post('/auth/refresh')
+      .post(apiPath('/auth/refresh'))
       .send({ refreshToken: viewerLogin.body.refreshToken })
       .expect(200);
     const refreshedToken = refreshed.body.accessToken as string;
 
     const created = await request(app.getHttpServer())
-      .post('/roles')
+      .post(apiPath('/roles'))
       .set('Authorization', `Bearer ${refreshedToken}`)
       .send({ name: { en: 'Results Approver', ar: 'معتمد النتائج' }, permissionIds: [] })
       .expect(201);

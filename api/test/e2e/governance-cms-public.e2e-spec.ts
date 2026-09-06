@@ -1,4 +1,5 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import { apiPath } from './support/api-path.js';
 
 process.env.MONGODB_URI ??= 'placeholder-overwritten-below';
 process.env.JWT_SECRET ??= 'e2e-test-secret-at-least-32-characters-long';
@@ -72,7 +73,7 @@ describe('Week 4 — Governance, CMS and the public surface (e2e)', () => {
       authMethods: [{ provider: 'Local', passwordHash, linkedAt: new Date() }],
     });
     const login = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post(apiPath('/auth/login'))
       .send({ email: 'cms-operator@uaeaf.ae', password: 'correct horse battery staple' })
       .expect(200);
     const token = login.body.accessToken as string;
@@ -83,7 +84,7 @@ describe('Week 4 — Governance, CMS and the public surface (e2e)', () => {
     //    the server owns every operational field.
     // ============================================================
     const submission = await request(app.getHttpServer())
-      .post('/contact-messages')
+      .post(apiPath('/contact-messages'))
       .send({
         messageType: 'Complaint',
         senderName: 'Citizen Tester',
@@ -100,7 +101,7 @@ describe('Week 4 — Governance, CMS and the public surface (e2e)', () => {
     // reaches the database (schema-audit-2026-09-04.md §3.7, P1 finding:
     // this route previously had no @MaxLength() on any free-text field).
     await request(app.getHttpServer())
-      .post('/contact-messages')
+      .post(apiPath('/contact-messages'))
       .send({
         messageType: 'Complaint',
         senderName: 'A'.repeat(201),
@@ -109,7 +110,7 @@ describe('Week 4 — Governance, CMS and the public surface (e2e)', () => {
       })
       .expect(400);
     await request(app.getHttpServer())
-      .post('/contact-messages')
+      .post(apiPath('/contact-messages'))
       .send({
         messageType: 'Complaint',
         senderName: 'Citizen Tester',
@@ -119,12 +120,12 @@ describe('Week 4 — Governance, CMS and the public surface (e2e)', () => {
       .expect(400);
 
     // Reading the citizen's PII back is NOT public.
-    await request(app.getHttpServer()).get('/contact-messages').expect(401);
-    await request(app.getHttpServer()).get('/contact-messages').set(auth()).expect(200);
+    await request(app.getHttpServer()).get(apiPath('/contact-messages')).expect(401);
+    await request(app.getHttpServer()).get(apiPath('/contact-messages')).set(auth()).expect(200);
 
     // Staff reply is recorded (not sent — delivery is an external concern).
     const replied = await request(app.getHttpServer())
-      .patch(`/contact-messages/${messageId}/reply`)
+      .patch(apiPath(`/contact-messages/${messageId}/reply`))
       .set(auth())
       .send({ replyBody: 'Thank you, maintenance is scheduled.', replyChannel: 'Email' })
       .expect(200);
@@ -136,7 +137,7 @@ describe('Week 4 — Governance, CMS and the public surface (e2e)', () => {
     // 2. Singleton enforcement: two PUTs leave exactly one row.
     // ============================================================
     await request(app.getHttpServer())
-      .put('/athletes-page')
+      .put(apiPath('/athletes-page'))
       .set(auth())
       .send({
         heroTitle: { en: 'Athletes', ar: 'الرياضيون' },
@@ -144,7 +145,7 @@ describe('Week 4 — Governance, CMS and the public surface (e2e)', () => {
       })
       .expect(200);
     const secondUpsert = await request(app.getHttpServer())
-      .put('/athletes-page')
+      .put(apiPath('/athletes-page'))
       .set(auth())
       .send({
         heroTitle: { en: 'Athletes', ar: 'الرياضيون' },
@@ -153,7 +154,7 @@ describe('Week 4 — Governance, CMS and the public surface (e2e)', () => {
       .expect(200);
 
     // The public GET needs no token and sees exactly one, updated row.
-    const publicPage = await request(app.getHttpServer()).get('/athletes-page').expect(200);
+    const publicPage = await request(app.getHttpServer()).get(apiPath('/athletes-page')).expect(200);
     expect(publicPage.body._id).toBe(secondUpsert.body._id);
     expect(publicPage.body.heroSubtitle.en).toBe('Second version');
 
@@ -162,7 +163,7 @@ describe('Week 4 — Governance, CMS and the public surface (e2e)', () => {
     //    that the RBAC-gated read still returns.
     // ============================================================
     await request(app.getHttpServer())
-      .put('/site-settings')
+      .put(apiPath('/site-settings'))
       .set(auth())
       .send({
         copyrightText: { en: '© UAEAF', ar: '© الاتحاد' },
@@ -172,14 +173,14 @@ describe('Week 4 — Governance, CMS and the public surface (e2e)', () => {
       })
       .expect(200);
 
-    const publicSettings = await request(app.getHttpServer()).get('/site-settings/public').expect(200);
+    const publicSettings = await request(app.getHttpServer()).get(apiPath('/site-settings/public')).expect(200);
     expect(publicSettings.body.copyrightText.en).toBe('© UAEAF');
     expect(publicSettings.body).not.toHaveProperty('googleAnalyticsId');
     expect(publicSettings.body).not.toHaveProperty('systemEmailSender');
     expect(publicSettings.body).not.toHaveProperty('isMaintenanceMode');
 
     const adminSettings = await request(app.getHttpServer())
-      .get('/site-settings')
+      .get(apiPath('/site-settings'))
       .set(auth())
       .expect(200);
     expect(adminSettings.body.googleAnalyticsId).toBe('GA-SECRET-VALUE');
@@ -190,7 +191,7 @@ describe('Week 4 — Governance, CMS and the public surface (e2e)', () => {
     //    until something is actually published ("Approved ≠ Published").
     // ============================================================
     const committee = await request(app.getHttpServer())
-      .post('/committees')
+      .post(apiPath('/committees'))
       .set(auth())
       .send({
         name: { en: 'Technical Committee', ar: 'اللجنة الفنية' },
@@ -204,12 +205,12 @@ describe('Week 4 — Governance, CMS and the public surface (e2e)', () => {
     const committeeId = committee.body._id as string;
 
     // The row itself stays behind RBAC...
-    await request(app.getHttpServer()).get('/committees').expect(401);
+    await request(app.getHttpServer()).get(apiPath('/committees')).expect(401);
 
     // ...while the public snapshot route is open but yields nothing,
     // because no publications row exists for it yet.
     const snapshot = await request(app.getHttpServer())
-      .get(`/committees/${committeeId}/public`)
+      .get(apiPath(`/committees/${committeeId}/public`))
       .expect(200);
     expect(snapshot.body).toEqual({});
 

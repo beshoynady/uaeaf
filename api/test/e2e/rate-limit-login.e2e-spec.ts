@@ -1,4 +1,5 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
+import { apiPath } from './support/api-path.js';
 
 process.env.MONGODB_URI ??= 'placeholder-overwritten-below';
 process.env.JWT_SECRET ??= 'e2e-test-secret-at-least-32-characters-long';
@@ -41,9 +42,9 @@ describe('Rate limiting — POST /auth/login (e2e)', () => {
     const payload = { email: 'nobody@uaeaf.ae', password: 'wrong password' };
 
     for (let i = 0; i < 10; i += 1) {
-      await request(app.getHttpServer()).post('/auth/login').send(payload).expect(401);
+      await request(app.getHttpServer()).post(apiPath('/auth/login')).send(payload).expect(401);
     }
-    await request(app.getHttpServer()).post('/auth/login').send(payload).expect(429);
+    await request(app.getHttpServer()).post(apiPath('/auth/login')).send(payload).expect(429);
 
     await app.close();
   }, 60000);

@@ -2,7 +2,7 @@ import helmet from 'helmet';
 import compression from 'compression';
 import { json, urlencoded } from 'express';
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { RequestMethod, ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module.js';
@@ -12,6 +12,15 @@ import { AppModule } from './app.module.js';
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
+
+  // Every route now resolves under /api/v1/... — one shared API version
+  // for the whole backend, decided before any frontend exists so the path
+  // move is cheap now. `/health` is excluded from the prefix here (and
+  // marked VERSION_NEUTRAL on the controller) because it's an
+  // uptime-monitoring endpoint, not a versioned API route — infra
+  // shouldn't have to track API version bumps just to keep probing it.
+  app.setGlobalPrefix('api', { exclude: [{ path: 'health', method: RequestMethod.GET }] });
+  app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
 
   app.use(helmet());
   app.use(compression());
