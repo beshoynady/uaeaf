@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, Param, Patch, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
@@ -45,6 +45,15 @@ export class ContactMessagesController {
   @RequirePermission('contactMessages', 'Read')
   findAll() {
     return this.service.findAll();
+  }
+
+  /** Before `:id` — Nest matches in declaration order. */
+  @Get('export')
+  @RequirePermission('contactMessages', 'Export')
+  @Header('content-type', 'text/csv; charset=utf-8')
+  @Header('content-disposition', 'attachment; filename="contact-messages.csv"')
+  exportCsv() {
+    return this.service.exportCsv();
   }
 
   @Get(':id')

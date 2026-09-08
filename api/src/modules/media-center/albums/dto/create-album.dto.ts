@@ -55,6 +55,19 @@ export class CreateAlbumDto {
   @Type(() => ContentAssociationDto)
   associations?: ContentAssociationDto[];
 
+  @ApiProperty({
+    description:
+      'Bilingual championship/tournament display name, captured directly since the ' +
+      "championships collection doesn't exist yet — independent of `associations[]`. " +
+      "Supply both if this album is also associated with a 'championships' owner.",
+    type: LocalizedTextDto,
+    required: false,
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => LocalizedTextDto)
+  championshipName?: LocalizedTextDto;
+
   @ApiProperty({ required: false })
   @IsOptional()
   @IsMongoId()

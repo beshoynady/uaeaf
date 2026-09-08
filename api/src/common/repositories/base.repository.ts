@@ -15,6 +15,24 @@ export abstract class BaseRepository<T> {
     return this.model.findOne({ _id: id, archivedAt: null } as QueryFilter<T>).exec();
   }
 
+  /** Batched sibling of `findById`, honouring the same soft-delete scope.
+   *  Exists because permission resolution moved from login time to every
+   *  request (owner decision 2026-09-07): resolving a Super Admin's 164
+   *  permissions one findById at a time cost 165 round trips, which was
+   *  tolerable once per 15 minutes and is not tolerable per request.
+   *
+   *  Returns fewer documents than ids given when some are missing or
+   *  archived — callers must treat absence as "grants nothing", never as
+   *  an error, so one stale id cannot fail an otherwise valid request. */
+  async findByIds(ids: readonly string[]): Promise<T[]> {
+    if (ids.length === 0) {
+      // Short-circuited rather than sent as `$in: []`: a user with no roles
+      // is the common case on a fresh account, and it needs no query at all.
+      return [];
+    }
+    return this.model.find({ _id: { $in: ids }, archivedAt: null } as QueryFilter<T>).exec();
+  }
+
   async findOne(filter: QueryFilter<T> = {}): Promise<T | null> {
     return this.model.findOne({ ...filter, archivedAt: null } as QueryFilter<T>).exec();
   }

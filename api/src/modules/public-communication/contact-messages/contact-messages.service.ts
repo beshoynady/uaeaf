@@ -6,6 +6,21 @@ import {
   CreateContactMessageDto,
   ReplyToContactMessageDto,
 } from './dto/create-contact-messages.dto.js';
+import { toCsv, type CsvColumn } from '../../../common/utils/csv.util.js';
+
+/** Column order for `contactMessages:Export`. Assignment and workflow ids
+ *  are omitted — they are internal plumbing, not answers. */
+const CONTACT_MESSAGE_EXPORT_COLUMNS: readonly CsvColumn[] = [
+  { key: 'messageType', header: 'Type' },
+  { key: 'status', header: 'Status' },
+  { key: 'senderName', header: 'Sender' },
+  { key: 'senderEmail', header: 'Email' },
+  { key: 'senderPhone', header: 'Phone' },
+  { key: 'messageBody', header: 'Message' },
+  { key: 'replyBody', header: 'Reply' },
+  { key: 'repliedAt', header: 'Replied at' },
+  { key: 'replyChannel', header: 'Reply channel' },
+];
 
 /** Implements: contactMessages collection, Domain 10 — Public
  *  Communication.
@@ -18,6 +33,16 @@ import {
 @Injectable()
 export class ContactMessagesService {
   constructor(private readonly repository: ContactMessagesRepository) {}
+
+  /** The inbox as a spreadsheet, behind `contactMessages:Export` — the
+   *  reporting need the owner recorded as requirement #11 (periodic reply
+   *  counts) is answered from this file until the Reports section exists. */
+  async exportCsv(): Promise<string> {
+    return toCsv(
+      (await this.repository.find()) as unknown as Record<string, unknown>[],
+      CONTACT_MESSAGE_EXPORT_COLUMNS,
+    );
+  }
 
   /** Public submission. Server-sets `status='New'`; every operational and
    *  reply field stays null until staff act (see `CreateContactMessageDto`). */

@@ -96,6 +96,33 @@ describe('AlbumsService', () => {
       );
     });
 
+    it('stores championshipName as null when omitted', async () => {
+      const repository = makeRepository();
+      const mediaAssetsService = makeMediaAssetsService();
+      repository.create.mockResolvedValue({} as never);
+      const service = new AlbumsService(repository, mediaAssetsService);
+
+      await service.create(baseDto);
+
+      expect(repository.create).toHaveBeenCalledWith(
+        expect.objectContaining({ championshipName: null }),
+      );
+    });
+
+    it('stores the supplied championshipName', async () => {
+      const repository = makeRepository();
+      const mediaAssetsService = makeMediaAssetsService();
+      repository.create.mockResolvedValue({} as never);
+      const service = new AlbumsService(repository, mediaAssetsService);
+      const championshipName = { en: 'UAE Athletics Championship 2026', ar: 'بطولة الإمارات لألعاب القوى 2026' };
+
+      await service.create({ ...baseDto, championshipName });
+
+      expect(repository.create).toHaveBeenCalledWith(
+        expect.objectContaining({ championshipName }),
+      );
+    });
+
     it('caps the number of tags', async () => {
       const repository = makeRepository();
       const mediaAssetsService = makeMediaAssetsService();

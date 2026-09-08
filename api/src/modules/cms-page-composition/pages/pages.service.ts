@@ -3,6 +3,7 @@ import { Types } from 'mongoose';
 import { PagesRepository } from './pages.repository.js';
 import type { PageDocument } from './schemas/pages.schema.js';
 import { CreatePageDto } from './dto/create-pages.dto.js';
+import type { PagePublicResponseDto } from './dto/page-public-response.dto.js';
 import { MediaAssetsService } from '../../media-center/media-assets/media-assets.service.js';
 import { isDuplicateKeyError, duplicateKeyField } from '../../../common/utils/mongo-errors.util.js';
 
@@ -50,9 +51,29 @@ export class PagesService {
   }
 
   /** Public routing lookup: only a `Published` page resolves. Returns
-   *  `null` for an unknown or still-Draft slug, so the route 404s. */
-  async findPublishedBySlug(slug: string): Promise<PageDocument | null> {
-    return this.repository.findOne({ slug, status: 'Published' });
+   *  `null` for an unknown or still-Draft slug, so the route 404s.
+   *  Returns the public-safe shape, never the raw document. */
+  async findPublishedBySlug(slug: string): Promise<PagePublicResponseDto | null> {
+    const page = await this.repository.findOne({ slug, status: 'Published' });
+    return page ? this.toPublicResponse(page) : null;
+  }
+
+  /** Maps a full `Page` document to its public-safe shape (excludes the
+   *  `status` routing gate and the `BaseSchema` audit trail — see the DTO's
+   *  doc comment). */
+  toPublicResponse(page: PageDocument): PagePublicResponseDto {
+    return {
+      id: page._id.toString(),
+      slug: page.slug,
+      title: page.title,
+      seo: page.seo
+        ? {
+            metaTitle: page.seo.metaTitle,
+            metaDescription: page.seo.metaDescription,
+            ogImageId: page.seo.ogImageId ? page.seo.ogImageId.toString() : null,
+          }
+        : null,
+    };
   }
 
   async remove(id: string, archivedBy: Types.ObjectId): Promise<PageDocument | null> {

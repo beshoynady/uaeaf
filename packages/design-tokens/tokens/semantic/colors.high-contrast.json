@@ -6,6 +6,7 @@
       "muted": { "value": "{color.neutral-warm.700}", "type": "color", "comment": "ADR-0051 — new; 9.04:1 on white, gives a third tier below primary/secondary without leaving max-contrast philosophy" },
       "disabled": { "value": "{color.neutral-warm.700}", "type": "color" },
       "inverse": { "value": "#FFFFFF", "type": "color" },
+      "on-brand": { "value": "#FFFFFF", "type": "color", "comment": "ADR-0059" },
       "link": { "value": "#000000", "type": "color", "comment": "Underline carries the link cue at this contrast level, not color alone" }
     },
     "surface": {
@@ -15,7 +16,15 @@
       "skeleton": { "value": "{color.neutral-warm.300}", "type": "color" },
       "overlay": { "value": "#000000", "type": "color" }
     },
+    "section": {
+      "comment": "ADR-0059 — high contrast deliberately flattens all four registers to black-on-white. A user who selects this mode is asking for maximum legibility, not brand expression; rendering a green or red full-bleed ground would take contrast away from them to make a point they did not ask for.",
+      "green": { "surface": { "value": "#FFFFFF", "type": "color" }, "text": { "value": "#000000", "type": "color" }, "text-muted": { "value": "{color.neutral-warm.700}", "type": "color" }, "border": { "value": "#000000", "type": "color" }, "divider": { "value": "#000000", "type": "color" } },
+      "red": { "surface": { "value": "#FFFFFF", "type": "color" }, "text": { "value": "#000000", "type": "color" }, "text-muted": { "value": "{color.neutral-warm.700}", "type": "color" }, "border": { "value": "#000000", "type": "color" }, "divider": { "value": "#000000", "type": "color" } },
+      "black": { "surface": { "value": "#000000", "type": "color" }, "text": { "value": "#FFFFFF", "type": "color" }, "text-muted": { "value": "#FFFFFF", "type": "color" }, "border": { "value": "#FFFFFF", "type": "color" }, "divider": { "value": "#FFFFFF", "type": "color" } },
+      "adjacent-separator": { "value": "#000000", "type": "color", "comment": "ADR-0059 — a solid black rule, since the registers themselves no longer differ" }
+    },
     "border": {
+      "subtle": { "value": "#000000", "type": "color", "comment": "ADR-0059 — high contrast collapses subtle into default by design; a weaker rule would defeat the mode" },
       "default": { "value": "#000000", "type": "color" },
       "strong": { "value": "#000000", "type": "color" }
     },

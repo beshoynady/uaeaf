@@ -1,9 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsIn, IsString, MinLength, ValidateNested } from 'class-validator';
+import { IsIn, ValidateNested } from 'class-validator';
 import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
 import { PERMISSION_ACTIONS } from '../schemas/permission.schema.js';
 import type { PermissionAction } from '../schemas/permission.schema.js';
+import { PERMISSION_RESOURCES } from '../../../../common/constants/permission-resources.js';
+import type { PermissionResource } from '../../../../common/constants/permission-resources.js';
 
 /** Request body for POST /permissions. */
 export class CreatePermissionDto {
@@ -15,10 +17,12 @@ export class CreatePermissionDto {
   @Type(() => LocalizedTextDto)
   name: LocalizedTextDto;
 
-  @ApiProperty({ description: 'Name of the collection this permission gates, e.g. "users".' })
-  @IsString()
-  @MinLength(1)
-  resourceType: string;
+  @ApiProperty({
+    description: 'The collection this permission gates. Must be a known guarded resource.',
+    enum: PERMISSION_RESOURCES,
+  })
+  @IsIn(PERMISSION_RESOURCES)
+  resourceType: PermissionResource;
 
   @ApiProperty({
     description: 'The action this permission grants.',

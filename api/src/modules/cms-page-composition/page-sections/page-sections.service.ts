@@ -3,6 +3,7 @@ import { Types } from 'mongoose';
 import { PageSectionsRepository } from './page-sections.repository.js';
 import type { PageSectionDocument } from './schemas/page-sections.schema.js';
 import { CreatePageSectionDto } from './dto/create-page-sections.dto.js';
+import type { PageSectionPublicResponseDto } from './dto/page-section-public-response.dto.js';
 import { selectVisibleInWindow } from '../../../common/utils/visibility-window.util.js';
 
 /** Implements: pageSections collection, Domain 11 — CMS & Page
@@ -51,8 +52,9 @@ export class PageSectionsService {
 
   /** The sections a public visitor should see for one page, in display
    *  order: enabled, `visibility='Everyone'`, and inside their
-   *  visibleFrom/visibleUntil window at `now`. */
-  async findPublicByPage(pageId: string, now: Date = new Date()): Promise<PageSectionDocument[]> {
+   *  visibleFrom/visibleUntil window at `now`. Returns the public-safe
+   *  shape, never raw documents. */
+  async findPublicByPage(pageId: string, now: Date = new Date()): Promise<PageSectionPublicResponseDto[]> {
     const sections = await this.repository.find({
       pageId: new Types.ObjectId(pageId),
       enabled: true,
@@ -63,7 +65,26 @@ export class PageSectionsService {
       now,
       (section) => section.visibleFrom,
       (section) => section.visibleUntil,
-    );
+    ).map((section) => this.toPublicResponse(section));
+  }
+
+  /** Maps a full `PageSection` document to its public-safe shape (excludes
+   *  the visibility gate, `filters`, and the audit trail — see the DTO's
+   *  doc comment). */
+  toPublicResponse(section: PageSectionDocument): PageSectionPublicResponseDto {
+    return {
+      id: section._id.toString(),
+      sectionType: section.sectionType,
+      sectionTitle: section.sectionTitle,
+      sectionSubtitle: section.sectionSubtitle,
+      itemLimit: section.itemLimit,
+      ctaText: section.ctaText,
+      ctaUrl: section.ctaUrl,
+      displayOrder: section.displayOrder,
+      selectionMode: section.selectionMode,
+      items: section.items.map((id) => id.toString()),
+      configuration: section.configuration,
+    };
   }
 
   async remove(id: string, archivedBy: Types.ObjectId): Promise<PageSectionDocument | null> {

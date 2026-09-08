@@ -15,6 +15,16 @@ export class AlbumPublicResponseDto {
   @ApiProperty() slug: string;
   @ApiProperty({ type: LocalizedTextDto, required: false, nullable: true }) description: LocalizedTextDto | null;
   @ApiProperty() contentCategoryId: string;
+  @ApiProperty({
+    type: LocalizedTextDto,
+    required: false,
+    nullable: true,
+    description:
+      'Denormalized championship/tournament name, captured at album-creation time — ' +
+      'not a live join (the championships collection does not exist yet). ' +
+      '[REVIEW WHEN THE CHAMPIONSHIPS MODULE IS BUILT].',
+  })
+  championshipName: LocalizedTextDto | null;
   @ApiProperty({ required: false, nullable: true }) coverImageId: string | null;
   @ApiProperty({ required: false, nullable: true }) publishedAt: Date | null;
   @ApiProperty({ type: [String] }) tags: string[];

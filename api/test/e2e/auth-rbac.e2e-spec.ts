@@ -120,10 +120,16 @@ describe('Auth + RBAC (e2e)', () => {
     // --- GET /roles: token WITHOUT roles:Read -> 403, AND a collection-level
     // AccessDenied row is written with entityId: null (entityId is optional
     // on the live board specifically for this case) ---
-    await request(app.getHttpServer())
+    const denied = await request(app.getHttpServer())
       .get(apiPath('/roles'))
       .set('Authorization', `Bearer ${noPermissionsToken}`)
       .expect(403);
+    // A refusal that names no code of its own still carries the status
+    // default, because `ApiExceptionFilter` stamps it (ADR-0058 §2.2). This
+    // assertion is also what keeps `configureTestApp` in step with main.ts:
+    // without the filter registered here, these specs would be exercising an
+    // application whose error responses differ from the deployed one.
+    expect(denied.body.code).toBe('forbidden');
     const collectionLevelDenials = await auditLogModel.find({
       action: 'AccessDenied',
       entityType: 'roles',

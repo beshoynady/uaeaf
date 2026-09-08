@@ -20,7 +20,9 @@
     "test:cov": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "test:debug": "node --inspect-brk --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
     "test:e2e": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./test/jest-e2e.json --forceExit",
-    "docs:generate": "compodoc -p tsconfig.json -d documentation"
+    "docs:generate": "compodoc -p tsconfig.json -d documentation",
+    "generate:openapi": "nest build && node dist/generate-openapi.js",
+    "bootstrap:admin": "nest build && node dist/bootstrap-admin.js"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",

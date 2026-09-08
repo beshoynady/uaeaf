@@ -23,4 +23,24 @@ export class AuditLogsRepository {
   async create(data: WriteAuditLogInput): Promise<AuditLogDocument> {
     return this.model.create(data);
   }
+
+  /**
+   * A page of the trail, newest first, plus the matching total.
+   *
+   * Reads only — the class comment above still holds: no update, no soft
+   * delete, no hard delete, of any kind, ever. Adding a read path does not
+   * weaken the append-only guarantee, and it is the reason that guarantee
+   * was worth having.
+   */
+  async findPage(
+    filter: Record<string, unknown>,
+    skip: number,
+    limit: number,
+  ): Promise<{ items: AuditLogDocument[]; total: number }> {
+    const [items, total] = await Promise.all([
+      this.model.find(filter).sort({ timestamp: -1 }).skip(skip).limit(limit).exec(),
+      this.model.countDocuments(filter).exec(),
+    ]);
+    return { items, total };
+  }
 }

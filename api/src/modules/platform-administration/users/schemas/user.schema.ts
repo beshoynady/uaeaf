@@ -10,6 +10,19 @@ export type UserDocument = HydratedDocument<User>;
 export const ACCOUNT_STATUSES = ['Active', 'Suspended', 'Deactivated'] as const;
 export type AccountStatus = (typeof ACCOUNT_STATUSES)[number];
 
+/** Mirrors the frontend's `AppLocale` exactly — the dashboard reads this to
+ *  pick a locale, so a value the frontend cannot route is a bug, not a
+ *  preference. */
+export const USER_LANGUAGES = ['ar', 'en'] as const;
+export type UserLanguage = (typeof USER_LANGUAGES)[number];
+
+/** Mirrors the values the frontend theme toggle writes to `data-theme`.
+ *  `high-contrast` is deliberately absent: it has full token coverage but is
+ *  not wired into the theme bootstrap (open item S12), so offering it here
+ *  would let a user store a preference the UI cannot honour. */
+export const USER_THEMES = ['light', 'dark'] as const;
+export type UserTheme = (typeof USER_THEMES)[number];
+
 /** Implements: users collection, Domain 8 — Platform Administration
  *  (FigJam node 103:7819, re-read fresh 2026-09-03 — `name` corrected from
  *  plain String to bilingual `{en,ar}`: a staff member's name is recorded
@@ -39,6 +52,28 @@ export class User extends BaseSchema {
 
   @Prop({ type: Types.ObjectId, ref: 'FederationPersonnel', default: null })
   personId: Types.ObjectId | null;
+
+  /** The account's own avatar, as a standalone reference (owner decision,
+   *  2026-09-07). Deliberately NOT resolved through
+   *  `personId → federationPersonnel.photoId`: not every account is a
+   *  federation person (service and contractor accounts exist), and an
+   *  administrator's dashboard avatar is an account-level choice rather
+   *  than an official personnel portrait. */
+  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  photoId: Types.ObjectId | null;
+
+  /** Preferred dashboard language. `null` means "not chosen" — the client
+   *  falls back to the request/URL locale. Persisted per account rather
+   *  than per device so the choice follows the user across machines, which
+   *  device-local storage cannot do. */
+  @Prop({ type: String, enum: USER_LANGUAGES, default: null })
+  preferredLanguage: UserLanguage | null;
+
+  /** Preferred colour theme. `null` means "not chosen" — the client falls
+   *  back to the OS `prefers-color-scheme`, matching the existing theme
+   *  bootstrap's own precedence (stored value → system). */
+  @Prop({ type: String, enum: USER_THEMES, default: null })
+  preferredTheme: UserTheme | null;
 
   @Prop({ type: String, enum: ACCOUNT_STATUSES, default: 'Active' })
   accountStatus: AccountStatus;

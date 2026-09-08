@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import mongoose from 'mongoose';
@@ -80,5 +81,50 @@ describe('BaseRepository', () => {
 
     expect(archived?.archivedAt).toBeInstanceOf(Date);
     expect(archived?.archivedBy?.toString()).toBe(archivedBy.toString());
+  });
+  describe('findByIds', () => {
+    // Added 2026-09-07 alongside the roleIds-only JWT decision: permission
+    // resolution moved from login time to every request, so the old
+    // one-findById-per-id pattern (165 round trips for the Super Admin)
+    // had to become a single batched read.
+    it('returns every matching document in one query', async () => {
+      const first = await repository.create({ name: 'Golf' });
+      const second = await repository.create({ name: 'Hotel' });
+
+      const found = await repository.findByIds([first._id.toString(), second._id.toString()]);
+
+      expect(found.map((doc) => doc.name).sort()).toEqual(['Golf', 'Hotel']);
+    });
+
+    it('excludes archived documents', async () => {
+      const kept = await repository.create({ name: 'India' });
+      const archived = await repository.create({ name: 'Juliett' });
+      await repository.softDelete(archived._id.toString(), new mongoose.Types.ObjectId());
+
+      const found = await repository.findByIds([kept._id.toString(), archived._id.toString()]);
+
+      expect(found.map((doc) => doc.name)).toEqual(['India']);
+    });
+
+    it('silently omits ids that do not exist rather than throwing', async () => {
+      const kept = await repository.create({ name: 'Kilo' });
+
+      const found = await repository.findByIds([
+        kept._id.toString(),
+        new mongoose.Types.ObjectId().toString(),
+      ]);
+
+      expect(found).toHaveLength(1);
+    });
+
+    it('issues no query at all for an empty id list', async () => {
+      const spy = jest.spyOn(model, 'find');
+
+      const found = await repository.findByIds([]);
+
+      expect(found).toEqual([]);
+      expect(spy).not.toHaveBeenCalled();
+      spy.mockRestore();
+    });
   });
 });

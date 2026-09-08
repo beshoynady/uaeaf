@@ -292,6 +292,18 @@ The refresh token itself carries **no permissions** — it only allows minting a
 
 Grounded in the confirmed live schema: `permissions.resourceType` is a free (not enum) string, and `permissions.action` is the closed enum `Create | Read | Update | Delete | HardDelete | Approve | Publish | EditProtectedData` (`09-Integrity-Completeness-Security-Audit.md` §C2/§4). `users.roleIds` and `roles.permissionIds` are both N:N `ObjectId[]`.
 
+> **AMENDED 2026-09-07 — owner decision. The two paragraphs immediately below ("Performance design" and "Trade-off this creates") are SUPERSEDED. They are kept verbatim as the record of what was originally approved and why.**
+>
+> The access token now carries `users.roleIds` and no permissions at all. `JwtStrategy` resolves `roleIds -> roles.permissionIds -> permissions` from the database on **every** authenticated request (`RolesService.resolvePermissions`, two indexed batched reads), and `PermissionsGuard` compares the route's `@RequirePermission` against that freshly resolved set. There is deliberately no cache: at the platform's actual size — 30-50 accounts, 10-20 roles — the owner judged a cache to be complexity without a matching benefit.
+>
+> The owner's stated rationale, in their terms: **least data in transit** (a leaked token discloses role membership, not the exact shape of the holder's authority); **immediate consistency** (a role edit reaches its holders on their next request); **single source of truth** (authority lives in the database only, with no second copy in a token that can disagree with it).
+>
+> Consequences for the paragraphs below: the 15-minute staleness window they describe **no longer exists** — an edited role, a reassigned role, and an archived role or permission all take effect at once. The 15-minute `JWT_ACCESS_EXPIRY` of §4.3 stands, but it is no longer the security boundary that justifies skipping a per-request lookup, because there is no longer a skipped lookup. `accountStatus=Suspended` is the one case still bounded by the token lifetime: it is re-checked on refresh, not on every request.
+>
+> What triggered the change was a defect, not a preference: a Super Admin holding all 164 permissions produced an 11,384-byte token, past the browser's 4,096-byte per-cookie limit and the ~8 KB `Cookie` header limit, which broke the session silently. See open item 10 (now closed) in `docs/engineering/UAEAF-PHASE-1-BUILD-PLAN-2026-09-07.md`, and the acceptance tests in `api/src/modules/platform-administration/auth/access-control.integration.spec.ts`.
+>
+> The startup-validation and audit-logging requirements below are **unaffected** and remain in force.
+
 **Performance design:** the `(resourceType, action)` permission set is resolved **once, at login** (`users.roleIds` → `roles.permissionIds` → `permissions`), flattened, and embedded in the JWT payload. `PermissionsGuard` checks a route's `@RequirePermission('users', 'Update')` declaration against that embedded set on every request — it does **not** re-query `users`/`roles`/`permissions` per request, the same `Reflector`-based pattern as `JwtAuthGuard`/`@Public()` otherwise uses for metadata, just reading from `request.user` instead of the database.
 
 **Trade-off this creates, to be made explicit in the Week 1 implementation, not left implicit:** a permission change (role edited, role reassigned, permission added/removed) or an account suspension (`accountStatus=Suspended`) does not take effect for an already-issued access token until it expires — bounded to **exactly 15 minutes** by the confirmed `JWT_ACCESS_EXPIRY` (§4.3), not "on the order of minutes." That exact bound is the deliberate decision that makes skipping a per-request DB check acceptable; it must be documented on `AuthService`/`PermissionsGuard` (per §6.1's TSDoc requirement) rather than discovered later as a surprise. If a specific case ever needs to revoke *immediately* rather than within 15 minutes, that has to go through refresh-token revocation, not a shorter access-token TTL "for that case" — a distinction worth carrying into Week 1 rather than conflating the two.
@@ -346,10 +358,9 @@ Applies to Week 1 and every week after. English throughout — code, comments, g
    * Verifies the requesting user holds the permission declared by
    * @RequirePermission() on the target route handler.
    *
-   * Resolution is read from the cached permission set embedded in the
-   * JWT at login time — this guard does NOT query
-   * users → roles → permissions on every request (see BE-PLAN-010 §4.4
-   * for the performance rationale and its staleness trade-off).
+   * Resolution is read from `request.user.permissions`, which JwtStrategy
+   * resolved from the database for this request (see the 2026-09-07
+   * amendment to §4.4 — the JWT carries roleIds only).
    *
    * @throws ForbiddenException if the required (resourceType, action)
    *   pair is not present in the user's resolved permission set.

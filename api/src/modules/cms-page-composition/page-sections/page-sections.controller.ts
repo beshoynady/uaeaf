@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator.js';
@@ -7,6 +7,7 @@ import { Public } from '../../../common/decorators/public.decorator.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 import { PageSectionsService } from './page-sections.service.js';
 import { CreatePageSectionDto } from './dto/create-page-sections.dto.js';
+import { PageSectionPublicResponseDto } from './dto/page-section-public-response.dto.js';
 
 /** Implements: pageSections collection, Domain 11 — CMS & Page Composition. */
 @ApiTags('page-sections')
@@ -31,6 +32,7 @@ export class PageSectionsController {
    *  displayOrder. */
   @Get('public/by-page/:pageId')
   @Public()
+  @ApiOkResponse({ type: [PageSectionPublicResponseDto] })
   findPublicByPage(@Param('pageId') pageId: string) {
     return this.service.findPublicByPage(pageId);
   }

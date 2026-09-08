@@ -100,11 +100,12 @@ describe('Privilege escalation chain is blocked (e2e)', () => {
     const token = login.body.accessToken as string;
 
     // --- Point 1: create a role carrying a permission not held -> 403, not created ---
-    await request(app.getHttpServer())
+    const escalatedCreate = await request(app.getHttpServer())
       .post(apiPath('/roles'))
       .set('Authorization', `Bearer ${token}`)
       .send({ name: { en: 'Escalated', ar: 'مرتقى' }, permissionIds: [rolesRead._id.toString(), excessPermission._id.toString()] })
       .expect(403);
+    expect(escalatedCreate.body.code).toBe('ungrantablePermission');
     expect(await roleModel.findOne({ 'name.en': 'Escalated' })).toBeNull();
 
     // --- Sanity: creating a role with only held permissions succeeds ---
@@ -116,28 +117,34 @@ describe('Privilege escalation chain is blocked (e2e)', () => {
     const legitRoleId = legitRole.body._id as string;
 
     // --- Point 2: rewrite that role's permissions to add the excess one -> 403 ---
-    await request(app.getHttpServer())
+    const escalatedRewrite = await request(app.getHttpServer())
       .patch(apiPath(`/roles/${legitRoleId}/permissions`))
       .set('Authorization', `Bearer ${token}`)
       .send({ permissionIds: [rolesRead._id.toString(), excessPermission._id.toString()] })
       .expect(403);
+    expect(escalatedRewrite.body.code).toBe('ungrantablePermission');
     const untouchedRole = await roleModel.findById(legitRoleId);
     expect(untouchedRole?.permissionIds).toHaveLength(1);
 
     // --- System-role edit: even with only already-held permissions, a
     // system role's permission set cannot be rewritten at all (P0 #3) ---
-    await request(app.getHttpServer())
+    const systemRoleEdit = await request(app.getHttpServer())
       .patch(apiPath(`/roles/${systemRole._id.toString()}/permissions`))
       .set('Authorization', `Bearer ${token}`)
       .send({ permissionIds: [rolesRead._id.toString()] })
       .expect(403);
+    expect(systemRoleEdit.body.code).toBe('systemRole');
 
     // --- Point 3: self-assign a role -> 403, roleIds unchanged ---
-    await request(app.getHttpServer())
+    const selfAssign = await request(app.getHttpServer())
       .patch(apiPath(`/users/${attacker._id.toString()}/roles`))
       .set('Authorization', `Bearer ${token}`)
       .send({ roleIds: [legitRoleId] })
       .expect(403);
+    // Three refusals, one status, three codes. This is the contract the
+    // dashboard branches on (ADR-0058); asserting it here proves the codes
+    // survive the whole stack, not just the unit that throws them.
+    expect(selfAssign.body.code).toBe('selfAssignment');
     const untouchedAttacker = await userModel.findById(attacker._id);
     expect(untouchedAttacker?.roleIds.map((id: { toString(): string }) => id.toString())).toEqual([
       attackerRole._id.toString(),

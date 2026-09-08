@@ -66,6 +66,22 @@ export class Album extends BaseSchema {
   @Prop({ type: [ContentAssociationSchema], default: [] })
   associations: ContentAssociation[];
 
+  /** Denormalized bilingual display name of this album's championship/
+   *  tournament, captured directly from admin input at album-creation time —
+   *  NOT a live join against `associations[].ownerId` where
+   *  `ownerType: 'championships'`. That collection doesn't exist yet (see
+   *  this schema's own doc comment above: "championships is not built this
+   *  week"), so there is nothing to resolve a name from at read time; this
+   *  field exists so the public album page can show a championship name
+   *  today without waiting on that module (design↔schema mapping pilot +
+   *  owner decision, 2026-09-07). `null` when the album has no championship
+   *  context, or the caller didn't supply one.
+   *  [REVIEW WHEN THE CHAMPIONSHIPS MODULE IS BUILT]: decide then whether
+   *  this stays a denormalized snapshot or is replaced by a live-resolved
+   *  join — not decided here, deliberately deferred. */
+  @Prop({ type: LocalizedTextSchema, default: null })
+  championshipName: LocalizedText | null;
+
   @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
   coverImageId: Types.ObjectId | null;
 

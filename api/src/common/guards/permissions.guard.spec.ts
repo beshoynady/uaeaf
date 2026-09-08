@@ -24,14 +24,17 @@ describe('PermissionsGuard', () => {
   it('allows the request when the route declares no required permission', async () => {
     const guard = new PermissionsGuard(makeReflector(undefined), makeAuditLogsService());
 
-    await expect(guard.canActivate(makeContext({ userId: 'u1', permissions: [] }))).resolves.toBe(true);
+    await expect(
+      guard.canActivate(makeContext({ userId: 'u1', roleIds: [], permissions: [] })),
+    ).resolves.toBe(true);
   });
 
-  it('allows the request when the JWT-cached permission set contains a match', async () => {
+  it('allows the request when the resolved permission set contains a match', async () => {
     const reflector = makeReflector({ resourceType: 'roles', action: 'Delete' });
     const guard = new PermissionsGuard(reflector, makeAuditLogsService());
     const user: AuthenticatedUser = {
       userId: 'u1',
+      roleIds: ['507f1f77bcf86cd799439012'],
       permissions: [{ resourceType: 'roles', action: 'Delete' }],
     };
 
@@ -45,6 +48,7 @@ describe('PermissionsGuard', () => {
     const guard = new PermissionsGuard(reflector, auditLogsService);
     const user: AuthenticatedUser = {
       userId: '507f1f77bcf86cd799439011',
+      roleIds: ['507f1f77bcf86cd799439012'],
       permissions: [{ resourceType: 'roles', action: 'Read' }],
     };
 
@@ -65,7 +69,11 @@ describe('PermissionsGuard', () => {
     const reflector = makeReflector({ resourceType: 'roles', action: 'Create' });
     const auditLogsService = makeAuditLogsService();
     const guard = new PermissionsGuard(reflector, auditLogsService);
-    const user: AuthenticatedUser = { userId: '507f1f77bcf86cd799439011', permissions: [] };
+    const user: AuthenticatedUser = {
+      userId: '507f1f77bcf86cd799439011',
+      roleIds: [],
+      permissions: [],
+    };
 
     await expect(guard.canActivate(makeContext(user, {}))).rejects.toThrow(ForbiddenException);
 

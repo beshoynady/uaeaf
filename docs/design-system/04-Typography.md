@@ -244,6 +244,16 @@ Evidence-reviewed against real component usage (UAEAF Homepage, this review cycl
 
 **Explicitly left unresolved (insufficient evidence, not guessed):** a "Day Number" style text role (16px/Bold, observed once, in a countdown/calendar context) was reviewed and **rejected** for its own role — single-instance usage does not meet criterion (2) above, and it must not be silently folded into `Type/CTA Label` either, since a calendar numeral is not semantically a call-to-action. This specific usage remains flagged `DESIGN SYSTEM GAP — recurrence evidence required` pending a second confirmed usage elsewhere in the platform.
 
+### Addendum, 2026-09-07 — `Type/Statistic Display` (resolves PB-GAP for new numeral displays)
+
+| Role | Size | Weight | Basis | Distinct From | Evidence |
+| --- | ---: | --- | --- | --- | --- |
+| `Type/Statistic Display` | 32px | Black | `DT-FONT-SIZE-H2` + `DT-FONT-WEIGHT-BLACK` | `H2` (same size, Bold weight — H2 is a document heading bound to page/section hierarchy semantics; Statistic Display is a standalone scannable numeral, never a heading, and must not carry `<h2>` semantics) | Federation-by-the-Numbers homepage section (4 sibling instances in one section — real recurrence, not incidental); architecturally the same class of need already flagged as open in CLAUDE.md §7 (PB-GAP, 5 Athlete Personal-Best nodes at 22px/26px) |
+
+Evidence against ADR-0040's four-part test: (1) **distinct** — a large standalone numeral meant to be scanned/counted is not a document heading, and giving 4 sibling stat numerals `<h2>` semantics would misuse heading hierarchy (Chapter 6); (2) **recurs** — 4 instances in the Federation-by-the-Numbers section alone, and the same need is independently evidenced by the pre-existing Athlete Personal-Best gap; (3) **no existing role fits** — CLAUDE.md §7 already forbids silently mapping 22px/26px to H3(24px)/H2(32px)/H4(20px), and §4.15a's own model requires reusing an *existing* primitive rather than minting a new pixel value, so H2's primitive (32px) is paired with a non-default weight (Black, not H2's default Bold) to make the role visually and semantically distinct, exactly as `Type/CTA Label` reuses Subtitle's size with a different weight; (4) **no proliferation** — one new role, existing primitives only, covering two real use cases.
+
+**Scope note:** this resolves PB-GAP *only* for new numeral displays built without prior Figma pixels (Bucket 2, per the current frontend build-out phase). It does **not** touch the 5 pre-existing Athlete Personal-Best nodes at 22px/26px (CLAUDE.md §27) — those remain an already-shipped composition, untouched, still flagged `DESIGN SYSTEM GAP` exactly as before. Converting them to this new role would be a visual change to approved, shipped content and needs its own evidence review, not a byproduct of this addendum.
+
 ## 4.15b Scoped Typography Exceptions
 
 # ADR-0041: Scoped Micro-Typography Exceptions

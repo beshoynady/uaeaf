@@ -2,11 +2,13 @@ import helmet from 'helmet';
 import compression from 'compression';
 import { json, urlencoded } from 'express';
 import { NestFactory } from '@nestjs/core';
-import { RequestMethod, ValidationPipe, VersioningType } from '@nestjs/common';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ValidationPipe } from '@nestjs/common';
+import { ApiExceptionFilter } from './common/filters/api-exception.filter.js';
+import { SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module.js';
-import { API_DEFAULT_VERSION, API_GLOBAL_PREFIX } from './common/constants/api-versioning.constant.js';
+import { configureApiRouting } from './api-routing.config.js';
+import { buildSwaggerDocument } from './swagger.config.js';
 
 /** Bootstraps the HTTP application: security middleware, global validation,
  *  Swagger documentation, then starts listening. */
@@ -14,14 +16,7 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
 
-  // Every route now resolves under /api/v1/... — one shared API version
-  // for the whole backend, decided before any frontend exists so the path
-  // move is cheap now. `/health` is excluded from the prefix here (and
-  // marked VERSION_NEUTRAL on the controller) because it's an
-  // uptime-monitoring endpoint, not a versioned API route — infra
-  // shouldn't have to track API version bumps just to keep probing it.
-  app.setGlobalPrefix(API_GLOBAL_PREFIX, { exclude: [{ path: 'health', method: RequestMethod.GET }] });
-  app.enableVersioning({ type: VersioningType.URI, defaultVersion: API_DEFAULT_VERSION });
+  configureApiRouting(app);
 
   app.use(helmet());
   app.use(compression());
@@ -41,14 +36,15 @@ async function bootstrap(): Promise<void> {
       forbidNonWhitelisted: true,
     }),
   );
+  // Registered 2026-09-08. Until then the API had no exception filter at
+  // all, so anything that was not already an HttpException reached the
+  // caller as a bare 500 — a duplicate email, a Mongoose `required`
+  // violation, a malformed id in a path param. See the filter for why each
+  // of those is a 4xx and why an unexpected failure's detail is logged
+  // rather than returned.
+  app.useGlobalFilters(new ApiExceptionFilter());
 
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('UAEAF Backend API')
-    .setDescription('UAE Athletics Federation platform API')
-    .setVersion('0.1.0')
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  const document = buildSwaggerDocument(app);
   SwaggerModule.setup('api/docs', app, document);
 
   const port = config.get<number>('app.port') ?? 3000;

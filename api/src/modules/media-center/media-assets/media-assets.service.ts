@@ -51,7 +51,12 @@ export class MediaAssetsService {
       // checksum isn't accepted from the client (see MediaFileDto's
       // comment) -- always stored as null until an upload-time hashing
       // step exists.
-      file: { ...dto.file, checksum: null },
+      file: {
+        ...dto.file,
+        checksum: null,
+        photographer: dto.file.photographer ?? null,
+        captureDate: dto.file.captureDate ? new Date(dto.file.captureDate) : null,
+      },
       caption: dto.caption,
       altText: dto.altText,
       displayOrder: dto.displayOrder,
@@ -100,6 +105,8 @@ export class MediaAssetsService {
         width: asset.file.width,
         height: asset.file.height,
         size: asset.file.size,
+        photographer: asset.file.photographer,
+        captureDate: asset.file.captureDate,
       },
       caption: asset.caption,
       altText: asset.altText,

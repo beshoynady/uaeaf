@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsString, Min, MinLength } from 'class-validator';
+import { IsDateString, IsInt, IsOptional, IsString, Min, MinLength } from 'class-validator';
 
 /** Request-body shape for `mediaAssets.file`. Deliberately excludes
  *  `checksum` — nothing in the upload path computes/verifies one yet
@@ -41,4 +41,15 @@ export class MediaFileDto {
   @IsString()
   @MinLength(1)
   storageKey: string;
+
+  @ApiProperty({ description: 'Photographer credit.', required: false })
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  photographer?: string;
+
+  @ApiProperty({ description: 'When the photo was actually taken.', required: false })
+  @IsOptional()
+  @IsDateString()
+  captureDate?: string;
 }

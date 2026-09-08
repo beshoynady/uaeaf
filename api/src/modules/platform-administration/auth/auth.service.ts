@@ -5,11 +5,8 @@ import bcrypt from 'bcryptjs';
 import { Types } from 'mongoose';
 import type { StringValue } from 'ms';
 import { UsersService } from '../users/users.service.js';
-import { RolesService } from '../roles/roles.service.js';
-import { PermissionsService } from '../permissions/permissions.service.js';
 import { AuthSessionsService } from '../auth-sessions/auth-sessions.service.js';
 import type { JwtPayload, RefreshTokenPayload } from '../../../common/interfaces/jwt-payload.interface.js';
-import type { RequiredPermission } from '../../../common/decorators/permissions.decorator.js';
 import { hashToken } from '../../../common/utils/hash-token.util.js';
 import { LoginDto } from './dto/login.dto.js';
 import type { TokenResponse } from './interfaces/token-response.interface.js';
@@ -23,17 +20,20 @@ interface RequestContext {
 }
 
 /**
- * Implements the login/refresh flow described in BE-PLAN-010 §4.3–§4.4:
- * the access token embeds a flattened permission set resolved at
- * login/refresh time; PermissionsGuard reads that embedded set and never
- * queries users/roles/permissions per request.
+ * Implements the login/refresh flow of BE-PLAN-010 §4.3, with §4.4 amended
+ * by the owner's 2026-09-07 token decision: the access token embeds the
+ * user's `roleIds` and no permissions at all. Resolving roles to permissions
+ * is JwtStrategy's job, once per request, so nothing this service mints can
+ * become stale.
+ *
+ * That is why neither RolesService nor PermissionsService is injected here
+ * any more — the roleIds are read straight off the user document, and this
+ * service no longer has an opinion about what they permit.
  */
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
-    private readonly rolesService: RolesService,
-    private readonly permissionsService: PermissionsService,
     private readonly authSessionsService: AuthSessionsService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
@@ -60,9 +60,14 @@ export class AuthService {
     // must not extend it, or a locked account could be kept locked
     // indefinitely by repeated hammering.
     if (user.lockedUntil && user.lockedUntil > new Date()) {
-      throw new UnauthorizedException(
-        'Account temporarily locked after repeated failed login attempts. Try again later.',
-      );
+      // Deliberately distinguishable from a wrong password: the login screen
+      // states the wait rather than letting someone retry into a wall. The
+      // `code` is what it reads (ADR-0058); the disclosure itself is the
+      // pre-existing decision this message already made.
+      throw new UnauthorizedException({
+        code: 'accountLocked',
+        message: 'Account temporarily locked after repeated failed login attempts. Try again later.',
+      });
     }
 
     if (user.accountStatus !== 'Active') {
@@ -76,15 +81,15 @@ export class AuthService {
     }
 
     const userId = user._id.toString();
-    const permissions = await this.resolvePermissions(user.roleIds);
     await this.usersService.recordSuccessfulLogin(userId);
-    const tokens = await this.issueTokens(userId, permissions, context);
+    const tokens = await this.issueTokens(userId, user.roleIds, context);
     return { accessToken: tokens.accessToken, refreshToken: tokens.refreshToken };
   }
 
   /**
-   * Re-resolves roleIds/permissionIds/accountStatus at mint time (BE-PLAN-010
-   * §4.3) — the refresh token itself carries no permissions. Also now
+   * Re-reads the user's roleIds and accountStatus at mint time (BE-PLAN-010
+   * §4.3), so a role assigned or withdrawn since the last login is picked
+   * up by the new access token. Also now
    * checks the token's `authSessions` row (auth-security-audit-2026-09-05.md
    * P0 #4): a revoked session, or a session already rotated into a newer
    * one, means this exact refresh token is dead even though its JWT
@@ -139,8 +144,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token.');
     }
 
-    const permissions = await this.resolvePermissions(user.roleIds);
-    const tokens = await this.issueTokens(payload.sub, permissions, context);
+    const tokens = await this.issueTokens(payload.sub, user.roleIds, context);
     // Rotation: the presented token is now permanently spent — any future
     // attempt to use it again hits the replacedBySessionId check above.
     await this.authSessionsService.markReplaced(session._id, tokens.sessionId);
@@ -172,18 +176,6 @@ export class AuthService {
     await this.authSessionsService.revokeAllForUser(userId);
   }
 
-  private async resolvePermissions(roleIds: Types.ObjectId[]): Promise<RequiredPermission[]> {
-    const roles = await Promise.all(roleIds.map((id) => this.rolesService.findById(id.toString())));
-    const permissionIds = new Set(
-      roles.flatMap((role) => role?.permissionIds.map((id) => id.toString()) ?? []),
-    );
-    const permissions = await Promise.all(
-      [...permissionIds].map((id) => this.permissionsService.findById(id)),
-    );
-    return permissions
-      .filter((permission): permission is NonNullable<typeof permission> => permission !== null)
-      .map((permission) => ({ resourceType: permission.resourceType, action: permission.action }));
-  }
 
   /** Also creates the `authSessions` row the refresh token belongs to
    *  (auth-security-audit-2026-09-05.md P0 #4) — `sessionId` is returned so
@@ -192,7 +184,7 @@ export class AuthService {
    *  the client, it's never part of the public API surface. */
   private async issueTokens(
     userId: string,
-    permissions: RequiredPermission[],
+    roleIds: Types.ObjectId[],
     context: RequestContext,
   ): Promise<TokenResponse & { sessionId: Types.ObjectId }> {
     const secret = this.getSecret();
@@ -203,7 +195,11 @@ export class AuthService {
     // `type` distinguishes access from refresh (auth-security-audit-
     // 2026-09-05.md P1) — same secret signs both, so without this claim a
     // refresh token could pass JwtStrategy as a valid access token.
-    const payload: JwtPayload = { sub: userId, type: 'access', permissions };
+    const payload: JwtPayload = {
+      sub: userId,
+      type: 'access',
+      roleIds: roleIds.map((id) => id.toString()),
+    };
     const refreshPayload: RefreshTokenPayload = {
       sub: userId,
       type: 'refresh',

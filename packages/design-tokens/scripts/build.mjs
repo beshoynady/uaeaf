@@ -155,7 +155,19 @@ function main() {
   // composition only — components MUST NOT consume them directly (Chapter 7 §7.7, enforced by lint §3.26,
   // not by omitting them from the build).
   const invariantResolved = resolveTree(structuredClone(primitives));
-  const baseVars = { ...flatten(invariantResolved, [], {}), ...flatten({ color: { brand: brandResolved.color.brand } }, [], {}) };
+  // `color.accent.*` ships alongside `color.brand.*`, not instead of it. Both
+  // live in tokens/brand/ and both are theme-invariant, but only brand was
+  // being emitted — so the Role/Accent layer ADR-0051 declared Active
+  // (registry DT-COLOR-015) existed in JSON and in nothing a stylesheet
+  // could reference. Consumers were left with two bad options: hardcode the
+  // hex, or reach past the layer into `--color-steel-blue-500`, which
+  // Chapter 7 §7.7 forbids. Found 2026-09-08 while implementing the auth
+  // screens. Purely additive: no existing variable changes name or value.
+  const baseVars = {
+    ...flatten(invariantResolved, [], {}),
+    ...flatten({ color: { brand: brandResolved.color.brand } }, [], {}),
+    ...flatten({ color: { accent: brandResolved.color.accent } }, [], {}),
+  };
   let baseCss = cssBlock(':root', baseVars);
 
   // ADR-0052 — mandatory prefers-reduced-motion support (Chapter 5 §5.8, already-documented rule,

@@ -40,6 +40,21 @@ export class MediaFile {
    *  `docs/audits/media-gallery-open-decisions.md`). */
   @Prop({ type: String, default: null })
   checksum: string | null;
+
+  /** Photographer credit, free text (not `LocalizedText` — a person's name
+   *  isn't bilingual content). `null` until supplied at upload time; no
+   *  automatic EXIF extraction exists. Added because the Album Detail
+   *  lightbox displays this prominently ("تصوير: ...") and previously had
+   *  no backing field anywhere (design↔schema mapping pilot, 2026-09-07). */
+  @Prop({ type: String, default: null })
+  photographer: string | null;
+
+  /** When the photo was actually taken, distinct from `BaseSchema`'s audit
+   *  timestamps (which record when the DB document was created/updated, not
+   *  when the shutter was pressed). `null` until supplied at upload time; no
+   *  automatic EXIF extraction exists. Same origin as `photographer` above. */
+  @Prop({ type: Date, default: null })
+  captureDate: Date | null;
 }
 
 export const MediaFileSchema = SchemaFactory.createForClass(MediaFile);

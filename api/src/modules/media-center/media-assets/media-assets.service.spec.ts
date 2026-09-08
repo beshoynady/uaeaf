@@ -72,6 +72,64 @@ describe('MediaAssetsService', () => {
         }),
       );
     });
+
+    it('defaults file.photographer/captureDate to null when omitted', async () => {
+      const repository = makeRepository();
+      const albumModel = makeAlbumModel();
+      repository.create.mockResolvedValue({ albumId: null } as unknown as MediaAssetDocument);
+      const service = new MediaAssetsService(repository, albumModel);
+
+      await service.create(baseDto);
+
+      expect(repository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          file: expect.objectContaining({ photographer: null, captureDate: null }),
+        }),
+      );
+    });
+
+    it('stores the supplied file.photographer and parses captureDate to a Date', async () => {
+      const repository = makeRepository();
+      const albumModel = makeAlbumModel();
+      repository.create.mockResolvedValue({ albumId: null } as unknown as MediaAssetDocument);
+      const service = new MediaAssetsService(repository, albumModel);
+
+      await service.create({
+        ...baseDto,
+        file: { ...baseDto.file, photographer: 'Ahmed Al Obaidli', captureDate: '2026-03-15' },
+      });
+
+      expect(repository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          file: expect.objectContaining({
+            photographer: 'Ahmed Al Obaidli',
+            captureDate: new Date('2026-03-15'),
+          }),
+        }),
+      );
+    });
+  });
+
+  describe('toPublicResponse', () => {
+    it('includes photographer and captureDate in the public file shape', () => {
+      const repository = makeRepository();
+      const albumModel = makeAlbumModel();
+      const service = new MediaAssetsService(repository, albumModel);
+      const captureDate = new Date('2026-03-15');
+      const asset = {
+        _id: new Types.ObjectId(),
+        file: { ...baseDto.file, checksum: null, photographer: 'Ahmed Al Obaidli', captureDate },
+        caption: baseDto.caption,
+        altText: baseDto.altText,
+        displayOrder: baseDto.displayOrder,
+        isFeatured: false,
+      } as unknown as MediaAssetDocument;
+
+      const result = service.toPublicResponse(asset);
+
+      expect(result.file.photographer).toBe('Ahmed Al Obaidli');
+      expect(result.file.captureDate).toBe(captureDate);
+    });
   });
 
   describe('remove', () => {

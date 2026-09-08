@@ -13,6 +13,12 @@
       "decelerate": { "value": "cubic-bezier(0,0,0.2,1)", "type": "cubicBezier" },
       "accelerate": { "value": "cubic-bezier(0.4,0,1,1)", "type": "cubicBezier" },
       "spring": { "value": "cubic-bezier(0.34,1.56,0.64,1)", "type": "cubicBezier", "comment": "Reserved for record/medal celebratory moments (L8 §SP.7) only" }
+    },
+    "ascent": {
+      "angle": { "value": "45deg", "type": "other", "comment": "ADR-0059 §D7. Measured from the four stroke geometries of the identity motif (\"نقطة الارتقاء / The Rise\", Chapter 1 §2.1): 44.09°, 45.14°, 44.15°, mean 44.46°. Rounded to 45° for an exact 1:1 pixel-grid slope. §D7.1: this vector is brand geometry, NOT reading direction — it MUST NOT mirror under RTL." },
+      "offset": { "value": "{space.4}", "type": "spacing", "comment": "Translate magnitude on BOTH axes. Equal x and y is what makes the vector 45° — the angle above is descriptive, this is the value that produces it." },
+      "stagger": { "value": "60ms", "type": "duration", "comment": "Chapter 5 §5.7: 40–80ms between elements. 60ms is the midpoint." },
+      "stagger-steps": { "value": "10", "type": "other", "comment": "Chapter 5 §5.7 caps total stagger at 600ms; 10 × 60ms is exactly that ceiling. Elements past the tenth reuse the last delay rather than extending the sequence." }
     }
   }
 }

@@ -18,6 +18,14 @@ export class Role extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   name: LocalizedText;
 
+  /** What this role is for, in the administrator's own words — shown beside
+   *  the name wherever roles are assigned. Added 2026-09-07: `name` alone
+   *  ("News Approver") does not tell an administrator handing out access
+   *  what the role actually permits, which is exactly the moment a wrong
+   *  grant happens. Nullable so existing seeded roles stay valid. */
+  @Prop({ type: LocalizedTextSchema, default: null })
+  description: LocalizedText | null;
+
   @Prop({ type: [Types.ObjectId], ref: 'Permission', default: [] })
   permissionIds: Types.ObjectId[];
 

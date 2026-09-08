@@ -1,0 +1,112 @@
+/*
+ * Motion derived from the identity itself.
+ *
+ * Chapter 1 §2.1 names the mark "نقطة الارتقاء / The Rise": four diagonal
+ * strokes reading as ascent. ADR-0059 §D7 measured those strokes at a mean
+ * 44.46° and fixed the system value at 45°, and §D7.1 established that the
+ * ascent vector is brand geometry rather than reading direction — so it MUST
+ * NOT mirror under RTL. CSS `transform` is physical and never mirrors, which
+ * is why the offsets below are written as `translate()` and not as anything
+ * logical. That is the correct behaviour here, not an oversight to fix.
+ *
+ * Every rule obeys ADR-0009: `transform` and `opacity` only.
+ */
+
+@property --rise-index {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+/* The ascent runs lower-left → upper-right, read off the motif's own
+   geometry: the long green stroke runs from (557.6, 265.0) to (614.9, 207.5)
+   in the source viewBox, and smaller Y is higher on screen. An element
+   therefore *enters from* the lower-left and settles at rest. */
+@keyframes uaeaf-rise {
+  from {
+    opacity: 0;
+    transform: translate(calc(-1 * var(--motion-ascent-offset)), var(--motion-ascent-offset));
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
+
+/* Scroll reveal deliberately does NOT touch opacity. A scroll-driven
+   animation is the one kind whose end state a static render — a crawler, a
+   print, a screenshot — is not guaranteed to reach, and Chapter 14 makes
+   indexability a hard requirement. Moving an already-opaque element costs
+   nothing if the animation never runs, and `transform` produces no layout
+   shift either way (Chapter 5 §5.9, CLS < 0.1). */
+@keyframes uaeaf-rise-track {
+  from {
+    transform: translate(calc(-1 * var(--motion-ascent-offset)), var(--motion-ascent-offset));
+  }
+  to {
+    transform: translate(0, 0);
+  }
+}
+
+/*
+ * Entrance on load. Used above the fold, where the animation is certain to
+ * complete. `both` holds the start frame during the delay, so a staggered
+ * item does not flash at full opacity before its turn.
+ *
+ * Chapter 5 §5.7: 40–80ms per step, 600ms total. `--motion-ascent-stagger`
+ * is 60ms and `--motion-ascent-stagger-steps` is 10, so the clamp is the
+ * ceiling rather than a number chosen here — an eleventh item shares the
+ * tenth's delay instead of pushing the sequence past 600ms.
+ */
+.rise-in {
+  animation: uaeaf-rise var(--motion-duration-base) var(--motion-easing-decelerate) both;
+  animation-delay: calc(
+    min(var(--rise-index), var(--motion-ascent-stagger-steps)) * var(--motion-ascent-stagger)
+  );
+}
+
+/*
+ * Reveal on scroll, driven by the element's own position rather than by a
+ * clock — so a list staggers itself as it crosses the viewport edge and needs
+ * no per-item delay at all.
+ *
+ * Guarded twice, and the outer guard is load-bearing: `animation-timeline`
+ * ignores `animation-duration`, so neither the global `* { animation-duration:
+ * 0.01ms }` reset nor the zeroed duration tokens stop a scroll-driven
+ * animation. Chapter 5 §5.8 is only honoured here because the whole block is
+ * inside `no-preference`.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .rise-scroll {
+      animation: uaeaf-rise-track both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 30%;
+    }
+  }
+}
+
+/*
+ * Celebratory. Chapter 5 §5.6 reserves `slower` + `spring` for "record/medal
+ * celebratory moments" and nothing else; `--motion-transition-celebratory`
+ * was built for exactly this and had never been consumed anywhere.
+ * Its one sanctioned home on the public site is the National Records page.
+ */
+@keyframes uaeaf-rise-celebratory {
+  from {
+    opacity: 0;
+    transform: translate(calc(-1 * var(--motion-ascent-offset)), var(--motion-ascent-offset))
+      scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+.rise-celebratory {
+  animation: uaeaf-rise-celebratory var(--motion-transition-celebratory) both;
+  animation-delay: calc(
+    min(var(--rise-index), var(--motion-ascent-stagger-steps)) * var(--motion-ascent-stagger)
+  );
+}

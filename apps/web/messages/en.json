@@ -1,0 +1,93 @@
+{
+  "Metadata": {
+    "title": "UAE Athletics Federation | الاتحاد الإماراتي لألعاب القوى",
+    "description": "UAEAF Digital Ecosystem"
+  },
+  "Nav": {
+    "home": "Home",
+    "about": "About the Federation",
+    "clubs": "Clubs",
+    "members": "Members",
+    "tournaments": "Tournaments",
+    "federationEvents": "Federation Events",
+    "news": "News & Articles",
+    "media": "Media Center",
+    "contact": "Contact Us"
+  },
+  "Legal": {
+    "accessibility": "Accessibility Statement",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Use",
+    "sitemap": "Sitemap"
+  },
+  "Social": {
+    "tiktok": "TikTok",
+    "facebook": "Facebook",
+    "youtube": "YouTube",
+    "x": "X",
+    "instagram": "Instagram"
+  },
+  "Header": {
+    "skipLink": "Skip to main content",
+    "mainNav": "Main navigation",
+    "homeAriaLabel": "Home — UAE Athletics Federation",
+    "switchToDarkMode": "Switch to dark mode",
+    "switchToLightMode": "Switch to light mode",
+    "search": "Search",
+    "switchLanguage": "Switch to Arabic",
+    "menu": "Navigation menu"
+  },
+  "Footer": {
+    "brandName": "UAE Athletics Federation",
+    "brandDescription": "The official governing body for athletics in the United Arab Emirates, a member of World Athletics and the Asian Athletics Federation.",
+    "quickLinksNav": "Quick Links",
+    "legalNav": "Legal Links",
+    "quickLinksTitle": "Quick Links",
+    "locationTitle": "Location",
+    "mapCardCity": "Zayed Sports City",
+    "mapCardRegion": "Abu Dhabi, UAE",
+    "contactTitle": "Contact",
+    "address": "Zayed Sports City, Abu Dhabi, United Arab Emirates",
+    "hours": "Sun–Thu, 08:00–15:00",
+    "helpCenter": "Help Center",
+    "copyright": "© 2026 UAE Athletics Federation. All rights reserved."
+  },
+  "HomePage": {
+    "title": "UAE Athletics Federation",
+    "description": "The site shell (header and footer) is ready. Homepage sections are in progress."
+  },
+  "Pages": {
+    "news": "News",
+    "athletes": "Athletes",
+    "clubs": "Clubs",
+    "coaches": "Coaches",
+    "disciplines": "Disciplines",
+    "records": "National records",
+    "results-rankings": "Results & rankings",
+    "albums": "Photo albums",
+    "videos": "Videos",
+    "board-members": "Board members",
+    "committees": "Committees",
+    "contact-us": "Contact us",
+    "breadcrumbLabel": "Breadcrumb"
+  },
+  "Sections": {
+    "boardMembers": "Board members",
+    "registeredAthletes": "Registered athletes",
+    "contactDetails": "Contact details",
+    "email": "Email",
+    "phones": "Phone numbers",
+    "address": "Address",
+    "officeHours": "Office hours",
+    "website": "Website",
+    "map": "Location on the map",
+    "openMap": "Open the map",
+    "socialLinks": "Social links"
+  },
+  "NotFound": {
+    "title": "Page not found",
+    "description": "The link you opened does not point to a page on this site. It may still be in preparation, or its address may have changed.",
+    "backHome": "Back to the homepage",
+    "available": "Pages available now"
+  }
+}

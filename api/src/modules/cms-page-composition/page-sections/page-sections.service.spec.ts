@@ -49,11 +49,20 @@ describe('PageSectionsService', () => {
 
     it('keeps only sections inside their visibility window, in displayOrder', async () => {
       const repository = makeRepository();
+      // Minimal but *valid* documents: `findPublicByPage` now maps through
+      // `toPublicResponse`, so fixtures need the fields that mapping reads.
+      const section = (displayOrder: number, visibleFrom: Date | null, visibleUntil: Date | null) => ({
+        _id: new Types.ObjectId(),
+        items: [],
+        displayOrder,
+        visibleFrom,
+        visibleUntil,
+      });
       repository.find.mockResolvedValue([
-        { displayOrder: 2, visibleFrom: null, visibleUntil: null },
-        { displayOrder: 1, visibleFrom: new Date('2026-09-01'), visibleUntil: new Date('2026-09-30') },
-        { displayOrder: 3, visibleFrom: new Date('2026-10-01'), visibleUntil: null }, // not open yet
-        { displayOrder: 4, visibleFrom: null, visibleUntil: new Date('2026-09-10') }, // expired
+        section(2, null, null),
+        section(1, new Date('2026-09-01'), new Date('2026-09-30')),
+        section(3, new Date('2026-10-01'), null), // not open yet
+        section(4, null, new Date('2026-09-10')), // expired
       ] as never);
       const service = new PageSectionsService(repository);
 
@@ -74,6 +83,80 @@ describe('PageSectionsService', () => {
         enabled: true,
         visibility: 'Everyone',
       });
+    });
+  });
+
+  describe('toPublicResponse', () => {
+    const makeDocument = () =>
+      ({
+        _id: new Types.ObjectId(),
+        pageId: new Types.ObjectId(),
+        sectionType: 'HERO',
+        sectionTitle: { en: 'Hero', ar: 'الواجهة' },
+        sectionSubtitle: null,
+        itemLimit: 5,
+        ctaText: { en: 'See all', ar: 'عرض الكل' },
+        ctaUrl: '/news',
+        displayOrder: 1,
+        selectionMode: 'MANUAL',
+        items: [new Types.ObjectId(), new Types.ObjectId()],
+        // Visibility gate — server-side only, must never reach a public reader.
+        enabled: true,
+        visibility: 'Everyone',
+        visibleFrom: new Date('2026-09-01'),
+        visibleUntil: new Date('2026-09-30'),
+        filters: { tag: 'featured' },
+        configuration: { autoplay: true },
+        createdBy: new Types.ObjectId(),
+        updatedBy: new Types.ObjectId(),
+        archivedAt: null,
+        archivedBy: null,
+      }) as never;
+
+    it('exposes what a renderer needs, with items serialised as strings', () => {
+      const service = new PageSectionsService(makeRepository());
+      const document = makeDocument() as unknown as { _id: Types.ObjectId; items: Types.ObjectId[] };
+
+      const result = service.toPublicResponse(document as never);
+
+      expect(result).toEqual({
+        id: document._id.toString(),
+        sectionType: 'HERO',
+        sectionTitle: { en: 'Hero', ar: 'الواجهة' },
+        sectionSubtitle: null,
+        itemLimit: 5,
+        ctaText: { en: 'See all', ar: 'عرض الكل' },
+        ctaUrl: '/news',
+        displayOrder: 1,
+        selectionMode: 'MANUAL',
+        items: document.items.map((id) => id.toString()),
+        configuration: { autoplay: true },
+      });
+    });
+
+    it('strips the visibility gate, the query filters, and the audit trail', () => {
+      const service = new PageSectionsService(makeRepository());
+
+      const result = service.toPublicResponse(makeDocument()) as unknown as Record<string, unknown>;
+
+      // `enabled`/`visibility`/`visibleFrom`/`visibleUntil` already did their
+      // job in `findPublicByPage` — a public reader only ever sees sections
+      // that passed. `filters` is server-side query config, not display data.
+      for (const leaked of [
+        'enabled',
+        'visibility',
+        'visibleFrom',
+        'visibleUntil',
+        'filters',
+        'pageId',
+        'createdBy',
+        'updatedBy',
+        'archivedAt',
+        'archivedBy',
+        '_id',
+      ]) {
+        expect(result).not.toHaveProperty(leaked);
+      }
     });
   });
 });

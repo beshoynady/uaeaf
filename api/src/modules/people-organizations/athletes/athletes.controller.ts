@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, Param, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
@@ -34,6 +34,17 @@ export class AthletesController {
   @Public()
   findAllPublic(@Query() query: PaginationQueryDto) {
     return this.service.findAllPublic(query.page, query.limit);
+  }
+
+  /** Declared before `:id` on purpose — Nest matches in declaration order,
+   *  so a later `export` route would be swallowed by the id parameter and
+   *  answer 404 for a path that exists. */
+  @Get('export')
+  @RequirePermission('athletes', 'Export')
+  @Header('content-type', 'text/csv; charset=utf-8')
+  @Header('content-disposition', 'attachment; filename="athletes.csv"')
+  exportCsv() {
+    return this.service.exportCsv();
   }
 
   @Get(':id')

@@ -5,6 +5,19 @@ import type { AthleteDocument } from './schemas/athlete.schema.js';
 import { CreateAthleteDto } from './dto/create-athlete.dto.js';
 import { AthletePublicResponseDto } from './dto/athlete-public-response.dto.js';
 import type { AthletePublicListResponseDto } from './dto/athlete-public-list-response.dto.js';
+import { toCsv, type CsvColumn } from '../../../common/utils/csv.util.js';
+
+/** Column order for `athletes:Export`. Bilingual fields become two columns
+ *  so neither language is lost to the other. */
+const ATHLETE_EXPORT_COLUMNS: readonly CsvColumn[] = [
+  { key: 'name.ar', header: 'Name (AR)' },
+  { key: 'name.en', header: 'Name (EN)' },
+  { key: 'gender', header: 'Gender' },
+  { key: 'dateOfBirth', header: 'Date of birth' },
+  { key: 'residencyType', header: 'Residency' },
+  { key: 'federationName.ar', header: 'Federation (AR)' },
+  { key: 'federationName.en', header: 'Federation (EN)' },
+];
 
 /** Implements: athletes collection, Domain 2 — People & Organizations
  *  (FigJam node `80:6020`). Plain CRUD — the Local/Guest profile-linkage
@@ -29,6 +42,28 @@ export class AthletesService {
 
   async findAll(): Promise<AthleteDocument[]> {
     return this.repository.find();
+  }
+
+  /**
+   * Every live athlete as a spreadsheet, behind `athletes:Export`.
+   *
+   * Reads through `find()` so the export inherits the soft-delete scope —
+   * an export that bypassed it would hand out records the platform treats
+   * as deleted.
+   *
+   * The reference columns (`nationalityId`, `disciplineIds`) are absent
+   * rather than dumped as ObjectIds: a spreadsheet of `68a9f...` answers no
+   * question anyone opens this file to ask. Resolving them to country and
+   * discipline names needs a join and is a separate slice — see the build
+   * plan. `dateOfBirth` IS included: it is `[SENSITIVE-MINOR]` (ADR-0028)
+   * and so absent from the public shape, but anyone holding `Export` also
+   * holds `Read`, which already returns it per record.
+   */
+  async exportCsv(): Promise<string> {
+    return toCsv(
+      (await this.repository.find()) as unknown as Record<string, unknown>[],
+      ATHLETE_EXPORT_COLUMNS,
+    );
   }
 
   async findById(id: string): Promise<AthleteDocument | null> {

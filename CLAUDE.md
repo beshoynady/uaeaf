@@ -44,6 +44,19 @@ If sources conflict, STOP and report the conflict instead of guessing.
 
 ---
 
+## 1a. DESIGN DECISIONS UNDER FIGMA UNAVAILABILITY
+
+When Figma tooling is unavailable and a genuine responsive/layout/visual decision is required to fix a real, evidenced defect:
+
+1. Do NOT invent values. Derive strictly from the already-approved Design System Framework (primarily Chapter 5 — Grid/Layout/Breakpoints — and any directly analogous pattern already implemented elsewhere in the codebase).
+1a.1. Before deriving anything from the Design System chapters, first check `docs/product/` — specifically `01-Information-Architecture.md` §12 and the relevant page specification's "Responsive Behavior" section — for behavior already recorded as **built**. A recorded as-built behavior is evidence of the approved Figma composition and must be reported (and reconciled per §1) rather than re-derived from first principles. Derivation from the Design System chapters applies only where `docs/product/` records nothing.
+2. Every individual decision (breakpoint value, column count, gutter, ordering) MUST cite the exact chapter/section/table row it derives from. A decision with no citation is a guess and must be classified as `DESIGN DECISION REQUIRED` instead.
+3. Label the resulting work `PENDING FIGMA BACK-SYNC` in the report, listing every new visual state that has no corresponding Figma frame yet — for review once Figma access returns.
+4. Do NOT touch Figma itself until access is explicitly confirmed restored by the user.
+5. This does not relax §2 (No Arbitrary Values) or §13 (Responsive Design) — it defines the one path by which a real, cited design-system rule (not taste) may still be applied to fix an evidenced defect while Figma is unreachable.
+
+---
+
 # 2. NON-NEGOTIABLE DESIGN RULE
 
 Do not redesign the UAEAF product based on personal taste.

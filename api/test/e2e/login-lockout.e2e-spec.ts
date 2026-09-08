@@ -67,13 +67,17 @@ describe('Login brute-force lockout (e2e)', () => {
     expect(afterFive!.lockedUntil!.getTime()).toBeGreaterThan(Date.now());
 
     // 6th attempt, during active lockout, with the CORRECT password: still
-    // rejected, with a distinct message, and does not increment further.
+    // rejected, distinguishably, and does not increment further.
     const sixthAttempt = await request(app.getHttpServer())
       .post(apiPath('/auth/login'))
       .send({ email: 'lockout@uaeaf.ae', password: correctPassword })
       .expect(401);
-    expect(sixthAttempt.body.message).not.toBe(fifthAttempt.body.message);
-    expect(sixthAttempt.body.message.toLowerCase()).toContain('locked');
+    // The distinction is the code, not the sentence (ADR-0058). The login
+    // screen needs to tell a lockout from a wrong password to know whether a
+    // countdown applies; matching the prose made that depend on wording
+    // nothing enforced.
+    expect(sixthAttempt.body.code).toBe('accountLocked');
+    expect(fifthAttempt.body.code).toBe('unauthorized');
     const afterSix = await userModel.findById(seeded._id);
     expect(afterSix!.failedLoginAttempts).toBe(5);
 

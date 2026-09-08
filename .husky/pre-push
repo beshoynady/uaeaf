@@ -1,0 +1,41 @@
+echo "Checking api/openapi.json is in sync with the current API..."
+
+# Plain `npm run generate:openapi` can hang indefinitely rather than fail if
+# MONGODB_URI is unreachable (Mongoose keeps retrying) -- discovered while
+# testing this hook. `exec`'s built-in `timeout` option kills it after 45s
+# instead. Using `exec` (single command string), not `spawn` with an args
+# array, specifically to avoid needing `shell:true` + an args array together
+# (Node flags that combination as a shell-injection risk) while still
+# resolving `npm.cmd` correctly on Windows.
+node -e "
+const { exec } = require('child_process');
+const child = exec('npm run generate:openapi', { cwd: 'api', timeout: 45000 });
+child.stdout.pipe(process.stdout);
+child.stderr.pipe(process.stderr);
+child.on('exit', (code, signal) => {
+  if (signal) {
+    console.error('\n[pre-push] openapi.json check timed out after 45s -- likely no reachable MongoDB (MONGODB_URI in api/.env). Point it at a reachable Mongo (local or Atlas) and retry, or use \'git push --no-verify\' to skip this check for this push.\n');
+    process.exitCode = 1;
+  } else {
+    process.exitCode = code ?? 1;
+  }
+});
+"
+generate_status=$?
+
+if [ $generate_status -ne 0 ]; then
+  exit 1
+fi
+
+if ! git diff --exit-code -- api/openapi.json > /dev/null; then
+  echo ""
+  echo "api/openapi.json is out of date with the current controllers/DTOs."
+  echo "Run 'npm run generate:openapi' inside api/, review the diff, and commit"
+  echo "the result before pushing (this is exactly what the 2026-09-07 audit"
+  echo "flagged going stale twice -- see"
+  echo "docs/audits/project-status-and-frontend-kickoff-2026-09-07.md Part 8)."
+  echo ""
+  exit 1
+fi
+
+echo "openapi.json is in sync."

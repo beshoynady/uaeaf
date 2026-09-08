@@ -126,6 +126,22 @@ describe('AlbumsService.getPublicBySlug (integration)', () => {
     expect(result!.relatedAlbums.map((related) => related.id)).toEqual([sharing._id.toString()]);
   });
 
+  it('exposes the denormalized championshipName, defaulting to null when not set', async () => {
+    const withName = await albumModel.create({
+      ...baseAlbum,
+      publicationState: 'Published',
+      championshipName: { en: 'UAE Athletics Championship 2026', ar: 'بطولة الإمارات لألعاب القوى 2026' },
+    });
+    const withoutName = await albumModel.create({ ...baseAlbum, slug: 'no-championship', publicationState: 'Published' });
+
+    const resultWithName = await albumsService.getPublicBySlug(withName.slug);
+    const resultWithoutName = await albumsService.getPublicBySlug(withoutName.slug);
+
+    expect(resultWithName!.album.championshipName?.en).toBe('UAE Athletics Championship 2026');
+    expect(resultWithName!.album.championshipName?.ar).toBe('بطولة الإمارات لألعاب القوى 2026');
+    expect(resultWithoutName!.album.championshipName).toBeNull();
+  });
+
   it('returns an empty related-albums list, without error, when the album has no associations', async () => {
     const album = await albumModel.create({ ...baseAlbum, publicationState: 'Published' });
 

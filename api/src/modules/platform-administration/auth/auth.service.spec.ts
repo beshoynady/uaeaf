@@ -7,21 +7,16 @@ import bcrypt from 'bcryptjs';
 import { Types } from 'mongoose';
 import { AuthService } from './auth.service.js';
 import { UsersService } from '../users/users.service.js';
-import { RolesService } from '../roles/roles.service.js';
-import { PermissionsService } from '../permissions/permissions.service.js';
 import { AuthSessionsService } from '../auth-sessions/auth-sessions.service.js';
 import { hashToken } from '../../../common/utils/hash-token.util.js';
 
 describe('AuthService', () => {
   let service: AuthService;
   let usersService: jest.Mocked<UsersService>;
-  let rolesService: jest.Mocked<RolesService>;
-  let permissionsService: jest.Mocked<PermissionsService>;
   let authSessionsService: jest.Mocked<AuthSessionsService>;
   let jwtService: jest.Mocked<JwtService>;
 
   const roleId = new Types.ObjectId();
-  const permissionId = new Types.ObjectId();
   const context = { ipAddress: '203.0.113.7', userAgent: 'jest' };
 
   beforeEach(async () => {
@@ -37,8 +32,6 @@ describe('AuthService', () => {
             recordFailedLogin: jest.fn(),
           },
         },
-        { provide: RolesService, useValue: { findById: jest.fn() } },
-        { provide: PermissionsService, useValue: { findById: jest.fn() } },
         {
           provide: AuthSessionsService,
           useValue: {
@@ -68,8 +61,6 @@ describe('AuthService', () => {
 
     service = module.get(AuthService);
     usersService = module.get(UsersService);
-    rolesService = module.get(RolesService);
-    permissionsService = module.get(PermissionsService);
     authSessionsService = module.get(AuthSessionsService);
     jwtService = module.get(JwtService);
 
@@ -143,7 +134,6 @@ describe('AuthService', () => {
       user.failedLoginAttempts = 5;
       user.lockedUntil = new Date(Date.now() - 60 * 1000);
       usersService.findByEmail.mockResolvedValue(user as never);
-      rolesService.findById.mockResolvedValue({ permissionIds: [] } as never);
       jwtService.sign.mockReturnValueOnce('access-token').mockReturnValueOnce('refresh-token');
 
       const result = await service.login({ email: 'sara@uaeaf.ae', password: 'correct-password' }, context);
@@ -152,11 +142,9 @@ describe('AuthService', () => {
       expect(usersService.recordSuccessfulLogin).toHaveBeenCalledWith(user._id.toString());
     });
 
-    it('issues tokens with the resolved permission set on success, and creates an AuthSession row (auth-security-audit-2026-09-05.md P0 #4)', async () => {
+    it("embeds the user's roleIds — never their permissions — and creates an AuthSession row (auth-security-audit-2026-09-05.md P0 #4)", async () => {
       const user = await activeUserWithLocalPassword('correct-password');
       usersService.findByEmail.mockResolvedValue(user as never);
-      rolesService.findById.mockResolvedValue({ permissionIds: [permissionId] } as never);
-      permissionsService.findById.mockResolvedValue({ resourceType: 'users', action: 'Read' } as never);
       jwtService.sign.mockReturnValueOnce('access-token').mockReturnValueOnce('refresh-token');
 
       const result = await service.login({ email: 'sara@uaeaf.ae', password: 'correct-password' }, context);
@@ -167,11 +155,15 @@ describe('AuthService', () => {
         Record<string, unknown>,
         Record<string, unknown>,
       ];
+      // Owner decision 2026-09-07 (supersedes BE-PLAN-010 4.4): the token
+      // carries identity and role membership only. Authority is read from
+      // the database on every request, so nothing here can go stale.
       expect(accessPayload).toEqual({
         sub: user._id.toString(),
         type: 'access',
-        permissions: [{ resourceType: 'users', action: 'Read' }],
+        roleIds: [roleId.toString()],
       });
+      expect(accessPayload.permissions).toBeUndefined();
       expect(accessOptions).toMatchObject({ expiresIn: '15m' });
       const [refreshPayload, refreshOptions] = jwtService.sign.mock.calls[1] as [
         Record<string, unknown>,
@@ -275,7 +267,7 @@ describe('AuthService', () => {
       expect(authSessionsService.revoke).toHaveBeenCalledWith(session._id);
     });
 
-    it('issues a fresh access token reflecting current permissions and rotates the session', async () => {
+    it('issues a fresh access token reflecting the current roleIds and rotates the session', async () => {
       const session = validSession();
       jwtService.verifyAsync.mockResolvedValue({
         sub: '507f1f77bcf86cd799439011',
@@ -288,15 +280,16 @@ describe('AuthService', () => {
         accountStatus: 'Active',
         roleIds: [roleId],
       } as never);
-      rolesService.findById.mockResolvedValue({ permissionIds: [permissionId] } as never);
-      permissionsService.findById.mockResolvedValue({ resourceType: 'roles', action: 'Update' } as never);
       jwtService.sign.mockReturnValueOnce('new-access-token').mockReturnValueOnce('new-refresh-token');
 
       const result = await service.refresh('some-refresh-token', context);
 
       expect(result.accessToken).toBe('new-access-token');
       const [accessPayload] = jwtService.sign.mock.calls[0] as [Record<string, unknown>];
-      expect(accessPayload.permissions).toEqual([{ resourceType: 'roles', action: 'Update' }]);
+      // Re-read from the user document at mint time, so a role assigned or
+      // withdrawn since the last login is picked up here.
+      expect(accessPayload.roleIds).toEqual([roleId.toString()]);
+      expect(accessPayload.permissions).toBeUndefined();
       // The old session is linked forward to the new one, not deleted — a
       // second presentation of the old token now hits the reuse-detection
       // branch above instead of silently succeeding again.

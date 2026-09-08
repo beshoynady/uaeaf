@@ -4,6 +4,7 @@ import { AlbumsRepository } from './albums.repository.js';
 import type { AlbumDocument } from './schemas/album.schema.js';
 import { CreateAlbumDto } from './dto/create-album.dto.js';
 import { AlbumPublicResponseDto, RelatedAlbumSummaryDto } from './dto/album-public-response.dto.js';
+import { AlbumDetailPageResponseDto } from './dto/album-detail-page-response.dto.js';
 import { MediaAssetsService } from '../media-assets/media-assets.service.js';
 import { MediaAssetPublicResponseDto } from '../media-assets/dto/media-asset-public-response.dto.js';
 import { isDuplicateKeyError, duplicateKeyField } from '../../../common/utils/mongo-errors.util.js';
@@ -51,6 +52,7 @@ export class AlbumsService {
           role: association.role ?? 'Related',
           displayOrder: association.displayOrder ?? 0,
         })),
+        championshipName: dto.championshipName ?? null,
         coverImageId: dto.coverImageId ? new Types.ObjectId(dto.coverImageId) : null,
         displayOrder: dto.displayOrder,
         publicationState: dto.publicationState,
@@ -97,11 +99,7 @@ export class AlbumsService {
    *  its visible photos in display order, and a "related albums" strip of
    *  other published albums sharing any association target (2026-09-04
    *  follow-on to ADR-0054). */
-  async getPublicBySlug(slug: string): Promise<{
-    album: AlbumPublicResponseDto;
-    mediaAssets: MediaAssetPublicResponseDto[];
-    relatedAlbums: RelatedAlbumSummaryDto[];
-  } | null> {
+  async getPublicBySlug(slug: string): Promise<AlbumDetailPageResponseDto | null> {
     const album = await this.repository.findPublishedBySlug(slug);
     if (!album) {
       return null;
@@ -126,6 +124,7 @@ export class AlbumsService {
       slug: album.slug,
       description: album.description,
       contentCategoryId: album.contentCategoryId.toString(),
+      championshipName: album.championshipName,
       coverImageId: album.coverImageId ? album.coverImageId.toString() : null,
       publishedAt: album.publishedAt,
       tags: album.tags,

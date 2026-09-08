@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiExtraModels, ApiOkResponse, ApiTags, getSchemaPath } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator.js';
@@ -7,6 +7,7 @@ import { Public } from '../../../common/decorators/public.decorator.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 import { AlbumsService } from './albums.service.js';
 import { CreateAlbumDto } from './dto/create-album.dto.js';
+import { AlbumDetailPageResponseDto } from './dto/album-detail-page-response.dto.js';
 
 /** Implements: albums collection, Domain 5 — Media Center. */
 @ApiTags('albums')
@@ -33,7 +34,16 @@ export class AlbumsController {
    *  ADR-0054). */
   @Get('public/:slug')
   @Public()
-  getPublicBySlug(@Param('slug') slug: string) {
+  @ApiExtraModels(AlbumDetailPageResponseDto)
+  @ApiOkResponse({
+    description:
+      'The album detail page composite (album + visible photos + related albums). Literally `null` ' +
+      'in the response body — still HTTP 200, not 404 — when no Published album matches `slug`; the ' +
+      'caller is responsible for treating a null body as not-found (matches the `AthleteProfilesService` ' +
+      'convention this endpoint was built from).',
+    schema: { oneOf: [{ $ref: getSchemaPath(AlbumDetailPageResponseDto) }, { type: 'null' }] },
+  })
+  getPublicBySlug(@Param('slug') slug: string): Promise<AlbumDetailPageResponseDto | null> {
     return this.service.getPublicBySlug(slug);
   }
 

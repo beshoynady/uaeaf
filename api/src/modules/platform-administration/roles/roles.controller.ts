@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
@@ -32,17 +32,24 @@ export class RolesController {
     return this.rolesService.findAll();
   }
 
+  /** 404s rather than answering 200 with an empty body for an unknown or
+   *  archived id (fixed 2026-09-08). */
   @Get(':id')
   @RequirePermission('roles', 'Read')
-  findOne(@Param('id') id: string) {
-    return this.rolesService.findById(id);
+  async findOne(@Param('id') id: string) {
+    const role = await this.rolesService.findById(id);
+    if (!role) {
+      throw new NotFoundException('Role not found.');
+    }
+    return role;
   }
 
-  /** Rejected by RolesService if isSystemRole=true. */
+  /** Renames the role and, when the body carries one, rewrites its
+   *  description. Rejected by RolesService if isSystemRole=true. */
   @Patch(':id/name')
   @RequirePermission('roles', 'Update')
   rename(@Param('id') id: string, @Body() dto: RenameRoleDto) {
-    return this.rolesService.rename(id, dto.name);
+    return this.rolesService.rename(id, dto.name, dto.description);
   }
 
   @Patch(':id/permissions')
@@ -59,7 +66,8 @@ export class RolesController {
     );
   }
 
-  /** Soft-deletes the role — rejected by RolesService if isSystemRole=true. */
+  /** Archives the role and clears it from every account holding it.
+   *  Rejected if the role is a system role, unknown, or already archived. */
   @Delete(':id')
   @RequirePermission('roles', 'Delete')
   remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {

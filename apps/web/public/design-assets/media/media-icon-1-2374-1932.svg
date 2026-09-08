@@ -1,0 +1,13 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="68" height="8" viewBox="0 0 68 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Pagination Dots" clip-path="url(#clip0_0_8)">
+<circle id="Dot 1" cx="4" cy="4" r="4" fill="#CCCCCC"/>
+<circle id="Dot 2" cx="20" cy="4" r="4" fill="#CCCCCC"/>
+<circle id="Dot 3" cx="36" cy="4" r="4" fill="#CCCCCC"/>
+<ellipse id="Dot 4 (active)" cx="58" cy="4" rx="10" ry="4" fill="#00843D"/>
+</g>
+<defs>
+<clipPath id="clip0_0_8">
+<rect width="68" height="8" fill="white"/>
+</clipPath>
+</defs>
+</svg>

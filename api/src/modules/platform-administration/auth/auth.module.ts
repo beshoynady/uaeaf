@@ -3,7 +3,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { UsersModule } from '../users/users.module.js';
 import { RolesModule } from '../roles/roles.module.js';
-import { PermissionsModule } from '../permissions/permissions.module.js';
 import { AuthSessionsModule } from '../auth-sessions/auth-sessions.module.js';
 import { AuthService } from './auth.service.js';
 import { AuthController } from './auth.controller.js';
@@ -12,8 +11,11 @@ import { JwtStrategy } from './strategies/jwt.strategy.js';
 @Module({
   imports: [
     UsersModule,
+    // For JwtStrategy, not AuthService: every authenticated request resolves
+    // its roleIds to permissions through RolesService (owner decision
+    // 2026-09-07). PermissionsModule is reached transitively through
+    // RolesModule and is no longer imported here directly.
     RolesModule,
-    PermissionsModule,
     // Session/revocation layer (auth-security-audit-2026-09-05.md P0 #4) —
     // logout/logout-all and refresh-token rotation both live in AuthService,
     // this just supplies the persisted AuthSession record they act on.
