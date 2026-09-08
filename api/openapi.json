@@ -15,9 +15,9 @@
         ]
       }
     },
-    "/api/v1/permissions": {
+    "/permissions": {
       "post": {
-        "operationId": "PermissionsController_create_v1",
+        "operationId": "PermissionsController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -39,7 +39,7 @@
         ]
       },
       "get": {
-        "operationId": "PermissionsController_findAll_v1",
+        "operationId": "PermissionsController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -51,9 +51,9 @@
         ]
       }
     },
-    "/api/v1/permissions/{id}": {
+    "/permissions/{id}": {
       "get": {
-        "operationId": "PermissionsController_findOne_v1",
+        "operationId": "PermissionsController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -74,9 +74,9 @@
         ]
       }
     },
-    "/api/v1/roles": {
+    "/roles": {
       "post": {
-        "operationId": "RolesController_create_v1",
+        "operationId": "RolesController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -98,7 +98,7 @@
         ]
       },
       "get": {
-        "operationId": "RolesController_findAll_v1",
+        "operationId": "RolesController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -110,9 +110,9 @@
         ]
       }
     },
-    "/api/v1/roles/{id}": {
+    "/roles/{id}": {
       "get": {
-        "operationId": "RolesController_findOne_v1",
+        "operationId": "RolesController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -133,7 +133,7 @@
         ]
       },
       "delete": {
-        "operationId": "RolesController_remove_v1",
+        "operationId": "RolesController_remove",
         "parameters": [
           {
             "name": "id",
@@ -154,9 +154,9 @@
         ]
       }
     },
-    "/api/v1/roles/{id}/name": {
+    "/roles/{id}/name": {
       "patch": {
-        "operationId": "RolesController_rename_v1",
+        "operationId": "RolesController_rename",
         "parameters": [
           {
             "name": "id",
@@ -187,9 +187,9 @@
         ]
       }
     },
-    "/api/v1/roles/{id}/permissions": {
+    "/roles/{id}/permissions": {
       "patch": {
-        "operationId": "RolesController_updatePermissions_v1",
+        "operationId": "RolesController_updatePermissions",
         "parameters": [
           {
             "name": "id",
@@ -220,9 +220,9 @@
         ]
       }
     },
-    "/api/v1/users": {
+    "/users": {
       "post": {
-        "operationId": "UsersController_create_v1",
+        "operationId": "UsersController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -244,7 +244,7 @@
         ]
       },
       "get": {
-        "operationId": "UsersController_findAll_v1",
+        "operationId": "UsersController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -256,9 +256,9 @@
         ]
       }
     },
-    "/api/v1/users/me": {
+    "/users/me": {
       "get": {
-        "operationId": "UsersController_me_v1",
+        "operationId": "UsersController_me",
         "parameters": [],
         "responses": {
           "200": {
@@ -270,9 +270,9 @@
         ]
       }
     },
-    "/api/v1/users/{id}": {
+    "/users/{id}": {
       "get": {
-        "operationId": "UsersController_findOne_v1",
+        "operationId": "UsersController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -293,9 +293,9 @@
         ]
       }
     },
-    "/api/v1/users/{id}/roles": {
+    "/users/{id}/roles": {
       "patch": {
-        "operationId": "UsersController_assignRoles_v1",
+        "operationId": "UsersController_assignRoles",
         "parameters": [
           {
             "name": "id",
@@ -326,9 +326,9 @@
         ]
       }
     },
-    "/api/v1/auth/login": {
+    "/auth/login": {
       "post": {
-        "operationId": "AuthController_login_v1",
+        "operationId": "AuthController_login",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -350,9 +350,9 @@
         ]
       }
     },
-    "/api/v1/auth/refresh": {
+    "/auth/refresh": {
       "post": {
-        "operationId": "AuthController_refresh_v1",
+        "operationId": "AuthController_refresh",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -374,9 +374,9 @@
         ]
       }
     },
-    "/api/v1/auth/logout": {
+    "/auth/logout": {
       "post": {
-        "operationId": "AuthController_logout_v1",
+        "operationId": "AuthController_logout",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -398,9 +398,9 @@
         ]
       }
     },
-    "/api/v1/auth/logout-all": {
+    "/auth/logout-all": {
       "post": {
-        "operationId": "AuthController_logoutAll_v1",
+        "operationId": "AuthController_logoutAll",
         "parameters": [],
         "responses": {
           "204": {
@@ -412,9 +412,9 @@
         ]
       }
     },
-    "/api/v1/workflow-definitions": {
+    "/workflow-definitions": {
       "post": {
-        "operationId": "WorkflowDefinitionsController_create_v1",
+        "operationId": "WorkflowDefinitionsController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -436,7 +436,7 @@
         ]
       },
       "get": {
-        "operationId": "WorkflowDefinitionsController_findAll_v1",
+        "operationId": "WorkflowDefinitionsController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -448,9 +448,9 @@
         ]
       }
     },
-    "/api/v1/workflow-definitions/{id}": {
+    "/workflow-definitions/{id}": {
       "get": {
-        "operationId": "WorkflowDefinitionsController_findOne_v1",
+        "operationId": "WorkflowDefinitionsController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -471,7 +471,7 @@
         ]
       },
       "delete": {
-        "operationId": "WorkflowDefinitionsController_remove_v1",
+        "operationId": "WorkflowDefinitionsController_remove",
         "parameters": [
           {
             "name": "id",
@@ -492,9 +492,9 @@
         ]
       }
     },
-    "/api/v1/workflow-steps": {
+    "/workflow-steps": {
       "post": {
-        "operationId": "WorkflowStepsController_create_v1",
+        "operationId": "WorkflowStepsController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -516,7 +516,7 @@
         ]
       },
       "get": {
-        "operationId": "WorkflowStepsController_findByDefinition_v1",
+        "operationId": "WorkflowStepsController_findByDefinition",
         "parameters": [
           {
             "name": "workflowDefinitionId",
@@ -537,9 +537,9 @@
         ]
       }
     },
-    "/api/v1/workflow-steps/{id}": {
+    "/workflow-steps/{id}": {
       "get": {
-        "operationId": "WorkflowStepsController_findOne_v1",
+        "operationId": "WorkflowStepsController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -560,7 +560,7 @@
         ]
       },
       "delete": {
-        "operationId": "WorkflowStepsController_remove_v1",
+        "operationId": "WorkflowStepsController_remove",
         "parameters": [
           {
             "name": "id",
@@ -581,9 +581,9 @@
         ]
       }
     },
-    "/api/v1/revisions": {
+    "/revisions": {
       "post": {
-        "operationId": "RevisionsController_create_v1",
+        "operationId": "RevisionsController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -605,9 +605,9 @@
         ]
       }
     },
-    "/api/v1/revisions/{id}": {
+    "/revisions/{id}": {
       "get": {
-        "operationId": "RevisionsController_findOne_v1",
+        "operationId": "RevisionsController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -628,9 +628,9 @@
         ]
       }
     },
-    "/api/v1/publications/{id}/unpublish": {
+    "/publications/{id}/unpublish": {
       "patch": {
-        "operationId": "PublicationsController_unpublish_v1",
+        "operationId": "PublicationsController_unpublish",
         "parameters": [
           {
             "name": "id",
@@ -651,9 +651,9 @@
         ]
       }
     },
-    "/api/v1/publications/{id}/archive": {
+    "/publications/{id}/archive": {
       "patch": {
-        "operationId": "PublicationsController_archive_v1",
+        "operationId": "PublicationsController_archive",
         "parameters": [
           {
             "name": "id",
@@ -674,9 +674,9 @@
         ]
       }
     },
-    "/api/v1/publications/{entityType}/{entityId}/public": {
+    "/publications/{entityType}/{entityId}/public": {
       "get": {
-        "operationId": "PublicationsController_getPublicSnapshot_v1",
+        "operationId": "PublicationsController_getPublicSnapshot",
         "parameters": [
           {
             "name": "entityType",
@@ -705,9 +705,9 @@
         ]
       }
     },
-    "/api/v1/workflow-action-history": {
+    "/workflow-action-history": {
       "get": {
-        "operationId": "WorkflowActionHistoryController_findByInstance_v1",
+        "operationId": "WorkflowActionHistoryController_findByInstance",
         "parameters": [
           {
             "name": "workflowInstanceId",
@@ -728,9 +728,9 @@
         ]
       }
     },
-    "/api/v1/workflow-instances": {
+    "/workflow-instances": {
       "post": {
-        "operationId": "WorkflowInstancesController_create_v1",
+        "operationId": "WorkflowInstancesController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -752,9 +752,9 @@
         ]
       }
     },
-    "/api/v1/workflow-instances/{id}": {
+    "/workflow-instances/{id}": {
       "get": {
-        "operationId": "WorkflowInstancesController_findOne_v1",
+        "operationId": "WorkflowInstancesController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -775,9 +775,9 @@
         ]
       }
     },
-    "/api/v1/workflow-instances/{id}/approve": {
+    "/workflow-instances/{id}/approve": {
       "post": {
-        "operationId": "WorkflowInstancesController_approve_v1",
+        "operationId": "WorkflowInstancesController_approve",
         "parameters": [
           {
             "name": "id",
@@ -808,9 +808,9 @@
         ]
       }
     },
-    "/api/v1/workflow-instances/{id}/reject": {
+    "/workflow-instances/{id}/reject": {
       "post": {
-        "operationId": "WorkflowInstancesController_reject_v1",
+        "operationId": "WorkflowInstancesController_reject",
         "parameters": [
           {
             "name": "id",
@@ -841,9 +841,9 @@
         ]
       }
     },
-    "/api/v1/workflow-instances/{id}/return": {
+    "/workflow-instances/{id}/return": {
       "post": {
-        "operationId": "WorkflowInstancesController_return__v1",
+        "operationId": "WorkflowInstancesController_return_",
         "parameters": [
           {
             "name": "id",
@@ -874,9 +874,9 @@
         ]
       }
     },
-    "/api/v1/workflow-instances/{id}/resubmit": {
+    "/workflow-instances/{id}/resubmit": {
       "post": {
-        "operationId": "WorkflowInstancesController_resubmit_v1",
+        "operationId": "WorkflowInstancesController_resubmit",
         "parameters": [
           {
             "name": "id",
@@ -907,9 +907,9 @@
         ]
       }
     },
-    "/api/v1/workflow-instances/{id}/delegate": {
+    "/workflow-instances/{id}/delegate": {
       "post": {
-        "operationId": "WorkflowInstancesController_delegate_v1",
+        "operationId": "WorkflowInstancesController_delegate",
         "parameters": [
           {
             "name": "id",
@@ -940,9 +940,9 @@
         ]
       }
     },
-    "/api/v1/workflow-instances/{id}/cancel": {
+    "/workflow-instances/{id}/cancel": {
       "post": {
-        "operationId": "WorkflowInstancesController_cancel_v1",
+        "operationId": "WorkflowInstancesController_cancel",
         "parameters": [
           {
             "name": "id",
@@ -963,9 +963,9 @@
         ]
       }
     },
-    "/api/v1/workflow-policies": {
+    "/workflow-policies": {
       "post": {
-        "operationId": "WorkflowPoliciesController_create_v1",
+        "operationId": "WorkflowPoliciesController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -987,7 +987,7 @@
         ]
       },
       "get": {
-        "operationId": "WorkflowPoliciesController_findAll_v1",
+        "operationId": "WorkflowPoliciesController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -999,9 +999,9 @@
         ]
       }
     },
-    "/api/v1/workflow-policies/{id}": {
+    "/workflow-policies/{id}": {
       "get": {
-        "operationId": "WorkflowPoliciesController_findOne_v1",
+        "operationId": "WorkflowPoliciesController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -1022,9 +1022,9 @@
         ]
       }
     },
-    "/api/v1/notifications": {
+    "/notifications": {
       "post": {
-        "operationId": "NotificationsController_create_v1",
+        "operationId": "NotificationsController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1046,9 +1046,9 @@
         ]
       }
     },
-    "/api/v1/notifications/me": {
+    "/notifications/me": {
       "get": {
-        "operationId": "NotificationsController_findMine_v1",
+        "operationId": "NotificationsController_findMine",
         "parameters": [],
         "responses": {
           "200": {
@@ -1060,9 +1060,9 @@
         ]
       }
     },
-    "/api/v1/notifications/{id}/read": {
+    "/notifications/{id}/read": {
       "patch": {
-        "operationId": "NotificationsController_markRead_v1",
+        "operationId": "NotificationsController_markRead",
         "parameters": [
           {
             "name": "id",
@@ -1083,9 +1083,9 @@
         ]
       }
     },
-    "/api/v1/countries": {
+    "/countries": {
       "post": {
-        "operationId": "CountriesController_create_v1",
+        "operationId": "CountriesController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1107,7 +1107,7 @@
         ]
       },
       "get": {
-        "operationId": "CountriesController_findAll_v1",
+        "operationId": "CountriesController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -1119,9 +1119,9 @@
         ]
       }
     },
-    "/api/v1/countries/{id}": {
+    "/countries/{id}": {
       "get": {
-        "operationId": "CountriesController_findOne_v1",
+        "operationId": "CountriesController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -1142,7 +1142,7 @@
         ]
       },
       "delete": {
-        "operationId": "CountriesController_remove_v1",
+        "operationId": "CountriesController_remove",
         "parameters": [
           {
             "name": "id",
@@ -1163,9 +1163,9 @@
         ]
       }
     },
-    "/api/v1/age-categories": {
+    "/age-categories": {
       "post": {
-        "operationId": "AgeCategoriesController_create_v1",
+        "operationId": "AgeCategoriesController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1187,7 +1187,7 @@
         ]
       },
       "get": {
-        "operationId": "AgeCategoriesController_findAll_v1",
+        "operationId": "AgeCategoriesController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -1199,9 +1199,9 @@
         ]
       }
     },
-    "/api/v1/age-categories/{id}": {
+    "/age-categories/{id}": {
       "get": {
-        "operationId": "AgeCategoriesController_findOne_v1",
+        "operationId": "AgeCategoriesController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -1222,7 +1222,7 @@
         ]
       },
       "delete": {
-        "operationId": "AgeCategoriesController_remove_v1",
+        "operationId": "AgeCategoriesController_remove",
         "parameters": [
           {
             "name": "id",
@@ -1243,9 +1243,9 @@
         ]
       }
     },
-    "/api/v1/disciplines": {
+    "/disciplines": {
       "post": {
-        "operationId": "DisciplinesController_create_v1",
+        "operationId": "DisciplinesController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1267,7 +1267,7 @@
         ]
       },
       "get": {
-        "operationId": "DisciplinesController_findAll_v1",
+        "operationId": "DisciplinesController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -1279,9 +1279,9 @@
         ]
       }
     },
-    "/api/v1/disciplines/{id}": {
+    "/disciplines/{id}": {
       "get": {
-        "operationId": "DisciplinesController_findOne_v1",
+        "operationId": "DisciplinesController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -1302,7 +1302,7 @@
         ]
       },
       "delete": {
-        "operationId": "DisciplinesController_remove_v1",
+        "operationId": "DisciplinesController_remove",
         "parameters": [
           {
             "name": "id",
@@ -1323,9 +1323,9 @@
         ]
       }
     },
-    "/api/v1/venues": {
+    "/venues": {
       "post": {
-        "operationId": "VenuesController_create_v1",
+        "operationId": "VenuesController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1347,7 +1347,7 @@
         ]
       },
       "get": {
-        "operationId": "VenuesController_findAll_v1",
+        "operationId": "VenuesController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -1359,9 +1359,9 @@
         ]
       }
     },
-    "/api/v1/venues/{id}": {
+    "/venues/{id}": {
       "get": {
-        "operationId": "VenuesController_findOne_v1",
+        "operationId": "VenuesController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -1382,7 +1382,7 @@
         ]
       },
       "delete": {
-        "operationId": "VenuesController_remove_v1",
+        "operationId": "VenuesController_remove",
         "parameters": [
           {
             "name": "id",
@@ -1403,9 +1403,9 @@
         ]
       }
     },
-    "/api/v1/media-assets": {
+    "/media-assets": {
       "post": {
-        "operationId": "MediaAssetsController_create_v1",
+        "operationId": "MediaAssetsController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1427,7 +1427,7 @@
         ]
       },
       "get": {
-        "operationId": "MediaAssetsController_findAll_v1",
+        "operationId": "MediaAssetsController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -1439,9 +1439,9 @@
         ]
       }
     },
-    "/api/v1/media-assets/{id}": {
+    "/media-assets/{id}": {
       "get": {
-        "operationId": "MediaAssetsController_findOne_v1",
+        "operationId": "MediaAssetsController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -1462,7 +1462,7 @@
         ]
       },
       "delete": {
-        "operationId": "MediaAssetsController_remove_v1",
+        "operationId": "MediaAssetsController_remove",
         "parameters": [
           {
             "name": "id",
@@ -1483,9 +1483,9 @@
         ]
       }
     },
-    "/api/v1/clubs": {
+    "/clubs": {
       "post": {
-        "operationId": "ClubsController_create_v1",
+        "operationId": "ClubsController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1507,7 +1507,7 @@
         ]
       },
       "get": {
-        "operationId": "ClubsController_findAll_v1",
+        "operationId": "ClubsController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -1519,9 +1519,9 @@
         ]
       }
     },
-    "/api/v1/clubs/{id}": {
+    "/clubs/{id}": {
       "get": {
-        "operationId": "ClubsController_findOne_v1",
+        "operationId": "ClubsController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -1542,7 +1542,7 @@
         ]
       },
       "delete": {
-        "operationId": "ClubsController_remove_v1",
+        "operationId": "ClubsController_remove",
         "parameters": [
           {
             "name": "id",
@@ -1563,9 +1563,9 @@
         ]
       }
     },
-    "/api/v1/athletes": {
+    "/athletes": {
       "post": {
-        "operationId": "AthletesController_create_v1",
+        "operationId": "AthletesController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1587,7 +1587,7 @@
         ]
       },
       "get": {
-        "operationId": "AthletesController_findAll_v1",
+        "operationId": "AthletesController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -1599,9 +1599,9 @@
         ]
       }
     },
-    "/api/v1/athletes/public": {
+    "/athletes/public": {
       "get": {
-        "operationId": "AthletesController_findAllPublic_v1",
+        "operationId": "AthletesController_findAllPublic",
         "parameters": [
           {
             "name": "page",
@@ -1634,9 +1634,9 @@
         ]
       }
     },
-    "/api/v1/athletes/{id}": {
+    "/athletes/{id}": {
       "get": {
-        "operationId": "AthletesController_findOne_v1",
+        "operationId": "AthletesController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -1657,7 +1657,7 @@
         ]
       },
       "delete": {
-        "operationId": "AthletesController_remove_v1",
+        "operationId": "AthletesController_remove",
         "parameters": [
           {
             "name": "id",
@@ -1678,9 +1678,9 @@
         ]
       }
     },
-    "/api/v1/coaches": {
+    "/coaches": {
       "post": {
-        "operationId": "CoachesController_create_v1",
+        "operationId": "CoachesController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1702,7 +1702,7 @@
         ]
       },
       "get": {
-        "operationId": "CoachesController_findAll_v1",
+        "operationId": "CoachesController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -1714,9 +1714,9 @@
         ]
       }
     },
-    "/api/v1/coaches/{id}": {
+    "/coaches/{id}": {
       "get": {
-        "operationId": "CoachesController_findOne_v1",
+        "operationId": "CoachesController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -1737,7 +1737,7 @@
         ]
       },
       "delete": {
-        "operationId": "CoachesController_remove_v1",
+        "operationId": "CoachesController_remove",
         "parameters": [
           {
             "name": "id",
@@ -1758,9 +1758,9 @@
         ]
       }
     },
-    "/api/v1/officials": {
+    "/officials": {
       "post": {
-        "operationId": "OfficialsController_create_v1",
+        "operationId": "OfficialsController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1782,7 +1782,7 @@
         ]
       },
       "get": {
-        "operationId": "OfficialsController_findAll_v1",
+        "operationId": "OfficialsController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -1794,9 +1794,9 @@
         ]
       }
     },
-    "/api/v1/officials/public": {
+    "/officials/public": {
       "get": {
-        "operationId": "OfficialsController_findAllPublic_v1",
+        "operationId": "OfficialsController_findAllPublic",
         "parameters": [
           {
             "name": "page",
@@ -1829,9 +1829,9 @@
         ]
       }
     },
-    "/api/v1/officials/{id}": {
+    "/officials/{id}": {
       "get": {
-        "operationId": "OfficialsController_findOne_v1",
+        "operationId": "OfficialsController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -1852,7 +1852,7 @@
         ]
       },
       "delete": {
-        "operationId": "OfficialsController_remove_v1",
+        "operationId": "OfficialsController_remove",
         "parameters": [
           {
             "name": "id",
@@ -1873,9 +1873,9 @@
         ]
       }
     },
-    "/api/v1/athlete-profiles": {
+    "/athlete-profiles": {
       "post": {
-        "operationId": "AthleteProfilesController_create_v1",
+        "operationId": "AthleteProfilesController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -1897,7 +1897,7 @@
         ]
       },
       "get": {
-        "operationId": "AthleteProfilesController_findAll_v1",
+        "operationId": "AthleteProfilesController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -1909,9 +1909,9 @@
         ]
       }
     },
-    "/api/v1/athlete-profiles/public/{slug}": {
+    "/athlete-profiles/public/{slug}": {
       "get": {
-        "operationId": "AthleteProfilesController_getPublicBySlug_v1",
+        "operationId": "AthleteProfilesController_getPublicBySlug",
         "parameters": [
           {
             "name": "slug",
@@ -1932,9 +1932,9 @@
         ]
       }
     },
-    "/api/v1/athlete-profiles/{id}": {
+    "/athlete-profiles/{id}": {
       "get": {
-        "operationId": "AthleteProfilesController_findOne_v1",
+        "operationId": "AthleteProfilesController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -1955,7 +1955,7 @@
         ]
       },
       "delete": {
-        "operationId": "AthleteProfilesController_remove_v1",
+        "operationId": "AthleteProfilesController_remove",
         "parameters": [
           {
             "name": "id",
@@ -1976,9 +1976,9 @@
         ]
       }
     },
-    "/api/v1/official-profiles": {
+    "/official-profiles": {
       "post": {
-        "operationId": "OfficialProfilesController_create_v1",
+        "operationId": "OfficialProfilesController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2000,7 +2000,7 @@
         ]
       },
       "get": {
-        "operationId": "OfficialProfilesController_findAll_v1",
+        "operationId": "OfficialProfilesController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -2012,9 +2012,9 @@
         ]
       }
     },
-    "/api/v1/official-profiles/public/{slug}": {
+    "/official-profiles/public/{slug}": {
       "get": {
-        "operationId": "OfficialProfilesController_getPublicBySlug_v1",
+        "operationId": "OfficialProfilesController_getPublicBySlug",
         "parameters": [
           {
             "name": "slug",
@@ -2035,9 +2035,9 @@
         ]
       }
     },
-    "/api/v1/official-profiles/{id}": {
+    "/official-profiles/{id}": {
       "get": {
-        "operationId": "OfficialProfilesController_findOne_v1",
+        "operationId": "OfficialProfilesController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -2058,7 +2058,7 @@
         ]
       },
       "delete": {
-        "operationId": "OfficialProfilesController_remove_v1",
+        "operationId": "OfficialProfilesController_remove",
         "parameters": [
           {
             "name": "id",
@@ -2079,9 +2079,9 @@
         ]
       }
     },
-    "/api/v1/athlete-club-history": {
+    "/athlete-club-history": {
       "post": {
-        "operationId": "AthleteClubHistoryController_create_v1",
+        "operationId": "AthleteClubHistoryController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2103,7 +2103,7 @@
         ]
       },
       "get": {
-        "operationId": "AthleteClubHistoryController_findAll_v1",
+        "operationId": "AthleteClubHistoryController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -2115,9 +2115,9 @@
         ]
       }
     },
-    "/api/v1/athlete-club-history/{id}": {
+    "/athlete-club-history/{id}": {
       "get": {
-        "operationId": "AthleteClubHistoryController_findOne_v1",
+        "operationId": "AthleteClubHistoryController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -2138,7 +2138,7 @@
         ]
       },
       "delete": {
-        "operationId": "AthleteClubHistoryController_remove_v1",
+        "operationId": "AthleteClubHistoryController_remove",
         "parameters": [
           {
             "name": "id",
@@ -2159,9 +2159,9 @@
         ]
       }
     },
-    "/api/v1/athlete-club-history/end-current/{athleteId}": {
+    "/athlete-club-history/end-current/{athleteId}": {
       "patch": {
-        "operationId": "AthleteClubHistoryController_endCurrent_v1",
+        "operationId": "AthleteClubHistoryController_endCurrent",
         "parameters": [
           {
             "name": "athleteId",
@@ -2192,9 +2192,9 @@
         ]
       }
     },
-    "/api/v1/coach-club-history": {
+    "/coach-club-history": {
       "post": {
-        "operationId": "CoachClubHistoryController_create_v1",
+        "operationId": "CoachClubHistoryController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2216,7 +2216,7 @@
         ]
       },
       "get": {
-        "operationId": "CoachClubHistoryController_findAll_v1",
+        "operationId": "CoachClubHistoryController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -2228,9 +2228,9 @@
         ]
       }
     },
-    "/api/v1/coach-club-history/{id}": {
+    "/coach-club-history/{id}": {
       "get": {
-        "operationId": "CoachClubHistoryController_findOne_v1",
+        "operationId": "CoachClubHistoryController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -2251,7 +2251,7 @@
         ]
       },
       "delete": {
-        "operationId": "CoachClubHistoryController_remove_v1",
+        "operationId": "CoachClubHistoryController_remove",
         "parameters": [
           {
             "name": "id",
@@ -2272,9 +2272,9 @@
         ]
       }
     },
-    "/api/v1/coach-club-history/end-current/{coachId}": {
+    "/coach-club-history/end-current/{coachId}": {
       "patch": {
-        "operationId": "CoachClubHistoryController_endCurrent_v1",
+        "operationId": "CoachClubHistoryController_endCurrent",
         "parameters": [
           {
             "name": "coachId",
@@ -2305,9 +2305,9 @@
         ]
       }
     },
-    "/api/v1/official-club-history": {
+    "/official-club-history": {
       "post": {
-        "operationId": "OfficialClubHistoryController_create_v1",
+        "operationId": "OfficialClubHistoryController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2329,7 +2329,7 @@
         ]
       },
       "get": {
-        "operationId": "OfficialClubHistoryController_findAll_v1",
+        "operationId": "OfficialClubHistoryController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -2341,9 +2341,9 @@
         ]
       }
     },
-    "/api/v1/official-club-history/{id}": {
+    "/official-club-history/{id}": {
       "get": {
-        "operationId": "OfficialClubHistoryController_findOne_v1",
+        "operationId": "OfficialClubHistoryController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -2364,7 +2364,7 @@
         ]
       },
       "delete": {
-        "operationId": "OfficialClubHistoryController_remove_v1",
+        "operationId": "OfficialClubHistoryController_remove",
         "parameters": [
           {
             "name": "id",
@@ -2385,9 +2385,9 @@
         ]
       }
     },
-    "/api/v1/official-club-history/end-current/{officialId}": {
+    "/official-club-history/end-current/{officialId}": {
       "patch": {
-        "operationId": "OfficialClubHistoryController_endCurrent_v1",
+        "operationId": "OfficialClubHistoryController_endCurrent",
         "parameters": [
           {
             "name": "officialId",
@@ -2418,9 +2418,9 @@
         ]
       }
     },
-    "/api/v1/athlete-coach-history": {
+    "/athlete-coach-history": {
       "post": {
-        "operationId": "AthleteCoachHistoryController_create_v1",
+        "operationId": "AthleteCoachHistoryController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2442,7 +2442,7 @@
         ]
       },
       "get": {
-        "operationId": "AthleteCoachHistoryController_findAll_v1",
+        "operationId": "AthleteCoachHistoryController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -2454,9 +2454,9 @@
         ]
       }
     },
-    "/api/v1/athlete-coach-history/current/{athleteId}": {
+    "/athlete-coach-history/current/{athleteId}": {
       "get": {
-        "operationId": "AthleteCoachHistoryController_getCurrentCoach_v1",
+        "operationId": "AthleteCoachHistoryController_getCurrentCoach",
         "parameters": [
           {
             "name": "athleteId",
@@ -2477,9 +2477,9 @@
         ]
       }
     },
-    "/api/v1/athlete-coach-history/{id}": {
+    "/athlete-coach-history/{id}": {
       "get": {
-        "operationId": "AthleteCoachHistoryController_findOne_v1",
+        "operationId": "AthleteCoachHistoryController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -2500,7 +2500,7 @@
         ]
       },
       "delete": {
-        "operationId": "AthleteCoachHistoryController_remove_v1",
+        "operationId": "AthleteCoachHistoryController_remove",
         "parameters": [
           {
             "name": "id",
@@ -2521,9 +2521,9 @@
         ]
       }
     },
-    "/api/v1/athlete-national-team-history": {
+    "/athlete-national-team-history": {
       "post": {
-        "operationId": "AthleteNationalTeamHistoryController_create_v1",
+        "operationId": "AthleteNationalTeamHistoryController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2545,7 +2545,7 @@
         ]
       },
       "get": {
-        "operationId": "AthleteNationalTeamHistoryController_findAll_v1",
+        "operationId": "AthleteNationalTeamHistoryController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -2557,9 +2557,9 @@
         ]
       }
     },
-    "/api/v1/athlete-national-team-history/current/{athleteId}": {
+    "/athlete-national-team-history/current/{athleteId}": {
       "get": {
-        "operationId": "AthleteNationalTeamHistoryController_isCurrentlyOnNationalTeam_v1",
+        "operationId": "AthleteNationalTeamHistoryController_isCurrentlyOnNationalTeam",
         "parameters": [
           {
             "name": "athleteId",
@@ -2580,9 +2580,9 @@
         ]
       }
     },
-    "/api/v1/athlete-national-team-history/{id}": {
+    "/athlete-national-team-history/{id}": {
       "get": {
-        "operationId": "AthleteNationalTeamHistoryController_findOne_v1",
+        "operationId": "AthleteNationalTeamHistoryController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -2603,7 +2603,7 @@
         ]
       },
       "delete": {
-        "operationId": "AthleteNationalTeamHistoryController_remove_v1",
+        "operationId": "AthleteNationalTeamHistoryController_remove",
         "parameters": [
           {
             "name": "id",
@@ -2624,9 +2624,9 @@
         ]
       }
     },
-    "/api/v1/official-assignments": {
+    "/official-assignments": {
       "post": {
-        "operationId": "OfficialAssignmentsController_create_v1",
+        "operationId": "OfficialAssignmentsController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2648,7 +2648,7 @@
         ]
       },
       "get": {
-        "operationId": "OfficialAssignmentsController_findAll_v1",
+        "operationId": "OfficialAssignmentsController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -2660,9 +2660,9 @@
         ]
       }
     },
-    "/api/v1/official-assignments/{id}": {
+    "/official-assignments/{id}": {
       "get": {
-        "operationId": "OfficialAssignmentsController_findOne_v1",
+        "operationId": "OfficialAssignmentsController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -2683,7 +2683,7 @@
         ]
       },
       "delete": {
-        "operationId": "OfficialAssignmentsController_remove_v1",
+        "operationId": "OfficialAssignmentsController_remove",
         "parameters": [
           {
             "name": "id",
@@ -2704,9 +2704,9 @@
         ]
       }
     },
-    "/api/v1/club-teams": {
+    "/club-teams": {
       "post": {
-        "operationId": "ClubTeamsController_create_v1",
+        "operationId": "ClubTeamsController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2728,7 +2728,7 @@
         ]
       },
       "get": {
-        "operationId": "ClubTeamsController_findAll_v1",
+        "operationId": "ClubTeamsController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -2740,9 +2740,9 @@
         ]
       }
     },
-    "/api/v1/club-teams/{id}": {
+    "/club-teams/{id}": {
       "get": {
-        "operationId": "ClubTeamsController_findOne_v1",
+        "operationId": "ClubTeamsController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -2763,7 +2763,7 @@
         ]
       },
       "delete": {
-        "operationId": "ClubTeamsController_remove_v1",
+        "operationId": "ClubTeamsController_remove",
         "parameters": [
           {
             "name": "id",
@@ -2784,9 +2784,9 @@
         ]
       }
     },
-    "/api/v1/athlete-guardian-relationships": {
+    "/athlete-guardian-relationships": {
       "post": {
-        "operationId": "AthleteGuardianRelationshipsController_create_v1",
+        "operationId": "AthleteGuardianRelationshipsController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2808,7 +2808,7 @@
         ]
       },
       "get": {
-        "operationId": "AthleteGuardianRelationshipsController_findAll_v1",
+        "operationId": "AthleteGuardianRelationshipsController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -2820,9 +2820,9 @@
         ]
       }
     },
-    "/api/v1/athlete-guardian-relationships/{id}": {
+    "/athlete-guardian-relationships/{id}": {
       "get": {
-        "operationId": "AthleteGuardianRelationshipsController_findOne_v1",
+        "operationId": "AthleteGuardianRelationshipsController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -2843,7 +2843,7 @@
         ]
       },
       "delete": {
-        "operationId": "AthleteGuardianRelationshipsController_remove_v1",
+        "operationId": "AthleteGuardianRelationshipsController_remove",
         "parameters": [
           {
             "name": "id",
@@ -2864,9 +2864,9 @@
         ]
       }
     },
-    "/api/v1/albums": {
+    "/albums": {
       "post": {
-        "operationId": "AlbumsController_create_v1",
+        "operationId": "AlbumsController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -2888,7 +2888,7 @@
         ]
       },
       "get": {
-        "operationId": "AlbumsController_findAll_v1",
+        "operationId": "AlbumsController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -2900,9 +2900,9 @@
         ]
       }
     },
-    "/api/v1/albums/public/{slug}": {
+    "/albums/public/{slug}": {
       "get": {
-        "operationId": "AlbumsController_getPublicBySlug_v1",
+        "operationId": "AlbumsController_getPublicBySlug",
         "parameters": [
           {
             "name": "slug",
@@ -2923,9 +2923,9 @@
         ]
       }
     },
-    "/api/v1/albums/{id}": {
+    "/albums/{id}": {
       "get": {
-        "operationId": "AlbumsController_findOne_v1",
+        "operationId": "AlbumsController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -2946,7 +2946,7 @@
         ]
       },
       "delete": {
-        "operationId": "AlbumsController_remove_v1",
+        "operationId": "AlbumsController_remove",
         "parameters": [
           {
             "name": "id",
@@ -2967,9 +2967,9 @@
         ]
       }
     },
-    "/api/v1/albums/{id}/publish": {
+    "/albums/{id}/publish": {
       "patch": {
-        "operationId": "AlbumsController_publish_v1",
+        "operationId": "AlbumsController_publish",
         "parameters": [
           {
             "name": "id",
@@ -2990,9 +2990,9 @@
         ]
       }
     },
-    "/api/v1/videos": {
+    "/videos": {
       "post": {
-        "operationId": "VideosController_create_v1",
+        "operationId": "VideosController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -3014,7 +3014,7 @@
         ]
       },
       "get": {
-        "operationId": "VideosController_findAll_v1",
+        "operationId": "VideosController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -3026,9 +3026,9 @@
         ]
       }
     },
-    "/api/v1/videos/{id}": {
+    "/videos/{id}": {
       "get": {
-        "operationId": "VideosController_findOne_v1",
+        "operationId": "VideosController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -3049,7 +3049,7 @@
         ]
       },
       "delete": {
-        "operationId": "VideosController_remove_v1",
+        "operationId": "VideosController_remove",
         "parameters": [
           {
             "name": "id",
@@ -3070,9 +3070,9 @@
         ]
       }
     },
-    "/api/v1/documents": {
+    "/documents": {
       "post": {
-        "operationId": "DocumentsController_create_v1",
+        "operationId": "DocumentsController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -3094,7 +3094,7 @@
         ]
       },
       "get": {
-        "operationId": "DocumentsController_findAll_v1",
+        "operationId": "DocumentsController_findAll",
         "parameters": [
           {
             "name": "ownerType",
@@ -3123,9 +3123,9 @@
         ]
       }
     },
-    "/api/v1/documents/{id}": {
+    "/documents/{id}": {
       "get": {
-        "operationId": "DocumentsController_findOne_v1",
+        "operationId": "DocumentsController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -3146,7 +3146,7 @@
         ]
       },
       "delete": {
-        "operationId": "DocumentsController_remove_v1",
+        "operationId": "DocumentsController_remove",
         "parameters": [
           {
             "name": "id",
@@ -3167,9 +3167,9 @@
         ]
       }
     },
-    "/api/v1/documents/{id}/public": {
+    "/documents/{id}/public": {
       "get": {
-        "operationId": "DocumentsController_getPublicSnapshot_v1",
+        "operationId": "DocumentsController_getPublicSnapshot",
         "parameters": [
           {
             "name": "id",
@@ -3190,9 +3190,9 @@
         ]
       }
     },
-    "/api/v1/federation": {
+    "/federation": {
       "post": {
-        "operationId": "FederationsController_create_v1",
+        "operationId": "FederationsController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -3214,7 +3214,7 @@
         ]
       },
       "get": {
-        "operationId": "FederationsController_findAll_v1",
+        "operationId": "FederationsController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -3226,9 +3226,9 @@
         ]
       }
     },
-    "/api/v1/federation/{id}": {
+    "/federation/{id}": {
       "get": {
-        "operationId": "FederationsController_findOne_v1",
+        "operationId": "FederationsController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -3249,7 +3249,7 @@
         ]
       },
       "delete": {
-        "operationId": "FederationsController_remove_v1",
+        "operationId": "FederationsController_remove",
         "parameters": [
           {
             "name": "id",
@@ -3270,9 +3270,9 @@
         ]
       }
     },
-    "/api/v1/election-cycles": {
+    "/election-cycles": {
       "post": {
-        "operationId": "ElectionCyclesController_create_v1",
+        "operationId": "ElectionCyclesController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -3294,7 +3294,7 @@
         ]
       },
       "get": {
-        "operationId": "ElectionCyclesController_findAll_v1",
+        "operationId": "ElectionCyclesController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -3306,9 +3306,9 @@
         ]
       }
     },
-    "/api/v1/election-cycles/{id}": {
+    "/election-cycles/{id}": {
       "get": {
-        "operationId": "ElectionCyclesController_findOne_v1",
+        "operationId": "ElectionCyclesController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -3329,7 +3329,7 @@
         ]
       },
       "delete": {
-        "operationId": "ElectionCyclesController_remove_v1",
+        "operationId": "ElectionCyclesController_remove",
         "parameters": [
           {
             "name": "id",
@@ -3350,9 +3350,9 @@
         ]
       }
     },
-    "/api/v1/federation-personnel": {
+    "/federation-personnel": {
       "post": {
-        "operationId": "FederationPersonnelsController_create_v1",
+        "operationId": "FederationPersonnelsController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -3374,7 +3374,7 @@
         ]
       },
       "get": {
-        "operationId": "FederationPersonnelsController_findAll_v1",
+        "operationId": "FederationPersonnelsController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -3386,9 +3386,9 @@
         ]
       }
     },
-    "/api/v1/federation-personnel/public": {
+    "/federation-personnel/public": {
       "get": {
-        "operationId": "FederationPersonnelsController_findAllPublic_v1",
+        "operationId": "FederationPersonnelsController_findAllPublic",
         "parameters": [],
         "responses": {
           "200": {
@@ -3400,9 +3400,9 @@
         ]
       }
     },
-    "/api/v1/federation-personnel/{id}": {
+    "/federation-personnel/{id}": {
       "get": {
-        "operationId": "FederationPersonnelsController_findOne_v1",
+        "operationId": "FederationPersonnelsController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -3423,7 +3423,7 @@
         ]
       },
       "delete": {
-        "operationId": "FederationPersonnelsController_remove_v1",
+        "operationId": "FederationPersonnelsController_remove",
         "parameters": [
           {
             "name": "id",
@@ -3444,9 +3444,9 @@
         ]
       }
     },
-    "/api/v1/federation-appointments": {
+    "/federation-appointments": {
       "post": {
-        "operationId": "FederationAppointmentsController_create_v1",
+        "operationId": "FederationAppointmentsController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -3468,7 +3468,7 @@
         ]
       },
       "get": {
-        "operationId": "FederationAppointmentsController_findAll_v1",
+        "operationId": "FederationAppointmentsController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -3480,9 +3480,9 @@
         ]
       }
     },
-    "/api/v1/federation-appointments/{id}": {
+    "/federation-appointments/{id}": {
       "get": {
-        "operationId": "FederationAppointmentsController_findOne_v1",
+        "operationId": "FederationAppointmentsController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -3503,7 +3503,7 @@
         ]
       },
       "delete": {
-        "operationId": "FederationAppointmentsController_remove_v1",
+        "operationId": "FederationAppointmentsController_remove",
         "parameters": [
           {
             "name": "id",
@@ -3524,9 +3524,9 @@
         ]
       }
     },
-    "/api/v1/committees": {
+    "/committees": {
       "post": {
-        "operationId": "CommitteesController_create_v1",
+        "operationId": "CommitteesController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -3548,7 +3548,7 @@
         ]
       },
       "get": {
-        "operationId": "CommitteesController_findAll_v1",
+        "operationId": "CommitteesController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -3560,9 +3560,9 @@
         ]
       }
     },
-    "/api/v1/committees/{id}": {
+    "/committees/{id}": {
       "get": {
-        "operationId": "CommitteesController_findOne_v1",
+        "operationId": "CommitteesController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -3583,7 +3583,7 @@
         ]
       },
       "delete": {
-        "operationId": "CommitteesController_remove_v1",
+        "operationId": "CommitteesController_remove",
         "parameters": [
           {
             "name": "id",
@@ -3604,9 +3604,9 @@
         ]
       }
     },
-    "/api/v1/committees/{id}/public": {
+    "/committees/{id}/public": {
       "get": {
-        "operationId": "CommitteesController_getPublicSnapshot_v1",
+        "operationId": "CommitteesController_getPublicSnapshot",
         "parameters": [
           {
             "name": "id",
@@ -3627,9 +3627,9 @@
         ]
       }
     },
-    "/api/v1/organizational-structure": {
+    "/organizational-structure": {
       "post": {
-        "operationId": "OrganizationalStructureNodesController_create_v1",
+        "operationId": "OrganizationalStructureNodesController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -3651,7 +3651,7 @@
         ]
       },
       "get": {
-        "operationId": "OrganizationalStructureNodesController_findAll_v1",
+        "operationId": "OrganizationalStructureNodesController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -3663,9 +3663,9 @@
         ]
       }
     },
-    "/api/v1/organizational-structure/{id}": {
+    "/organizational-structure/{id}": {
       "get": {
-        "operationId": "OrganizationalStructureNodesController_findOne_v1",
+        "operationId": "OrganizationalStructureNodesController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -3686,7 +3686,7 @@
         ]
       },
       "delete": {
-        "operationId": "OrganizationalStructureNodesController_remove_v1",
+        "operationId": "OrganizationalStructureNodesController_remove",
         "parameters": [
           {
             "name": "id",
@@ -3707,9 +3707,9 @@
         ]
       }
     },
-    "/api/v1/organizational-structure/{id}/public": {
+    "/organizational-structure/{id}/public": {
       "get": {
-        "operationId": "OrganizationalStructureNodesController_getPublicSnapshot_v1",
+        "operationId": "OrganizationalStructureNodesController_getPublicSnapshot",
         "parameters": [
           {
             "name": "id",
@@ -3730,9 +3730,9 @@
         ]
       }
     },
-    "/api/v1/organizational-structure/{id}/parent": {
+    "/organizational-structure/{id}/parent": {
       "patch": {
-        "operationId": "OrganizationalStructureNodesController_setParent_v1",
+        "operationId": "OrganizationalStructureNodesController_setParent",
         "parameters": [
           {
             "name": "id",
@@ -3763,9 +3763,9 @@
         ]
       }
     },
-    "/api/v1/governance-documents": {
+    "/governance-documents": {
       "post": {
-        "operationId": "GovernanceDocumentsController_create_v1",
+        "operationId": "GovernanceDocumentsController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -3787,7 +3787,7 @@
         ]
       },
       "get": {
-        "operationId": "GovernanceDocumentsController_findAll_v1",
+        "operationId": "GovernanceDocumentsController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -3799,9 +3799,9 @@
         ]
       }
     },
-    "/api/v1/governance-documents/{id}": {
+    "/governance-documents/{id}": {
       "get": {
-        "operationId": "GovernanceDocumentsController_findOne_v1",
+        "operationId": "GovernanceDocumentsController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -3822,7 +3822,7 @@
         ]
       },
       "delete": {
-        "operationId": "GovernanceDocumentsController_remove_v1",
+        "operationId": "GovernanceDocumentsController_remove",
         "parameters": [
           {
             "name": "id",
@@ -3843,9 +3843,9 @@
         ]
       }
     },
-    "/api/v1/governance-documents/{id}/public": {
+    "/governance-documents/{id}/public": {
       "get": {
-        "operationId": "GovernanceDocumentsController_getPublicSnapshot_v1",
+        "operationId": "GovernanceDocumentsController_getPublicSnapshot",
         "parameters": [
           {
             "name": "id",
@@ -3866,9 +3866,9 @@
         ]
       }
     },
-    "/api/v1/vision-mission-page": {
+    "/vision-mission-page": {
       "post": {
-        "operationId": "VisionMissionPagesController_create_v1",
+        "operationId": "VisionMissionPagesController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -3890,7 +3890,7 @@
         ]
       },
       "get": {
-        "operationId": "VisionMissionPagesController_findAll_v1",
+        "operationId": "VisionMissionPagesController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -3902,9 +3902,9 @@
         ]
       }
     },
-    "/api/v1/vision-mission-page/{id}": {
+    "/vision-mission-page/{id}": {
       "get": {
-        "operationId": "VisionMissionPagesController_findOne_v1",
+        "operationId": "VisionMissionPagesController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -3925,7 +3925,7 @@
         ]
       },
       "delete": {
-        "operationId": "VisionMissionPagesController_remove_v1",
+        "operationId": "VisionMissionPagesController_remove",
         "parameters": [
           {
             "name": "id",
@@ -3946,9 +3946,9 @@
         ]
       }
     },
-    "/api/v1/vision-mission-page/{id}/public": {
+    "/vision-mission-page/{id}/public": {
       "get": {
-        "operationId": "VisionMissionPagesController_getPublicSnapshot_v1",
+        "operationId": "VisionMissionPagesController_getPublicSnapshot",
         "parameters": [
           {
             "name": "id",
@@ -3969,9 +3969,9 @@
         ]
       }
     },
-    "/api/v1/strategic-plans-page": {
+    "/strategic-plans-page": {
       "post": {
-        "operationId": "StrategicPlansPagesController_create_v1",
+        "operationId": "StrategicPlansPagesController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -3993,7 +3993,7 @@
         ]
       },
       "get": {
-        "operationId": "StrategicPlansPagesController_findAll_v1",
+        "operationId": "StrategicPlansPagesController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -4005,9 +4005,9 @@
         ]
       }
     },
-    "/api/v1/strategic-plans-page/{id}": {
+    "/strategic-plans-page/{id}": {
       "get": {
-        "operationId": "StrategicPlansPagesController_findOne_v1",
+        "operationId": "StrategicPlansPagesController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -4028,7 +4028,7 @@
         ]
       },
       "delete": {
-        "operationId": "StrategicPlansPagesController_remove_v1",
+        "operationId": "StrategicPlansPagesController_remove",
         "parameters": [
           {
             "name": "id",
@@ -4049,9 +4049,9 @@
         ]
       }
     },
-    "/api/v1/strategic-plans-page/{id}/public": {
+    "/strategic-plans-page/{id}/public": {
       "get": {
-        "operationId": "StrategicPlansPagesController_getPublicSnapshot_v1",
+        "operationId": "StrategicPlansPagesController_getPublicSnapshot",
         "parameters": [
           {
             "name": "id",
@@ -4072,9 +4072,9 @@
         ]
       }
     },
-    "/api/v1/about-federation-page": {
+    "/about-federation-page": {
       "post": {
-        "operationId": "AboutFederationPagesController_create_v1",
+        "operationId": "AboutFederationPagesController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4096,7 +4096,7 @@
         ]
       },
       "get": {
-        "operationId": "AboutFederationPagesController_findAll_v1",
+        "operationId": "AboutFederationPagesController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -4108,9 +4108,9 @@
         ]
       }
     },
-    "/api/v1/about-federation-page/{id}": {
+    "/about-federation-page/{id}": {
       "get": {
-        "operationId": "AboutFederationPagesController_findOne_v1",
+        "operationId": "AboutFederationPagesController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -4131,7 +4131,7 @@
         ]
       },
       "delete": {
-        "operationId": "AboutFederationPagesController_remove_v1",
+        "operationId": "AboutFederationPagesController_remove",
         "parameters": [
           {
             "name": "id",
@@ -4152,9 +4152,9 @@
         ]
       }
     },
-    "/api/v1/about-federation-page/{id}/public": {
+    "/about-federation-page/{id}/public": {
       "get": {
-        "operationId": "AboutFederationPagesController_getPublicSnapshot_v1",
+        "operationId": "AboutFederationPagesController_getPublicSnapshot",
         "parameters": [
           {
             "name": "id",
@@ -4175,9 +4175,9 @@
         ]
       }
     },
-    "/api/v1/president-message-page": {
+    "/president-message-page": {
       "post": {
-        "operationId": "PresidentMessagePagesController_create_v1",
+        "operationId": "PresidentMessagePagesController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4199,7 +4199,7 @@
         ]
       },
       "get": {
-        "operationId": "PresidentMessagePagesController_findAll_v1",
+        "operationId": "PresidentMessagePagesController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -4211,9 +4211,9 @@
         ]
       }
     },
-    "/api/v1/president-message-page/{id}": {
+    "/president-message-page/{id}": {
       "get": {
-        "operationId": "PresidentMessagePagesController_findOne_v1",
+        "operationId": "PresidentMessagePagesController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -4234,7 +4234,7 @@
         ]
       },
       "delete": {
-        "operationId": "PresidentMessagePagesController_remove_v1",
+        "operationId": "PresidentMessagePagesController_remove",
         "parameters": [
           {
             "name": "id",
@@ -4255,9 +4255,9 @@
         ]
       }
     },
-    "/api/v1/president-message-page/{id}/public": {
+    "/president-message-page/{id}/public": {
       "get": {
-        "operationId": "PresidentMessagePagesController_getPublicSnapshot_v1",
+        "operationId": "PresidentMessagePagesController_getPublicSnapshot",
         "parameters": [
           {
             "name": "id",
@@ -4278,9 +4278,9 @@
         ]
       }
     },
-    "/api/v1/committees-page": {
+    "/committees-page": {
       "get": {
-        "operationId": "CommitteesPagesController_get_v1",
+        "operationId": "CommitteesPagesController_get",
         "parameters": [],
         "responses": {
           "200": {
@@ -4292,7 +4292,7 @@
         ]
       },
       "put": {
-        "operationId": "CommitteesPagesController_upsert_v1",
+        "operationId": "CommitteesPagesController_upsert",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4314,9 +4314,9 @@
         ]
       }
     },
-    "/api/v1/board-members-page": {
+    "/board-members-page": {
       "get": {
-        "operationId": "BoardMembersPageController_get_v1",
+        "operationId": "BoardMembersPageController_get",
         "parameters": [],
         "responses": {
           "200": {
@@ -4328,7 +4328,7 @@
         ]
       },
       "put": {
-        "operationId": "BoardMembersPageController_upsert_v1",
+        "operationId": "BoardMembersPageController_upsert",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4350,9 +4350,9 @@
         ]
       }
     },
-    "/api/v1/contact-us-page": {
+    "/contact-us-page": {
       "get": {
-        "operationId": "ContactUsPagesController_get_v1",
+        "operationId": "ContactUsPagesController_get",
         "parameters": [],
         "responses": {
           "200": {
@@ -4364,7 +4364,7 @@
         ]
       },
       "put": {
-        "operationId": "ContactUsPagesController_upsert_v1",
+        "operationId": "ContactUsPagesController_upsert",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4386,9 +4386,9 @@
         ]
       }
     },
-    "/api/v1/site-settings/public": {
+    "/site-settings/public": {
       "get": {
-        "operationId": "SiteSettingsController_getPublic_v1",
+        "operationId": "SiteSettingsController_getPublic",
         "parameters": [],
         "responses": {
           "200": {
@@ -4400,9 +4400,9 @@
         ]
       }
     },
-    "/api/v1/site-settings": {
+    "/site-settings": {
       "get": {
-        "operationId": "SiteSettingsController_get_v1",
+        "operationId": "SiteSettingsController_get",
         "parameters": [],
         "responses": {
           "200": {
@@ -4414,7 +4414,7 @@
         ]
       },
       "put": {
-        "operationId": "SiteSettingsController_upsert_v1",
+        "operationId": "SiteSettingsController_upsert",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4436,9 +4436,9 @@
         ]
       }
     },
-    "/api/v1/navigation-menus": {
+    "/navigation-menus": {
       "post": {
-        "operationId": "NavigationMenusController_create_v1",
+        "operationId": "NavigationMenusController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4460,7 +4460,7 @@
         ]
       },
       "get": {
-        "operationId": "NavigationMenusController_findAll_v1",
+        "operationId": "NavigationMenusController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -4472,9 +4472,9 @@
         ]
       }
     },
-    "/api/v1/navigation-menus/public/by-key/{key}": {
+    "/navigation-menus/public/by-key/{key}": {
       "get": {
-        "operationId": "NavigationMenusController_findPublicByKey_v1",
+        "operationId": "NavigationMenusController_findPublicByKey",
         "parameters": [
           {
             "name": "key",
@@ -4495,9 +4495,9 @@
         ]
       }
     },
-    "/api/v1/navigation-menus/{id}": {
+    "/navigation-menus/{id}": {
       "get": {
-        "operationId": "NavigationMenusController_findOne_v1",
+        "operationId": "NavigationMenusController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -4518,7 +4518,7 @@
         ]
       },
       "delete": {
-        "operationId": "NavigationMenusController_remove_v1",
+        "operationId": "NavigationMenusController_remove",
         "parameters": [
           {
             "name": "id",
@@ -4539,9 +4539,9 @@
         ]
       }
     },
-    "/api/v1/navigation-items": {
+    "/navigation-items": {
       "post": {
-        "operationId": "NavigationItemsController_create_v1",
+        "operationId": "NavigationItemsController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4563,7 +4563,7 @@
         ]
       },
       "get": {
-        "operationId": "NavigationItemsController_findAll_v1",
+        "operationId": "NavigationItemsController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -4575,9 +4575,9 @@
         ]
       }
     },
-    "/api/v1/navigation-items/{id}": {
+    "/navigation-items/{id}": {
       "get": {
-        "operationId": "NavigationItemsController_findOne_v1",
+        "operationId": "NavigationItemsController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -4598,7 +4598,7 @@
         ]
       },
       "delete": {
-        "operationId": "NavigationItemsController_remove_v1",
+        "operationId": "NavigationItemsController_remove",
         "parameters": [
           {
             "name": "id",
@@ -4619,9 +4619,9 @@
         ]
       }
     },
-    "/api/v1/navigation-items/public/by-menu/{menuId}": {
+    "/navigation-items/public/by-menu/{menuId}": {
       "get": {
-        "operationId": "NavigationItemsController_findByMenu_v1",
+        "operationId": "NavigationItemsController_findByMenu",
         "parameters": [
           {
             "name": "menuId",
@@ -4642,9 +4642,9 @@
         ]
       }
     },
-    "/api/v1/navigation-items/{id}/parent": {
+    "/navigation-items/{id}/parent": {
       "patch": {
-        "operationId": "NavigationItemsController_setParent_v1",
+        "operationId": "NavigationItemsController_setParent",
         "parameters": [
           {
             "name": "id",
@@ -4675,9 +4675,9 @@
         ]
       }
     },
-    "/api/v1/pages": {
+    "/pages": {
       "post": {
-        "operationId": "PagesController_create_v1",
+        "operationId": "PagesController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4699,7 +4699,7 @@
         ]
       },
       "get": {
-        "operationId": "PagesController_findAll_v1",
+        "operationId": "PagesController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -4711,9 +4711,9 @@
         ]
       }
     },
-    "/api/v1/pages/public/{slug}": {
+    "/pages/public/{slug}": {
       "get": {
-        "operationId": "PagesController_findPublishedBySlug_v1",
+        "operationId": "PagesController_findPublishedBySlug",
         "parameters": [
           {
             "name": "slug",
@@ -4734,9 +4734,9 @@
         ]
       }
     },
-    "/api/v1/pages/{id}": {
+    "/pages/{id}": {
       "get": {
-        "operationId": "PagesController_findOne_v1",
+        "operationId": "PagesController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -4757,7 +4757,7 @@
         ]
       },
       "delete": {
-        "operationId": "PagesController_remove_v1",
+        "operationId": "PagesController_remove",
         "parameters": [
           {
             "name": "id",
@@ -4778,9 +4778,9 @@
         ]
       }
     },
-    "/api/v1/page-sections": {
+    "/page-sections": {
       "post": {
-        "operationId": "PageSectionsController_create_v1",
+        "operationId": "PageSectionsController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4802,7 +4802,7 @@
         ]
       },
       "get": {
-        "operationId": "PageSectionsController_findAll_v1",
+        "operationId": "PageSectionsController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -4814,9 +4814,9 @@
         ]
       }
     },
-    "/api/v1/page-sections/public/by-page/{pageId}": {
+    "/page-sections/public/by-page/{pageId}": {
       "get": {
-        "operationId": "PageSectionsController_findPublicByPage_v1",
+        "operationId": "PageSectionsController_findPublicByPage",
         "parameters": [
           {
             "name": "pageId",
@@ -4837,9 +4837,9 @@
         ]
       }
     },
-    "/api/v1/page-sections/{id}": {
+    "/page-sections/{id}": {
       "get": {
-        "operationId": "PageSectionsController_findOne_v1",
+        "operationId": "PageSectionsController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -4860,7 +4860,7 @@
         ]
       },
       "delete": {
-        "operationId": "PageSectionsController_remove_v1",
+        "operationId": "PageSectionsController_remove",
         "parameters": [
           {
             "name": "id",
@@ -4881,9 +4881,9 @@
         ]
       }
     },
-    "/api/v1/hero-slides": {
+    "/hero-slides": {
       "post": {
-        "operationId": "HeroSlidesController_create_v1",
+        "operationId": "HeroSlidesController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -4905,7 +4905,7 @@
         ]
       },
       "get": {
-        "operationId": "HeroSlidesController_findAll_v1",
+        "operationId": "HeroSlidesController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -4917,9 +4917,9 @@
         ]
       }
     },
-    "/api/v1/hero-slides/public/by-section/{pageSectionId}": {
+    "/hero-slides/public/by-section/{pageSectionId}": {
       "get": {
-        "operationId": "HeroSlidesController_findPublicBySection_v1",
+        "operationId": "HeroSlidesController_findPublicBySection",
         "parameters": [
           {
             "name": "pageSectionId",
@@ -4940,9 +4940,9 @@
         ]
       }
     },
-    "/api/v1/hero-slides/{id}": {
+    "/hero-slides/{id}": {
       "get": {
-        "operationId": "HeroSlidesController_findOne_v1",
+        "operationId": "HeroSlidesController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -4963,7 +4963,7 @@
         ]
       },
       "delete": {
-        "operationId": "HeroSlidesController_remove_v1",
+        "operationId": "HeroSlidesController_remove",
         "parameters": [
           {
             "name": "id",
@@ -4984,9 +4984,9 @@
         ]
       }
     },
-    "/api/v1/athletes-page": {
+    "/athletes-page": {
       "get": {
-        "operationId": "AthletesPageController_get_v1",
+        "operationId": "AthletesPageController_get",
         "parameters": [],
         "responses": {
           "200": {
@@ -4998,7 +4998,7 @@
         ]
       },
       "put": {
-        "operationId": "AthletesPageController_upsert_v1",
+        "operationId": "AthletesPageController_upsert",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -5020,9 +5020,9 @@
         ]
       }
     },
-    "/api/v1/coaches-page": {
+    "/coaches-page": {
       "get": {
-        "operationId": "CoachesPageController_get_v1",
+        "operationId": "CoachesPageController_get",
         "parameters": [],
         "responses": {
           "200": {
@@ -5034,7 +5034,7 @@
         ]
       },
       "put": {
-        "operationId": "CoachesPageController_upsert_v1",
+        "operationId": "CoachesPageController_upsert",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -5056,9 +5056,9 @@
         ]
       }
     },
-    "/api/v1/results-rankings-page": {
+    "/results-rankings-page": {
       "get": {
-        "operationId": "ResultsRankingsPageController_get_v1",
+        "operationId": "ResultsRankingsPageController_get",
         "parameters": [],
         "responses": {
           "200": {
@@ -5070,7 +5070,7 @@
         ]
       },
       "put": {
-        "operationId": "ResultsRankingsPageController_upsert_v1",
+        "operationId": "ResultsRankingsPageController_upsert",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -5092,9 +5092,9 @@
         ]
       }
     },
-    "/api/v1/records-page": {
+    "/records-page": {
       "get": {
-        "operationId": "RecordsPageController_get_v1",
+        "operationId": "RecordsPageController_get",
         "parameters": [],
         "responses": {
           "200": {
@@ -5106,7 +5106,7 @@
         ]
       },
       "put": {
-        "operationId": "RecordsPageController_upsert_v1",
+        "operationId": "RecordsPageController_upsert",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -5128,9 +5128,9 @@
         ]
       }
     },
-    "/api/v1/news-page": {
+    "/news-page": {
       "get": {
-        "operationId": "NewsPageController_get_v1",
+        "operationId": "NewsPageController_get",
         "parameters": [],
         "responses": {
           "200": {
@@ -5142,7 +5142,7 @@
         ]
       },
       "put": {
-        "operationId": "NewsPageController_upsert_v1",
+        "operationId": "NewsPageController_upsert",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -5164,9 +5164,9 @@
         ]
       }
     },
-    "/api/v1/clubs-page": {
+    "/clubs-page": {
       "get": {
-        "operationId": "ClubsPageController_get_v1",
+        "operationId": "ClubsPageController_get",
         "parameters": [],
         "responses": {
           "200": {
@@ -5178,7 +5178,7 @@
         ]
       },
       "put": {
-        "operationId": "ClubsPageController_upsert_v1",
+        "operationId": "ClubsPageController_upsert",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -5200,9 +5200,9 @@
         ]
       }
     },
-    "/api/v1/disciplines-page": {
+    "/disciplines-page": {
       "get": {
-        "operationId": "DisciplinesPageController_get_v1",
+        "operationId": "DisciplinesPageController_get",
         "parameters": [],
         "responses": {
           "200": {
@@ -5214,7 +5214,7 @@
         ]
       },
       "put": {
-        "operationId": "DisciplinesPageController_upsert_v1",
+        "operationId": "DisciplinesPageController_upsert",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -5236,9 +5236,9 @@
         ]
       }
     },
-    "/api/v1/albums-page": {
+    "/albums-page": {
       "get": {
-        "operationId": "AlbumsPageController_get_v1",
+        "operationId": "AlbumsPageController_get",
         "parameters": [],
         "responses": {
           "200": {
@@ -5250,7 +5250,7 @@
         ]
       },
       "put": {
-        "operationId": "AlbumsPageController_upsert_v1",
+        "operationId": "AlbumsPageController_upsert",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -5272,9 +5272,9 @@
         ]
       }
     },
-    "/api/v1/videos-page": {
+    "/videos-page": {
       "get": {
-        "operationId": "VideosPageController_get_v1",
+        "operationId": "VideosPageController_get",
         "parameters": [],
         "responses": {
           "200": {
@@ -5286,7 +5286,7 @@
         ]
       },
       "put": {
-        "operationId": "VideosPageController_upsert_v1",
+        "operationId": "VideosPageController_upsert",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -5308,9 +5308,9 @@
         ]
       }
     },
-    "/api/v1/contact-messages": {
+    "/contact-messages": {
       "post": {
-        "operationId": "ContactMessagesController_create_v1",
+        "operationId": "ContactMessagesController_create",
         "parameters": [],
         "requestBody": {
           "required": true,
@@ -5332,7 +5332,7 @@
         ]
       },
       "get": {
-        "operationId": "ContactMessagesController_findAll_v1",
+        "operationId": "ContactMessagesController_findAll",
         "parameters": [],
         "responses": {
           "200": {
@@ -5344,9 +5344,9 @@
         ]
       }
     },
-    "/api/v1/contact-messages/{id}": {
+    "/contact-messages/{id}": {
       "get": {
-        "operationId": "ContactMessagesController_findOne_v1",
+        "operationId": "ContactMessagesController_findOne",
         "parameters": [
           {
             "name": "id",
@@ -5367,7 +5367,7 @@
         ]
       },
       "delete": {
-        "operationId": "ContactMessagesController_remove_v1",
+        "operationId": "ContactMessagesController_remove",
         "parameters": [
           {
             "name": "id",
@@ -5388,9 +5388,9 @@
         ]
       }
     },
-    "/api/v1/contact-messages/{id}/reply": {
+    "/contact-messages/{id}/reply": {
       "patch": {
-        "operationId": "ContactMessagesController_reply_v1",
+        "operationId": "ContactMessagesController_reply",
         "parameters": [
           {
             "name": "id",
@@ -6094,6 +6094,14 @@
           "storageKey": {
             "type": "string",
             "description": "Storage-backend-relative path/key, independent of `url`."
+          },
+          "photographer": {
+            "type": "string",
+            "description": "Photographer credit."
+          },
+          "captureDate": {
+            "type": "string",
+            "description": "When the photo was actually taken."
           }
         },
         "required": [
@@ -6902,6 +6910,14 @@
             "items": {
               "$ref": "#/components/schemas/ContentAssociationDto"
             }
+          },
+          "championshipName": {
+            "description": "Bilingual championship/tournament display name, captured directly since the championships collection doesn't exist yet — independent of `associations[]`. Supply both if this album is also associated with a 'championships' owner.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
           },
           "coverImageId": {
             "type": "string"

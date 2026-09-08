@@ -1,0 +1,9 @@
+# api/openapi.json is machine-generated (api/src/generate-openapi.ts writes LF
+# unconditionally) and is diffed by the pre-push hook (.husky/pre-push) to
+# detect drift from the real API. Without this, Windows' core.autocrlf=true
+# (the default here, confirmed 2026-09-07, no .gitattributes existed before
+# this) normalizes it to CRLF on checkout, so every regeneration shows as a
+# full-file diff from line endings alone -- not from real content changes --
+# which would make the hook block every push. Pinning eol=lf keeps the
+# checked-out file byte-identical to what the generator writes.
+api/openapi.json text eol=lf
