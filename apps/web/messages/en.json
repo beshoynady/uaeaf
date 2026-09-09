@@ -6,12 +6,27 @@
   "Nav": {
     "home": "Home",
     "about": "About the Federation",
-    "clubs": "Clubs",
+    "aboutOverview": "About the Federation",
+    "presidentMessage": "President's Message",
+    "boardMembers": "Board of Directors",
+    "committees": "Committees",
+    "organisationalStructure": "Organisational Structure",
+    "governance": "Governance & Strategy",
+    "visionMission": "Vision & Mission",
+    "strategicPlan": "Strategic Plan",
+    "policies": "Policies & Regulations",
     "members": "Members",
-    "tournaments": "Tournaments",
-    "federationEvents": "Federation Events",
+    "clubs": "Clubs",
+    "clubsDescription": "General Assembly members",
+    "athletes": "Athletes",
+    "coaches": "Coaches",
+    "officials": "Officials",
+    "championships": "Championships",
+    "events": "Events",
     "news": "News & Articles",
     "media": "Media Center",
+    "photoAlbums": "Photo Albums",
+    "videos": "Videos",
     "contact": "Contact Us"
   },
   "Legal": {
@@ -34,7 +49,7 @@
     "switchToDarkMode": "Switch to dark mode",
     "switchToLightMode": "Switch to light mode",
     "search": "Search",
-    "switchLanguage": "Switch to Arabic",
+    "switchLanguage": "Switch to {language}",
     "menu": "Navigation menu"
   },
   "Footer": {
@@ -83,6 +98,53 @@
     "map": "Location on the map",
     "openMap": "Open the map",
     "socialLinks": "Social links"
+  },
+  "Contact": {
+    "cards": {
+      "phone": "Phone",
+      "email": "Email",
+      "location": "Location",
+      "officeHours": "Working Hours"
+    },
+    "messageTypes": {
+      "Suggestion": "Suggestion",
+      "Complaint": "Complaint",
+      "Inquiry": "Inquiry",
+      "General": "General"
+    },
+    "form": {
+      "title": "Send Us a Message",
+      "submit": "Send Message",
+      "sending": "Sending…",
+      "sent": "Your message has reached us. Thank you for getting in touch.",
+      "failed": "The message could not be sent. Please try again.",
+      "requiredHint": "required field",
+      "labels": {
+        "senderName": "Name",
+        "senderPhone": "Phone Number",
+        "senderEmail": "Email Address",
+        "messageType": "Message Type",
+        "subject": "Subject",
+        "messageBody": "Message"
+      },
+      "placeholders": {
+        "senderName": "e.g., John Doe",
+        "senderPhone": "e.g., +971 50 123 4567",
+        "senderEmail": "example@email.com",
+        "messageType": "Select: Suggestion / Complaint / Inquiry",
+        "subject": "Brief title of your message",
+        "messageBody": "Write your message in detail here..."
+      },
+      "errors": {
+        "required": "This field is required.",
+        "email": "Enter a valid email address."
+      }
+    },
+    "map": {
+      "title": "Our Location",
+      "viewOnMaps": "View on Google Maps",
+      "openDirections": "Open Directions"
+    }
   },
   "NotFound": {
     "title": "Page not found",

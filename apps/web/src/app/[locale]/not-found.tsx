@@ -12,7 +12,7 @@ import { PUBLIC_PAGES } from "@/lib/pages/public-pages";
  * and until now the site had Next.js's unstyled default, outside the app
  * shell, in one language. It is reached often today: the approved
  * nine-item navigation (IA §8.1) points at nine destinations that have no
- * page yet, so `/about`, `/members`, `/tournaments`, `/events/federation-events`
+ * page yet, so `/about`, `/championships`, `/events/federation-events`
  * and `/media` all land here, as do the footer's `/help`, `/accessibility`,
  * `/privacy`, `/terms` and `/sitemap`.
  *

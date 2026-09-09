@@ -38,6 +38,15 @@ export class CreateContactMessageDto {
   @MaxLength(30)
   senderPhone?: string;
 
+  @ApiProperty({
+    required: false,
+    description: "The form's subject line. Optional: the public form does not require it.",
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  subject?: string;
+
   @ApiProperty()
   @IsString()
   @MinLength(1)

@@ -1,14 +1,12 @@
 "use client";
 
-import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Link, usePathname } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 import { UaeafLogo } from "@/components/brand/uaeaf-logo";
 import { FOCUS, TRANSITION } from "@/components/ui/interactive";
-import { PRIMARY_NAV } from "@/lib/navigation";
-import { isBuilt } from "@/lib/pages/built-routes";
 import { LanguageToggle } from "./language-toggle";
+import { PrimaryNav } from "./primary-nav";
 import { ThemeToggle } from "./theme-toggle";
 
 /**
@@ -25,162 +23,132 @@ import { ThemeToggle } from "./theme-toggle";
  * DOM order is Logo → Nav → Utilities, the reverse of the Figma export's
  * order. The export is LTR-flattened; under the AR document's `dir="rtl"` a
  * `justify-between` row places its FIRST child on the right, reproducing the
- * approved layout (logo right, utilities left). Under `dir="ltr"` (English)
- * this same order places the logo left, utilities right — i.e. it is
- * direction-symmetric and needed no change for the i18n foundation
- * (verified visually, see deviation log D-i18n-1).
+ * approved layout (logo right, utilities left). Under `dir="ltr"` this same
+ * order places the logo left and utilities right — direction-symmetric, so it
+ * needed no change for the i18n foundation.
  *
- * ── The navigation below the row's own width ───────────────────────────────
+ * ── Why the row fits again (2026-09-09) ────────────────────────────────────
  *
- * The nav was `hidden lg:block` and nothing replaced it, so every viewport
- * under 1024px had **no navigation at all** — not a reduced one, none. IA
- * §8.1's behaviour note is explicit that "below 1024px the whole bar collapses
- * into a drawer with the same tree", and PR-006 makes the public layer
- * mobile-priority, so the missing half was the priority half.
+ * ADR-0061 §D6 had to push the row out to `2xl` because nine flat English
+ * labels wanted 1098px and 1440px offers 1070px. The owner's answer was not to
+ * shorten the labels but to regroup: eight top-level items, three of them
+ * disclosure panels (ADR-0062). The row's cost falls with the grouping, and
+ * the threshold is re-derived from measurement in `primary-nav.tsx` rather
+ * than inherited from either previous calculation.
  *
- * The threshold is `xl` (1280px), not the documented 1024. That is a
- * deviation and it is measured, not preferred: at a 1024px viewport the nine
- * Arabic labels need **1066px** of intrinsic width on their own, before the
- * 120px logo and the 158px utility cluster — so the row overflowed the
- * document by 360px, which the browser reported and no test could.
+ * ── Scrolling ──────────────────────────────────────────────────────────────
  *
- * The reconciliation is that §8.1's 1024 predates §8.1 itself. The threshold
- * was written against the header as built, which carried **seven** items; the
- * Product Owner ruling in that same section then raised it to **nine** and
- * nobody re-derived the width. `xl` is the first §5.2 band where the row
- * measurably fits — a documented breakpoint, not an invented one (CLAUDE.md
- * §1a.2). Recorded as DESIGN DECISION REQUIRED: nine items in a 96px bar need
- * either this threshold or a shorter label set, and that is the owner's call.
- *
- * It is one list, not two. A second copy of the nine links for small screens
- * would double the tab order, double the accessible names a screen reader
- * announces, and give the same defect two places to be fixed — which is the
- * shape that put one WCAG failure into five copies of a search field on the
- * dashboard. The same `<ul>` lays out as a row at `lg` and as a stack below
- * it; when collapsed it is `hidden`, so its links leave the tab order
- * entirely rather than staying reachable behind a closed panel.
- *
- * Disclosure, not a modal: the panel is a sibling that opens under the bar,
- * so there is no focus to trap, no scroll to lock, and no way to be left
- * stranded inside it. `aria-expanded` and `aria-controls` are on the button
- * (WAI-ARIA APG disclosure pattern).
+ * The bar is sticky and gains elevation once the page leaves the top. It does
+ * NOT shrink. Animating a sticky header's height re-lays-out every pixel of
+ * the document beneath it on every frame, which is precisely what the brief's
+ * own performance rule — transform and opacity only — exists to prevent, and
+ * it makes the text the reader is following jump. Elevation carries the same
+ * message (you have left the top of the page) and composites.
  */
 
 export function SiteHeader({ activePath }: { activePath?: string }) {
-  const t = useTranslations("Nav");
   const tHeader = useTranslations("Header");
-  const pathname = usePathname();
-  const [open, setOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-  // `activePath` stays a prop so a test can pin it; the live value is the
-  // locale-stripped pathname next-intl gives us.
-  const current = activePath ?? pathname ?? "/";
+  useEffect(() => {
+    // `passive` because this listener never calls preventDefault, and a
+    // non-passive scroll listener blocks the compositor on touch.
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // The drawer is a disclosure, not a modal — no focus trap, no scroll lock,
+  // no way to be stranded inside it. Escape still closes it from anywhere in
+  // the header, which is the one modal affordance a disclosure should borrow.
+  const onHeaderKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === "Escape" && drawerOpen) setDrawerOpen(false);
+  };
 
   return (
-    <header
-      className="relative flex h-24 w-full items-center justify-between gap-2 border-b border-[color:var(--color-border-default)] bg-[color:var(--color-surface-base)] px-4 sm:px-6"
-      data-node-id="2374:1175"
-    >
-      {/* WCAG 2.2 SC 2.4.1 Bypass Blocks. Not present in the Figma frame —
-          a keyboard affordance the static mockup has no way to express. */}
-      <a
-        href="#main-content"
-        className={`sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:end-6 focus-visible:top-4 focus-visible:z-50 focus-visible:rounded-sm focus-visible:bg-[color:var(--color-brand-primary)] focus-visible:px-4 focus-visible:py-2 focus-visible:text-[color:var(--color-text-on-brand)] ${FOCUS}`}
+    <>
+      <header
+        onKeyDown={onHeaderKeyDown}
+        data-scrolled={scrolled}
+        className={`site-header sticky top-0 z-50 flex h-24 w-full items-center justify-between gap-2 border-b bg-[color:var(--color-surface-base)] px-4 sm:px-6 ${
+          scrolled
+            ? "border-[color:var(--color-border-strong)] shadow-dropdown"
+            : "border-[color:var(--color-border-default)]"
+        }`}
+        data-node-id="2374:1175"
       >
-        {tHeader("skipLink")}
-      </a>
-
-      <Link
-        href="/"
-        aria-label={tHeader("homeAriaLabel")}
-        className={`flex shrink-0 items-center rounded-xs ${FOCUS}`}
-      >
-        {/* The inline component rather than `/brand/uaeaf-logo.svg`: the file
-            carried three colours that are not the federation's (ADR-0059
-            §D7.2) and `preserveAspectRatio="none"`, which lets the mark
-            stretch — the first prohibition in guide §9.1. */}
-        <UaeafLogo className="h-11 w-auto sm:h-16" />
-      </Link>
-
-      <nav
-        id="primary-nav"
-        aria-label={tHeader("mainNav")}
-        className={`${
-          open ? "block" : "hidden"
-        } absolute inset-x-0 top-full z-40 min-w-0 border-b border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)] px-4 py-2 shadow-dropdown xl:static xl:z-auto xl:block xl:border-0 xl:bg-transparent xl:p-0 xl:shadow-none`}
-      >
-        <ul className="flex flex-col xl:flex-row xl:items-center xl:gap-3 2xl:gap-5">
-          {PRIMARY_NAV.map((item) => {
-            const isActive = item.href === current;
-            return (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  prefetch={isBuilt(item.href) ? undefined : false}
-                  aria-current={isActive ? "page" : undefined}
-                  onClick={() => setOpen(false)}
-                  className={`flex min-h-11 flex-row items-center justify-between gap-2 rounded-xs px-1.5 text-body whitespace-nowrap xl:flex-col xl:justify-center xl:gap-2 xl:py-3.5 ${TRANSITION} ${FOCUS} ${
-                    isActive
-                      ? "font-medium text-[color:var(--color-text-primary)]"
-                      : "font-normal text-[color:var(--color-text-secondary)] hover:text-[color:var(--color-text-primary)] active:text-[color:var(--color-text-secondary)]"
-                  }`}
-                >
-                  <span className="flex items-center gap-1.5 whitespace-nowrap">
-                    {item.hasDropdown ? (
-                      <Image
-                        src="/icons/chevron-down.svg"
-                        alt=""
-                        width={10}
-                        height={10}
-                        aria-hidden="true"
-                        data-chevron="true"
-                        className="size-2.5 shrink-0"
-                      />
-                    ) : null}
-                    {t(item.key)}
-                  </span>
-                  {/* Active indicator: 2px green underline, Figma node 2544:2595.
-                      Always rendered so the row height cannot shift between states.
-                      Stacked, it becomes a 2px end-aligned marker rather than a
-                      full-width rule — the underline reads as an underline only
-                      under a horizontal row. */}
-                  <span
-                    aria-hidden="true"
-                    className={`h-0.5 w-6 xl:w-full ${
-                      isActive ? "bg-[color:var(--color-brand-primary)]" : "bg-transparent"
-                    }`}
-                  />
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-
-      <div className="flex shrink-0 items-center gap-1 text-[color:var(--color-text-secondary)] sm:gap-3">
-        <ThemeToggle />
-        <button
-          type="button"
-          className={`inline-flex min-h-11 items-center rounded-xs px-2 text-label font-medium whitespace-nowrap ${TRANSITION} ${FOCUS} hover:text-[color:var(--color-text-primary)] active:text-[color:var(--color-text-secondary)]`}
+        {/* WCAG 2.2 SC 2.4.1 Bypass Blocks. Not present in the Figma frame —
+            a keyboard affordance the static mockup has no way to express. */}
+        <a
+          href="#main-content"
+          className={`sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:end-6 focus-visible:top-4 focus-visible:z-50 focus-visible:rounded-sm focus-visible:bg-[color:var(--color-brand-primary)] focus-visible:px-4 focus-visible:py-2 focus-visible:text-[color:var(--color-text-on-brand)] ${FOCUS}`}
         >
-          {tHeader("search")}
-        </button>
-        <LanguageToggle />
+          {tHeader("skipLink")}
+        </a>
 
-        <button
-          type="button"
-          aria-expanded={open}
-          aria-controls="primary-nav"
-          aria-label={tHeader("menu")}
-          onClick={() => setOpen((wasOpen) => !wasOpen)}
-          // 44px minimum touch target — IA §12's stated KPI for every small
-          // screen, and the only control here that exists solely below `lg`.
-          className={`flex size-11 items-center justify-center rounded-xs xl:hidden ${TRANSITION} ${FOCUS} hover:text-[color:var(--color-text-primary)] active:text-[color:var(--color-text-secondary)]`}
+        <Link
+          href="/"
+          aria-label={tHeader("homeAriaLabel")}
+          className={`flex shrink-0 items-center rounded-xs ${FOCUS}`}
         >
-          <MenuIcon open={open} />
-        </button>
-      </div>
-    </header>
+          {/* The inline component rather than `/brand/uaeaf-logo.svg`: the file
+              carried three colours that are not the federation's (ADR-0059
+              §D7.2) and `preserveAspectRatio="none"`, which lets the mark
+              stretch — the first prohibition in guide §9.1. Its inks follow
+              ADR-0002 on dark grounds (ADR-0061 §D4). */}
+          <UaeafLogo className="h-11 w-auto sm:h-16" />
+        </Link>
+
+        <PrimaryNav
+          drawerOpen={drawerOpen}
+          onCloseDrawer={() => setDrawerOpen(false)}
+          activePath={activePath}
+        />
+
+        <div className="flex shrink-0 items-center gap-1 text-[color:var(--color-text-secondary)] sm:gap-3">
+          <ThemeToggle />
+          <button
+            type="button"
+            className={`inline-flex min-h-11 items-center rounded-xs px-2 text-label font-medium whitespace-nowrap ${TRANSITION} ${FOCUS} hover:text-[color:var(--color-text-primary)] active:text-[color:var(--color-text-secondary)]`}
+          >
+            {tHeader("search")}
+          </button>
+          <LanguageToggle />
+
+          <button
+            type="button"
+            aria-expanded={drawerOpen}
+            aria-controls="primary-nav"
+            aria-label={tHeader("menu")}
+            onClick={() => setDrawerOpen((wasOpen) => !wasOpen)}
+            // 44px minimum touch target — IA §12's stated KPI for every small
+            // screen, and the only control here that exists solely below the
+            // row breakpoint.
+            className={`flex size-11 items-center justify-center rounded-xs xl:hidden ${TRANSITION} ${FOCUS} hover:text-[color:var(--color-text-primary)] active:text-[color:var(--color-text-secondary)]`}
+          >
+            <MenuIcon open={drawerOpen} />
+          </button>
+        </div>
+      </header>
+
+      {/*
+        The drawer's scrim.
+        Kept outside the header so it can cover the page without covering the
+        bar the reader closes it from. `aria-hidden` and not focusable: it
+        duplicates the close button rather than adding a control, and a
+        keyboard already has Escape.
+      */}
+      <div
+        aria-hidden="true"
+        data-open={drawerOpen}
+        onClick={() => setDrawerOpen(false)}
+        className={`nav-scrim fixed inset-0 top-24 z-30 bg-[color:var(--color-brand-black)] xl:hidden ${
+          drawerOpen ? "" : "pointer-events-none"
+        }`}
+      />
+    </>
   );
 }
 

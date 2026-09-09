@@ -41,6 +41,43 @@ html {
   color-scheme: light dark;
 }
 
+/*
+ * Logo inks — Chapter 1 ADR-0002 (Accepted): "In Dark Mode, the white
+ * monochrome logo is used exclusively."
+ *
+ * The three brand colours are Pantone values and are therefore theme-INVARIANT
+ * in `base.css`, which is correct for the palette and wrong for the mark: the
+ * header rendered the full-colour logo in every theme, so its five wordmark
+ * paths stayed `#000000` on the dark theme's `#131210` surface. Measured on
+ * the live build: 1.12:1. The mark was not dim, it was absent.
+ *
+ * ADR-0002 also rejects the alternative that suggests itself first — a white
+ * plate behind the colour mark — as a break in visual continuity, and guide
+ * §9.1 forbids recolouring the mark to anything else. So the fix is the one
+ * the guide already ships: the monochrome variant, inheriting `currentColor`
+ * from the dark surface's own text colour.
+ *
+ * Indirection through three custom properties rather than a `useTheme()` call
+ * keeps this in the cascade, where the theme actually lives (Chapter 7 §7.4:
+ * theme resolution MUST be CSS-only) — no client component, no hydration
+ * boundary, and correct on the very first paint.
+ *
+ * High contrast is deliberately absent: it paints a #FFFFFF surface, which is
+ * exactly the "white/high-contrast background" the guide's own background rule
+ * gives the full-colour mark. It inherits :root.
+ */
+:root {
+  --logo-ink: var(--color-brand-black);
+  --logo-green: var(--color-brand-primary);
+  --logo-red: var(--color-brand-secondary);
+}
+
+[data-theme="dark"] {
+  --logo-ink: currentColor;
+  --logo-green: currentColor;
+  --logo-red: currentColor;
+}
+
 body {
   background: var(--color-surface-base);
   color: var(--color-text-primary);

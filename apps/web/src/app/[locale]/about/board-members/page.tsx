@@ -80,7 +80,7 @@ export default async function BoardMembersPage({
                     <a
                       href={`mailto:${member.publicContact.email}`}
                       dir="ltr"
-                      className="mt-4 inline-flex min-h-11 items-center rounded-xs text-body-sm text-[color:var(--color-brand-primary)] underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-easing-standard)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--a11y-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--a11y-focus-offset)]"
+                      className="mt-4 inline-flex min-h-11 items-center rounded-xs text-body-sm text-[color:var(--color-text-link)] underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-easing-standard)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--a11y-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--a11y-focus-offset)]"
                     >
                       {member.publicContact.email}
                     </a>

@@ -696,6 +696,47 @@ The homepage is no longer a proposal. Twelve content sections ship in a **fixed 
 
 ### 8.1 Main Navigation (Public) — **[RESOLVED — Product Owner ruling, resolves Master Spec §52 OPEN-004]**
 
+> ## ⚠️ AMENDED 2026-09-09 — Product Owner ruling (ADR-0062). Read this before the nine-item table.
+>
+> The nine-item structure below was correct as a content inventory and wrong as a *row*: measured on a
+> live browser, nine flat English labels want 1098px and the widest laptop band offers 1070px, so the
+> row overlapped the utility cluster at 1280, 1366 and 1440 (ADR-0061 §D6). Rather than shorten
+> approved copy, the Product Owner regrouped the navigation into disclosure panels. **Eight top-level
+> items, three with panels, one nested level.** Full rationale, keyboard/ARIA contract and measurements
+> in `docs/design-system/ADR-0062-Primary-Navigation-Regrouping-And-Header-Interaction.md`.
+>
+> Four differences from the table below were put to the Product Owner before implementation rather than
+> resolved silently. **Which side was corrected, and why, item by item:**
+>
+> | # | Difference | Corrected side | Reason |
+> |---|---|---|---|
+> | 1 | **Clubs** — row 3 has it top-level | **This document** | Owner ruling. Clubs moves inside Members. §8.1's own justification for the top-level slot was that Clubs *is* the General Assembly membership listing; that meaning is preserved as a description line on the child (`أعضاء الجمعية العمومية` / "General Assembly members"), so it is carried by words rather than by position. The build is correct. |
+> | 2 | **News & Articles** — row 7 is a two-item dropdown | **This document** | Owner ruling. It becomes a plain link, and its second item — "الاتحاد في الإعلام" — becomes a section of the News page rather than a destination (see §15.1a's 2026-09-09 amendment). Nothing is orphaned. The build is correct. |
+> | 3 | **المواهب والمتطوعون** (Talents & Volunteers) — row 4's nested submenu | **Neither — deferred** | Owner instruction, 2026-09-09: *"أجّل وضع المواهب والمتطوعين في الهيدر الآن حتى يتم مراجعتها مع الاتحاد."* The submenu is **not** withdrawn from this document and is **not** built into the header. It is held pending review with the Federation. This row stays as the approved target state; the build's omission is a scheduling decision, not a deviation to be "fixed" by a later reader. |
+> | 4 | **البطولات / Championships** — row 5 | **The build** | Not an owner ruling — a naming defect in the code, decided on evidence (see the note under the table). This document was already right; the build said "Tournaments" and has been corrected to match. |
+>
+> **The regrouped structure as built:**
+>
+> | # | Item | Type | Children |
+> |---|---|---|---|
+> | 1 | الرئيسية / Home | link | — |
+> | 2 | عن الاتحاد / About the Federation | panel | نبذة · كلمة الرئيس · مجلس الإدارة · اللجان · الهيكل التنظيمي · **الحوكمة والاستراتيجية** (nested: الرؤية والرسالة · الخطة الاستراتيجية · السياسات واللوائح) |
+> | 3 | الأعضاء / Members | panel | الأندية *(أعضاء الجمعية العمومية)* · الرياضيون · المدرّبون · الحكّام — **المواهب والمتطوعون deferred, see row 3 above** |
+> | 4 | البطولات / Championships | link | — |
+> | 5 | الفعاليات / Events | link | — |
+> | 6 | الأخبار والمقالات / News & Articles | link | — |
+> | 7 | المركز الإعلامي / Media Center | panel | ألبوم الصور · الفيديوهات |
+> | 8 | تواصل معنا / Contact Us | link | — |
+>
+> **Interaction pattern amended:** the panels use WAI-ARIA APG's **Disclosure Navigation** pattern —
+> a `<button>` with `aria-expanded` revealing a list of ordinary links — not `role="menu"`/`menuitem`,
+> which the APG reserves for application command menus and which would strip these links of their link
+> semantics. On the drawer the nested group opens **in flow** as an accordion rather than as a second
+> floating layer, which has no hover to open it on touch. Both are recorded in ADR-0062 §D3/§D4.
+>
+> **The nine-item table below is preserved as the content inventory it always was** — every destination
+> in it still exists, and the footer's Quick Links still mirror all of them 1:1.
+
 **This supersedes the "seven items, two dropdowns" description below, which is preserved as historical record only — do not build against it.** The Header architecture question (7-item/2-dropdown documented vs. 9-item/4-dropdown built, left open across multiple prior audits this engagement) is now closed. Nine top-level items; four carry a dropdown (one uses a single-column flyout/submenu pattern rather than parallel columns — see behaviour note below):
 
 | # | Item | Type | Children |
@@ -715,6 +756,24 @@ The homepage is no longer a proposal. Twelve content sections ship in a **fixed 
 **Interaction pattern:** the four dropdowns are single-column, not multi-column mega-menus. Two (About, Members) use a nested flyout — hovering/focusing a category row (e.g. "الحوكمة والاستراتيجية") reveals its own sub-list rather than showing every column at once. The other two (News & Articles, Media Centre) are flat two-item lists with no further nesting, since neither item has children of its own. This nested-flyout pattern is already covered by existing keyboard/accessibility governance (Chapter 8 L3 §N.5/§N.7, WAI-ARIA APG nested-menu pattern) — no new governance required, only a different arrangement of already-approved content.
 
 **Footer coupling:** per §9 below, Footer Quick Links must mirror this 9-item structure 1:1 — the previous 7-item Footer list is now stale and needs updating to match.
+
+#### Naming ruling 2026-09-09 — "Championships", not "Tournaments" (row 5)
+
+The build had shipped `Tournaments` as the English label while this table said `Championships`. Decided
+on evidence, not preference:
+
+| Test | Finding |
+| --- | --- |
+| **Semantic precision** | A *championship* is a competition that confers a title. A *tournament* is a competition run as a series of eliminating rounds. Athletics is decided by mark and place in heats and finals, not by a knockout bracket — so "tournament" describes a structure the sport does not use. |
+| **Arabic correspondence** | The approved Arabic is **البطولات**, whose singular بطولة is the title-conferring sense. "Tournament" back-translates to دورة / منافسة, neither of which is the approved word. The English label was the only side out of step. |
+| **Usage in the governing bodies** | World Athletics names its own competitions *World Athletics Championships* and *World Athletics Indoor Championships*; the continental body runs the *Asian Athletics Championships*. Peer national federations follow the same word — British, US and Australian national athletics titles are all *Championships*. "Tournament" is not the term of art anywhere in this sport's hierarchy. |
+| **Internal consistency** | The API already models this concept as `championship` across the content-association, page-section and document schemas. "Tournaments" survived only in the web layer's label and route. |
+
+**Applied to:** this document (already correct, unchanged), the English message catalogue
+(`Tournaments` → `Championships`), and the web route (`/tournaments` → `/championships`). The route was
+renamed rather than redirected because **no page exists at it yet** — there is no live URL, no inbound
+link and no index entry to preserve, so a redirect would be ceremony over an address nothing has ever
+resolved. The Arabic label «البطولات» was already correct and is unchanged.
 
 ---
 
@@ -1007,6 +1066,41 @@ Where the **built design [B]** and this **planning document** disagree, and whic
 | **Status** | ⏳ **Awaiting a product ruling.** §4.6 and §11 currently assume services exist at P1–P2. |
 
 ### 15.1a Product decision — RESOLVED — "UAEAF in the Media" (الاتحاد في الإعلام) placement ✅
+
+> ## ⚠️ AMENDED 2026-09-09 — Product Owner ruling. Read this before the table below.
+>
+> **What changed:** "UAEAF in the Media" is **no longer a destination of its own**. It becomes a
+> **section of the News page** (`/news`), not a page.
+>
+> **Why it was re-opened:** the header regrouping of 2026-09-09 (ADR-0062) made "الأخبار والمقالات"
+> a plain link rather than a two-item dropdown. That left this feature — whose *only* approved entry
+> point was that dropdown item — with no way in. Presented as a conflict rather than resolved
+> silently; the Product Owner's answer was to fold the content into the News page itself.
+>
+> **Rows of the table below that this supersedes:**
+>
+> | Row | Superseded by |
+> |---|---|
+> | **Dedicated destination** — "Approved. Archive route: `/media-coverage`" | **Withdrawn.** No `/media-coverage` route is built. The curated entries render as a section within `/news`, anchored for deep-linking. The rule that individual external articles get no UAEAF detail page is **unchanged** — it came from ADR-0042 §7 and still holds. |
+> | **Bilingual routing** — applied to `/media-coverage` | Moot: there is no such route. `/news` already follows the same one-path convention. |
+> | **Archive indexability** — "Recommended indexable" | Moot as a separate question. The content is part of `/news`, which is indexable in its own right; nothing new is added to the index and nothing is removed from it. The reasoning in `02-Homepage-Specification.md` §18 is preserved as history there. |
+> | **Navigation (Header / Footer)** — "remains coupled to the Header decision… genuinely open" | **Closed.** The header carries no item for it, by decision rather than by deferral, because it is no longer a destination. |
+>
+> **What this ruling does NOT touch, and must not be read as touching:**
+>
+> - **ADR-0042 (Chapter 13 §15) needs no amendment.** Its own Consequences clause states it does not
+>   decide route, navigation, indexability or homepage exposure — those were always this section's to
+>   decide. The content type, ownership boundary, editorial workflow, external-link governance and
+>   localisation rules are all untouched.
+> - **The locked product name** — English "UAEAF in the Media", Arabic "الاتحاد في الإعلام" — is
+>   unchanged, and still MUST NOT be replaced by "External Media Coverage" in user-facing copy.
+> - **Homepage exposure** (position 8, carousel presentation, §11b) is a separate locked decision about
+>   a page that is still deferred. It is not re-opened here. Its section-level CTA, which pointed at
+>   `/media-coverage`, now points at the News page's section anchor — a target that comes into
+>   existence when that section is built, and which must not be invented before then.
+>
+> **Everything below is preserved as decision history, per this document's own audit-trail convention
+> (§5). Do not build the withdrawn route against it.**
 
 **Decision history preserved below** — the original open item (three options: top-level nav / nested / Homepage-only) was raised in a prior session pass and is recorded here in full before its resolution, per this document's own audit-trail convention (§5).
 

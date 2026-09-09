@@ -167,6 +167,11 @@ function main() {
     ...flatten(invariantResolved, [], {}),
     ...flatten({ color: { brand: brandResolved.color.brand } }, [], {}),
     ...flatten({ color: { accent: brandResolved.color.accent } }, [], {}),
+    // ADR-0065 D3a — the categorical scale is theme-invariant for the same
+    // reason the brand layer is: a category's identity cannot change with the
+    // viewer's theme, or the same value would read as two different categories
+    // in light and dark.
+    ...flatten({ color: { category: brandResolved.color.category } }, [], {}),
   };
   let baseCss = cssBlock(':root', baseVars);
 
@@ -237,6 +242,8 @@ function main() {
     meta: { version: '1.0.0', generatedFrom: 'packages/design-tokens/tokens/**', pipeline: 'Chapter 3 §3.9' },
     primitive: invariantResolved,
     brand: brandResolved.color.brand,
+    accent: brandResolved.color.accent,
+    category: brandResolved.color.category,
     themes: perThemeTokensJson,
   };
   writeFileSync(join(BUILD_DIR, 'tokens.json'), JSON.stringify(tokensJson, null, 2));

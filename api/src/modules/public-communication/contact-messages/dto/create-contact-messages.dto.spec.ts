@@ -26,6 +26,31 @@ describe('CreateContactMessageDto length limits', () => {
     expect(errors).toHaveLength(0);
   });
 
+  it("accepts the form's subject line", async () => {
+    // The public form has a Subject input (Figma `2616:1382`). Without a field
+    // to carry it the endpoint would accept the submission and silently drop
+    // what the citizen typed.
+    const dto = plainToInstance(CreateContactMessageDto, {
+      ...validSubmission,
+      subject: 'Question about the national championship calendar',
+    });
+
+    const errors = await validate(dto);
+
+    expect(errors).toHaveLength(0);
+  });
+
+  it('rejects subject over 200 characters', async () => {
+    const dto = plainToInstance(CreateContactMessageDto, {
+      ...validSubmission,
+      subject: 'a'.repeat(201),
+    });
+
+    const errors = await validate(dto);
+
+    expect(errors.some((e) => e.property === 'subject')).toBe(true);
+  });
+
   it('rejects senderName over 200 characters', async () => {
     const dto = plainToInstance(CreateContactMessageDto, {
       ...validSubmission,

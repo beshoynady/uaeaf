@@ -59,6 +59,11 @@ export class ContactMessage extends BaseSchema {
   @Prop({ type: String, default: null })
   senderPhone: string | null;
 
+  /** The subject line from the public form. Optional — the form does not
+   *  require it, and messages predating the field have none. */
+  @Prop({ type: String, default: null })
+  subject: string | null;
+
   @Prop({ type: String, required: true })
   messageBody: string;
 

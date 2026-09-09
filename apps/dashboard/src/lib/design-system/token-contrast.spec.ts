@@ -24,8 +24,22 @@ const CSS_DIR = join(
   "../../../../../packages/design-tokens/build/css",
 );
 
-/** Text tiers that carry meaning and therefore must be readable. */
-const TEXT_TIERS = ["--color-text-primary", "--color-text-secondary", "--color-text-muted"] as const;
+/**
+ * Text tiers that carry meaning and therefore must be readable.
+ *
+ * `--color-text-link` belongs here: the three auth screens render it, and an
+ * unmeasured link colour is how it reached AA failures on two surfaces
+ * (ADR-0063 D1).
+ *
+ * `--color-text-disabled` stays out, and not by oversight: WCAG 1.4.3 exempts
+ * inactive components, and the dimming is the affordance.
+ */
+const TEXT_TIERS = [
+  "--color-text-primary",
+  "--color-text-secondary",
+  "--color-text-muted",
+  "--color-text-link",
+] as const;
 
 /** Grounds a component may legitimately place body text on. */
 const SURFACES = [

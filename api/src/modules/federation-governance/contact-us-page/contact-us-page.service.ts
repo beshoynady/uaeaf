@@ -21,6 +21,9 @@ export class ContactUsPagesService extends SingletonPageService<ContactUsPageDoc
     if (dto.heroImageId) {
       await this.mediaAssetsService.assertUsableImage(dto.heroImageId);
     }
+    if (dto.map?.imageId) {
+      await this.mediaAssetsService.assertUsableImage(dto.map.imageId);
+    }
     return this.upsertDocument({
       heroImageId: dto.heroImageId ? new Types.ObjectId(dto.heroImageId) : null,
       heroTitle: dto.heroTitle,
@@ -43,6 +46,32 @@ export class ContactUsPagesService extends SingletonPageService<ContactUsPageDoc
       officeHours: dto.officeHours ?? null,
       website: dto.website ?? null,
       socialLinks: dto.socialLinks ?? [],
+      locationSummary: dto.locationSummary ?? null,
+      cardLabels: dto.cardLabels
+        ? {
+            email: dto.cardLabels.email ?? null,
+            location: dto.cardLabels.location ?? null,
+            officeHours: dto.cardLabels.officeHours ?? null,
+          }
+        : null,
+      // Always written, never left absent: the singleton upsert replaces the
+      // whole document, so an omitted group would keep whatever the previous
+      // save left behind and an editor clearing a field would see it return.
+      form: {
+        title: dto.form?.title ?? null,
+        consentNote: dto.form?.consentNote ?? null,
+        messageTypeLabels: dto.form?.messageTypeLabels ?? [],
+      },
+      map: dto.map
+        ? {
+            title: dto.map.title ?? null,
+            imageId: dto.map.imageId ? new Types.ObjectId(dto.map.imageId) : null,
+            pinTitle: dto.map.pinTitle ?? null,
+            pinSubtitle: dto.map.pinSubtitle ?? null,
+            directionsUrl: dto.map.directionsUrl ?? null,
+            note: dto.map.note ?? null,
+          }
+        : null,
     });
   }
 }

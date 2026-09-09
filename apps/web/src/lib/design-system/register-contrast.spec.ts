@@ -9,18 +9,11 @@ import {
 /**
  * The coloured registers, measured on every ground, in every theme.
  *
- * The rule this exists to enforce is the owner's, stated in as many words:
- * contrast is checked "on every surface the element may sit on, not white
- * alone". That instruction came from a failure — `color.text.muted` shipped
- * with a comment reading "4.68:1 on white", which was true, and white was the
- * only ground anyone had checked; the same token measured 4.48 on the sunken
- * surface and 4.00 / 3.48 / 4.49 on the three dark ones.
- *
- * Coloured registers multiply that risk, because a register is a whole extra
- * ground that no existing check knew about. So every tier of every register
- * is measured here rather than asserted anywhere.
+ * Contrast is checked on every surface an element may sit on, never on white
+ * alone: a register is an extra ground that no surface-level check knows
+ * about, so every tier of every register is measured here rather than asserted
+ * anywhere.
  */
-
 const THEMES = ["light", "dark", "high-contrast"] as const;
 const REGISTERS = ["green", "red", "black"] as const;
 
@@ -113,5 +106,54 @@ describe.each(THEMES)("registers in %s theme", (theme) => {
 
     expect(measured).toBeLessThan(1.4);
     expect(tokens["--color-section-adjacent-separator"]).toBeDefined();
+  });
+});
+
+/**
+ * The page's own text ladder, measured on every page surface.
+ *
+ * Without this block nothing compares a `--color-text-*` token to a
+ * `--color-surface-*` one, which is how the link token kept an "AA on dark
+ * surface" comment that measurement contradicted — 4.17:1 on the dark card
+ * (ADR-0063 D1).
+ *
+ * `text.disabled` is excluded, not overlooked: WCAG 1.4.3 exempts inactive
+ * components and the dimming is the affordance.
+ */const PAGE_TEXT = ["primary", "secondary", "muted", "link"] as const;
+const PAGE_SURFACES = ["base", "raised", "sunken"] as const;
+
+describe.each(THEMES)("page text ladder in %s theme", (theme) => {
+  const tokens = themeTokens(theme);
+
+  describe.each(PAGE_TEXT)("text.%s", (tier) => {
+    const color = tokens[`--color-text-${tier}`];
+
+    it("is declared", () => {
+      expect(color, `--color-text-${tier}`).toMatch(/^#[0-9a-fA-F]{6}$/);
+    });
+
+    it.each(PAGE_SURFACES)("clears AA on surface.%s", (name) => {
+      const surface = tokens[`--color-surface-${name}`];
+      expect(
+        contrastRatio(color, surface),
+        `--color-text-${tier} on --color-surface-${name}`,
+      ).toBeGreaterThanOrEqual(AA_NORMAL_TEXT);
+    });
+  });
+
+  it("keeps the link distinguishable from body text, not only legible", () => {
+    // Not the accessibility floor — WCAG 1.4.1 is satisfied by the underline.
+    // This is the reason a link token exists at all: one that resolves to the
+    // paragraph colour around it is doing no work.
+    //
+    // High-contrast inverts that deliberately, per its own token file: there
+    // the underline carries the link cue and colour stops competing with
+    // legibility, so link and body text are the same black.
+    if (theme === "high-contrast") {
+      expect(tokens["--color-text-link"]).toBe(tokens["--color-text-primary"]);
+      return;
+    }
+
+    expect(tokens["--color-text-link"]).not.toBe(tokens["--color-text-primary"]);
   });
 });

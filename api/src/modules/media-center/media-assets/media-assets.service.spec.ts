@@ -169,3 +169,90 @@ describe('MediaAssetsService', () => {
     });
   });
 });
+
+/**
+ * Public read by id — the gap that blocked every image on the public site.
+ *
+ * Twelve public pages carry a `heroImageId`, the admin panel offers a picker
+ * for it, and the public site had no way to turn that id into a URL: every
+ * route on `media-assets` required `mediaAssets:Read`, so an anonymous request
+ * got a 401. Recorded as an API gap in ADR-0060 §7 and approved for
+ * implementation by the Product Owner on 2026-09-09.
+ */
+describe('MediaAssetsService.findPublicByIds', () => {
+  const makeRepository = () =>
+    ({ findVisibleByIds: jest.fn() }) as unknown as jest.Mocked<MediaAssetsRepository>;
+  const albumModel = {} as never;
+
+  const doc = (id: Types.ObjectId, url: string) =>
+    ({
+      _id: id,
+      file: {
+        url,
+        mimeType: 'image/jpeg',
+        width: 1600,
+        height: 900,
+        size: 1,
+        photographer: null,
+        captureDate: null,
+      },
+      caption: { en: 'c', ar: 'ت' },
+      altText: { en: 'a', ar: 'ب' },
+      displayOrder: 0,
+      isFeatured: false,
+    }) as unknown as MediaAssetDocument;
+
+  it('returns the public-safe shape for each requested id', async () => {
+    const repository = makeRepository();
+    const id = new Types.ObjectId();
+    repository.findVisibleByIds.mockResolvedValue([doc(id, 'https://cdn/a.jpg')]);
+    const service = new MediaAssetsService(repository, albumModel);
+
+    const result = await service.findPublicByIds([id.toString()]);
+
+    expect(result).toEqual([
+      expect.objectContaining({
+        id: id.toString(),
+        file: expect.objectContaining({ url: 'https://cdn/a.jpg' }),
+      }),
+    ]);
+    // The internal file fields must not leak to an anonymous caller.
+    expect(result[0].file).not.toHaveProperty('storageKey');
+    expect(result[0].file).not.toHaveProperty('checksum');
+  });
+
+  it('ignores ids that are not valid ObjectIds instead of throwing', async () => {
+    // A public endpoint is reachable by anyone, so a malformed id is an
+    // ordinary event, not an exceptional one. Throwing would turn a typo in a
+    // CMS field into a 500 on a visitor's page.
+    const repository = makeRepository();
+    repository.findVisibleByIds.mockResolvedValue([]);
+    const service = new MediaAssetsService(repository, albumModel);
+
+    await expect(service.findPublicByIds(['not-an-id', ''])).resolves.toEqual([]);
+    // …and it does not reach the database to learn that nothing valid was
+    // asked for. A query for an empty `$in` is a round trip whose answer is
+    // already known.
+    expect(repository.findVisibleByIds).not.toHaveBeenCalled();
+  });
+
+  it('caps how many ids one anonymous request may resolve', async () => {
+    const repository = makeRepository();
+    repository.findVisibleByIds.mockResolvedValue([]);
+    const service = new MediaAssetsService(repository, albumModel);
+
+    const many = Array.from({ length: 80 }, () => new Types.ObjectId().toString());
+    await service.findPublicByIds(many);
+
+    const passed = repository.findVisibleByIds.mock.calls[0][0];
+    expect(passed).toHaveLength(50);
+  });
+
+  it('returns an empty list when asked for nothing', async () => {
+    const repository = makeRepository();
+    const service = new MediaAssetsService(repository, albumModel);
+
+    await expect(service.findPublicByIds([])).resolves.toEqual([]);
+    expect(repository.findVisibleByIds).not.toHaveBeenCalled();
+  });
+});

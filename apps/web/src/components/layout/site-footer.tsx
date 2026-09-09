@@ -11,43 +11,30 @@ import { isBuilt } from "@/lib/pages/built-routes";
  * Global site footer.
  *
  * Visual source: Figma `Section / Footer`, node 2374:2198, inside
- * `Homepage - AR / RTL (APPROVED BASELINE v1)`. Unlike the header, this node's
- * exported values are already clean master integers (72/64/48/24/16/13) — no
- * R7 scaling to undo.
+ * `Homepage - AR / RTL (APPROVED BASELINE v1)`. That node is clipped out of its
+ * parent frame and renders blank there — read its geometry directly, and use
+ * `720:834` (the same footer on a static page) for visual confirmation.
  *
- * Note: in the approved baseline this node sits at y=8896 inside a parent only
- * 8758px tall, so it is clipped out of the frame and renders blank there. Its
- * geometry and content are intact and were read directly; `720:834` (the same
- * footer on a static page) was used for visual confirmation.
+ * The composition — four columns, their order, the swooshes, the map card, the
+ * legal strip — is protected by CLAUDE.md §3. Colour comes from the black
+ * register (ADR-0059 §D2), never from literal `text-white` or
+ * `--color-brand-black`: that token is `#000000` in every theme and measures
+ * 1.12:1 against the dark page.
  *
- * ── What changed when the registers landed ─────────────────────────────────
+ * Alignment is `start`, not `end`. Both are logical, but `end` means "where
+ * this language stops reading" and puts each language against its own
+ * direction. Chapter 4 §4.11 requires the one logical property rather than a
+ * locale conditional; ADR-0061 D1. Guarded by
+ * `direction-and-logo-contract.spec.ts`.
  *
- * The composition — four columns, their order, the swooshes, the map card,
- * the legal strip — is untouched; CLAUDE.md §3 protects it and nothing here
- * needed it changed. What changed is that the footer had been painting the
- * black register by hand: `--color-brand-black` for the ground and then
- * twenty-one literal `text-white` / `text-white/65` declarations, a raw
- * `#1a1a1a` card, `border-white/8` and `border-white/40`, and twelve
- * hardcoded pixel sizes. Three consequences, all now closed:
+ * Column order is Brand → Quick Links → Location → Contact: the first child
+ * lands on the reading start in either direction, so this order reproduces the
+ * approved composition in both without `flex-row-reverse`, and keeps the
+ * screen-reader order matching the visual one.
  *
- *  - `--color-brand-black` is `#000000` in every theme, so in dark theme the
- *    footer was pure black against a `#131210` page — 1.12:1, no boundary at
- *    all (ADR-0059 §D2). The register resolves to `#4A4942` there instead.
- *  - `white/65` on black measures 9.7:1; the register's own muted tier
- *    measures 11.9:1 and is the value the design system actually publishes.
- *  - one of the twelve sizes was `11px`, below Chapter 4's 13px floor, and it
- *    is not one of the two exceptions ADR-0041 documents. It is `text-caption`
- *    now, like every other small label here.
- *
- * The focus rings were drawn with `outline-offset`, which leaves the gap
- * transparent — so the ring was black-on-black wherever it mattered. They are
- * painted rings now, offset colour included.
- *
- * `useTranslations`, not `getTranslations` — same reasoning as `SiteHeader`
- * (kept a non-async Server Component so tests can render it directly under
- * `<NextIntlClientProvider>`).
+ * `useTranslations`, not `getTranslations` — keeps this a non-async Server
+ * Component so tests can render it directly under `<NextIntlClientProvider>`.
  */
-
 const tone = REGISTER_CLASSES.black;
 
 const FOOTER_LINK = `rounded-xs text-caption ${tone.muted} ${TRANSITION} hover:text-[color:var(--color-section-black-text)] active:text-[color:var(--color-section-black-text-muted)] ${FOCUS}`;
@@ -55,19 +42,28 @@ const FOOTER_LINK = `rounded-xs text-caption ${tone.muted} ${TRANSITION} hover:t
 /**
  * Decorative brand swooshes, Figma nodes 2737:38–41.
  *
- * Positioned with PHYSICAL left/right, deliberately not logical start/end,
- * and deliberately NOT locale-conditional: the approved footer composition is
- * itself a fixed piece of brand art (like the logo), not a text flow that
- * should mirror with reading direction — mirroring it under `dir="ltr"` would
- * flip brand artwork that was never designed to be flipped. Confirmed as the
- * intended behaviour during i18n planning (2026-09-07), and independently
- * required by ADR-0059 §D7.1, which forbids mirroring the ascent vector.
- */
-const decorations = [
-  { src: "/brand/swoosh-red.svg", w: 202, h: 23, className: "left-[-30px] top-[134px] w-[179px]" },
-  { src: "/brand/swoosh-green.svg", w: 289, h: 38, className: "left-[-10px] top-[114px] w-[259px]" },
-  { src: "/brand/swoosh-white.svg", w: 231, h: 26, className: "right-[-5px] top-[270px] w-[204px]" },
-  { src: "/brand/swoosh-red-sm.svg", w: 145, h: 17, className: "right-[-18px] top-[308px] w-[129px]" },
+ * Angle and placement are governed separately, and conflating them breaks
+ * English (ADR-0061 D2):
+ *
+ *  - The ANGLE is fixed brand geometry. `-rotate-35` is a physical transform
+ *    and must never mirror — ADR-0059 §D7.1 forbids mirroring the ascent
+ *    vector, so the strokes rise the same way in both languages.
+ *  - The PLACEMENT belongs to the composition, which does mirror. `start`/`end`
+ *    keep the art beside the Brand and Contact columns as those columns swap
+ *    sides; physical `left`/`right` would leave it crossing the wordmark under
+ *    `dir="ltr"`.
+ *
+ * Drawn only from `xl` (ADR-0061 D3). The artwork has fixed pixel sizes
+ * composed against the 1440px frame while the columns around it shrink, so
+ * below 1280 the strokes reach the text — at 1024 the white one runs through
+ * two words of the brand description, white on white. No Figma frame exists
+ * for a small-screen treatment and §13 forbids inventing one; the art is
+ * `aria-hidden`, so not drawing it costs no content. PENDING FIGMA BACK-SYNC.
+ */const decorations = [
+  { src: "/brand/swoosh-red.svg", w: 202, h: 23, className: "end-[-30px] top-[134px] w-[179px]" },
+  { src: "/brand/swoosh-green.svg", w: 289, h: 38, className: "end-[-10px] top-[114px] w-[259px]" },
+  { src: "/brand/swoosh-white.svg", w: 231, h: 26, className: "start-[-5px] top-[270px] w-[204px]" },
+  { src: "/brand/swoosh-red-sm.svg", w: 145, h: 17, className: "start-[-18px] top-[308px] w-[129px]" },
 ];
 
 export function SiteFooter() {
@@ -86,50 +82,33 @@ export function SiteFooter() {
           key={d.src}
           aria-hidden="true"
           data-decorative="true"
-          className={`pointer-events-none absolute -rotate-35 select-none ${d.className}`}
+          className={`pointer-events-none absolute hidden -rotate-35 select-none xl:block ${d.className}`}
         >
           <Image src={d.src} alt="" width={d.w} height={d.h} className="h-auto w-full" />
         </span>
       ))}
 
-      {/* Column order is Brand → Quick Links → Location → Contact, the reverse of
-          the Figma export's order. The export is LTR-flattened (Contact first =
-          leftmost); under `dir="rtl"` the first child lands on the right, so this
-          order is what reproduces the approved right-to-left reading: Brand on the
-          right, Contact on the left. Reordering the DOM rather than applying
-          `flex-row-reverse` keeps the screen-reader order matching the visual one.
+      {/* Grid breakpoints derive from Design System Chapter 5 §5.2's breakpoint
+          table (CLAUDE.md §1a — PENDING FIGMA BACK-SYNC, no Figma frame exists
+          for the `md`/`lg` states):
+            - ≤767px (§5.2 xs/sm): `grid-cols-1`, per §5.10 Stacking.
+            - `md` (§5.2: 8 cols): `grid-cols-2` — 8÷4 sections.
+            - `lg` (§5.2: 12 cols; §5.10 forbids stacking at lg+): `grid-cols-4`
+              — 12÷4 = 3 tracks each.
+            - `xl`: `grid-cols-4` with the approved 48px gap. At the 1312px
+              content width of the 1440px root frame this is exactly the
+              approved 292px columns: (1312−3×48)÷4.
 
-          Responsive breakpoints below are derived from Design System Chapter 5
-          §5.2's breakpoint table (CLAUDE.md §1a — Pending Figma Back-Sync, no
-          Figma frame exists yet for the `md`/`lg` states):
-            - default (≤767px, §5.2 xs/sm): `grid-cols-1` — full stack, §5.10
-              Stacking ("MUST stack vertically... most important first"); the DOM
-              order above already is that order.
-            - `md:` (768-1023px, §5.2: 8 cols/24px gutter): `grid-cols-2` — 8÷4
-              sections = 2 columns each, an exact division of a documented number.
-            - `lg:` (1024-1279px, §5.2: 12 cols/24px gutter; §5.10: "side-by-side
-              at lg+ MUST NOT stack"): `grid-cols-4` — 12÷4 = 3 tracks each,
-              fractional so it always fits (unlike a fixed px width, which cannot:
-              4×292+3×24=1240px > the 1183px max content width `lg` ever offers).
-            - `xl:` (≥1280px, §5.2 xl/2xl start): stays `grid-cols-4`, only the
-              gap widens to 48px (the pre-existing, already-approved gap value —
-              not a new number). At exactly 1312px of available content width
-              (the 1440px root frame, CLAUDE.md §3) this computes to the original
-              approved 292px columns exactly: (1312-3×48)÷4=292. Deliberately
-              NOT `flex` + fixed `basis-[292px]`: that was tried first and, caught
-              by real-browser pixel measurement (not assumed), overflowed the
-              footer's own `overflow-hidden` and clipped the last column whenever
-              a vertical scrollbar shaved a few px off an otherwise-≥1280px
-              viewport — the exact same "no slack at 1312px" root cause as the
-              original wrap-balloon bug (Part 9.2), just manifesting as a clip
-              instead of a wrap. Grid's `1fr` tracks shrink proportionally instead
-              of overflowing, so every width from 1280px up degrades gracefully
-              while still hitting the exact approved 292px at 1440px. */}
+          Fractional tracks, never `flex` + `basis-[292px]`: fixed widths need
+          1240px at `lg` where only 1183px is offered, and at `xl` they overflow
+          the footer's own `overflow-hidden` and clip the last column whenever a
+          scrollbar shaves a few px off a ≥1280px viewport. `1fr` tracks shrink
+          instead. */}
       <div
         data-testid="footer-columns"
         className="relative grid w-full max-w-[1312px] grid-cols-1 items-start gap-y-12 pb-12 md:grid-cols-2 md:gap-6 lg:grid-cols-4 lg:gap-x-6 xl:gap-12"
       >
-        <section className="flex min-w-0 flex-col items-end gap-3.5">
+        <section className="flex min-w-0 flex-col items-start gap-3.5">
           {/* `variant="mono"` per guide §6.1: the full-colour mark belongs on a
               white or clearly contrasting ground, the monochrome mark
               everywhere else. `currentColor` picks up the register's text
@@ -140,7 +119,7 @@ export function SiteFooter() {
           <h2 className="text-label font-bold">{tFooter("brandName")}</h2>
           <p
             data-testid="footer-brand-description"
-            className={`w-full max-w-[260px] text-end text-caption leading-[1.6] ${tone.muted}`}
+            className={`w-full max-w-[260px] text-start text-caption leading-[1.6] ${tone.muted}`}
           >
             {tFooter("brandDescription")}
           </p>
@@ -171,15 +150,36 @@ export function SiteFooter() {
           </ul>
         </section>
 
-        <nav aria-label={tFooter("quickLinksNav")} className="flex min-w-0 flex-col items-end gap-3">
+        {/* Two sub-columns. Nineteen destinations in one column stand 3.5x
+            the height of the other three, which is no longer the approved
+            four-column footer; ADR-0063 D2 carries the measurements.
+
+            CSS multi-column rather than a second `<nav>` or a nested grid, so
+            the DOM stays one list in one landmark — reading order, tab order
+            and `FOOTER_QUICK_LINKS` order remain one source, and the flow
+            follows `dir` without a locale conditional.
+
+            Three classes here are load-bearing, not cosmetic:
+             - `w-full` — without it the list shrinks to its content (106px in
+               Arabic, 142px in English) and `columns-2` splits that instead of
+               the 288px column.
+             - no `whitespace-nowrap` — the sub-columns are 136px at 1440 and
+               "Organisational Structure" is 142px, so it must be allowed to
+               wrap rather than cross the gutter.
+             - `break-inside-avoid` — keeps a wrapped label's lines together
+               instead of splitting them across the two sub-columns.
+
+            PENDING FIGMA BACK-SYNC: the approved frame shows one nine-item
+            column, and no frame exists for this one. */}
+        <nav aria-label={tFooter("quickLinksNav")} className="flex min-w-0 flex-col items-start gap-3">
           <h2 className="text-caption font-bold">{tFooter("quickLinksTitle")}</h2>
-          <ul className="flex flex-col items-end gap-3 text-end">
+          <ul className="block w-full columns-2 gap-x-4 text-start">
             {FOOTER_QUICK_LINKS.map((item) => (
-              <li key={item.href}>
+              <li key={item.href} className="mb-3 break-inside-avoid last:mb-0">
                 <Link
                   href={item.href}
                   prefetch={isBuilt(item.href) ? undefined : false}
-                  className={`${FOOTER_LINK} whitespace-nowrap`}
+                  className={FOOTER_LINK}
                 >
                   {t(item.key)}
                 </Link>
@@ -188,7 +188,7 @@ export function SiteFooter() {
           </ul>
         </nav>
 
-        <section className="flex min-w-0 flex-col items-end gap-3">
+        <section className="flex min-w-0 flex-col items-start gap-3">
           <h2 className="text-caption font-bold">{tFooter("locationTitle")}</h2>
           <div
             data-testid="footer-map-card"
@@ -205,22 +205,21 @@ export function SiteFooter() {
               />
             </span>
             <span className="flex flex-col items-center gap-1 text-center">
-              {/* Figma specifies Alexandria SemiBold (600) here. The design system
-                  defines exactly four weights — 400/500/700/900 (Chapter 3) — so 600
-                  is not an approved value. Mapped to `bold` rather than minting an
-                  unapproved token (CLAUDE.md §16). */}
+              {/* Figma specifies Alexandria SemiBold (600); Chapter 3 defines
+                  exactly four weights (400/500/700/900), so 600 maps to `bold`
+                  rather than minting an unapproved token (CLAUDE.md §16). */}
               <span className="text-caption font-bold">{tFooter("mapCardCity")}</span>
-              {/* Was `text-[11px]`, below Chapter 4's 13px floor and outside both
-                  ADR-0041 exceptions. `text-caption` is the scale's own smallest
-                  step. */}
+              {/* `text-caption` is the scale's smallest step. Nothing here may
+                  go below Chapter 4's 13px floor — neither ADR-0041 exception
+                  covers this label. */}
               <span className={`text-caption ${tone.muted}`}>{tFooter("mapCardRegion")}</span>
             </span>
           </div>
         </section>
 
-        <section className="flex min-w-0 flex-col items-end gap-3.5">
+        <section className="flex min-w-0 flex-col items-start gap-3.5">
           <h2 className="text-caption font-bold">{tFooter("contactTitle")}</h2>
-          <p className="flex items-start gap-2 text-end">
+          <p className="flex items-start gap-2 text-start">
             <Image
               src="/icons/map-pin.svg"
               alt=""

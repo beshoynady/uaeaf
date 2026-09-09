@@ -7,7 +7,7 @@
       "disabled": { "value": "{color.neutral-warm.400}", "type": "color", "comment": "Deliberately below 4.5:1 — WCAG 1.4.3 exempts inactive UI components, and the dimming is the affordance" },
       "inverse": { "value": "{color.white}", "type": "color" },
       "on-brand": { "value": "{color.white}", "type": "color", "comment": "ADR-0059 — text on any filled brand or semantic ground. Was referenced by role-workbench.tsx and never defined, so the Archive-role button's label resolved by inheritance over a #D32F2F fill. White measures 4.98 on semantic.error, 4.81 on brand.primary, 5.88 on brand.secondary" },
-      "link": { "value": "{color.brand.primary}", "type": "color" }
+      "link": { "value": "{color.green.600}", "type": "color", "comment": "ADR-0063 — measures 6.38 / 6.67 / 6.07 on base/raised/sunken. Not {color.brand.primary}: the identity value is fixed at Pantone 348 C and measures 4.37:1 on surface.sunken, which is why this role is separate from it" }
     },
     "surface": {
       "base": { "value": "{color.neutral-warm.50}", "type": "color", "comment": "ADR-0059 — was {color.white}, identical to `raised`, which left the light theme with no elevation ramp at all (§3.33.1 logged this as a Known Constraint). The page now sits one step below the cards it carries" },

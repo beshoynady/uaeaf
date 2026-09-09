@@ -20,11 +20,8 @@ export interface LocalizedText {
 
 /** `HeroPageSchema` — the trio shared by all twelve singleton page wrappers.
  *
- *  `heroImageId` is a raw `mediaAssets` reference, not a URL. Resolving it
- *  needs `GET /media-assets/:id`, which upstream guards with
- *  `@RequirePermission('mediaAssets', 'Read')` — there is no public read. The
- *  field is carried here because it is part of the contract, and is
- *  deliberately not rendered: see `page-hero.tsx`. */
+ *  `heroImageId` is a raw `mediaAssets` reference, not a URL. Resolve it
+ *  through `fetchPublicMedia()` — `GET /media-assets/public?ids=…`. */
 export interface HeroPage {
   heroImageId: string | null;
   heroTitle: LocalizedText;
@@ -69,6 +66,63 @@ export interface ContactUsPage extends HeroPage {
   officeHours?: LocalizedText;
   website?: string;
   socialLinks?: SocialLink[];
+  /** One line for the location card. The postal `address` is the full eight
+   *  parts the footer and the structured-data block need. */
+  locationSummary?: LocalizedText | null;
+  cardLabels?: ContactCardLabels | null;
+  form?: ContactFormContent | null;
+  map?: ContactMapContent | null;
+}
+
+/** The phone card is absent: its label is `phones[].label`. */
+export interface ContactCardLabels {
+  email?: LocalizedText | null;
+  location?: LocalizedText | null;
+  officeHours?: LocalizedText | null;
+}
+
+/** `value` is one of `CONTACT_MESSAGE_TYPES`; only the label is editable. */
+export interface ContactMessageTypeLabel {
+  value: ContactMessageType;
+  label: LocalizedText;
+}
+
+export const CONTACT_MESSAGE_TYPES = ["Complaint", "Suggestion", "Inquiry", "General"] as const;
+export type ContactMessageType = (typeof CONTACT_MESSAGE_TYPES)[number];
+
+export interface ContactFormContent {
+  title?: LocalizedText | null;
+  consentNote?: LocalizedText | null;
+  messageTypeLabels?: ContactMessageTypeLabel[];
+}
+
+export interface ContactMapContent {
+  title?: LocalizedText | null;
+  imageId?: string | null;
+  pinTitle?: LocalizedText | null;
+  pinSubtitle?: LocalizedText | null;
+  /** Routing target, distinct from `googleMapsUrl`, which opens the place. */
+  directionsUrl?: string | null;
+  note?: LocalizedText | null;
+}
+
+/** `MediaAssetPublicResponseDto` from `GET /media-assets/public?ids=…`.
+ *  Excludes `storageKey`, `checksum` and `albumId` upstream. */
+export interface MediaAssetPublic {
+  id: string;
+  file: {
+    url: string;
+    mimeType: string;
+    width: number;
+    height: number;
+    size: number;
+    photographer: string | null;
+    captureDate: string | null;
+  };
+  caption: LocalizedText;
+  altText: LocalizedText;
+  displayOrder: number;
+  isFeatured: boolean;
 }
 
 /** `FederationPersonnelPublicResponseDto` from `GET /federation-personnel/public`.

@@ -428,6 +428,26 @@
     "page_videos": "Videos",
     "page_board-members": "Board members",
     "page_committees": "Committees",
-    "page_contact-us": "Contact us"
+    "page_contact-us": "Contact us",
+    "field_locationSummary": "Short location (location card)",
+    "field_cardLabels_email": "Email card label",
+    "field_cardLabels_location": "Location card label",
+    "field_cardLabels_officeHours": "Working hours card label",
+    "field_form_title": "Message form heading",
+    "field_form_consentNote": "Consent line under the form",
+    "field_form_messageTypeLabels": "Message type options",
+    "field_map_title": "Map section heading",
+    "field_map_imageId": "Map image",
+    "field_map_pinTitle": "Map pin title",
+    "field_map_pinSubtitle": "Map pin subtitle",
+    "field_map_directionsUrl": "Directions link",
+    "field_map_note": "Note under the map",
+    "addMessageType": "Add message type",
+    "messageTypeValue": "Type",
+    "messageTypeLabel": "Displayed label",
+    "messageType_Complaint": "Complaint",
+    "messageType_Suggestion": "Suggestion",
+    "messageType_Inquiry": "Inquiry",
+    "messageType_General": "General"
   }
 }

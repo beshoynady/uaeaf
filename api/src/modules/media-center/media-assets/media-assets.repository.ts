@@ -23,4 +23,16 @@ export class MediaAssetsRepository extends BaseRepository<MediaAssetDocument> {
       .sort({ displayOrder: 1 })
       .exec();
   }
+
+  /** Resolves a set of asset ids for an anonymous caller. Same visibility
+   *  contract as `findVisibleByAlbum` — hidden and archived assets are
+   *  invisible to the public site exactly as they are to a public album
+   *  page — but keyed by id, because a page references its hero and section
+   *  images individually rather than through an album. */
+  async findVisibleByIds(ids: Types.ObjectId[]): Promise<MediaAssetDocument[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    return this.model.find({ _id: { $in: ids }, isVisible: true, archivedAt: null }).exec();
+  }
 }

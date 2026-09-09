@@ -6,12 +6,27 @@
   "Nav": {
     "home": "الرئيسية",
     "about": "عن الاتحاد",
-    "clubs": "الاندية",
-    "members": "الاعضاء",
-    "tournaments": "البطولات",
-    "federationEvents": "فعاليات الاتحاد",
-    "news": "الاخبار و المقالات",
-    "media": "المركز الاعلامي",
+    "aboutOverview": "نبذة عن الاتحاد",
+    "presidentMessage": "كلمة الرئيس",
+    "boardMembers": "مجلس الإدارة",
+    "committees": "اللجان",
+    "organisationalStructure": "الهيكل التنظيمي",
+    "governance": "الحوكمة والاستراتيجية",
+    "visionMission": "الرؤية والرسالة",
+    "strategicPlan": "الخطة الاستراتيجية",
+    "policies": "السياسات واللوائح",
+    "members": "الأعضاء",
+    "clubs": "الأندية",
+    "clubsDescription": "أعضاء الجمعية العمومية",
+    "athletes": "الرياضيون",
+    "coaches": "المدرّبون",
+    "officials": "الحكّام",
+    "championships": "البطولات",
+    "events": "الفعاليات",
+    "news": "الأخبار والمقالات",
+    "media": "المركز الإعلامي",
+    "photoAlbums": "ألبوم الصور",
+    "videos": "الفيديوهات",
     "contact": "تواصل معنا"
   },
   "Legal": {
@@ -34,7 +49,7 @@
     "switchToDarkMode": "التبديل إلى المظهر الداكن",
     "switchToLightMode": "التبديل إلى المظهر الفاتح",
     "search": "بحث",
-    "switchLanguage": "التبديل إلى الإنجليزية",
+    "switchLanguage": "التبديل إلى {language}",
     "menu": "قائمة التنقّل"
   },
   "Footer": {
@@ -83,6 +98,53 @@
     "map": "الموقع على الخريطة",
     "openMap": "افتح الخريطة",
     "socialLinks": "روابط التواصل"
+  },
+  "Contact": {
+    "cards": {
+      "phone": "الهاتف",
+      "email": "البريد الإلكتروني",
+      "location": "الموقع",
+      "officeHours": "ساعات العمل"
+    },
+    "messageTypes": {
+      "Suggestion": "اقتراح",
+      "Complaint": "شكوى",
+      "Inquiry": "استفسار",
+      "General": "عام"
+    },
+    "form": {
+      "title": "أرسل لنا رسالة",
+      "submit": "إرسال الرسالة",
+      "sending": "جارٍ الإرسال…",
+      "sent": "وصلتنا رسالتك. شكرًا لتواصلك معنا.",
+      "failed": "تعذّر إرسال الرسالة. حاول مرة أخرى.",
+      "requiredHint": "حقل مطلوب",
+      "labels": {
+        "senderName": "الاسم",
+        "senderPhone": "رقم الهاتف",
+        "senderEmail": "البريد الإلكتروني",
+        "messageType": "نوع الرسالة",
+        "subject": "موضوع الرسالة",
+        "messageBody": "الرسالة"
+      },
+      "placeholders": {
+        "senderName": "مثال: محمد أحمد",
+        "senderPhone": "مثال: ‎+971 50 123 4567",
+        "senderEmail": "example@email.com",
+        "messageType": "اختر: اقتراح / شكوى / استفسار",
+        "subject": "عنوان مختصر لرسالتكم",
+        "messageBody": "اكتب رسالتكم بالتفصيل هنا..."
+      },
+      "errors": {
+        "required": "هذا الحقل مطلوب.",
+        "email": "أدخل بريدًا إلكترونيًا صحيحًا."
+      }
+    },
+    "map": {
+      "title": "موقعنا",
+      "viewOnMaps": "عرض الموقع على خرائط Google",
+      "openDirections": "فتح الاتجاهات"
+    }
   },
   "NotFound": {
     "title": "الصفحة غير موجودة",

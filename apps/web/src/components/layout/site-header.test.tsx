@@ -1,145 +1,258 @@
 import { screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { SiteHeader } from "./site-header";
-import { PRIMARY_NAV } from "@/lib/navigation";
+import { PRIMARY_NAV, navDestinations } from "@/lib/navigation";
 import { renderWithIntl } from "@/test/render-with-intl";
-import type { AppLocale } from "@/i18n/routing";
+import { LOCALE_ENDONYM, type AppLocale } from "@/i18n/routing";
 import arMessages from "../../../messages/ar.json";
 import enMessages from "../../../messages/en.json";
 
 const messagesByLocale = { ar: arMessages, en: enMessages } as const;
 
+const groups = PRIMARY_NAV.filter((item) => item.children);
+const topLevelLinks = PRIMARY_NAV.filter((item) => !item.children);
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 describe.each<AppLocale>(["ar", "en"])("SiteHeader (%s)", (locale) => {
   const messages = messagesByLocale[locale];
+  const label = (key: string) => messages.Nav[key as keyof typeof messages.Nav];
   const localePath = (href: string) => `/${locale}${href === "/" ? "" : href}`;
 
-  it("renders a banner landmark containing the primary navigation", () => {
+  it("renders a banner containing the labelled main navigation", () => {
     renderWithIntl(<SiteHeader />, locale);
     const banner = screen.getByRole("banner");
-    expect(within(banner).getByRole("navigation", { name: messages.Header.mainNav })).toBeInTheDocument();
+    expect(
+      within(banner).getByRole("navigation", { name: messages.Header.mainNav }),
+    ).toBeInTheDocument();
   });
 
-  it("renders all nine approved primary nav items as translated links", () => {
+  it("renders each grouping item as a collapsed disclosure button, not a link", () => {
     renderWithIntl(<SiteHeader />, locale);
-    const nav = screen.getByRole("navigation", { name: messages.Header.mainNav });
-    const links = within(nav).getAllByRole("link");
-    expect(links).toHaveLength(9);
-    for (const item of PRIMARY_NAV) {
-      const label = messages.Nav[item.key as keyof typeof messages.Nav];
-      expect(within(nav).getByRole("link", { name: label })).toHaveAttribute("href", localePath(item.href));
+    expect(groups).toHaveLength(3);
+    for (const group of groups) {
+      const trigger = screen.getByRole("button", {
+        name: new RegExp(escapeRegExp(label(group.key))),
+      });
+      expect(trigger).toHaveAttribute("aria-expanded", "false");
+      expect(trigger).toHaveAttribute("aria-controls");
+      // A control that both navigates and discloses can do neither
+      // unambiguously from the keyboard, so a group is never also a link.
+      expect(screen.queryByRole("link", { name: label(group.key) })).toBeNull();
     }
   });
 
-  it("marks the active route with aria-current, not colour alone", () => {
-    renderWithIntl(<SiteHeader activePath="/" />, locale);
-    const active = screen.getByRole("link", { name: messages.Nav.home });
-    expect(active).toHaveAttribute("aria-current", "page");
-    expect(screen.getByRole("link", { name: messages.Nav.clubs })).not.toHaveAttribute("aria-current");
+  it("renders each top-level destination as a real link to its own route", () => {
+    renderWithIntl(<SiteHeader />, locale);
+    expect(topLevelLinks).toHaveLength(5);
+    for (const item of topLevelLinks) {
+      expect(screen.getByRole("link", { name: label(item.key) })).toHaveAttribute(
+        "href",
+        localePath(item.href!),
+      );
+    }
   });
 
-  /**
-   * The five dropdown items render their chevron as a decorative hint only.
-   * Flyout panels (Figma 169:1479 / 169:1492) are a separate increment; until
-   * they exist, advertising `aria-haspopup="menu"` would promise assistive-tech
-   * users a menu that never opens. Each item stays a plain, keyboard-reachable
-   * link to its own landing page.
-   */
-  it("renders dropdown chevrons as decoration, without promising an unbuilt menu", () => {
+  it("carries every destination exactly once, so the tab order is not doubled", () => {
     const { container } = renderWithIntl(<SiteHeader />, locale);
-    const chevrons = container.querySelectorAll('[data-chevron="true"]');
-    expect(chevrons).toHaveLength(5);
-    for (const chevron of chevrons) {
-      expect(chevron).toHaveAttribute("aria-hidden", "true");
-    }
-    expect(container.querySelectorAll("[aria-haspopup]")).toHaveLength(0);
+    const nav = container.querySelector("#primary-nav") as HTMLElement;
+    // Read from the DOM rather than by role: a closed panel's links are
+    // correctly absent from the accessibility tree, and what this rule is
+    // about is that no destination exists TWICE in the markup.
+    const hrefs = [...nav.querySelectorAll("a[href]")].map((a) => a.getAttribute("href"));
+    const expected = navDestinations().map((leaf) => localePath(leaf.href));
+    expect([...hrefs].sort()).toEqual([...expected].sort());
   });
 
-  it("renders the logo as a home link with an accessible name", () => {
-    renderWithIntl(<SiteHeader />, locale);
-    const logo = screen.getByRole("link", { name: messages.Header.homeAriaLabel });
-    expect(logo).toHaveAttribute("href", localePath("/"));
-  });
-
-  it("renders the utility controls (theme, search, language) as real controls", () => {
-    renderWithIntl(<SiteHeader />, locale);
-    // Default (no data-theme set yet): announces the action, switch to dark.
-    expect(screen.getByRole("button", { name: messages.Header.switchToDarkMode })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: messages.Header.search })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: messages.Header.switchLanguage })).toBeInTheDocument();
-  });
-
-  it("provides a skip link to the main content as the first focusable element", () => {
-    renderWithIntl(<SiteHeader />, locale);
-    const skip = screen.getByRole("link", { name: messages.Header.skipLink });
-    expect(skip).toHaveAttribute("href", "#main-content");
+  it("uses the disclosure pattern, never an application menu", () => {
+    const { container } = renderWithIntl(<SiteHeader />, locale);
+    // `role="menu"` / `menuitem` would strip these of their link semantics: a
+    // screen reader stops counting them as links, drops them from its links
+    // list, and announces "menu item" for something that navigates.
+    expect(
+      container.querySelectorAll('[role="menu"], [role="menuitem"], [role="menubar"]'),
+    ).toHaveLength(0);
   });
 });
 
-describe("SiteHeader language toggle", () => {
-  it("points to the other locale's version of the current page", () => {
-    renderWithIntl(<SiteHeader />, "ar");
-    const toggle = screen.getByRole("link", { name: arMessages.Header.switchLanguage });
-    expect(toggle).toHaveAttribute("href", expect.stringContaining("/en"));
-  });
-});
-
-/**
- * Below the row's own width the header had no navigation at all — the nav was
- * `hidden lg:block` and nothing replaced it. IA §8.1 specifies a drawer with
- * the same tree, and PR-006 makes the public layer mobile-priority, so the
- * range that was missing was the one that matters most.
- *
- * The threshold is `xl`, not `lg`: measured in a real browser, the nine
- * approved labels need 1066px of intrinsic width and overflowed a 1024px
- * viewport by 360px. See the component's own note.
- */
-describe("SiteHeader navigation below the row breakpoint", () => {
-  it("keeps one list, not a second copy for small screens", async () => {
-    renderWithIntl(<SiteHeader />, "ar");
-    // Two lists would double the tab order and announce every destination
-    // twice. The count is nine whether the panel is open or closed.
-    expect(screen.getAllByRole("link", { name: arMessages.Nav.clubs })).toHaveLength(1);
-  });
-
-  it("exposes the panel through a labelled button that reports its state", async () => {
-    const { default: userEvent } = await import("@testing-library/user-event");
+describe("SiteHeader disclosure behaviour", () => {
+  it("opens a panel on click and reveals its children", async () => {
     const user = userEvent.setup();
-    renderWithIntl(<SiteHeader />, "ar");
+    renderWithIntl(<SiteHeader />, "en");
+    const trigger = screen.getByRole("button", { name: /About the Federation/ });
 
-    const toggle = screen.getByRole("button", { name: arMessages.Header.menu });
+    expect(screen.queryByRole("link", { name: "Board of Directors" })).toBeNull();
+    await user.click(trigger);
+
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("link", { name: "Board of Directors" })).toHaveAttribute(
+      "href",
+      "/en/about/board-members",
+    );
+  });
+
+  it("closes on Escape and returns focus to the trigger it came from", async () => {
+    const user = userEvent.setup();
+    renderWithIntl(<SiteHeader />, "en");
+    const trigger = screen.getByRole("button", { name: /About the Federation/ });
+
+    await user.click(trigger);
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+
+    trigger.focus();
+    await user.keyboard("{Escape}");
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(trigger).toHaveFocus();
+  });
+
+  it("opens with ArrowDown and lands focus on the first child", async () => {
+    const user = userEvent.setup();
+    renderWithIntl(<SiteHeader />, "en");
+    const trigger = screen.getByRole("button", { name: /^Members/ });
+
+    trigger.focus();
+    await user.keyboard("{ArrowDown}");
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+
+    // `requestAnimationFrame` defers the focus move by a frame.
+    await new Promise((resolve) => setTimeout(resolve, 40));
+    expect(screen.getByRole("link", { name: /Clubs/ })).toHaveFocus();
+  });
+
+  it("moves between a panel's items with the arrow keys", async () => {
+    const user = userEvent.setup();
+    renderWithIntl(<SiteHeader />, "en");
+    await user.click(screen.getByRole("button", { name: /^Members/ }));
+
+    const clubs = screen.getByRole("link", { name: /Clubs/ });
+    clubs.focus();
+    await user.keyboard("{ArrowDown}");
+    expect(screen.getByRole("link", { name: "Athletes" })).toHaveFocus();
+
+    await user.keyboard("{ArrowUp}");
+    expect(clubs).toHaveFocus();
+  });
+
+  it("carries the nested group one level deeper without flattening it", async () => {
+    const user = userEvent.setup();
+    renderWithIntl(<SiteHeader />, "en");
+
+    await user.click(screen.getByRole("button", { name: /About the Federation/ }));
+    const nested = screen.getByRole("button", { name: /Governance & Strategy/ });
+    expect(nested).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("link", { name: "Strategic Plan" })).toBeNull();
+
+    await user.click(nested);
+    expect(nested).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("link", { name: "Vision & Mission" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Policies & Regulations" })).toBeInTheDocument();
+  });
+
+  it("opens only one panel at a time", async () => {
+    const user = userEvent.setup();
+    renderWithIntl(<SiteHeader />, "en");
+    const about = screen.getByRole("button", { name: /About the Federation/ });
+    const members = screen.getByRole("button", { name: /^Members/ });
+
+    await user.click(about);
+    await user.click(members);
+
+    expect(about).toHaveAttribute("aria-expanded", "false");
+    expect(members).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("keeps the meaning Clubs lost when it stopped being top-level", () => {
+    renderWithIntl(<SiteHeader />, "en");
+    // IA §8.1 kept Clubs at top level because it *is* the General Assembly
+    // membership listing. Moving it under Members must not drop that.
+    expect(screen.getByText(enMessages.Nav.clubsDescription)).toBeInTheDocument();
+  });
+});
+
+describe("SiteHeader current-page state", () => {
+  it("marks the current page, and its ancestor group without claiming to be it", async () => {
+    const user = userEvent.setup();
+    const { container } = renderWithIntl(<SiteHeader activePath="/clubs" />, "en");
+    await user.click(screen.getByRole("button", { name: /^Members/ }));
+
+    expect(screen.getByRole("link", { name: /Clubs/ })).toHaveAttribute("aria-current", "page");
+    // `aria-current="page"` on the ancestor would announce the group as the
+    // page the reader is on, which it is not.
+    expect(screen.getByRole("button", { name: /^Members/ })).not.toHaveAttribute("aria-current");
+    expect(container.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
+  });
+});
+
+describe("SiteHeader utilities and drawer", () => {
+  it("renders the utility controls (theme, search, language) as real controls", () => {
+    renderWithIntl(<SiteHeader />, "ar");
+    expect(
+      screen.getByRole("button", { name: arMessages.Header.switchToDarkMode }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: arMessages.Header.search })).toBeInTheDocument();
+    const switcher = screen.getByRole("link", {
+      name: arMessages.Header.switchLanguage.replace("{language}", LOCALE_ENDONYM.en),
+    });
+    expect(within(switcher).getByText(LOCALE_ENDONYM.en)).toHaveAttribute("lang", "en");
+  });
+
+  it("provides a skip link to the main content", () => {
+    renderWithIntl(<SiteHeader />, "en");
+    expect(screen.getByRole("link", { name: enMessages.Header.skipLink })).toHaveAttribute(
+      "href",
+      "#main-content",
+    );
+  });
+
+  it("toggles the drawer and keeps its links out of the tab order while closed", async () => {
+    const user = userEvent.setup();
+    const { container } = renderWithIntl(<SiteHeader />, "en");
+    const toggle = screen.getByRole("button", { name: enMessages.Header.menu });
+
     expect(toggle).toHaveAttribute("aria-expanded", "false");
     expect(toggle).toHaveAttribute("aria-controls", "primary-nav");
+    // The `hidden` attribute, not merely a class: it removes the links from
+    // the accessibility tree and the tab order without depending on a
+    // stylesheet, rather than leaving them reachable behind a closed panel.
+    expect(container.querySelector("#primary-nav")?.className).toMatch(/(?:^|\s)hidden(?:\s|$)/);
 
     await user.click(toggle);
     expect(toggle).toHaveAttribute("aria-expanded", "true");
+    expect(container.querySelector("#primary-nav")?.className).toMatch(/(?:^|\s)block(?:\s|$)/);
   });
 
-  it("takes the collapsed panel out of the tab order rather than hiding it visually", () => {
-    // `hidden` removes the links from the accessibility tree and from tab
-    // order. A panel that is merely off-screen leaves nine focus stops that
-    // go nowhere a keyboard user can see.
-    const { container } = renderWithIntl(<SiteHeader />, "ar");
-    expect(container.querySelector("#primary-nav")?.className).toMatch(/(?:^|\s)hidden(?:\s|$)/);
-  });
-
-  it("closes the panel when a destination is chosen", async () => {
-    const { default: userEvent } = await import("@testing-library/user-event");
+  it("closes the drawer on Escape", async () => {
     const user = userEvent.setup();
-    renderWithIntl(<SiteHeader />, "ar");
+    renderWithIntl(<SiteHeader />, "en");
+    const toggle = screen.getByRole("button", { name: enMessages.Header.menu });
 
-    const toggle = screen.getByRole("button", { name: arMessages.Header.menu });
     await user.click(toggle);
-    await user.click(screen.getByRole("link", { name: arMessages.Nav.clubs }));
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
 
+    toggle.focus();
+    await user.keyboard("{Escape}");
     expect(toggle).toHaveAttribute("aria-expanded", "false");
   });
 
-  it("gives the toggle a 44px touch target", () => {
-    // IA §12 states this as a KPI for every small screen, and this control
-    // exists only on small screens.
-    const toggle = renderWithIntl(<SiteHeader />, "ar").container.querySelector(
-      '[aria-controls="primary-nav"]',
-    );
+  it("gives the drawer trigger a 44px target", () => {
+    const { container } = renderWithIntl(<SiteHeader />, "en");
+    const toggle = container.querySelector('button[aria-controls="primary-nav"]');
     expect(toggle?.className).toMatch(/(?:^|\s)size-11(?:\s|$)/);
+  });
+
+  it("dims the page behind the drawer without adding a control to reach past it", async () => {
+    const user = userEvent.setup();
+    const { container } = renderWithIntl(<SiteHeader />, "en");
+    const scrim = container.querySelector(".nav-scrim")!;
+
+    expect(scrim).toHaveAttribute("aria-hidden", "true");
+    expect(scrim).toHaveAttribute("data-open", "false");
+    expect(scrim.className).toMatch(/pointer-events-none/);
+
+    await user.click(screen.getByRole("button", { name: enMessages.Header.menu }));
+    expect(scrim).toHaveAttribute("data-open", "true");
   });
 });

@@ -7,7 +7,7 @@
       "disabled": { "value": "{color.neutral-warm.600}", "type": "color", "comment": "ADR-0059 — was .700; kept one step below muted. Deliberately under 4.5:1 per WCAG 1.4.3's inactive-component exemption" },
       "inverse": { "value": "{color.black}", "type": "color" },
       "on-brand": { "value": "{color.white}", "type": "color", "comment": "ADR-0059 — filled brand/semantic grounds carry their own colour in both themes, so the text on them does not invert" },
-      "link": { "value": "{color.green.400}", "type": "color", "comment": "Lighter step for AA contrast on dark surface" }
+      "link": { "value": "{color.green.300}", "type": "color", "comment": "ADR-0063 — measures 6.56 / 5.72 / 7.36 on base/raised/sunken. Do not lighten toward green.400: 4.17:1 on surface.raised fails AA on every card" }
     },
     "surface": {
       "base": { "value": "{color.neutral-warm.950}", "type": "color" },

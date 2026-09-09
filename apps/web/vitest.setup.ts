@@ -25,3 +25,29 @@ vi.mock("next/navigation", async (importOriginal) => {
     useSearchParams: () => new URLSearchParams(),
   };
 });
+
+/**
+ * jsdom implements no CSS media-query engine, so `window.matchMedia` does not
+ * exist at all — a component that asks whether it is in the row layout, or
+ * whether the device has a real pointer, throws before it renders.
+ *
+ * The stub answers `false` to every query, which is the same answer the server
+ * snapshot gives: the stacked, no-hover layout. That is deliberate — it makes
+ * the drawer, not the row, the shape every test asserts against unless the
+ * test overrides it, and the drawer is the layer PR-006 calls mobile-priority.
+ * A test that needs the row overrides `window.matchMedia` itself.
+ */
+Object.defineProperty(window, "matchMedia", {
+  writable: true,
+  configurable: true,
+  value: (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  }),
+});

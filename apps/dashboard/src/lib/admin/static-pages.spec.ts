@@ -108,6 +108,84 @@ describe("readPageBody", () => {
     expect(readPageBody(committees, body)).toEqual({ ok: true, body });
   });
 
+  it("nests a dotted field under its group", () => {
+    // The contact page's map and form are objects upstream, and the editor is
+    // a flat list of controls. A dotted name is what joins the two without a
+    // second field kind per group.
+    const contact = findStaticPage("contact-us")!;
+    const result = readPageBody(contact, {
+      ...hero,
+      email: "info@example.test",
+      "map.title": { ar: "موقعنا", en: "Our Location" },
+      "map.directionsUrl": " https://example.test/route ",
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      body: { map: { title: { ar: "موقعنا", en: "Our Location" }, directionsUrl: "https://example.test/route" } },
+    });
+  });
+
+  it("omits a group whose every field was left blank", () => {
+    const contact = findStaticPage("contact-us")!;
+    const result = readPageBody(contact, { ...hero, email: "info@example.test" });
+
+    expect(result).toEqual({ ok: true, body: { ...hero, email: "info@example.test" } });
+  });
+
+  it("keeps only message-type labels the submission endpoint accepts", () => {
+    const contact = findStaticPage("contact-us")!;
+    const result = readPageBody(contact, {
+      ...hero,
+      email: "info@example.test",
+      "form.messageTypeLabels": [
+        { value: "Suggestion", label: { ar: "اقتراح", en: "Suggestion" } },
+        { value: "NotAType", label: { ar: "س", en: "x" } },
+        { value: "Inquiry", label: { ar: "  ", en: "  " } },
+      ],
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      body: {
+        form: {
+          messageTypeLabels: [{ value: "Suggestion", label: { ar: "اقتراح", en: "Suggestion" } }],
+        },
+      },
+    });
+  });
+
+  it("declares a control for every content element the contact page renders", () => {
+    // The screen has to reach every element the public page shows, or an
+    // editor is left with content only a developer can change.
+    const names = findStaticPage("contact-us")!.fields.map((field) => field.name);
+
+    expect(names).toEqual(
+      expect.arrayContaining([
+        "heroImageId",
+        "heroTitle",
+        "heroSubtitle",
+        "email",
+        "phones",
+        "officeHours",
+        "locationSummary",
+        "cardLabels.email",
+        "cardLabels.location",
+        "cardLabels.officeHours",
+        "form.title",
+        "form.consentNote",
+        "form.messageTypeLabels",
+        "map.title",
+        "map.imageId",
+        "map.pinTitle",
+        "map.pinSubtitle",
+        "map.directionsUrl",
+        "map.note",
+        "googleMapsUrl",
+      ]),
+    );
+  });
+
   it("drops fields the page does not declare", () => {
     // `forbidNonWhitelisted` upstream rejects the whole request over one
     // stray key, so a field left over from another page's form would fail

@@ -110,3 +110,263 @@
     min(var(--rise-index), var(--motion-ascent-stagger-steps)) * var(--motion-ascent-stagger)
   );
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+ * Header interaction (2026-09-09)
+ *
+ * Every value below is a token. The design system had already encoded the
+ * principle the owner asked for — "the exit is faster than the entrance" —
+ * as two paired tokens, so it did not need restating as numbers:
+ *
+ *   --motion-transition-enter : 220ms cubic-bezier(0,0,0.2,1)    decelerate
+ *   --motion-transition-exit  : 150ms cubic-bezier(0.4,0,1,1)    accelerate
+ *
+ * Both were declared and neither had ever been used. So were
+ * --motion-transition-overlay, --motion-easing-spring and
+ * --motion-duration-instant, all consumed here.
+ *
+ * Only `opacity` and `transform` are animated. Nothing here animates a
+ * property that forces layout — the disclosure panels change `display`
+ * exactly once per toggle, not per frame.
+ * ══════════════════════════════════════════════════════════════════════════ */
+
+/*
+ * A floating disclosure panel (the header row's dropdowns).
+ *
+ * Kept in the DOM and hidden with `visibility`, not unmounted: an unmounted
+ * panel has no closing animation to play, and `visibility: hidden` already
+ * removes it from the accessibility tree and the tab order, which is the part
+ * that actually matters. The `visibility` delay on close is what lets the fade
+ * finish before the panel stops being paintable.
+ *
+ * Applied only at the row breakpoint (`<bp>:nav-float`). Below it the same
+ * element is an in-flow accordion body and is toggled with `hidden`, because a
+ * `visibility: hidden` block would still occupy its full height in the stack.
+ */
+@utility nav-float {
+  /*
+   * The floating panel stays displayed while closed and is hidden with
+   * `visibility`, which is what lets the fade and the rise actually run: a
+   * `display: none` element has nothing to transition from. `visibility:
+   * hidden` still removes it from the accessibility tree and the tab order,
+   * and it is absolutely positioned here, so staying displayed costs no
+   * layout.
+   *
+   * The panel must therefore NOT carry the `hidden` attribute in this layout
+   * — and no stylesheet can undo that attribute, because Tailwind's preflight
+   * declares `:where([hidden]:not([hidden="until-found"])){display:none
+   * !important}` in the `base` layer, and for `!important` declarations the
+   * cascade REVERSES layer order: an important rule in `base` beats an
+   * important rule in `utilities`. Measured on the live build: the panel read
+   * `display: none` with a 220ms transition it could never play. The attribute
+   * is applied from the layout state in `primary-nav.tsx` instead.
+   */
+  display: block;
+  transition:
+    opacity var(--motion-transition-enter),
+    transform var(--motion-transition-enter),
+    visibility 0s;
+
+  &[data-open="false"] {
+    display: block;
+    opacity: 0;
+    visibility: hidden;
+    /* The Rise: entry along the 45° ascent vector, at the magnitude
+     * ADR-0059 §D7 fixed. Physical translate, so it does not mirror. */
+    transform: translate(calc(-1 * var(--motion-ascent-offset)), var(--motion-ascent-offset));
+    transition:
+      opacity var(--motion-transition-exit),
+      transform var(--motion-transition-exit),
+      visibility 0s linear var(--motion-duration-fast);
+  }
+}
+
+/*
+ * The nav item's indicator: a 2px bar that rises into place along the same
+ * vector on hover and focus, and stays put on the current page.
+ *
+ * The bar moves, never the label. A label that lifts on hover shifts the text
+ * a reader is in the middle of, and across a row of nine it reads as jitter.
+ */
+.nav-indicator {
+  transition:
+    opacity var(--motion-transition-exit),
+    transform var(--motion-transition-exit);
+}
+
+.nav-item:hover .nav-indicator,
+.nav-item:focus-visible .nav-indicator,
+.nav-item[aria-expanded="true"] .nav-indicator {
+  transition:
+    opacity var(--motion-transition-enter),
+    transform var(--motion-transition-enter);
+}
+
+.nav-indicator[data-state="rest"] {
+  opacity: 0;
+  transform: translate(calc(-1 * var(--space-1)), var(--space-1));
+}
+
+.nav-item:hover .nav-indicator[data-state="rest"],
+.nav-item:focus-visible .nav-indicator[data-state="rest"],
+.nav-item[aria-expanded="true"] .nav-indicator[data-state="rest"] {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+
+/* The chevron on a disclosure trigger points at the panel it controls. */
+.nav-chevron {
+  transition: transform var(--motion-transition-exit);
+}
+
+[aria-expanded="true"] > * > .nav-chevron,
+[aria-expanded="true"] .nav-chevron {
+  transform: rotate(180deg);
+  transition: transform var(--motion-transition-enter);
+}
+
+/*
+ * The drawer's scrim. `--motion-transition-overlay` and `--opacity-overlay`
+ * are both tokens that existed for this and had never been used.
+ */
+.nav-scrim {
+  opacity: var(--opacity-overlay);
+  transition:
+    opacity var(--motion-transition-overlay),
+    visibility 0s;
+}
+
+.nav-scrim[data-open="false"] {
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity var(--motion-transition-exit),
+    visibility 0s linear var(--motion-duration-fast);
+}
+
+/*
+ * The header's own response to scrolling.
+ *
+ * Deliberately NOT a height change. Shrinking a sticky header animates a
+ * layout property and moves every pixel of the document under it on every
+ * frame — the one thing the brief's own performance rule rules out. The bar
+ * gains elevation instead: a shadow and a stronger edge, both composited.
+ */
+.site-header {
+  transition:
+    box-shadow var(--motion-transition-enter),
+    border-color var(--motion-transition-enter);
+}
+
+/*
+ * Drawer items rise in sequence. Reuses the existing `.rise-in` mechanism and
+ * its `--rise-index` counter, so the stagger is the same 60ms the rest of the
+ * site uses (Chapter 5 §5.7's 40–80ms band, capped at 10 steps).
+ */
+@media (prefers-reduced-motion: reduce) {
+  /*
+   * The global reset in `globals.css` zeroes durations but not delays, and a
+   * `visibility` delay is what would otherwise leave a panel unpaintable for
+   * 150ms after an instant fade. Zeroed here so the panels appear and vanish
+   * outright, with their function and content unchanged.
+   */
+  .nav-float,
+  .nav-float[data-open="false"],
+  .nav-scrim,
+  .nav-scrim[data-open="false"],
+  .nav-indicator,
+  .nav-chevron,
+  .site-header {
+    transition-delay: 0s !important;
+  }
+
+  .nav-indicator[data-state="rest"],
+  .nav-float[data-open="false"] {
+    transform: none !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+ * Surface interaction — ADR-0065 D5
+ * ══════════════════════════════════════════════════════════════════════════
+ *
+ * A card that responds to the pointer has to respond to the keyboard the same
+ * way, or the response is a decoration for people who use a mouse. `.lift`
+ * therefore keys on `:hover`, `:focus-within` and `:focus-visible` alike, and
+ * an `:active` press returns it to rest rather than inventing a third depth.
+ *
+ * The rise is the ascent vector at quarter strength — the same lower-left →
+ * upper-right direction as `.rise-in`, read off the motif's geometry, not a
+ * generic `translateY(-2px)`.
+ *
+ * Elevation changes by cross-fading a pseudo-element rather than transitioning
+ * `box-shadow`, so this obeys ADR-0009's transform/opacity restriction
+ * literally rather than approximately.
+ */
+.lift {
+  position: relative;
+  box-shadow: var(--elevation-card);
+}
+
+.lift::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  box-shadow: var(--elevation-card-hover);
+  opacity: 0;
+  transition: opacity var(--motion-duration-fast) var(--motion-easing-standard);
+}
+
+.lift:hover::after,
+.lift:focus-within::after,
+.lift:focus-visible::after {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .lift {
+    transition: transform var(--motion-duration-fast) var(--motion-easing-decelerate);
+  }
+
+  .lift:hover,
+  .lift:focus-within,
+  .lift:focus-visible {
+    transform: translate(
+      calc(var(--motion-ascent-offset) / 4),
+      calc(-1 * var(--motion-ascent-offset) / 4)
+    );
+  }
+
+  /* Press settles the card back onto the page. Depth returning to rest reads
+     as contact; a second, deeper hover state reads as a different component. */
+  .lift:active {
+    transform: translate(0, 0);
+    transition-duration: var(--motion-duration-instant);
+  }
+}
+
+/*
+ * The pending state on a submit control.
+ *
+ * Rotation only — the button keeps its label, so the spinner is a second
+ * signal rather than the only one, and a reader with reduced motion still
+ * sees the label change and the control disable.
+ */
+@keyframes uaeaf-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+/* Wrapped rather than left to the global reduced-motion reset: that reset
+   zeroes `animation-duration` but not `animation-iteration-count`, so an
+   infinite animation would survive it as a very fast one. Under `reduce` the
+   ring simply holds still — the button's label and disabled state carry the
+   pending state on their own. */
+@media (prefers-reduced-motion: no-preference) {
+  .spin {
+    animation: uaeaf-spin var(--motion-duration-slower) linear infinite;
+  }
+}

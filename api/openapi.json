@@ -15,6 +15,85 @@
         ]
       }
     },
+    "/api/v1/audit-logs/export": {
+      "get": {
+        "operationId": "AuditLogsController_exportCsv_v1",
+        "parameters": [
+          {
+            "name": "entityType",
+            "required": false,
+            "in": "query",
+            "description": "Collection name, camelCase — e.g. `roles`, `users`.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entityId",
+            "required": false,
+            "in": "query",
+            "description": "History of one specific record.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "actorId",
+            "required": false,
+            "in": "query",
+            "description": "Everything one user did.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "action",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Create",
+                "Update",
+                "Delete",
+                "HardDelete",
+                "StatusChange",
+                "AccessDenied"
+              ]
+            }
+          },
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "default": 0,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "audit-logs"
+        ]
+      }
+    },
     "/api/v1/audit-logs": {
       "get": {
         "operationId": "AuditLogsController_findAll_v1",
@@ -394,6 +473,20 @@
         ]
       }
     },
+    "/api/v1/users/export": {
+      "get": {
+        "operationId": "UsersController_exportCsv_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "users"
+        ]
+      }
+    },
     "/api/v1/users/{id}": {
       "get": {
         "operationId": "UsersController_findOne_v1",
@@ -613,6 +706,40 @@
         "responses": {
           "200": {
             "description": ""
+          }
+        },
+        "tags": [
+          "media-assets"
+        ]
+      }
+    },
+    "/api/v1/media-assets/public": {
+      "get": {
+        "operationId": "MediaAssetsController_findPublicByIds_v1",
+        "parameters": [
+          {
+            "name": "ids",
+            "required": false,
+            "in": "query",
+            "description": "Comma-separated MediaAsset ids. Malformed ids are ignored rather than rejected; at most 50 are resolved per request. Assets that are hidden or archived are simply absent from the response, so the caller must not assume a 1:1 mapping with what it asked for.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MediaAssetPublicResponseDto"
+                  }
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -1777,6 +1904,20 @@
         ]
       }
     },
+    "/api/v1/clubs/export": {
+      "get": {
+        "operationId": "ClubsController_exportCsv_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "clubs"
+        ]
+      }
+    },
     "/api/v1/clubs/{id}": {
       "get": {
         "operationId": "ClubsController_findOne_v1",
@@ -1882,6 +2023,20 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "athletes"
+        ]
+      }
+    },
+    "/api/v1/athletes/export": {
+      "get": {
+        "operationId": "AthletesController_exportCsv_v1",
+        "parameters": [],
         "responses": {
           "200": {
             "description": ""
@@ -5546,6 +5701,20 @@
         ]
       }
     },
+    "/api/v1/contact-messages/export": {
+      "get": {
+        "operationId": "ContactMessagesController_exportCsv_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "contact-messages"
+        ]
+      }
+    },
     "/api/v1/contact-messages/{id}": {
       "get": {
         "operationId": "ContactMessagesController_findOne_v1",
@@ -5838,7 +6007,8 @@
               "HardDelete",
               "Approve",
               "Publish",
-              "EditProtectedData"
+              "EditProtectedData",
+              "Export"
             ]
           }
         },
@@ -6041,7 +6211,8 @@
               "HardDelete",
               "Approve",
               "Publish",
-              "EditProtectedData"
+              "EditProtectedData",
+              "Export"
             ]
           }
         },
@@ -6410,6 +6581,72 @@
           "caption",
           "altText",
           "displayOrder"
+        ]
+      },
+      "MediaFilePublicResponseDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "width": {
+            "type": "number"
+          },
+          "height": {
+            "type": "number"
+          },
+          "size": {
+            "type": "number"
+          },
+          "photographer": {
+            "type": "object",
+            "nullable": true
+          },
+          "captureDate": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "url",
+          "mimeType",
+          "width",
+          "height",
+          "size"
+        ]
+      },
+      "MediaAssetPublicResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "file": {
+            "$ref": "#/components/schemas/MediaFilePublicResponseDto"
+          },
+          "caption": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "altText": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "displayOrder": {
+            "type": "number"
+          },
+          "isFeatured": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "file",
+          "caption",
+          "altText",
+          "displayOrder",
+          "isFeatured"
         ]
       },
       "LoginDto": {
@@ -7726,72 +7963,6 @@
           "assetCount"
         ]
       },
-      "MediaFilePublicResponseDto": {
-        "type": "object",
-        "properties": {
-          "url": {
-            "type": "string"
-          },
-          "mimeType": {
-            "type": "string"
-          },
-          "width": {
-            "type": "number"
-          },
-          "height": {
-            "type": "number"
-          },
-          "size": {
-            "type": "number"
-          },
-          "photographer": {
-            "type": "object",
-            "nullable": true
-          },
-          "captureDate": {
-            "type": "object",
-            "nullable": true
-          }
-        },
-        "required": [
-          "url",
-          "mimeType",
-          "width",
-          "height",
-          "size"
-        ]
-      },
-      "MediaAssetPublicResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "file": {
-            "$ref": "#/components/schemas/MediaFilePublicResponseDto"
-          },
-          "caption": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "altText": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "displayOrder": {
-            "type": "number"
-          },
-          "isFeatured": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "id",
-          "file",
-          "caption",
-          "altText",
-          "displayOrder",
-          "isFeatured"
-        ]
-      },
       "RelatedAlbumSummaryDto": {
         "type": "object",
         "properties": {
@@ -8774,6 +8945,83 @@
           }
         }
       },
+      "ContactCardLabelsDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "location": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "officeHours": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          }
+        }
+      },
+      "ContactMessageTypeLabelDto": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "enum": [
+              "Complaint",
+              "Suggestion",
+              "Inquiry",
+              "General"
+            ]
+          },
+          "label": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          }
+        },
+        "required": [
+          "value",
+          "label"
+        ]
+      },
+      "ContactFormContentDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "consentNote": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "messageTypeLabels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContactMessageTypeLabelDto"
+            }
+          }
+        }
+      },
+      "ContactMapContentDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "imageId": {
+            "type": "string",
+            "description": "MediaAsset id of the map still."
+          },
+          "pinTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "pinSubtitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "directionsUrl": {
+            "type": "string",
+            "description": "Routing target, distinct from googleMapsUrl."
+          },
+          "note": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          }
+        }
+      },
       "UpsertContactUsPageDto": {
         "type": "object",
         "properties": {
@@ -8814,6 +9062,23 @@
             "items": {
               "$ref": "#/components/schemas/SocialLinkDto"
             }
+          },
+          "locationSummary": {
+            "description": "One-line place name for the location card, not the postal address.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "cardLabels": {
+            "$ref": "#/components/schemas/ContactCardLabelsDto"
+          },
+          "form": {
+            "$ref": "#/components/schemas/ContactFormContentDto"
+          },
+          "map": {
+            "$ref": "#/components/schemas/ContactMapContentDto"
           }
         },
         "required": [
@@ -9489,6 +9754,10 @@
           },
           "senderPhone": {
             "type": "string"
+          },
+          "subject": {
+            "type": "string",
+            "description": "The form's subject line. Optional: the public form does not require it."
           },
           "messageBody": {
             "type": "string"

@@ -23,6 +23,11 @@ import type { AlbumDocument } from '../albums/schemas/album.schema.js';
  *  import from `album.schema.ts`). */
 @Injectable()
 export class MediaAssetsService {
+  /** Ceiling on how many assets one anonymous request may resolve. A page
+   *  never legitimately needs more; without it the endpoint is a free bulk
+   *  export of the media table to anyone who can generate ObjectIds. */
+  private static readonly PUBLIC_ID_LIMIT = 50;
+
   constructor(
     private readonly repository: MediaAssetsRepository,
     @InjectModel(Album.name) private readonly albumModel: Model<AlbumDocument>,
@@ -90,6 +95,35 @@ export class MediaAssetsService {
    *  follow-on to ADR-0054). */
   async findPublicByAlbum(albumId: Types.ObjectId): Promise<MediaAssetPublicResponseDto[]> {
     const assets = await this.repository.findVisibleByAlbum(albumId);
+    return assets.map((asset) => this.toPublicResponse(asset));
+  }
+
+  /**
+   * Resolves media ids for the public site.
+   *
+   * Every one of the twelve public pages carries a `heroImageId` and the CMS
+   * offers a picker for it, but every route on this controller required
+   * `mediaAssets:Read` — so the public site could store the reference and
+   * never render the image. Recorded as an API gap in ADR-0060 §7; approved
+   * by the Product Owner on 2026-09-09.
+   *
+   * Batch rather than one-at-a-time because a single page references a hero
+   * plus several section images, and N round trips on a server-rendered page
+   * is N times the latency before first paint.
+   *
+   * Malformed ids are dropped rather than rejected: this endpoint is
+   * reachable by anyone, so a bad id is an ordinary event, and a stale
+   * reference left in a CMS field must not turn a visitor's page into a 500.
+   */
+  async findPublicByIds(ids: readonly string[]): Promise<MediaAssetPublicResponseDto[]> {
+    const valid = ids
+      .filter((id) => Types.ObjectId.isValid(id))
+      .slice(0, MediaAssetsService.PUBLIC_ID_LIMIT)
+      .map((id) => new Types.ObjectId(id));
+    if (valid.length === 0) {
+      return [];
+    }
+    const assets = await this.repository.findVisibleByIds(valid);
     return assets.map((asset) => this.toPublicResponse(asset));
   }
 

@@ -4,7 +4,12 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { LocalizedText } from "@/lib/api/types";
-import { ADDRESS_PARTS, type PageField, type StaticPage } from "@/lib/admin/static-pages";
+import {
+  ADDRESS_PARTS,
+  CONTACT_MESSAGE_TYPES,
+  type PageField,
+  type StaticPage,
+} from "@/lib/admin/static-pages";
 import { StatusMessage } from "@/components/auth/status-message";
 import { TextField } from "@/components/auth/text-field";
 import { BilingualField } from "@/components/admin/bilingual-field";
@@ -19,6 +24,11 @@ interface PhoneRow {
   label: LocalizedText;
   number: string;
 }
+interface MessageTypeRow {
+  value: string;
+  label: LocalizedText;
+}
+
 interface LinkRow {
   platform: string;
   url: string;
@@ -215,7 +225,10 @@ function Field({
   onChange: (name: string, value: unknown) => void;
 }) {
   const t = useTranslations("SitePages");
-  const label = t(`field_${field.name}`);
+  // next-intl reads `.` as a nesting separator, so a dotted field name has to
+  // be flattened before it becomes a message key or a DOM id.
+  const slug = field.name.replace(/\./g, "_");
+  const label = t(`field_${slug}`);
 
   switch (field.kind) {
     case "media":
@@ -235,7 +248,7 @@ function Field({
       const value = (state[field.name] ?? { ar: "", en: "" }) as LocalizedText;
       return (
         <BilingualField
-          id={`field-${field.name}`}
+          id={`field-${slug}`}
           multiline={field.multiline}
           labelAr={t("labelAr", { label })}
           labelEn={t("labelEn", { label })}
@@ -253,7 +266,7 @@ function Field({
     case "text":
       return (
         <TextField
-          id={`field-${field.name}`}
+          id={`field-${slug}`}
           label={label}
           type={field.inputType === "email" ? "email" : "text"}
           inputMode={field.inputType === "email" ? "email" : undefined}
@@ -377,7 +390,97 @@ function Field({
         />
       );
     }
+
+    case "messageTypeLabels": {
+      const rows = (state[field.name] ?? []) as MessageTypeRow[];
+      const replace = (index: number, next: MessageTypeRow) =>
+        onChange(
+          field.name,
+          rows.map((row, i) => (i === index ? next : row)),
+        );
+      // The remaining types, so the same option is not offered twice — the
+      // public select is keyed by value and a duplicate would render twice.
+      const unused = CONTACT_MESSAGE_TYPES.filter(
+        (value) => !rows.some((row) => row.value === value),
+      );
+      return (
+        <RepeatableRows
+          legend={label}
+          rows={rows}
+          disabled={disabled}
+          addLabel={t("addMessageType")}
+          canAdd={unused.length > 0}
+          onAdd={() =>
+            onChange(field.name, [...rows, { value: unused[0], label: { ar: "", en: "" } }])
+          }
+          onRemove={(index) => onChange(field.name, rows.filter((_, i) => i !== index))}
+          renderRow={(row, index) => (
+            <div className="flex flex-1 flex-col gap-4">
+              <SelectField
+                id={`message-type-${index}`}
+                label={t("messageTypeValue")}
+                value={row.value}
+                disabled={disabled}
+                options={CONTACT_MESSAGE_TYPES.filter(
+                  (value) => value === row.value || unused.includes(value),
+                ).map((value) => ({ value, label: t(`messageType_${value}`) }))}
+                onChange={(value) => replace(index, { ...row, value })}
+              />
+              <BilingualField
+                id={`message-type-${index}-label`}
+                labelAr={t("labelAr", { label: t("messageTypeLabel") })}
+                labelEn={t("labelEn", { label: t("messageTypeLabel") })}
+                valueAr={row.label.ar}
+                valueEn={row.label.en}
+                onChangeAr={(ar) => replace(index, { ...row, label: { ...row.label, ar } })}
+                onChangeEn={(en) => replace(index, { ...row, label: { ...row.label, en } })}
+                disabled={disabled}
+                required={false}
+              />
+            </div>
+          )}
+        />
+      );
+    }
   }
+}
+
+/** A labelled select, the same shape as the one on the create-user form. */
+function SelectField({
+  id,
+  label,
+  value,
+  options,
+  disabled,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  options: readonly { value: string; label: string }[];
+  disabled: boolean;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <label htmlFor={id} className="text-label font-medium text-[color:var(--color-text-secondary)]">
+        {label}
+      </label>
+      <select
+        id={id}
+        value={value}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.value)}
+        className="h-12 rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-base)] px-3 text-body text-[color:var(--color-text-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-focus-default)] disabled:cursor-not-allowed"
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
 }
 
 /**
@@ -392,6 +495,7 @@ function RepeatableRows<Row>({
   rows,
   disabled,
   addLabel,
+  canAdd = true,
   onAdd,
   onRemove,
   renderRow,
@@ -400,6 +504,7 @@ function RepeatableRows<Row>({
   rows: readonly Row[];
   disabled: boolean;
   addLabel: string;
+  canAdd?: boolean;
   onAdd: () => void;
   onRemove: (index: number) => void;
   renderRow: (row: Row, index: number) => React.ReactNode;
@@ -436,7 +541,7 @@ function RepeatableRows<Row>({
 
       <button
         type="button"
-        disabled={disabled}
+        disabled={disabled || !canAdd}
         onClick={onAdd}
         className="h-10 self-start rounded-[var(--radius-md)] border border-[color:var(--color-brand-primary)] px-4 text-label font-medium text-[color:var(--color-brand-primary)] transition-colors duration-[var(--motion-duration-fast)] hover:bg-[color:color-mix(in_srgb,var(--color-brand-primary)_8%,var(--color-surface-base))] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-focus-default)] disabled:cursor-not-allowed disabled:border-[color:var(--color-border-default)] disabled:text-[color:var(--color-text-disabled)] active:bg-[color:var(--color-surface-skeleton)]"
       >
@@ -453,7 +558,7 @@ function toFormState(page: StaticPage, record: PageRecord): Record<string, unkno
   const state: Record<string, unknown> = {};
 
   for (const field of page.fields) {
-    const value = stored[field.name];
+    const value = readPath(stored, field.name);
     switch (field.kind) {
       case "localized":
         state[field.name] = isLocalized(value) ? { ar: value.ar, en: value.en } : { ar: "", en: "" };
@@ -483,10 +588,34 @@ function toFormState(page: StaticPage, record: PageRecord): Record<string, unkno
             }))
           : [];
         break;
+      case "messageTypeLabels":
+        state[field.name] = Array.isArray(value)
+          ? value
+              .map((row) => row as MessageTypeRow)
+              .filter((row) => (CONTACT_MESSAGE_TYPES as readonly string[]).includes(row.value))
+              .map((row) => ({
+                value: row.value,
+                label: isLocalized(row.label) ? { ...row.label } : { ar: "", en: "" },
+              }))
+          : [];
+        break;
     }
   }
 
   return state;
+}
+
+/** Reads `a.b` out of a stored record; a plain name is read as itself. */
+function readPath(stored: Record<string, unknown>, name: string): unknown {
+  return name
+    .split(".")
+    .reduce<unknown>(
+      (node, key) =>
+        typeof node === "object" && node !== null
+          ? (node as Record<string, unknown>)[key]
+          : undefined,
+      stored,
+    );
 }
 
 function isLocalized(value: unknown): value is LocalizedText {

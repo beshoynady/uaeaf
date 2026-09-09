@@ -5,7 +5,7 @@ import { PUBLIC_PAGES } from "./public-pages";
  *
  * The approved nine-item navigation (IA §8.1) and the footer's legal strip
  * point at destinations that have no page yet — `/about`, `/members`,
- * `/tournaments`, `/events/federation-events`, `/media`, `/help`,
+ * `/championships`, `/events/federation-events`, `/help`,
  * `/accessibility`, `/privacy`, `/terms`, `/sitemap`. Next.js prefetches every
  * `<Link>` that enters the viewport, so each of those fired a request that came
  * back 404: **451 of them across a 112-page sweep**, roughly ten per page load,

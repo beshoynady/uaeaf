@@ -428,6 +428,26 @@
     "page_videos": "الفيديوهات",
     "page_board-members": "مجلس الإدارة",
     "page_committees": "اللجان",
-    "page_contact-us": "اتصل بنا"
+    "page_contact-us": "اتصل بنا",
+    "field_locationSummary": "الموقع المختصر (بطاقة الموقع)",
+    "field_cardLabels_email": "عنوان بطاقة البريد الإلكتروني",
+    "field_cardLabels_location": "عنوان بطاقة الموقع",
+    "field_cardLabels_officeHours": "عنوان بطاقة ساعات العمل",
+    "field_form_title": "عنوان نموذج الرسالة",
+    "field_form_consentNote": "سطر الموافقة أسفل النموذج",
+    "field_form_messageTypeLabels": "خيارات نوع الرسالة",
+    "field_map_title": "عنوان قسم الخريطة",
+    "field_map_imageId": "صورة الخريطة",
+    "field_map_pinTitle": "عنوان مؤشّر الخريطة",
+    "field_map_pinSubtitle": "وصف مؤشّر الخريطة",
+    "field_map_directionsUrl": "رابط الاتجاهات",
+    "field_map_note": "ملاحظة أسفل الخريطة",
+    "addMessageType": "إضافة نوع رسالة",
+    "messageTypeValue": "النوع",
+    "messageTypeLabel": "التسمية المعروضة",
+    "messageType_Complaint": "شكوى",
+    "messageType_Suggestion": "اقتراح",
+    "messageType_Inquiry": "استفسار",
+    "messageType_General": "عام"
   }
 }

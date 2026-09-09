@@ -177,4 +177,46 @@ describe("motion implementation", () => {
     }
     expect(offenders).toEqual([]);
   });
+  it("never puts a scroll-driven entry and an interaction lift on one element", () => {
+    // `.rise-scroll` is a scroll-driven animation on `transform`, and the
+    // animation origin outranks every normal declaration — so a `.lift` on the
+    // same node has its hover and focus transform silently discarded. The
+    // failure is invisible in review and in a screenshot: the elevation still
+    // cross-fades, so the card looks interactive while never moving.
+    //
+    // The two class names are rarely written side by side. The real defect had
+    // `rise-scroll` in a JSX template and `lift` inside the constant that
+    // template interpolated, so module constants are substituted first —
+    // without that this guard passes over the exact bug it exists to catch.
+    const components = (function walk(dir: string): string[] {
+      return readdirSync(dir).flatMap((entry) => {
+        const full = join(dir, entry);
+        if (statSync(full).isDirectory()) return walk(full);
+        return entry.endsWith(".tsx") ? [full] : [];
+      });
+    })(join(SRC, "components"));
+
+    expect(components.length).toBeGreaterThan(5);
+
+    const offenders: string[] = [];
+    for (const file of components) {
+      const source = readFileSync(file, "utf-8");
+      const constants = new Map<string, string>();
+      for (const [, name, value] of source.matchAll(
+        /const\s+([A-Za-z_$][\w$]*)\s*(?::[^=]+)?=\s*"([^"\n]*)"/g,
+      )) {
+        constants.set(name, value);
+      }
+      const resolve = (text: string) =>
+        text.replace(/\$\{([A-Za-z_$][\w$]*)\}/g, (whole, name) => constants.get(name) ?? whole);
+
+      for (const match of source.matchAll(/"([^"\n]*)"|`([^`]*)`/g)) {
+        const classes = resolve(match[1] ?? match[2] ?? "");
+        if (/\brise-scroll\b/.test(classes) && /\blift\b/.test(classes)) {
+          offenders.push(`${file.split(/[\/]/).slice(-2).join("/")}: ${classes.slice(0, 70)}`);
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
 });

@@ -24,13 +24,22 @@ import { isMongoId } from "./request-shapes";
  *   An editor screen for them cannot exist until it does.
  */
 
+/** A field's `name` may be dotted (`map.title`). The editor keeps a flat map
+ *  of controls; `readPageBody` puts the value back under its group, which is
+ *  the shape the API's nested DTOs expect. */
 export type PageField =
   | { kind: "localized"; name: string; required: boolean; multiline?: boolean }
   | { kind: "media"; name: string }
   | { kind: "text"; name: string; required: boolean; inputType: "email" | "url" | "text" }
   | { kind: "phones"; name: string }
   | { kind: "address"; name: string }
-  | { kind: "socialLinks"; name: string };
+  | { kind: "socialLinks"; name: string }
+  | { kind: "messageTypeLabels"; name: string };
+
+/** The closed vocabulary `contactMessages` validates a submission against.
+ *  An option outside it would be offered on the public form and then refused
+ *  by the endpoint, so the editor cannot introduce one. */
+export const CONTACT_MESSAGE_TYPES = ["Complaint", "Suggestion", "Inquiry", "General"] as const;
 
 export interface StaticPage {
   /** URL segment, message key, and the last part of the API path. */
@@ -84,9 +93,24 @@ export const STATIC_PAGES: readonly StaticPage[] = [
       { kind: "text", name: "website", required: false, inputType: "url" },
       { kind: "text", name: "googleMapsUrl", required: false, inputType: "url" },
       { kind: "localized", name: "officeHours", required: false },
+      { kind: "localized", name: "locationSummary", required: false },
       { kind: "phones", name: "phones" },
       { kind: "address", name: "address" },
       { kind: "socialLinks", name: "socialLinks" },
+      // The three cards whose value lives in a dedicated field above. The
+      // phone card's label is part of `phones` and is edited there.
+      { kind: "localized", name: "cardLabels.email", required: false },
+      { kind: "localized", name: "cardLabels.location", required: false },
+      { kind: "localized", name: "cardLabels.officeHours", required: false },
+      { kind: "localized", name: "form.title", required: false },
+      { kind: "localized", name: "form.consentNote", required: false, multiline: true },
+      { kind: "messageTypeLabels", name: "form.messageTypeLabels" },
+      { kind: "localized", name: "map.title", required: false },
+      { kind: "media", name: "map.imageId" },
+      { kind: "localized", name: "map.pinTitle", required: false },
+      { kind: "localized", name: "map.pinSubtitle", required: false },
+      { kind: "text", name: "map.directionsUrl", required: false, inputType: "url" },
+      { kind: "localized", name: "map.note", required: false, multiline: true },
     ],
   },
 ];
@@ -131,6 +155,22 @@ export function readPageBody(page: StaticPage, value: unknown): PageBodyResult {
   const input = (value ?? {}) as Record<string, unknown>;
   const body: PageBody = {};
 
+  /** Writes a value at `a.b`, creating the group only when something lands in
+   *  it — an empty group would be a stored object the public page has to
+   *  null-check for no reason. */
+  const put = (name: string, written: unknown) => {
+    const dot = name.indexOf(".");
+    if (dot === -1) {
+      body[name] = written;
+      return;
+    }
+    const group = name.slice(0, dot);
+    const leaf = name.slice(dot + 1);
+    const existing = (body[group] as Record<string, unknown>) ?? {};
+    existing[leaf] = written;
+    body[group] = existing;
+  };
+
   for (const field of page.fields) {
     const raw = input[field.name];
 
@@ -141,14 +181,14 @@ export function readPageBody(page: StaticPage, value: unknown): PageBodyResult {
           return REJECT;
         }
         if (text !== null) {
-          body[field.name] = text;
+          put(field.name, text);
         }
         break;
       }
       case "media": {
         if (raw === undefined || raw === null || raw === "") break;
         if (!isMongoId(raw)) return REJECT;
-        body[field.name] = raw;
+        put(field.name, raw);
         break;
       }
       case "text": {
@@ -159,7 +199,7 @@ export function readPageBody(page: StaticPage, value: unknown): PageBodyResult {
         }
         // Lowercased for the same reason the user schema lowercases an
         // email: it is an address, and its case carries no meaning.
-        body[field.name] = field.inputType === "email" ? trimmed.toLowerCase() : trimmed;
+        put(field.name, field.inputType === "email" ? trimmed.toLowerCase() : trimmed);
         break;
       }
       case "phones": {
@@ -171,7 +211,7 @@ export function readPageBody(page: StaticPage, value: unknown): PageBodyResult {
             (entry): entry is { label: LocalizedText; number: string } =>
               entry.label !== null && entry.label !== "invalid" && entry.number.length > 0,
           );
-        if (phones.length > 0) body[field.name] = phones;
+        if (phones.length > 0) put(field.name, phones);
         break;
       }
       case "address": {
@@ -184,7 +224,7 @@ export function readPageBody(page: StaticPage, value: unknown): PageBodyResult {
         }
         // An address with every part blank is not an empty address, it is
         // no address — and sending `{}` would store one.
-        if (Object.keys(address).length > 0) body[field.name] = address;
+        if (Object.keys(address).length > 0) put(field.name, address);
         break;
       }
       case "socialLinks": {
@@ -198,7 +238,21 @@ export function readPageBody(page: StaticPage, value: unknown): PageBodyResult {
           // Both halves or neither: a platform with no link is a dead chip
           // on the public footer, and a link with no platform has no label.
           .filter((entry) => entry.platform.length > 0 && entry.url.length > 0);
-        if (links.length > 0) body[field.name] = links;
+        if (links.length > 0) put(field.name, links);
+        break;
+      }
+      case "messageTypeLabels": {
+        if (!Array.isArray(raw)) break;
+        const labels = raw
+          .map((entry) => entry as { value?: unknown; label?: unknown })
+          .map((entry) => ({ value: String(entry.value ?? ""), label: readLocalized(entry.label) }))
+          .filter(
+            (entry): entry is { value: string; label: LocalizedText } =>
+              (CONTACT_MESSAGE_TYPES as readonly string[]).includes(entry.value) &&
+              entry.label !== null &&
+              entry.label !== "invalid",
+          );
+        if (labels.length > 0) put(field.name, labels);
         break;
       }
     }

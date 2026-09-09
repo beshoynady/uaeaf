@@ -12,9 +12,16 @@
       }
     },
     "accent": {
-      "information": { "value": "{color.steel-blue.500}", "type": "color", "comment": "ADR-0051 — Role/Accent Token, restricted to content-statistics use only (Brand Guide v1.0 §3)" },
-      "classification": { "value": "{color.teal.500}", "type": "color", "comment": "ADR-0051 — Role/Accent Token, restricted to tags/sport-specialty use only" },
-      "featured": { "value": "{color.desert-sand.500}", "type": "color", "comment": "ADR-0051 — Role/Accent Token, restricted to editorial/heritage content only — never CTAs, forms, or generic cards/badges" }
+      "information": { "value": "{color.steel-blue.500}", "type": "color", "comment": "ADR-0065 D2 — role: data and figures (statistics, tables, charts, quantitative emphasis). Never actions or system states. Scope widened from ADR-0051's content-statistics restriction; PENDING BRAND-GUIDE BACK-SYNC" },
+      "classification": { "value": "{color.teal.500}", "type": "color", "comment": "ADR-0065 D2 — role: taxonomy (discipline tags, categories, filters). Never actions or system states. Scope widened from ADR-0051's tags/sport-specialty restriction; PENDING BRAND-GUIDE BACK-SYNC" },
+      "featured": { "value": "{color.desert-sand.500}", "type": "color", "comment": "ADR-0051 — Role/Accent Token, restricted to editorial/heritage content only — never CTAs, forms, or generic cards/badges. Scope unchanged by ADR-0065" }
+    },
+    "category": {
+      "1": { "value": "{color.steel-blue.500}", "type": "color", "comment": "ADR-0065 D3a — categorical scale, index 1. Assigned by position in the schema enum, never by taste; see D3b" },
+      "2": { "value": "{color.teal.700}", "type": "color", "comment": "ADR-0065 D3a — categorical scale, index 2" },
+      "3": { "value": "{color.desert-sand.600}", "type": "color", "comment": "ADR-0065 D3a — categorical scale, index 3" },
+      "4": { "value": "{color.gold.700}", "type": "color", "comment": "ADR-0065 D3a — categorical scale, index 4" },
+      "5": { "value": "{color.silver.700}", "type": "color", "comment": "ADR-0065 D3a — categorical scale, index 5. The scale ends here: a sixth category needs an amendment, not an interpolated value" }
     }
   }
 }
