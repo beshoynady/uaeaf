@@ -92,6 +92,22 @@ function paint(tokens: string[], prefix: string, theme: Parameters<typeof themeT
 
   const body = token.slice(token.indexOf("[") + 1, token.lastIndexOf("]"));
 
+  // `color-mix(in srgb, var(--token) N%, transparent)` — the spelling the
+  // glass recipes use so their alpha is a composition of a *token's* colour
+  // rather than a hand-written white. The prober has to resolve it or it
+  // would silently measure nothing where the translucency actually is.
+  const mixed = body.match(/color-mix\(in_srgb,var\((--[a-z0-9-]+)\)_([\d.]+)%,transparent\)/);
+  if (mixed) {
+    const hex = themeTokens(theme)[mixed[1] as keyof ReturnType<typeof themeTokens>];
+    expect(hex, `${mixed[1]} is not a token in the ${theme} theme`).toBeTruthy();
+    const value = String(hex).replace("#", "");
+    const full = value.length === 3 ? [...value].map((c) => c + c).join("") : value;
+    return {
+      rgb: [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16)) as unknown as readonly number[],
+      alpha: Number(mixed[2]) / 100,
+    };
+  }
+
   const literal = body.match(/rgb\((\d+)_(\d+)_(\d+)(?:\/([\d.]+))?\)/);
   if (literal) {
     return {

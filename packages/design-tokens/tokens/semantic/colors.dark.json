@@ -70,6 +70,8 @@
   "elevation": {
     "card": { "value": "0px 1px 2px rgba(0,0,0,0.4)", "type": "boxShadow", "comment": "ADR-0052 — dark-mode shadows need much higher opacity than light-mode (0.06) to register against an already-dark surface; the surface adapts, brand colors don't invert (Brand Guide v1.0 §11.1 principle applied to elevation)" },
     "card-hover": { "value": "0px 2px 8px rgba(0,0,0,0.45)", "type": "boxShadow", "comment": "ADR-0052" },
+    "panel": { "value": "0px 2px 8px rgba(0,0,0,0.45)", "type": "boxShadow", "comment": "ADR-0066, carrying ADR-0052's rule that a dark surface needs a far higher opacity to register at all." },
+    "panel-hover": { "value": "0px 4px 16px rgba(0,0,0,0.55)", "type": "boxShadow", "comment": "ADR-0066 + ADR-0052" },
     "dropdown": { "value": "0px 2px 8px rgba(0,0,0,0.45)", "type": "boxShadow", "comment": "ADR-0052" },
     "modal": { "value": "0px 8px 24px rgba(0,0,0,0.55)", "type": "boxShadow", "comment": "ADR-0052" }
   },

@@ -287,7 +287,7 @@
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
- * Surface interaction — ADR-0065 D5
+ * Surface interaction — ADR-0065 D5, revised by ADR-0066
  * ══════════════════════════════════════════════════════════════════════════
  *
  * A card that responds to the pointer has to respond to the keyboard the same
@@ -295,13 +295,37 @@
  * therefore keys on `:hover`, `:focus-within` and `:focus-visible` alike, and
  * an `:active` press returns it to rest rather than inventing a third depth.
  *
- * The rise is the ascent vector at quarter strength — the same lower-left →
- * upper-right direction as `.rise-in`, read off the motif's geometry, not a
- * generic `translateY(-2px)`.
+ * ── The rise is vertical, and the diagonal stays where it means something ──
  *
- * Elevation changes by cross-fading a pseudo-element rather than transitioning
- * `box-shadow`, so this obeys ADR-0009's transform/opacity restriction
- * literally rather than approximately.
+ * It used to travel the ascent vector — 4px right and 4px up. ADR-0059 §D7
+ * fixes the identity's angle at 45° and §D7.1 forbids mirroring "motion
+ * derived from The Rise"; neither requires every interaction to travel it,
+ * and on a grid the horizontal half is actively wrong. Cards in a row share
+ * left and right edges, so a card sliding sideways breaks the row's alignment
+ * and the eye reads the *row* as jittering rather than the *card* as raised.
+ * Under RTL, where the vector must not mirror, the card drifts toward the end
+ * of the line — away from the reading edge, which is the opposite of coming
+ * forward. Vertical-only locks every edge to the grid so the only change the
+ * eye registers is depth.
+ *
+ * The diagonal keeps `.rise-in` and `.rise-scroll`: the entrance is the
+ * motion that is genuinely derived from The Rise, and that is where §D7 bites.
+ *
+ * ── Timing ────────────────────────────────────────────────────────────────
+ *
+ * `--motion-duration-instant` (100ms). Chapter 5 §5.6's table maps INSTANT to
+ * "Simple Hover" and FAST (150ms) to "Focus, Toggle"; this shipped on FAST,
+ * which is the wrong rung and invisible as a defect because both are tokens.
+ *
+ * ── Three signals, not one ────────────────────────────────────────────────
+ *
+ * Depth alone is the weakest signal available: a shadow is what a low-vision
+ * reader is least likely to see, and on the dark theme ADR-0052 has to raise
+ * its opacity sevenfold just to make it register. So the edge takes the
+ * action colour and the icon inverts at the same moment. Elevation still
+ * changes by cross-fading a pseudo-element rather than transitioning
+ * `box-shadow`, so ADR-0009's restriction holds literally rather than
+ * approximately.
  */
 .lift {
   position: relative;
@@ -316,7 +340,7 @@
   border-radius: inherit;
   box-shadow: var(--elevation-card-hover);
   opacity: 0;
-  transition: opacity var(--motion-duration-fast) var(--motion-easing-standard);
+  transition: opacity var(--motion-duration-instant) var(--motion-easing-standard);
 }
 
 .lift:hover::after,
@@ -325,24 +349,39 @@
   opacity: 1;
 }
 
+/* The icon answers the card, not itself: the swap keys on the card's hover so
+   a pointer anywhere on the card lights it, which is what makes the whole
+   rectangle read as one control. Colour only — no geometry, no layout. */
+.card-icon {
+  transition:
+    background-color var(--motion-duration-instant) var(--motion-easing-standard),
+    border-color var(--motion-duration-instant) var(--motion-easing-standard),
+    color var(--motion-duration-instant) var(--motion-easing-standard);
+}
+
+.lift:hover .card-icon,
+.lift:focus-within .card-icon,
+.lift:focus-visible .card-icon {
+  background-color: var(--color-brand-primary);
+  border-color: var(--color-brand-primary);
+  color: var(--color-text-on-brand);
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .lift {
-    transition: transform var(--motion-duration-fast) var(--motion-easing-decelerate);
+    transition: transform var(--motion-duration-instant) var(--motion-easing-decelerate);
   }
 
   .lift:hover,
   .lift:focus-within,
   .lift:focus-visible {
-    transform: translate(
-      calc(var(--motion-ascent-offset) / 4),
-      calc(-1 * var(--motion-ascent-offset) / 4)
-    );
+    transform: translateY(calc(-1 * var(--motion-ascent-offset) / 4));
   }
 
   /* Press settles the card back onto the page. Depth returning to rest reads
      as contact; a second, deeper hover state reads as a different component. */
   .lift:active {
-    transform: translate(0, 0);
+    transform: translateY(0);
     transition-duration: var(--motion-duration-instant);
   }
 
@@ -352,13 +391,20 @@
      contradicts the state it is in. */
   .lift:disabled,
   .lift[aria-disabled="true"] {
-    transform: translate(0, 0);
+    transform: translateY(0);
   }
 }
 
 .lift:disabled::after,
 .lift[aria-disabled="true"]::after {
   opacity: 0;
+}
+
+.lift:disabled .card-icon,
+.lift[aria-disabled="true"] .card-icon {
+  background-color: var(--color-surface-sunken);
+  border-color: var(--color-border-strong);
+  color: var(--color-brand-primary);
 }
 
 /*

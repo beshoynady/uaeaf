@@ -1,7 +1,13 @@
 import type { ReactNode } from "react";
 import { UaeafMotif } from "@/components/brand/uaeaf-motif";
 import { CONTAINER, REGISTER_CLASSES, type Register } from "./section";
-import { HERO_COMPOSITION, HERO_MEASURE, HERO_MOTIF, HERO_TEXT } from "./surface";
+import {
+  HERO_COMPOSITION,
+  HERO_MEASURE,
+  HERO_MOTIF,
+  HERO_TEXT,
+  HERO_VIEWPORT,
+} from "./surface";
 
 /**
  * The hero every public listing page opens with.
@@ -46,6 +52,7 @@ export function PageHero({
   subtitle,
   breadcrumb,
   titleId,
+  fillsFirstScreen = false,
 }: {
   register: Register;
   title: string;
@@ -55,6 +62,25 @@ export function PageHero({
   subtitle: string | null;
   breadcrumb?: ReactNode;
   titleId: string;
+  /**
+   * Take the whole first screen, header included.
+   *
+   * Off by default, and that default is a measured decision rather than
+   * caution. A hero that owns the screen has to have something to fill it
+   * with: the contact page's does — a photograph and four cards — and reads
+   * as one composed opening. These eleven are typography-led by design
+   * (§3.34.2 calls the Quiet/Institutional pages exactly that), so the same
+   * rule turned an 804px band into a flat register field holding a title and
+   * one line of subtitle, with roughly 550px of nothing. That is the dead
+   * space the height rule was meant to remove, arriving through the rule
+   * itself.
+   *
+   * So the standard is "the first screen is one composed unit", and the
+   * height is how a hero achieves that when it has the material. Reported to
+   * the owner rather than decided quietly: the flag exists so turning it on
+   * for the other eleven is one edit once they carry hero imagery.
+   */
+  fillsFirstScreen?: boolean;
 }) {
   const tone = REGISTER_CLASSES[register];
 
@@ -63,7 +89,9 @@ export function PageHero({
       aria-labelledby={titleId}
       data-register={register}
       data-testid="page-hero"
-      className={`w-full overflow-hidden ${tone.surface}`}
+      className={`flex w-full flex-col justify-center overflow-hidden ${
+        fillsFirstScreen ? HERO_VIEWPORT : ""
+      } ${tone.surface}`}
     >
       <div className={`${CONTAINER} ${HERO_COMPOSITION} py-12 md:py-16 lg:py-20`}>
         <div className={HERO_TEXT}>

@@ -1,0 +1,186 @@
+/*
+ * The field: a label printed on the edge of its own control.
+ *
+ * ── What this is not ──────────────────────────────────────────────────────
+ *
+ * It is not the floating-label pattern that replaces the label with a
+ * placeholder. That one fails the moment it is needed: the reader fills six
+ * fields, comes back to check the third, and the only thing that said what it
+ * was has been overwritten by their own answer. Here the label *moves* and
+ * never leaves — it is readable while typing, while correcting, and while
+ * reading the finished form back.
+ *
+ * The DOM order stays `<label>` then control, which Chapter 8 L2 §F.1 makes a
+ * MUST. Only the painted position changes.
+ *
+ * ── Why every movement is a transform ─────────────────────────────────────
+ *
+ * The obvious implementation animates `top` from 50% to 0. `top` is a layout
+ * property: ADR-0009 and Chapter 5 §5.6 permit `transform` and `opacity` and
+ * nothing else for interactive motion, because everything else forces the
+ * browser to re-lay-out the page on every frame. So the label sits at a fixed
+ * centre and travels by exactly half the control's height — which is why the
+ * control's height is a token rather than whatever its content happens to
+ * need.
+ *
+ * ── The notch ─────────────────────────────────────────────────────────────
+ *
+ * The label carries the field's own surface behind it, so where it crosses
+ * the top border the line simply stops. `--field-surface` follows the field's
+ * state, so the gap matches whichever ground is currently behind the text
+ * rather than a colour chosen once and hoped for.
+ */
+
+.field {
+  position: relative;
+  /* Recessed at rest, raised on focus. The step is a surface change, not a
+     hand-drawn inner shadow: `--color-surface-sunken` is the system's own
+     answer to "below the plane". */
+  --field-surface: var(--color-surface-sunken);
+}
+
+.field:focus-within {
+  --field-surface: var(--color-surface-raised);
+}
+
+/* 13 ÷ 16 — the ratio between `--typography-label-*` and `--typography-body-*`.
+   Written as a number because `calc()` cannot divide one length by another;
+   the two tokens it is derived from are named here so the derivation is
+   auditable rather than a taste decision. */
+.field {
+  --field-label-scale: 0.8125;
+}
+
+.field-label {
+  position: absolute;
+  inset-inline-start: var(--space-3);
+  top: 50%;
+  z-index: 1;
+  max-width: calc(100% - var(--space-8));
+  padding-inline: var(--space-1);
+  background-color: var(--field-surface);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* The label is a passenger: clicks belong to the control underneath it, and
+     the `<label for>` association still moves focus there. */
+  pointer-events: none;
+  transform: translateY(-50%);
+  transform-origin: 0 50%;
+}
+
+/* The origin is the reading edge, so the label shrinks toward the corner it
+   will sit in rather than toward the middle of the field. */
+[dir="rtl"] .field-label {
+  transform-origin: 100% 50%;
+}
+
+/*
+ * Floated: focused, already answered, or a control that has no empty state.
+ *
+ * A `<select>` always has a value, so `:placeholder-shown` never matches it
+ * and its label would sit on top of the selected option forever. Naming it
+ * here is the whole fix.
+ */
+.field:focus-within .field-label,
+.field:has(.field-control:not(:placeholder-shown)) .field-label,
+.field:has(select.field-control) .field-label {
+  color: var(--color-text-primary);
+  transform: translateY(calc(-50% - var(--space-6))) scale(var(--field-label-scale));
+}
+
+/*
+ * The example appears when it is useful and not before.
+ *
+ * At rest the label occupies the middle of the field; a placeholder there
+ * would sit under it. Once the label has moved up, the space it left is
+ * exactly where an example belongs — and it is gone again the moment the
+ * reader types over it.
+ */
+.field-control::placeholder {
+  color: var(--color-text-secondary);
+  opacity: 0;
+}
+
+.field:focus-within .field-control::placeholder {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .field-label {
+    transition:
+      transform var(--motion-duration-fast) var(--motion-easing-standard),
+      color var(--motion-duration-fast) var(--motion-easing-standard);
+  }
+
+  .field-control::placeholder {
+    transition: opacity var(--motion-duration-fast) var(--motion-easing-standard);
+  }
+}
+
+/*
+ * The control itself.
+ *
+ * `--space-12` is 48px: above WCAG 2.5.8's 44px floor with room for the
+ * border, and the value the label's travel is derived from. Padding leaves
+ * the top edge clear so the floated label crosses a line, not a letter.
+ */
+.field-control {
+  min-height: var(--space-12);
+  width: 100%;
+  border-radius: var(--radius-md);
+  background-color: var(--field-surface);
+  color: var(--color-text-primary);
+  /* Start only. This rule is unlayered and therefore beats Tailwind's
+     utilities, so setting `padding-inline` here silently removed the `pe-11`
+     that reserves room for a field's trailing icon — visible as the message-
+     type option running underneath its own chevron. The end padding stays
+     with the control that knows whether it has an icon. */
+  padding-inline-start: var(--space-3);
+  padding-block: var(--space-3);
+}
+
+/*
+ * A textarea is the one control that is taller than one line, so its label
+ * has nothing to be vertically centred against — it sits on the first line
+ * instead, and travels the same distance from there.
+ */
+.field-textarea .field-label {
+  top: calc(var(--space-6) + 1px);
+}
+
+/*
+ * Raised on focus: the recess fills in, the surface comes up to the panel's
+ * own, and the elevation appears. Three changes, one moment — the same
+ * grammar the cards use.
+ */
+.field:focus-within .field-control {
+  box-shadow: var(--elevation-card);
+}
+
+/*
+ * A field in error keeps its own edge, and the message beneath it carries an
+ * icon: Chapter 8 L2 §F.3 forbids relying on red alone.
+ */
+.field-invalid .field-label {
+  color: var(--color-semantic-error);
+}
+
+/*
+ * The field that takes the slack.
+ *
+ * When two panels in a row are made equal in height, the shorter one gains
+ * space that has to go somewhere. Putting it under the submit button as
+ * padding would make the panels equal and say nothing; giving it to the
+ * message box makes a taller form a *roomier* one, which is the only reading
+ * of that space a person filling in the form would welcome.
+ */
+.field-textarea {
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.field-textarea .field-control {
+  height: 100%;
+}

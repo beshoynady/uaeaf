@@ -70,6 +70,8 @@
   "elevation": {
     "card": { "value": "{elevation.1}", "type": "boxShadow" },
     "card-hover": { "value": "{elevation.2}", "type": "boxShadow" },
+    "panel": { "value": "{elevation.2}", "type": "boxShadow", "comment": "ADR-0066 — a large container standing IN the flow, not floating above it. It borrowed {elevation.dropdown} before this token existed: the right value under a name that described a different object, which is how a component ends up documented as a menu." },
+    "panel-hover": { "value": "{elevation.3}", "type": "boxShadow", "comment": "ADR-0066 — one rung deeper than a card's hover, because a panel is larger and the same shadow reads as less lift on more area." },
     "dropdown": { "value": "{elevation.2}", "type": "boxShadow" },
     "modal": { "value": "{elevation.4}", "type": "boxShadow" }
   },

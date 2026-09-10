@@ -166,3 +166,101 @@ describe("the raised-surface standard", () => {
     }
   });
 });
+
+/** The declaration block a CSS selector opens, found by name rather than by a
+ *  regex that has to guess where the rule ends. */
+function ruleFor(css: string, selector: string): string {
+  const at = css.indexOf(selector);
+  if (at === -1) return "";
+  const open = css.indexOf("{", at);
+  return css.slice(at, css.indexOf("}", open) + 1);
+}
+
+describe("the interaction standard", () => {
+  const standard = stripComments(readFileSync(SURFACE, "utf-8"));
+  const motion = readFileSync(join(SRC, "styles", "motion.css"), "utf-8");
+
+  it("times a hover at the rung Chapter 5 §5.6 maps to hover", () => {
+    // §5.6's table is explicit: INSTANT (100ms) is "Simple Hover"; FAST
+    // (150ms) is "Focus, Toggle". The lift shipped on FAST — the wrong rung,
+    // and invisible as a defect because both rungs are tokens.
+    // The transform transition lives in the second `.lift {` block, inside
+    // the reduced-motion guard — `ruleFor` finds the first, which carries
+    // only position and elevation. Ask for the declaration by what it
+    // declares, not by the order it happens to appear in.
+    // Scoped to `.lift`, which is the hover. A page transition and a nav
+    // panel also transition a transform and are mapped to other rungs — a
+    // rule that demanded INSTANT everywhere would be enforcing the opposite
+    // of §5.6's table.
+    const block = motion.slice(motion.indexOf("@media (prefers-reduced-motion: no-preference) {", motion.indexOf(".lift {")));
+    const rule = block.slice(0, block.indexOf(".lift:hover,"));
+    expect(rule, "the lift declares no transform transition").toContain("transition: transform");
+    expect(rule, "a hover is timed off Chapter 5 §5.6's hover rung").toContain(
+      "--motion-duration-instant",
+    );
+  });
+
+  it("keeps the ascent vector on the entrance and off the hover", () => {
+    // ADR-0059 §D7 fixes the identity's angle at 45°, and §D7.1 forbids
+    // mirroring "motion derived from The Rise" — which is the entrance. It
+    // does not require every interaction to travel that vector, and on a grid
+    // the horizontal half of a diagonal breaks the row's alignment: the eye
+    // reads the row as jittering rather than the card as rising. Under RTL,
+    // where the vector must not mirror, the card drifts toward the end of the
+    // line — away from the reading edge, the opposite of coming forward.
+    expect(motion, "the entrance no longer travels the ascent vector").toContain(
+      "--motion-ascent-offset",
+    );
+    const hover = ruleFor(motion, ".lift:hover,");
+    expect(hover, "the lift declares no hover state").not.toEqual("");
+    expect(hover, "the hover still travels diagonally").not.toContain("translate(calc");
+    expect(hover, "the hover no longer rises").toContain("translateY");
+  });
+
+  it("answers a hover on the edge and the icon, not on the shadow alone", () => {
+    // A card that changes only its depth is read by its shadow — the one
+    // signal a low-vision reader is least likely to see. Three coordinated
+    // signals make the whole card one interactive unit.
+    expect(standard, "no interactive edge in the standard").toContain("CARD_INTERACTIVE");
+    expect(standard, "no icon treatment in the standard").toContain("CARD_ICON");
+    expect(motion, "the icon does not answer the card's hover").toContain(".lift:hover .card-icon");
+  });
+
+  it("animates nothing that forces layout", () => {
+    // ADR-0009 and Chapter 5 §5.6. Colour is not motion, so `transition-colors`
+    // stays legal; a transition on a box property does not.
+    const offenders = [...motion.matchAll(/transition:([^;]+);/g)]
+      .map((m) => m[1])
+      .filter((v) => /(width|height|top|left|right|bottom|margin|padding|inset)/.test(v));
+    expect(offenders).toEqual([]);
+  });
+});
+
+describe("the layout standard", () => {
+  const standard = stripComments(readFileSync(SURFACE, "utf-8"));
+
+  it("makes two panels in a row equal in height", () => {
+    // Not alignment for its own sake: a row whose panels end at different
+    // heights reads as one of them being unfinished. The slack is absorbed by
+    // the element that can use it — the map grows, the message box grows —
+    // never by empty padding.
+    expect(standard).toContain("PANEL_ROW");
+    expect(standard).toContain("PANEL_FILL");
+    expect(standard).toContain("items-stretch");
+  });
+
+  it("sizes a hero to the screen minus the header, in a unit that survives a phone", () => {
+    // `vh` on a phone measures the viewport with the browser chrome hidden,
+    // so a `100vh` hero is taller than the screen the reader is looking at
+    // until they scroll. `svh` is the small viewport — chrome shown — which
+    // is what "fills the first screen" has to mean.
+    //
+    // The header is `h-24`: a fixed 96px that never shrinks, so the hero is
+    // the screen minus one spacing token rather than minus a literal.
+    expect(standard).toContain("HERO_VIEWPORT");
+    expect(standard).toContain("100svh");
+    expect(standard, "the hero height is not derived from a token").toContain("var(--space-24)");
+    const bareVh = /[^s]\b\d+vh\b/.test(standard);
+    expect(bareVh, "a bare vh unit does not survive a phone's browser bars").toBe(false);
+  });
+});

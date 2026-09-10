@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "@uaeaf/design-tokens/build/css/index.css";
 @import "../../styles/motion.css";
+@import "../../styles/forms.css";
 
 /*
  * Chapter 21 §21.2/§21.3: Tailwind theme MUST derive from the generated CSS Variables
@@ -28,6 +29,8 @@
   /* Chapter 3 elevation.* -> Tailwind's --shadow-* namespace (shadow-card, shadow-modal, ...) */
   --shadow-card: var(--elevation-card);
   --shadow-card-hover: var(--elevation-card-hover);
+  --shadow-panel: var(--elevation-panel);
+  --shadow-panel-hover: var(--elevation-panel-hover);
   --shadow-dropdown: var(--elevation-dropdown);
   --shadow-modal: var(--elevation-modal);
 

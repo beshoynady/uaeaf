@@ -8,12 +8,14 @@ import { cloudinarySrcSet } from "@/lib/api/cloudinary-srcset";
 import { ContactIcon, type ContactIconName } from "@/components/ui/contact-icon";
 import { TOUCH_TARGET } from "@/components/ui/interactive";
 import {
-  CARD as CARD_SURFACE,
+  CARD_ICON,
+  CARD_INTERACTIVE,
+  GLASS_OVER_ART_MD,
   HERO_COMPOSITION,
   HERO_MEASURE,
   HERO_MOTIF,
   HERO_TEXT,
-  LIFT,
+  HERO_VIEWPORT,
 } from "@/components/ui/surface";
 import { UaeafMotif } from "@/components/brand/uaeaf-motif";
 import { text } from "@/components/pages/static-page-screen";
@@ -71,7 +73,7 @@ const CARD_ICONS: readonly ContactIconName[] = ["phone", "mail", "mapPin", "cloc
  * solved against the worst admissible input, a pure white photograph. Both
  * situations are measured by `contact-card-contrast.spec.ts`.
  */
-const CARD = `${LIFT} ${CARD_SURFACE} flex w-full flex-col items-center justify-center gap-2 px-4 py-6 text-center text-[color:var(--color-text-primary)] md:border-[rgb(255_255_255/0.35)] md:bg-[rgb(255_255_255/0.12)] md:text-[color:var(--color-text-on-brand)] md:shadow-none md:backdrop-blur-[12px] xl:gap-3 xl:px-6 xl:py-8`;
+const CARD = `${CARD_INTERACTIVE} ${GLASS_OVER_ART_MD} flex w-full items-center gap-4 px-4 py-3 text-start text-[color:var(--color-text-primary)] md:flex-col md:justify-center md:gap-2 md:py-6 md:text-center md:text-[color:var(--color-text-on-brand)] md:shadow-none xl:gap-3 xl:px-6 xl:py-8`;
 
 /** The overlay that makes the band a legible ground.
  *
@@ -132,8 +134,12 @@ export async function ContactHero({
   ];
 
   return (
-    <section aria-labelledby={titleId} data-testid="contact-hero" className="relative">
-      <div className="relative flex min-h-[300px] flex-col justify-center overflow-hidden px-4 pt-12 pb-8 sm:px-6 md:min-h-[551px] md:px-8 md:pb-[360px] lg:px-12 xl:min-h-[550px] xl:px-16 xl:pb-[236px]">
+    <section
+      aria-labelledby={titleId}
+      data-testid="contact-hero"
+      className={`relative flex flex-col ${HERO_VIEWPORT}`}
+    >
+      <div className="relative flex min-h-0 flex-1 flex-col justify-center overflow-hidden px-4 pt-8 pb-8 sm:px-6 md:px-8 md:pb-[360px] lg:px-12 xl:px-16 xl:pb-[236px]">
         {heroImage ? (
           isCloudinaryUrl(heroImage.file.url) ? (
             // A plain <img>, not next/image: the resizing is the CDN's, and
@@ -209,9 +215,15 @@ export async function ContactHero({
         </div>
       </div>
 
+      {/* `shrink-0` is load-bearing below `md`, where this is a flex item in a
+          section whose height is the first screen. Flexbox was compressing it
+          by 10px to make the section's numbers add up, and grid items do not
+          shrink with their container — so the fourth card ran past the fold
+          while every box measured correct. The band above takes the
+          difference instead: it is the element that can afford to. */}
       <ul
         data-testid="contact-cards"
-        className="mx-auto grid w-full max-w-[1248px] grid-cols-1 gap-3 px-4 pt-6 sm:px-6 md:absolute md:inset-x-0 md:bottom-8 md:grid-cols-2 md:gap-4 md:px-8 md:pt-0 lg:px-12 xl:grid-cols-4 xl:gap-6 xl:px-16"
+        className="mx-auto grid w-full max-w-[1248px] shrink-0 grid-cols-1 gap-2 px-4 pt-4 sm:px-6 md:absolute md:inset-x-0 md:bottom-8 md:grid-cols-2 md:gap-4 md:px-8 md:pt-0 lg:px-12 xl:grid-cols-4 xl:gap-6 xl:px-16"
       >
         {cards.map((card, index) => (
           // Entry and interaction on two elements, never one. A scroll-driven
@@ -220,14 +232,33 @@ export async function ContactHero({
           // `.lift` on the same node silently cancel the hover lift. Measured
           // on a live page: the card stayed at `matrix(1,0,0,1,0,0)` under
           // `:focus-within`. Guarded by `motion-contract.spec.ts`.
-          <li key={card.label} className="rise-scroll flex">
+          // `.rise-in`, not `.rise-scroll`. A scroll-driven entry belongs to
+          // content below the fold; these cards are now inside the first
+          // screen by construction, so a scroll animation sits near zero
+          // progress on first paint and holds the card ten pixels low —
+          // measured, and visible as the fourth card being clipped by the
+          // bottom edge. The page-load entrance is the one that matches where
+          // they actually are, and it still travels the ascent vector.
+          <li
+            key={card.label}
+            className="rise-in flex"
+            style={{ "--rise-index": index + 3 } as React.CSSProperties}
+          >
             <div className={CARD}>
-              {/* `currentColor`, not a fixed white: the ring has to follow
-                  whichever ground the card is on, and naming the colour twice
-                  is how one of the two gets forgotten. */}
-              <span className="flex size-11 items-center justify-center rounded-full border-2 border-current xl:size-13">
+              {/* Two grounds, two treatments, one class list. On the stacked
+                  card the icon is the shared `CARD_ICON` — Federation Green
+                  on the recessed step, inverting to white-on-green when the
+                  card is hovered. On the pinned card the ground is a
+                  photograph under a fixed overlay, where that green measures
+                  3.1:1 and reads as dim, so the ring falls back to
+                  `currentColor` (the band's white) and the hover inversion is
+                  the same green fill either way. */}
+              <span
+                className={`${CARD_ICON} size-11 md:border-2 md:border-current md:bg-transparent md:text-[color:var(--color-text-on-brand)] xl:size-13`}
+              >
                 <ContactIcon name={CARD_ICONS[index]} className="size-[18px] xl:size-[22px]" />
               </span>
+              <span className="flex min-w-0 flex-col gap-1 md:contents">
               <span className="text-label font-bold">{card.label}</span>
               {card.value ? (
                 card.href ? (
@@ -251,6 +282,7 @@ export async function ContactHero({
                   <span className="text-body-sm xl:text-body">{card.value}</span>
                 )
               ) : null}
+              </span>
             </div>
           </li>
         ))}

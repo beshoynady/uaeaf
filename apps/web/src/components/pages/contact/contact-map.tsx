@@ -7,7 +7,7 @@ import { isCloudinaryUrl } from "@/lib/api/cloudinary-loader";
 import { cloudinarySrcSet } from "@/lib/api/cloudinary-srcset";
 import { text } from "@/components/pages/static-page-screen";
 import { FOCUS, TRANSITION } from "@/components/ui/interactive";
-import { PANEL, RECESS } from "@/components/ui/surface";
+import { GLASS_EDGE, PANEL, PANEL_FILL, RECESS } from "@/components/ui/surface";
 import { ContactIcon } from "@/components/ui/contact-icon";
 
 /**
@@ -52,13 +52,13 @@ export async function ContactMap({
     <section
       aria-labelledby={headingId}
       data-testid="contact-map"
-      className={`flex flex-col gap-5 ${PANEL} p-5 md:p-8 xl:p-10`}
+      className={`flex h-full flex-col gap-5 ${PANEL} ${GLASS_EDGE} p-5 md:p-8 xl:p-10`}
     >
       <h2 id={headingId} className="text-h2">
         {title}
       </h2>
 
-      <div className={`relative flex h-[220px] w-full items-center justify-center overflow-hidden ${RECESS} md:h-[300px] xl:h-[380px]`}>
+      <div className={`relative flex min-h-[220px] w-full items-center justify-center overflow-hidden ${RECESS} ${PANEL_FILL} md:min-h-[300px] xl:min-h-[380px]`}>
         {mapImage ? (
           isCloudinaryUrl(mapImage.file.url) ? (
             // See the hero: the CDN does the resizing, and only a string can

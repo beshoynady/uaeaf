@@ -9,6 +9,7 @@ import { ContactHero } from "@/components/pages/contact/contact-hero";
 import { ContactForm, type MessageTypeOption } from "@/components/pages/contact/contact-form";
 import { ContactMap } from "@/components/pages/contact/contact-map";
 import { ContactSocial } from "@/components/pages/contact/contact-social";
+import { PANEL_ROW, PANEL_TALL } from "@/components/ui/surface";
 import { ContactPageJsonLd } from "@/lib/seo/json-ld";
 import { fetchPublicMedia } from "@/lib/api/media";
 import { CONTACT_MESSAGE_TYPES, type ContactUsPage, type PostalAddress } from "@/lib/api/types";
@@ -146,8 +147,10 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
               for anyone reading linearly. `xl:flex-row-reverse` restores the
               designed side-by-side composition, which places the map at the
               reading start in both languages. */}
-          <div className="mx-auto flex w-full max-w-[1248px] flex-col gap-12 px-4 pt-4 pb-16 sm:px-6 md:px-8 lg:px-12 xl:flex-row-reverse xl:items-start xl:px-16">
-            <div className="rise-scroll min-w-0 flex-1">
+          <div
+            className={`mx-auto w-full max-w-[1248px] gap-12 px-4 pt-16 pb-16 sm:px-6 md:px-8 lg:px-12 xl:flex-row-reverse xl:px-16 ${PANEL_ROW}`}
+          >
+            <div className={`rise-scroll ${PANEL_TALL}`}>
               <ContactForm
                 headingId="contact-form-heading"
                 title={text(record.form?.title, locale) ?? t("form.title")}
@@ -155,7 +158,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
                 messageTypes={messageTypes}
               />
             </div>
-            <div className="rise-scroll min-w-0 flex-1">
+            <div className={`rise-scroll ${PANEL_TALL}`}>
               <ContactMap
                 locale={locale}
                 record={record}

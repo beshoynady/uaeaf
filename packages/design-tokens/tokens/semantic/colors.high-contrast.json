@@ -52,6 +52,8 @@
   "elevation": {
     "card": { "value": "none", "type": "boxShadow", "comment": "ADR-0052 — High Contrast carries elevation via solid borders only (already Chapter 7 §7.3 philosophy), never soft shadows" },
     "card-hover": { "value": "none", "type": "boxShadow", "comment": "ADR-0052" },
+    "panel": { "value": "none", "type": "boxShadow", "comment": "ADR-0066 — High Contrast carries elevation on solid borders only (Chapter 7 §7.3); a panel is no exception." },
+    "panel-hover": { "value": "none", "type": "boxShadow", "comment": "ADR-0066" },
     "dropdown": { "value": "none", "type": "boxShadow", "comment": "ADR-0052" },
     "modal": { "value": "none", "type": "boxShadow", "comment": "ADR-0052" }
   },

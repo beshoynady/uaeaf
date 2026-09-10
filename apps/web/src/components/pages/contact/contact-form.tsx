@@ -3,7 +3,7 @@
 import { useId, useState } from "react";
 import { useTranslations } from "next-intl";
 import { FOCUS, TRANSITION } from "@/components/ui/interactive";
-import { FIELD_EDGE, LIFT, PANEL } from "@/components/ui/surface";
+import { FIELD_EDGE, GLASS_EDGE, LIFT, PANEL, PANEL_FILL } from "@/components/ui/surface";
 import { ContactIcon, type ContactIconName } from "@/components/ui/contact-icon";
 
 /**
@@ -43,15 +43,27 @@ const REQUIRED: readonly FieldName[] = ["senderName", "senderEmail", "messageTyp
  * compositor can handle, and its duration is the `fast` token, so the global
  * reduced-motion reset zeroes it along with everything else.
  *
- * There is deliberately no floating label. The labels here are already
- * permanently visible above their fields, which is strictly better than a
- * label that has to move out of the way to be read: a floating label is a
- * placeholder pretending to be a label, and it disappears at the exact moment
- * — mid-typing, mid-correction — when someone most needs to check what the
- * field was asking for.
+ * ── The label sits on the edge ─────────────────────────────────────────────
+ *
+ * An earlier version of this file argued against a floating label, and that
+ * argument still holds — for the pattern it was aimed at. The one that fails
+ * is the one that *replaces* the label with a placeholder: the reader fills
+ * six fields, comes back to check the third, and the only thing that said
+ * what it was has been overwritten by their own answer.
+ *
+ * This is the other pattern. The label travels to the top edge and stays
+ * there, readable while typing, while correcting, and while reading the
+ * finished form back — and the outline opens a gap for it rather than the
+ * label sitting on top of a line. The DOM order is unchanged, which Chapter 8
+ * L2 §F.1 makes a MUST: only the painted position moves.
+ *
+ * The geometry and the notch live in `styles/forms.css`, because they are one
+ * mechanism shared by every field on the site rather than this form's
+ * decoration. What stays here is the part that is stateful: which edge a
+ * field wears when it is resting, hovered, focused or wrong.
  */
 const CONTROL_SHAPE =
-  "w-full rounded-[var(--radius-md)] border bg-[color:var(--color-surface-base)] px-3.5 py-3 text-body text-[color:var(--color-text-primary)] shadow-[inset_0_2px_6px_rgb(0_0_0/0.07)] transition-[box-shadow,border-color] duration-[var(--motion-duration-fast)] ease-[var(--motion-easing-standard)] placeholder:text-[color:var(--color-text-secondary)] focus:shadow-[var(--elevation-card-hover)]";
+  "field-control text-body transition-[box-shadow,border-color] duration-[var(--motion-duration-fast)] ease-[var(--motion-easing-standard)]";
 
 /**
  * The two complete field appearances, written out rather than assembled.
@@ -142,12 +154,30 @@ export function ContactForm({
     }
   }
 
-  const field = (name: FieldName, control: React.ReactNode, required = false) => (
-    <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-      <label htmlFor={fieldId(name)} className="text-label text-[color:var(--color-text-primary)]">
+  const field = (
+    name: FieldName,
+    control: React.ReactNode,
+    required = false,
+    shape: "control" | "textarea" = "control",
+  ) => (
+    <div
+      className={`field flex min-w-0 flex-1 flex-col gap-1.5${
+        shape === "textarea" ? " field-textarea" : ""
+      }${errors[name] ? " field-invalid" : ""}`}
+    >
+      {/* First in the DOM (Chapter 8 L2 §F.1), painted onto the field's edge
+          by `forms.css`. `text-label` is the resting size; the floated size is
+          that scaled by the label/body type ratio, which keeps it above
+          Chapter 4's 13px floor. */}
+      <label htmlFor={fieldId(name)} className="field-label text-body">
         {t(`labels.${name}`)}
         {required ? (
-          <span className="font-bold text-[color:var(--color-semantic-error)]">
+          // §F.4 requires the `*` and `aria-required` together. It is drawn in
+          // the primary ink rather than the error red: red at 13px bold
+          // measures 3.95:1 on the dark theme's panel and fails 1.4.3, and the
+          // glyph carries the meaning without the colour in any case (1.4.1).
+          // The error red stays for actual errors, where it means something.
+          <span className="font-bold text-[color:var(--color-text-primary)]">
             {" *"}
             <span className="sr-only">{t("requiredHint")}</span>
           </span>
@@ -177,13 +207,13 @@ export function ContactForm({
       // is the page's primary surface, it sits on a ground only 1.04:1 away
       // from its own fill, and the card step (0 1px 2px at 6%) left it reading
       // as a flat area of the page rather than as a raised object.
-      className={`flex flex-col gap-6 ${PANEL} p-5 md:p-8 xl:p-10`}
+      className={`flex h-full flex-col gap-6 ${PANEL} ${GLASS_EDGE} p-5 md:p-8 xl:p-10`}
     >
       <h2 id={headingId} className="text-h2">
         {title}
       </h2>
 
-      <form noValidate onSubmit={onSubmit} className="flex flex-col gap-6">
+      <form noValidate onSubmit={onSubmit} className={`flex flex-col gap-6 ${PANEL_FILL}`}>
         <div className="flex flex-col gap-6 md:flex-row">
           {field(
             "senderName",
@@ -299,6 +329,7 @@ export function ContactForm({
             className={`${controlClass(Boolean(errors.messageBody))} min-h-[110px] resize-y ${TRANSITION} ${FOCUS}`}
           />,
           true,
+          "textarea",
         )}
 
         {/* Flat, not a gradient: ADR-0065 R2 — the two stops of the old

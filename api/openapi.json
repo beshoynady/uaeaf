@@ -713,6 +713,40 @@
         ]
       }
     },
+    "/api/v1/media-assets/upload": {
+      "post": {
+        "operationId": "MediaAssetsController_upload_v1",
+        "parameters": [
+          {
+            "name": "scope",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "The image as `file`, plus the metadata fields. `caption` and `altText` are JSON objects with `ar` and `en` keys, sent as JSON text because every multipart part is a string.",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadMediaAssetDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "media-assets"
+        ]
+      }
+    },
     "/api/v1/media-assets/public": {
       "get": {
         "operationId": "MediaAssetsController_findPublicByIds_v1",
@@ -783,6 +817,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "media-assets"
+        ]
+      }
+    },
+    "/api/v1/media-assets/{id}/object": {
+      "delete": {
+        "operationId": "MediaAssetsController_purge_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
             "description": ""
           }
         },
@@ -6581,6 +6638,47 @@
           "caption",
           "altText",
           "displayOrder"
+        ]
+      },
+      "UploadMediaAssetDto": {
+        "type": "object",
+        "properties": {
+          "albumId": {
+            "type": "string",
+            "description": "Album this asset belongs to. Omitted for a page image."
+          },
+          "caption": {
+            "description": "Bilingual caption.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "altText": {
+            "description": "Bilingual alternative text. Required.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "displayOrder": {
+            "type": "number",
+            "description": "Sort position within the parent album."
+          },
+          "photographer": {
+            "type": "string",
+            "description": "Photographer credit."
+          },
+          "captureDate": {
+            "type": "string",
+            "description": "When the photograph was taken."
+          }
+        },
+        "required": [
+          "caption",
+          "altText"
         ]
       },
       "MediaFilePublicResponseDto": {
