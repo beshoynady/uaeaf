@@ -41,6 +41,11 @@ export function PageWorkbench({
 }) {
   const t = useTranslations("SitePages");
 
+  // The library is seeded from the server and then grows in place: an image
+  // uploaded from a picker has to be selectable straight away, and a reload
+  // to see it would throw away every unsaved edit on the page around it.
+  const [library, setLibrary] = useState<readonly MediaAssetOption[]>(images);
+
   const [selectedKey, setSelectedKey] = useState<string | null>(STATIC_PAGES[0]?.key ?? null);
   const [query, setQuery] = useState("");
 
@@ -159,7 +164,8 @@ export function PageWorkbench({
               key={page.key}
               page={page}
               record={entry?.record ?? null}
-              images={images}
+              images={library}
+              onUploaded={(image) => setLibrary((current) => [image, ...current])}
               canEdit={entry?.canEdit ?? false}
               canReadMedia={canReadMedia}
               locale={locale}

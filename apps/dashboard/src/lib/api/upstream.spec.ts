@@ -59,6 +59,24 @@ describe("callUpstream", () => {
     expect(new Headers(init.headers).get("content-type")).toBe("application/json");
   });
 
+  it("passes a multipart body through untouched", async () => {
+    // An upload is the one write whose body is not JSON. Serializing it, or
+    // setting a content-type by hand, both break it: `fetch` has to generate
+    // the multipart boundary itself, which it only does when the body is a
+    // FormData and no content-type is set.
+    const fetchMock = stubFetch(new Response(JSON.stringify({ _id: "1" }), { status: 201 }));
+    const form = new FormData();
+    form.set("file", new Blob([new Uint8Array([1, 2, 3])]), "hero.png");
+    form.set("altText", '{"ar":"ب","en":"A"}');
+
+    await callUpstream("/media-assets/upload", { method: "POST", form, accessToken: "t" });
+
+    const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(init.body).toBe(form);
+    expect(new Headers(init.headers).get("content-type")).toBeNull();
+    expect(new Headers(init.headers).get("authorization")).toBe("Bearer t");
+  });
+
   it("attaches the bearer token when one is supplied", async () => {
     const fetchMock = stubFetch(new Response("{}", { status: 200, headers: { "content-type": "application/json" } }));
 

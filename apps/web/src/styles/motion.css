@@ -345,6 +345,20 @@
     transform: translate(0, 0);
     transition-duration: var(--motion-duration-instant);
   }
+
+  /* A disabled control answers nothing. `:hover` still matches a disabled
+     button in every engine, so without this a submit button mid-request would
+     keep rising under the pointer while refusing the click — feedback that
+     contradicts the state it is in. */
+  .lift:disabled,
+  .lift[aria-disabled="true"] {
+    transform: translate(0, 0);
+  }
+}
+
+.lift:disabled::after,
+.lift[aria-disabled="true"]::after {
+  opacity: 0;
 }
 
 /*

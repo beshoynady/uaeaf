@@ -1,9 +1,12 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { MediaAssetsRepository } from './media-assets.repository.js';
 import type { MediaAssetDocument } from './schemas/media-asset.schema.js';
 import { CreateMediaAssetDto } from './dto/create-media-asset.dto.js';
+import { UploadMediaAssetDto } from './dto/upload-media-asset.dto.js';
+import { assertUploadable, type UploadCandidate } from './upload/upload-constraints.js';
+import { STORAGE_PROVIDER, type StorageFolder, type StorageProvider } from '../storage/storage-provider.js';
 import { MediaAssetPublicResponseDto } from './dto/media-asset-public-response.dto.js';
 import { Album } from '../albums/schemas/album.schema.js';
 import type { AlbumDocument } from '../albums/schemas/album.schema.js';
@@ -23,6 +26,8 @@ import type { AlbumDocument } from '../albums/schemas/album.schema.js';
  *  import from `album.schema.ts`). */
 @Injectable()
 export class MediaAssetsService {
+  private readonly logger = new Logger(MediaAssetsService.name);
+
   /** Ceiling on how many assets one anonymous request may resolve. A page
    *  never legitimately needs more; without it the endpoint is a free bulk
    *  export of the media table to anyone who can generate ObjectIds. */
@@ -31,6 +36,7 @@ export class MediaAssetsService {
   constructor(
     private readonly repository: MediaAssetsRepository,
     @InjectModel(Album.name) private readonly albumModel: Model<AlbumDocument>,
+    @Inject(STORAGE_PROVIDER) private readonly storage: StorageProvider,
   ) {}
 
   /** Shared validation for every consumer that references a `MediaAsset`
@@ -72,6 +78,115 @@ export class MediaAssetsService {
       await this.albumModel.updateOne({ _id: asset.albumId }, { $inc: { assetCount: 1 } }).exec();
     }
     return asset;
+  }
+
+  /**
+   * Stores an uploaded file and registers it as an asset.
+   *
+   * The order is the contract. The bytes are verified first, so a file the
+   * provider would refuse never leaves this process; then the object is
+   * stored; only then is a record written. A record is therefore never
+   * created for an object that does not exist.
+   *
+   * Every field describing the file comes from one of two trustworthy
+   * sources — the bytes themselves or the provider's answer. Nothing is
+   * taken from the request, which is why `UploadMediaAssetDto` carries no
+   * file fields to take.
+   */
+  async uploadAndCreate(
+    file: UploadCandidate,
+    dto: UploadMediaAssetDto,
+    folder: StorageFolder,
+  ): Promise<MediaAssetDocument> {
+    assertUploadable(file);
+
+    const stored = await this.storage.upload({
+      buffer: file.buffer,
+      folder,
+      originalName: file.originalname,
+    });
+
+    // Storing the bytes and writing the row are one operation or neither.
+    // Without this, any failure past the upload -- a schema refusal, a lost
+    // connection -- leaves a file on the provider that nothing points at,
+    // which is the orphan the delete policy exists to prevent. Observed
+    // against the running API before it was written: a request rejected at
+    // the schema still left its image behind.
+    let asset: MediaAssetDocument;
+    try {
+      asset = await this.repository.create({
+        albumId: dto.albumId ? new Types.ObjectId(dto.albumId) : null,
+        file: {
+          url: stored.url,
+          mimeType: stored.mimeType,
+          width: stored.width,
+          height: stored.height,
+          size: stored.bytes,
+          originalName: file.originalname,
+          storageKey: stored.storageKey,
+          checksum: null,
+          photographer: dto.photographer ?? null,
+          captureDate: dto.captureDate ? new Date(dto.captureDate) : null,
+        },
+        caption: dto.caption,
+        altText: dto.altText,
+        // A page image belongs to no album, so it has no grid to be ordered
+        // within; the schema still requires the field, and 0 is the honest
+        // value for "not positioned" rather than a number implying a place.
+        displayOrder: dto.displayOrder ?? 0,
+        isVisible: true,
+        isFeatured: false,
+      });
+    } catch (cause) {
+      // The caller has to learn why the request really failed, so a failure
+      // in the cleanup is logged and dropped rather than thrown over it.
+      // There is nothing further to do about the orphan at that point.
+      await this.storage.destroy(stored.storageKey).catch((sweepFailure: unknown) => {
+        this.logger.error(
+          `Orphaned ${stored.storageKey}: the record failed and the object could not be removed (${
+            sweepFailure instanceof Error ? sweepFailure.message : String(sweepFailure)
+          }).`,
+        );
+      });
+      throw cause;
+    }
+
+    if (asset.albumId) {
+      await this.albumModel.updateOne({ _id: asset.albumId }, { $inc: { assetCount: 1 } }).exec();
+    }
+    return asset;
+  }
+
+  /**
+   * Destroys the stored object, then removes the record permanently.
+   *
+   * The second half of a two-step: `remove()` archives, and this ends it.
+   * Splitting them is what lets an archive stay restorable while still
+   * giving an operator a way to stop paying for a file nothing will ever
+   * use again — the alternative, destroying on archive, means the archive
+   * holds records whose images are gone.
+   *
+   * Order matters and is asserted in the tests: destroy first, delete
+   * second. Reversed, a failure at the provider would leave an object with
+   * nothing pointing at it — the orphan this path exists to prevent.
+   *
+   * @throws NotFoundException when `id` references nothing.
+   * @throws ConflictException when the asset has not been archived first;
+   * a live asset may still be rendered by a published page.
+   */
+  async purge(id: string): Promise<void> {
+    const asset = await this.repository.findIncludingArchived(id);
+    if (!asset) {
+      throw new NotFoundException(`MediaAsset ${id} not found.`);
+    }
+    if (!asset.archivedAt) {
+      throw new ConflictException(
+        `MediaAsset ${id} is still live. Archive it before purging, so nothing published loses its image without warning.`,
+      );
+    }
+
+    await this.storage.destroy(asset.file.storageKey);
+    await this.repository.hardDelete(id);
   }
 
   async findAll(): Promise<MediaAssetDocument[]> {

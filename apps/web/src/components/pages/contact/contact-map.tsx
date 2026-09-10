@@ -3,8 +3,11 @@ import { getTranslations } from "next-intl/server";
 import type { AppLocale } from "@/i18n/routing";
 import type { ContactUsPage, MediaAssetPublic } from "@/lib/api/types";
 import { altOf, isExternalMedia } from "@/lib/api/media";
+import { isCloudinaryUrl } from "@/lib/api/cloudinary-loader";
+import { cloudinarySrcSet } from "@/lib/api/cloudinary-srcset";
 import { text } from "@/components/pages/static-page-screen";
 import { FOCUS, TRANSITION } from "@/components/ui/interactive";
+import { PANEL, RECESS } from "@/components/ui/surface";
 import { ContactIcon } from "@/components/ui/contact-icon";
 
 /**
@@ -49,22 +52,36 @@ export async function ContactMap({
     <section
       aria-labelledby={headingId}
       data-testid="contact-map"
-      className="flex flex-col gap-5 rounded-[var(--radius-lg)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)] p-5 shadow-[var(--elevation-card)] md:p-8 xl:p-10"
+      className={`flex flex-col gap-5 ${PANEL} p-5 md:p-8 xl:p-10`}
     >
       <h2 id={headingId} className="text-h2">
         {title}
       </h2>
 
-      <div className="relative flex h-[220px] w-full items-center justify-center overflow-hidden rounded-[var(--radius-lg)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-sunken)] md:h-[300px] xl:h-[380px]">
+      <div className={`relative flex h-[220px] w-full items-center justify-center overflow-hidden ${RECESS} md:h-[300px] xl:h-[380px]`}>
         {mapImage ? (
-          <Image
-            src={mapImage.file.url}
-            alt={altOf(mapImage, locale)}
-            fill
-            unoptimized={isExternalMedia(mapImage.file.url)}
-            sizes="(min-width: 1280px) 600px, (min-width: 768px) 688px, 350px"
-            className="object-cover"
-          />
+          isCloudinaryUrl(mapImage.file.url) ? (
+            // See the hero: the CDN does the resizing, and only a string can
+            // carry that instruction across the server/client boundary.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={mapImage.file.url}
+              srcSet={cloudinarySrcSet(mapImage.file.url, mapImage.file.width)}
+              sizes="(min-width: 1280px) 600px, (min-width: 768px) 688px, 350px"
+              alt={altOf(mapImage, locale)}
+              loading="lazy"
+              className="absolute inset-0 size-full object-cover"
+            />
+          ) : (
+            <Image
+              src={mapImage.file.url}
+              alt={altOf(mapImage, locale)}
+              fill
+              unoptimized={isExternalMedia(mapImage.file.url)}
+              sizes="(min-width: 1280px) 600px, (min-width: 768px) 688px, 350px"
+              className="object-cover"
+            />
+          )
         ) : null}
 
         {pinTitle ? (
@@ -112,7 +129,14 @@ export async function ContactMap({
               href={record.map.directionsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className={`${BUTTON} ${FOCUS} border border-[color:var(--color-border-strong)] text-[color:var(--color-text-primary)] hover:bg-[color:var(--color-surface-sunken)] active:bg-[color:var(--color-surface-skeleton)]`}
+              // Demoted to a text action, not promoted to match its
+              // neighbour. Three levels have to fit on this page and only
+              // three: the form's solid green submit is what the page is for,
+              // the outlined "view on maps" is what this section is for, and
+              // this is the alternative to that. Two identical outlined
+              // buttons side by side made the reader choose between peers
+              // when one of them is plainly the lesser errand.
+              className={`${BUTTON} ${FOCUS} text-[color:var(--color-text-secondary)] underline decoration-transparent underline-offset-4 hover:text-[color:var(--color-text-primary)] hover:decoration-current active:text-[color:var(--color-text-primary)] active:bg-[color:var(--color-surface-sunken)]`}
             >
               {t("map.openDirections")}
             </a>

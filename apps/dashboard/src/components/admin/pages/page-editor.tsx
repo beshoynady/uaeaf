@@ -52,6 +52,7 @@ export function PageEditor({
   page,
   record,
   images,
+  onUploaded,
   canEdit,
   canReadMedia = true,
   locale,
@@ -59,6 +60,10 @@ export function PageEditor({
   page: StaticPage;
   record: PageRecord;
   images: readonly MediaAssetOption[];
+  /** Reports a newly uploaded image so the screen can add it to its own
+   *  library list; the picker cannot show a thumbnail for an id that is not
+   *  in `images`. */
+  onUploaded?: (image: MediaAssetOption) => void;
   /** `<resource>:Update`. Without it the content is shown and the controls
    *  are not — the API would refuse the write anyway, and a disabled Save is
    *  a promise the screen cannot keep. */
@@ -163,6 +168,7 @@ export function PageEditor({
               field={field}
               state={state}
               images={images}
+              onUploaded={onUploaded}
               canReadMedia={canReadMedia}
               disabled={!canEdit || saving}
               locale={locale}
@@ -211,6 +217,7 @@ function Field({
   field,
   state,
   images,
+  onUploaded,
   canReadMedia,
   disabled,
   locale,
@@ -219,6 +226,7 @@ function Field({
   field: PageField;
   state: Record<string, unknown>;
   images: readonly MediaAssetOption[];
+  onUploaded?: (image: MediaAssetOption) => void;
   canReadMedia: boolean;
   disabled: boolean;
   locale: AppLocale;
@@ -237,6 +245,7 @@ function Field({
           label={label}
           value={String(state[field.name] ?? "")}
           images={images}
+          onUploaded={onUploaded}
           canRead={canReadMedia}
           disabled={disabled}
           locale={locale}

@@ -1,16 +1,21 @@
 import type { ReactNode } from "react";
 import { UaeafMotif } from "@/components/brand/uaeaf-motif";
 import { CONTAINER, REGISTER_CLASSES, type Register } from "./section";
+import { HERO_COMPOSITION, HERO_MEASURE, HERO_MOTIF, HERO_TEXT } from "./surface";
 
 /**
  * The hero every public listing page opens with.
  *
  * ── Composition ────────────────────────────────────────────────────────────
  *
- * Two columns at `md` and up, stacked below it (Chapter 5 §5.10 Stacking,
- * "most important first" — the heading is first in the DOM either way). The
- * motif has a column of its own rather than sitting behind the text, and that
- * is a contrast decision, not a layout preference: artwork behind text
+ * `HERO_COMPOSITION` in `ui/surface` — the one composition every page that
+ * opens with a hero now shares, contact included. Two columns at `md` and up,
+ * stacked below it (Chapter 5 §5.10 Stacking, "most important first" — the
+ * heading is first in the DOM either way), title block on the reading edge,
+ * motif answering from the far side on the same baseline.
+ *
+ * The motif has a column of its own rather than sitting behind the text, and
+ * that is a contrast decision, not a layout preference: artwork behind text
  * changes the measured ratio of every character it passes under, and Chapter
  * 6 puts WCAG AA above any aesthetic consideration. Two columns cannot
  * overlap at any width, so the ratio is the register's published one at every
@@ -60,8 +65,8 @@ export function PageHero({
       data-testid="page-hero"
       className={`w-full overflow-hidden ${tone.surface}`}
     >
-      <div className={`${CONTAINER} grid items-center gap-8 py-12 md:grid-cols-[1fr_auto] md:py-16 lg:py-20`}>
-        <div className="min-w-0">
+      <div className={`${CONTAINER} ${HERO_COMPOSITION} py-12 md:py-16 lg:py-20`}>
+        <div className={HERO_TEXT}>
           {breadcrumb}
           <h1
             id={titleId}
@@ -72,7 +77,7 @@ export function PageHero({
           </h1>
           {subtitle ? (
             <p
-              className={`rise-in mt-4 max-w-[62ch] text-body-lg ${tone.muted}`}
+              className={`rise-in mt-4 ${HERO_MEASURE} text-body-lg ${tone.muted}`}
               style={{ "--rise-index": 1 } as React.CSSProperties}
             >
               {subtitle}
@@ -87,7 +92,7 @@ export function PageHero({
             a green or red ground, and the black stroke into the black one. */}
         <UaeafMotif
           tone={register === "neutral" ? "brand" : "inherit"}
-          className="rise-in h-20 w-full self-end opacity-70 md:h-32 md:w-32 md:self-center"
+          className={`rise-in ${HERO_MOTIF} opacity-70`}
           style={{ "--rise-index": 2 } as React.CSSProperties}
         />
       </div>

@@ -3,7 +3,19 @@ import { getTranslations } from "next-intl/server";
 import type { AppLocale } from "@/i18n/routing";
 import type { ContactUsPage, LocalizedText, MediaAssetPublic } from "@/lib/api/types";
 import { altOf, isExternalMedia } from "@/lib/api/media";
+import { isCloudinaryUrl } from "@/lib/api/cloudinary-loader";
+import { cloudinarySrcSet } from "@/lib/api/cloudinary-srcset";
 import { ContactIcon, type ContactIconName } from "@/components/ui/contact-icon";
+import { TOUCH_TARGET } from "@/components/ui/interactive";
+import {
+  CARD as CARD_SURFACE,
+  HERO_COMPOSITION,
+  HERO_MEASURE,
+  HERO_MOTIF,
+  HERO_TEXT,
+  LIFT,
+} from "@/components/ui/surface";
+import { UaeafMotif } from "@/components/brand/uaeaf-motif";
 import { text } from "@/components/pages/static-page-screen";
 
 /**
@@ -33,26 +45,33 @@ import { text } from "@/components/pages/static-page-screen";
 const CARD_ICONS: readonly ContactIconName[] = ["phone", "mail", "mapPin", "clock"];
 
 /**
- * The cards carry no hue at all.
+ * The cards carry no hue at all — and two grounds, not one.
  *
  * ADR-0065 R2: four cards distinguished by four steps of one ramp encode
  * nothing — a telephone number is not "lighter green" than an email address
  * in any sense a reader can decode. The four are peers, so they are painted
  * as peers.
  *
- * The panel is a fixed translucent white rather than a surface token: the
- * ground behind it is theme-independent — a photograph under a fixed dark
- * overlay — so a token that flips with the theme would invert over a ground
- * that does not.
+ * What the earlier version got wrong is that this component appears in two
+ * places. From `md` up it is pinned inside the hero band, over a photograph
+ * under a fixed dark overlay; below `md` it leaves the band entirely and
+ * stacks on the page's own surface. One set of classes was written for the
+ * first situation and inherited by the second, which put white text on
+ * `#FAFAF8` at 1.04:1 — the four contact details, unreadable on every phone
+ * in the light theme, on the page whose whole job is to give them.
  *
- * Its 12% and the overlay's 0.64/0.74 are one decision, not two. The
- * photograph is whatever an editor uploaded, so the pair is set against the
- * worst admissible input, a pure white image, where it holds white card text
- * above AA at both ends of the gradient. Measured by
- * `contact-card-contrast.spec.ts`.
+ * So the unprefixed classes describe the stacked card and follow the theme,
+ * and the `md:` ones describe the pinned card and deliberately do not: the
+ * band's ground is an uploaded picture under a fixed overlay, and a token
+ * that flipped with the theme would invert over a ground that never does.
+ * `currentColor` carries the icon ring and the underline across both, so
+ * neither can be forgotten when the other changes.
+ *
+ * The pinned card's 12% and the overlay's 0.64/0.74 remain one decision:
+ * solved against the worst admissible input, a pure white photograph. Both
+ * situations are measured by `contact-card-contrast.spec.ts`.
  */
-const CARD =
-  "lift w-full flex flex-col items-center justify-center gap-2 rounded-[var(--radius-md)] border border-[rgb(255_255_255/0.35)] bg-[rgb(255_255_255/0.12)] px-4 py-6 text-center text-[color:var(--color-text-on-brand)] backdrop-blur-[12px] xl:gap-3 xl:px-6 xl:py-8";
+const CARD = `${LIFT} ${CARD_SURFACE} flex w-full flex-col items-center justify-center gap-2 px-4 py-6 text-center text-[color:var(--color-text-primary)] md:border-[rgb(255_255_255/0.35)] md:bg-[rgb(255_255_255/0.12)] md:text-[color:var(--color-text-on-brand)] md:shadow-none md:backdrop-blur-[12px] xl:gap-3 xl:px-6 xl:py-8`;
 
 /** The overlay that makes the band a legible ground.
  *
@@ -114,17 +133,34 @@ export async function ContactHero({
 
   return (
     <section aria-labelledby={titleId} data-testid="contact-hero" className="relative">
-      <div className="relative flex min-h-[300px] flex-col items-center justify-center overflow-hidden px-4 pt-12 pb-8 sm:px-6 md:min-h-[551px] md:px-8 md:pb-[360px] lg:px-12 xl:min-h-[550px] xl:px-16 xl:pb-[236px]">
+      <div className="relative flex min-h-[300px] flex-col justify-center overflow-hidden px-4 pt-12 pb-8 sm:px-6 md:min-h-[551px] md:px-8 md:pb-[360px] lg:px-12 xl:min-h-[550px] xl:px-16 xl:pb-[236px]">
         {heroImage ? (
-          <Image
-            src={heroImage.file.url}
-            alt={altOf(heroImage, locale)}
-            fill
-            priority
-            unoptimized={isExternalMedia(heroImage.file.url)}
-            sizes="100vw"
-            className="object-cover"
-          />
+          isCloudinaryUrl(heroImage.file.url) ? (
+            // A plain <img>, not next/image: the resizing is the CDN's, and
+            // next/image can only be told that through a `loader` function,
+            // which a server component may not hand to the client component
+            // it renders. The srcset is a string, which may cross that line.
+            //
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={heroImage.file.url}
+              srcSet={cloudinarySrcSet(heroImage.file.url, heroImage.file.width)}
+              sizes="100vw"
+              alt={altOf(heroImage, locale)}
+              fetchPriority="high"
+              className="absolute inset-0 size-full object-cover"
+            />
+          ) : (
+            <Image
+              src={heroImage.file.url}
+              alt={altOf(heroImage, locale)}
+              fill
+              priority
+              unoptimized={isExternalMedia(heroImage.file.url)}
+              sizes="100vw"
+              className="object-cover"
+            />
+          )
         ) : (
           // The black register, not raw `brand.black`: ADR-0059 D2 resolves it
           // to `neutral-warm.700` in the dark theme, where pure black cannot
@@ -137,22 +173,39 @@ export async function ContactHero({
         )}
         <div aria-hidden="true" className={HERO_OVERLAY} />
 
-        <div className="relative flex w-full max-w-[900px] flex-col items-center gap-4 text-center text-[color:var(--color-text-on-brand)]">
-          <h1
-            id={titleId}
-            className="rise-in text-display-l text-balance"
-            style={{ "--rise-index": 0 } as React.CSSProperties}
-          >
-            {title}
-          </h1>
-          {subtitle ? (
-            <p
-              className="rise-in text-body-lg opacity-85"
-              style={{ "--rise-index": 1 } as React.CSSProperties}
+        <div
+          className={`relative mx-auto w-full max-w-[1248px] ${HERO_COMPOSITION} text-[color:var(--color-text-on-brand)]`}
+        >
+          <div className={HERO_TEXT}>
+            <h1
+              id={titleId}
+              className="rise-in text-display-l text-balance"
+              style={{ "--rise-index": 0 } as React.CSSProperties}
             >
-              {subtitle}
-            </p>
-          ) : null}
+              {title}
+            </h1>
+            {subtitle ? (
+              <p
+                className={`rise-in mt-4 ${HERO_MEASURE} text-body-lg opacity-85`}
+                style={{ "--rise-index": 1 } as React.CSSProperties}
+              >
+                {subtitle}
+              </p>
+            ) : null}
+          </div>
+
+          {/* The ascent motif, in `inherit` tone so its four strokes collapse
+              to the band's own white — Federation Green and Red measure 1.15:1
+              against each other (ADR-0059 §D2) and neither survives a dark
+              photograph. It answers the title from the far side of the same
+              baseline rather than sitting behind it: Chapter 6 puts WCAG AA
+              above composition, and artwork crossing under text changes the
+              measured ratio of every character it passes. */}
+          <UaeafMotif
+            tone="inherit"
+            className={`rise-in ${HERO_MOTIF} opacity-25`}
+            style={{ "--rise-index": 2 } as React.CSSProperties}
+          />
         </div>
       </div>
 
@@ -169,22 +222,28 @@ export async function ContactHero({
           // `:focus-within`. Guarded by `motion-contract.spec.ts`.
           <li key={card.label} className="rise-scroll flex">
             <div className={CARD}>
-              <span className="flex size-11 items-center justify-center rounded-full border-2 border-[color:var(--color-text-on-brand)] xl:size-13">
+              {/* `currentColor`, not a fixed white: the ring has to follow
+                  whichever ground the card is on, and naming the colour twice
+                  is how one of the two gets forgotten. */}
+              <span className="flex size-11 items-center justify-center rounded-full border-2 border-current xl:size-13">
                 <ContactIcon name={CARD_ICONS[index]} className="size-[18px] xl:size-[22px]" />
               </span>
               <span className="text-label font-bold">{card.label}</span>
               {card.value ? (
                 card.href ? (
-                  // Underlined at rest, not on hover. Federation Green is the
-                  // action colour (ADR-0065 D2) and cannot be spent here: over
-                  // the dark hero ground it would fail WCAG 1.4.3. The
-                  // underline carries the affordance instead, which also
-                  // satisfies 1.4.1 — the link is never distinguished by
-                  // colour alone.
+                  // Underlined at rest, not on hover — the affordance never
+                  // rests on colour alone (WCAG 1.4.1), and on the pinned card
+                  // Federation Green would fail 1.4.3 against the dark band
+                  // anyway.
+                  //
+                  // `min-h-11` is the reason this is an inline-flex box: at
+                  // its natural line height the link measured 109×20, under
+                  // even the 24px floor of WCAG 2.5.8, on the two card values
+                  // that are the page's primary actions on a phone.
                   <a
                     href={card.href}
                     dir={card.ltr ? "ltr" : undefined}
-                    className="text-body-sm rounded-xs underline decoration-[rgb(255_255_255/0.5)] underline-offset-4 transition-[text-decoration-color] duration-[var(--motion-duration-fast)] hover:decoration-[currentColor] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-text-on-brand)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent xl:text-body"
+                    className={`text-body-sm inline-flex ${TOUCH_TARGET} items-center justify-center rounded-xs px-2 underline decoration-current/50 underline-offset-4 transition-[text-decoration-color,color] duration-[var(--motion-duration-fast)] hover:decoration-current focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2 focus-visible:ring-offset-transparent xl:text-body`}
                   >
                     {card.value}
                   </a>

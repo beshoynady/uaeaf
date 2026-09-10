@@ -3,6 +3,7 @@
 import { useId, useState } from "react";
 import { useTranslations } from "next-intl";
 import { FOCUS, TRANSITION } from "@/components/ui/interactive";
+import { FIELD_EDGE, LIFT, PANEL } from "@/components/ui/surface";
 import { ContactIcon, type ContactIconName } from "@/components/ui/contact-icon";
 
 /**
@@ -31,18 +32,49 @@ export type MessageTypeOption = { value: string; label: string };
 
 const REQUIRED: readonly FieldName[] = ["senderName", "senderEmail", "messageType", "messageBody"];
 
-const CONTROL_BASE =
-  "w-full rounded-[var(--radius-md)] border bg-[color:var(--color-surface-base)] px-3.5 py-3 text-body text-[color:var(--color-text-primary)] shadow-[inset_0_2px_6px_rgb(0_0_0/0.07)] placeholder:text-[color:var(--color-text-secondary)]";
+/**
+ * A field reads as recessed at rest and rises to meet the cursor.
+ *
+ * The inset shadow is the resting state: the control is a well cut into the
+ * panel, which is what says "type here" before any label is read. On focus it
+ * inverts — the inset goes, a soft outer shadow arrives, and the border
+ * strengthens — so the active field lifts out of the panel it sits in. The
+ * transition runs on `box-shadow` and `border-color` only, both of which the
+ * compositor can handle, and its duration is the `fast` token, so the global
+ * reduced-motion reset zeroes it along with everything else.
+ *
+ * There is deliberately no floating label. The labels here are already
+ * permanently visible above their fields, which is strictly better than a
+ * label that has to move out of the way to be read: a floating label is a
+ * placeholder pretending to be a label, and it disappears at the exact moment
+ * — mid-typing, mid-correction — when someone most needs to check what the
+ * field was asking for.
+ */
+const CONTROL_SHAPE =
+  "w-full rounded-[var(--radius-md)] border bg-[color:var(--color-surface-base)] px-3.5 py-3 text-body text-[color:var(--color-text-primary)] shadow-[inset_0_2px_6px_rgb(0_0_0/0.07)] transition-[box-shadow,border-color] duration-[var(--motion-duration-fast)] ease-[var(--motion-easing-standard)] placeholder:text-[color:var(--color-text-secondary)] focus:shadow-[var(--elevation-card-hover)]";
+
+/**
+ * The two complete field appearances, written out rather than assembled.
+ *
+ * Each string carries its own hover, active and focus states end to end. That
+ * is not repetition for its own sake: `interaction-state-contract.spec.ts`
+ * resolves module constants but cannot resolve a function, so a `hover:` in
+ * one constant and its matching `active:` inside a helper reads to the guard
+ * as a control that lights up under a pointer and does nothing when pressed
+ * — which is exactly what it is meant to catch, and it caught this.
+ *
+ * `active` anticipates `focus` rather than inventing a third look: the press
+ * already shows the border the field is about to settle on, so pressing and
+ * landing are one movement instead of two jumps.
+ */
+const CONTROL_RESTING = `${CONTROL_SHAPE} ${FIELD_EDGE}`;
 
 /** A failed field is marked by its border as well as by its message, so the
  *  state survives WCAG 1.4.1 — the message is the primary signal and the
  *  colour is the secondary one, never the reverse. */
-const controlClass = (invalid: boolean) =>
-  `${CONTROL_BASE} ${
-    invalid
-      ? "border-[color:var(--color-semantic-error)]"
-      : "border-[color:var(--color-border-default)]"
-  }`;
+const CONTROL_INVALID = `${CONTROL_SHAPE} border-[color:var(--color-semantic-error)] hover:border-[color:var(--color-semantic-error)] active:border-[color:var(--color-semantic-error)] focus:border-[color:var(--color-semantic-error)]`;
+
+const controlClass = (invalid: boolean) => (invalid ? CONTROL_INVALID : CONTROL_RESTING);
 
 export function ContactForm({
   title,
@@ -141,7 +173,11 @@ export function ContactForm({
     <section
       aria-labelledby={headingId}
       data-testid="contact-form"
-      className="flex flex-col gap-6 rounded-[var(--radius-lg)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)] p-5 shadow-[var(--elevation-card)] md:p-8 xl:p-10"
+      // `elevation-dropdown` at rest rather than `elevation-card`: this panel
+      // is the page's primary surface, it sits on a ground only 1.04:1 away
+      // from its own fill, and the card step (0 1px 2px at 6%) left it reading
+      // as a flat area of the page rather than as a raised object.
+      className={`flex flex-col gap-6 ${PANEL} p-5 md:p-8 xl:p-10`}
     >
       <h2 id={headingId} className="text-h2">
         {title}
@@ -273,7 +309,17 @@ export function ContactForm({
           type="submit"
           disabled={state === "sending"}
           aria-busy={state === "sending"}
-          className={`flex min-h-13 w-full items-center justify-center gap-2.5 rounded-[var(--button-radius)] bg-[color:var(--color-brand-primary)] text-body font-bold text-[color:var(--color-text-on-brand)] hover:bg-[color:var(--color-green-600)] active:bg-[color:var(--color-green-700)] disabled:cursor-progress disabled:opacity-70 ${TRANSITION} ${FOCUS}`}
+          // Four felt states, not four colours. Hover raises the button on the
+          // ascent vector and deepens its shadow; active drops it flat again,
+          // which is what a press is; disabled removes both, because a control
+          // that lifts under the cursor while refusing the click is lying.
+          // `.lift` carries the rise and the elevation cross-fade — the same
+          // response every other raised object on the site gives, along the
+          // motif's ascent vector rather than straight up (ADR-0059 §D7). It
+          // holds its own reduced-motion and disabled behaviour, so the
+          // reader who turns motion off still gets every colour change and a
+          // button mid-request stops answering the pointer entirely.
+          className={`flex min-h-13 w-full items-center justify-center gap-2.5 rounded-[var(--button-radius)] bg-[color:var(--color-brand-primary)] text-body font-bold text-[color:var(--color-text-on-brand)] ${LIFT} transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-easing-standard)] hover:bg-[color:var(--color-green-600)] active:bg-[color:var(--color-green-700)] disabled:cursor-progress disabled:opacity-70 ${FOCUS}`}
         >
           {state === "sending" ? (
             // The label changes as well as the spinner turning: a pending
@@ -289,15 +335,21 @@ export function ContactForm({
 
         {/* WCAG 4.1.3: the outcome has to reach a screen reader without moving
             focus, and it has to be in the DOM before it has text, or the
-            announcement is missed. The icon is a second channel so the outcome
-            does not rest on colour alone (1.4.1). */}
+            announcement is missed. The sentence itself is what carries the
+            outcome — it says plainly whether the message was sent — so the
+            colour is the secondary channel and 1.4.1 holds without it.
+
+            A full hairline in the semantic colour rather than a thick rail on
+            one edge: the tinted ground already distinguishes the two states,
+            and the rail was doing nothing it was not already doing while
+            reading as a stock alert component. */}
         <p
           role="status"
           aria-live="polite"
           className={`text-body-sm text-[color:var(--color-text-primary)] empty:hidden ${
             state === "idle"
               ? ""
-              : `rounded-[var(--radius-md)] border-s-4 px-4 py-3 ${
+              : `rounded-[var(--radius-md)] border px-4 py-3 ${
                   state === "failed"
                     ? "border-[color:var(--color-semantic-error)] bg-[color-mix(in_srgb,var(--color-semantic-error)_8%,var(--color-surface-raised))]"
                     : "border-[color:var(--color-semantic-success)] bg-[color-mix(in_srgb,var(--color-semantic-success)_8%,var(--color-surface-raised))]"

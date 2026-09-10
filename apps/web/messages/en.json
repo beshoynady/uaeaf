@@ -144,6 +144,10 @@
       "title": "Our Location",
       "viewOnMaps": "View on Google Maps",
       "openDirections": "Open Directions"
+    },
+    "social": {
+      "title": "Follow us",
+      "note": "Federation news, championships and competition moments on our official channels."
     }
   },
   "NotFound": {

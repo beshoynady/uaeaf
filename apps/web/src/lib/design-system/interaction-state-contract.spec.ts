@@ -143,6 +143,25 @@ describe("interaction state contract", () => {
     expect(offenders).toEqual([]);
   });
 
+  /**
+   * Classes that draw a focus indicator from a stylesheet rather than from a
+   * Tailwind variant, discovered rather than listed: any class name in the
+   * project's own CSS whose rule carries `:focus-visible`. A class that stops
+   * drawing one drops off this list by itself, and the check goes red again.
+   */
+  const FOCUS_CLASSES = (() => {
+    const styles = join(SRC, "styles");
+    const names = new Set<string>();
+    for (const file of readdirSync(styles)) {
+      if (!file.endsWith(".css")) continue;
+      const css = readFileSync(join(styles, file), "utf-8");
+      for (const [, name] of css.matchAll(/\.([a-z][\w-]*)(?::[\w-]+)*:focus-visible/g)) {
+        names.add(name);
+      }
+    }
+    return [...names];
+  })();
+
   it("gives every interactive element a focus-visible indicator", () => {
     const byFile = new Map<string, ClassAttr[]>();
     for (const attr of ALL) {
@@ -155,7 +174,15 @@ describe("interaction state contract", () => {
       const interactive = [...source.matchAll(/<(button|input|select|textarea)\b|<a\s[^>]*href=|<Link\b/g)];
       if (interactive.length === 0) continue;
 
-      const hasIndicator = attrs.some(({ value }) => /\bfocus(-visible|-within)?:/.test(value));
+      // A Tailwind `focus-visible:` variant, or a project class whose own
+      // `:focus-visible` rule lives in a stylesheet. The second was added
+      // because this check reported four files as having no focus treatment
+      // while every control in them drew a 2px outline on focus — measured in
+      // a browser, not assumed. A class that carries the indicator is still
+      // an indicator; what this must keep catching is a file with neither.
+      const hasIndicator = attrs.some(
+        ({ value }) => /\bfocus(-visible|-within)?:/.test(value) || FOCUS_CLASSES.some((name) => value.includes(name)),
+      );
       if (!hasIndicator) {
         offenders.push(`${file} — ${interactive.length} interactive element(s), no focus treatment`);
       }

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { REGISTER_CLASSES, type Register } from "./section";
+import { CARD, LIFT } from "./surface";
 
 /**
  * A surface that sits above its section.
@@ -9,7 +10,10 @@ import { REGISTER_CLASSES, type Register } from "./section";
  * 1px border on a surface the same colour as itself. Depth here comes from
  * three things at once, which is what makes it read as depth rather than as
  * a shadow someone remembered to add — a lighter surface than the ground, a
- * border, and `--elevation-card`.
+ * readable border, and `--elevation-card`. All three are `ui/surface`'s
+ * decision, not this component's: the border used to be
+ * `--color-border-default` here and `--color-border-strong` on the contact
+ * page, which is how one system ends up with two kinds of card.
  *
  * On a coloured register there is no lighter surface to move to: the register
  * *is* the surface, and a white card on a green band would read as a hole
@@ -28,7 +32,7 @@ export function Card({
   register?: Register;
   /** Adds hover and pressed feedback. Set this only where the whole card is
    *  a link or a button — feedback on a card that does nothing when clicked
-   *  is a false affordance (Chapter 10 §UX, "affordance"). */
+   *  is a false affordance (Chapter 11 §UX, "affordance"). */
   interactive?: boolean;
   children: ReactNode;
   className?: string;
@@ -36,34 +40,30 @@ export function Card({
   const tone = REGISTER_CLASSES[register];
   const surface =
     register === "neutral"
-      ? "bg-[color:var(--color-surface-raised)] shadow-card"
-      : "bg-white/8";
+      ? CARD
+      : `rounded-[var(--radius-md)] border ${tone.border} bg-white/8`;
 
-  // `transform` and `box-shadow` only. ADR-0009 permits transform/opacity for
-  // motion; the shadow swap is a paint change on a discrete state, not an
-  // animated property, and neither forces layout.
+  // The rise and the elevation cross-fade are `.lift`'s (ADR-0065 D5) — one
+  // definition, shared with every other raised object on the site. What stays
+  // here is the part that is specific to a card on a coloured band, where the
+  // ground has to lighten because a shadow on a green surface says nothing.
   const feedback = interactive
     ? [
-        "transition-[transform,box-shadow,background-color]",
-        "duration-[var(--motion-duration-fast)]",
-        "ease-[var(--motion-easing-standard)]",
-        // The lift runs along the ascent vector, so a card rises the way the
-        // identity's strokes do rather than straight up (ADR-0059 §D7).
-        "hover:-translate-y-0.5 hover:translate-x-0.5",
-        register === "neutral" ? "hover:shadow-card-hover" : "hover:bg-white/12",
-        "active:translate-y-0 active:translate-x-0",
-        register === "neutral" ? "active:shadow-card" : "active:bg-white/8",
+        LIFT,
+        register === "neutral"
+          ? ""
+          : "transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-easing-standard)] hover:bg-white/12 active:bg-white/8",
         "focus-within:outline-none focus-within:ring-2",
         "focus-within:ring-[color:var(--a11y-focus-ring)]",
         "focus-within:ring-offset-2",
         "focus-within:ring-offset-[color:var(--a11y-focus-offset)]",
-      ].join(" ")
+      ]
+        .filter(Boolean)
+        .join(" ")
     : "";
 
   return (
-    <div
-      className={`rounded-[var(--radius-md)] border ${tone.border} ${surface} p-6 ${feedback}${className ? ` ${className}` : ""}`}
-    >
+    <div className={`${surface} p-6 ${feedback}${className ? ` ${className}` : ""}`}>
       {children}
     </div>
   );

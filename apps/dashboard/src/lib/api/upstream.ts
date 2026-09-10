@@ -83,6 +83,10 @@ export function upstreamUrl(path: string): string {
 export interface UpstreamRequest {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
+  /** A multipart body, passed through as-is. Used only by the image upload,
+   *  which is the one administration write that carries a file rather than
+   *  JSON. Mutually exclusive with `body`. */
+  form?: FormData;
   accessToken?: string;
 }
 
@@ -95,6 +99,9 @@ export async function callUpstream<T = unknown>(
   request: UpstreamRequest = {},
 ): Promise<T> {
   const headers = new Headers({ accept: "application/json" });
+  // Deliberately not set for a multipart body: `fetch` generates the
+  // boundary and writes the header itself, and a hand-set content-type
+  // leaves the boundary out, which the server cannot parse.
   if (request.body !== undefined) {
     headers.set("content-type", "application/json");
   }
@@ -105,7 +112,7 @@ export async function callUpstream<T = unknown>(
   const response = await fetch(upstreamUrl(path), {
     method: request.method ?? "GET",
     headers,
-    body: request.body === undefined ? undefined : JSON.stringify(request.body),
+    body: request.form ?? (request.body === undefined ? undefined : JSON.stringify(request.body)),
     // Every call here is either a mutation or an administrator reading live
     // state. A cached role list would show an editor permissions that were
     // revoked minutes ago — worse than a slow page.

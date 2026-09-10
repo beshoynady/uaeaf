@@ -5,6 +5,7 @@ import { MediaAssetsRepository } from './media-assets.repository.js';
 import { MediaAssetsService } from './media-assets.service.js';
 import { MediaAssetsController } from './media-assets.controller.js';
 import { Album, AlbumSchema } from '../albums/schemas/album.schema.js';
+import { StorageModule } from '../storage/storage.module.js';
 
 /** Also registers the `Album` model (not just `MediaAsset`) so
  *  `MediaAssetsService` can maintain `Album.assetCount` without importing
@@ -16,6 +17,7 @@ import { Album, AlbumSchema } from '../albums/schemas/album.schema.js';
       { name: MediaAsset.name, schema: MediaAssetSchema },
       { name: Album.name, schema: AlbumSchema },
     ]),
+    StorageModule,
   ],
   controllers: [MediaAssetsController],
   providers: [MediaAssetsRepository, MediaAssetsService],

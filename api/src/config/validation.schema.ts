@@ -22,4 +22,13 @@ export const validationSchema = z.object({
   JWT_SECRET: z.string().min(32),
   JWT_ACCESS_EXPIRY: z.string().default('15m'),
   JWT_REFRESH_EXPIRY: z.string().default('7d'),
+
+  // Optional, deliberately. Requiring them would stop the application from
+  // booting anywhere the image store is not configured -- every e2e spec
+  // builds the real AppModule, and CI has no credentials. A missing value
+  // instead surfaces at the one place it matters, as a refused upload
+  // naming the variable, rather than as a process that will not start.
+  CLOUDINARY_CLOUD_NAME: z.string().optional(),
+  CLOUDINARY_API_KEY: z.string().optional(),
+  CLOUDINARY_API_SECRET: z.string().optional(),
 });
