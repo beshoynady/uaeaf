@@ -28,7 +28,7 @@ afterAll(async () => {
 describe('Rate limiting — POST /auth/login (e2e)', () => {
   it('rejects with 429 once the 10-per-60s limit is exceeded', async () => {
     const { Test } = await import('@nestjs/testing');
-    const { ValidationPipe, INestApplication } = await import('@nestjs/common');
+    const { INestApplication } = await import('@nestjs/common');
     const request = (await import('supertest')).default;
     const { AppModule } = await import('../../src/app.module.js');
 

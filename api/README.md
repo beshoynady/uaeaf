@@ -42,6 +42,7 @@ missing or malformed.
 |---|---|
 | `npm run start:dev` | Dev server, watch mode |
 | `npm run build` | Production TypeScript build (`nest build`) |
+| `npm run generate:openapi` | Compiles into `dist-openapi/` (incremental, never touching `dist/`) and rewrites `openapi.json` from the controllers and DTOs. Commit the result. The pre-push hook and CI run it, see `docs/engineering/quality-gates.md`. Needs a reachable `MONGODB_URI` |
 | `npm run test` | Jest unit tests |
 | `npm run test:cov` | Jest unit tests with coverage |
 | `npm run test:e2e` | Jest e2e tests (Supertest + an ephemeral, real MongoDB via `mongodb-memory-server` — never touches the local dev database) |

@@ -21,7 +21,8 @@
     "test:debug": "node --inspect-brk --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
     "test:e2e": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config ./test/jest-e2e.json --forceExit",
     "docs:generate": "compodoc -p tsconfig.json -d documentation",
-    "generate:openapi": "nest build && node dist/generate-openapi.js",
+    "build:openapi": "tsc -p tsconfig.openapi.json",
+    "generate:openapi": "npm run build:openapi && node dist-openapi/generate-openapi.js",
     "bootstrap:admin": "nest build && node dist/bootstrap-admin.js",
     "seed:dev": "nest build && node --env-file-if-exists=.env dist/seed-dev.js",
     "seed:export": "nest build && node --env-file-if-exists=.env dist/seed-dev.js --export",
@@ -80,6 +81,7 @@
     "globalSetup": "<rootDir>/../test/utils/stale-test-databases.ts",
     "testRegex": ".*\\.spec\\.ts$",
     "maxWorkers": 2,
+    "testTimeout": 30000,
     "extensionsToTreatAsEsm": [
       ".ts"
     ],

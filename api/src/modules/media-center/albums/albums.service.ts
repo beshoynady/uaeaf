@@ -6,7 +6,6 @@ import { CreateAlbumDto } from './dto/create-album.dto.js';
 import { AlbumPublicResponseDto, RelatedAlbumSummaryDto } from './dto/album-public-response.dto.js';
 import { AlbumDetailPageResponseDto } from './dto/album-detail-page-response.dto.js';
 import { MediaAssetsService } from '../media-assets/media-assets.service.js';
-import { MediaAssetPublicResponseDto } from '../media-assets/dto/media-asset-public-response.dto.js';
 import { isDuplicateKeyError, duplicateKeyField } from '../../../common/utils/mongo-errors.util.js';
 
 /** `tags[]` cleanup bounds. Confirmed final (2026-09-03) — not a

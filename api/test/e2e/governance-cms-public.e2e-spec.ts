@@ -21,7 +21,7 @@ afterAll(async () => {
 describe('Week 4 — Governance, CMS and the public surface (e2e)', () => {
   it('covers the anonymous contact form, singleton page upsert, public reads, and the workflow public-snapshot gate', async () => {
     const { Test } = await import('@nestjs/testing');
-    const { ValidationPipe, INestApplication } = await import('@nestjs/common');
+    const { INestApplication } = await import('@nestjs/common');
     const { getModelToken } = await import('@nestjs/mongoose');
     const request = (await import('supertest')).default;
 

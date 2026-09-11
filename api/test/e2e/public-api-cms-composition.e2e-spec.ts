@@ -30,7 +30,7 @@ afterAll(async () => {
 describe('Public API — CMS composition chain and navigation (e2e)', () => {
   it('walks pages -> pageSections -> heroSlides and navigationMenus -> navigationItems, unauthenticated', async () => {
     const { Test } = await import('@nestjs/testing');
-    const { ValidationPipe, INestApplication } = await import('@nestjs/common');
+    const { INestApplication } = await import('@nestjs/common');
     const { getModelToken } = await import('@nestjs/mongoose');
     const { Types } = await import('mongoose');
     const request = (await import('supertest')).default;
@@ -100,13 +100,13 @@ describe('Public API — CMS composition chain and navigation (e2e)', () => {
     });
 
     const publicPage = await request(app.getHttpServer()).get(apiPath(`/pages/public/${page.slug}`)).expect(200);
-    expect(publicPage.body._id).toBe(page._id.toString());
+    expect(publicPage.body.id).toBe(page._id.toString());
 
     const publicSections = await request(app.getHttpServer())
       .get(apiPath(`/page-sections/public/by-page/${page._id.toString()}`))
       .expect(200);
     expect(publicSections.body).toHaveLength(1);
-    expect(publicSections.body[0]._id).toBe(heroSection._id.toString());
+    expect(publicSections.body[0].id).toBe(heroSection._id.toString());
 
     const publicSlides = await request(app.getHttpServer())
       .get(apiPath(`/hero-slides/public/by-section/${heroSection._id.toString()}`))

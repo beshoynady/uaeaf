@@ -5,6 +5,7 @@
   "testRegex": ".e2e-spec.ts$",
   "globalSetup": "<rootDir>/utils/stale-test-databases.ts",
   "maxWorkers": 2,
+  "testTimeout": 30000,
   "extensionsToTreatAsEsm": [".ts"],
   "moduleNameMapper": {
     "^(\\.{1,2}/.*)\\.js$": "$1"

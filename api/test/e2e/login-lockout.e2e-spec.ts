@@ -21,7 +21,7 @@ afterAll(async () => {
 describe('Login brute-force lockout (e2e)', () => {
   it('locks the account after 5 failed attempts, rejects further attempts without extending it, and resets after expiry', async () => {
     const { Test } = await import('@nestjs/testing');
-    const { ValidationPipe, INestApplication } = await import('@nestjs/common');
+    const { INestApplication } = await import('@nestjs/common');
     const { getModelToken } = await import('@nestjs/mongoose');
     const request = (await import('supertest')).default;
 

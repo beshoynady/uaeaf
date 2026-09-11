@@ -1,9 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 
 type Theme = "light" | "dark";
+
+/**
+ * The active theme is not React state: it is `data-theme` on <html>, which the
+ * root layout stamps from the theme cookie and the toggle below rewrites.
+ * Reading it through `useSyncExternalStore` keeps the DOM its only owner, so
+ * the button is right on its first paint instead of rendering the prop and
+ * correcting itself after mount. apps/web's toggle reads it the same way.
+ */
+function subscribe(onChange: () => void) {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+  return () => observer.disconnect();
+}
+
+/** Only the two themes this app renders. There is deliberately no
+ *  `prefers-color-scheme` fallback: the generated token CSS has no such rule,
+ *  so a dark OS still gets a light page, and the button must describe the page. */
+function readStampedTheme(): Theme | null {
+  const attribute = document.documentElement.getAttribute("data-theme");
+  return attribute === "light" || attribute === "dark" ? attribute : null;
+}
 
 /**
  * Writes the theme in three places, in this order:
@@ -20,26 +41,18 @@ type Theme = "light" | "dark";
  */
 export function ThemeToggle({ initialTheme }: { initialTheme: Theme }) {
   const t = useTranslations("Shell");
-  const [theme, setTheme] = useState<Theme>(initialTheme);
-
-  // Reads the attribute the server actually stamped, and nothing else.
-  //
-  // An earlier version fell back to `prefers-color-scheme` when no attribute
-  // was present. That was wrong for this token system: the generated CSS has
-  // no `prefers-color-scheme` rule, so a dark OS produced a light page and a
-  // button offering to "switch to light" — a control describing a state the
-  // user was not in. The layout now always stamps a value, so this only has
-  // to agree with it.
-  useEffect(() => {
-    const attribute = document.documentElement.getAttribute("data-theme");
-    if (attribute === "light" || attribute === "dark") {
-      setTheme(attribute);
-    }
-  }, []);
+  // The server renders from the same cookie it stamps on <html>, so its
+  // snapshot is `initialTheme` and hydration matches the page.
+  const theme = useSyncExternalStore(
+    subscribe,
+    () => readStampedTheme() ?? initialTheme,
+    () => initialTheme,
+  );
 
   async function toggle() {
     const next: Theme = theme === "dark" ? "light" : "dark";
-    setTheme(next);
+    // Writing the attribute is the state change; the observer turns it into a
+    // render. There is no second copy to keep in step.
     document.documentElement.setAttribute("data-theme", next);
 
     await fetch("/api/preferences", {

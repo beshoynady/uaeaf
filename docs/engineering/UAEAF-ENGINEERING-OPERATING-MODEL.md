@@ -536,6 +536,8 @@ Do not:
 
 unless explicitly instructed.
 
+Do not bypass the pre-push hook with `--no-verify` except in a documented emergency. `docs/engineering/quality-gates.md` defines what counts as one, and what the hook and CI each check.
+
 NOTE — this section's original "if an unexpected commit appears, STOP and
 report" instruction described an auto-commit investigation that the
 project owner has since explicitly closed (root cause found and fixed).

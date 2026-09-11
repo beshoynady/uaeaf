@@ -21,7 +21,7 @@ afterAll(async () => {
 describe('People & Organizations + Documents (e2e)', () => {
   it('covers a Local athlete + profile, a Guest athlete with no profile, and a documents attach-to-club flow', async () => {
     const { Test } = await import('@nestjs/testing');
-    const { ValidationPipe, INestApplication } = await import('@nestjs/common');
+    const { INestApplication } = await import('@nestjs/common');
     const { getModelToken } = await import('@nestjs/mongoose');
     const request = (await import('supertest')).default;
 

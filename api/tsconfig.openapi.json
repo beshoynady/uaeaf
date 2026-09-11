@@ -1,0 +1,14 @@
+// The build `npm run generate:openapi` runs, and with it the pre-push hook and CI.
+// It compiles the same sources as tsconfig.build.json into dist-openapi/, never
+// dist/: `nest build` deletes dist/ and its tsbuildinfo on every run, which made
+// each check a cold compile and crashed a running `npm run start:dev`. Nothing
+// deletes dist-openapi/, so the build stays incremental. Its tsbuildinfo lives
+// inside it: deleting the folder then deletes both, and the next build is cold
+// rather than skipping outputs that are gone.
+{
+  "extends": "./tsconfig.build.json",
+  "compilerOptions": {
+    "outDir": "./dist-openapi",
+    "tsBuildInfoFile": "./dist-openapi/.tsbuildinfo"
+  }
+}

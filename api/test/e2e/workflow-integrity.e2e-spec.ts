@@ -36,6 +36,8 @@ let Types: typeof import('mongoose').Types;
 let pageModel: import('mongoose').Model<{ _id: unknown }>;
 let instanceModel: import('mongoose').Model<unknown>;
 let publicationModel: import('mongoose').Model<unknown>;
+// The instance the service calls, so a test can hold its reads (see holdConcurrentReads).
+let instancesRepository: { findActive: (...args: unknown[]) => Promise<unknown> };
 const tokens = {} as Record<Who, string>;
 const ids = {} as Record<Who, string>;
 
@@ -64,6 +66,9 @@ beforeAll(async () => {
   const { VisionMissionPage } = await import(
     '../../src/modules/federation-governance/vision-mission-page/schemas/vision-mission-page.schema.js'
   );
+  const { WorkflowInstancesRepository } = await import(
+    '../../src/modules/workflow/workflow-instances/workflow-instances.repository.js'
+  );
   const bcrypt = (await import('bcryptjs')).default;
 
   const moduleFixture = await Test.createTestingModule({ imports: [AppModule] }).compile();
@@ -75,6 +80,7 @@ beforeAll(async () => {
   pageModel = moduleFixture.get(getModelToken(VisionMissionPage.name));
   instanceModel = moduleFixture.get(getModelToken(WorkflowInstance.name));
   publicationModel = moduleFixture.get(getModelToken(Publication.name));
+  instancesRepository = moduleFixture.get(WorkflowInstancesRepository);
   const permissionModel = moduleFixture.get(getModelToken(Permission.name));
   const roleModel = moduleFixture.get(getModelToken(Role.name));
   const userModel = moduleFixture.get(getModelToken(User.name));
@@ -236,6 +242,38 @@ async function publicVision(entityId: string): Promise<string | null> {
   return (page.body.visionText?.en as string | undefined) ?? null;
 }
 
+/**
+ * Makes the next `count` reads of an active instance wait for one another:
+ * each read's answer is held until all of them have been answered, so
+ * submissions sent together always all read before any of them writes,
+ * rather than only when the timing happens to line up.
+ *
+ * If the reads can no longer overlap (a fix that serialises them), the
+ * barrier opens after `giveUpMs` instead of hanging. A hang would fail the
+ * test, and `it.failing` would count that failure as the defect still being
+ * there. Returns the function that puts the repository back.
+ */
+function holdConcurrentReads(count: number, giveUpMs = 10000): () => void {
+  const original = instancesRepository.findActive;
+  let answered = 0;
+  let open!: () => void;
+  const allAnswered = new Promise<void>((resolve) => {
+    open = resolve;
+  });
+  const giveUp = setTimeout(() => open(), giveUpMs);
+  instancesRepository.findActive = async function held(this: unknown, ...args: unknown[]) {
+    const answer = await original.apply(this, args);
+    answered += 1;
+    if (answered === count) open();
+    await allAnswered;
+    return answer;
+  };
+  return () => {
+    clearTimeout(giveUp);
+    Reflect.deleteProperty(instancesRepository, 'findActive');
+  };
+}
+
 async function livePublications(entityId: string): Promise<number> {
   return publicationModel.countDocuments({
     entityType: 'visionMissionPage',
@@ -358,16 +396,22 @@ describe('Workflow integrity (e2e)', () => {
   // H2 — CONFIRMED DEFECT (P1). "At most one active instance per record"
   // (BE-PLAN-010 Week 2 §4) is a read-then-write in the service
   // (`findActive`, then `create`) with no database constraint behind it, so
-  // two submissions arriving together both pass the read.
+  // two submissions arriving together both pass the read. The barrier makes
+  // them always arrive together.
   it.failing('[H2] creates one instance when the same record is submitted twice at once', async () => {
     const entityId = await storePage('Double submit');
     const { definitionId } = await defineWorkflow([{ stepType: 'Sequential', assignees: ['a'], requiredApprovals: 1 }]);
     const revisionId = await revise(entityId);
 
-    await Promise.all([
-      submitRequest(definitionId, entityId, revisionId),
-      submitRequest(definitionId, entityId, revisionId),
-    ]);
+    const restore = holdConcurrentReads(2);
+    try {
+      await Promise.all([
+        submitRequest(definitionId, entityId, revisionId),
+        submitRequest(definitionId, entityId, revisionId),
+      ]);
+    } finally {
+      restore();
+    }
 
     const active = await instanceModel.countDocuments({
       entityType: 'visionMissionPage',

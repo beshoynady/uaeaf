@@ -1,0 +1,177 @@
+# Quality gate for main: runs on every push to main, and on demand from the
+# Actions tab. What this workflow checks, what the pre-push hook checks, and
+# when --no-verify is acceptable: docs/engineering/quality-gates.md.
+#
+# Every value below is a test-only placeholder written here on purpose. No job
+# reads a secret, and no job reaches Atlas or any database outside the runner.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# A newer push to the same branch makes the older run's result moot.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  api-checks:
+    name: api · type-check, openapi drift, lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: api
+    # The openapi generator boots the whole app, which connects to MongoDB
+    # without reading or writing documents. This throwaway container serves it.
+    services:
+      mongodb:
+        image: mongo:8.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      MONGODB_URI: mongodb://localhost:27017/uaeaf-ci
+      JWT_SECRET: ci-placeholder-secret-not-a-real-credential
+      # This job starts no in-memory MongoDB, so npm ci skips that download.
+      MONGOMS_DISABLE_POSTINSTALL: '1'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: api/package-lock.json
+      - name: Install
+        id: install
+        run: npm ci
+      - name: Type-check and compile the API
+        run: npm run build:openapi
+      - name: Regenerate openapi.json
+        run: |
+          timeout 120 node dist-openapi/generate-openapi.js || {
+            echo "::error::The openapi generator failed or ran past 120 s. Its output is above; check the MongoDB service first."
+            exit 1
+          }
+      - name: openapi.json matches the API
+        run: |
+          if ! git diff --quiet HEAD -- openapi.json; then
+            git --no-pager diff --stat HEAD -- openapi.json
+            echo "::error file=api/openapi.json::api/openapi.json تغيّر عن الـ commit: شغّل npm run generate:openapi داخل api/ واعمل commit للنتيجة. / api/openapi.json is out of date: run npm run generate:openapi in api/ and commit the result."
+            exit 1
+          fi
+      # Lint reports on its own, whatever happened to the steps above.
+      - name: Lint
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run lint
+
+  api-unit:
+    name: api · unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: api
+    env:
+      # Where mongodb-memory-server keeps its mongod binary. The cache step
+      # restores it, so npm ci does not download it on every run.
+      MONGOMS_DOWNLOAD_DIR: ${{ github.workspace }}/.cache/mongodb-binaries
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: api/package-lock.json
+      - uses: actions/cache@v4
+        with:
+          path: .cache/mongodb-binaries
+          key: mongodb-binaries-${{ runner.os }}-${{ hashFiles('api/package-lock.json') }}
+      - name: Install
+        run: npm ci
+      # The first mongod start on a fresh runner is the slow one. It happens
+      # here, before any suite, rather than inside a test's time limit.
+      - name: Start and stop one in-memory MongoDB
+        run: node -e "import('mongodb-memory-server').then(async ({ MongoMemoryServer }) => { const server = await MongoMemoryServer.create(); await server.stop(); })"
+      - name: Unit tests
+        run: npm test
+
+  api-e2e:
+    name: api · e2e tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: api
+    # Each e2e suite starts its own in-memory MongoDB inside the runner and sets
+    # its own test-only env values, so this job needs no service and no secret.
+    env:
+      MONGOMS_DOWNLOAD_DIR: ${{ github.workspace }}/.cache/mongodb-binaries
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: api/package-lock.json
+      - uses: actions/cache@v4
+        with:
+          path: .cache/mongodb-binaries
+          key: mongodb-binaries-${{ runner.os }}-${{ hashFiles('api/package-lock.json') }}
+      - name: Install
+        run: npm ci
+      - name: Start and stop one in-memory MongoDB
+        run: node -e "import('mongodb-memory-server').then(async ({ MongoMemoryServer }) => { const server = await MongoMemoryServer.create(); await server.stop(); })"
+      - name: e2e tests
+        run: npm run test:e2e
+
+  apps:
+    name: ${{ matrix.app }} · type-check, lint, unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [web, dashboard]
+    defaults:
+      run:
+        working-directory: apps/${{ matrix.app }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install
+        working-directory: .
+        run: npm ci
+      # The apps import the generated token CSS, and packages/design-tokens/build/
+      # is not committed. The package has no tsconfig of its own: its TypeScript
+      # (testing/) is type-checked through web, which imports it.
+      - name: Build design tokens
+        working-directory: .
+        run: npm run build -w @uaeaf/design-tokens
+      # next-env.d.ts and the route types are generated, not committed.
+      - name: Generate Next.js types
+        id: typegen
+        run: npx next typegen
+      # The three checks below report independently of one another.
+      - name: Type-check
+        if: ${{ !cancelled() && steps.typegen.outcome == 'success' }}
+        run: npx tsc --noEmit
+      - name: Lint
+        if: ${{ !cancelled() && steps.typegen.outcome == 'success' }}
+        run: npm run lint
+      - name: Unit tests
+        if: ${{ !cancelled() && steps.typegen.outcome == 'success' }}
+        run: npm test
