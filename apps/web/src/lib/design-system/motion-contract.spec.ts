@@ -27,6 +27,18 @@ import { declaredTokens, themeTokens } from "@uaeaf/design-tokens/testing";
 
 const SRC = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
+/**
+ * The shared stylesheets, which are no longer under this application.
+ *
+ * `forms.css` moved into the token package so the public site and the
+ * dashboard cannot drift apart on what a field is, and `interaction.css`
+ * joined it. Both carry transitions and both are subject to every rule below
+ * — and a directory walk rooted at `src` had silently stopped seeing them.
+ * A guard that stops covering the file it was written for is worse than no
+ * guard, because it still reports green.
+ */
+const SHARED_CSS = join(SRC, "..", "..", "..", "packages", "design-tokens", "css");
+
 function stylesheets(dir: string): string[] {
   return readdirSync(dir).flatMap((entry) => {
     const full = join(dir, entry);
@@ -39,7 +51,7 @@ function stylesheets(dir: string): string[] {
  *  every reported offset still points at the real line — and so that prose
  *  *about* a property is never mistaken for a use of it. The guard rule below
  *  reported its own explanatory comment before this existed. */
-const CSS = stylesheets(SRC).map((file) => ({
+const CSS = [...stylesheets(SRC), ...stylesheets(SHARED_CSS)].map((file) => ({
   file: file.replace(SRC, "src"),
   source: readFileSync(file, "utf-8").replace(/\/\*[\s\S]*?\*\//g, (block) =>
     block.replace(/[^\n]/g, " "),
@@ -87,6 +99,16 @@ describe("motion tokens", () => {
 });
 
 describe("motion implementation", () => {
+  it("covers the shared stylesheets as well as this app's own", () => {
+    // Named explicitly rather than counted: the move that took `forms.css`
+    // out of `src` is exactly the kind of change that turns this file green
+    // and empty at the same time.
+    const names = CSS.map(({ file }) => file.split(/[\\/]/).pop());
+    expect(names).toContain("forms.css");
+    expect(names).toContain("interaction.css");
+    expect(names).toContain("motion.css");
+  });
+
   it("finds stylesheets to check, so the rules below cannot pass vacuously", () => {
     expect(CSS.length).toBeGreaterThan(0);
   });

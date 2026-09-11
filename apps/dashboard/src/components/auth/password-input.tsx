@@ -60,7 +60,12 @@ export function PasswordInput({
           // the fact that matters in a shared office.
           aria-label={revealed ? t("hidePassword") : t("showPassword")}
           aria-pressed={revealed}
-          className="flex size-10 items-center justify-center rounded-[var(--radius-sm)] text-caption font-medium text-[color:var(--color-text-muted)] transition-colors hover:text-[color:var(--color-text-primary)] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[color:var(--color-focus-default)] active:bg-[color:var(--color-surface-skeleton)]"
+          // `size-11` is 44px — WCAG 2.5.5 and IA §12's KPI floor. It measured
+          // 40x40 until the field's shell dropped its own vertical padding
+          // (ADR-0067 D5) and left the button room to be the size it should
+          // always have been: 44 + the shell's 4px end padding is exactly the
+          // control's 48px height.
+          className="flex size-11 items-center justify-center rounded-[var(--radius-sm)] text-caption font-medium text-[color:var(--color-text-muted)] transition-colors hover:text-[color:var(--color-text-primary)] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[color:var(--color-focus-default)] active:bg-[color:var(--color-surface-skeleton)]"
         >
           <EyeIcon crossed={revealed} />
         </button>

@@ -210,18 +210,43 @@ export const HERO_MOTIF = "h-20 w-full self-end md:h-32 md:w-32";
  *    card's own alpha and the band's overlay are solved together against the
  *    worst admissible photograph rather than against a colour someone assumed.
  *
- * What carries the three-dimensional feel on a flat ground is not blur but
- * the light-catching edge: a hairline of the surface's own light along the
- * top, which is how a physical panel with a bevel reads. That costs no layer.
+ * 3. **And measured, the blur is the part that does not pay.** Three
+ *    independent runs, 150 scrolled frames each at 1440x900 under a 4x CPU
+ *    throttle, on the contact page where four cards put `backdrop-filter`
+ *    over **16.4%** of the viewport:
+ *
+ *    | radius | mean frame | p50 | p95 | frames over 16.7ms |
+ *    | --- | --- | --- | --- | --- |
+ *    | 12px | 30.6ms | 22.5ms | 68.8ms | 103 / 150 |
+ *    | 8px | 28.9ms | 23.2ms | 67.4ms | 104 / 150 |
+ *    | 4px | 24.9ms | 21.7ms | 55.7ms | 106 / 150 |
+ *    | none | **19.5ms** | **16.6ms** | **31.6ms** | **74 / 150** |
+ *
+ *    The radius barely matters: even 4px costs +5.4ms mean and +24ms at p95,
+ *    because the expense is *having* a backdrop layer the compositor must
+ *    re-snapshot every frame, not how far it is blurred. Only `none` returns
+ *    the median frame to the 16.7ms budget.
+ *
+ *    And here the blur had little to soften in the first place: what sits
+ *    behind these cards is a photograph under a 0.64–0.74 black scrim, which
+ *    has already crushed the detail a blur would smooth.
+ *
+ * What carries the three-dimensional feel is therefore not blur but the
+ * light-catching edge: a hairline of the surface's own light along the top,
+ * which is how a physical panel with a bevel reads. That costs no layer, and
+ * the translucency — the part a reader actually sees as glass — is untouched,
+ * so the contrast solved against the worst admissible photograph still holds
+ * exactly as measured.
  */
 export const GLASS_EDGE =
   "shadow-[inset_0_1px_0_color-mix(in_srgb,var(--color-text-on-brand)_55%,transparent)]";
 
-/** A surface standing on artwork: translucent, blurred, edge-lit. The alpha
- *  and the blur are the values already proven on the contact hero's cards
- *  against a pure-white photograph — reused rather than re-invented. */
+/** A surface standing on artwork: translucent and edge-lit. The alpha is the
+ *  value already proven on the contact hero's cards against a pure-white
+ *  photograph — reused rather than re-invented. No `backdrop-filter`: the
+ *  table above is why. */
 export const GLASS_OVER_ART =
-  "border-[color-mix(in_srgb,var(--color-text-on-brand)_35%,transparent)] bg-[color-mix(in_srgb,var(--color-text-on-brand)_12%,transparent)] backdrop-blur-[12px]";
+  "border-[color-mix(in_srgb,var(--color-text-on-brand)_35%,transparent)] bg-[color-mix(in_srgb,var(--color-text-on-brand)_12%,transparent)]";
 
 /**
  * The same treatment from `md` up, written out rather than derived.
@@ -233,4 +258,90 @@ export const GLASS_OVER_ART =
  * can read it, which is why this is a second constant instead of a helper.
  */
 export const GLASS_OVER_ART_MD =
-  "md:border-[color-mix(in_srgb,var(--color-text-on-brand)_35%,transparent)] md:bg-[color-mix(in_srgb,var(--color-text-on-brand)_12%,transparent)] md:backdrop-blur-[12px]";
+  "md:border-[color-mix(in_srgb,var(--color-text-on-brand)_35%,transparent)] md:bg-[color-mix(in_srgb,var(--color-text-on-brand)_12%,transparent)]";
+
+/** The lit edge from `md` up, for a surface that carries a flat elevation
+ *  below that breakpoint and stands on artwork above it. */
+export const GLASS_EDGE_MD =
+  "md:shadow-[inset_0_1px_0_color-mix(in_srgb,var(--color-text-on-brand)_55%,transparent)]";
+
+/**
+ * The order a hero arrives in, as one table rather than seven literals.
+ *
+ * The owner asked for a composed opening rather than everything at once:
+ * the ground, then the heading, then the line under it, then the motif, then
+ * the cards in sequence. Each step is `--motion-ascent-stagger` (60ms,
+ * Chapter 5 §5.7's 40–80ms band) after the last, and the longest delay here
+ * — the fourth card at index 7 — is 420ms, inside §5.7's 600ms ceiling with
+ * room to spare.
+ *
+ * The ground is index 0 and takes no delay at all. It is the stage, not a
+ * performer: it is present in the first paint and *settles* rather than
+ * arriving, which is also what protects the largest contentful paint (see
+ * `.rise-ground` in `motion.css`).
+ *
+ * Every hero on the site reads from this table, including the ones with no
+ * photograph — a heading that waits 60ms is imperceptible, and one rhythm
+ * across twelve pages is the point.
+ */
+export const HERO_STAGE = {
+  ground: 0,
+  title: 1,
+  subtitle: 2,
+  motif: 3,
+  /** Cards continue from here: `HERO_STAGE.card + index`. */
+  card: 4,
+} as const;
+
+/**
+ * The ground layer of a hero: a photograph on its own plane.
+ *
+ * `-inset-y-20` is not padding — it is the headroom the parallax and the
+ * settle move through. `--space-20` (80px) against a combined 64px of travel;
+ * the budget is set out beside `@keyframes uaeaf-parallax` in `motion.css`.
+ * `overflow-hidden` on the band is what keeps the overhang invisible.
+ */
+export const HERO_PARALLAX = "hero-parallax pointer-events-none absolute inset-x-0 -inset-y-20";
+
+/** The picture itself, filling that layer. */
+export const HERO_MEDIA = "rise-ground size-full object-cover";
+
+/**
+ * The scrim that turns a photograph into a ground text can sit on.
+ *
+ * Not a taste decision and not adjustable per page: an uploaded picture is an
+ * unknown ground, so the overlay is solved against the worst admissible one —
+ * a pure white image — and the result is the floor at which white text and
+ * the hero's translucent cards still clear WCAG AA. The designed 0.45/0.55
+ * measured 3.74:1 and failed; 0.64/0.74 is what passes.
+ *
+ * Shared by every hero that can carry an image so the guarantee is the same
+ * one everywhere, rather than re-derived per page and wrong on the twelfth.
+ *
+ * Written as `color-mix` over `--color-brand-black` rather than `rgb(0 0 0 /
+ * …)`. Byte-identical output — Federation Black is `#000000` — but §16 forbids
+ * a hardcoded colour where a token exists, and `surface-standard.spec.ts`
+ * enforces that on this module rather than trusting it. The two percentages
+ * are the measured floor, not a token, and that is the honest reading: they
+ * are the answer to "what makes white text clear AA over a pure white
+ * photograph", which no colour token can express.
+ */
+export const HERO_SCRIM =
+  "absolute inset-0 bg-[linear-gradient(to_bottom,color-mix(in_srgb,var(--color-brand-black)_64%,transparent),color-mix(in_srgb,var(--color-brand-black)_74%,transparent))]";
+
+/**
+ * A section's contents entering as the reader reaches them.
+ *
+ * On the contents, never on the band. A full-bleed `<section>` that travels
+ * 16px leaves a 16px sliver of the page showing along its own edge for the
+ * length of the animation — on a coloured register that reads as a flicker in
+ * the band itself. Moving what is inside it says the same thing and has no
+ * edge to expose.
+ *
+ * `.rise-scroll` is deliberately opacity-free (see `motion.css`): a
+ * scroll-driven animation is the one kind whose end state a crawler or a
+ * print is not guaranteed to reach, and Chapter 14 makes indexability a hard
+ * requirement. Nothing here can hide text — the worst case is text sitting
+ * 16px from where it belongs.
+ */
+export const SECTION_ENTER = "rise-scroll";

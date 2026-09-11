@@ -1,0 +1,69 @@
+/*
+ * What the pointer says about a control.
+ *
+ * ── Why this exists at all ────────────────────────────────────────────────
+ *
+ * Tailwind v4 changed `button` from `cursor: pointer` back to the browser
+ * default, which is `cursor: default` — the same arrow the pointer shows over
+ * a paragraph. So every button on both applications looked, to the pointer,
+ * exactly like text: no affordance, on the one signal a mouse user gets
+ * before they commit to a click. Chapter 11 §UX lists affordance and feedback
+ * as requirements, and Chapter 8 makes the interactive states of a control
+ * part of the component rather than a page's decoration.
+ *
+ * ── Why `@layer base` and not an unlayered rule ───────────────────────────
+ *
+ * Unlayered CSS beats every layer, which would make this rule win over a
+ * `cursor-*` utility a component deliberately set — `disabled:cursor-progress`
+ * on a submit button mid-request, `cursor-not-allowed` on a locked permission
+ * cell. Declared in `base` instead, it lands after Tailwind's own preflight
+ * (same layer, later source order, so it wins there) and still loses to
+ * anything in `utilities`, which is exactly the precedence a default wants.
+ *
+ * Shared by both applications for the same reason `forms.css` is: this is
+ * plain CSS with no utilities in it, and a control that answers the pointer
+ * on the public site and not in the dashboard is one system pretending to be
+ * two.
+ */
+
+@layer base {
+  /*
+   * Anything that acts on a click. `a[href]` is deliberately absent — every
+   * engine already gives a link the hand, and restating it here would only
+   * create a second place to keep correct.
+   */
+  button:not(:disabled),
+  summary,
+  select:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled),
+  input[type="file"]:not(:disabled),
+  input[type="range"]:not(:disabled),
+  input[type="color"]:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [role="tab"]:not([aria-disabled="true"]),
+  [role="switch"]:not([aria-disabled="true"]),
+  [role="menuitem"]:not([aria-disabled="true"]),
+  [role="option"]:not([aria-disabled="true"]),
+  /* A label is only clickable-as-a-control when it wraps a box to tick; over
+     a text input it should keep the caret, which is what the reader is about
+     to place. */
+  label:has(input[type="checkbox"]:not(:disabled)),
+  label:has(input[type="radio"]:not(:disabled)) {
+    cursor: pointer;
+  }
+
+  /*
+   * And the other half of the same signal: a control that will not answer
+   * says so before it is clicked. Both spellings, because `aria-disabled` is
+   * what a focusable-but-inert control uses and `:disabled` is what a removed
+   * one uses, and the pointer cannot tell the difference.
+   */
+  button:disabled,
+  select:disabled,
+  input:disabled,
+  textarea:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}

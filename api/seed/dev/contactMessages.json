@@ -1,0 +1,76 @@
+[
+  {
+    "_id": {
+      "$oid": "6a99ad3038a2eaf20a1dd816"
+    },
+    "createdBy": null,
+    "updatedBy": null,
+    "archivedAt": null,
+    "archivedBy": null,
+    "messageType": "Inquiry",
+    "senderName": "Citizen Test",
+    "senderEmail": "citizen@example.com",
+    "senderPhone": null,
+    "messageBody": "Testing the public contact form.",
+    "status": "New",
+    "hardDeleteEligibleAt": null,
+    "assignedToId": null,
+    "assignedToType": null,
+    "workflowInstanceId": null,
+    "replyBody": null,
+    "repliedAt": null,
+    "repliedBy": null,
+    "replyChannel": null,
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6aa15b01312e32864a91fbf1"
+    },
+    "createdBy": null,
+    "updatedBy": null,
+    "archivedAt": null,
+    "archivedBy": null,
+    "messageType": "Inquiry",
+    "senderName": "???? ??????",
+    "senderEmail": "visitor@example.test",
+    "senderPhone": "+971 50 000 0000",
+    "subject": "??????? ?? ?????? ????????",
+    "messageBody": "??? ????? ????? ????? ?? ????? ????? ???? � ???? ????? ??????.",
+    "status": "New",
+    "hardDeleteEligibleAt": null,
+    "assignedToId": null,
+    "assignedToType": null,
+    "workflowInstanceId": null,
+    "replyBody": null,
+    "repliedAt": null,
+    "repliedBy": null,
+    "replyChannel": null,
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6aa17c7d312e32864a91fbf4"
+    },
+    "createdBy": null,
+    "updatedBy": null,
+    "archivedAt": null,
+    "archivedBy": null,
+    "messageType": "Inquiry",
+    "senderName": "اختبار الأدوار اللونية",
+    "senderEmail": "role.check@example.test",
+    "senderPhone": null,
+    "subject": "تحقق بعد ADR-0065",
+    "messageBody": "رسالة تحقق آلية بعد إعادة بناء الألوان والتفاعل. بيانات تجريبية.",
+    "status": "New",
+    "hardDeleteEligibleAt": null,
+    "assignedToId": null,
+    "assignedToType": null,
+    "workflowInstanceId": null,
+    "replyBody": null,
+    "repliedAt": null,
+    "repliedBy": null,
+    "replyChannel": null,
+    "__v": 0
+  }
+]

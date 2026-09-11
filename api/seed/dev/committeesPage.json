@@ -1,0 +1,34 @@
+[
+  {
+    "_id": {
+      "$oid": "6aa04ba9e3d1ab8b4179f0ff"
+    },
+    "createdBy": null,
+    "updatedBy": null,
+    "archivedAt": null,
+    "archivedBy": null,
+    "createdAt": {
+      "$date": "2026-09-08T17:53:45.866Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-08T17:53:45.866Z"
+    },
+    "heroImageId": null,
+    "heroTitle": {
+      "ar": "اللجان",
+      "en": "Committees"
+    },
+    "heroSubtitle": {
+      "ar": "نص تجريبي محلي للتحقق البصري فقط — ليس محتوى معتمدًا. طوله كافٍ لاختبار الالتفاف عبر كل النطاقات، ولاختبار سلوك النص العربي داخل عمود ضيّق.",
+      "en": "Local sample text for visual verification only — not approved content. Long enough to test wrapping across every breakpoint and to test how the column behaves at its narrowest."
+    },
+    "introHeading": {
+      "ar": "حوكمة وتمكين",
+      "en": "Governance and enablement"
+    },
+    "introText": {
+      "ar": "فقرة تجريبية محلية متعددة الأسطر.\n\nالسطر الثاني موجود عمدًا للتحقق من أن الفواصل التي يكتبها المحرّر لا تُطوى إلى كتلة واحدة.",
+      "en": "Local multi-line sample paragraph.\n\nThe second line exists on purpose, to verify that the breaks an editor types are not collapsed into one block."
+    }
+  }
+]

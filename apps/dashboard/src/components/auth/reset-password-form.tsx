@@ -3,6 +3,7 @@
 import { useMemo, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { PasswordInput } from "./password-input";
+import { RequiredHint } from "@/components/ui/required-field";
 import { PasswordStrengthMeter } from "./password-strength-meter";
 import { StatusMessage } from "./status-message";
 import { SubmitButton } from "./submit-button";
@@ -105,6 +106,8 @@ export function ResetPasswordForm({ token, locale }: { token: string; locale: Ap
           ) : null}
         </StatusMessage>
       ) : null}
+
+      <RequiredHint />
 
       <div className="flex flex-col gap-3">
         <PasswordInput

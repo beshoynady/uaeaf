@@ -1,4 +1,5 @@
 import { Children, isValidElement, type ReactNode } from "react";
+import { SECTION_ENTER } from "./surface";
 
 /**
  * Full-bleed section registers.
@@ -84,6 +85,7 @@ export function Section({
   id,
   labelledBy,
   bleed = false,
+  enter = true,
 }: {
   register?: Register;
   children: ReactNode;
@@ -96,8 +98,24 @@ export function Section({
   /** Skip the container — for a band whose content must reach the viewport
    *  edge, such as a full-width image. */
   bleed?: boolean;
+  /**
+   * Whether the contents rise into place as the reader reaches them.
+   *
+   * On by default: one motion language for every band on the site is the
+   * point, and `SECTION_ENTER` cannot hide content (it is opacity-free) or
+   * shift layout (it is a transform).
+   *
+   * Turn it off for a band containing a `position: fixed` descendant. A
+   * transform on an ancestor becomes that descendant's containing block, so
+   * the fixed element would start scrolling with the page — a real defect,
+   * and one that only appears while the animation is running.
+   *
+   * Ignored under `bleed`, which has no container to move.
+   */
+  enter?: boolean;
 }) {
   const tone = REGISTER_CLASSES[register];
+  const inner = enter ? SECTION_ENTER : "";
   return (
     <section
       id={id}
@@ -105,7 +123,12 @@ export function Section({
       data-register={register}
       className={`w-full ${tone.surface}${className ? ` ${className}` : ""}`}
     >
-      {bleed ? children : <div className={CONTAINER}>{children}</div>}
+      {/* A bleed band keeps its children as direct descendants and gets no
+          entrance. Its content reaches the viewport edge by definition, so
+          translating it uncovers the band's own ground along that edge — the
+          same reason the animation is on the contents rather than the section
+          everywhere else. There is nothing here for the motion to hide behind. */}
+      {bleed ? children : <div className={`${CONTAINER} ${inner}`}>{children}</div>}
     </section>
   );
 }

@@ -59,7 +59,7 @@ export const BUTTON_GHOST = `${BUTTON_BASE} bg-transparent text-[color:var(--col
  * fills it edge to edge and a ring drawn on the input would be clipped by the
  * shell's own border radius.
  */
-export const FIELD_SHELL = `flex ${TOUCH_TARGET} items-center gap-2 rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)] px-3 ${TRANSITION} focus-within:border-[color:var(--color-border-strong)] focus-within:ring-2 focus-within:ring-[color:var(--a11y-focus-ring)] focus-within:ring-offset-2 focus-within:ring-offset-[color:var(--a11y-focus-offset)] has-[:disabled]:cursor-not-allowed has-[:disabled]:bg-[color:var(--color-surface-sunken)] has-[:disabled]:opacity-[var(--opacity-disabled)] has-[[aria-invalid=true]]:border-[color:var(--color-semantic-error)]`;
+export const FIELD_SHELL = `flex ${TOUCH_TARGET} items-center gap-2 rounded-[var(--radius-md)] border border-[color:var(--color-border-strong)] bg-[color:var(--color-surface-raised)] px-3 ${TRANSITION} focus-within:border-[color:var(--color-border-strong)] focus-within:ring-2 focus-within:ring-[color:var(--a11y-focus-ring)] focus-within:ring-offset-2 focus-within:ring-offset-[color:var(--a11y-focus-offset)] has-[:disabled]:cursor-not-allowed has-[:disabled]:bg-[color:var(--color-surface-sunken)] has-[:disabled]:opacity-[var(--opacity-disabled)] has-[[aria-invalid=true]]:border-[color:var(--color-semantic-error)]`;
 
 /**
  * The input itself. `outline-none` is correct here and only here: the shell
@@ -68,6 +68,53 @@ export const FIELD_SHELL = `flex ${TOUCH_TARGET} items-center gap-2 rounded-[var
  */
 export const FIELD_INPUT =
   "min-w-0 flex-1 bg-transparent text-label text-[color:var(--color-text-primary)] outline-none placeholder:text-[color:var(--color-text-muted)] disabled:cursor-not-allowed";
+
+/**
+ * The box a notched-label control lives in — ADR-0066/ADR-0067, shared with
+ * the public site.
+ *
+ * Geometry, ground and the notch come from `forms.css` in the token package,
+ * which both applications import; only the edge and the focus treatment are
+ * class strings, because Tailwind resolves those per application. A field on
+ * this surface and a field on the public site are now the same object: a
+ * reader who has filled one has learned the other.
+ *
+ * `--color-border-strong`, not `--color-border-default`. That is not a taste
+ * upgrade: `default` (#E0DFDB) measures **1.15:1** against the raised surface,
+ * and WCAG 2.1 §1.4.11 requires **3:1** for the visual boundary of a
+ * user-interface component — every field on this dashboard was failing it.
+ * `strong` measures 4.68:1 light and 3.48:1 dark.
+ */
+const FIELD_EDGE = `border border-[color:var(--color-border-strong)] ${TRANSITION} hover:border-[color:var(--color-brand-primary)] active:border-[color:var(--color-brand-primary)] focus-within:border-[color:var(--color-brand-primary)] focus-within:ring-2 focus-within:ring-[color:var(--a11y-focus-ring)] focus-within:ring-offset-2 focus-within:ring-offset-[color:var(--a11y-focus-offset)]`;
+
+export const FIELD_CONTROL = `field-control ${FIELD_EDGE} has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-[var(--opacity-disabled)] has-[[aria-invalid=true]]:border-[color:var(--color-semantic-error)]`;
+
+/**
+ * The same box, sharing its space with a trailing control — a password's
+ * reveal button, a unit, a clear affordance. `field-shell` lays the two out as
+ * flex siblings so the trailing control gets its own hit area.
+ *
+ * Not for a `<select>`'s chevron: a chevron is a picture of what the whole
+ * control already does, so it must not take a hit area away from it. That one
+ * is painted over the control's own end padding instead — see `SelectField`.
+ */
+export const FIELD_BOX = `${FIELD_CONTROL} field-shell`;
+
+/**
+ * A `<select>` in the same box.
+ *
+ * `appearance-none` removes the platform chevron so the field can draw its own
+ * at the reading end, and `pe-11` reserves the room it needs — logical, so the
+ * chevron and the gap it sits in swap sides together in Arabic.
+ *
+ * `disabled:` and `aria-[invalid=true]:`, NOT the `has-[…]:` pair above, and
+ * the difference is not cosmetic. A select *is* its own box rather than a
+ * control living inside one, so `has-[:disabled]` would resolve against its
+ * **options** — and a select whose placeholder option is disabled, which is
+ * every select with a placeholder, would have painted itself disabled and
+ * dimmed while remaining perfectly usable. Same for `has-[[aria-invalid]]`.
+ */
+export const FIELD_SELECT = `field-control ${FIELD_EDGE} w-full appearance-none pe-11 text-body text-[color:var(--color-text-primary)] outline-none disabled:cursor-not-allowed disabled:opacity-[var(--opacity-disabled)] aria-[invalid=true]:border-[color:var(--color-semantic-error)]`;
 
 /** A row or card that selects something — list items, media tiles, page rows. */
 export const SELECTABLE_ROW = `w-full ${TOUCH_TARGET} rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)] px-3 py-2 text-start ${TRANSITION} ${FOCUS_RING} hover:border-[color:var(--color-border-strong)] hover:bg-[color:var(--color-surface-sunken)] active:bg-[color:var(--color-surface-skeleton)] disabled:cursor-not-allowed disabled:opacity-[var(--opacity-disabled)] aria-[current=true]:border-[color:var(--color-brand-primary)] aria-[pressed=true]:border-[color:var(--color-brand-primary)]`;
@@ -87,6 +134,9 @@ export const INTERACTIVE_CLASS_NAMES = {
   BUTTON_GHOST,
   FIELD_SHELL,
   FIELD_INPUT,
+  FIELD_CONTROL,
+  FIELD_BOX,
+  FIELD_SELECT,
   SELECTABLE_ROW,
   TOGGLE_SEGMENT,
 } as const;

@@ -42,7 +42,7 @@ export default async function ResultsRankingsPage({ params }: { params: Promise<
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const { title, subtitle } = await loadStaticPage(KEY, locale);
+  const { title, subtitle, heroImage } = await loadStaticPage(KEY, locale);
 
-  return <StaticPageScreen pageKey={KEY} locale={locale} title={title} subtitle={subtitle} />;
+  return <StaticPageScreen pageKey={KEY} locale={locale} title={title} subtitle={subtitle} heroImage={heroImage} />;
 }

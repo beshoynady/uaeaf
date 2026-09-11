@@ -10,7 +10,7 @@ import { PERMISSION_CATALOGUE } from '../common/constants/permission-catalogue.j
 import { Permission, PermissionSchema } from '../modules/platform-administration/permissions/schemas/permission.schema.js';
 import { Role, RoleSchema } from '../modules/platform-administration/roles/schemas/role.schema.js';
 import { User, UserSchema } from '../modules/platform-administration/users/schemas/user.schema.js';
-import { runBootstrap, type BootstrapModels } from './seed-admin.js';
+import { MIN_PASSWORD_LENGTH, readBootstrapAdminInput, runBootstrap, type BootstrapModels } from './seed-admin.js';
 
 /**
  * Runs the real seeding logic against a real MongoDB.
@@ -168,5 +168,44 @@ describe('runBootstrap', () => {
       resourceType: { $nin: PERMISSION_CATALOGUE.map((entry) => entry.resourceType) },
     });
     expect(invalid).toBe(0);
+  });
+});
+
+/**
+ * `bootstrap:admin` and `seed:dev` both create the first administrator from
+ * the environment. One reader, so the two can never disagree about what a
+ * valid administrator is.
+ */
+describe('readBootstrapAdminInput', () => {
+  const env = {
+    BOOTSTRAP_ADMIN_EMAIL: '  Admin@UAEAF.ae ',
+    BOOTSTRAP_ADMIN_PASSWORD: 'a-sufficiently-long-password',
+  };
+
+  it('normalises the email and falls back to the default names', () => {
+    expect(readBootstrapAdminInput(env)).toEqual({
+      email: 'admin@uaeaf.ae',
+      password: 'a-sufficiently-long-password',
+      nameEn: 'Platform Administrator',
+      nameAr: 'مسؤول المنصة',
+    });
+  });
+
+  it('takes the names from the environment when they are given', () => {
+    const input = readBootstrapAdminInput({ ...env, BOOTSTRAP_ADMIN_NAME_EN: 'Ops', BOOTSTRAP_ADMIN_NAME_AR: 'العمليات' });
+    expect([input.nameEn, input.nameAr]).toEqual(['Ops', 'العمليات']);
+  });
+
+  it.each(['BOOTSTRAP_ADMIN_EMAIL', 'BOOTSTRAP_ADMIN_PASSWORD'])('names %s when it is missing', (name) => {
+    expect(() => readBootstrapAdminInput({ ...env, [name]: undefined })).toThrow(name);
+  });
+
+  it('holds the password to the same minimum the API applies, and never echoes it', () => {
+    expect(() => readBootstrapAdminInput({ ...env, BOOTSTRAP_ADMIN_PASSWORD: 'short-pw' })).toThrow(
+      expect.objectContaining({ message: expect.stringContaining(String(MIN_PASSWORD_LENGTH)) }),
+    );
+    expect(() => readBootstrapAdminInput({ ...env, BOOTSTRAP_ADMIN_PASSWORD: 'short-pw' })).toThrow(
+      expect.objectContaining({ message: expect.not.stringContaining('short-pw') }),
+    );
   });
 });

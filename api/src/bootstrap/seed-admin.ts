@@ -33,6 +33,40 @@ export interface BootstrapResult {
  *  bar the API applies to every other account. */
 export const MIN_PASSWORD_LENGTH = 12;
 
+export interface BootstrapAdminInput {
+  email: string;
+  password: string;
+  nameEn: string;
+  nameAr: string;
+}
+
+/**
+ * Reads the first administrator from the environment for both
+ * `bootstrap:admin` and `seed:dev`, so the two cannot disagree about what a
+ * valid administrator is. Errors name the variable and never repeat the
+ * value — these scripts print to terminals and deploy logs.
+ */
+export function readBootstrapAdminInput(env: Record<string, string | undefined>): BootstrapAdminInput {
+  const required = (name: string): string => {
+    const value = env[name];
+    if (!value) throw new Error(`${name} is required.`);
+    return value;
+  };
+
+  const email = required('BOOTSTRAP_ADMIN_EMAIL').trim().toLowerCase();
+  const password = required('BOOTSTRAP_ADMIN_PASSWORD');
+  if (password.length < MIN_PASSWORD_LENGTH) {
+    throw new Error(`BOOTSTRAP_ADMIN_PASSWORD must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+  }
+
+  return {
+    email,
+    password,
+    nameEn: env.BOOTSTRAP_ADMIN_NAME_EN || 'Platform Administrator',
+    nameAr: env.BOOTSTRAP_ADMIN_NAME_AR || 'مسؤول المنصة',
+  };
+}
+
 const SUPER_ADMIN_ROLE = {
   en: 'Super Admin',
   ar: 'مسؤول عام',

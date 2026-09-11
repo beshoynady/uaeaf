@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { TextField } from "./text-field";
+import { RequiredHint } from "@/components/ui/required-field";
 import { StatusMessage } from "./status-message";
 import { SubmitButton } from "./submit-button";
 import type { AppLocale } from "@/i18n/routing";
@@ -84,6 +85,8 @@ export function ForgotPasswordForm({ locale }: { locale: AppLocale }) {
           {t(errorKey)}
         </StatusMessage>
       ) : null}
+
+      <RequiredHint />
 
       <TextField
         id="email"

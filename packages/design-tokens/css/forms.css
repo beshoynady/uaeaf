@@ -1,6 +1,17 @@
 /*
  * The field: a label printed on the edge of its own control.
  *
+ * ── Why this file is in the token package ───────────────────────────
+ *
+ * The public site and the admin dashboard are two Next.js applications with
+ * two Tailwind builds, and Tailwind v4 finds utilities by scanning source
+ * text under the app that owns the stylesheet — which is why the *class
+ * strings* stay per-app in each `ui/interactive.ts`. This file contains no
+ * utilities: it is plain CSS reading tokens both apps already import, so it
+ * can be one file rather than two that drift. A field on the dashboard and a
+ * field on the public site are the same object, and a reader who fills one
+ * has learned the other.
+ *
  * ── What this is not ──────────────────────────────────────────────────────
  *
  * It is not the floating-label pattern that replaces the label with a
@@ -43,18 +54,53 @@
   --field-surface: var(--color-surface-raised);
 }
 
-/* 13 ÷ 16 — the ratio between `--typography-label-*` and `--typography-body-*`.
-   Written as a number because `calc()` cannot divide one length by another;
-   the two tokens it is derived from are named here so the derivation is
-   auditable rather than a taste decision. */
+/*
+ * How far the label shrinks when it floats — and it is a ratio *to a target*,
+ * not a ratio between two roles.
+ *
+ * The target is Chapter 4 §4.10: **13px, no text smaller than this anywhere**,
+ * with exactly two named exceptions (ADR-0041, neither of them a form label).
+ * So the scale is 13 ÷ whatever the resting body size is at this breakpoint,
+ * and the floated label lands on the floor rather than near it.
+ *
+ * It was a single 0.8125 — 13 ÷ 16, correct for `--font-size-body-desktop` and
+ * never checked against the other one. `--font-size-body-mobile` is 15px, so
+ * every field on every phone floated its label at **12.19px**, under the
+ * floor, on both applications, since the notched label shipped. Measured in
+ * Chrome at 390px; the arithmetic had been sitting in this comment the whole
+ * time, asserting a conclusion for one of the two cases it covered.
+ *
+ * Written as numbers because `calc()` cannot divide one length by another. The
+ * breakpoint is `--breakpoint-md` (768px), spelled out because a media query
+ * cannot read a custom property.
+ */
 .field {
-  --field-label-scale: 0.8125;
+  --field-label-scale: 0.8667; /* 13 ÷ --font-size-body-mobile (15px) */
+}
+
+@media (min-width: 768px) {
+  .field {
+    --field-label-scale: 0.8125; /* 13 ÷ --font-size-body-desktop (16px) */
+  }
 }
 
 .field-label {
   position: absolute;
   inset-inline-start: var(--space-3);
-  top: 50%;
+  /*
+   * Half a control's height from the top of the field — NOT `top: 50%`.
+   *
+   * The label is out of flow, so the field's first in-flow child is the
+   * control and this lands exactly on its centre line. `50%` looked identical
+   * until a field failed: an error message is a third child, the field grows
+   * by its height, and half of the taller box is no longer the middle of the
+   * control. The label then sat low at rest and floated to the wrong place —
+   * on the one field the reader most needs to read.
+   *
+   * `--space-12` is the control's own `min-height` below, so the two cannot
+   * drift apart.
+   */
+  top: calc(var(--space-12) / 2);
   z-index: 1;
   max-width: calc(100% - var(--space-8));
   padding-inline: var(--space-1);
@@ -77,15 +123,63 @@
 }
 
 /*
- * Floated: focused, already answered, or a control that has no empty state.
+ * Floated: focused, or already answered.
  *
- * A `<select>` always has a value, so `:placeholder-shown` never matches it
- * and its label would sit on top of the selected option forever. Naming it
- * here is the whole fix.
+ * A `<select>` needs its own clause because `:placeholder-shown` never
+ * matches one — a select always has a value. The state that corresponds to an
+ * empty input is "the empty option is the one selected", and `option:checked`
+ * reads exactly that, live. So a select rests with its label in the middle
+ * like every other field and floats it the moment a real answer is chosen.
+ *
+ * Which is also why the clause above is restricted to `input, textarea` by
+ * element rather than written against `.field-control`. `:not(:placeholder-
+ * shown)` is *vacuously true* for a select — it can never show a placeholder —
+ * so an untyped clause floated every select's label on first paint and the
+ * select-specific clause below never got a chance to say otherwise. Measured
+ * on the live page: the label sat on the border with nothing under it.
+ *
+ * The two `:has()` are siblings on the same compound, never nested — `:has()`
+ * inside `:has()` is invalid and would silently drop the whole rule. Written
+ * against `option[value=""]` rather than `:invalid` so it does not depend on
+ * the control also carrying `required`; a select that forgot it would
+ * otherwise be permanently `:valid` and float its label forever.
+ *
+ * `[data-placeholder]`, because an empty value is not always an empty
+ * answer. "All statuses" in the user directory and "no linked person" on the
+ * new-user form are both `value=""` and both are real choices; read as
+ * unanswered, the label rested in the middle of a field that was already
+ * showing a word, one printed on top of the other.
+ *
+ * The attribute is explicit rather than borrowed from `disabled`, and that is
+ * the second time this control has been fixed. `disabled` reads like the
+ * right marker — the option exists to be replaced, not chosen — but the HTML
+ * Standard's "ask for a reset" step selects *the first option in tree order
+ * that is not disabled*. A disabled placeholder is skipped by that rule
+ * exactly as a `hidden` one is. The public form survived first paint only
+ * because React's `defaultValue=""` selects the option explicitly, and then
+ * lost it at the one moment nobody looks: `form.reset()` after a successful
+ * send, which restores selectedness from the `selected` attribute (none has
+ * one) and hands the field to the reset rule. The visitor's *second* message
+ * arrived carrying a type they never chose. So the placeholder is now a
+ * plain, selectable, first-in-order option that the reset rule lands on by
+ * itself, and `data-placeholder` — which no browser behaviour reads — is what
+ * says what it is.
+ *
+ * ── And a file input is the select's problem in the other costume ─────────
+ *
+ * `:placeholder-shown` cannot match `input[type="file"]` either — there is no
+ * placeholder to show — so `:not(:placeholder-shown)` is vacuously true for
+ * one and the generic clause floated its label by accident. Accidentally
+ * right is still a defect: it is one selector edit away from silently
+ * becoming accidentally wrong. It is stated instead, and it is permanent,
+ * because a file input is never visually empty — the browser's own "choose
+ * file" button occupies the middle of the box from first paint, which is
+ * exactly where a resting label would be.
  */
 .field:focus-within .field-label,
-.field:has(.field-control:not(:placeholder-shown)) .field-label,
-.field:has(select.field-control) .field-label {
+.field:has(:is(input, textarea):not([type="file"]):not(:placeholder-shown)) .field-label,
+.field:has(input[type="file"]) .field-label,
+.field:has(select.field-control):not(:has(option[data-placeholder]:checked)) .field-label {
   color: var(--color-text-primary);
   transform: translateY(calc(-50% - var(--space-6))) scale(var(--field-label-scale));
 }
@@ -98,12 +192,24 @@
  * exactly where an example belongs — and it is gone again the moment the
  * reader types over it.
  */
-.field-control::placeholder {
+/*
+ * Every control here MUST carry a `placeholder`, even an empty one.
+ *
+ * `:placeholder-shown` cannot match an input that has no placeholder
+ * attribute, so `:not(:placeholder-shown)` is vacuously true for one — and the
+ * label above would float on first paint and never come back down. A single
+ * space is the whole requirement; the components default to it.
+ */
+.field-control::placeholder,
+.field-shell input::placeholder,
+.field-shell textarea::placeholder {
   color: var(--color-text-secondary);
   opacity: 0;
 }
 
-.field:focus-within .field-control::placeholder {
+.field:focus-within .field-control::placeholder,
+.field:focus-within .field-shell input::placeholder,
+.field:focus-within .field-shell textarea::placeholder {
   opacity: 1;
 }
 
@@ -123,8 +229,23 @@
  * The control itself.
  *
  * `--space-12` is 48px: above WCAG 2.5.8's 44px floor with room for the
- * border, and the value the label's travel is derived from. Padding leaves
- * the top edge clear so the floated label crosses a line, not a letter.
+ * border, and the value the label's travel is derived from.
+ *
+ * ── Why the padding is computed rather than chosen ────────────────────────
+ *
+ * `min-height` is a floor, not a height, and the control was overrunning it:
+ * `var(--space-3)` top and bottom plus a 25.6px line box plus two 1px borders
+ * comes to **51.6px**, and the label — which travels `--space-12 / 2` = 24px —
+ * was therefore sitting 1.8px above a centre line it was supposed to be on.
+ * Measured, not reasoned: 51.59px in Chrome at every breakpoint above 390.
+ *
+ * The comment that used to sit here said the two "cannot drift apart". They
+ * had. So the padding is now whatever makes that sentence true: half of what
+ * is left of `--space-12` once the line box and the two borders have taken
+ * their share. `1lh` is the control's own line box, so the type keeps the role
+ * Chapter 4 gives it and the box comes out at exactly 48px — the height the
+ * label's travel is derived from, and the height this file has been claiming
+ * all along.
  */
 .field-control {
   min-height: var(--space-12);
@@ -138,7 +259,60 @@
      type option running underneath its own chevron. The end padding stays
      with the control that knows whether it has an icon. */
   padding-inline-start: var(--space-3);
-  padding-block: var(--space-3);
+  padding-block: calc((var(--space-12) - 1lh - 2 * var(--border-width-default)) / 2);
+}
+
+/*
+ * A control that has to share its box.
+ *
+ * A password field carries a reveal button; a measurement carries its unit.
+ * The shell wears the control's geometry — height, radius, ground, the notched
+ * label's edge — and the real input sits inside it with no chrome of its own,
+ * because two borders around one control is two controls to a reader.
+ *
+ * Laid out as siblings rather than an absolutely-positioned overlay: an
+ * overlay reserves its space with padding on the input, and the input's
+ * padding resolves in the *input's* direction while the overlay resolves in
+ * the *page's*. On the dashboard's Arabic login that put the reveal button on
+ * the left and the reserved space on the right, and the typed password ran
+ * underneath the button.
+ */
+.field-shell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding-inline-end: var(--space-1);
+  /* The control's own vertical padding would cap the trailing button at 25px
+     inside a 48px box — under WCAG 2.5.8's 44px floor on the one control that
+     needs to be pressed. `min-height` already sets the box; centring places
+     the contents in it. */
+  padding-block: 0;
+}
+
+.field-shell > input,
+.field-shell > textarea,
+.field-shell > select {
+  flex: 1 1 auto;
+  min-width: 0;
+  /*
+   * Fills the shell's full height, and this is a hit-area rule rather than a
+   * visual one — nothing about the painted result changes, because an input
+   * centres its own text in whatever box it is given.
+   *
+   * `align-items: center` alone left the input at its natural 26px inside a
+   * 48px box, so the top and bottom 11px of a control that plainly looks 48px
+   * tall accepted no tap at all. Measured on the login form: `input 356x26`
+   * inside a shell measuring 48. On the public site the input *is* the
+   * `.field-control` and the question never arose, which is exactly why it
+   * went unnoticed here.
+   */
+  align-self: stretch;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  /* Correct here and only here: the shell draws the focus indicator, and a
+     second outline inside the first is two rectangles for one control. */
+  outline: none;
 }
 
 /*
@@ -147,7 +321,7 @@
  * instead, and travels the same distance from there.
  */
 .field-textarea .field-label {
-  top: calc(var(--space-6) + 1px);
+  top: calc(var(--space-6) + var(--border-width-default));
 }
 
 /*
@@ -162,9 +336,25 @@
 /*
  * A field in error keeps its own edge, and the message beneath it carries an
  * icon: Chapter 8 L2 §F.3 forbids relying on red alone.
+ *
+ * The label is NOT red, for exactly the reason the message is not — and this
+ * is a correction. ADR-0067 §D8 recorded the invalid label as passing at
+ * 5.09:1 on the dark theme while recolouring only the message. Measured on
+ * the live page across twelve combinations, it is **3.95:1**: the same
+ * `--color-semantic-error` (#E53E3E) on the same dark ground, under WCAG
+ * 1.4.3's 4.5:1. The figure in the ADR was wrong, so the label kept a colour
+ * it had not earned.
+ *
+ * Light measures 4.53:1 and does pass, but one rule beats two: the same gap
+ * produced both failures and one token (`semantic.error-text`, proposed in
+ * §D8) will let both revert together.
+ *
+ * Nothing is lost from §F.3 or WCAG 1.4.1. The **edge** still carries the
+ * state in colour and clears the 3:1 non-text floor on both themes (4.98:1
+ * light, 3.95:1 dark), and the message says in words what is wrong.
  */
 .field-invalid .field-label {
-  color: var(--color-semantic-error);
+  color: var(--color-text-primary);
 }
 
 /*

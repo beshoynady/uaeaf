@@ -50,7 +50,7 @@ export default async function AthletesPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [{ title, subtitle }, athletes] = await Promise.all([
+  const [{ title, subtitle, heroImage }, athletes] = await Promise.all([
     loadStaticPage(KEY, locale),
     loadAthletes(),
   ]);
@@ -62,6 +62,7 @@ export default async function AthletesPage({
       locale={locale}
       title={title}
       subtitle={subtitle}
+      heroImage={heroImage}
       itemNames={athletes.map((athlete) => athlete.name[locale])}
     >
       {athletes.length > 0 ? (

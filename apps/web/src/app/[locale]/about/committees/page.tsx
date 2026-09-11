@@ -34,12 +34,12 @@ export default async function CommitteesPageScreen({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const { record, title, subtitle } = await loadStaticPage<CommitteesPage>(KEY, locale);
+  const { record, title, subtitle, heroImage } = await loadStaticPage<CommitteesPage>(KEY, locale);
   const introHeading = text(record?.introHeading, locale);
   const introText = text(record?.introText, locale);
 
   return (
-    <StaticPageScreen pageKey={KEY} locale={locale} title={title} subtitle={subtitle}>
+    <StaticPageScreen pageKey={KEY} locale={locale} title={title} subtitle={subtitle} heroImage={heroImage}>
       {introText ? (
         <Section
           labelledBy={introHeading ? "committees-intro-heading" : undefined}

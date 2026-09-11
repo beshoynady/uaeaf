@@ -3,6 +3,7 @@
   "rootDir": ".",
   "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
+  "globalSetup": "<rootDir>/utils/stale-test-databases.ts",
   "maxWorkers": 2,
   "extensionsToTreatAsEsm": [".ts"],
   "moduleNameMapper": {

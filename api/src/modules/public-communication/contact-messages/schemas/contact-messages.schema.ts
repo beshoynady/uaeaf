@@ -53,9 +53,15 @@ export class ContactMessage extends BaseSchema {
   @Prop({ type: String, required: true })
   senderName: string;
 
-  @Prop({ type: String, required: true })
-  senderEmail: string;
+  /** Nullable since 2026-09-10: the public form no longer requires an email
+   *  address (`CreateContactMessageDto`), and a `required: true` here would
+   *  turn every phone-only submission into a Mongoose ValidationError — a 500
+   *  the citizen reads as "the message could not be sent". Widening a stored
+   *  field is safe for the rows that already have one. */
+  @Prop({ type: String, default: null })
+  senderEmail: string | null;
 
+  /** Required by the DTO, not here — the reason is written out beside it. */
   @Prop({ type: String, default: null })
   senderPhone: string | null;
 

@@ -10,10 +10,15 @@ import { TOUCH_TARGET } from "@/components/ui/interactive";
 import {
   CARD_ICON,
   CARD_INTERACTIVE,
+  GLASS_EDGE_MD,
   GLASS_OVER_ART_MD,
   HERO_COMPOSITION,
   HERO_MEASURE,
+  HERO_MEDIA,
   HERO_MOTIF,
+  HERO_PARALLAX,
+  HERO_SCRIM,
+  HERO_STAGE,
   HERO_TEXT,
   HERO_VIEWPORT,
 } from "@/components/ui/surface";
@@ -73,18 +78,7 @@ const CARD_ICONS: readonly ContactIconName[] = ["phone", "mail", "mapPin", "cloc
  * solved against the worst admissible input, a pure white photograph. Both
  * situations are measured by `contact-card-contrast.spec.ts`.
  */
-const CARD = `${CARD_INTERACTIVE} ${GLASS_OVER_ART_MD} flex w-full items-center gap-4 px-4 py-3 text-start text-[color:var(--color-text-primary)] md:flex-col md:justify-center md:gap-2 md:py-6 md:text-center md:text-[color:var(--color-text-on-brand)] md:shadow-none xl:gap-3 xl:px-6 xl:py-8`;
-
-/** The overlay that makes the band a legible ground.
- *
- *  Its strength is set by the card above it, not by taste. The cards are
- *  translucent so they stay visible when no photograph is set, which means
- *  they *lighten* whatever is beneath them — so the overlay has to do enough
- *  work that even the lightest stop still holds white text after the card has
- *  added its own 12%. Solving that against a pure white image puts the floor
- *  at 0.61; the designed 0.45/0.55 measured 3.74:1 and failed. */
-const HERO_OVERLAY =
-  "absolute inset-0 bg-[linear-gradient(to_bottom,rgb(0_0_0/0.64),rgb(0_0_0/0.74))]";
+const CARD = `${CARD_INTERACTIVE} ${GLASS_OVER_ART_MD} ${GLASS_EDGE_MD} flex w-full items-center gap-4 px-4 py-3 text-start text-[color:var(--color-text-primary)] md:flex-col md:justify-center md:gap-2 md:py-6 md:text-center md:text-[color:var(--color-text-on-brand)] xl:gap-3 xl:px-6 xl:py-8`;
 
 export async function ContactHero({
   locale,
@@ -141,32 +135,37 @@ export async function ContactHero({
     >
       <div className="relative flex min-h-0 flex-1 flex-col justify-center overflow-hidden px-4 pt-8 pb-8 sm:px-6 md:px-8 md:pb-[360px] lg:px-12 xl:px-16 xl:pb-[236px]">
         {heroImage ? (
-          isCloudinaryUrl(heroImage.file.url) ? (
-            // A plain <img>, not next/image: the resizing is the CDN's, and
-            // next/image can only be told that through a `loader` function,
-            // which a server component may not hand to the client component
-            // it renders. The srcset is a string, which may cross that line.
-            //
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={heroImage.file.url}
-              srcSet={cloudinarySrcSet(heroImage.file.url, heroImage.file.width)}
-              sizes="100vw"
-              alt={altOf(heroImage, locale)}
-              fetchPriority="high"
-              className="absolute inset-0 size-full object-cover"
-            />
-          ) : (
-            <Image
-              src={heroImage.file.url}
-              alt={altOf(heroImage, locale)}
-              fill
-              priority
-              unoptimized={isExternalMedia(heroImage.file.url)}
-              sizes="100vw"
-              className="object-cover"
-            />
-          )
+          // The ground plane: its own element, because the picture carries the
+          // load-in settle and this carries the scroll parallax, and two
+          // animations on one `transform` leave only the last one running.
+          <div className={HERO_PARALLAX}>
+            {isCloudinaryUrl(heroImage.file.url) ? (
+              // A plain <img>, not next/image: the resizing is the CDN's, and
+              // next/image can only be told that through a `loader` function,
+              // which a server component may not hand to the client component
+              // it renders. The srcset is a string, which may cross that line.
+              //
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={heroImage.file.url}
+                srcSet={cloudinarySrcSet(heroImage.file.url, heroImage.file.width)}
+                sizes="100vw"
+                alt={altOf(heroImage, locale)}
+                fetchPriority="high"
+                className={HERO_MEDIA}
+              />
+            ) : (
+              <Image
+                src={heroImage.file.url}
+                alt={altOf(heroImage, locale)}
+                fill
+                priority
+                unoptimized={isExternalMedia(heroImage.file.url)}
+                sizes="100vw"
+                className={HERO_MEDIA}
+              />
+            )}
+          </div>
         ) : (
           // The black register, not raw `brand.black`: ADR-0059 D2 resolves it
           // to `neutral-warm.700` in the dark theme, where pure black cannot
@@ -177,7 +176,7 @@ export async function ContactHero({
             className="absolute inset-0 bg-[color:var(--color-section-black-surface)]"
           />
         )}
-        <div aria-hidden="true" className={HERO_OVERLAY} />
+        <div aria-hidden="true" className={HERO_SCRIM} />
 
         <div
           className={`relative mx-auto w-full max-w-[1248px] ${HERO_COMPOSITION} text-[color:var(--color-text-on-brand)]`}
@@ -186,14 +185,14 @@ export async function ContactHero({
             <h1
               id={titleId}
               className="rise-in text-display-l text-balance"
-              style={{ "--rise-index": 0 } as React.CSSProperties}
+              style={{ "--rise-index": HERO_STAGE.title } as React.CSSProperties}
             >
               {title}
             </h1>
             {subtitle ? (
               <p
                 className={`rise-in mt-4 ${HERO_MEASURE} text-body-lg opacity-85`}
-                style={{ "--rise-index": 1 } as React.CSSProperties}
+                style={{ "--rise-index": HERO_STAGE.subtitle } as React.CSSProperties}
               >
                 {subtitle}
               </p>
@@ -210,7 +209,7 @@ export async function ContactHero({
           <UaeafMotif
             tone="inherit"
             className={`rise-in ${HERO_MOTIF} opacity-25`}
-            style={{ "--rise-index": 2 } as React.CSSProperties}
+            style={{ "--rise-index": HERO_STAGE.motif } as React.CSSProperties}
           />
         </div>
       </div>
@@ -242,7 +241,7 @@ export async function ContactHero({
           <li
             key={card.label}
             className="rise-in flex"
-            style={{ "--rise-index": index + 3 } as React.CSSProperties}
+            style={{ "--rise-index": HERO_STAGE.card + index } as React.CSSProperties}
           >
             <div className={CARD}>
               {/* Two grounds, two treatments, one class list. On the stacked

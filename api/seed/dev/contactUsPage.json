@@ -1,0 +1,156 @@
+[
+  {
+    "_id": {
+      "$oid": "6aa04ba9e3d1ab8b4179f100"
+    },
+    "createdBy": null,
+    "updatedBy": null,
+    "archivedAt": null,
+    "archivedBy": null,
+    "createdAt": {
+      "$date": "2026-09-08T17:53:45.872Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-08T17:53:45.872Z"
+    },
+    "heroImageId": {
+      "$oid": "6aa1d1344a3f231870e29d81"
+    },
+    "heroTitle": {
+      "en": "Contact us",
+      "ar": "اتصل بنا"
+    },
+    "heroSubtitle": {
+      "en": "Local sample text for visual verification only — not approved content. Long enough to test wrapping across every breakpoint and to test how the column behaves at its narrowest.",
+      "ar": "نص تجريبي محلي للتحقق البصري فقط — ليس محتوى معتمدًا. طوله كافٍ لاختبار الالتفاف عبر كل النطاقات، ولاختبار سلوك النص العربي داخل عمود ضيّق."
+    },
+    "email": "info@uaeaf.ae",
+    "phones": [
+      {
+        "label": {
+          "en": "Main line",
+          "ar": "الخط الرئيسي"
+        },
+        "number": "+971 2 000 0000"
+      },
+      {
+        "label": {
+          "en": "Help centre",
+          "ar": "مركز المساعدة"
+        },
+        "number": "+971 2 000 0001"
+      }
+    ],
+    "address": {
+      "country": "الإمارات العربية المتحدة",
+      "emirate": "أبوظبي",
+      "city": "أبوظبي",
+      "area": "مدينة زايد الرياضية",
+      "street": "شارع الاختبار",
+      "building": "مبنى الاتحاد",
+      "poBox": "00000",
+      "postalCode": "00000"
+    },
+    "googleMapsUrl": "https://maps.google.com/?q=Zayed+Sports+City",
+    "officeHours": {
+      "en": "Sunday – Thursday, 08:00 – 15:00",
+      "ar": "الأحد – الخميس، ٨:٠٠ – ١٥:٠٠"
+    },
+    "website": "https://www.uaeaf.ae",
+    "socialLinks": [
+      {
+        "platform": "Instagram",
+        "url": "https://www.instagram.com/uaeaf"
+      },
+      {
+        "platform": "X",
+        "url": "https://x.com/uaeaf"
+      },
+      {
+        "platform": "YouTube",
+        "url": "https://www.youtube.com/@uaeaf"
+      },
+      {
+        "platform": "Facebook",
+        "url": "https://www.facebook.com/uaeaf"
+      },
+      {
+        "platform": "TikTok",
+        "url": "https://www.tiktok.com/@uaeaf"
+      }
+    ],
+    "cardLabels": {
+      "email": {
+        "en": "Email",
+        "ar": "البريد الإلكتروني"
+      },
+      "location": {
+        "en": "Location",
+        "ar": "الموقع"
+      },
+      "officeHours": {
+        "en": "Working hours",
+        "ar": "ساعات العمل"
+      }
+    },
+    "form": {
+      "title": {
+        "en": "Send us a message",
+        "ar": "أرسل لنا رسالة"
+      },
+      "consentNote": {
+        "en": "Sample notice for verification only — not approved legal text. Your details are used solely to reply to your message.",
+        "ar": "بيان تجريبي للتحقّق فقط — ليس نصًا قانونيًا معتمدًا. تُستخدم بياناتك للردّ على رسالتك وحدها."
+      },
+      "messageTypeLabels": [
+        {
+          "value": "Complaint",
+          "label": {
+            "en": "Complaint",
+            "ar": "شكوى"
+          }
+        },
+        {
+          "value": "Suggestion",
+          "label": {
+            "en": "Suggestion",
+            "ar": "اقتراح"
+          }
+        },
+        {
+          "value": "Inquiry",
+          "label": {
+            "en": "Inquiry",
+            "ar": "استفسار"
+          }
+        }
+      ]
+    },
+    "locationSummary": {
+      "en": "Zayed Sports City, Abu Dhabi",
+      "ar": "مدينة زايد الرياضية، أبوظبي"
+    },
+    "map": {
+      "title": {
+        "en": "Our location",
+        "ar": "موقعنا"
+      },
+      "imageId": {
+        "$oid": "6aa1d5c24a3f231870e29d89"
+      },
+      "pinTitle": {
+        "en": "Zayed Sports City",
+        "ar": "مدينة زايد الرياضية"
+      },
+      "pinSubtitle": {
+        "en": "Abu Dhabi, UAE",
+        "ar": "أبوظبي، الإمارات"
+      },
+      "directionsUrl": "https://maps.google.com/?daddr=Zayed+Sports+City",
+      "note": {
+        "en": "Sample map frame for visual verification — no official Maps address has been approved yet.",
+        "ar": "إطار خريطة تجريبي للتحقّق البصري — لم يُعتمد عنوان خرائط رسمي بعد."
+      }
+    }
+  }
+]

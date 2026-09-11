@@ -1,6 +1,7 @@
 "use client";
 
 import { TextField } from "@/components/auth/text-field";
+import { FieldLabel } from "@/components/ui/required-field";
 
 /**
  * One value, recorded in both languages.
@@ -54,6 +55,7 @@ export function BilingualField({
               label={labelAr}
               dir="rtl"
               value={valueAr}
+              required={required}
               disabled={disabled}
               onChange={onChangeAr}
             />
@@ -62,6 +64,7 @@ export function BilingualField({
               label={labelEn}
               dir="ltr"
               value={valueEn}
+              required={required}
               disabled={disabled}
               onChange={onChangeEn}
             />
@@ -94,7 +97,7 @@ export function BilingualField({
 
       {hint ? <p className="text-caption text-[color:var(--color-text-muted)]">{hint}</p> : null}
       {error ? (
-        <p role="alert" className="text-caption font-medium text-[color:var(--color-semantic-error)]">
+        <p role="alert" className="text-caption font-medium text-[color:var(--color-text-primary)]">
           {error}
         </p>
       ) : null}
@@ -102,11 +105,21 @@ export function BilingualField({
   );
 }
 
+/**
+ * The multi-line half of the same field.
+ *
+ * Same mechanism as `TextField` — `forms.css` in the token package draws the
+ * notch and moves the label — with the one difference a textarea forces:
+ * `.field-textarea` puts the label on the *first line* rather than the
+ * vertical centre, because a box three rows tall has no single line to be
+ * centred against.
+ */
 function TextArea({
   id,
   label,
   dir,
   value,
+  required,
   disabled,
   onChange,
 }: {
@@ -114,14 +127,20 @@ function TextArea({
   label: string;
   dir: "rtl" | "ltr";
   value: string;
+  required?: boolean;
   disabled?: boolean;
   onChange: (value: string) => void;
 }) {
   return (
-    <div className="flex flex-col gap-2">
-      <label htmlFor={id} className="text-label font-medium text-[color:var(--color-text-secondary)]">
+    <div className="field field-textarea flex flex-col gap-2">
+      {/* `required` reaches this half now. It did not before: `BilingualField`
+          threaded it to its single-line inputs and dropped it here, so a
+          required *description* carried no glyph, no `aria-required` and no
+          native `required` — §F.4 broken by omission rather than by half, on
+          the only field kind where nobody noticed. */}
+      <FieldLabel htmlFor={id} required={required}>
         {label}
-      </label>
+      </FieldLabel>
       <textarea
         id={id}
         name={id}
@@ -129,11 +148,16 @@ function TextArea({
         lang={dir === "rtl" ? "ar" : "en"}
         rows={3}
         value={value}
+        required={required}
+        aria-required={required ? true : undefined}
         disabled={disabled}
+        // Without a placeholder attribute `:placeholder-shown` can never
+        // match, and the label would float on first paint and stay there.
+        placeholder=" "
         onChange={(event) => onChange(event.target.value)}
         // Vertical resize only: the two halves sit in a two-column grid, and
         // dragging one wider would push it out of its own cell.
-        className="min-h-[84px] resize-y rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-base)] px-4 py-3 text-body text-[color:var(--color-text-primary)] outline-none transition-[border-color] duration-[var(--motion-duration-fast)] focus-visible:border-[color:var(--color-border-strong)] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[color:var(--color-focus-default)] disabled:cursor-not-allowed disabled:text-[color:var(--color-text-disabled)]"
+        className={`field-control min-h-[84px] resize-y border border-[color:var(--color-border-strong)] text-body outline-none transition-[border-color] duration-[var(--motion-duration-fast)] hover:border-[color:var(--color-brand-primary)] active:border-[color:var(--color-brand-primary)] focus:border-[color:var(--color-brand-primary)] focus-visible:border-[color:var(--color-brand-primary)] disabled:cursor-not-allowed disabled:text-[color:var(--color-text-disabled)]`}
       />
     </div>
   );

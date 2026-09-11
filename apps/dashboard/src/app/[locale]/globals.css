@@ -8,6 +8,8 @@
  */
 @import "tailwindcss";
 @import "@uaeaf/design-tokens/build/css/index.css";
+@import "@uaeaf/design-tokens/css/forms.css";
+@import "@uaeaf/design-tokens/css/interaction.css";
 
 /*
  * Chapter 21 §21.2/§21.3: Tailwind theme MUST derive from the generated CSS Variables

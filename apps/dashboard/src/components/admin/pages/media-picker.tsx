@@ -4,6 +4,9 @@ import { useId, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { localized, type LocalizedText } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
+import { TextField } from "@/components/auth/text-field";
+import { FIELD_BOX } from "@/components/ui/interactive";
+import { FieldLabel, RequiredHint } from "@/components/ui/required-field";
 
 /** One image from the media library, as this picker needs it. */
 export interface MediaAssetOption {
@@ -271,17 +274,19 @@ function UploadPanel({
     }
   }
 
-  const CONTROL =
-    "h-10 w-full rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-base)] px-3 text-label text-[color:var(--color-text-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-focus-default)] disabled:cursor-not-allowed disabled:text-[color:var(--color-text-disabled)]";
-
+  // Uncontrolled on purpose — see `reset` above, which clears the panel by
+  // hand because it is not inside a `<form>`.
   const field = (name: string, label: string, required = false, type = "text") => (
-    <div className="flex min-w-0 flex-col gap-1.5">
-      <label htmlFor={id(name)} className="text-caption text-[color:var(--color-text-secondary)]">
-        {label}
-        {required ? <span aria-hidden="true"> *</span> : null}
-      </label>
-      <input id={id(name)} name={name} type={type} disabled={disabled} className={CONTROL} />
-    </div>
+    <TextField
+      id={id(name)}
+      name={name}
+      type={type}
+      label={label}
+      required={required}
+      disabled={disabled}
+      dir="auto"
+      className="min-w-0"
+    />
   );
 
   return (
@@ -293,22 +298,33 @@ function UploadPanel({
         {t("uploadImage")}
       </p>
 
-      <div className="flex flex-col gap-1.5">
-        <label
-          htmlFor={id("file")}
-          className="text-caption text-[color:var(--color-text-secondary)]"
-        >
+      {/* §F.4 once for the panel. Not a `<form>` — see the note above — but a
+          reader filling it cannot tell that, and the rule is about what they
+          are looking at. */}
+      <RequiredHint />
+
+      {/* The one field whose label never rests in the middle, and the only
+          one that says so out loud. A file input is never visually empty —
+          the browser's own button occupies the box from first paint — so
+          `forms.css` floats this label permanently rather than leaving it to
+          `:placeholder-shown`, which a file input can no more match than a
+          `<select>` can. */}
+      <div className="field flex flex-col gap-2">
+        <FieldLabel htmlFor={id("file")} required>
           {t("uploadFile")}
-          <span aria-hidden="true"> *</span>
-        </label>
-        <input
-          id={id("file")}
-          name="file"
-          type="file"
-          accept="image/png,image/jpeg,image/webp"
-          disabled={disabled}
-          className={`${CONTROL} py-2 file:me-3 file:rounded-[var(--radius-sm)] file:border-0 file:bg-[color:var(--color-surface-skeleton)] file:px-3 file:py-1 file:text-label`}
-        />
+        </FieldLabel>
+        <div className={FIELD_BOX}>
+          <input
+            id={id("file")}
+            name="file"
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            required
+            aria-required="true"
+            disabled={disabled}
+            className="text-label file:me-3 file:rounded-[var(--radius-sm)] file:border-0 file:bg-[color:var(--color-surface-skeleton)] file:px-3 file:py-1.5 file:text-label disabled:cursor-not-allowed"
+          />
+        </div>
         <p className="text-caption text-[color:var(--color-text-muted)]">{t("uploadHint")}</p>
       </div>
 

@@ -81,7 +81,99 @@
     .rise-scroll {
       animation: uaeaf-rise-track both;
       animation-timeline: view();
-      animation-range: entry 10% cover 30%;
+      /*
+       * Bounded inside `entry`, and that is the whole correctness argument.
+       *
+       * This used to read `entry 10% cover 30%`. `cover` spans the entire
+       * time any part of the element is visible, so for anything tall — or
+       * anything already on screen at first paint — 30% of cover sits far
+       * ahead of the current scroll offset and the animation parks near zero
+       * progress and stays there. Measured: the contact hero's fourth card
+       * held 10px low and was clipped by the fold while every box reported
+       * the correct size. An element already in view has, by definition,
+       * finished its `entry` phase, so an `entry`-bounded range resolves to
+       * the end keyframe under `fill: both` and cannot strand anything.
+       *
+       * A length rather than a percentage for the end, because a percentage
+       * of `entry` is a percentage of the element's own height: a tall
+       * section would then reveal slowly and a short one instantly, from one
+       * declaration. `--space-32` fixes the reveal at 128px of scroll for
+       * every section on the site, which is what makes the rhythm shared.
+       */
+      animation-range: entry 0% entry var(--space-32);
+    }
+  }
+}
+
+/*
+ * The ground plane.
+ *
+ * Two layers moving at different speeds is the only honest way to say
+ * "depth" with `transform` alone, and the hero is the one place on the site
+ * with a real ground to move. The photograph settles into place more slowly
+ * than the type that lands on it (`slower` against `base`) and then trails
+ * the page as it scrolls — so the reader's own scrolling is what separates
+ * the plane the picture is on from the plane the words are on.
+ *
+ * ── Why this is safe above the fold ───────────────────────────────────────
+ *
+ * The rule the owner set — no scroll-driven motion above the fold — is about
+ * an *entrance* stranded near zero progress. This is not an entrance: at
+ * progress 0 the layer is at `translateY(0)`, which is exactly its designed
+ * resting position. A stranded parallax is a correct parallax.
+ *
+ * ── Why it cannot expose an edge ──────────────────────────────────────────
+ *
+ * The layer is sized `-inset-y-20` (`HERO_PARALLAX`), so it overhangs the
+ * band by `--space-20` = 80px top and bottom. The settle travels
+ * `--motion-ascent-offset` (16px) and the parallax travels `--space-12`
+ * (48px) — 64px against 80px of headroom even if both were at full extent at
+ * once, which they never are. No literal appears in either budget.
+ */
+@keyframes uaeaf-parallax {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(var(--space-12));
+  }
+}
+
+@keyframes uaeaf-rise-ground {
+  from {
+    transform: translateY(var(--motion-ascent-offset));
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/*
+ * The ground's own arrival. `transform` only, never `opacity`: a hero
+ * photograph is the largest contentful paint on the page, and an element at
+ * `opacity: 0` is not counted as painted — fading it in would push LCP out by
+ * the length of the fade for a decorative gain. Moving it costs nothing.
+ *
+ * Vertical, not diagonal. `.rise-in`'s 45° is the identity's ascent and
+ * belongs to objects that arrive on the page; this is the stage those objects
+ * arrive on, and it has no horizontal headroom to travel through in any case.
+ */
+.rise-ground {
+  animation: uaeaf-rise-ground var(--motion-duration-slower) var(--motion-easing-decelerate) both;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: scroll()) {
+    .hero-parallax {
+      animation: uaeaf-parallax linear both;
+      /*
+       * `scroll(root block)`, never the default `nearest`: the hero band
+       * carries `overflow: hidden`, which makes it a scroll container, and a
+       * container that never scrolls holds the timeline at progress 0
+       * forever. The layer would simply never move, silently.
+       */
+      animation-timeline: scroll(root block);
+      animation-range: 0 100svh;
     }
   }
 }
@@ -327,9 +419,19 @@
  * `box-shadow`, so ADR-0009's restriction holds literally rather than
  * approximately.
  */
+/*
+ * No resting `box-shadow` here, and that absence is load-bearing.
+ *
+ * This file is unlayered, so a declaration in it beats every Tailwind utility
+ * — which meant `.lift { box-shadow: var(--elevation-card) }` silently
+ * overrode the `md:shadow-none` on the contact hero's pinned card, and the
+ * card carried an elevation over a photograph for as long as the rule existed
+ * with nothing reporting it. The resting elevation belongs to the recipe that
+ * draws the surface (`CARD`, `PANEL`), which is where it can be overridden per
+ * breakpoint. `.lift` owns only the response.
+ */
 .lift {
   position: relative;
-  box-shadow: var(--elevation-card);
 }
 
 .lift::after {
@@ -372,16 +474,23 @@
     transition: transform var(--motion-duration-instant) var(--motion-easing-decelerate);
   }
 
+  /* Rise and growth are one event, not two. `--motion-lift-scale` is 1.01 and
+     is bounded rather than chosen (ADR-0067): the edge it moves must travel
+     further than the 1px hairline the card's own border is drawn with, or the
+     growth reads as nothing, and less than the 4px rise, or the card outruns
+     its own lift sideways and the row jitters again. Both bounds hold across
+     every width the standard covers; the token's comment carries the numbers. */
   .lift:hover,
   .lift:focus-within,
   .lift:focus-visible {
-    transform: translateY(calc(-1 * var(--motion-ascent-offset) / 4));
+    transform: translateY(calc(-1 * var(--motion-ascent-offset) / 4))
+      scale(var(--motion-lift-scale));
   }
 
   /* Press settles the card back onto the page. Depth returning to rest reads
      as contact; a second, deeper hover state reads as a different component. */
   .lift:active {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     transition-duration: var(--motion-duration-instant);
   }
 
@@ -391,7 +500,7 @@
      contradicts the state it is in. */
   .lift:disabled,
   .lift[aria-disabled="true"] {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 

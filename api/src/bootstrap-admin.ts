@@ -5,7 +5,7 @@ import { AppModule } from './app.module.js';
 import { Permission } from './modules/platform-administration/permissions/schemas/permission.schema.js';
 import { Role } from './modules/platform-administration/roles/schemas/role.schema.js';
 import { User } from './modules/platform-administration/users/schemas/user.schema.js';
-import { MIN_PASSWORD_LENGTH, runBootstrap } from './bootstrap/seed-admin.js';
+import { readBootstrapAdminInput, runBootstrap } from './bootstrap/seed-admin.js';
 
 /**
  * Creates the first administrator, and the permissions and role that
@@ -28,20 +28,8 @@ import { MIN_PASSWORD_LENGTH, runBootstrap } from './bootstrap/seed-admin.js';
  * Requires:  MONGODB_URI, BOOTSTRAP_ADMIN_EMAIL, BOOTSTRAP_ADMIN_PASSWORD
  * Optional:  BOOTSTRAP_ADMIN_NAME_EN, BOOTSTRAP_ADMIN_NAME_AR
  */
-function requireEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`${name} is required. See the header of src/bootstrap-admin.ts.`);
-  }
-  return value;
-}
-
 async function main(): Promise<void> {
-  const email = requireEnv('BOOTSTRAP_ADMIN_EMAIL').trim().toLowerCase();
-  const password = requireEnv('BOOTSTRAP_ADMIN_PASSWORD');
-  if (password.length < MIN_PASSWORD_LENGTH) {
-    throw new Error(`BOOTSTRAP_ADMIN_PASSWORD must be at least ${MIN_PASSWORD_LENGTH} characters.`);
-  }
+  const admin = readBootstrapAdminInput(process.env);
 
   // `abortOnError: false` matters more than it looks: Nest's default is to
   // log the failure and call `process.exit(1)` itself. Combined with a muted
@@ -61,20 +49,15 @@ async function main(): Promise<void> {
         roles: app.get<Model<Role>>(getModelToken(Role.name)),
         users: app.get<Model<User>>(getModelToken(User.name)),
       },
-      {
-        email,
-        password,
-        nameEn: process.env.BOOTSTRAP_ADMIN_NAME_EN || 'Platform Administrator',
-        nameAr: process.env.BOOTSTRAP_ADMIN_NAME_AR || 'مسؤول المنصة',
-      },
+      admin,
     );
 
     log(`permissions in catalogue: ${result.permissionCount}`);
     log(`Super Admin role: ${result.roleId.toString()}`);
     log(
       result.userCreated
-        ? `administrator created: ${email}`
-        : `administrator already existed: ${email} (left untouched)`,
+        ? `administrator created: ${admin.email}`
+        : `administrator already existed: ${admin.email} (left untouched)`,
     );
   } finally {
     await app.close();

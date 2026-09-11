@@ -9,6 +9,7 @@ import { StatusControl } from "./status-control";
 import { CreateUserForm, type PersonOption } from "./create-user-form";
 import type { AppLocale } from "@/i18n/routing";
 import { SearchField } from "@/components/ui/search-field";
+import { SelectField } from "@/components/ui/select-field";
 
 type StatusFilter = "all" | "Active" | "Suspended" | "Deactivated";
 
@@ -91,10 +92,11 @@ export function UserDirectory({
           onValueChange={setQuery}
         />
 
-        <Select
+        <SelectField
+          id="filter-status"
           label={t("filterStatus")}
           value={status}
-          onChange={(value) => setStatus(value as StatusFilter)}
+          onChange={(event) => setStatus(event.target.value as StatusFilter)}
           options={[
             { value: "all", label: t("allStatuses") },
             { value: "Active", label: statuses("Active") },
@@ -103,10 +105,11 @@ export function UserDirectory({
           ]}
         />
 
-        <Select
+        <SelectField
+          id="filter-role"
           label={t("filterRole")}
           value={roleId}
-          onChange={setRoleId}
+          onChange={(event) => setRoleId(event.target.value)}
           options={[
             { value: "all", label: t("allRoles") },
             { value: "none", label: t("withoutRole") },
@@ -338,31 +341,3 @@ function StatusPill({
   );
 }
 
-function Select({
-  label,
-  value,
-  onChange,
-  options,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  options: ReadonlyArray<{ value: string; label: string }>;
-}) {
-  return (
-    <label className="flex items-center gap-2">
-      <span className="sr-only">{label}</span>
-      <select
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        className="h-10 rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-base)] px-3 text-label text-[color:var(--color-text-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-focus-default)]"
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}

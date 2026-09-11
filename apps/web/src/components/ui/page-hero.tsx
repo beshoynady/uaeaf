@@ -1,10 +1,20 @@
 import type { ReactNode } from "react";
+import Image from "next/image";
 import { UaeafMotif } from "@/components/brand/uaeaf-motif";
+import { altOf, isExternalMedia } from "@/lib/api/media";
+import { isCloudinaryUrl } from "@/lib/api/cloudinary-loader";
+import { cloudinarySrcSet } from "@/lib/api/cloudinary-srcset";
+import type { MediaAssetPublic } from "@/lib/api/types";
+import type { AppLocale } from "@/i18n/routing";
 import { CONTAINER, REGISTER_CLASSES, type Register } from "./section";
 import {
   HERO_COMPOSITION,
   HERO_MEASURE,
+  HERO_MEDIA,
   HERO_MOTIF,
+  HERO_PARALLAX,
+  HERO_SCRIM,
+  HERO_STAGE,
   HERO_TEXT,
   HERO_VIEWPORT,
 } from "./surface";
@@ -27,24 +37,24 @@ import {
  * overlap at any width, so the ratio is the register's published one at every
  * breakpoint instead of something that has to be re-measured per viewport.
  *
+ * ── The first screen follows the picture ───────────────────────────────────
+ *
+ * A hero owns the whole first screen when — and only when — it has something
+ * to fill it with. That used to be a boolean an author remembered to set, and
+ * the owner was right that a flag is the wrong shape for it: the condition it
+ * encodes is "does this page have a hero image", which the component can see
+ * for itself. So the height is derived from the picture. Upload one in the
+ * admin panel and the page composes itself onto the first screen; remove it
+ * and the hero shrinks back to its content rather than leaving 550px of empty
+ * register behind, which is the dead space the height rule exists to remove.
+ *
  * ── Motion ─────────────────────────────────────────────────────────────────
  *
- * The heading and subtitle enter along the ascent vector, staggered by
- * `--motion-ascent-stagger`. Chapter 5 §5.7 allows 40–80ms per step and caps
- * the total at 600ms; two elements at 60ms is 60ms of total stagger, well
- * inside it. The vector itself does not mirror under RTL (ADR-0059 §D7.1).
- *
- * ── The image that is not here ─────────────────────────────────────────────
- *
- * Every one of the twelve page records carries `heroImageId`, and the admin
- * panel offers a picker for it. It is not rendered, because it cannot be:
- * resolving a `mediaAssets` reference to a URL needs `GET /media-assets/:id`,
- * which upstream carries `@RequirePermission('mediaAssets', 'Read')` — there
- * is no public read of media at all. Rendering a broken image, or reaching
- * for a stand-in from the design-asset exports, would both be worse than
- * saying so. The gap is reported rather than papered over, and the hero is
- * typography-led in the meantime — which is what §3.34.2 prescribes for the
- * Quiet/Institutional pages regardless.
+ * `HERO_STAGE` orders the arrival: ground, heading, subtitle, motif, then
+ * whatever the page puts after them. The vector does not mirror under RTL
+ * (ADR-0059 §D7.1). The photograph is on its own plane and moves more slowly
+ * than the type — the depth cue, and the only thing here that is not a
+ * straight fade-and-rise.
  */
 export function PageHero({
   register,
@@ -52,7 +62,8 @@ export function PageHero({
   subtitle,
   breadcrumb,
   titleId,
-  fillsFirstScreen = false,
+  heroImage,
+  locale,
 }: {
   register: Register;
   title: string;
@@ -62,51 +73,80 @@ export function PageHero({
   subtitle: string | null;
   breadcrumb?: ReactNode;
   titleId: string;
-  /**
-   * Take the whole first screen, header included.
-   *
-   * Off by default, and that default is a measured decision rather than
-   * caution. A hero that owns the screen has to have something to fill it
-   * with: the contact page's does — a photograph and four cards — and reads
-   * as one composed opening. These eleven are typography-led by design
-   * (§3.34.2 calls the Quiet/Institutional pages exactly that), so the same
-   * rule turned an 804px band into a flat register field holding a title and
-   * one line of subtitle, with roughly 550px of nothing. That is the dead
-   * space the height rule was meant to remove, arriving through the rule
-   * itself.
-   *
-   * So the standard is "the first screen is one composed unit", and the
-   * height is how a hero achieves that when it has the material. Reported to
-   * the owner rather than decided quietly: the flag exists so turning it on
-   * for the other eleven is one edit once they carry hero imagery.
-   */
-  fillsFirstScreen?: boolean;
+  /** The page record's `heroImageId`, already resolved. Its presence is what
+   *  decides the hero's height and its colour treatment — see above. */
+  heroImage?: MediaAssetPublic;
+  locale: AppLocale;
 }) {
   const tone = REGISTER_CLASSES[register];
+  const hasImage = Boolean(heroImage);
 
   return (
     <section
       aria-labelledby={titleId}
       data-register={register}
       data-testid="page-hero"
-      className={`flex w-full flex-col justify-center overflow-hidden ${
-        fillsFirstScreen ? HERO_VIEWPORT : ""
-      } ${tone.surface}`}
+      data-fills-first-screen={hasImage ? "true" : "false"}
+      className={`relative flex w-full flex-col justify-center overflow-hidden ${
+        hasImage
+          ? `${HERO_VIEWPORT} text-[color:var(--color-text-on-brand)]`
+          : tone.surface
+      }`}
     >
-      <div className={`${CONTAINER} ${HERO_COMPOSITION} py-12 md:py-16 lg:py-20`}>
+      {heroImage ? (
+        <>
+          {/* The ground plane. Its own element rather than the picture itself,
+              because the picture carries the settle and this carries the
+              parallax — two animations on one `transform` would silently
+              leave only the last one running. */}
+          <div aria-hidden={altOf(heroImage, locale) ? undefined : "true"} className={HERO_PARALLAX}>
+            {isCloudinaryUrl(heroImage.file.url) ? (
+              // A plain <img>, not next/image: the resizing is the CDN's, and
+              // next/image can only be told that through a `loader` function,
+              // which a server component may not hand to the client component
+              // it renders. A srcset is a string, which may cross that line.
+              //
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={heroImage.file.url}
+                srcSet={cloudinarySrcSet(heroImage.file.url, heroImage.file.width)}
+                sizes="100vw"
+                alt={altOf(heroImage, locale)}
+                fetchPriority="high"
+                className={HERO_MEDIA}
+              />
+            ) : (
+              <Image
+                src={heroImage.file.url}
+                alt={altOf(heroImage, locale)}
+                fill
+                priority
+                unoptimized={isExternalMedia(heroImage.file.url)}
+                sizes="100vw"
+                className={HERO_MEDIA}
+              />
+            )}
+          </div>
+          <div aria-hidden="true" className={HERO_SCRIM} />
+        </>
+      ) : null}
+
+      <div className={`relative ${CONTAINER} ${HERO_COMPOSITION} py-12 md:py-16 lg:py-20`}>
         <div className={HERO_TEXT}>
           {breadcrumb}
           <h1
             id={titleId}
             className="rise-in text-h1 text-balance"
-            style={{ "--rise-index": 0 } as React.CSSProperties}
+            style={{ "--rise-index": HERO_STAGE.title } as React.CSSProperties}
           >
             {title}
           </h1>
           {subtitle ? (
             <p
-              className={`rise-in mt-4 ${HERO_MEASURE} text-body-lg ${tone.muted}`}
-              style={{ "--rise-index": 1 } as React.CSSProperties}
+              className={`rise-in mt-4 ${HERO_MEASURE} text-body-lg ${
+                hasImage ? "opacity-85" : tone.muted
+              }`}
+              style={{ "--rise-index": HERO_STAGE.subtitle } as React.CSSProperties}
             >
               {subtitle}
             </p>
@@ -114,14 +154,15 @@ export function PageHero({
         </div>
 
         {/* The identity's own geometry, at the scale the composition can
-            carry. `tone="inherit"` on a coloured register because Federation
-            Green and Federation Red measure 1.15:1 against each other
-            (ADR-0059 §D2) — the brand-coloured strokes would disappear into
-            a green or red ground, and the black stroke into the black one. */}
+            carry. `tone="inherit"` on a coloured register or over a
+            photograph because Federation Green and Federation Red measure
+            1.15:1 against each other (ADR-0059 §D2) — the brand-coloured
+            strokes would disappear into a green or red ground, and the black
+            stroke into the black one. */}
         <UaeafMotif
-          tone={register === "neutral" ? "brand" : "inherit"}
-          className={`rise-in ${HERO_MOTIF} opacity-70`}
-          style={{ "--rise-index": 2 } as React.CSSProperties}
+          tone={register === "neutral" && !hasImage ? "brand" : "inherit"}
+          className={`rise-in ${HERO_MOTIF} ${hasImage ? "opacity-25" : "opacity-70"}`}
+          style={{ "--rise-index": HERO_STAGE.motif } as React.CSSProperties}
         />
       </div>
     </section>

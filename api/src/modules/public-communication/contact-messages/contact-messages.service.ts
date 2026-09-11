@@ -51,7 +51,7 @@ export class ContactMessagesService {
     return this.repository.create({
       messageType: dto.messageType,
       senderName: dto.senderName,
-      senderEmail: dto.senderEmail,
+      senderEmail: dto.senderEmail ?? null,
       senderPhone: dto.senderPhone ?? null,
       subject: dto.subject ?? null,
       messageBody: dto.messageBody,

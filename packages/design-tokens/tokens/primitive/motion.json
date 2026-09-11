@@ -19,6 +19,9 @@
       "offset": { "value": "{space.4}", "type": "spacing", "comment": "Translate magnitude on BOTH axes. Equal x and y is what makes the vector 45° — the angle above is descriptive, this is the value that produces it." },
       "stagger": { "value": "60ms", "type": "duration", "comment": "Chapter 5 §5.7: 40–80ms between elements. 60ms is the midpoint." },
       "stagger-steps": { "value": "10", "type": "other", "comment": "Chapter 5 §5.7 caps total stagger at 600ms; 10 × 60ms is exactly that ceiling. Elements past the tenth reuse the last delay rather than extending the sequence." }
+    },
+    "lift": {
+      "scale": { "value": "1.01", "type": "other", "comment": "ADR-0067. Chapter 5 §5.11 authorises `transform: scale()` as the way to change a surface's apparent size, but fixes no magnitude — this is that magnitude, bounded rather than chosen. A raised card's hover is ONE physical event (it comes toward the reader), so the scale is bounded by the lift it accompanies: `{motion.ascent.offset}` ÷ 4 = 4px (ADR-0066 D3). LOWER BOUND — the edge must move further than `{border.width.default}` (1px), or the growth cannot be resolved as depth at all. UPPER BOUND — the edge must move LESS than the 4px rise, or a card in a row outruns its own lift sideways and the eye reads the row jittering instead of the card rising, which is the exact failure ADR-0066 D3 removed from the diagonal. Edge displacement is width × (scale-1) ÷ 2. Across the full width range the standard covers — 358px (stacked card, 390px viewport) → 1.79px, 294px (contact hero card at xl) → 1.47px, 600px (half of the 1248px panel row, the widest surface `.lift` can reach) → 3.00px — every value sits inside 1px … 4px. Guarded by `surface-standard.spec.ts`." }
     }
   }
 }

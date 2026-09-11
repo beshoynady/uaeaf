@@ -1,0 +1,70 @@
+[
+  {
+    "_id": {
+      "$oid": "6aa1d1344a3f231870e29d81"
+    },
+    "createdBy": null,
+    "updatedBy": null,
+    "archivedAt": null,
+    "archivedBy": null,
+    "albumId": null,
+    "file": {
+      "url": "https://res.cloudinary.com/aodzt1lz/image/upload/v1788989748/uaeaf/pages/contact-hero-2616-1382-9d2f1f31.png",
+      "mimeType": "image/png",
+      "width": 1536,
+      "height": 672,
+      "size": 1639225,
+      "originalName": "contact-hero-2616-1382.png",
+      "storageKey": "uaeaf/pages/contact-hero-2616-1382-9d2f1f31",
+      "checksum": null,
+      "photographer": "UAEAF Media",
+      "captureDate": null
+    },
+    "caption": {
+      "en": "Contact page hero",
+      "ar": "غلاف صفحة تواصل معنا"
+    },
+    "altText": {
+      "en": "Runners on the track at Zayed Sports City at dusk",
+      "ar": "عدّاؤون على مضمار مدينة زايد الرياضية عند الغروب"
+    },
+    "displayOrder": 0,
+    "isVisible": true,
+    "isFeatured": false,
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6aa1d5c24a3f231870e29d89"
+    },
+    "createdBy": null,
+    "updatedBy": null,
+    "archivedAt": null,
+    "archivedBy": null,
+    "albumId": null,
+    "file": {
+      "url": "https://res.cloudinary.com/aodzt1lz/image/upload/v1788990914/uaeaf/pages/contact-map-2616-1382-974f52e6.png",
+      "mimeType": "image/png",
+      "width": 1248,
+      "height": 832,
+      "size": 1086742,
+      "originalName": "contact-map-2616-1382.png",
+      "storageKey": "uaeaf/pages/contact-map-2616-1382-974f52e6",
+      "checksum": null,
+      "photographer": null,
+      "captureDate": null
+    },
+    "caption": {
+      "en": "Federation headquarters location map",
+      "ar": "خريطة موقع مقر الاتحاد"
+    },
+    "altText": {
+      "en": "Map showing the federation headquarters at Zayed Sports City, Abu Dhabi",
+      "ar": "خريطة تُظهر موقع مقر الاتحاد في مدينة زايد الرياضية، أبوظبي"
+    },
+    "displayOrder": 0,
+    "isVisible": true,
+    "isFeatured": false,
+    "__v": 0
+  }
+]

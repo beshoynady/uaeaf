@@ -12,6 +12,8 @@ import {
 } from "@/lib/admin/static-pages";
 import { StatusMessage } from "@/components/auth/status-message";
 import { TextField } from "@/components/auth/text-field";
+import { SelectField } from "@/components/ui/select-field";
+import { RequiredHint } from "@/components/ui/required-field";
 import { BilingualField } from "@/components/admin/bilingual-field";
 import { MediaPicker, type MediaAssetOption } from "./media-picker";
 import type { AppLocale } from "@/i18n/routing";
@@ -156,6 +158,12 @@ export function PageEditor({
         </StatusMessage>
       ) : null}
 
+      {/* §F.4, and conditional because this form's fields come from the
+          page's own schema: a page whose every field is optional shows no
+          glyph, and a sentence explaining a glyph that is not there is worse
+          than no sentence. */}
+      {page.fields.some((field) => "required" in field && field.required) ? <RequiredHint /> : null}
+
       {/* One grid for the whole form so the rhythm holds: a short single
           value takes half the width and pairs with its neighbour, while
           anything bilingual or repeatable spans both columns. Laid out
@@ -265,7 +273,6 @@ function Field({
           valueEn={value.en}
           onChangeAr={(ar) => onChange(field.name, { ...value, ar })}
           onChangeEn={(en) => onChange(field.name, { ...value, en })}
-          hint={field.required ? undefined : t("optional")}
           disabled={disabled}
           required={field.required}
         />
@@ -274,12 +281,17 @@ function Field({
 
     case "text":
       return (
+        // No per-field "optional" caption. §F.4 marks what is *required* and
+        // says so once at the top of the form; marking the complement as well
+        // states the same fact twice per field in two different notations,
+        // which is the duplication that rule's SHOULD exists to prevent. The
+        // `optional` string stays in the message catalogue — nothing else has
+        // been decided about where else it may belong.
         <TextField
           id={`field-${slug}`}
           label={label}
           type={field.inputType === "email" ? "email" : "text"}
           inputMode={field.inputType === "email" ? "email" : undefined}
-          hint={field.required ? undefined : t("optional")}
           value={String(state[field.name] ?? "")}
           disabled={disabled}
           onChange={(event) => onChange(field.name, event.target.value)}
@@ -433,7 +445,7 @@ function Field({
                 options={CONTACT_MESSAGE_TYPES.filter(
                   (value) => value === row.value || unused.includes(value),
                 ).map((value) => ({ value, label: t(`messageType_${value}`) }))}
-                onChange={(value) => replace(index, { ...row, value })}
+                onChange={(event) => replace(index, { ...row, value: event.target.value })}
               />
               <BilingualField
                 id={`message-type-${index}-label`}
@@ -454,43 +466,6 @@ function Field({
   }
 }
 
-/** A labelled select, the same shape as the one on the create-user form. */
-function SelectField({
-  id,
-  label,
-  value,
-  options,
-  disabled,
-  onChange,
-}: {
-  id: string;
-  label: string;
-  value: string;
-  options: readonly { value: string; label: string }[];
-  disabled: boolean;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <div className="flex flex-col gap-2">
-      <label htmlFor={id} className="text-label font-medium text-[color:var(--color-text-secondary)]">
-        {label}
-      </label>
-      <select
-        id={id}
-        value={value}
-        disabled={disabled}
-        onChange={(event) => onChange(event.target.value)}
-        className="h-12 rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-base)] px-3 text-body text-[color:var(--color-text-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-focus-default)] disabled:cursor-not-allowed"
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
 
 /**
  * A list the editor grows and shrinks.

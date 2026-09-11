@@ -38,13 +38,19 @@ const surface = readFileSync(SURFACE, "utf-8");
  * what the browser composites, wherever the value is written.
  */
 function declaration(name: string, from: string = source): string {
-  const start = from.indexOf(`const ${name} =`);
+  // A recipe that has become a site-wide standard now lives in `ui/surface`;
+  // the hero imports it and no longer declares it. Falling through keeps this
+  // probe measuring the value the browser composites rather than failing on
+  // where the value is written.
+  const here = from.indexOf(`const ${name} =`);
+  const start = here > -1 ? here : surface.indexOf(`export const ${name} =`);
+  const text = here > -1 ? from : surface;
   expect(start, `${name} is gone — this probe is measuring nothing`).toBeGreaterThan(-1);
-  const raw = from.slice(start, from.indexOf(";", start));
+  const raw = text.slice(start, text.indexOf(";", start));
 
   return raw.replace(/\$\{(\w+)\}/g, (_, reference: string) => {
-    const local = from.indexOf(`const ${reference} =`);
-    const body = local > -1 ? declaration(reference, from) : declaration(imported(reference), surface);
+    const local = text.indexOf(`const ${reference} =`);
+    const body = local > -1 ? declaration(reference, text) : declaration(imported(reference), surface);
     return body.slice(body.indexOf("=") + 1);
   });
 }
@@ -191,11 +197,18 @@ describe("contact hero cards", () => {
     // From `md` up the card is inside the band, and the ground is an uploaded
     // picture under a fixed overlay. Nothing in that stack follows the theme,
     // so the worst admissible input — a pure white image — is the test.
-    const overlay = classesAt("HERO_OVERLAY", "base");
+    const overlay = classesAt("HERO_SCRIM", "base");
     const card = classesAt("CARD", "md");
 
-    const gradient = declaration("HERO_OVERLAY").match(/rgb\((\d+)_\d+_\d+\/([\d.]+)\)/g) ?? [];
-    expect(gradient.length, "the hero overlay declares no translucent stop").toBeGreaterThan(0);
+    // Each stop is `color-mix(in srgb, var(--token) N%, transparent)`, which
+    // is what §16 requires and what the shipped scrim now says. Resolved
+    // through `paint` so the token's own value is read rather than assumed to
+    // be black — if `--color-brand-black` ever stopped being #000000, this
+    // measurement would follow it instead of quietly measuring the old one.
+    const stops = [...declaration("HERO_SCRIM").matchAll(
+      /color-mix\(in_srgb,var\(--[a-z0-9-]+\)_[\d.]+%,transparent\)/g,
+    )].map((match) => match[0]);
+    expect(stops.length, "the hero scrim declares no translucent stop").toBeGreaterThan(0);
     expect(overlay.length).toBeGreaterThan(0);
 
     const panel = paint(card, "bg", "light");
@@ -203,13 +216,14 @@ describe("contact hero cards", () => {
     expect(panel, "the pinned card declares no translucent ground").toBeTruthy();
     expect(text).toBeTruthy();
 
-    for (const stop of gradient) {
-      const [, level, alpha] = stop.match(/rgb\((\d+)_\d+_\d+\/([\d.]+)\)/)!;
-      const band = over(Number(level), Number(alpha), 255);
-      const ground = over(panel!.rgb[0], panel!.alpha, band);
+    for (const stop of stops) {
+      const ink = paint([`bg-[${stop}]`], "bg", "light")!;
+      // The worst admissible photograph is a pure white one.
+      const band = [0, 1, 2].map((i) => over(ink.rgb[i], ink.alpha, 255));
+      const ground = [0, 1, 2].map((i) => over(panel!.rgb[i], panel!.alpha, band[i]));
       expect(
-        contrastRatio(hex(text!.rgb), hex([ground, ground, ground])),
-        `overlay ${alpha} + card ${panel!.alpha} over a white photograph`,
+        contrastRatio(hex(text!.rgb), hex(ground)),
+        `scrim ${ink.alpha} + card ${panel!.alpha} over a white photograph`,
       ).toBeGreaterThanOrEqual(AA_NORMAL_TEXT);
     }
   });

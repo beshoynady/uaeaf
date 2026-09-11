@@ -1,5 +1,7 @@
 "use client";
 
+import { SelectField } from "@/components/ui/select-field";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -84,21 +86,19 @@ export function StatusControl({
       ) : null}
 
       <div className="flex flex-wrap items-center gap-3">
-        <label className="flex items-center gap-2">
-          <span className="sr-only">{t("statusTitle")}</span>
-          <select
-            value={target}
-            disabled={disabled || saving}
-            onChange={(event) => setTarget(event.target.value as UserResponse["accountStatus"])}
-            className="h-10 rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-base)] px-3 text-label text-[color:var(--color-text-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-focus-default)] disabled:cursor-not-allowed disabled:text-[color:var(--color-text-disabled)]"
-          >
-            {STATUSES.map((status) => (
-              <option key={status} value={status}>
-                {statuses(status)}
-              </option>
-            ))}
-          </select>
-        </label>
+        {/* The label was `sr-only`, which left a sighted reader an unnamed
+            dropdown sitting beside an "apply" button — the one control on
+            this panel that ends someone's sessions. The notched label names
+            it inside its own box, so it costs the row no height. */}
+        <SelectField
+          id="account-status"
+          label={t("statusTitle")}
+          value={target}
+          disabled={disabled || saving}
+          onChange={(event) => setTarget(event.target.value as UserResponse["accountStatus"])}
+          options={STATUSES.map((status) => ({ value: status, label: statuses(status) }))}
+          className="min-w-[200px]"
+        />
 
         <button
           type="button"

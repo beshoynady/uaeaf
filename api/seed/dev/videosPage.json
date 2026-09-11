@@ -1,0 +1,26 @@
+[
+  {
+    "_id": {
+      "$oid": "6aa04ba9e3d1ab8b4179f0fd"
+    },
+    "createdBy": null,
+    "updatedBy": null,
+    "archivedAt": null,
+    "archivedBy": null,
+    "createdAt": {
+      "$date": "2026-09-08T17:53:45.854Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-08T17:53:45.854Z"
+    },
+    "heroImageId": null,
+    "heroTitle": {
+      "ar": "الفيديوهات",
+      "en": "Videos"
+    },
+    "heroSubtitle": {
+      "ar": "نص تجريبي محلي للتحقق البصري فقط — ليس محتوى معتمدًا. طوله كافٍ لاختبار الالتفاف عبر كل النطاقات، ولاختبار سلوك النص العربي داخل عمود ضيّق.",
+      "en": "Local sample text for visual verification only — not approved content. Long enough to test wrapping across every breakpoint and to test how the column behaves at its narrowest."
+    }
+  }
+]

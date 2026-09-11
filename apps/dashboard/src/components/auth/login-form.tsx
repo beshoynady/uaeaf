@@ -3,6 +3,7 @@
 import { useCallback, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { TextField } from "./text-field";
+import { RequiredHint } from "@/components/ui/required-field";
 import { PasswordInput } from "./password-input";
 import { StatusMessage } from "./status-message";
 import { LockoutNotice, type TimedReason } from "./lockout-notice";
@@ -102,6 +103,10 @@ export function LoginForm({ locale }: { locale: AppLocale }) {
           {t(failure.code)}
         </StatusMessage>
       ) : null}
+
+      {/* §F.4: once, at the top, rather than a sentence repeated invisibly
+          under every field it applies to. */}
+      <RequiredHint />
 
       <TextField
         id="email"

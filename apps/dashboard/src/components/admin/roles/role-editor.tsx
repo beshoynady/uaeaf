@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import type { LocalizedText, RoleResponse } from "@/lib/api/types";
 import { StatusMessage } from "@/components/auth/status-message";
 import { BilingualField } from "@/components/admin/bilingual-field";
+import { RequiredHint } from "@/components/ui/required-field";
 
 /**
  * A role's own record — its name and its description.
@@ -112,6 +113,8 @@ export function RoleEditor({
           {errors.has(errorKey) ? errors(errorKey) : errors("serviceUnavailable")}
         </StatusMessage>
       ) : null}
+
+      <RequiredHint />
 
       <BilingualField
         id="role-name"

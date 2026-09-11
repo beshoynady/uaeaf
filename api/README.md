@@ -28,6 +28,9 @@ npm run start:dev
 | `JWT_REFRESH_EXPIRY` | no, defaults `7d` | confirmed |
 | `PORT` | no, defaults `3000` | |
 | `NODE_ENV` | no, defaults `development` | `development` \| `production` \| `test` |
+| `CLOUDINARY_CLOUD_NAME` / `_API_KEY` / `_API_SECRET` | no | image uploads fail without them |
+| `BOOTSTRAP_ADMIN_EMAIL` / `_PASSWORD` | for `bootstrap:admin` and `seed:dev` | the first administrator; password 12+ characters; an existing account is never changed |
+| `BOOTSTRAP_ADMIN_NAME_EN` / `_AR` | no | defaults `Platform Administrator` / `مسؤول المنصة` |
 
 Startup fails fast (Zod, via `ConfigModule`'s native `validationSchema`
 option — see `src/config/validation.schema.ts`) if a required variable is
@@ -44,6 +47,43 @@ missing or malformed.
 | `npm run test:e2e` | Jest e2e tests (Supertest + an ephemeral, real MongoDB via `mongodb-memory-server` — never touches the local dev database) |
 | `npm run lint` | oxlint |
 | `npm run docs:generate` | Compodoc → `documentation/` (gitignored, regenerate on demand) |
+| `npm run bootstrap:admin` | Permission catalogue, Super Admin role and the first administrator — safe to re-run |
+| `npm run seed:dev` | Brings a **local** database to the development fixture state (below) |
+| `npm run seed:dev -- --reset` | Same, but puts the fixture versions back over edits |
+| `npm run seed:export` | Snapshots the current local database into the fixtures |
+
+### Development data
+
+`npm run seed:dev` takes a local database — empty or not — to a known state
+in one command: it runs `bootstrap:admin`, then writes the fixtures in
+`seed/dev/` (the twelve page records, the media they point at, sample board
+members and sample inbox messages). Users, sessions and audit history are
+never fixtures.
+
+- **By default it only adds what is missing**: a page record when its
+  collection is empty, any other document when its id is absent. What was
+  entered in the dashboard stays. `--reset` is the explicit way back.
+- **It refuses** `NODE_ENV=production` and any `MONGODB_URI` that is not
+  `localhost`, `127.0.0.1` or `::1`.
+- Every fixture is checked against the current Mongoose schema before
+  anything is written, so fixtures that went stale fail loudly instead of
+  seeding documents the API rejects.
+
+To change the fixtures, change the local database (through the dashboard),
+run `npm run seed:export`, and review the diff. Export refuses any field
+whose name looks like a credential.
+
+The images are links to Cloudinary objects in the project's account; on
+another account they appear broken.
+
+### Test databases
+
+Unit and e2e runs start real MongoDB instances through
+`mongodb-memory-server`. A run that crashes leaves their data folders in
+the temp directory; each run starts by removing any not written to for an
+hour (`test/utils/stale-test-databases.ts`). Left alone they accumulate to
+gigabytes on the system drive — enough to stop Windows growing its page
+file, at which point the machine runs out of memory.
 
 ## Folder structure
 

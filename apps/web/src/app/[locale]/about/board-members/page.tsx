@@ -43,7 +43,7 @@ export default async function BoardMembersPage({
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const [{ title, subtitle }, members] = await Promise.all([
+  const [{ title, subtitle, heroImage }, members] = await Promise.all([
     loadStaticPage(KEY, locale),
     loadMembers(),
   ]);
@@ -55,6 +55,7 @@ export default async function BoardMembersPage({
       locale={locale}
       title={title}
       subtitle={subtitle}
+      heroImage={heroImage}
       itemNames={members.map((member) => member.fullName[locale])}
     >
       {members.length > 0 ? (

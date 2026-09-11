@@ -15,7 +15,7 @@ describe('ContactMessagesService', () => {
   const submission = {
     messageType: 'Complaint' as const,
     senderName: 'Citizen',
-    senderEmail: 'citizen@example.com',
+    senderPhone: '+971 50 123 4567',
     messageBody: 'Body text.',
   };
 
@@ -39,6 +39,23 @@ describe('ContactMessagesService', () => {
           repliedBy: null,
           replyChannel: null,
         }),
+      );
+    });
+
+    it('stores null rather than undefined when no email address was given', async () => {
+      // ADR-0067 D11 made the address optional. `undefined` would leave the
+      // stored document without the key at all, so a later `$set` on it would
+      // be the first thing to create it — and every read in between would have
+      // to cope with a field that is sometimes absent rather than sometimes
+      // null. The schema's default is null; this keeps the write agreeing.
+      const repository = makeRepository();
+      repository.create.mockResolvedValue({} as never);
+      const service = new ContactMessagesService(repository);
+
+      await service.create(submission);
+
+      expect(repository.create).toHaveBeenCalledWith(
+        expect.objectContaining({ senderEmail: null, senderPhone: '+971 50 123 4567' }),
       );
     });
   });

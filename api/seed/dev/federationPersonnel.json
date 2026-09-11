@@ -1,0 +1,247 @@
+[
+  {
+    "_id": {
+      "$oid": "6aa04ba9e3d1ab8b4179f102"
+    },
+    "createdBy": null,
+    "updatedBy": null,
+    "archivedAt": null,
+    "archivedBy": null,
+    "createdAt": {
+      "$date": "2026-09-08T17:53:45.877Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-08T17:53:45.877Z"
+    },
+    "fullName": {
+      "ar": "عضو مجلس تجريبي 1",
+      "en": "Sample board member 1"
+    },
+    "photoId": null,
+    "shortBio": {
+      "ar": "نبذة تجريبية قصيرة تُستخدم للتحقق من ارتفاع البطاقات وتساويها عبر الشبكة.",
+      "en": "A short sample biography, used to check that card heights stay equal across the grid."
+    },
+    "biography": null,
+    "nationalityId": {
+      "$oid": "6aa04ba9e3d1ab8b4179f101"
+    },
+    "publicContact": {
+      "email": "member1@uaeaf.ae",
+      "phone": null
+    },
+    "internalContact": null,
+    "status": "Active",
+    "socialLinks": []
+  },
+  {
+    "_id": {
+      "$oid": "6aa04ba9e3d1ab8b4179f103"
+    },
+    "createdBy": null,
+    "updatedBy": null,
+    "archivedAt": null,
+    "archivedBy": null,
+    "createdAt": {
+      "$date": "2026-09-08T17:53:45.878Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-08T17:53:45.878Z"
+    },
+    "fullName": {
+      "ar": "عضو مجلس تجريبي 2",
+      "en": "Sample board member 2"
+    },
+    "photoId": null,
+    "shortBio": {
+      "ar": "نبذة تجريبية قصيرة تُستخدم للتحقق من ارتفاع البطاقات وتساويها عبر الشبكة.",
+      "en": "A short sample biography, used to check that card heights stay equal across the grid."
+    },
+    "biography": null,
+    "nationalityId": {
+      "$oid": "6aa04ba9e3d1ab8b4179f101"
+    },
+    "publicContact": {
+      "email": "member2@uaeaf.ae",
+      "phone": null
+    },
+    "internalContact": null,
+    "status": "Active",
+    "socialLinks": []
+  },
+  {
+    "_id": {
+      "$oid": "6aa04ba9e3d1ab8b4179f104"
+    },
+    "createdBy": null,
+    "updatedBy": null,
+    "archivedAt": null,
+    "archivedBy": null,
+    "createdAt": {
+      "$date": "2026-09-08T17:53:45.878Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-08T17:53:45.878Z"
+    },
+    "fullName": {
+      "ar": "عضو مجلس تجريبي 3",
+      "en": "Sample board member 3"
+    },
+    "photoId": null,
+    "shortBio": {
+      "ar": "نبذة تجريبية قصيرة تُستخدم للتحقق من ارتفاع البطاقات وتساويها عبر الشبكة.",
+      "en": "A short sample biography, used to check that card heights stay equal across the grid."
+    },
+    "biography": null,
+    "nationalityId": {
+      "$oid": "6aa04ba9e3d1ab8b4179f101"
+    },
+    "publicContact": {
+      "email": "member3@uaeaf.ae",
+      "phone": null
+    },
+    "internalContact": null,
+    "status": "Active",
+    "socialLinks": []
+  },
+  {
+    "_id": {
+      "$oid": "6aa04ba9e3d1ab8b4179f105"
+    },
+    "createdBy": null,
+    "updatedBy": null,
+    "archivedAt": null,
+    "archivedBy": null,
+    "createdAt": {
+      "$date": "2026-09-08T17:53:45.878Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-08T17:53:45.878Z"
+    },
+    "fullName": {
+      "ar": "عضو مجلس تجريبي 4",
+      "en": "Sample board member 4"
+    },
+    "photoId": null,
+    "shortBio": {
+      "ar": "نبذة تجريبية قصيرة تُستخدم للتحقق من ارتفاع البطاقات وتساويها عبر الشبكة.",
+      "en": "A short sample biography, used to check that card heights stay equal across the grid."
+    },
+    "biography": null,
+    "nationalityId": {
+      "$oid": "6aa04ba9e3d1ab8b4179f101"
+    },
+    "publicContact": {
+      "email": "member4@uaeaf.ae",
+      "phone": null
+    },
+    "internalContact": null,
+    "status": "Active",
+    "socialLinks": []
+  },
+  {
+    "_id": {
+      "$oid": "6aa04ba9e3d1ab8b4179f106"
+    },
+    "createdBy": null,
+    "updatedBy": null,
+    "archivedAt": null,
+    "archivedBy": null,
+    "createdAt": {
+      "$date": "2026-09-08T17:53:45.878Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-08T17:53:45.878Z"
+    },
+    "fullName": {
+      "ar": "عضو مجلس تجريبي 5",
+      "en": "Sample board member 5"
+    },
+    "photoId": null,
+    "shortBio": {
+      "ar": "نبذة تجريبية قصيرة تُستخدم للتحقق من ارتفاع البطاقات وتساويها عبر الشبكة.",
+      "en": "A short sample biography, used to check that card heights stay equal across the grid."
+    },
+    "biography": null,
+    "nationalityId": {
+      "$oid": "6aa04ba9e3d1ab8b4179f101"
+    },
+    "publicContact": {
+      "email": "member5@uaeaf.ae",
+      "phone": null
+    },
+    "internalContact": null,
+    "status": "Active",
+    "socialLinks": []
+  },
+  {
+    "_id": {
+      "$oid": "6aa04ba9e3d1ab8b4179f107"
+    },
+    "createdBy": null,
+    "updatedBy": null,
+    "archivedAt": null,
+    "archivedBy": null,
+    "createdAt": {
+      "$date": "2026-09-08T17:53:45.878Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-08T17:53:45.878Z"
+    },
+    "fullName": {
+      "ar": "عضو مجلس تجريبي 6",
+      "en": "Sample board member 6"
+    },
+    "photoId": null,
+    "shortBio": {
+      "ar": "نبذة تجريبية قصيرة تُستخدم للتحقق من ارتفاع البطاقات وتساويها عبر الشبكة.",
+      "en": "A short sample biography, used to check that card heights stay equal across the grid."
+    },
+    "biography": null,
+    "nationalityId": {
+      "$oid": "6aa04ba9e3d1ab8b4179f101"
+    },
+    "publicContact": {
+      "email": "member6@uaeaf.ae",
+      "phone": null
+    },
+    "internalContact": null,
+    "status": "Active",
+    "socialLinks": []
+  },
+  {
+    "_id": {
+      "$oid": "6aa04ba9e3d1ab8b4179f108"
+    },
+    "createdBy": null,
+    "updatedBy": null,
+    "archivedAt": null,
+    "archivedBy": null,
+    "createdAt": {
+      "$date": "2026-09-08T17:53:45.878Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-08T17:53:45.878Z"
+    },
+    "fullName": {
+      "ar": "عضو مجلس تجريبي 7",
+      "en": "Sample board member 7"
+    },
+    "photoId": null,
+    "shortBio": {
+      "ar": "نبذة تجريبية قصيرة تُستخدم للتحقق من ارتفاع البطاقات وتساويها عبر الشبكة.",
+      "en": "A short sample biography, used to check that card heights stay equal across the grid."
+    },
+    "biography": null,
+    "nationalityId": {
+      "$oid": "6aa04ba9e3d1ab8b4179f101"
+    },
+    "publicContact": {
+      "email": "member7@uaeaf.ae",
+      "phone": null
+    },
+    "internalContact": null,
+    "status": "Active",
+    "socialLinks": []
+  }
+]

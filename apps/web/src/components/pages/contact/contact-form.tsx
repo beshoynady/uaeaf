@@ -30,7 +30,19 @@ type FieldName = "senderName" | "senderPhone" | "senderEmail" | "messageType" | 
 
 export type MessageTypeOption = { value: string; label: string };
 
-const REQUIRED: readonly FieldName[] = ["senderName", "senderEmail", "messageType", "messageBody"];
+/**
+ * The four the federation cannot act on a message without.
+ *
+ * The telephone is required and the address is not, which is the reverse of
+ * what this form shipped with. It is the owner's call and it matches how the
+ * reply actually happens: `contactMessages.replyChannel` is `Email | Phone`,
+ * and a citizen reachable on neither is a record nobody can close.
+ *
+ * The API enforces the same four (`CreateContactMessageDto`). Validating in
+ * one place only would mean either a form that accepts what the API rejects,
+ * or an API that accepts what no form can produce.
+ */
+const REQUIRED: readonly FieldName[] = ["senderName", "senderPhone", "messageType", "messageBody"];
 
 /**
  * A field reads as recessed at rest and rises to meet the cursor.
@@ -57,10 +69,11 @@ const REQUIRED: readonly FieldName[] = ["senderName", "senderEmail", "messageTyp
  * label sitting on top of a line. The DOM order is unchanged, which Chapter 8
  * L2 §F.1 makes a MUST: only the painted position moves.
  *
- * The geometry and the notch live in `styles/forms.css`, because they are one
- * mechanism shared by every field on the site rather than this form's
- * decoration. What stays here is the part that is stateful: which edge a
- * field wears when it is resting, hovered, focused or wrong.
+ * The geometry and the notch live in `@uaeaf/design-tokens/css/forms.css`,
+ * because they are one mechanism shared by every field on both applications
+ * rather than this form's decoration. What stays here is the part that is
+ * stateful: which edge a field wears when it is resting, hovered, focused or
+ * wrong.
  */
 const CONTROL_SHAPE =
   "field-control text-body transition-[box-shadow,border-color] duration-[var(--motion-duration-fast)] ease-[var(--motion-easing-standard)]";
@@ -81,10 +94,19 @@ const CONTROL_SHAPE =
  */
 const CONTROL_RESTING = `${CONTROL_SHAPE} ${FIELD_EDGE}`;
 
-/** A failed field is marked by its border as well as by its message, so the
- *  state survives WCAG 1.4.1 — the message is the primary signal and the
- *  colour is the secondary one, never the reverse. */
-const CONTROL_INVALID = `${CONTROL_SHAPE} border-[color:var(--color-semantic-error)] hover:border-[color:var(--color-semantic-error)] active:border-[color:var(--color-semantic-error)] focus:border-[color:var(--color-semantic-error)]`;
+/**
+ * A failed field is marked by its border as well as by its message, so the
+ * state survives WCAG 1.4.1 — the message is the primary signal and the
+ * colour is the secondary one, never the reverse.
+ *
+ * The bare `border` is load-bearing and was missing. Tailwind's
+ * `border-[color:…]` sets a colour and no width, and the width lives in
+ * `FIELD_EDGE`, which the invalid variant replaces rather than extends — so an
+ * invalid control measured `border-top-width: 0px` and lost its outline
+ * entirely at the moment it most needed one (WCAG 2.1 §1.4.11). Visible in the
+ * geometry too: an invalid field stood 48px tall where a valid one stood 49.
+ */
+const CONTROL_INVALID = `${CONTROL_SHAPE} border border-[color:var(--color-semantic-error)] hover:border-[color:var(--color-semantic-error)] active:border-[color:var(--color-semantic-error)] focus:border-[color:var(--color-semantic-error)]`;
 
 const controlClass = (invalid: boolean) => (invalid ? CONTROL_INVALID : CONTROL_RESTING);
 
@@ -119,6 +141,10 @@ export function ContactForm({
     for (const name of REQUIRED) {
       if (!value(name)) found[name] = t("errors.required");
     }
+    // Optional, but not unchecked: a reader who starts typing an address and
+    // gets it wrong has given the federation a channel that will bounce, and
+    // saying so costs them one correction now instead of a reply that never
+    // arrives.
     const email = value("senderEmail");
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       found.senderEmail = t("errors.email");
@@ -140,8 +166,8 @@ export function ContactForm({
         body: JSON.stringify({
           messageType: value("messageType"),
           senderName: value("senderName"),
-          senderEmail: email,
-          senderPhone: value("senderPhone") || undefined,
+          senderEmail: email || undefined,
+          senderPhone: value("senderPhone"),
           subject: value("subject") || undefined,
           messageBody: value("messageBody"),
         }),
@@ -169,23 +195,53 @@ export function ContactForm({
           by `forms.css`. `text-label` is the resting size; the floated size is
           that scaled by the label/body type ratio, which keeps it above
           Chapter 4's 13px floor. */}
-      <label htmlFor={fieldId(name)} className="field-label text-body">
-        {t(`labels.${name}`)}
+      {/*
+        §F.4's two halves: the glyph here and `aria-required` on the control.
+        The glyph sits **outside** the `<label>` element, which is what the
+        rule's own wording asks for — *an `*` after the Label* — and is not a
+        detail. A `<label>`'s content is the field's **name**; a marker saying
+        something *about* the field is not part of what it is called. Inside,
+        it joined `label.textContent`, so the field's name became "الاسم *"
+        and every query that asked for the field by its name stopped finding
+        it. `aria-hidden` stays as well: nothing in the accessibility tree can
+        reach it from out here, and two mechanisms saying the same thing cost
+        nothing.
+
+        Primary ink rather than the error red: red at 13px bold measures
+        3.95:1 on the dark theme's panel and fails 1.4.3, and a field nobody
+        has filled in yet is not *wrong* — spending the error colour on the
+        resting state leaves nothing to say with when there is an error.
+
+        This markup is duplicated from the dashboard's `FieldLabel` rather
+        than shared, because `packages/ui` holds no components and the two
+        applications have separate Tailwind builds. The mechanism they do
+        share — geometry, notch, travel — is `forms.css` in the token package.
+        Held identical by `surface-standard.spec.ts`. PENDING: a real shared
+        component package would end the duplication.
+      */}
+      <span className="field-label text-body">
+        <label htmlFor={fieldId(name)}>{t(`labels.${name}`)}</label>
         {required ? (
-          // §F.4 requires the `*` and `aria-required` together. It is drawn in
-          // the primary ink rather than the error red: red at 13px bold
-          // measures 3.95:1 on the dark theme's panel and fails 1.4.3, and the
-          // glyph carries the meaning without the colour in any case (1.4.1).
-          // The error red stays for actual errors, where it means something.
-          <span className="font-bold text-[color:var(--color-text-primary)]">
+          <span aria-hidden="true" className="font-bold text-[color:var(--color-text-primary)]">
             {" *"}
-            <span className="sr-only">{t("requiredHint")}</span>
           </span>
         ) : null}
-      </label>
+      </span>
       {control}
+      {/* Primary ink, not `--color-semantic-error`.
+          #E53E3E on the dark theme's raised panel measures **3.95:1**,
+          measured on the live page — under WCAG 1.4.3's 4.5:1 for text this
+          size, on the one sentence a reader has to be able to act on. The
+          field's red edge and its red label carry the state (both measured
+          above 4.5:1 on their own grounds), so 1.4.1 holds without the message
+          being red as well; the words are what say what is wrong.
+          DESIGN SYSTEM GAP — there is no error colour that clears 4.5:1 as
+          text on a dark surface. Proposal in ADR-0067 §D8. */}
       {errors[name] ? (
-        <p id={errorId(name)} className="text-caption text-[color:var(--color-semantic-error)]">
+        <p
+          id={errorId(name)}
+          className="text-caption font-medium text-[color:var(--color-text-primary)]"
+        >
           {errors[name]}
         </p>
       ) : null}
@@ -213,7 +269,21 @@ export function ContactForm({
         {title}
       </h2>
 
+      {/* §F.4: the explanation belongs once at the top of the form, not
+          repeated invisibly on every field it applies to. */}
+      <p className="text-caption text-[color:var(--color-text-secondary)]">{t("requiredHint")}</p>
+
       <form noValidate onSubmit={onSubmit} className={`flex flex-col gap-6 ${PANEL_FILL}`}>
+        {/*
+          Two paired rows, then two full-width ones.
+
+          The pairing is not decorative: `senderName`/`senderPhone` are who is
+          writing and how to reach them, `senderEmail`/`messageType` are the
+          second channel and the routing. Subject and body take the full width
+          because a one-line title and a paragraph are both harmed by being
+          half as wide, and Chapter 5 §5.10 stacks every pair below `md` in DOM
+          order — which is already the reading order here.
+        */}
         <div className="flex flex-col gap-6 md:flex-row">
           {field(
             "senderName",
@@ -225,6 +295,7 @@ export function ContactForm({
                 maxLength={200}
                 autoComplete="name"
                 placeholder={t("placeholders.senderName")}
+                aria-required="true"
                 aria-invalid={Boolean(errors.senderName)}
                 aria-describedby={describedBy("senderName")}
                 className={`${controlClass(Boolean(errors.senderName))} pe-11 ${TRANSITION} ${FOCUS}`}
@@ -248,34 +319,36 @@ export function ContactForm({
                 maxLength={30}
                 autoComplete="tel"
                 placeholder={t("placeholders.senderPhone")}
-                className={`${controlClass(false)} pe-11 text-start ${TRANSITION} ${FOCUS}`}
+                aria-required="true"
+                aria-invalid={Boolean(errors.senderPhone)}
+                aria-describedby={describedBy("senderPhone")}
+                className={`${controlClass(Boolean(errors.senderPhone))} pe-11 text-start ${TRANSITION} ${FOCUS}`}
               />
               {icon("phone")}
             </div>,
+            true,
           )}
         </div>
 
-        {field(
-          "senderEmail",
-          <div dir="ltr" className="relative">
-            <input
-              id={fieldId("senderEmail")}
-              name="senderEmail"
-              type="email"
-              dir="ltr"
-              maxLength={254}
-              autoComplete="email"
-              placeholder={t("placeholders.senderEmail")}
-              aria-invalid={Boolean(errors.senderEmail)}
-              aria-describedby={describedBy("senderEmail")}
-              className={`${controlClass(Boolean(errors.senderEmail))} pe-11 text-start ${TRANSITION} ${FOCUS}`}
-            />
-            {icon("mail")}
-          </div>,
-          true,
-        )}
-
         <div className="flex flex-col gap-6 md:flex-row">
+          {field(
+            "senderEmail",
+            <div dir="ltr" className="relative">
+              <input
+                id={fieldId("senderEmail")}
+                name="senderEmail"
+                type="email"
+                dir="ltr"
+                maxLength={254}
+                autoComplete="email"
+                placeholder={t("placeholders.senderEmail")}
+                aria-invalid={Boolean(errors.senderEmail)}
+                aria-describedby={describedBy("senderEmail")}
+                className={`${controlClass(Boolean(errors.senderEmail))} pe-11 text-start ${TRANSITION} ${FOCUS}`}
+              />
+              {icon("mail")}
+            </div>,
+          )}
           {field(
             "messageType",
             <div className="relative">
@@ -283,13 +356,40 @@ export function ContactForm({
                 id={fieldId("messageType")}
                 name="messageType"
                 defaultValue=""
+                aria-required="true"
                 aria-invalid={Boolean(errors.messageType)}
                 aria-describedby={describedBy("messageType")}
                 className={`${controlClass(Boolean(errors.messageType))} appearance-none pe-11 ${TRANSITION} ${FOCUS}`}
               >
-                <option value="" disabled>
-                  {t("placeholders.messageType")}
-                </option>
+                {/*
+                  Empty on purpose, and `forms.css` reads it.
+
+                  A select used to be the one control that broke the notched
+                  label: it always has a value, so `:placeholder-shown` never
+                  matches and the label floated from the first paint while a
+                  "Select: …" string sat in the middle of the field saying the
+                  same thing twice. The empty option is the select's version of
+                  an empty input — the label rests in it and travels out of it
+                  the moment a real answer is chosen, exactly like every other
+                  field.
+
+                Plain and selectable — neither `hidden` nor `disabled`,
+                  both of which this carried in turn and both of which the
+                  HTML Standard's "ask for a reset" step is specified to skip:
+                  it selects the first option in tree order *that is not
+                  disabled*, and a `display: none` one cannot be shown either.
+                  Under both, the field silently answered its own required
+                  question with whichever message type happened to be first.
+                  `defaultValue=""` hid that at first paint and `form.reset()`
+                  after a successful send brought it back, so the visitor's
+                  second message carried a type they never chose.
+
+                  Left plain, the reset rule lands on this option by itself,
+                  in every path. `data-placeholder` is what tells `forms.css`
+                  the field is unanswered; no browser behaviour reads it, so
+                  nothing can be skipped on account of it.
+                */}
+                <option value="" data-placeholder />
                 {messageTypes.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
@@ -300,21 +400,22 @@ export function ContactForm({
             </div>,
             true,
           )}
-          {field(
-            "subject",
-            <div className="relative">
-              <input
-                id={fieldId("subject")}
-                name="subject"
-                type="text"
-                maxLength={200}
-                placeholder={t("placeholders.subject")}
-                className={`${controlClass(false)} pe-11 ${TRANSITION} ${FOCUS}`}
-              />
-              {icon("tag")}
-            </div>,
-          )}
         </div>
+
+        {field(
+          "subject",
+          <div className="relative">
+            <input
+              id={fieldId("subject")}
+              name="subject"
+              type="text"
+              maxLength={200}
+              placeholder={t("placeholders.subject")}
+              className={`${controlClass(false)} pe-11 ${TRANSITION} ${FOCUS}`}
+            />
+            {icon("tag")}
+          </div>,
+        )}
 
         {field(
           "messageBody",
@@ -324,6 +425,7 @@ export function ContactForm({
             rows={4}
             maxLength={5000}
             placeholder={t("placeholders.messageBody")}
+            aria-required="true"
             aria-invalid={Boolean(errors.messageBody)}
             aria-describedby={describedBy("messageBody")}
             className={`${controlClass(Boolean(errors.messageBody))} min-h-[110px] resize-y ${TRANSITION} ${FOCUS}`}
@@ -350,7 +452,7 @@ export function ContactForm({
           // holds its own reduced-motion and disabled behaviour, so the
           // reader who turns motion off still gets every colour change and a
           // button mid-request stops answering the pointer entirely.
-          className={`flex min-h-13 w-full items-center justify-center gap-2.5 rounded-[var(--button-radius)] bg-[color:var(--color-brand-primary)] text-body font-bold text-[color:var(--color-text-on-brand)] ${LIFT} transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-easing-standard)] hover:bg-[color:var(--color-green-600)] active:bg-[color:var(--color-green-700)] disabled:cursor-progress disabled:opacity-70 ${FOCUS}`}
+          className={`flex min-h-13 w-full items-center justify-center gap-2.5 rounded-[var(--button-radius)] bg-[color:var(--color-brand-primary)] shadow-[var(--elevation-card)] text-body font-bold text-[color:var(--color-text-on-brand)] ${LIFT} transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-easing-standard)] hover:bg-[color:var(--color-green-600)] active:bg-[color:var(--color-green-700)] disabled:cursor-progress disabled:opacity-70 ${FOCUS}`}
         >
           {state === "sending" ? (
             // The label changes as well as the spinner turning: a pending

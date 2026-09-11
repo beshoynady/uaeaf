@@ -2,7 +2,8 @@ import type { ReactNode } from "react";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { fetchPublic } from "@/lib/api/public-client";
-import type { HeroPage, LocalizedText } from "@/lib/api/types";
+import { fetchPublicMedia } from "@/lib/api/media";
+import type { HeroPage, LocalizedText, MediaAssetPublic } from "@/lib/api/types";
 import { findPublicPage, type PublicPage } from "@/lib/pages/public-pages";
 import { buildMetadata } from "@/lib/seo/metadata";
 import {
@@ -36,16 +37,29 @@ const SECTION_PARENT: Record<string, { messageKey: string; route: string | null 
 export async function loadStaticPage<T extends HeroPage = HeroPage>(
   key: string,
   locale: AppLocale,
-): Promise<{ page: PublicPage; record: T | null; title: string; subtitle: string | null }> {
+): Promise<{
+  page: PublicPage;
+  record: T | null;
+  title: string;
+  subtitle: string | null;
+  heroImage: MediaAssetPublic | undefined;
+}> {
   const page = findPublicPage(key);
   if (!page) throw new Error(`No public page registered for "${key}"`);
 
   const record = await fetchPublic<T>(page.apiPath);
   const t = await getTranslations({ locale, namespace: "Pages" });
 
+  // Resolved here rather than in each of the eleven routes, because the hero
+  // is the shared part of those pages and the image is now what decides its
+  // height. `fetchPublicMedia` answers an empty map for an absent id without
+  // making a request, so a page with no picture pays nothing for the lookup.
+  const media = await fetchPublicMedia([record?.heroImageId]);
+
   return {
     page,
     record,
+    heroImage: record?.heroImageId ? media.get(record.heroImageId) : undefined,
     // The record's own heading wins. Where the singleton has never been
     // saved — which is every one of the twelve on a fresh database — the
     // page still needs exactly one `<h1>` (Chapter 14 §2), and the name it
@@ -97,6 +111,7 @@ export async function StaticPageScreen({
    *  what the page hopes to render later. */
   itemNames,
   contact,
+  heroImage,
   children,
 }: {
   pageKey: string;
@@ -104,6 +119,9 @@ export async function StaticPageScreen({
   title: string;
   subtitle: string | null;
   itemNames?: readonly string[];
+  /** From `loadStaticPage`. Passed straight through: the hero decides its own
+   *  height and colour treatment from whether this is present. */
+  heroImage?: MediaAssetPublic;
   contact?: {
     email?: string;
     telephones?: readonly string[];
@@ -164,9 +182,20 @@ export async function StaticPageScreen({
         title={title}
         subtitle={subtitle}
         titleId={titleId}
+        heroImage={heroImage}
+        locale={locale}
         breadcrumb={
           trail.length > 0 ? (
-            <Breadcrumb trail={trail} label={t("breadcrumbLabel")} register={page.register} />
+            <Breadcrumb
+              trail={trail}
+              label={t("breadcrumbLabel")}
+              // A photograph under the hero scrim is a dark ground whatever
+              // the page's own register says, so the trail reads from the
+              // black register there. Taking the page's register instead
+              // would put `text-secondary` on a dark picture — the register
+              // contrast guarantee is published per ground, not per page.
+              register={heroImage ? "black" : page.register}
+            />
           ) : null
         }
       />

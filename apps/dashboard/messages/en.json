@@ -102,7 +102,8 @@
     "never": "Never",
     "accessDenied": "You do not have permission to view this section.",
     "accessDeniedTitle": "Not permitted",
-    "loadFailed": "Could not load this data."
+    "loadFailed": "Could not load this data.",
+    "requiredHint": "Fields marked with * are required."
   },
   "WriteErrors": {
     "sessionExpired": "Your session ended and the change was not saved. Reload the page and sign in again.",

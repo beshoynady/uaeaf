@@ -118,7 +118,7 @@
       "sending": "Sending…",
       "sent": "Your message has reached us. Thank you for getting in touch.",
       "failed": "The message could not be sent. Please try again.",
-      "requiredHint": "required field",
+      "requiredHint": "Fields marked with * are required.",
       "labels": {
         "senderName": "Name",
         "senderPhone": "Phone Number",
@@ -131,7 +131,6 @@
         "senderName": "e.g., John Doe",
         "senderPhone": "e.g., +971 50 123 4567",
         "senderEmail": "example@email.com",
-        "messageType": "Select: Suggestion / Complaint / Inquiry",
         "subject": "Brief title of your message",
         "messageBody": "Write your message in detail here..."
       },

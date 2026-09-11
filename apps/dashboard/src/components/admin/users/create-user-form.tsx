@@ -9,6 +9,8 @@ import { toggleSelection } from "@/lib/admin/permission-matrix";
 import { StatusMessage } from "@/components/auth/status-message";
 import { PasswordInput } from "@/components/auth/password-input";
 import { TextField } from "@/components/auth/text-field";
+import { SelectField } from "@/components/ui/select-field";
+import { RequiredHint } from "@/components/ui/required-field";
 import { BilingualField } from "@/components/admin/bilingual-field";
 import type { AppLocale } from "@/i18n/routing";
 
@@ -128,6 +130,8 @@ export function CreateUserForm({
         </StatusMessage>
       ) : null}
 
+      <RequiredHint />
+
       <BilingualField
         id="user-name"
         labelAr={t("fieldNameAr")}
@@ -209,28 +213,27 @@ export function CreateUserForm({
       {people === null ? (
         <p className="text-caption text-[color:var(--color-text-muted)]">{t("personHiddenHint")}</p>
       ) : (
-        <div className="flex max-w-[420px] flex-col gap-2">
-          <label
-            htmlFor="user-person"
-            className="text-label font-medium text-[color:var(--color-text-secondary)]"
-          >
-            {t("fieldPerson")}
-          </label>
-          <select
+        <div className="flex max-w-[420px] flex-col">
+          {/* No `placeholder`: "no linked person" is an answer, not the
+              absence of one, so it is a real option the reader can pick and
+              pick again. `forms.css` distinguishes the two by whether the
+              empty option is `disabled`, which keeps the label floated here
+              rather than resting on top of the word it would cover. */}
+          <SelectField
             id="user-person"
+            label={t("fieldPerson")}
             value={personId}
             disabled={saving}
+            hint={t("personHint")}
             onChange={(event) => setPersonId(event.target.value)}
-            className="h-12 rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-base)] px-3 text-body text-[color:var(--color-text-primary)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-focus-default)]"
-          >
-            <option value="">{t("personNone")}</option>
-            {people.map((person) => (
-              <option key={person.id} value={person.id}>
-                {localized(person.name, locale)}
-              </option>
-            ))}
-          </select>
-          <p className="text-caption text-[color:var(--color-text-muted)]">{t("personHint")}</p>
+            options={[
+              { value: "", label: t("personNone") },
+              ...people.map((person) => ({
+                value: person.id,
+                label: localized(person.name, locale),
+              })),
+            ]}
+          />
         </div>
       )}
 
