@@ -4,6 +4,7 @@ node_modules/
 .agents/*
 .codex/*
 .specify
+graphify-out
 my-project
 /.pnp
 .pnp.*

@@ -1,4 +1,4 @@
-import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { WorkflowInstancesRepository } from './workflow-instances.repository.js';
 import type { WorkflowInstanceDocument } from './schemas/workflow-instance.schema.js';
@@ -7,14 +7,30 @@ import type { WorkflowStepDocument } from '../workflow-steps/schemas/workflow-st
 import { WorkflowActionHistoryService } from '../workflow-action-history/workflow-action-history.service.js';
 import { PublicationsService } from '../publications/publications.service.js';
 import { AuditLogsService } from '../audit-logs/audit-logs.service.js';
+import { RevisionsService } from '../revisions/revisions.service.js';
+import { WorkflowDefinitionsService } from '../workflow-definitions/workflow-definitions.service.js';
 import { PUBLICATION_ENTITY_TYPES } from '../../../common/constants/workflow-entity-types.js';
 import type { WorkflowEntityType, PublicationEntityType } from '../../../common/constants/workflow-entity-types.js';
+
+/**
+ * Delegation is switched off. It adds the delegate to the step's
+ * `assigneeIds`, and a step belongs to the definition rather than to one
+ * instance, so a single delegation would let the delegate approve every
+ * instance of that definition, now and later (OUT-02 and fix F7 in
+ * docs/engineering/reviews/workflow-integrity-review.md).
+ */
+const DELEGATION_ENABLED = false;
 
 /** `contactMessages` is the one workflow-participation (List A) entity
  *  type excluded from the revision/publication list (List B) — see
  *  `common/constants/workflow-entity-types.ts`. */
 function isPublicationEligible(entityType: WorkflowEntityType): entityType is PublicationEntityType {
   return (PUBLICATION_ENTITY_TYPES as readonly string[]).includes(entityType);
+}
+
+/** Whether `step` is one of the steps of the definition `instance` runs on. */
+function isStepOf(step: WorkflowStepDocument, instance: WorkflowInstanceDocument): boolean {
+  return step.workflowDefinitionId.equals(instance.workflowDefinitionId as Types.ObjectId);
 }
 
 export interface RequestContext {
@@ -53,12 +69,17 @@ export class WorkflowInstancesService {
     private readonly actionHistoryService: WorkflowActionHistoryService,
     private readonly publicationsService: PublicationsService,
     private readonly auditLogsService: AuditLogsService,
+    private readonly revisionsService: RevisionsService,
+    private readonly definitionsService: WorkflowDefinitionsService,
   ) {}
 
   /** @throws ConflictException when an active instance already exists for
    *  (entityType, entityId) — at most one active instance per entity
-   *  (BE-PLAN-010 Week 2 §4). */
+   *  (BE-PLAN-010 Week 2 §4).
+   *  @throws from `assertCanSubmitThrough` and `assertRevisionOf`. */
   async create(input: CreateWorkflowInstanceInput, context: RequestContext = {}): Promise<WorkflowInstanceDocument> {
+    await this.assertCanSubmitThrough(input.workflowDefinitionId, input.entityType);
+    await this.assertRevisionOf(input.revisionId, input.entityType, input.entityId);
     const [active, firstStep] = await Promise.all([
       this.repository.findActive(input.entityType, input.entityId),
       this.stepsService.findFirst(input.workflowDefinitionId),
@@ -110,6 +131,7 @@ export class WorkflowInstancesService {
    *  2 §9); no author-field comparison exists or is performed. */
   async approve(id: string, actorId: string, reason?: string, context: RequestContext = {}): Promise<WorkflowInstanceDocument | null> {
     const instance = await this.loadInProgress(id);
+    await this.assertStillGoverned(instance);
     const currentStep = await this.loadAssignedStep(instance, actorId);
     const actorObjectId = new Types.ObjectId(actorId);
 
@@ -204,6 +226,7 @@ export class WorkflowInstancesService {
    *  author may resubmit into it (BE-PLAN-010 Week 2 §2). */
   async reject(id: string, actorId: string, reason: string, context: RequestContext = {}): Promise<WorkflowInstanceDocument | null> {
     const instance = await this.loadInProgress(id);
+    await this.assertStillGoverned(instance);
     const currentStep = await this.loadAssignedStep(instance, actorId);
     const actorObjectId = new Types.ObjectId(actorId);
 
@@ -231,8 +254,12 @@ export class WorkflowInstancesService {
     return updated;
   }
 
-  /** Returned sends the instance back to a specific *earlier* step for
-   *  revision — same instance continues (BE-PLAN-010 Week 2 §2).
+  /** Returned sends the instance back to a specific *earlier* step of its own
+   *  definition for revision — same instance continues (BE-PLAN-010 Week 2
+   *  §2).
+   *  @throws BadRequestException when `returnedToStepId` belongs to another
+   *  definition: that step's assignees would decide content their workflow
+   *  never named them for.
    *  @throws ConflictException when `returnedToStepId` is not earlier
    *  (lower `sequenceOrder`) than the current step. */
   async return(
@@ -243,12 +270,16 @@ export class WorkflowInstancesService {
     context: RequestContext = {},
   ): Promise<WorkflowInstanceDocument | null> {
     const instance = await this.loadInProgress(id);
+    await this.assertStillGoverned(instance);
     const [currentStep, targetStep] = await Promise.all([
       this.loadAssignedStep(instance, actorId),
       this.stepsService.findById(returnedToStepId),
     ]);
     if (!targetStep) {
       throw new NotFoundException(`Step ${returnedToStepId} not found.`);
+    }
+    if (!isStepOf(targetStep, instance)) {
+      throw new BadRequestException('returnedToStepId must be a step of this instance\'s workflow definition.');
     }
     if (targetStep.sequenceOrder >= currentStep.sequenceOrder) {
       throw new ConflictException('returnedToStepId must be an earlier step than the current one.');
@@ -287,7 +318,8 @@ export class WorkflowInstancesService {
    *  re-review); after Returned it resumes at the step it was returned to
    *  (already `currentStepId`) — BE-PLAN-010 Week 2 §2.
    *  @throws ConflictException unless the instance is Rejected or
-   *  Returned. */
+   *  Returned.
+   *  @throws NotFoundException / BadRequestException from `assertRevisionOf`. */
   async resubmit(
     id: string,
     actorId: string,
@@ -301,6 +333,9 @@ export class WorkflowInstancesService {
     if (instance.status !== 'Rejected' && instance.status !== 'Returned') {
       throw new ConflictException('Only a Rejected or Returned instance can be resubmitted.');
     }
+    await this.assertStillGoverned(instance);
+    const revisionObjectId = new Types.ObjectId(newRevisionId);
+    await this.assertRevisionOf(revisionObjectId, instance.entityType, instance.entityId);
 
     const targetStep =
       instance.status === 'Rejected'
@@ -309,8 +344,10 @@ export class WorkflowInstancesService {
     if (!targetStep) {
       throw new ConflictException('This workflow definition has no steps.');
     }
+    if (!isStepOf(targetStep, instance)) {
+      throw new ConflictException('The step this instance resumes at belongs to another workflow definition.');
+    }
 
-    const revisionObjectId = new Types.ObjectId(newRevisionId);
     const actorObjectId = new Types.ObjectId(actorId);
     const previousStatus = instance.status;
 
@@ -344,7 +381,8 @@ export class WorkflowInstancesService {
   /** Delegation adds the delegate to the current step's `assigneeIds` so
    *  they may also act on it — a reasonable, minimal reading of
    *  `action='Delegated'`; not itself detailed by any of the Week 2
-   *  confirmed design decisions (§1-§12). */
+   *  confirmed design decisions (§1-§12).
+   *  @throws ForbiddenException while `DELEGATION_ENABLED` is false. */
   async delegate(
     id: string,
     actorId: string,
@@ -352,7 +390,13 @@ export class WorkflowInstancesService {
     reason?: string,
     context: RequestContext = {},
   ): Promise<WorkflowInstanceDocument> {
+    if (!DELEGATION_ENABLED) {
+      throw new ForbiddenException(
+        'Delegation is temporarily disabled: it would let the delegate approve every instance of this workflow definition, not only this one.',
+      );
+    }
     const instance = await this.loadInProgress(id);
+    await this.assertStillGoverned(instance);
     const currentStep = await this.loadAssignedStep(instance, actorId);
     const delegateObjectId = new Types.ObjectId(delegatedToUserId);
     const actorObjectId = new Types.ObjectId(actorId);
@@ -392,6 +436,10 @@ export class WorkflowInstancesService {
    *
    * @throws ConflictException when the instance is already terminal
    * (`status='Approved'`).
+   *
+   * Unlike every other action it does not re-read the definition: cancelling
+   * is the way out of an instance whose definition was retired, and such an
+   * instance would otherwise block every new submission of its record.
    */
   async cancel(id: string, actorId: string, context: RequestContext = {}): Promise<WorkflowInstanceDocument | null> {
     const instance = await this.repository.findById(id);
@@ -422,6 +470,36 @@ export class WorkflowInstancesService {
     return this.repository.findById(id);
   }
 
+  /**
+   * Approval publishes the instance's revision as the record's public
+   * content, so the revision must be one taken of this record: a revision of
+   * any other record would put that record's text on this one's page.
+   *
+   * A contact message is never published and no revision can be taken of
+   * one, so for it there is nothing to match.
+   *
+   * @throws NotFoundException when the revision does not exist.
+   * @throws BadRequestException when it is a revision of another record.
+   */
+  private async assertRevisionOf(
+    revisionId: Types.ObjectId,
+    entityType: WorkflowEntityType,
+    entityId: Types.ObjectId,
+  ): Promise<void> {
+    if (!isPublicationEligible(entityType)) {
+      return;
+    }
+    const revision = await this.revisionsService.findById(revisionId.toString());
+    if (!revision) {
+      throw new NotFoundException(`Revision ${revisionId.toString()} not found.`);
+    }
+    if (revision.entityType !== entityType || !revision.entityId.equals(entityId)) {
+      throw new BadRequestException(
+        `Revision ${revisionId.toString()} is not a revision of ${entityType} ${entityId.toString()}.`,
+      );
+    }
+  }
+
   private async loadInProgress(id: string): Promise<WorkflowInstanceDocument> {
     const instance = await this.repository.findById(id);
     if (!instance) {
@@ -433,10 +511,56 @@ export class WorkflowInstancesService {
     return instance;
   }
 
+  /**
+   * The definition names who approves. A record submitted through one the
+   * federation retired, or one written for another entity type, would be
+   * approved by people its own workflow does not name.
+   *
+   * @throws NotFoundException when the definition does not exist or is archived.
+   * @throws ConflictException when it is inactive.
+   * @throws BadRequestException when it governs another entity type.
+   */
+  private async assertCanSubmitThrough(definitionId: Types.ObjectId, entityType: WorkflowEntityType): Promise<void> {
+    const definition = await this.definitionsService.findById(definitionId.toString());
+    if (!definition) {
+      throw new NotFoundException(`Workflow definition ${definitionId.toString()} not found.`);
+    }
+    if (!definition.isActive) {
+      throw new ConflictException(`Workflow definition ${definitionId.toString()} is inactive.`);
+    }
+    if (definition.entityType !== entityType) {
+      throw new BadRequestException(
+        `Workflow definition ${definitionId.toString()} governs ${definition.entityType}, not ${entityType}.`,
+      );
+    }
+  }
+
+  /**
+   * Every action after submission reads the definition again, so an instance
+   * whose definition was retired or deactivated stops instead of finishing
+   * under rules that no longer apply. The entity type is compared again for
+   * instances submitted before submission checked it.
+   *
+   * @throws ConflictException when the definition is archived, inactive, or
+   * governs another entity type.
+   */
+  private async assertStillGoverned(instance: WorkflowInstanceDocument): Promise<void> {
+    const definitionId = (instance.workflowDefinitionId as Types.ObjectId).toString();
+    const definition = await this.definitionsService.findById(definitionId);
+    if (!definition || !definition.isActive || definition.entityType !== instance.entityType) {
+      throw new ConflictException(
+        `Workflow instance ${instance._id.toString()} cannot proceed: its workflow definition is archived, inactive, or governs another entity type. Cancel it and submit again.`,
+      );
+    }
+  }
+
   private async loadAssignedStep(instance: WorkflowInstanceDocument, actorId: string): Promise<WorkflowStepDocument> {
     const currentStep = await this.stepsService.findById((instance.currentStepId as Types.ObjectId).toString());
     if (!currentStep) {
       throw new NotFoundException('The current step no longer exists.');
+    }
+    if (!isStepOf(currentStep, instance)) {
+      throw new ConflictException('The current step belongs to another workflow definition.');
     }
     const isAssigned = currentStep.assigneeIds.some((assigneeId) => assigneeId.toString() === actorId);
     if (!isAssigned) {

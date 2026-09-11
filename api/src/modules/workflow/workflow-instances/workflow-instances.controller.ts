@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
@@ -103,6 +103,11 @@ export class WorkflowInstancesController {
   }
 
   @Post(':id/delegate')
+  @ApiOperation({
+    summary: 'Temporarily disabled — always answers 403',
+    description:
+      'Delegation adds the delegate to the step, and a step belongs to the definition, so one delegation would let the delegate approve every instance of that definition. It stays off until delegation is recorded per instance.',
+  })
   @RequirePermission('workflowInstances', 'Approve')
   @SkipAuditLog()
   delegate(

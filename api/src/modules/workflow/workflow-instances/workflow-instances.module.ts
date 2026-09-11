@@ -8,6 +8,8 @@ import { WorkflowStepsModule } from '../workflow-steps/workflow-steps.module.js'
 import { WorkflowActionHistoryModule } from '../workflow-action-history/workflow-action-history.module.js';
 import { PublicationsModule } from '../publications/publications.module.js';
 import { AuditLogsModule } from '../audit-logs/audit-logs.module.js';
+import { RevisionsModule } from '../revisions/revisions.module.js';
+import { WorkflowDefinitionsModule } from '../workflow-definitions/workflow-definitions.module.js';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { AuditLogsModule } from '../audit-logs/audit-logs.module.js';
     WorkflowActionHistoryModule,
     PublicationsModule,
     AuditLogsModule,
+    RevisionsModule,
+    WorkflowDefinitionsModule,
   ],
   controllers: [WorkflowInstancesController],
   providers: [WorkflowInstancesRepository, WorkflowInstancesService],

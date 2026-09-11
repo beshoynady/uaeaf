@@ -1431,6 +1431,7 @@
     },
     "/api/v1/workflow-instances/{id}/delegate": {
       "post": {
+        "description": "Delegation adds the delegate to the step, and a step belongs to the definition, so one delegation would let the delegate approve every instance of that definition. It stays off until delegation is recorded per instance.",
         "operationId": "WorkflowInstancesController_delegate_v1",
         "parameters": [
           {
@@ -1457,6 +1458,7 @@
             "description": ""
           }
         },
+        "summary": "Temporarily disabled — always answers 403",
         "tags": [
           "workflow-instances"
         ]
@@ -6858,7 +6860,7 @@
         "properties": {
           "entityType": {
             "type": "string",
-            "description": "The entity type this revision snapshots (12-type list).",
+            "description": "The entity type to freeze (12-type list).",
             "enum": [
               "articles",
               "staticPages",
@@ -6876,17 +6878,12 @@
           },
           "entityId": {
             "type": "string",
-            "description": "The entity id this revision snapshots."
-          },
-          "snapshotData": {
-            "type": "object",
-            "description": "Frozen content at this version."
+            "description": "The id of the stored record to freeze."
           }
         },
         "required": [
           "entityType",
-          "entityId",
-          "snapshotData"
+          "entityId"
         ]
       },
       "CreateWorkflowInstanceDto": {

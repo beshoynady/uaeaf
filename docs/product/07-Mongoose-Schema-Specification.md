@@ -714,8 +714,9 @@ Populate strategy: `assigneeId` — on-demand (discriminated poly).
 | Field | Mongoose Type | Required | Default | Validation | Index | Visibility |
 |---|---|---|---|---|---|---|
 | `_id` | ObjectId | auto | auto | — | Primary (auto) | Public |
-| `workflowDefinitionId` | ObjectId, ref `WorkflowDefinition` | `true` | none | — | None | Public |
+| `workflowDefinitionId` | ObjectId, ref `WorkflowDefinition` | `true` | none | At submission the definition must exist and not be archived (`404`), be `isActive` (`409`), and govern this `entityType` (`400`). Every later action except cancel reads it again and answers `409` if it is archived, inactive, or governs another type; `currentStepId` and a `returnedToStepId` must be steps of this definition (`WorkflowInstancesService`, 2026-09-11) | None | Public |
 | `entityType` | String, enum | `true` | none | Closed 12-type list above | `{ entityType: 1, entityId: 1 }` compound — "workflow state for this entity" | Public |
+| `revisionId` | ObjectId, ref `Revision` | `false` (required by the create DTO) | `null` | For the 12 revision/publication types it must be a revision of this same `(entityType, entityId)`: missing → `404`, another record's → `400`, at submission and at resubmission. `contactMessages` is exempt — no revision can be taken of one and none is ever published (`WorkflowInstancesService`, 2026-09-11) | None | Public |
 | `entityId` | ObjectId, poly → 12-type closed list above | `true` | none | must resolve against the collection named by `entityType` | see compound above | Public |
 | `currentStepId` | ObjectId, ref `WorkflowStep` | `false` | `null` | `null` once `status` leaves `InProgress` | None | Public |
 | `status` | String, enum | `true` | `'InProgress'` | Already specified: `['InProgress', 'Approved', 'Rejected', 'Returned']` | `{ status: 1 }` — candidate | Public |
@@ -735,17 +736,17 @@ Populate strategy: `entityId` — on-demand.
 | `reason` | String | `false` | `''` | `maxlength: 1000` — required in practice when `action = 'Rejected'` (app-layer conditional requirement, not a schema-level one) | None | Public |
 | `delegatedToUserId` | ObjectId, ref `User` | `false` | `null` | required only when `action = 'Delegated'` (app-layer conditional) | None | Public |
 | `returnedToStepId` | ObjectId, ref `WorkflowStep` | `false` | `null` | required only when `action = 'Returned'` (app-layer conditional) — added in Phase 2.2 to close the traceability gap the Phase 2.1 audit flagged | None | Public |
-| `actionDate` | DateTime | `true` | none | — | see compounds above | Public |
+| `actionDate` | DateTime | `true` | none | Server-stamped. Orders the approval cycles: a step's `requiredApprovals` counts distinct `Approved` actors after the instance's latest `Submitted`/`Resubmitted` row only, so no approval given before a rejection or a return counts toward the resubmitted text (`WorkflowActionHistoryRepository.countDistinctApprovers`, 2026-09-11) | see compounds above | Public |
 
 ### `revisions`
 
 | Field | Mongoose Type | Required | Default | Validation | Index | Visibility |
 |---|---|---|---|---|---|---|
 | `_id` | ObjectId | auto | auto | — | Primary (auto) | Public |
-| `entityType` | String, enum | `true` | none | Closed 12-type list above | `{ entityType: 1, entityId: 1, versionNumber: -1 }` compound — "latest version for this entity" | Public |
+| `entityType` | String, enum | `true` | none | Closed 12-type list above | `{ entityType: 1, entityId: 1, versionNumber: -1 }` compound, **unique** — "latest version for this entity", and no two revisions of one record share a number | Public |
 | `entityId` | ObjectId, poly → 12-type closed list above | `true` | none | must resolve against `entityType` | see compound above | Public |
-| `versionNumber` | Number | `true` | none | `min: 1`, monotonically increasing per `(entityType, entityId)` (app-layer enforced) | see compound above | Public |
-| `snapshotData` | Mixed (embedded) | `true` | none | Frozen content at this version — deliberately `Mixed`/unstructured since it must accommodate any of the 12 entity types' full field set | None | Public |
+| `versionNumber` | Number | `true` | none | `min: 1`, one more than the record's latest revision. Two submissions that read the same latest number cannot both keep it: the unique index refuses the second, which reads again and takes the next; after five attempts that each find their number taken, `POST /revisions` answers `409` (`RevisionsService`, 2026-09-11) | see compound above | Public |
+| `snapshotData` | Mixed (embedded) | `true` | none | Frozen content at this version — deliberately `Mixed`/unstructured since it must accommodate any of the 12 entity types' full field set. Taken by the server from the stored record, never supplied by the caller; excludes `createdBy`, `updatedBy`, `archivedAt`, `archivedBy`, `publicationState`, `revisionId`, `__v` (`RevisionsService`, 2026-09-11) | None | Public |
 | `createdBy` | ObjectId, ref `User` | `true` | none | — | None | Public |
 | `createdAt` | DateTime | `true` | none | — | None | Public |
 

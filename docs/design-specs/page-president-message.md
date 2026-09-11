@@ -14,6 +14,7 @@
 | Extraction method | `get_metadata` (structure), `get_design_context` (real values/tokens/copy), `get_variable_defs` (bindings), `get_screenshot` (candidate-node verification) |
 | Figma editability | **LOCKED — permanent** |
 | Governing rules | CLAUDE.md §1, §2, §12, §13, §16 |
+| Re-verified | 2026-09-11 — every frame rendered with `get_screenshot` and read by eye; three nodes re-read with `get_design_context`. Corrections, new defects and the reconciliation with the built site are in **§7**. |
 
 ## Node index
 
@@ -313,3 +314,85 @@ Decorative vectors: 4 `swoosh-decor` + the four named brand swooshes per section
 **NOT EXTRACTED — chairman photography.** `1219:2302` / `1268:2334` (580 × 760), `1240:2299` /
 `1273:2275` (768 × 440), `1253:2299` (375 × 300) and `2748:2109` (220 × 320) are image-fill frames.
 The master portrait must be recovered from the design team — five distinct crops are required.
+
+---
+
+## 7. Verification against Figma, and reconciliation with the built site (2026-09-11)
+
+### 7.1 Method, and why it changed
+
+§2–§5 were extracted mostly from `get_metadata`, which reports **layer names, positions and sizes — not
+rendered text or colour**. A text layer keeps the name it was created with when its characters are later
+edited, so metadata alone can report Arabic where English is painted. This pass rendered all six frames
+with `get_screenshot`, read each one visually, and re-read three nodes with `get_design_context`
+(`1252:2362`, `1219:2311`, `1273:2287`). Where a finding below says *render*, the screenshot is the
+evidence; where it gives a value, `get_design_context` returned it.
+
+### 7.2 Corrections to §1–§5
+
+| Item | Recorded | Verified | Status |
+|---|---|---|---|
+| PM-D01 | EN footer "largely untranslated" | The EN desktop render shows Quick Links, *Location*, *Contact*, the legal links and the copyright **in English**. The Arabic came from layer names. | **VERIFIED / NOT AN ISSUE** |
+| PM-D16 | AR footer `X Icon Button` empty | The AR desktop render shows the X glyph between Instagram and YouTube. | **VERIFIED / NOT AN ISSUE** |
+| §1.1 Speech Card gap, tablet | `NOT EXTRACTED` | Pull-quote ends where the body begins: `2748:64` 125 tall at y 32 → bottom 157; body `1238:2369` at y 157. The gap is **0**, and the same holds on AR mobile (273 / 273) and EN mobile (335 / 335). | Extracted — and a defect, **PM-D22** |
+| PM-D13 | pull-quote `#e8f5ed` "hardcoded" | The value is exactly `--color-green-50` (`packages/design-tokens/build/css/base.css`). The binding is missing in Figma; the token exists. | Narrowed — map to the token |
+
+Header and footer defects (PM-D02, D05, D06, D08, D09, D11) concern site chrome that is already built
+from its own approved sources (ADR-0061, ADR-0062, ADR-0063, the approved footer redesign). This page
+takes neither element from these frames. **OUT OF SCOPE** for this page.
+
+### 7.3 New defects, found by reading the renders
+
+| ID | Sev | Frames | Defect | Evidence |
+|---|---|---|---|---|
+| PM-D18 | **P1** | AR + EN desktop | **Decoration covers text.** The green/red swooshes at the Speech Card's top edge paint over the first words of the pull-quote; the black/red pair at its bottom edge paints over paragraph 4 (EN) and paragraph 5 (AR). | render |
+| PM-D19 | **P1** | AR + EN desktop | **Hero text sits on the photograph with no scrim.** The role line runs across the lit podium and the flag emblem ("…Athletics Federation", "كلمة رئيس…"). | render |
+| PM-D20 | **P1** | AR mobile | **The role line is invisible**: `rgba(255,255,255,0.75)` on the white text side — carried over from the desktop overlay. | `get_design_context` `1252:2365` |
+| PM-D21 | **P1** | EN mobile | **The portrait covers the breadcrumb and the H1.** The 220 × 320 cut-out (with its drop shadow) overlaps "Chairman's Message" in both. | render |
+| PM-D22 | P2 | AR + EN tablet, AR + EN mobile | Pull-quote and body touch — gap 0 (see §7.2). | geometry |
+| PM-D23 | P2 | AR desktop only | **Five icon hues outside the identity**: containers at green `rgba(0,132,61,…)`, teal `rgba(20,184,166,…)`, blue `rgba(59,130,246,…)`, amber `rgba(217,119,6,…)`, red `rgba(239,68,68,…)` — Tailwind's default `teal-500`, `blue-500`, `amber-600`, `red-500`. The other five frames use green throughout. | `get_design_context` `1219:2311` |
+| PM-D24 | P2 | EN tablet | **The entire speech body is Alexandria Bold `#111`** — every paragraph, not only lead-ins. | `get_design_context` `1273:2287` |
+| PM-D25 | P2 | AR desktop | **The title block has no common edge.** Breadcrumb, H1 and role are centred on x 420 of the 840 column; the name is right-aligned to x 760 — and the whole block stands on the far side, with the portrait on the reading edge. | geometry + render |
+| PM-D26 | **P1** | AR + EN desktop | **Reading measure of ~150–170 characters per line** — the body spans 1344px at 16px. Chapter 4 §4.6: 65–75 (AR), 75–85 (EN). | geometry, Ch.4 §4.6 |
+| PM-D27 | P3 | EN desktop, EN mobile | Value-card body is start-aligned under a centred icon and title — two alignments inside one card. AR centres all three. | render |
+| PM-D28 | P3 | EN desktop | Paragraphs render without the 20px gap AR uses between them. | render |
+
+### 7.4 Resolved by governance — no owner decision needed
+
+Every row cites the rule that decides it; the Figma value is not used where a higher source (CLAUDE.md §1) answers.
+
+| Topic | Figma | Decided by | Implementation |
+|---|---|---|---|
+| Personality | frame named "(Editorial)" | Visual Protocol §4 — *Institutional: About / governance / board / committees*; §3.34.2 Board row | Institutional. Motion is the site's standard: `HERO_STAGE` opening sequence and section `rise-scroll` (ADR-0067 D3/D4); nothing page-specific. |
+| Register | — | `lib/pages/public-pages.ts` register logic (guide §3.3: administration → green), as board-members and committees | `green` |
+| Page title | AR H1/breadcrumb "رئيس الاتحاد"; EN "Chairman's Message" | IA §8.1 (Product Owner ruling): **كلمة الرئيس**; approved catalogue `presidentMessage`: **President's Message** | H1 and last breadcrumb use the IA label in both languages. "Chairman" is not used — the EN role line in the same frame already says *President*. |
+| Hero composition | AR: portrait on the reading edge, text centred on the far side; EN mobile: portrait over the H1; portrait bleeds 140px into the header (PM-D07) | ADR-0066 D5 + ADR-0067 D2 (`PageHero`) | Title block on the reading edge (right in AR, left in EN), portrait in the far column, the two never overlap, both on one baseline. With a background image: `HERO_SCRIM` over it and the hero owns the first screen. No bleed above the hero. Below `md` the columns stack **heading first** (Chapter 5 §5.10 as built). Fixes PM-D07, D19, D20, D21, D25. **PENDING FIGMA BACK-SYNC.** |
+| Hero type | 40 Bold / 32 Black / 24 Regular, same sizes on mobile | Ch.4 §4.4 scale, §4.7 (two steps only); `PageHero` subtitle role | H1 → `h1` (40/28); name → `h2` (32/24); role → `body-lg` (18/16), the subtitle role every hero uses; breadcrumb → `caption`. |
+| Reading measure | 1344px | Ch.4 §4.6 | The body column is capped at the §4.6 measure; the layout of the freed width is decision **7.5-3**. Fixes PM-D26. |
+| Body type | 16 / lh 1.9 / 20px paragraph gap / `#374151` | Ch.4 §4.6 (lh 1.6, `space.4`), ADR-0059 D4 text ladder | `body` (16/15, lh 1.6), paragraph gap `space-4`, body `--color-text-secondary`, lead-ins `<strong>` in `--color-text-primary` — the Figma intent (softer body, darker lead-in) inside the ladder. Fixes PM-D24, D28. |
+| Pull-quote colours | `#e8f5ed` / green-500 / green-600 | tokens exist | `--color-green-50`, `--color-green-500`, `--color-green-600` (5.95:1 measured on the green-50 ground). Rendered at **every** breakpoint in both languages — content is data, not a per-breakpoint layer (PM-D03). |
+| Quote → body gap | 32 / 0 / 0 | Speech Card padding ramp, §1.3 rule 3 | 32 / 24 / 16 — one step with the card padding. **PENDING FIGMA BACK-SYNC.** Fixes PM-D22. |
+| Decorative swooshes in the Speech Card and Values band | 8 vectors, red among them | ADR-0066 D5 (artwork never behind text), Visual Protocol §18 (one approved motif), §3.34.2 Institutional (red virtually absent) | Not drawn. The motif appears only where `PageHero` places it. Fixes PM-D18. |
+| Value icons | five hues on AR desktop | Chapter 1 three-colour identity; five of six frames | One green treatment for all five (ADR-0066 D3 icon chip). Fixes PM-D23. |
+| Value-card alignment | centred (AR), mixed (EN) | Ch.4 §4.6 (text right-aligned AR / left-aligned EN), ADR-0066 D5 (centred stacks retired) | Icon, title and body on the reading edge. Fixes PM-D27. **PENDING FIGMA BACK-SYNC.** |
+| Value-card type | title 17 Bold, body 13 / lh 1.6 | Component precedent: board-members `Card` | title `h4`, body `body-sm` in the register's muted text. |
+| Value-card surface and heights | `#0d1f12`, uneven EN heights | ADR-0066 D1 (one raised-surface recipe), D4 (a row ends at one height) | `CARD` recipe on a neutral band (on a coloured band, see 7.5-2); cards in a row stretch to one height (PM-D12). |
+| Values grid collapse | 5 → 2 + full-width 5th → 1 | §1.3 rule 4 of this file | Kept as extracted. |
+| Header, footer | this file §2 | ADR-0061/0062/0063, approved footer | Site chrome, not rebuilt here. |
+
+### 7.5 Owner decisions still open
+
+1. **DESIGN SYSTEM GAP — pull-quote size.** 22px is not on the Ch.4 §4.4 scale (the PB-GAP pattern, CLAUDE.md §7). Not mapped silently. Candidates: `h3` (24/20, bold) or `h4` (20/18, medium).
+2. **DESIGN DECISION REQUIRED — Values band register.** Figma's `#0d1f12` matches no register. Candidates: neutral with standard cards (board-members precedent), `green` (the page's own register), or `black`. A card drawn *on* a coloured register has no recipe yet — choosing green or black also opens that gap.
+3. **DESIGN DECISION REQUIRED — the width §4.6 frees on desktop.** A single centred reading column, or an editorial pair: the reading column plus a margin column carrying the pull-quote and the signature. No Figma frame for either.
+4. **DESIGN DECISION REQUIRED — sign-off and date.** The message is a dated record in an archive, and the schema already carries `signatoryName` / `signatoryTitle`; no frame shows a signature or a date.
+5. **IA — the archive.** No frame and no IA entry. Its own route under `/about/president`, or a section of this page.
+6. **CONTENT** — (a) which of the two English pull-quote translations is canonical (PM-D04); (b) the clause English ¶5 drops (PM-D10) needs an approved translation; (c) the master portrait, ideally one high-resolution cut-out on transparency, which also removes the need for five crops; (d) Arabic copy observations, reported and **not** edited: "المرجوة و الغايات" carries a space after the conjunction; "لاسيما" is usually written "لا سيما".
+
+### 7.6 What the message body must obey (input to the rich-text work)
+
+Chapter 4 §4.6 governs every paragraph the editor produces: measure 65–75 (AR) / 75–85 (EN); line height
+1.6; `space.4` between paragraphs; **Arabic right-aligned and MUST NOT be justified; English
+left-aligned; italic MUST NOT be used in Arabic** (it breaks letter joins); numbers and Latin terms keep
+their own LTR run inside Arabic. The page's single H1 is the hero's, so headings inside the body start at
+`h2`. Links follow ADR-0063's semantic link colour.

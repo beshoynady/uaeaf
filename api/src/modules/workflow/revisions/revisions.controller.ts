@@ -20,7 +20,6 @@ export class RevisionsController {
     return this.service.create({
       entityType: dto.entityType,
       entityId: new Types.ObjectId(dto.entityId),
-      snapshotData: dto.snapshotData,
       createdBy: new Types.ObjectId(user.userId),
     });
   }

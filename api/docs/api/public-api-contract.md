@@ -408,9 +408,37 @@ revision so the populated shape is genuine, not guessed:
 }
 ```
 
-The exact field set in `snapshotData` is whatever the entity's own approved
-revision recorded at publish time — it is not schema-enforced beyond "an
-object." The other 6 routes returned `{}` in this capture because nothing
+`snapshotData` is taken by the server from the stored record at the moment
+the revision is created: `POST /api/v1/revisions` accepts only `entityType`
+and `entityId`, and refuses a body carrying `snapshotData` with `400`. It
+holds the record's content fields plus `_id`, `createdAt` and `updatedAt`,
+and never `createdBy`, `updatedBy`, `archivedAt`, `archivedBy`,
+`publicationState`, `revisionId` or `__v`. A record that does not exist or is
+archived answers `404`; an entity type with no collection yet answers `400`.
+Each revision of a record gets its own `versionNumber` (a unique index backs
+it); when several are saved at the same moment each takes the next free
+number, and after five attempts that all find their number taken the request
+answers `409` — submit again.
+
+What reaches the snapshot is decided by the authenticated workflow routes
+(`/api/v1/workflow-instances`), which answer as follows:
+
+| Situation | Answer |
+|---|---|
+| Submitting or resubmitting a revision that does not exist | `404` |
+| Submitting or resubmitting a revision of another record (the 12 revision types; `contactMessages` is exempt) | `400` |
+| Submitting through a definition that does not exist or is archived | `404` |
+| Submitting through an inactive definition | `409` |
+| Submitting through a definition written for another entity type | `400` |
+| Approving, rejecting, returning or resubmitting once the instance's definition is archived, inactive, or governs another type (cancel still works) | `409` |
+| Returning to a step of another definition | `400` |
+| `POST /workflow-instances/:id/delegate` — delegation is temporarily disabled | `403` |
+
+A step's `requiredApprovals` counts approvals given since the instance was
+last submitted or resubmitted; an approval given before a rejection or a
+return does not count toward the resubmitted text.
+
+The other 6 routes returned `{}` in this capture because nothing
 has been published for them yet on this fresh instance; their populated
 shape mirrors their own entity's editable fields, the same way `committees`'
 does above.

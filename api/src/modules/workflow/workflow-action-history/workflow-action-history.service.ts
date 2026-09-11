@@ -28,9 +28,10 @@ export class WorkflowActionHistoryService {
     return this.repository.findByInstance(new Types.ObjectId(workflowInstanceId));
   }
 
-  /** Distinct actors who have already approved `workflowStepId` within
-   *  `workflowInstanceId` — WorkflowInstancesService uses this to decide
-   *  whether a Parallel step's `requiredApprovals` threshold is met. */
+  /** Distinct actors who approved `workflowStepId` in the instance's current
+   *  submission cycle — WorkflowInstancesService uses this to decide whether
+   *  a step's `requiredApprovals` threshold is met. See the repository for
+   *  where a cycle starts. */
   async countDistinctApprovers(
     workflowInstanceId: Types.ObjectId,
     workflowStepId: Types.ObjectId,

@@ -39,4 +39,7 @@ export class Revision {
 }
 
 export const RevisionSchema = SchemaFactory.createForClass(Revision);
-RevisionSchema.index({ entityType: 1, entityId: 1 });
+// A version number names one text in a record's history, so two submissions
+// that read the same latest number cannot both keep it. The same index serves
+// the read of a record's latest revision.
+RevisionSchema.index({ entityType: 1, entityId: 1, versionNumber: -1 }, { unique: true });
