@@ -107,6 +107,10 @@ A 1.25 (Major Third) type scale, with each level directly mapped to a `DT-FONT-S
 | Label      | 13px/1.3                         | 12px/1.3  | Medium  | `DT-FONT-SIZE-LABEL`      |
 | Overline   | 12px/1.3 · letter-spacing 0.08em | Same      | Bold    | `DT-FONT-SIZE-OVERLINE`   |
 
+**One weight per level, in both scripts (ADR-0068 D5).** The Weight column applies to Arabic (Alexandria) and Latin (IBM Plex Sans) alike. There is no lighter Latin pairing: the one drawn in the Figma specimen `2579:5` is not part of this scale.
+
+**`Black` in Latin text renders at 700.** IBM Plex Sans's variable weight axis ends at 700, while Alexandria's runs to 900. So in English, Display XL, Display L and H1 render at the same weight as H2 and H3, and only size separates them. `DT-FONT-WEIGHT-BLACK` stays 900, because Alexandria draws it.
+
 ## 4.5 Font Tokens Mapping
 
 ```text

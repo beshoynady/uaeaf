@@ -99,6 +99,8 @@ Refer to Chapter 5 §5.8 (Reduced Motion) for the complete technical details. Ad
 * Zoom 200%: **MUST** keep all content complete and usable without loss of functionality or text overlap (WCAG 1.4.4)
 * Reflow: **MUST NOT** introduce horizontal scrolling at a width of 320px (WCAG 1.4.10)
 * Touch Targets: **MUST** be ≥44×44px (aligned with Chapter 0 Discovery)
+  * This is the project's floor. It is stricter than WCAG 2.2 SC 2.5.8 *Target Size (Minimum)*, which is Level AA at 24×24px. It equals SC 2.5.5 *Target Size (Enhanced)*, Level AAA. Cite §6.7 for the 44px floor, not SC 2.5.8.
+  * It applies to every button, icon-only buttons included. Chapter 8 L1 `CMP-BUTTON-001` and `CMP-ICONBUTTON-001` each have one 44px size, with no smaller size for dense layouts (ADR-0068 D2).
 * Orientation: **MUST NOT** restrict usage to a single orientation (portrait/landscape) unless there is a documented functional necessity
 
 ## 6.8 Media Accessibility

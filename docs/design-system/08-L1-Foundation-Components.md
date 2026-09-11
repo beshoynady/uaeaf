@@ -53,18 +53,18 @@ This section is the first practical application of all rules established in Chap
 | Section                  | Details                                                                                                                                                                                                                                                               |
 | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Purpose**              | The primary clickable action in any interface — the most frequently used interactive element across the entire system                                                                                                                                                 |
-| **Anatomy**              | Container (background + optional borders) ← Label (text, consumes `typography.label` from Chapter 7) ← Optional Icon (right or left depending on RTL/LTR)                                                                                                             |
-| **Variants**             | `Primary` (background `color.semantic.success`) · `Secondary` (border without background) · `Ghost` (no background or border) · `Danger` (`color.semantic.danger` — for deletion/cancellation only, Chapter 1 ADR-0004) · `Icon-only`                                 |
-| **Sizes**                | `sm` (32px height) · `md` (40px, default) · `lg` (48px)                                                                                                                                                                                                               |
-| **States**               | Default · Hover (darkens color through `color.semantic.success.hover` token) · Focus (`a11y.focus.ring`) · Active · Disabled (`opacity.disabled` from Chapter 3) · Loading (Spinner replaces the Label while width remains unchanged)                                 |
+| **Anatomy**              | Container (background + optional borders) ← Label (text, consumes `typography.label` from Chapter 7; this row conflicts with `Type/CTA Label` in Chapter 4 §4.15a, which is open under ADR-0068 *Pending*) ← Optional Icon (right or left depending on RTL/LTR)      |
+| **Variants**             | Four types (ADR-0068 D3): `Primary` (`button.primary.*` → `color.brand.primary`, ADR-0051) · `Secondary` (neutral outline: `surface.raised` fill, `border.default` edge, `text.primary` label) · `Tertiary` (no background or border; formerly `Ghost`; label colour open, ADR-0068 D3) · `Destructive` (`button.danger.*` → `color.semantic.error`, ADR-0051; formerly `Danger`; for deletion and irreversible actions only, Chapter 1 ADR-0004). A filled brand-red "Secondary Accent" is not a type. Icon-only is a composition (below), and a standalone icon-only control is CMP-ICONBUTTON-001 |
+| **Sizes**                | One size: **44px** height (Chapter 6 §6.7, ADR-0068 D2), set as `min-height` so a label that wraps at 200% zoom grows the button instead of being clipped. There is no `sm` or `lg`, and no smaller size for dense tables                                             |
+| **States**               | Default · Hover (`button.primary.background-hover` / `button.danger.background-hover`, ADR-0051) · Focus (`a11y.focus.ring`) · Active · Disabled (`opacity.disabled` from Chapter 3) · Loading (Spinner replaces the Label while width remains unchanged)          |
 | **Content Rules**        | Button text must use a clear action verb ("Publish", not "OK") — follows Chapter 9 (to be referenced when written)                                                                                                                                                    |
 | **Behavior**             | A maximum of one `Primary` button per screen section (Chapter 2 §PR-001 Anti-Pattern)                                                                                                                                                                                 |
 | **Keyboard Interaction** | `Enter`/`Space` activates the button · `Tab` reaches it in logical order (Chapter 6 §6.3)                                                                                                                                                                             |
 | **Accessibility**        | Always a real `<button>` element (Chapter 6 §6.13 Anti-Pattern: no `<div onClick>`) · `aria-busy` during Loading · `aria-disabled` when focus needs to be retained for explanatory purposes                                                                           |
 | **Responsive Behavior**  | On mobile, primary action buttons in forms **SHOULD** span the full width (`w-full`) to improve touch target size (Chapter 6 §6.7: 44px)                                                                                                                              |
-| **Design Tokens Used**   | `color.semantic.success/danger` · `typography.label` · `motion.transition.default` (Chapter 5) · `a11y.focus.ring` · `radius.sm` (Chapter 3)                                                                                                                          |
-| **Do & Don't**           | Do: use a clear action verb · Don't: do not use Danger as a regular button (Chapter 1 ADR-0004)                                                                                                                                                                       |
-| **QA Checklist**         | ☐ Is it a real `<button>` element? ☐ Is the Focus Ring visible? ☐ Does Loading preserve the width? ☐ Is there no more than one Primary button in the section?                                                                                                         |
+| **Design Tokens Used**   | `button.primary.*` · `button.danger.*` · `button.disabled.*` · `button.focus.*` · `button.radius` (= `radius.sm`) · `typography.label` · `motion.transition.default` (Chapter 5) · `a11y.focus.ring`. Secondary and Tertiary have no `button.*` token yet (DESIGN SYSTEM GAP, ADR-0068 D3) |
+| **Do & Don't**           | Do: use a clear action verb · Don't: do not use Destructive as a regular button (Chapter 1 ADR-0004)                                                                                                                                                                  |
+| **QA Checklist**         | ☐ Is it a real `<button>` element? ☐ Is it at least 44px tall? ☐ Is the Focus Ring visible? ☐ Does Loading preserve the width? ☐ Is there no more than one Primary button in the section?                                                                               |
 | **Related Components**   | Implementation Reference: Native `<button>` + Radix `Slot` (`asChild`) + shadcn/ui Button Pattern (there is no official Radix Primitive named Button, unlike Dialog/Popover/Dropdown — technical correction) · Icon Button (CMP-ICONBUTTON-001) · Link (CMP-LINK-001) |
 
 ### Component API Contract
@@ -73,8 +73,7 @@ This section is the first practical application of all rules established in Chap
 
 | Property                 | Type                                        | Required | Default     |
 | ------------------------ | ------------------------------------------- | -------- | ----------- |
-| `variant`                | `'primary'\|'secondary'\|'ghost'\|'danger'` | Yes      | `'primary'` |
-| `size`                   | `'sm'\|'md'\|'lg'`                          | No       | `'md'`      |
+| `variant`                | `'primary'\|'secondary'\|'tertiary'\|'destructive'` | Yes      | `'primary'` |
 | `disabled`               | `boolean`                                   | No       | `false`     |
 | `loading`                | `boolean`                                   | No       | `false`     |
 | `iconLeft` / `iconRight` | `ReactNode`                                 | No       | `undefined` |
@@ -93,11 +92,11 @@ This section is the first practical application of all rules established in Chap
 
 **Error Prevention (Product Rules):**
 
-* `Danger` variant **MUST NOT** be used inside a celebratory Hero section.
-* `Ghost` **MUST NOT** be used as the only primary action on a screen.
-* `Secondary` **MUST NOT** be used for a deletion action (use `Danger` only).
+* `Destructive` variant **MUST NOT** be used inside a celebratory Hero section.
+* `Tertiary` **MUST NOT** be used as the only primary action on a screen.
+* `Secondary` **MUST NOT** be used for a deletion action (use `Destructive` only).
 
-**Component Maturity:** `Stable` (v1.0)
+**Component Maturity:** `Stable` (v1.1: one 44px size and four types, ADR-0068 D2/D3; there is no `size` prop)
 
 ---
 
@@ -108,7 +107,7 @@ This section is the first practical application of all rules established in Chap
 | **Purpose**              | A compact secondary action without visible text (e.g., closing a Modal or opening an options menu)                                                                                  |
 | **Anatomy**              | Circular/square Container ← Icon only (no Label)                                                                                                                                    |
 | **Variants**             | Ghost (default) · Filled (for stronger visual emphasis)                                                                                                                             |
-| **Sizes**                | `sm` (32×32) · `md` (40×40) · `lg` (48×48) — aligned with Chapter 6 §6.7 touch-target requirements as a minimum                                                                     |
+| **Sizes**                | One size: **44×44px** (Chapter 6 §6.7, ADR-0068 D2). The former `sm` 32×32 and `md` 40×40 were below the §6.7 floor, and `lg` 48×48 retires with them                             |
 | **States**               | Same as Button (Default/Hover/Focus/Active/Disabled)                                                                                                                                |
 | **Content Rules**        | No visible text; **MUST** always have a descriptive `aria-label`                                                                                                                    |
 | **Behavior**             | Used only when the icon is semantically clear (an "X" icon for closing is universally understandable); if the icon is not clear, a Tooltip (CMP documented later) **MUST** be added |
@@ -169,7 +168,7 @@ This section is the first practical application of all rules established in Chap
 | Section                  | Details                                                                                                                                                 |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Purpose**              | Compact visual representation of a concept or action (Chapter 1 §8 Icons is the initial reference — detailed here)                                      |
-| **Anatomy**              | SVG with a fixed 1.5px stroke width (Lucide Icons library)                                                                                              |
+| **Anatomy**              | SVG with a fixed 1.5px stroke width. Two sources (ADR-0068 D6): **Lucide** for UI icons (actions, navigation, state, form affordances), and a **drawn set** for sport disciplines and platform marks. Platform marks are filled third-party artwork: reproduced from the platform's source, exempt from the stroke rule, never redrawn. The drawn discipline icons follow every rule in this table |
 | **Variants**             | `Outline` (default, aligned with the modern visual language) — no `Filled` except for exceptional "selected/active" states                              |
 | **Sizes**                | 16 / 20 / 24 / 32px only — no custom sizes (same logic as §4.4 Type Scale)                                                                              |
 | **States**               | Inherits the surrounding text color (`currentColor`) — no independent icon-specific color                                                               |
@@ -179,8 +178,8 @@ This section is the first practical application of all rules established in Chap
 | **Accessibility**        | A standalone functional icon **MUST** have an `aria-label` (Chapter 6 §6.8) · A decorative icon **MUST** use `aria-hidden="true"`                       |
 | **Responsive Behavior**  | No change                                                                                                                                               |
 | **Design Tokens Used**   | `icon.size.*` (Chapter 3 `DT-ICON-SIZE-*`)                                                                                                              |
-| **Do & Don't**           | Do: use Lucide exclusively to ensure consistent stroke weight · Don't: do not mix icons from different libraries (breaks PR-009 Consistency)            |
-| **QA Checklist**         | ☐ Is it exclusively from Lucide? ☐ Is `aria-hidden` or `aria-label` correct for the context?                                                            |
+| **Do & Don't**           | Do: take every UI icon from Lucide, and every discipline icon or platform mark from the drawn set · Don't: do not mix sources within one category (breaks PR-009 Consistency), and do not draw a UI icon that Lucide already provides |
+| **QA Checklist**         | ☐ Is a UI icon from Lucide, and a discipline icon or platform mark from the drawn set? ☐ Is the stroke 1.5px (platform marks excepted)? ☐ Does it use `currentColor`? ☐ Is `aria-hidden` or `aria-label` correct for the context? |
 | **Related Components**   | Custom sports components (L8) build on the same icon system                                                                                             |
 
 ---
@@ -304,7 +303,7 @@ This section is the first practical application of all rules established in Chap
 | **Keyboard Interaction** | Not applicable                                                                                                                                                                       |
 | **Accessibility**        | `aria-busy="true"` on the parent container while it is displayed; the pulse **MUST** be disabled under Reduced Motion (remaining as a static gray shape)                             |
 | **Responsive Behavior**  | Matches the actual content layout at every Breakpoint                                                                                                                                |
-| **Design Tokens Used**   | `color.surface.skeleton` (Semantic) · `motion.duration.slow` for the pulse                                                                                                           |
+| **Design Tokens Used**   | `color.surface.skeleton` (Semantic): `neutral-warm.150` light / `.800` dark / `.300` high contrast. It is one step beyond `surface.sunken`, so the shape stays visible on every surface (Chapter 7 §7.9.4, ADR-0068 D9) · `motion.duration.slow` for the pulse |
 | **Do & Don't**           | Do: exactly match dimensions to prevent CLS · Don't: do not use Skeleton for operations under one second (use Spinner or nothing)                                                    |
 | **QA Checklist**         | ☐ Do dimensions match the real content? ☐ Is there zero CLS on replacement? ☐ Is `aria-busy` present?                                                                                |
 | **Related Components**   | Spinner (for short loading) · Table, Card (consume it later in L5)                                                                                                                   |
