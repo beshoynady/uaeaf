@@ -24,7 +24,8 @@
     "generate:openapi": "nest build && node dist/generate-openapi.js",
     "bootstrap:admin": "nest build && node dist/bootstrap-admin.js",
     "seed:dev": "nest build && node --env-file-if-exists=.env dist/seed-dev.js",
-    "seed:export": "nest build && node --env-file-if-exists=.env dist/seed-dev.js --export"
+    "seed:export": "nest build && node --env-file-if-exists=.env dist/seed-dev.js --export",
+    "backfill:created-at": "nest build && node --env-file-if-exists=.env dist/backfill-created-at.js"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",

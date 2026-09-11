@@ -11,7 +11,7 @@ export type MediaAssetDocument = HydratedDocument<MediaAsset>;
  *  node `92:7269`, re-read fresh 2026-09-03). Images only — rescoped from a
  *  general media collection once `videos` was split out into its own
  *  collection (Domain 6 split); do not add video-handling fields here. */
-@Schema({ collection: 'mediaAssets' })
+@Schema({ collection: 'mediaAssets', timestamps: true })
 export class MediaAsset extends BaseSchema {
   @Prop({ type: Types.ObjectId, ref: 'Album', default: null })
   albumId: Types.ObjectId | null;

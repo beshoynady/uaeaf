@@ -19,7 +19,7 @@ export type WorkflowPolicyOperation = (typeof WORKFLOW_POLICY_OPERATIONS)[number
  *  `WorkflowInstancesService.approve`). `allowHardDelete` defaults false:
  *  per the board's convention, "delete" always means archive unless this
  *  is explicitly true for the entityType. */
-@Schema({ collection: 'workflowPolicies' })
+@Schema({ collection: 'workflowPolicies', timestamps: true })
 export class WorkflowPolicy extends BaseSchema {
   @Prop({ type: String, enum: WORKFLOW_ENTITY_TYPES, required: true })
   entityType: WorkflowEntityType;

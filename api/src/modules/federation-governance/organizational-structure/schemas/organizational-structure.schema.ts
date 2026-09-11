@@ -40,7 +40,7 @@ export type OrgNodeType = (typeof ORG_NODE_TYPES)[number];
  *  `parentNodeId` builds the org tree. Mongoose enforces nothing about
  *  cycles, so `OrganizationalStructureNodesService.setParent()` walks the
  *  ancestor chain and rejects any edit that would close a loop. */
-@Schema({ collection: 'organizationalStructure' })
+@Schema({ collection: 'organizationalStructure', timestamps: true })
 export class OrganizationalStructureNode extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   title: LocalizedText;

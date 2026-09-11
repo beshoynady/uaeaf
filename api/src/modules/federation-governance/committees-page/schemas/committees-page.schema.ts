@@ -16,7 +16,7 @@ export type CommitteesPageDocument = HydratedDocument<CommitteesPage>;
  *
  *  Singleton — at most one row, enforced in `CommitteesPagesService`
  *  (confirmed decision #8). */
-@Schema({ collection: 'committeesPage' })
+@Schema({ collection: 'committeesPage', timestamps: true })
 export class CommitteesPage extends HeroPageSchema {
   /** e.g. "حوكمة وتمكين". */
   @Prop({ type: LocalizedTextSchema, required: true })

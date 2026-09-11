@@ -18,7 +18,7 @@ export type NavigationItemDocument = HydratedDocument<NavigationItem>;
  *
  *  Not workflow-governed; `isActive` here is a plain admin toggle with no
  *  publication semantics. */
-@Schema({ collection: 'navigationItems' })
+@Schema({ collection: 'navigationItems', timestamps: true })
 export class NavigationItem extends BaseSchema {
   @Prop({ type: Types.ObjectId, ref: 'NavigationMenu', required: true })
   menuId: Types.ObjectId;

@@ -23,7 +23,7 @@ export type PublicationStatus = (typeof PUBLICATION_STATUSES)[number];
  *  (entityType, entityId) at any time — `PublicationsRepository.createLive()`
  *  atomically retires any prior `Live` row to `Archived` before inserting
  *  the new one. */
-@Schema({ collection: 'publications' })
+@Schema({ collection: 'publications', timestamps: true })
 export class Publication extends BaseSchema {
   @Prop({ type: String, enum: PUBLICATION_ENTITY_TYPES, required: true })
   entityType: PublicationEntityType;

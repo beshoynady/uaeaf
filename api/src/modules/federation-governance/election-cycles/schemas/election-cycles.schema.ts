@@ -15,7 +15,7 @@ export type ElectionCycleStatus = (typeof ELECTION_CYCLE_STATUSES)[number];
  *  roleType President and BoardMember reference the cycle that elected
  *  them. Not workflow-governed (no `publicationState`, absent from both
  *  Domain 7 closed lists). */
-@Schema({ collection: 'electionCycles' })
+@Schema({ collection: 'electionCycles', timestamps: true })
 export class ElectionCycle extends BaseSchema {
   @Prop({ type: Types.ObjectId, ref: 'Federation', required: true })
   federationId: Types.ObjectId;

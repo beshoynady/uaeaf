@@ -62,7 +62,7 @@ export type DocumentPublicationState = PublicationState;
  * visibility is controlled exclusively by `publicationState` +
  * `archivedAt`, never read by any auto-transition/cron job.
  */
-@Schema({ collection: 'documents' })
+@Schema({ collection: 'documents', timestamps: true })
 export class Document extends BaseSchema {
   @Prop({ type: DocumentFileSchema, required: true })
   file: DocumentFile;

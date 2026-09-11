@@ -21,7 +21,7 @@ export type WorkflowAction = (typeof WORKFLOW_ACTIONS)[number];
  *  reject-then-resubmit sequence would otherwise silently lose which exact
  *  revision an approver reviewed at each step. `returnedToStepId` is
  *  populated only when `action='Returned'`. */
-@Schema({ collection: 'workflowActionHistory' })
+@Schema({ collection: 'workflowActionHistory', timestamps: true })
 export class WorkflowActionHistory extends BaseSchema {
   @Prop({ type: Types.ObjectId, ref: 'WorkflowInstance', required: true })
   workflowInstanceId: Types.ObjectId;

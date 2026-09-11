@@ -14,7 +14,7 @@ export type ClubsPageDocument = HydratedDocument<ClubsPage>;
  *  decision #8). Not workflow-governed: the board gives it no
  *  `publicationState` and it is absent from the Domain 7 closed
  *  entity-type lists, the same exemption class as `albums`. */
-@Schema({ collection: 'clubsPage' })
+@Schema({ collection: 'clubsPage', timestamps: true })
 export class ClubsPage extends HeroPageSchema {}
 
 export const ClubsPageSchema = SchemaFactory.createForClass(ClubsPage);

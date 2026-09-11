@@ -23,7 +23,7 @@ export type OfficialDocument = HydratedDocument<Official>;
  *  No `slug` (removed 2026-09-03): the public routing identifier is now
  *  solely `officialProfiles.slug` — a Guest official (no Profile row) has
  *  no individual public page, which is intentional. */
-@Schema({ collection: 'officials' })
+@Schema({ collection: 'officials', timestamps: true })
 export class Official extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   fullName: LocalizedText;

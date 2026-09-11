@@ -34,7 +34,7 @@ export type OfficialProfileStatus = (typeof OFFICIAL_PROFILE_STATUSES)[number];
  *  soft-deleted profile would permanently block a corrected re-creation
  *  of the same official's profile (schema-audit-2026-09-04.md §9.2, P1
  *  finding). */
-@Schema({ collection: 'officialProfiles' })
+@Schema({ collection: 'officialProfiles', timestamps: true })
 export class OfficialProfile extends BaseSchema {
   @Prop({ type: Types.ObjectId, ref: 'Official', required: true })
   officialId: Types.ObjectId;

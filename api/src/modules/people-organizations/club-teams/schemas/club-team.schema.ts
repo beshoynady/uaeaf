@@ -12,7 +12,7 @@ export type ClubTeamGender = (typeof CLUB_TEAM_GENDERS)[number];
 /** Implements: clubTeams collection, Domain 2 — People & Organizations
  *  (FigJam node `261:4352`, re-read fresh 2026-09-03). A squad — e.g. "First
  *  Team (Men)" — within a club, scoped to one age category and gender. */
-@Schema({ collection: 'clubTeams' })
+@Schema({ collection: 'clubTeams', timestamps: true })
 export class ClubTeam extends BaseSchema {
   @Prop({ type: Types.ObjectId, ref: 'Club', required: true })
   clubId: Types.ObjectId;

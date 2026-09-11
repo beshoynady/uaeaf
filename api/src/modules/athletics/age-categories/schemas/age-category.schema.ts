@@ -9,7 +9,7 @@ export type AgeCategoryDocument = HydratedDocument<AgeCategory>;
  *  data only; FigJam node `81:6454`, re-read fresh 2026-09-03). Used by
  *  `clubTeams.ageCategoryId` and `athleteNationalTeamHistory.ageCategoryId`
  *  to identify a national-team tier (Youth, Junior, Senior, ...). */
-@Schema({ collection: 'ageCategories' })
+@Schema({ collection: 'ageCategories', timestamps: true })
 export class AgeCategory extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   name: LocalizedText;

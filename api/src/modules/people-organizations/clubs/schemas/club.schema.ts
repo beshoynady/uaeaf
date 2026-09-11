@@ -18,7 +18,7 @@ export type ClubStatus = (typeof CLUB_STATUSES)[number];
  *  not `mediaAssets` — corrected on the live board 2026-09-02 (a video is
  *  not an image). `latitude`/`longitude` are reserved placeholders, not yet
  *  populated per the board's own note. */
-@Schema({ collection: 'clubs' })
+@Schema({ collection: 'clubs', timestamps: true })
 export class Club extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   name: LocalizedText;

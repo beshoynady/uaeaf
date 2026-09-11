@@ -12,7 +12,7 @@ export type VenueDocument = HydratedDocument<Venue>;
  *  venue is a specific club's home facility. `latitude`/`longitude` added
  *  to the live board 2026-09-03, mirroring the existing `clubs.latitude`/
  *  `longitude` pattern exactly. */
-@Schema({ collection: 'venues' })
+@Schema({ collection: 'venues', timestamps: true })
 export class Venue extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   name: LocalizedText;

@@ -90,6 +90,7 @@ describe('Week 4 — Governance, CMS and the public surface (e2e)', () => {
         messageType: 'Complaint',
         senderName: 'Citizen Tester',
         senderEmail: 'citizen@example.com',
+        senderPhone: '+971 50 000 0000',
         messageBody: 'The track surface at the stadium needs maintenance.',
       })
       .expect(201);

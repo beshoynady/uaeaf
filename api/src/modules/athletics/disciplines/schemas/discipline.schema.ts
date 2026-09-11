@@ -12,7 +12,7 @@ export type DisciplineDocument = HydratedDocument<Discipline>;
  *  RoadRunning/RaceWalking/CrossCountry), per World Athletics' official
  *  7-category classification. `slug` and `iconKey` are plain `String` on
  *  the live board — not bilingual, unlike `name`/`description`. */
-@Schema({ collection: 'disciplines' })
+@Schema({ collection: 'disciplines', timestamps: true })
 export class Discipline extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   name: LocalizedText;

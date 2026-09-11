@@ -21,7 +21,7 @@ export type HeroSlideMediaType = (typeof HERO_SLIDE_MEDIA_TYPES)[number];
  *  claimed to work for both" media types; since `mediaAssets` was rescoped
  *  to images only when `videos` split out, a video slide must use
  *  `videoId`. Not workflow-governed. */
-@Schema({ collection: 'heroSlides' })
+@Schema({ collection: 'heroSlides', timestamps: true })
 export class HeroSlide extends BaseSchema {
   @Prop({ type: Types.ObjectId, ref: 'PageSection', required: true })
   pageSectionId: Types.ObjectId;

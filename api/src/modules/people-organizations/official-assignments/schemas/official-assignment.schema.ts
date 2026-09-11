@@ -26,7 +26,7 @@ export type OfficialAssignmentTargetType = (typeof OFFICIAL_ASSIGNMENT_TARGET_TY
  *  general qualification). The same official may be assigned a different
  *  `role` on different assignments; the two fields deliberately share the
  *  same enum but are never derived from one another. */
-@Schema({ collection: 'officialAssignments' })
+@Schema({ collection: 'officialAssignments', timestamps: true })
 export class OfficialAssignment extends BaseSchema {
   @Prop({ type: Types.ObjectId, ref: 'Official', required: true })
   officialId: Types.ObjectId;

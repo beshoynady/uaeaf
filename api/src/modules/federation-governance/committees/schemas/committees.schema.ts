@@ -35,7 +35,7 @@ export type CommitteeGroup = (typeof COMMITTEE_GROUPS)[number];
  *  `committeeGroup` is manually set by an admin — the board notes the
  *  grouping business rule is unconfirmed by the client and deliberately
  *  kept flexible, so nothing is auto-derived here. */
-@Schema({ collection: 'committees' })
+@Schema({ collection: 'committees', timestamps: true })
 export class Committee extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   name: LocalizedText;

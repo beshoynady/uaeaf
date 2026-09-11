@@ -13,7 +13,7 @@ export type RoleDocument = HydratedDocument<Role>;
  *  administrative ones, must be bilingual, not just public-website
  *  editorial content. isSystemRole confirmed present, added 2026-09-02 to
  *  close ADR-tracked admin gap). */
-@Schema({ collection: 'roles' })
+@Schema({ collection: 'roles', timestamps: true })
 export class Role extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   name: LocalizedText;

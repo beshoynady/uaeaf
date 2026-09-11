@@ -48,7 +48,7 @@ export type AppointmentStatus = (typeof APPOINTMENT_STATUSES)[number];
  *
  *  Not workflow-governed: no `publicationState`; absent from both Domain 7
  *  closed lists. */
-@Schema({ collection: 'federationAppointments' })
+@Schema({ collection: 'federationAppointments', timestamps: true })
 export class FederationAppointment extends BaseSchema {
   @Prop({ type: Types.ObjectId, ref: 'FederationPersonnel', required: true })
   personId: Types.ObjectId;

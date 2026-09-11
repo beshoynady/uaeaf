@@ -51,6 +51,8 @@ missing or malformed.
 | `npm run seed:dev` | Brings a **local** database to the development fixture state (below) |
 | `npm run seed:dev -- --reset` | Same, but puts the fixture versions back over edits |
 | `npm run seed:export` | Snapshots the current local database into the fixtures |
+| `npm run backfill:created-at` | Shows which **local** documents lack `createdAt` and the date their ObjectId gives them — writes nothing |
+| `npm run backfill:created-at -- --apply` | Writes that `createdAt`; never `updatedAt`, never over an existing date |
 
 ### Development data
 

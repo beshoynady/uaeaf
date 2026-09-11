@@ -31,7 +31,7 @@ export type UserTheme = (typeof USER_THEMES)[number];
  *  federationPersonnel) are still declared, since they exist on the live
  *  board — omitting a documented field would itself be a drift from the
  *  schema, not a scope simplification. */
-@Schema({ collection: 'users' })
+@Schema({ collection: 'users', timestamps: true })
 export class User extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   name: LocalizedText;

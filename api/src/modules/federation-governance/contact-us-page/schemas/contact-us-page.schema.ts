@@ -142,7 +142,7 @@ export const ContactMapContentSchema = SchemaFactory.createForClass(ContactMapCo
  *
  *  Not workflow-governed (no `publicationState`, absent from both Domain 7
  *  closed lists). Singleton — enforced in `ContactUsPagesService`. */
-@Schema({ collection: 'contactUsPage' })
+@Schema({ collection: 'contactUsPage', timestamps: true })
 export class ContactUsPage extends HeroPageSchema {
   @Prop({ type: String, required: true })
   email: string;

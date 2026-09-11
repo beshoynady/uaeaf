@@ -16,7 +16,7 @@ export type VideoExternalPlatform = (typeof VIDEO_EXTERNAL_PLATFORMS)[number];
  *  — no embed-code field needed. `contentCategoryId` refs a
  *  `contentCategories` collection not built this week — plain `ObjectId`,
  *  no `ref:`. */
-@Schema({ collection: 'videos' })
+@Schema({ collection: 'videos', timestamps: true })
 export class Video extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   title: LocalizedText;

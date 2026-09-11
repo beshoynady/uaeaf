@@ -15,7 +15,7 @@ export type WorkflowStepType = (typeof WORKFLOW_STEP_TYPES)[number];
  *  requiredApprovals=N = N of M. `assigneeType` is fixed to `'User'` per
  *  the board's own note — approval routing is always to named individuals,
  *  never a role or committee as a group. */
-@Schema({ collection: 'workflowSteps' })
+@Schema({ collection: 'workflowSteps', timestamps: true })
 export class WorkflowStep extends BaseSchema {
   @Prop({ type: Types.ObjectId, ref: 'WorkflowDefinition', required: true })
   workflowDefinitionId: Types.ObjectId;

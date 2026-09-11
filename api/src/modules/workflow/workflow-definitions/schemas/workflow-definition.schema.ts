@@ -15,7 +15,7 @@ export type WorkflowDefinitionDocument = HydratedDocument<WorkflowDefinition>;
  * a given entity+operation happens one layer up, via
  * `workflowPolicies.workflowDefinitionId` (see WorkflowPoliciesService).
  */
-@Schema({ collection: 'workflowDefinitions' })
+@Schema({ collection: 'workflowDefinitions', timestamps: true })
 export class WorkflowDefinition extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   name: LocalizedText;

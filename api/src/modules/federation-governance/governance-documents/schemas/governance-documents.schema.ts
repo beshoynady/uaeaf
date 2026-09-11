@@ -28,7 +28,7 @@ export type GovernanceDocumentType = (typeof GOVERNANCE_DOCUMENT_TYPES)[number];
  *  new revision of this wrapper, never a separate documents-side approval.
  *  `GovernanceDocumentsService` deliberately calls no workflow method on
  *  `DocumentsService`. */
-@Schema({ collection: 'governanceDocuments' })
+@Schema({ collection: 'governanceDocuments', timestamps: true })
 export class GovernanceDocument extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   title: LocalizedText;

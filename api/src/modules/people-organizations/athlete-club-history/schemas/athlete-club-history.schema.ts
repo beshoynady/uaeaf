@@ -15,7 +15,7 @@ export type AthleteClubHistoryDocument = HydratedDocument<AthleteClubHistory>;
  *  implicit "still current" exception for old rows. `AthleteClubHistoryService`
  *  enforces this by closing out the athlete's current row before opening a
  *  new one — see `create()`/`endCurrent()`. */
-@Schema({ collection: 'athleteClubHistory' })
+@Schema({ collection: 'athleteClubHistory', timestamps: true })
 export class AthleteClubHistory extends BaseSchema {
   @Prop({ type: Types.ObjectId, ref: 'Athlete', required: true })
   athleteId: Types.ObjectId;

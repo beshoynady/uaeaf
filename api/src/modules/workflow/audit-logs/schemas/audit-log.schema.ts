@@ -35,7 +35,7 @@ export type AuditAction = (typeof AUDIT_ACTIONS)[number];
  * guessing a value list not in evidence — revisit once that domain note is
  * located.
  */
-@Schema({ collection: 'auditLogs' })
+@Schema({ collection: 'auditLogs', timestamps: true })
 export class AuditLog extends BaseSchema {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   actorId: Types.ObjectId;

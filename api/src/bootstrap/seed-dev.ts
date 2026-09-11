@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import mongoose, { type Connection, type Model, type Types } from 'mongoose';
+import { openDatabase, registeredModels } from './dev-database.js';
 
 const { EJSON } = mongoose.mongo.BSON;
 
@@ -54,50 +55,7 @@ export interface SeedRow {
   skipped: number;
 }
 
-const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '::1']);
-
 const KNOWN_PATH_TYPES = new Set(['real', 'nested', 'virtual']);
-
-/**
- * `BaseSchema` promises every collection `createdAt`/`updatedAt` through
- * Mongoose `timestamps`, but declares the option on its own `@Schema()`, and
- * each subclass's `@Schema({ collection })` replaces rather than merges it —
- * so no compiled schema currently has the paths. The fields are the
- * contract, the missing paths are the defect: allowed here by name, not by
- * loosening the check, until the schemas carry them again.
- */
-const CONTRACT_FIELDS = new Set(['createdAt', 'updatedAt']);
-
-/**
- * Refuses production, and any database that is not on this machine.
- *
- * `--reset` deletes page records and export copies a database into the
- * repository; pointed at a shared server, either one is an incident. The
- * refusal never repeats the address, which can carry a password.
- */
-export function assertSafeDevTarget(uri: string | undefined, nodeEnv: string | undefined): void {
-  if (nodeEnv === 'production') {
-    throw new Error('Refusing to run with NODE_ENV=production. Development data is for development databases only.');
-  }
-  if (!uri) {
-    throw new Error('MONGODB_URI is not set.');
-  }
-
-  // `mongodb+srv://` never matches: it names a DNS record, which is a remote cluster by definition.
-  const match = /^mongodb:\/\/(?:[^@/]*@)?([^/?]+)/.exec(uri);
-  const hosts = match ? match[1].split(',').map(hostOf) : [];
-  if (hosts.length === 0 || !hosts.every((host) => LOCAL_HOSTS.has(host))) {
-    throw new Error(
-      'Refusing: MONGODB_URI must point at a local database (localhost, 127.0.0.1 or ::1). ' +
-        'Development fixtures are never written to, or read from, a shared server.',
-    );
-  }
-}
-
-function hostOf(hostAndPort: string): string {
-  if (hostAndPort.startsWith('[')) return hostAndPort.slice(1, hostAndPort.indexOf(']'));
-  return hostAndPort.split(':')[0].toLowerCase();
-}
 
 export async function loadDevFixtures(dir: string): Promise<DevFixtures> {
   const fixtures: DevFixtures = new Map();
@@ -138,9 +96,7 @@ export async function validateDevFixtures(connection: Connection, fixtures: DevF
       // A whitelist, not `=== 'adhoc'`: Mongoose 9 reports an unknown path as
       // `adhocOrUndefined`, and a blacklist written for one spelling silently
       // accepts every field once the spelling changes.
-      const unknown = Object.keys(doc).filter(
-        (key) => !CONTRACT_FIELDS.has(key) && !KNOWN_PATH_TYPES.has(model.schema.pathType(key)),
-      );
+      const unknown = Object.keys(doc).filter((key) => !KNOWN_PATH_TYPES.has(model.schema.pathType(key)));
       if (unknown.length > 0) {
         throw new Error(`${set.collection} ${String(doc._id)}: ${unknown.join(', ')} is not in the schema.`);
       }
@@ -175,7 +131,7 @@ export async function seedDevFixtures(
   const report: SeedRow[] = [];
   for (const set of DEV_FIXTURE_SETS) {
     const docs = fixtures.get(set.collection)!;
-    const collection = (await database(connection)).collection(set.collection);
+    const collection = (await openDatabase(connection)).collection(set.collection);
     const row: SeedRow = { collection: set.collection, inserted: 0, replaced: 0, skipped: 0 };
 
     if (set.singleton) {
@@ -223,7 +179,7 @@ export async function seedDevFixtures(
  * git.
  */
 export async function exportDevFixtures(connection: Connection): Promise<DevFixtures> {
-  const db = await database(connection);
+  const db = await openDatabase(connection);
   const fixtures: DevFixtures = new Map();
   for (const set of DEV_FIXTURE_SETS) {
     const docs = await db.collection(set.collection).find({}).sort({ _id: 1 }).toArray();
@@ -272,20 +228,8 @@ function findCredentialKey(value: unknown, path: string): string | null {
   return null;
 }
 
-/**
- * The registered model for a collection. `AppModule` registers them on the
- * Nest connection; the test suite registers them on Mongoose's default one.
- */
 function modelFor(connection: Connection, collection: string): Model<unknown> {
-  const candidates = [...Object.values(connection.models), ...Object.values(connection.base?.models ?? {})];
-  const model = candidates.find(
-    (candidate) => candidate.collection.collectionName === collection && candidate.db === connection,
-  );
+  const model = registeredModels(connection).find((candidate) => candidate.collection.collectionName === collection);
   if (!model) throw new Error(`No Mongoose model is registered for the "${collection}" collection.`);
-  return model as Model<unknown>;
-}
-
-async function database(connection: Connection): Promise<NonNullable<Connection['db']>> {
-  if (!connection.db) await connection.asPromise();
-  return connection.db!;
+  return model;
 }

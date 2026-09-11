@@ -44,6 +44,7 @@ describe('Rate limiting — POST /contact-messages (e2e)', () => {
       messageType: 'Inquiry',
       senderName: 'Rate Limit Tester',
       senderEmail: 'ratelimit@example.com',
+      senderPhone: '+971 50 000 0000',
       messageBody: 'Testing the rate limit.',
     };
 

@@ -12,7 +12,7 @@ export type CountryType = (typeof COUNTRY_TYPES)[number];
  *  (FigJam node `80:6398`, re-read fresh 2026-09-03). Holds both sovereign
  *  countries (for athlete/coach/official nationality) and the UAE's own
  *  emirates (for club/venue location), distinguished by `type`. */
-@Schema({ collection: 'countries' })
+@Schema({ collection: 'countries', timestamps: true })
 export class Country extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   name: LocalizedText;

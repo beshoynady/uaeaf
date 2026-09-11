@@ -85,7 +85,7 @@ export type PageSectionItemTarget = (typeof PAGE_SECTION_ITEM_TARGETS)[number];
  *  `LIVE_STREAM` shape, but `LIVE_STREAM` was removed from `sectionType`
  *  when it merged into `VIDEO_LIBRARY`. The field stays free-form, so no
  *  behaviour depends on the resolution. */
-@Schema({ collection: 'pageSections' })
+@Schema({ collection: 'pageSections', timestamps: true })
 export class PageSection extends BaseSchema {
   @Prop({ type: Types.ObjectId, ref: 'Page', required: true })
   pageId: Types.ObjectId;

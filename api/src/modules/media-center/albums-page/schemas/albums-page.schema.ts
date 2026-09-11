@@ -15,7 +15,7 @@ export type AlbumsPageDocument = HydratedDocument<AlbumsPage>;
  *  workflow-governed: absent from the Domain 7 closed entity-type lists
  *  (`common/constants/workflow-entity-types.ts`), the same exemption class
  *  as `albums` and `athletesPage` (2026-09-04 follow-on to ADR-0054). */
-@Schema({ collection: 'albumsPage' })
+@Schema({ collection: 'albumsPage', timestamps: true })
 export class AlbumsPage extends HeroPageSchema {}
 
 export const AlbumsPageSchema = SchemaFactory.createForClass(AlbumsPage);

@@ -32,7 +32,7 @@ export type NotificationDeliveryState = (typeof NOTIFICATION_DELIVERY_STATES)[nu
  *  notification is only reachable via a second hop through
  *  `workflowInstances.currentStepId` — a known, documented engine-level
  *  gap, not something this module fabricates a field for. */
-@Schema({ collection: 'notifications' })
+@Schema({ collection: 'notifications', timestamps: true })
 export class Notification extends BaseSchema {
   @Prop({ type: String, enum: NOTIFICATION_TYPES, required: true })
   type: NotificationType;

@@ -11,7 +11,7 @@ export type AthleteNationalTeamHistoryDocument = HydratedDocument<AthleteNationa
  *  roster — see `AthleteNationalTeamHistoryService.isCurrentlyOnNationalTeam()`.
  *  Confirmed decision #2: `athletes` has no `isNationalTeam` field; status
  *  is always derived by querying this collection. */
-@Schema({ collection: 'athleteNationalTeamHistory' })
+@Schema({ collection: 'athleteNationalTeamHistory', timestamps: true })
 export class AthleteNationalTeamHistory extends BaseSchema {
   @Prop({ type: Types.ObjectId, ref: 'Athlete', required: true })
   athleteId: Types.ObjectId;

@@ -30,7 +30,7 @@ export type FederationPersonnelStatus = (typeof FEDERATION_PERSONNEL_STATUSES)[n
  *  Not workflow-governed: no `publicationState`, absent from both Domain 7
  *  closed lists. `status` here is the person's own Active/Inactive
  *  relationship to the federation, unrelated to publication. */
-@Schema({ collection: 'federationPersonnel' })
+@Schema({ collection: 'federationPersonnel', timestamps: true })
 export class FederationPersonnel extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   fullName: LocalizedText;

@@ -20,7 +20,7 @@ export type CoachStatus = (typeof COACH_STATUSES)[number];
  *  String, for consistency with `athletes.nationalityId`. `startDate` is
  *  optional (career start) so years of experience is computed client-side
  *  rather than stored as a static number. */
-@Schema({ collection: 'coaches' })
+@Schema({ collection: 'coaches', timestamps: true })
 export class Coach extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   fullName: LocalizedText;

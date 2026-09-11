@@ -46,7 +46,7 @@ export type AlbumPublicationState = (typeof ALBUM_PUBLICATION_STATES)[number];
  *  the infra-level soft-delete marker inherited from `BaseSchema` ("record
  *  removed from the system"). An album can be business-Archived while
  *  still active (`archivedAt: null`), and vice versa. */
-@Schema({ collection: 'albums' })
+@Schema({ collection: 'albums', timestamps: true })
 export class Album extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   title: LocalizedText;

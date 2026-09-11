@@ -30,7 +30,7 @@ export type FederationStatus = (typeof FEDERATION_STATUSES)[number];
  *  `BaseSchema` supplies them uniformly here rather than special-casing a
  *  single collection out of the platform-wide soft-delete contract —
  *  flagged rather than silently treated as a board omission. */
-@Schema({ collection: 'federation' })
+@Schema({ collection: 'federation', timestamps: true })
 export class Federation extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   name: LocalizedText;

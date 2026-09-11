@@ -10,7 +10,7 @@ export type CoachClubHistoryDocument = HydratedDocument<CoachClubHistory>;
  *  `AthleteClubHistory`'s doc comment for the confirmed `endDate`
  *  semantics — the same "at most one current row per person, every ended
  *  row has an explicit endDate" rule applies here. */
-@Schema({ collection: 'coachClubHistory' })
+@Schema({ collection: 'coachClubHistory', timestamps: true })
 export class CoachClubHistory extends BaseSchema {
   @Prop({ type: Types.ObjectId, ref: 'Coach', required: true })
   coachId: Types.ObjectId;

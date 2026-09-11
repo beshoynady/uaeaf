@@ -35,7 +35,7 @@ export type AthleteProfileStatus = (typeof ATHLETE_PROFILE_STATUSES)[number];
  *  soft-deleted profile would permanently block a corrected re-creation
  *  of the same athlete's profile (schema-audit-2026-09-04.md §9.2, P1
  *  finding). */
-@Schema({ collection: 'athleteProfiles' })
+@Schema({ collection: 'athleteProfiles', timestamps: true })
 export class AthleteProfile extends BaseSchema {
   @Prop({ type: Types.ObjectId, ref: 'Athlete', required: true })
   athleteId: Types.ObjectId;

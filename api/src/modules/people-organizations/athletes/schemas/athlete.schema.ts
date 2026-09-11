@@ -32,7 +32,7 @@ export type AthleteGender = (typeof ATHLETE_GENDERS)[number];
  *  No `slug` (removed 2026-09-03): the public routing identifier is now
  *  solely `athleteProfiles.slug` — a Guest athlete (no Profile row) has no
  *  individual public page at all, which is intentional, not a gap. */
-@Schema({ collection: 'athletes' })
+@Schema({ collection: 'athletes', timestamps: true })
 export class Athlete extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   name: LocalizedText;

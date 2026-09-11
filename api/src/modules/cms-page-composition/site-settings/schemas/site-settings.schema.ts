@@ -49,7 +49,7 @@ export const DefaultSeoSchema = SchemaFactory.createForClass(DefaultSeo);
  *  constants. Wiring auth to read runtime DB settings would change Week 1-2
  *  behaviour, which this week's brief explicitly excludes. Needs an owner
  *  decision on which is authoritative. */
-@Schema({ collection: 'siteSettings' })
+@Schema({ collection: 'siteSettings', timestamps: true })
 export class SiteSettings extends BaseSchema {
   @Prop({ type: DefaultSeoSchema, default: null })
   defaultSeo: DefaultSeo | null;

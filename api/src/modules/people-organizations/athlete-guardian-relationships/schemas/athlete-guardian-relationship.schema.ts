@@ -15,7 +15,7 @@ export type GuardianRelationshipType = (typeof GUARDIAN_RELATIONSHIP_TYPES)[numb
  *  guardian is captured directly on the relationship row — there is no
  *  standalone Guardian collection. `consentDocId` refs `documents` (built
  *  this same week, Domain 6). */
-@Schema({ collection: 'athleteGuardianRelationships' })
+@Schema({ collection: 'athleteGuardianRelationships', timestamps: true })
 export class AthleteGuardianRelationship extends BaseSchema {
   @Prop({ type: Types.ObjectId, ref: 'Athlete', required: true })
   athleteId: Types.ObjectId;

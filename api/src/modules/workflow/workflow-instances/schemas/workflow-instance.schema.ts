@@ -26,7 +26,7 @@ export type WorkflowInstanceStatus = (typeof WORKFLOW_INSTANCE_STATUSES)[number]
  * the board's own note describes: without it, nothing proves which exact
  * content version an approver reviewed.
  */
-@Schema({ collection: 'workflowInstances' })
+@Schema({ collection: 'workflowInstances', timestamps: true })
 export class WorkflowInstance extends BaseSchema {
   @Prop({ type: Types.ObjectId, ref: 'WorkflowDefinition', required: true })
   workflowDefinitionId: Types.ObjectId;

@@ -16,7 +16,7 @@ export type NavigationMenuLocation = (typeof NAVIGATION_MENU_LOCATIONS)[number];
  *  per the board.
  *
  *  Not workflow-governed and not a singleton (several menus coexist). */
-@Schema({ collection: 'navigationMenus' })
+@Schema({ collection: 'navigationMenus', timestamps: true })
 export class NavigationMenu extends BaseSchema {
   /** Uniqueness declared below as a partial index, not `unique: true`
    *  here — see that index's comment (schema-audit-2026-09-04.md §9.2,

@@ -11,7 +11,7 @@ export type AthleteCoachHistoryDocument = HydratedDocument<AthleteCoachHistory>;
  *  `AthleteCoachHistoryService.getCurrentCoach()`. There is deliberately no
  *  `coachId` field on `athletes` itself (confirmed decision #2): current
  *  coach is always derived by querying this collection, never denormalized. */
-@Schema({ collection: 'athleteCoachHistory' })
+@Schema({ collection: 'athleteCoachHistory', timestamps: true })
 export class AthleteCoachHistory extends BaseSchema {
   @Prop({ type: Types.ObjectId, ref: 'Athlete', required: true })
   athleteId: Types.ObjectId;

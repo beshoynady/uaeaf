@@ -38,7 +38,7 @@ export const ABOUT_FEDERATION_MAX_ACHIEVEMENTS = 10;
  *
  *  `heroSubtitle` is plain bilingual text, NOT rich text, consistent with
  *  the `heroSubtitle` pattern across the other page models. */
-@Schema({ collection: 'aboutFederationPage' })
+@Schema({ collection: 'aboutFederationPage', timestamps: true })
 export class AboutFederationPage extends HeroPageSchema {
   @Prop({ type: Date, required: true })
   foundingDate: Date;

@@ -22,7 +22,7 @@ export type PresidentMessagePageDocument = HydratedDocument<PresidentMessagePage
  *  signatory by reading them. The board's rationale: if the president
  *  changes, this historical message stays correctly attributed to their
  *  exact term rather than to a free-text name. */
-@Schema({ collection: 'presidentMessagePage' })
+@Schema({ collection: 'presidentMessagePage', timestamps: true })
 export class PresidentMessagePage extends HeroPageSchema {
   /** Canonical link to the specific presidential appointment/term. */
   @Prop({ type: Types.ObjectId, ref: 'FederationAppointment', required: true })

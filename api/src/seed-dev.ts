@@ -7,8 +7,8 @@ import { Permission } from './modules/platform-administration/permissions/schema
 import { Role } from './modules/platform-administration/roles/schemas/role.schema.js';
 import { User } from './modules/platform-administration/users/schemas/user.schema.js';
 import { readBootstrapAdminInput, runBootstrap } from './bootstrap/seed-admin.js';
+import { assertSafeDevTarget } from './bootstrap/dev-database.js';
 import {
-  assertSafeDevTarget,
   exportDevFixtures,
   loadDevFixtures,
   seedDevFixtures,

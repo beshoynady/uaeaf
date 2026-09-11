@@ -45,7 +45,7 @@ export type ContactMessageReplyChannel = (typeof CONTACT_MESSAGE_REPLY_CHANNELS)
  *  for it (an inbound message has no internal author); `BaseSchema`
  *  supplies the field uniformly and it simply stays null for
  *  citizen-submitted rows. */
-@Schema({ collection: 'contactMessages' })
+@Schema({ collection: 'contactMessages', timestamps: true })
 export class ContactMessage extends BaseSchema {
   @Prop({ type: String, enum: CONTACT_MESSAGE_TYPES, required: true })
   messageType: ContactMessageType;

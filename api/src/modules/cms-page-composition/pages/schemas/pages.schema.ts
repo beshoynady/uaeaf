@@ -34,7 +34,7 @@ export const PageSeoSchema = SchemaFactory.createForClass(PageSeo);
  *
  *  A routable CMS page; its content is composed from `pageSections` rows.
  *  Not workflow-governed — see the `PAGE_STATUSES` note. */
-@Schema({ collection: 'pages' })
+@Schema({ collection: 'pages', timestamps: true })
 export class Page extends BaseSchema {
   /** Uniqueness declared below as a partial index, not `unique: true`
    *  here — see that index's comment (schema-audit-2026-09-04.md §9.2,

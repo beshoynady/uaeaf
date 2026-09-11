@@ -57,7 +57,7 @@ export const ImpactMetricSchema = SchemaFactory.createForClass(ImpactMetric);
  *  `documentVersion` suggest successive plan periods may legitimately
  *  coexist, and the board states no singleton constraint — flagged rather
  *  than assumed either way. */
-@Schema({ collection: 'strategicPlansPage' })
+@Schema({ collection: 'strategicPlansPage', timestamps: true })
 export class StrategicPlansPage extends HeroPageSchema {
   @Prop({ type: Types.ObjectId, ref: 'Federation', required: true })
   federationId: Types.ObjectId;

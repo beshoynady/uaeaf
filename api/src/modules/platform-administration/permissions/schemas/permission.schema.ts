@@ -31,7 +31,7 @@ export type PermissionAction = (typeof PERMISSION_ACTIONS)[number];
  *  in the dashboard's role/permission management UI (e.g. "Delete
  *  Articles" / "حذف المقالات"), distinct from `resourceType`/`action`,
  *  which remain plain technical identifiers, not display text). */
-@Schema({ collection: 'permissions' })
+@Schema({ collection: 'permissions', timestamps: true })
 export class Permission extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   name: LocalizedText;

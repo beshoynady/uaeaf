@@ -29,7 +29,7 @@ export type VisionMissionPageDocument = HydratedDocument<VisionMissionPage>;
  *  Deliberately NOT singleton-enforced despite the `*Page` name: this is
  *  workflow-governed editorial content rather than a hero wrapper, and the
  *  board states no singleton constraint — see `SingletonPageService`. */
-@Schema({ collection: 'visionMissionPage' })
+@Schema({ collection: 'visionMissionPage', timestamps: true })
 export class VisionMissionPage extends HeroPageSchema {
   @Prop({ type: Types.ObjectId, ref: 'Federation', required: true })
   federationId: Types.ObjectId;
