@@ -1,0 +1,13 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="24" height="24" fill="#1E1E1E"/>
+<g id="Section 1">
+<path d="M-1181 -5174C-1181 -5175.1 -1180.1 -5176 -1179 -5176H14891C14892.1 -5176 14893 -5175.1 14893 -5174V683C14893 684.104 14892.1 685 14891 685H-1179C-1180.1 685 -1181 684.104 -1181 683V-5174Z" fill="#444444"/>
+<path d="M-1179 -5176V-5175H14891V-5176V-5177H-1179V-5176ZM14893 -5174H14892V683H14893H14894V-5174H14893ZM14891 685V684H-1179V685V686H14891V685ZM-1181 683H-1180V-5174H-1181H-1182V683H-1181ZM-1179 685V684C-1179.55 684 -1180 683.552 -1180 683H-1181H-1182C-1182 684.657 -1180.66 686 -1179 686V685ZM14893 683H14892C14892 683.552 14891.6 684 14891 684V685V686C14892.7 686 14894 684.657 14894 683H14893ZM14891 -5176V-5175C14891.6 -5175 14892 -5174.55 14892 -5174H14893H14894C14894 -5175.66 14892.7 -5177 14891 -5177V-5176ZM-1179 -5176V-5177C-1180.66 -5177 -1182 -5175.66 -1182 -5174H-1181H-1180C-1180 -5174.55 -1179.55 -5175 -1179 -5175V-5176Z" fill="white" fill-opacity="0.1"/>
+<g id="icon-press-mic">
+<rect id="Rectangle" x="10" y="3" width="4" height="10" rx="2" stroke="#00843D" stroke-width="2"/>
+<path id="Vector" d="M6 11V12L8 16H16L18 12V11" stroke="#00843D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_2" d="M12 16V20" stroke="#00843D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_3" d="M8 21H16" stroke="#00843D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</g>
+</svg>

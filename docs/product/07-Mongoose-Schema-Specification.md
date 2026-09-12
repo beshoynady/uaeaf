@@ -229,20 +229,37 @@ Populate strategy: `attendingClubIds` — on-demand (potentially large array, no
 | `achievements` | `[AchievementSchema]` (embedded) | `false` | `[]` | **[SCHEMA-READY GAP FILLED]** bounded array had no explicit max in the diagram — capped at **10 entries** (app-layer array-length validator); sub-schema `{ text: { en: String, ar: String }, year: Number }`, `_id: false` — these are a short highlight list, never individually referenced/edited outside the parent document, so no need for their own `_id` | None | Public |
 | `publicationState` | String, enum | `true` | `'Draft'` | Full list: `['Draft', 'Live', 'Archived']` — denorm ← `publications` (ADR-0020) | `{ publicationState: 1 }` | Public |
 
-### `presidentMessage` (new in Phase 2.2) — **Synced from direct FigJam edit: `federationAppointmentId` added (2026-08-26)**
+### `presidentMessagePage` — **Patched to v2 by ADR-0069 (2026-09-12): rich-text body, five fields added, `goals` removed**
+
+As built, the collection is named `presidentMessagePage` and extends the shared `HeroPageSchema` (`heroImageId`/`heroTitle`/`heroSubtitle`), which is what the `photo`/`title` rows below became.
 
 | Field | Mongoose Type | Required | Default | Validation | Index | Visibility |
 |---|---|---|---|---|---|---|
 | `_id` | ObjectId | auto | auto | — | Primary (auto) | Public |
-| `federationAppointmentId` | ObjectId, ref `FederationAppointment` | `true` | none | canonical link to the specific presidential appointment/term — if the president changes, the historical message stays correctly attributed to their exact term rather than a free-text name | `{ federationAppointmentId: 1 }` | Public |
-| `photo` | ObjectId, ref `MediaAsset` | `false` | `null` | — | None | Public |
-| `title` | `{ en: String, ar: String }` | `true` (both) | none | `maxlength: 200` each | None | Public |
-| `messageBody` | `{ en: String, ar: String }` | `true` (both) | none | no `maxlength` — rich text | None | Public |
-| `signatoryName` | `{ en: String, ar: String }` | `true` (both) | none | `maxlength: 150` each — **denormalized display snapshot**; canonical identity comes from `federationAppointmentId` → `federationAppointments` → `federationPersonnel` | None | Public |
-| `signatoryTitle` | `{ en: String, ar: String }` | `true` (both) | none | `maxlength: 150` each — e.g. `"رئيس الاتحاد"`, same snapshot rationale as `signatoryName` | None | Public |
-| `publicationState` | String, enum | `true` | `'Draft'` | Full list: `['Draft', 'Live', 'Archived']` — denorm ← `publications` (ADR-0020); archival history satisfied entirely by `revisions.snapshotData`, no separate archive field/collection needed | `{ publicationState: 1 }` | Public |
+| `federationAppointmentId` | ObjectId, ref `FederationAppointment` | `true` | none | canonical link to the specific presidential appointment/term — if the president changes, the historical message stays correctly attributed to their exact term rather than a free-text name. **Not editable through `PATCH`** (ADR-0069 D5): re-pointing a signed statement at another term reattributes it | `{ federationAppointmentId: 1 }` | Internal |
+| `heroImageId` | ObjectId, ref `MediaAsset` | `false` | `null` | the hero **background**, from `HeroPageSchema` | None | Public |
+| `heroTitle` | `{ en, ar }` | `true` (both) | none | the H1. IA §8.1 rules the label: `كلمة الرئيس` / `President's Message` | None | Public |
+| `heroSubtitle` | `{ en, ar }` | `true` (both) | none | the role line under the H1 (owner decision Q2) | None | Public |
+| **`featuredImageId`** | ObjectId, ref `MediaAsset` | `false` | `null` | **New (ADR-0069 D2).** The president's portrait, distinct from the hero background — ADR-0044's `featured_image` role. Alt text stays on `mediaAssets.altText` and is not duplicated here | None | Public |
+| **`pullQuote`** | `{ en, ar }` | `false` | `null` | **New (ADR-0069 D2).** A distinct editorial element rendered at every breakpoint (PM-D03), not the body's first sentence | None | Public |
+| `messageBody` | `{ en: Mixed, ar: Mixed }` | `true` (both) | none | **Retyped (ADR-0069 D1).** One ProseMirror/TipTap document per language, stored as JSON. Checked on every write against the per-language allowlist in `common/rich-text/rich-text-allowlist.ts`: no `textAlign` in either language (this is how justify and manual alignment are refused), no italic in Arabic (Ch.4 §4.6), headings limited to levels 2–3, links limited to `https:`/`http:`/`mailto:`, depth ≤ 6, ≤ 20,000 characters | None | Public |
+| **`valuesTitle`** | `{ en, ar }` | `false` | `null` | **New (ADR-0069 D2).** The values band's heading | None | Public |
+| **`values`** | `[IconKeyedContentBlock]` | `false` | `[]` | **New (ADR-0069 D2), replaces `goals`.** `{ title, description, iconKey, displayOrder }`; `iconKey` is closed to the twelve keys of `VALUE_ICON_KEYS`. Deliberately this message's own list, not a pointer at `visionMission.coreValues` — an archived message keeps the values of its own term | None | Public |
+| ~~`goals`~~ | ~~`[ContentBlock]`~~ | — | — | **Removed (ADR-0069 D2).** Carried since Week 1, rendered by nothing, and its shared type is documented as explicitly icon-free — which the values band is not. The migration **refuses** rows carrying non-empty goals rather than converting them: choosing an icon per entry is an editorial decision | — | — |
+| `signatoryName` | `{ en, ar }` | `true` (both) | none | **denormalized display snapshot**; canonical identity comes from `federationAppointmentId` → `federationAppointments` → `federationPersonnel` | None | Public |
+| `signatoryTitle` | `{ en, ar }` | `true` (both) | none | e.g. `"رئيس الاتحاد"`, same snapshot rationale as `signatoryName` | None | Public |
+| **`seo`** | `PageSeo` | `false` | `null` | **New (ADR-0069 D2).** Reuses the shared `PageSeoSchema` (`metaTitle`, `metaDescription`, `ogImageId`) rather than redefining it — Chapter 14 §3 requires a share image. Moved to `common/schemas/page-seo.schema.ts` by the same ADR, now that two collections carry it | None | Public |
+| `publicationState` | String, enum | `true` | `'Draft'` | Full list: `['Draft', 'Live', 'Archived']` — denorm ← `publications` (ADR-0020); archival history satisfied entirely by `revisions.snapshotData`. **Not editable through `PATCH`**: it is a consequence of publishing, never an instruction from a client | `{ publicationState: 1 }` | Internal |
+
+**There is no date field, deliberately.** The message's date is the date it was published, read from the Live publication's `publishedAt` (ADR-0069 D2). Two stored dates could disagree; the published one is the true one.
+
+**Term years need no field either.** They are already carried by `federationAppointments.termStart`/`termEnd` and `electionCycles`.
+
+**Public visibility is an allowlist, not a column.** `GET /president-message-page/current/public` builds its response field by field (ADR-0069 D3); the `Visibility` column above records intent, and the projection is what enforces it. Anything added to this collection later does not reach a visitor until that projection names it.
 
 Populate strategy: `federationAppointmentId` — default (signatory identity/photo typically needed alongside the message).
+
+**Migration:** `npm run migrate:president-message` (dry run by default, `-- --apply` to write). Converts string bodies to ProseMirror documents, defaults the five new fields, and drops empty `goals`. Rows with non-empty `goals` are reported and left untouched.
 
 ---
 

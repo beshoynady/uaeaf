@@ -1,0 +1,14 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="24" height="24" fill="#1E1E1E"/>
+<g id="Section 1">
+<path d="M-1437 -5174C-1437 -5175.1 -1436.1 -5176 -1435 -5176H14635C14636.1 -5176 14637 -5175.1 14637 -5174V683C14637 684.104 14636.1 685 14635 685H-1435C-1436.1 685 -1437 684.104 -1437 683V-5174Z" fill="#444444"/>
+<path d="M-1435 -5176V-5175H14635V-5176V-5177H-1435V-5176ZM14637 -5174H14636V683H14637H14638V-5174H14637ZM14635 685V684H-1435V685V686H14635V685ZM-1437 683H-1436V-5174H-1437H-1438V683H-1437ZM-1435 685V684C-1435.55 684 -1436 683.552 -1436 683H-1437H-1438C-1438 684.657 -1436.66 686 -1435 686V685ZM14637 683H14636C14636 683.552 14635.6 684 14635 684V685V686C14636.7 686 14638 684.657 14638 683H14637ZM14635 -5176V-5175C14635.6 -5175 14636 -5174.55 14636 -5174H14637H14638C14638 -5175.66 14636.7 -5177 14635 -5177V-5176ZM-1435 -5176V-5177C-1436.66 -5177 -1438 -5175.66 -1438 -5174H-1437H-1436C-1436 -5174.55 -1435.55 -5175 -1435 -5175V-5176Z" fill="white" fill-opacity="0.1"/>
+<g id="icon-conference-landmark-a">
+<path id="Vector" d="M2 8L12 2L22 8H2Z" stroke="#00843D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_2" d="M4 8V19" stroke="#00843D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_3" d="M9 8V19" stroke="#00843D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_4" d="M20 8V19" stroke="#00843D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_5" d="M2 22H22" stroke="#00843D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</g>
+</svg>

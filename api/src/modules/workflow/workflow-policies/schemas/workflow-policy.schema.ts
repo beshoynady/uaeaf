@@ -38,4 +38,17 @@ export class WorkflowPolicy extends BaseSchema {
 }
 
 export const WorkflowPolicySchema = SchemaFactory.createForClass(WorkflowPolicy);
-WorkflowPolicySchema.index({ entityType: 1, operation: 1 });
+// Unique since ADR-0069 D4 (audit finding H4). `resolve()` answers with the
+// one policy for a pair, so two live rows for that pair is a state where the
+// answer depends on which document the query happened to return first.
+// Partial on `archivedAt: null` so an archived policy does not permanently
+// block a corrected replacement — the `pages.slug` precedent.
+//
+// Mongoose does NOT drop the superseded non-unique index on its own. The
+// rollout order is: check for duplicates → drop the old index explicitly →
+// build this one. See `bootstrap/check-policy-duplicates.ts` and the
+// deployment checklist.
+WorkflowPolicySchema.index(
+  { entityType: 1, operation: 1 },
+  { unique: true, partialFilterExpression: { archivedAt: null } },
+);

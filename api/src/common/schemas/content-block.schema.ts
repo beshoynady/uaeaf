@@ -1,5 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { LocalizedText, LocalizedTextSchema } from './localized-text.schema.js';
+import { VALUE_ICON_KEYS } from '../constants/value-icon-keys.js';
+import type { ValueIconKey } from '../constants/value-icon-keys.js';
 
 /**
  * `{ title, description, displayOrder }` — the bounded editorial list item
@@ -43,3 +45,21 @@ export class IconedContentBlock extends ContentBlock {
 }
 
 export const IconedContentBlockSchema = SchemaFactory.createForClass(IconedContentBlock);
+
+/**
+ * `{ title, description, iconKey, displayOrder }` with `iconKey` closed to
+ * `VALUE_ICON_KEYS` (ADR-0069 D2).
+ *
+ * A separate class rather than a tightening of `IconedContentBlock`,
+ * because that type's two existing consumers (`visionMissionPage.coreValues`,
+ * `strategicPlansPage.foundationPillars`) were seeded against the free
+ * string and are not in this change's scope. Narrowing theirs is a
+ * migration of its own; this one starts closed.
+ */
+@Schema({ _id: false })
+export class IconKeyedContentBlock extends ContentBlock {
+  @Prop({ type: String, enum: VALUE_ICON_KEYS, required: true })
+  iconKey: ValueIconKey;
+}
+
+export const IconKeyedContentBlockSchema = SchemaFactory.createForClass(IconKeyedContentBlock);

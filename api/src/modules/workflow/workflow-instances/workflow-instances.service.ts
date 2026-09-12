@@ -470,6 +470,17 @@ export class WorkflowInstancesService {
     return this.repository.findById(id);
   }
 
+  /** The review currently open on a record, if any — "active" meaning not
+   *  archived and not yet Approved (Rejected/Returned are not terminal).
+   *  Exposed for `PublishingService`, which must refuse a direct publish
+   *  while one is running. */
+  async findActive(
+    entityType: WorkflowEntityType,
+    entityId: Types.ObjectId,
+  ): Promise<WorkflowInstanceDocument | null> {
+    return this.repository.findActive(entityType, entityId);
+  }
+
   /**
    * Approval publishes the instance's revision as the record's public
    * content, so the revision must be one taken of this record: a revision of

@@ -422,10 +422,12 @@ describe('Workflow integrity (e2e)', () => {
     expect(active).toBe(1);
   }, 30000);
 
-  // H11 — CONFIRMED DEFECT (P1). A definition is scoped to exactly one
-  // entity type (08-Workflow-Scenario-Review §2.A), but a policy is stored
-  // without the definition it names ever being read.
-  it.failing('[H11/S8] refuses a policy whose definition governs another entity type', async () => {
+  // H11 — FIXED (ADR-0069 D4). A definition is scoped to exactly one entity
+  // type (08-Workflow-Scenario-Review §2.A). The policy's definition is now
+  // read when the policy is written, not only when it is used — so the
+  // administrator who mistyped it hears about it, instead of an editor two
+  // weeks later.
+  it('[H11/S8] refuses a policy whose definition governs another entity type', async () => {
     const { definitionId } = await defineWorkflow([{ stepType: 'Sequential', assignees: ['a'], requiredApprovals: 1 }], {
       entityType: 'committees',
     });
@@ -441,10 +443,10 @@ describe('Workflow integrity (e2e)', () => {
     expect([400, 409]).toContain(policy.status);
   }, 30000);
 
-  // H11 — CONFIRMED DEFECT (P1). `isActive` is "whether this definition is
-  // usable" (CreateWorkflowDefinitionDto), yet a policy may route to an
-  // unusable one.
-  it.failing('[H11/S8] refuses a policy whose definition is inactive', async () => {
+  // H11 — FIXED (ADR-0069 D4). `isActive` is "whether this definition is
+  // usable" (CreateWorkflowDefinitionDto); a policy can no longer route to
+  // an unusable one.
+  it('[H11/S8] refuses a policy whose definition is inactive', async () => {
     const { definitionId } = await defineWorkflow([{ stepType: 'Sequential', assignees: ['a'], requiredApprovals: 1 }], {
       isActive: false,
     });
@@ -488,11 +490,12 @@ describe('Workflow integrity (e2e)', () => {
 
   // --- Admin configuration (H4, H5, H6) ------------------------------------
 
-  // H4 — CONFIRMED DEFECT (P2 today, P1 once policies are read). Policy
-  // selection is one pointer per (entityType, operation)
-  // (08-Workflow-Scenario-Review §6.5); a second row makes the choice
-  // arbitrary, and nothing refuses it.
-  it.failing('[H4] refuses a second policy for the same entity type and operation', async () => {
+  // H4 — FIXED (ADR-0069 D4). Policy selection is one pointer per
+  // (entityType, operation) (08-Workflow-Scenario-Review §6.5); a second row
+  // made the choice arbitrary. Now refused twice over: a partial-unique
+  // index on `{entityType, operation}` where `archivedAt: null`, and the
+  // duplicate-key error mapped to a 409 the caller can read.
+  it('[H4] refuses a second policy for the same entity type and operation', async () => {
     const { definitionId } = await defineWorkflow([{ stepType: 'Sequential', assignees: ['a'], requiredApprovals: 1 }]);
     const policy = {
       entityType: 'visionMissionPage',

@@ -1523,6 +1523,76 @@
         ]
       }
     },
+    "/api/v1/workflow-policies/{entityType}/{operation}": {
+      "get": {
+        "operationId": "WorkflowPoliciesController_findByPair_v1",
+        "parameters": [
+          {
+            "name": "entityType",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "operation",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "workflow-policies"
+        ]
+      },
+      "put": {
+        "operationId": "WorkflowPoliciesController_set_v1",
+        "parameters": [
+          {
+            "name": "entityType",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "operation",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetWorkflowPolicyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "workflow-policies"
+        ]
+      }
+    },
     "/api/v1/workflow-policies/{id}": {
       "get": {
         "operationId": "WorkflowPoliciesController_findOne_v1",
@@ -4603,6 +4673,20 @@
         ]
       }
     },
+    "/api/v1/president-message-page/current/public": {
+      "get": {
+        "operationId": "PresidentMessagePagesController_getCurrentPublic_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "president-message-page"
+        ]
+      }
+    },
     "/api/v1/president-message-page/{id}": {
       "get": {
         "operationId": "PresidentMessagePagesController_findOne_v1",
@@ -4616,6 +4700,37 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "president-message-page"
+        ]
+      },
+      "patch": {
+        "operationId": "PresidentMessagePagesController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePresidentMessagePageDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": ""
@@ -4639,6 +4754,118 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "president-message-page"
+        ]
+      }
+    },
+    "/api/v1/president-message-page/{id}/editorial-state": {
+      "get": {
+        "operationId": "PresidentMessagePagesController_editorialState_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "president-message-page"
+        ]
+      }
+    },
+    "/api/v1/president-message-page/{id}/publish": {
+      "post": {
+        "operationId": "PresidentMessagePagesController_publish_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishPresidentMessagePageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "president-message-page"
+        ]
+      }
+    },
+    "/api/v1/president-message-page/{id}/submit": {
+      "post": {
+        "operationId": "PresidentMessagePagesController_submit_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "president-message-page"
+        ]
+      }
+    },
+    "/api/v1/president-message-page/{id}/restore": {
+      "post": {
+        "operationId": "PresidentMessagePagesController_restore_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestorePresidentMessagePageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -7048,6 +7275,27 @@
           "allowHardDelete"
         ]
       },
+      "SetWorkflowPolicyDto": {
+        "type": "object",
+        "properties": {
+          "workflowRequired": {
+            "type": "boolean",
+            "description": "Whether this operation must go through an approval workflow. When true, workflowDefinitionId must name an active definition for the same entityType, or the operation resolves to blocked."
+          },
+          "workflowDefinitionId": {
+            "type": "object",
+            "nullable": true,
+            "description": "The definition that governs this operation. Required in practice when workflowRequired is true."
+          },
+          "allowHardDelete": {
+            "type": "boolean",
+            "description": "Whether \"delete\" may mean physical deletion for this entity type. Defaults to false."
+          }
+        },
+        "required": [
+          "workflowRequired"
+        ]
+      },
       "CreateNotificationDto": {
         "type": "object",
         "properties": {
@@ -8878,6 +9126,78 @@
           "publicationState"
         ]
       },
+      "LocalizedRichTextDto": {
+        "type": "object",
+        "properties": {
+          "en": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "English body as a ProseMirror/TipTap document. Allowed nodes: doc, paragraph, text, heading (level 2-3), bulletList, orderedList, listItem, blockquote, horizontalRule, hardBreak. Allowed marks: bold, link (https/http/mailto), italic."
+          },
+          "ar": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Arabic body as a ProseMirror/TipTap document. Same allowlist as English MINUS italic, which breaks Arabic letter joins (Chapter 4 §4.6). No textAlign in either language, which is how justify and manual alignment are refused."
+          }
+        },
+        "required": [
+          "en",
+          "ar"
+        ]
+      },
+      "IconKeyedContentBlockDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "description": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "displayOrder": {
+            "type": "number"
+          },
+          "iconKey": {
+            "type": "string",
+            "enum": [
+              "eye",
+              "users",
+              "star",
+              "award",
+              "zap",
+              "target",
+              "handshake",
+              "trophy",
+              "medal",
+              "flag",
+              "lightbulb",
+              "shield-check"
+            ],
+            "description": "One of the twelve approved icon keys."
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "displayOrder",
+          "iconKey"
+        ]
+      },
+      "PageSeoDto": {
+        "type": "object",
+        "properties": {
+          "metaTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "metaDescription": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "ogImageId": {
+            "type": "string",
+            "description": "ref → mediaAssets, must be an image."
+          }
+        }
+      },
       "CreatePresidentMessagePageDto": {
         "type": "object",
         "properties": {
@@ -8895,14 +9215,29 @@
             "type": "string",
             "description": "Canonical link to the presidential appointment/term."
           },
-          "goals": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ContentBlockDto"
-            }
+          "featuredImageId": {
+            "type": "string",
+            "description": "The president's portrait — ref → mediaAssets."
+          },
+          "pullQuote": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
           },
           "messageBody": {
+            "description": "ProseMirror/TipTap document per language, checked against the ADR-0069 allowlist.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedRichTextDto"
+              }
+            ]
+          },
+          "valuesTitle": {
             "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IconKeyedContentBlockDto"
+            }
           },
           "signatoryName": {
             "description": "Denormalized display snapshot — canonical identity is federationAppointmentId.",
@@ -8919,6 +9254,9 @@
                 "$ref": "#/components/schemas/LocalizedTextDto"
               }
             ]
+          },
+          "seo": {
+            "$ref": "#/components/schemas/PageSeoDto"
           },
           "publicationState": {
             "type": "string",
@@ -8938,6 +9276,94 @@
           "signatoryName",
           "signatoryTitle",
           "publicationState"
+        ]
+      },
+      "UpdatePresidentMessagePageDto": {
+        "type": "object",
+        "properties": {
+          "heroImageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "ref → mediaAssets, or null."
+          },
+          "heroTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "heroSubtitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "featuredImageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "ref → mediaAssets, or null."
+          },
+          "pullQuote": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "messageBody": {
+            "$ref": "#/components/schemas/LocalizedRichTextDto"
+          },
+          "valuesTitle": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IconKeyedContentBlockDto"
+            }
+          },
+          "signatoryName": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "signatoryTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "seo": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PageSeoDto"
+              }
+            ]
+          }
+        }
+      },
+      "PublishPresidentMessagePageDto": {
+        "type": "object",
+        "properties": {
+          "expectedUpdatedAt": {
+            "type": "string",
+            "description": "The record's updatedAt as last read, ISO-8601. Publishing is refused if it has changed.",
+            "example": "2026-09-12T08:31:04.512Z"
+          }
+        },
+        "required": [
+          "expectedUpdatedAt"
+        ]
+      },
+      "RestorePresidentMessagePageDto": {
+        "type": "object",
+        "properties": {
+          "revisionId": {
+            "type": "string",
+            "description": "The revision to copy back over the draft. Publishes nothing."
+          }
+        },
+        "required": [
+          "revisionId"
         ]
       },
       "UpsertCommitteesPageDto": {
@@ -9379,20 +9805,6 @@
           "slug",
           "title"
         ]
-      },
-      "PageSeoDto": {
-        "type": "object",
-        "properties": {
-          "metaTitle": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "metaDescription": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "ogImageId": {
-            "type": "string"
-          }
-        }
       },
       "CreatePageDto": {
         "type": "object",

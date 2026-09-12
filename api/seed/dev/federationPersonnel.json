@@ -243,5 +243,40 @@
     "internalContact": null,
     "status": "Active",
     "socialLinks": []
+  },
+  {
+    "_id": {
+      "$oid": "6aa5001000000000000000c1"
+    },
+    "createdBy": null,
+    "updatedBy": null,
+    "archivedAt": null,
+    "archivedBy": null,
+    "createdAt": {
+      "$date": "2026-09-12T00:00:00Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-12T00:00:00Z"
+    },
+    "fullName": {
+      "ar": "سعادة اللواء الدكتور محمد عبدالله المر",
+      "en": "Dr. Muhammad Abdullah Al-Murr"
+    },
+    "photoId": null,
+    "shortBio": {
+      "ar": "نص تجريبي محلي للتحقق البصري فقط — ليس محتوى معتمدًا.",
+      "en": "Local sample text for visual verification only — not approved content."
+    },
+    "biography": null,
+    "nationalityId": {
+      "$oid": "6aa04ba9e3d1ab8b4179f101"
+    },
+    "publicContact": {
+      "email": "president@uaeaf.ae",
+      "phone": null
+    },
+    "internalContact": null,
+    "status": "Active",
+    "socialLinks": []
   }
 ]

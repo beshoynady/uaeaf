@@ -1,0 +1,17 @@
+<svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="22" height="22" fill="#1E1E1E"/>
+<g id="Section 1">
+<path d="M-1565 -5174C-1565 -5175.1 -1564.1 -5176 -1563 -5176H14507C14508.1 -5176 14509 -5175.1 14509 -5174V683C14509 684.104 14508.1 685 14507 685H-1563C-1564.1 685 -1565 684.104 -1565 683V-5174Z" fill="#444444"/>
+<path d="M-1563 -5176V-5175H14507V-5176V-5177H-1563V-5176ZM14509 -5174H14508V683H14509H14510V-5174H14509ZM14507 685V684H-1563V685V686H14507V685ZM-1565 683H-1564V-5174H-1565H-1566V683H-1565ZM-1563 685V684C-1563.55 684 -1564 683.552 -1564 683H-1565H-1566C-1566 684.657 -1564.66 686 -1563 686V685ZM14509 683H14508C14508 683.552 14507.6 684 14507 684V685V686C14508.7 686 14510 684.657 14510 683H14509ZM14507 -5176V-5175C14507.6 -5175 14508 -5174.55 14508 -5174H14509H14510C14510 -5175.66 14508.7 -5177 14507 -5177V-5176ZM-1563 -5176V-5177C-1564.66 -5177 -1566 -5175.66 -1566 -5174H-1565H-1564C-1564 -5174.55 -1563.55 -5175 -1563 -5175V-5176Z" fill="white" fill-opacity="0.1"/>
+<g id="icon-sprint" clip-path="url(#clip0_0_1)">
+<path id="Vector" d="M6 6L30 18L6 30" stroke="#00843D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_2" d="M11 6L35 18L11 30" stroke="#00843D" stroke-opacity="0.75" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_3" d="M16 6L40 18L16 30" stroke="#00843D" stroke-opacity="0.5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_0_1">
+<rect width="22" height="22" fill="white"/>
+</clipPath>
+</defs>
+</svg>

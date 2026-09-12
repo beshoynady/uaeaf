@@ -31,6 +31,9 @@ export const DEV_FIXTURE_SETS: readonly DevFixtureSet[] = [
   { collection: 'mediaAssets', singleton: false },
   { collection: 'federationPersonnel', singleton: false },
   { collection: 'contactMessages', singleton: false },
+  // Before `presidentMessagePage`: the message points at the appointment,
+  // and the public route resolves "which message is current" through it.
+  { collection: 'federationAppointments', singleton: false },
   { collection: 'albumsPage', singleton: true },
   { collection: 'athletesPage', singleton: true },
   { collection: 'boardMembersPage', singleton: true },
@@ -40,6 +43,7 @@ export const DEV_FIXTURE_SETS: readonly DevFixtureSet[] = [
   { collection: 'contactUsPage', singleton: true },
   { collection: 'disciplinesPage', singleton: true },
   { collection: 'newsPage', singleton: true },
+  { collection: 'presidentMessagePage', singleton: true },
   { collection: 'recordsPage', singleton: true },
   { collection: 'resultsRankingsPage', singleton: true },
   { collection: 'videosPage', singleton: true },

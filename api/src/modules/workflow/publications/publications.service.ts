@@ -35,6 +35,17 @@ export class PublicationsService {
     return this.repository.createLive({ ...input, publishedAt: new Date() });
   }
 
+  /** The record's current Live publication, if it has one. Exposed for the
+   *  dashboard's editorial-state read, which needs `publishedAt` — the date
+   *  the message is signed with (ADR-0069 D2) — without pulling the whole
+   *  snapshot through `getPublicSnapshot`. */
+  async findLive(
+    entityType: PublicationEntityType,
+    entityId: Types.ObjectId,
+  ): Promise<PublicationDocument | null> {
+    return this.repository.findLive(entityType, entityId);
+  }
+
   /** @throws ConflictException when the publication is not currently Live
    *  (including when it doesn't exist at all). */
   async unpublish(id: string): Promise<PublicationDocument | null> {

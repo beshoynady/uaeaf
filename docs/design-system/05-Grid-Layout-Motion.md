@@ -105,6 +105,7 @@ Modal Component Enter/Exit Animation (Chapter 8)
 | `DT-MOTION-DURATION-BASE`     | 220ms                            | Modal, Drawer open/close                 |
 | `DT-MOTION-DURATION-SLOW`     | 320ms                            | Full-page transition                     |
 | `DT-MOTION-DURATION-SLOWER`   | 480ms                            | Hero celebratory animations only         |
+| `DT-MOTION-DURATION-AMBIENT`  | 1200ms                           | Ambient background motion only — ADR-0069 D9, restricted by §3.14 |
 | `DT-MOTION-EASING-STANDARD`   | `cubic-bezier(0.4,0,0.2,1)`      | Default state for all motion             |
 | `DT-MOTION-EASING-DECELERATE` | `cubic-bezier(0,0,0.2,1)`        | Entering elements                        |
 | `DT-MOTION-EASING-ACCELERATE` | `cubic-bezier(0.4,0,1,1)`        | Exiting elements                         |

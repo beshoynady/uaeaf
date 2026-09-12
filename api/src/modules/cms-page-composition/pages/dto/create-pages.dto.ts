@@ -1,29 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsIn, IsMongoId, IsOptional, IsString, MinLength, ValidateNested } from 'class-validator';
+import { IsIn, IsOptional, IsString, MinLength, ValidateNested } from 'class-validator';
 import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
+// Shared since ADR-0069 D2. Re-exported so this module's importers are unchanged.
+import { PageSeoDto } from '../../../../common/dto/page-seo.dto.js';
 import { PAGE_STATUSES } from '../schemas/pages.schema.js';
 import type { PageStatus } from '../schemas/pages.schema.js';
 
-/** Request shape for the `seo` embed. */
-export class PageSeoDto {
-  @ApiProperty({ type: LocalizedTextDto, required: false })
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => LocalizedTextDto)
-  metaTitle?: LocalizedTextDto;
-
-  @ApiProperty({ type: LocalizedTextDto, required: false })
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => LocalizedTextDto)
-  metaDescription?: LocalizedTextDto;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsMongoId()
-  ogImageId?: string;
-}
+export { PageSeoDto };
 
 /** Request body for POST /pages. */
 export class CreatePageDto {

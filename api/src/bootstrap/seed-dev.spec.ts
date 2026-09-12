@@ -46,6 +46,14 @@ import {
   ContactMessageSchema,
 } from '../modules/public-communication/contact-messages/schemas/contact-messages.schema.js';
 import {
+  FederationAppointment,
+  FederationAppointmentSchema,
+} from '../modules/federation-governance/federation-appointments/schemas/federation-appointments.schema.js';
+import {
+  PresidentMessagePage,
+  PresidentMessagePageSchema,
+} from '../modules/federation-governance/president-message-page/schemas/president-message-page.schema.js';
+import {
   DEV_FIXTURE_SETS,
   assertNoSecrets,
   exportDevFixtures,
@@ -71,9 +79,11 @@ const MODELS: Array<[string, Schema]> = [
   [ContactMessage.name, ContactMessageSchema],
   [ContactUsPage.name, ContactUsPageSchema],
   [DisciplinesPage.name, DisciplinesPageSchema],
+  [FederationAppointment.name, FederationAppointmentSchema],
   [FederationPersonnel.name, FederationPersonnelSchema],
   [MediaAsset.name, MediaAssetSchema],
   [NewsPage.name, NewsPageSchema],
+  [PresidentMessagePage.name, PresidentMessagePageSchema],
   [RecordsPage.name, RecordsPageSchema],
   [ResultsRankingsPage.name, ResultsRankingsPageSchema],
   [VideosPage.name, VideosPageSchema],

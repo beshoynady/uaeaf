@@ -38,6 +38,18 @@ export const API_ERROR_CODES = [
   // because the body carries the exact pairs that would fix it, which the
   // dashboard ticks on the caller's behalf.
   'impliedReadMissing',
+  // Publishing refusals (ADR-0069 D4/D5). Each prevents the task, so the
+  // dashboard renders them as a persistent alert in the action panel rather
+  // than a toast (Chapter 8 L4, ADR-0016) — and each needs different words:
+  // "an administrator has not configured this yet" and "someone edited this
+  // while you were reading it" are not the same problem for the same person.
+  'publishingPolicyMissing',
+  'workflowRequired',
+  'activeWorkflowExists',
+  'staleRecord',
+  'pendingContent',
+  'underReview',
+  'richTextNotAllowed',
 ] as const;
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

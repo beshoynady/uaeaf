@@ -26,7 +26,9 @@
     "bootstrap:admin": "nest build && node dist/bootstrap-admin.js",
     "seed:dev": "nest build && node --env-file-if-exists=.env dist/seed-dev.js",
     "seed:export": "nest build && node --env-file-if-exists=.env dist/seed-dev.js --export",
-    "backfill:created-at": "nest build && node --env-file-if-exists=.env dist/backfill-created-at.js"
+    "backfill:created-at": "nest build && node --env-file-if-exists=.env dist/backfill-created-at.js",
+    "check:policy-duplicates": "nest build && node --env-file-if-exists=.env dist/check-policy-duplicates.js",
+    "migrate:president-message": "nest build && node --env-file-if-exists=.env dist/migrate-president-message-v2.js"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",

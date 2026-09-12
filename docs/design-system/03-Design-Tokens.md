@@ -295,7 +295,13 @@ Any Commit that violates §3.10 (Hardcoded value) **MUST** be automatically reje
 | Spacing Scale                  | Values defined within the 8pt scale only — no arbitrary value such as `13px` |
 | Radius Scale                   | 6 values only (`none/xs/sm/md/lg/xl/full`)                                   |
 | Color Shades per Primary Color | Maximum 10 shades (`50→900`)                                                 |
-| Motion Durations               | 5 values only (`instant/fast/base/slow/slower`)                              |
+| Motion Durations               | 6 values only (`instant/fast/base/slow/slower/ambient`)                      |
+
+**Documented Exception (ADR-0069 D9) — the sixth duration.** `ambient` (1200ms) was added for a single, narrowly bounded purpose and is the only duration on the scale that is restricted by rule rather than by convention:
+
+> `ambient` is for **non-interactive, one-shot, decorative** motion on a background or ground plane. It MUST NOT be used for any state change, transition, entrance, or exit, and MUST NOT be applied to text, to a control, or to any element carrying content. Under `prefers-reduced-motion: reduce` an `ambient` animation is not shortened — it is not played.
+
+Its one authorised use is the portrait hero's background settle (ADR-0069 D8). A second use requires a new ADR. The restriction is machine-checkable: `ambient` must not appear on a selector that also carries a `:hover`, `:focus` or `[data-state]` condition. The five transition durations are unchanged, and the count does not grow again without an ADR that states what the previous five could not express.
 
 **Documented Exception (Project Owner, §3.7):** `color.gray` is allowed a maximum of **14 shades** (instead of 10), due to its extensive use across Light/Dark Mode. Additional values are required at both ends: `25` is close to white for extremely light Light-mode surfaces, while `950` is close to black for extremely dark Dark-mode surfaces — see Chapter 7 §7.3 examples `--color-gray-25` and `--color-gray-950`.
 

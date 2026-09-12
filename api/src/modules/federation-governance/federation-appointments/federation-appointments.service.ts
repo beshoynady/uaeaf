@@ -1,7 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { FederationAppointmentsRepository } from './federation-appointments.repository.js';
-import type { FederationAppointmentDocument } from './schemas/federation-appointments.schema.js';
+import type {
+  AppointmentRoleType,
+  FederationAppointmentDocument,
+} from './schemas/federation-appointments.schema.js';
 import { CreateFederationAppointmentDto } from './dto/create-federation-appointments.dto.js';
 
 /** Implements: federationAppointments collection, Domain 1 — Federation &
@@ -58,6 +61,16 @@ export class FederationAppointmentsService {
 
   async findAll(): Promise<FederationAppointmentDocument[]> {
     return this.repository.find();
+  }
+
+  /** Every currently-serving appointment of a role.
+   *
+   *  A list rather than one document because only `President` is
+   *  single-holder by convention, and that convention is not enforced by
+   *  the schema — returning one would hide a data problem instead of
+   *  letting the caller see it. */
+  async findActiveByRole(roleType: AppointmentRoleType): Promise<FederationAppointmentDocument[]> {
+    return this.repository.find({ roleType, status: 'Active' });
   }
 
   async findById(id: string): Promise<FederationAppointmentDocument | null> {

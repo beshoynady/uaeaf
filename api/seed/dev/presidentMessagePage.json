@@ -1,0 +1,257 @@
+[
+  {
+    "_id": {
+      "$oid": "6aa5001000000000000000b1"
+    },
+    "createdBy": null,
+    "updatedBy": null,
+    "archivedAt": null,
+    "archivedBy": null,
+    "createdAt": {
+      "$date": "2026-09-12T00:00:00Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-12T00:00:00Z"
+    },
+    "federationAppointmentId": {
+      "$oid": "6aa5001000000000000000a1"
+    },
+    "heroImageId": null,
+    "heroTitle": {
+      "ar": "كلمة الرئيس",
+      "en": "President's Message"
+    },
+    "heroSubtitle": {
+      "ar": "كلمة رئيس اتحاد الإمارات لألعاب القوى",
+      "en": "President of the UAE Athletics Federation"
+    },
+    "featuredImageId": null,
+    "pullQuote": {
+      "ar": "«نعمل على بناء منظومة متكاملة لرفع مستوى ألعاب القوى في الإمارات، من خلال برامج استكشاف المواهب وتطوير الكوادر التدريبية والرياضية، لرفع راية دولتنا عالياً في المحافل العالمية.»",
+      "en": "[[pending-content]] \"We are working to build an integrated system to raise the level of athletics in the UAE, through talent discovery programs, training cadre development, and athletic development, to raise our country's flag high in international forums.\""
+    },
+    "messageBody": {
+      "ar": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "يتبنّى",
+                "marks": [
+                  {
+                    "type": "bold"
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": " اتحاد الإمارات لألعاب القوى منظومة متكاملة ترسخ تمكين جميع لاعبي ولاعبات منتخباتنا الوطنية المختلفة بأفضل الممارسات لاكتشاف مواهبهم وتطوير قدراتهم وصقل تجاربهم، لإثراء الواقع الخاص بهذه اللعبة، لتحقيق نتائج واعدة تستشرف مستقبلها لرفع رايات دولتنا الغالية في منصات التتويج العالمية."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "نسعى",
+                "marks": [
+                  {
+                    "type": "bold"
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": " لترسيخ البرامج الاستراتيجية الداعمة لاستدامة التطور وجودة البرامج، لتحقيق المنجزات الوطنية في المنافسات الخارجية، بما يتماشى مع رؤية مجلس الإدارة التطويرية، لبلوغ الأهداف المرجوة و الغايات المنشودة حتى تستعيد \"أم الألعاب\" موقعها الذي يمكنها من العبور إلى آفاق المستقبل بالإرادة والمثابرة والتحدي."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "لطالما",
+                "marks": [
+                  {
+                    "type": "bold"
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": " حرصنا على تشارك الرؤى مع الأندية انطلاقاً من رغبتنا في إرساء القيم الداعمة لنهضة اللعبة، والعمل على تصميم برامج طموحة حتى نمضي قدماً في العمل معاً على تعزيز الجهود المرتبطة بالتطور الذي يكرّس ريادة البرامج وبناء خطط مستدامة وفق منظومة متكاملة، وبرامج متنوعة وتعاون بناء وإيجابي بين الجميع."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "ندرك",
+                "marks": [
+                  {
+                    "type": "bold"
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": " جيداً أن التحديات التي تواجهنا للوصول إلى المنجزات الوطنية يجب أن تمثل دافعاً لنا جميعاً حتى نرتقي بأهدافنا إلى مستوى تطلعاتنا، ونعمل معاً على رسم خريطة نستشعر من خلالها قدرتنا على الوفاء بكل المتطلبات التي نعول عليها للوصول إلى المخرجات التي تجسد الصورة المشرفة عن هذه اللعبة."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "فخورون",
+                "marks": [
+                  {
+                    "type": "bold"
+                  }
+                ]
+              },
+              {
+                "type": "text",
+                "text": " بالتفاعل الكبير والتجاوب اللافت من الأندية والفئات المجتمعية والمؤسسات الوطنية مع البرامج التي تم الإعلان عنها في الفترة الماضية، لاسيما على مستوى المسابقات المختلفة، ونؤكد أن أبوابنا مفتوحة لإثراء اللعبة بكل ما يمكن أن يعزز تطورها ورفعتها، انطلاقاً من مسؤوليتنا الوطنية التي ننطلق عبرها بثقة كبيرة في قدرة \"أم الألعاب\" على عكس الصورة المشرفة عن دولة الإمارات في المحافل الخارجية."
+              }
+            ]
+          }
+        ]
+      },
+      "en": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "The UAE Athletics Federation adopts an integrated system that consolidates the empowerment of all male and female players of our various national teams with the best practices to discover their talents, develop their capabilities and refine their experiences, to enrich the reality of this game, to achieve promising results that look forward to its future, to raise the flags of our dear country on the international podiums."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "We seek to consolidate strategic programs that support the sustainability of development and the quality of programs, to achieve national achievements in external competitions, in line with the developmental vision of the Board of Directors, to achieve the desired goals and objectives so that the \"mother of games\" can regain its position that enables it to cross into future horizons with will, perseverance and challenge."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "We have always been keen to share visions with clubs based on our desire to establish values that support the renaissance of the game, and to work on designing ambitious programs in order to move forward in working together to enhance efforts related to development that devote leadership to programs and build sustainable plans according to an integrated system, diverse programs and constructive and positive cooperation between everyone."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "We are well aware that the challenges we face in order to reach the national achievements must be a motive for all of us in order to raise our goals to the level of our aspirations, and we work together to draw a map through which we feel our ability to fulfill all the requirements that we count on to reach the outputs that embody the honorable image of this game."
+              }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "We are proud of the great interaction and remarkable response of clubs, community groups and national institutions to the programs that were announced in the last period, especially at the level of various competitions, and of the ability of the \"Mother of Games\" to reflect the honorable image of the UAE in foreign forums. [[pending-content]]"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "valuesTitle": {
+      "ar": "قيمنا وتوجهاتنا",
+      "en": "Our Values & Direction"
+    },
+    "values": [
+      {
+        "title": {
+          "ar": "الرؤية",
+          "en": "Vision"
+        },
+        "description": {
+          "ar": "استشراف مستقبل ألعاب القوى ورفع راية الإمارات عالياً",
+          "en": "Envisioning the future of athletics and raising the UAE flag high"
+        },
+        "iconKey": "eye",
+        "displayOrder": 1
+      },
+      {
+        "title": {
+          "ar": "التعاون",
+          "en": "Cooperation"
+        },
+        "description": {
+          "ar": "الشراكة البناءة مع الأندية والمؤسسات الوطنية لتحقيق الأهداف",
+          "en": "Building constructive partnerships with clubs and national institutions to achieve our goals"
+        },
+        "iconKey": "users",
+        "displayOrder": 2
+      },
+      {
+        "title": {
+          "ar": "القيادة",
+          "en": "Leadership"
+        },
+        "description": {
+          "ar": "قيادة فاعلة وملهمة تدفع نحو الريادة والتميز الرياضي",
+          "en": "Effective, inspiring leadership driving sporting excellence and pioneering achievement"
+        },
+        "iconKey": "star",
+        "displayOrder": 3
+      },
+      {
+        "title": {
+          "ar": "التميز",
+          "en": "Excellence"
+        },
+        "description": {
+          "ar": "السعي نحو الإنجاز وتحقيق أعلى المستويات في المنافسات",
+          "en": "Striving for achievement and reaching the highest levels of competition"
+        },
+        "iconKey": "award",
+        "displayOrder": 4
+      },
+      {
+        "title": {
+          "ar": "الابتكار",
+          "en": "Innovation"
+        },
+        "description": {
+          "ar": "تبني الأساليب الحديثة لتطوير قدرات الرياضيين وبرامج الاتحاد",
+          "en": "Embracing modern methods to develop athletes' capabilities and federation programs"
+        },
+        "iconKey": "zap",
+        "displayOrder": 5
+      }
+    ],
+    "signatoryName": {
+      "ar": "سعادة اللواء الدكتور محمد عبدالله المر",
+      "en": "Dr. Muhammad Abdullah Al-Murr"
+    },
+    "signatoryTitle": {
+      "ar": "رئيس الاتحاد",
+      "en": "President"
+    },
+    "seo": null,
+    "publicationState": "Draft"
+  }
+]

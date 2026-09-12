@@ -653,6 +653,22 @@ Answering the seven questions posed by the audit brief, strictly from schema evi
 
 **Overall: NEEDS-DECISION.** The schema fully supports per-operation workflow selection (a real capability, confirmed working) but does not support per-submission workflow-variant selection, definition versioning, or definition-change isolation for in-flight instances.
 
+### 6.5 Update — ADR-0069 D4 (2026-09-12): the pointer is now read, unique, and fails closed
+
+Question 2 above says the policy pointer is "presumably copied at trigger time (not stated, but the only mechanism the schema provides)". It was not copied at all: until this change **nothing in the codebase read `workflowPolicies`** (audit finding OUT-07), and the client sent its own `workflowDefinitionId` when opening a review (OUT-04). Three things changed:
+
+| Was | Is |
+|---|---|
+| No reader. Each module published by whatever path it happened to implement | `WorkflowPoliciesService.resolve(entityType, operation)` returns exactly one of `workflow` \| `direct` \| `blocked` |
+| No policy, or a policy naming an unusable definition, meant nothing in particular | Both resolve to **`blocked`** — drafts still save; submit and publish are refused naming the missing configuration. A system whose least-configured state is its most permissive state is not a permission system |
+| `{entityType, operation}` index was **non-unique**, so two contradictory policies could coexist and selection was whichever document the query returned first (finding H4) | **Unique**, partial on `archivedAt: null`. A duplicate is a 409 |
+| A policy could name a definition that was archived, inactive, or written for another entity type (finding H11/S8) | Refused **when the policy is written**, and refused again at `resolve()` time |
+| The submitting client chose the definition (finding OUT-04) | The **server** takes it from the policy. There is nowhere for a client to name a softer workflow than the configured one |
+
+Questions 5, 6 and 7 are unchanged and still NEEDS-DECISION: no per-submission variant selection, no definition versioning, and no step-structure freeze for in-flight instances.
+
+**Rollout order is not optional** — check for duplicates, drop the superseded non-unique index explicitly (Mongoose will not), then build the new one. See `docs/engineering/deployment-checklist.md` and `npm run check:policy-duplicates`.
+
 ---
 
 ## 7. Workflow Engine Findings

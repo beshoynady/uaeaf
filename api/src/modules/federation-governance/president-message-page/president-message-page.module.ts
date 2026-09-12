@@ -7,6 +7,8 @@ import { PresidentMessagePagesController } from './president-message-page.contro
 import { PublicationsModule } from '../../workflow/publications/publications.module.js';
 import { RevisionsModule } from '../../workflow/revisions/revisions.module.js';
 import { MediaAssetsModule } from '../../media-center/media-assets/media-assets.module.js';
+import { PublishingModule } from '../../workflow/publishing/publishing.module.js';
+import { FederationAppointmentsModule } from '../federation-appointments/federation-appointments.module.js';
 
 @Module({
   imports: [
@@ -14,6 +16,12 @@ import { MediaAssetsModule } from '../../media-center/media-assets/media-assets.
     PublicationsModule,
     RevisionsModule,
     MediaAssetsModule,
+    // The publishing path (policy resolution, direct publish, submit,
+    // restore, editorial state) — ADR-0069 D4/D5.
+    PublishingModule,
+    // "Which message is current" is answered by the sitting president's
+    // term, not by the newest row (ADR-0069 D3).
+    FederationAppointmentsModule,
   ],
   controllers: [PresidentMessagePagesController],
   providers: [PresidentMessagePagesRepository, PresidentMessagePagesService],

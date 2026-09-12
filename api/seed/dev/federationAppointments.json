@@ -1,0 +1,34 @@
+[
+  {
+    "_id": {
+      "$oid": "6aa5001000000000000000a1"
+    },
+    "createdBy": null,
+    "updatedBy": null,
+    "archivedAt": null,
+    "archivedBy": null,
+    "createdAt": {
+      "$date": "2026-09-12T00:00:00Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-12T00:00:00Z"
+    },
+    "personId": {
+      "$oid": "6aa5001000000000000000c1"
+    },
+    "supersedesAppointmentId": null,
+    "roleType": "President",
+    "positionTitle": {
+      "ar": "رئيس الاتحاد",
+      "en": "President"
+    },
+    "committeeId": null,
+    "electionCycleId": null,
+    "termStart": {
+      "$date": "2025-01-01T00:00:00Z"
+    },
+    "termEnd": null,
+    "status": "Active",
+    "displayOrder": 1
+  }
+]
