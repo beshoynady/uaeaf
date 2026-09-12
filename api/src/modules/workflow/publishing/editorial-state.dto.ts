@@ -1,6 +1,21 @@
 import { ApiProperty } from '@nestjs/swagger';
 import type { PublishingMode } from '../workflow-policies/workflow-policies.service.js';
 import type { WorkflowInstanceStatus } from '../workflow-instances/schemas/workflow-instance.schema.js';
+import type { PublishBlockerKind } from './publish-blockers.js';
+
+/** One reason this record may not be published yet. */
+export class PublishBlockerDto {
+  @ApiProperty({
+    enum: ['pendingContent', 'missingRequired'],
+    description:
+      '`pendingContent` — the field still carries the awaiting-the-client marker. ' +
+      '`missingRequired` — the field must hold a value before this type may be published and is empty.',
+  })
+  kind: PublishBlockerKind;
+
+  @ApiProperty({ description: 'Record path, e.g. `pullQuote.en` or `featuredImageId`.' })
+  field: string;
+}
 
 /** An action the caller may take on this record right now. */
 export const EDITORIAL_ACTIONS = [
@@ -70,8 +85,11 @@ export class EditorialStateDto {
 
   @ApiProperty({
     isArray: true,
-    type: String,
-    description: 'Field paths still carrying the pending-content marker. Publishing is refused while non-empty.',
+    type: PublishBlockerDto,
+    description:
+      'Everything standing between this draft and the public site. Publishing is refused while non-empty, ' +
+      'and the dashboard renders it as a readiness list above the publish button rather than waiting to ' +
+      'refuse the press.',
   })
-  pendingContent: string[];
+  publishBlockers: PublishBlockerDto[];
 }

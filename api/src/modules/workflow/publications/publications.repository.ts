@@ -25,6 +25,40 @@ export class PublicationsRepository extends BaseRepository<PublicationDocument> 
     return this.findOne({ entityType, entityId, status: 'Live' });
   }
 
+  /** Every publication this record has ever had, whatever its status.
+   *
+   *  Read by the dashboard's version history to say what became of each
+   *  version — `findLive` alone would answer only for the current one, and
+   *  a version that was live last month would read as never published. */
+  async findForEntity(
+    entityType: PublicationEntityType,
+    entityId: Types.ObjectId,
+  ): Promise<PublicationDocument[]> {
+    return this.find({ entityType, entityId });
+  }
+
+  /** What became of each of the given versions, in one query.
+   *
+   *  The history listing needs this for the page it is drawing and nothing
+   *  more — reading an entity's whole publication history to annotate
+   *  twenty rows would make a paginated route cost what the unpaginated one
+   *  cost, which is the thing pagination was added to stop. */
+  async findByRevisionIds(revisionIds: Types.ObjectId[]): Promise<PublicationDocument[]> {
+    if (revisionIds.length === 0) {
+      return [];
+    }
+    return this.find({ revisionId: { $in: revisionIds } });
+  }
+
+  /** The one publication made from a given revision, if it was ever
+   *  published at all. At most one can exist: a revision is created fresh
+   *  for each publish, and `createLive` is called once per revision — so a
+   *  version's fate is a single document, not a search through the record's
+   *  whole history. */
+  async findByRevisionId(revisionId: Types.ObjectId): Promise<PublicationDocument | null> {
+    return this.findOne({ revisionId });
+  }
+
   /** Creates a new `Live` publications row for (entityType, entityId),
    *  first retiring any existing `Live` row(s) for that same entity to
    *  `Archived` — enforces the confirmed invariant that at most one `Live`

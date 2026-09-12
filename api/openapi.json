@@ -1125,6 +1125,78 @@
         "tags": [
           "revisions"
         ]
+      },
+      "get": {
+        "operationId": "RevisionsController_list_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "1-indexed page number.",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Versions per page (max 200).",
+            "schema": {
+              "default": 20,
+              "type": "number"
+            }
+          },
+          {
+            "name": "entityType",
+            "required": true,
+            "in": "query",
+            "description": "The entity type whose history to list.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "articles",
+                "staticPages",
+                "externalMediaCoverage",
+                "governanceDocuments",
+                "strategicPlansPage",
+                "visionMissionPage",
+                "aboutFederationPage",
+                "presidentMessagePage",
+                "organizationalStructure",
+                "committees",
+                "documents",
+                "publicEvents"
+              ]
+            }
+          },
+          {
+            "name": "entityId",
+            "required": true,
+            "in": "query",
+            "description": "The id of the record whose history to list.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevisionHistoryPageDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "revisions"
+        ]
       }
     },
     "/api/v1/revisions/{id}": {
@@ -1150,55 +1222,45 @@
         ]
       }
     },
-    "/api/v1/publications/{id}/unpublish": {
-      "patch": {
-        "operationId": "PublicationsController_unpublish_v1",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
+    "/api/v1/workflow-policies": {
+      "post": {
+        "operationId": "WorkflowPoliciesController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWorkflowPolicyDto"
+              }
             }
           }
-        ],
+        },
         "responses": {
-          "200": {
+          "201": {
             "description": ""
           }
         },
         "tags": [
-          "publications"
+          "workflow-policies"
         ]
-      }
-    },
-    "/api/v1/publications/{id}/archive": {
-      "patch": {
-        "operationId": "PublicationsController_archive_v1",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "publications"
-        ]
-      }
-    },
-    "/api/v1/publications/{entityType}/{entityId}/public": {
+      },
       "get": {
-        "operationId": "PublicationsController_getPublicSnapshot_v1",
+        "operationId": "WorkflowPoliciesController_findAll_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "workflow-policies"
+        ]
+      }
+    },
+    "/api/v1/workflow-policies/{entityType}/{operation}": {
+      "get": {
+        "operationId": "WorkflowPoliciesController_findByPair_v1",
         "parameters": [
           {
             "name": "entityType",
@@ -1209,7 +1271,7 @@
             }
           },
           {
-            "name": "entityId",
+            "name": "operation",
             "required": true,
             "in": "path",
             "schema": {
@@ -1223,18 +1285,57 @@
           }
         },
         "tags": [
-          "publications"
+          "workflow-policies"
+        ]
+      },
+      "put": {
+        "operationId": "WorkflowPoliciesController_set_v1",
+        "parameters": [
+          {
+            "name": "entityType",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "operation",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetWorkflowPolicyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "workflow-policies"
         ]
       }
     },
-    "/api/v1/workflow-action-history": {
+    "/api/v1/workflow-policies/{id}": {
       "get": {
-        "operationId": "WorkflowActionHistoryController_findByInstance_v1",
+        "operationId": "WorkflowPoliciesController_findOne_v1",
         "parameters": [
           {
-            "name": "workflowInstanceId",
+            "name": "id",
             "required": true,
-            "in": "query",
+            "in": "path",
             "schema": {
               "type": "string"
             }
@@ -1246,7 +1347,7 @@
           }
         },
         "tags": [
-          "workflow-action-history"
+          "workflow-policies"
         ]
       }
     },
@@ -1487,58 +1588,14 @@
         ]
       }
     },
-    "/api/v1/workflow-policies": {
-      "post": {
-        "operationId": "WorkflowPoliciesController_create_v1",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateWorkflowPolicyDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "workflow-policies"
-        ]
-      },
+    "/api/v1/workflow-action-history": {
       "get": {
-        "operationId": "WorkflowPoliciesController_findAll_v1",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "workflow-policies"
-        ]
-      }
-    },
-    "/api/v1/workflow-policies/{entityType}/{operation}": {
-      "get": {
-        "operationId": "WorkflowPoliciesController_findByPair_v1",
+        "operationId": "WorkflowActionHistoryController_findByInstance_v1",
         "parameters": [
           {
-            "name": "entityType",
+            "name": "workflowInstanceId",
             "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "operation",
-            "required": true,
-            "in": "path",
+            "in": "query",
             "schema": {
               "type": "string"
             }
@@ -1550,52 +1607,13 @@
           }
         },
         "tags": [
-          "workflow-policies"
-        ]
-      },
-      "put": {
-        "operationId": "WorkflowPoliciesController_set_v1",
-        "parameters": [
-          {
-            "name": "entityType",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "operation",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetWorkflowPolicyDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "workflow-policies"
+          "workflow-action-history"
         ]
       }
     },
-    "/api/v1/workflow-policies/{id}": {
-      "get": {
-        "operationId": "WorkflowPoliciesController_findOne_v1",
+    "/api/v1/publications/{id}/unpublish": {
+      "patch": {
+        "operationId": "PublicationsController_unpublish_v1",
         "parameters": [
           {
             "name": "id",
@@ -1612,7 +1630,61 @@
           }
         },
         "tags": [
-          "workflow-policies"
+          "publications"
+        ]
+      }
+    },
+    "/api/v1/publications/{id}/archive": {
+      "patch": {
+        "operationId": "PublicationsController_archive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "publications"
+        ]
+      }
+    },
+    "/api/v1/publications/{entityType}/{entityId}/public": {
+      "get": {
+        "operationId": "PublicationsController_getPublicSnapshot_v1",
+        "parameters": [
+          {
+            "name": "entityType",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "publications"
         ]
       }
     },
@@ -7113,6 +7185,177 @@
           "entityId"
         ]
       },
+      "RevisionActorDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "nullable": true,
+            "description": "Null when the account no longer exists — history outlives accounts.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "RevisionSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "versionNumber": {
+            "type": "number",
+            "description": "Version number within this record, starting at 1."
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "ISO date the version was frozen."
+          },
+          "createdBy": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RevisionActorDto"
+              }
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "Draft",
+              "Live",
+              "Unpublished",
+              "Archived"
+            ]
+          },
+          "publishedAt": {
+            "type": "object",
+            "nullable": true,
+            "description": "ISO date this version went live; null if it never did."
+          }
+        },
+        "required": [
+          "id",
+          "versionNumber",
+          "createdAt",
+          "createdBy",
+          "state",
+          "publishedAt"
+        ]
+      },
+      "RevisionHistoryPageDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RevisionSummaryDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Versions this record has in all, not on this page."
+          },
+          "page": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit"
+        ]
+      },
+      "CreateWorkflowPolicyDto": {
+        "type": "object",
+        "properties": {
+          "entityType": {
+            "type": "string",
+            "description": "The governed entity type.",
+            "enum": [
+              "articles",
+              "staticPages",
+              "externalMediaCoverage",
+              "governanceDocuments",
+              "strategicPlansPage",
+              "visionMissionPage",
+              "aboutFederationPage",
+              "presidentMessagePage",
+              "organizationalStructure",
+              "committees",
+              "documents",
+              "contactMessages",
+              "publicEvents"
+            ]
+          },
+          "operation": {
+            "type": "string",
+            "description": "The governed operation.",
+            "enum": [
+              "Add",
+              "Edit",
+              "Delete",
+              "Unpublish",
+              "Archive"
+            ]
+          },
+          "workflowRequired": {
+            "type": "boolean",
+            "description": "Whether this (entityType, operation) pair requires approval at all."
+          },
+          "workflowDefinitionId": {
+            "type": "string",
+            "description": "Required when workflowRequired=true; the definition to route through."
+          },
+          "allowHardDelete": {
+            "type": "boolean",
+            "description": "Whether HardDelete is permitted for this entityType at all.",
+            "default": false
+          }
+        },
+        "required": [
+          "entityType",
+          "operation",
+          "workflowRequired",
+          "allowHardDelete"
+        ]
+      },
+      "SetWorkflowPolicyDto": {
+        "type": "object",
+        "properties": {
+          "workflowRequired": {
+            "type": "boolean",
+            "description": "Whether this operation must go through an approval workflow. When true, workflowDefinitionId must name an active definition for the same entityType, or the operation resolves to blocked."
+          },
+          "workflowDefinitionId": {
+            "type": "object",
+            "nullable": true,
+            "description": "The definition that governs this operation. Required in practice when workflowRequired is true."
+          },
+          "allowHardDelete": {
+            "type": "boolean",
+            "description": "Whether \"delete\" may mean physical deletion for this entity type. Defaults to false."
+          }
+        },
+        "required": [
+          "workflowRequired"
+        ]
+      },
       "CreateWorkflowInstanceDto": {
         "type": "object",
         "properties": {
@@ -7219,81 +7462,6 @@
         },
         "required": [
           "delegatedToUserId"
-        ]
-      },
-      "CreateWorkflowPolicyDto": {
-        "type": "object",
-        "properties": {
-          "entityType": {
-            "type": "string",
-            "description": "The governed entity type.",
-            "enum": [
-              "articles",
-              "staticPages",
-              "externalMediaCoverage",
-              "governanceDocuments",
-              "strategicPlansPage",
-              "visionMissionPage",
-              "aboutFederationPage",
-              "presidentMessagePage",
-              "organizationalStructure",
-              "committees",
-              "documents",
-              "contactMessages",
-              "publicEvents"
-            ]
-          },
-          "operation": {
-            "type": "string",
-            "description": "The governed operation.",
-            "enum": [
-              "Add",
-              "Edit",
-              "Delete",
-              "Unpublish",
-              "Archive"
-            ]
-          },
-          "workflowRequired": {
-            "type": "boolean",
-            "description": "Whether this (entityType, operation) pair requires approval at all."
-          },
-          "workflowDefinitionId": {
-            "type": "string",
-            "description": "Required when workflowRequired=true; the definition to route through."
-          },
-          "allowHardDelete": {
-            "type": "boolean",
-            "description": "Whether HardDelete is permitted for this entityType at all.",
-            "default": false
-          }
-        },
-        "required": [
-          "entityType",
-          "operation",
-          "workflowRequired",
-          "allowHardDelete"
-        ]
-      },
-      "SetWorkflowPolicyDto": {
-        "type": "object",
-        "properties": {
-          "workflowRequired": {
-            "type": "boolean",
-            "description": "Whether this operation must go through an approval workflow. When true, workflowDefinitionId must name an active definition for the same entityType, or the operation resolves to blocked."
-          },
-          "workflowDefinitionId": {
-            "type": "object",
-            "nullable": true,
-            "description": "The definition that governs this operation. Required in practice when workflowRequired is true."
-          },
-          "allowHardDelete": {
-            "type": "boolean",
-            "description": "Whether \"delete\" may mean physical deletion for this entity type. Defaults to false."
-          }
-        },
-        "required": [
-          "workflowRequired"
         ]
       },
       "CreateNotificationDto": {

@@ -16,13 +16,54 @@
  * - **FB.21** timers stop while a dialog is open, and while the pointer or
  *   the keyboard is inside the region — a message that expires while it is
  *   being read was never shown.
+ * - **FB.22** every message records where it came from. Not shown to anyone;
+ *   it is what makes a burst of toasts diagnosable after the fact.
+ * - **FB.25** a message carrying an `eventId` is shown once, however many
+ *   times it arrives. Stronger than FB.16's text match, which fails the
+ *   moment the same event is worded two ways.
+ *
+ * What it deliberately does NOT implement, and why:
+ *
+ * - **FB.23** rate limiting. It governs a stream of unrelated events — the
+ *   chapter's example is live result updates. Every toast this dashboard
+ *   raises is the result of a click, so there is no such stream to limit
+ *   yet. The queue is capped instead, which bounds the damage without
+ *   inventing a limiter for a source that does not exist.
+ * - **FB.24** cross-tab synchronisation. It governs session-level events
+ *   (session expired, forced logout), which this region does not carry.
+ *
+ * ADR-0016 bounds what may be a toast at all: never an error that prevents
+ * the task. A refusal the reader must act on belongs inline, beside the
+ * control that refused.
  */
 
 export const TOAST_TONES = ["success", "info", "warning", "error"] as const;
 export type ToastTone = (typeof TOAST_TONES)[number];
 
+/** FB.22's closed list. Internal metadata — never rendered. */
+export const TOAST_SOURCES = [
+  "validation",
+  "api",
+  "navigation",
+  "permission",
+  "realtime",
+  "background-job",
+  "offline",
+  "system",
+] as const;
+export type ToastSource = (typeof TOAST_SOURCES)[number];
+
 /** FB.6. */
 export const MAX_VISIBLE_TOASTS = 3;
+
+/**
+ * How many may wait behind the visible three.
+ *
+ * A queue is a promise to show every message eventually; past this many, that
+ * promise is worse than the messages. The overflow is counted, not kept — the
+ * region says how many were dropped rather than pretending to hold them.
+ */
+export const MAX_QUEUED_TOASTS = 10;
 
 /** FB.11's window. 5s is its midpoint. */
 export const DEFAULT_TOAST_DURATION = 5_000;
@@ -31,12 +72,17 @@ export interface ToastSpec {
   tone: ToastTone;
   title: string;
   description?: string;
+  /** FB.22. Required: a message with no recorded origin is the one nobody
+   *  can explain later. */
+  source: ToastSource;
   /**
    * Two toasts sharing this are the same event happening again (FB.16).
    * Without one, every toast is its own — which is right for messages that
    * name a specific record.
    */
   dedupeKey?: string;
+  /** FB.25. The same id is shown once, whatever its wording. */
+  eventId?: string;
   /** Milliseconds, or `null` to stay until dismissed. Defaults by tone. */
   duration?: number | null;
 }
@@ -55,6 +101,23 @@ export function defaultDurationFor(tone: ToastTone): number | null {
 
 type Listener = () => void;
 
+/**
+ * What a subscriber reads.
+ *
+ * A separate object rather than the store's own arrays, because the store
+ * mutates those in place and `useSyncExternalStore` compares by reference — a
+ * snapshot that is the same array after a push is a change React never sees.
+ */
+export interface ToastSnapshot {
+  visible: readonly ToastRecord[];
+  queued: number;
+  dropped: number;
+}
+
+/** The server renders no toasts, so every server snapshot is this one — and
+ *  it must be a stable reference or React re-renders forever. */
+export const EMPTY_TOAST_SNAPSHOT: ToastSnapshot = { visible: [], queued: 0, dropped: 0 };
+
 interface Timer {
   /** What is left to run when the queue is resumed. */
   remaining: number;
@@ -67,8 +130,11 @@ export class ToastStore {
   private queue: ToastRecord[] = [];
   private timers = new Map<string, Timer>();
   private listeners = new Set<Listener>();
+  private seenEventIds = new Set<string>();
   private paused = false;
   private sequence = 0;
+  private dropped = 0;
+  private snapshot: ToastSnapshot = EMPTY_TOAST_SNAPSHOT;
 
   /** Visible toasts, oldest first. */
   get visible(): readonly ToastRecord[] {
@@ -80,22 +146,41 @@ export class ToastStore {
     return this.queue.length;
   }
 
+  /** How many were refused because the queue was full. */
+  get droppedCount(): number {
+    return this.dropped;
+  }
+
   get isPaused(): boolean {
     return this.paused;
   }
 
-  subscribe(listener: Listener): () => void {
+  /** Bound, so it can be handed to `useSyncExternalStore` directly. */
+  readonly getSnapshot = (): ToastSnapshot => this.snapshot;
+
+  subscribe = (listener: Listener): (() => void) => {
     this.listeners.add(listener);
-    return () => this.listeners.delete(listener);
-  }
+    return () => {
+      this.listeners.delete(listener);
+    };
+  };
 
   /**
    * Shows a toast, or merges it into the one already saying the same thing.
    *
    * Returns the id either way, so a caller holding it can later replace the
-   * message in place — which is how `promise` keeps its slot.
+   * message in place — which is how a pending-then-resolved pair keeps its
+   * slot. Returns `null` when nothing was shown: a repeat of an `eventId`
+   * already handled, or a queue with no room left.
    */
-  show(spec: ToastSpec): string {
+  show(spec: ToastSpec): string | null {
+    if (spec.eventId !== undefined) {
+      if (this.seenEventIds.has(spec.eventId)) {
+        return null;
+      }
+      this.seenEventIds.add(spec.eventId);
+    }
+
     const existing = spec.dedupeKey
       ? [...this.records, ...this.queue].find((record) => record.dedupeKey === spec.dedupeKey)
       : undefined;
@@ -119,8 +204,12 @@ export class ToastStore {
     if (this.records.length < MAX_VISIBLE_TOASTS) {
       this.records.push(record);
       this.startTimer(record);
-    } else {
+    } else if (this.queue.length < MAX_QUEUED_TOASTS) {
       this.queue.push(record);
+    } else {
+      this.dropped += 1;
+      this.emit();
+      return null;
     }
 
     this.emit();
@@ -135,7 +224,8 @@ export class ToastStore {
    * the moment the reader is looking straight at it (FB.17).
    */
   update(id: string, spec: Partial<ToastSpec>): void {
-    const record = this.records.find((item) => item.id === id) ?? this.queue.find((item) => item.id === id);
+    const record =
+      this.records.find((item) => item.id === id) ?? this.queue.find((item) => item.id === id);
     if (!record) {
       return;
     }
@@ -173,20 +263,13 @@ export class ToastStore {
     this.emit();
   }
 
-  /** The newest first — what Escape closes. */
-  dismissNewest(): void {
-    const newest = this.records.at(-1);
-    if (newest) {
-      this.dismiss(newest.id);
-    }
-  }
-
   dismissAll(): void {
     for (const id of [...this.timers.keys()]) {
       this.clearTimer(id);
     }
     this.records = [];
     this.queue = [];
+    this.dropped = 0;
     this.emit();
   }
 
@@ -198,7 +281,7 @@ export class ToastStore {
       return;
     }
     this.paused = true;
-    for (const [id, timer] of this.timers) {
+    for (const timer of this.timers.values()) {
       if (timer.handle === null || timer.startedAt === null) {
         continue;
       }
@@ -206,7 +289,6 @@ export class ToastStore {
       timer.remaining = Math.max(0, timer.remaining - (Date.now() - timer.startedAt));
       timer.handle = null;
       timer.startedAt = null;
-      void id;
     }
     this.emit();
   }
@@ -240,7 +322,9 @@ export class ToastStore {
 
   private arm(id: string, timer: Timer): void {
     timer.startedAt = Date.now();
-    timer.handle = setTimeout(() => this.dismiss(id), timer.remaining);
+    timer.handle = setTimeout(() => {
+      this.dismiss(id);
+    }, timer.remaining);
   }
 
   private clearTimer(id: string): void {
@@ -252,6 +336,7 @@ export class ToastStore {
   }
 
   private emit(): void {
+    this.snapshot = { visible: [...this.records], queued: this.queue.length, dropped: this.dropped };
     for (const listener of this.listeners) {
       listener();
     }

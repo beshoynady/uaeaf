@@ -40,4 +40,49 @@ export class RevisionsRepository {
   async countForEntity(entityType: PublicationEntityType, entityId: Types.ObjectId): Promise<number> {
     return this.model.countDocuments({ entityType, entityId }).exec();
   }
+
+  /**
+   * One page of a record's history, newest first, without the snapshots.
+   *
+   * The skip and limit are applied in the database, not to an in-memory
+   * slice, so a record with a thousand versions costs the same to read as
+   * one with ten. `total` is counted separately: the page alone cannot say
+   * how far the history goes.
+   *
+   * `snapshotData` is projected out on purpose: a page of fifty versions
+   * would otherwise send fifty full documents to draw a list of dates. The
+   * reader opens one version at a time, and `findById` fetches that one.
+   *
+   * Served by the existing `{entityType, entityId, versionNumber: -1}`
+   * index, which is already sorted the way this reads.
+   */
+  async findForEntity(
+    entityType: PublicationEntityType,
+    entityId: Types.ObjectId,
+    skip: number,
+    limit: number,
+  ): Promise<{ items: RevisionListRow[]; total: number }> {
+    const filter = { entityType, entityId };
+    const [items, total] = await Promise.all([
+      this.model
+        .find(filter, { snapshotData: 0 })
+        .sort({ versionNumber: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean<RevisionListRow[]>()
+        .exec(),
+      this.model.countDocuments(filter).exec(),
+    ]);
+    return { items, total };
+  }
+}
+
+/** One row of a record's history — everything but the snapshot itself. */
+export interface RevisionListRow {
+  _id: Types.ObjectId;
+  entityType: PublicationEntityType;
+  entityId: Types.ObjectId;
+  versionNumber: number;
+  createdAt: Date;
+  createdBy: Types.ObjectId;
 }

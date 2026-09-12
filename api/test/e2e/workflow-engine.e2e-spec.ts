@@ -61,6 +61,10 @@ describe('Workflow engine (e2e)', () => {
       ['workflowSteps', 'Create'],
       ['revisions', 'Create'],
       ['revisions', 'Read'],
+      // `revisions:Read` opens history in general; reading THIS record's
+      // history also needs Read on its own entity type (owner decision
+      // 2026-09-12). Without this line the GET below is a 403.
+      ['visionMissionPage', 'Read'],
       ['workflowInstances', 'Create'],
       ['workflowInstances', 'Read'],
       ['workflowInstances', 'Approve'],
@@ -304,7 +308,9 @@ describe('Workflow engine (e2e)', () => {
       .get(apiPath(`/revisions/${revisionB1Id}`))
       .set(auth())
       .expect(200);
-    expect(revisionB1Again.body.snapshotData.visionText.en).toBe('Vision B, first draft');
+    // `content`, not `snapshotData`: the read projects the frozen snapshot
+    // through the entity type's allowlist rather than returning it raw.
+    expect(revisionB1Again.body.content.visionText.en).toBe('Vision B, first draft');
 
     // Resubmission is held to the same rule as the first submission.
     await request(app.getHttpServer())

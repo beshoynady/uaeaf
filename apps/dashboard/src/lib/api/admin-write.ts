@@ -57,7 +57,42 @@ export const WRITE_ERROR_CODES = [
   "serviceUnavailable",
 ] as const;
 
-export type WriteErrorCode = (typeof WRITE_ERROR_CODES)[number];
+/**
+ * Failures only the editorial surfaces can produce — publishing, review and
+ * restore (ADR-0069 D4/D5).
+ *
+ * Kept apart from the list above rather than merged into it because
+ * `write-error-copy.spec.ts` checks every code against every surface that can
+ * reach it, and these cannot reach the three that predate them: a role
+ * assignment has no draft to go stale and no publishing policy to be missing.
+ * Merging them would demand copy for "someone edited this record while you
+ * were reading it" on the permission matrix — and copy written for a case
+ * that cannot happen is copy nobody will ever correct.
+ */
+export const EDITORIAL_ERROR_CODES = [
+  /** No usable publishing policy is configured. Fails closed: drafts still
+   *  save, nothing publishes, an administrator must act. */
+  "publishingPolicyMissing",
+  /** The policy demands approvals, so this may not be published directly. */
+  "workflowRequired",
+  /** A review is already running on this record. */
+  "activeWorkflowExists",
+  /** The record changed after it was opened. */
+  "staleRecord",
+  /** Copy is still marked as awaiting the client. */
+  "pendingContent",
+  /** A field this type may not be published without is still empty. */
+  "missingRequiredField",
+  /** A review is in progress and this caller is not handling its step. */
+  "underReview",
+  /** The submitted rich text used a node, mark or attribute the language's
+   *  allowlist does not permit. */
+  "richTextNotAllowed",
+] as const;
+
+export type WriteErrorCode =
+  | (typeof WRITE_ERROR_CODES)[number]
+  | (typeof EDITORIAL_ERROR_CODES)[number];
 
 /** The API returns 200 with an empty body instead of 404 on four routes
  *  (PATCH roles/:id/name, PATCH roles/:id/permissions, DELETE roles/:id,
@@ -122,6 +157,18 @@ const FROM_API_CODE: Record<string, WriteErrorCode> = {
   ungrantablePermission: "ungrantablePermission",
   selfAssignment: "selfAssignment",
   impliedReadMissing: "impliedReadMissing",
+  // ADR-0069 D4/D5. Each prevents the task, so each carries its own words:
+  // "nobody has configured this yet", "someone edited this while you were
+  // reading it" and "the portrait is missing" are three different problems
+  // for three different people.
+  publishingPolicyMissing: "publishingPolicyMissing",
+  workflowRequired: "workflowRequired",
+  activeWorkflowExists: "activeWorkflowExists",
+  staleRecord: "staleRecord",
+  pendingContent: "pendingContent",
+  missingRequiredField: "missingRequiredField",
+  underReview: "underReview",
+  richTextNotAllowed: "richTextNotAllowed",
 };
 
 function fallbackFor(status: number): WriteErrorCode {

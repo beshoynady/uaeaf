@@ -18,7 +18,7 @@ export default async function OverviewPage({ params }: { params: Promise<{ local
   // memoised GET /users/me the shell above already made, so listing the
   // reachable sections costs no extra round trip.
   const grants = await readGrants(locale);
-  const sections = visibleNavItems(grants).filter((item) => item.resourceType !== null);
+  const sections = visibleNavItems(grants).filter((item) => item.requires !== null);
 
   return (
     <>

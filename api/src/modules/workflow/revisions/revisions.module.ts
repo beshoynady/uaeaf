@@ -3,11 +3,17 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Revision, RevisionSchema } from './schemas/revision.schema.js';
 import { RevisionsRepository } from './revisions.repository.js';
 import { RevisionsService } from './revisions.service.js';
-import { RevisionsController } from './revisions.controller.js';
 
+/**
+ * Data only — the HTTP routes for `/revisions` live in `PublishingModule`.
+ *
+ * Reading a version's history needs `publications` as well as `revisions`,
+ * and `PublicationsModule` already imports this module for the public read
+ * path, so this module cannot import it back. The controller therefore sits
+ * in the one module that can see both (see `publishing/revisions.controller.ts`).
+ */
 @Module({
   imports: [MongooseModule.forFeature([{ name: Revision.name, schema: RevisionSchema }])],
-  controllers: [RevisionsController],
   providers: [RevisionsRepository, RevisionsService],
   exports: [RevisionsService],
 })

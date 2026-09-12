@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, type InputHTMLAttributes, type ReactNode } from "react";
+import { useId, type InputHTMLAttributes, type ReactNode, type RefAttributes } from "react";
 import { FIELD_BOX } from "@/components/ui/interactive";
 import { FieldLabel } from "@/components/ui/required-field";
 
@@ -55,7 +55,11 @@ export function TextField({
    *  password field. Follows the page's direction, which is where a reader
    *  of that language expects a trailing affordance. */
   trailing?: ReactNode;
-} & InputHTMLAttributes<HTMLInputElement>) {
+} & InputHTMLAttributes<HTMLInputElement> &
+  // React 19 passes `ref` through as an ordinary prop, and the spread
+  // below already forwards it to the control. Only the type was missing,
+  // which left a caller unable to focus a field it had just revealed.
+  RefAttributes<HTMLInputElement>) {
   const generated = useId();
   const hintId = hint ? `${generated}-hint` : undefined;
   const errorId = error ? `${generated}-error` : undefined;

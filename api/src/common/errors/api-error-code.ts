@@ -48,6 +48,11 @@ export const API_ERROR_CODES = [
   'activeWorkflowExists',
   'staleRecord',
   'pendingContent',
+  // A field the page cannot be published without is still empty. Distinct
+  // from `pendingContent` because the marker is a string and a missing image
+  // is not — and because the two are different jobs: chasing the client for
+  // copy, versus uploading a portrait the editor already has.
+  'missingRequiredField',
   'underReview',
   'richTextNotAllowed',
 ] as const;

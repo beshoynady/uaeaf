@@ -16,6 +16,7 @@ import { WorkflowStepsModule } from './modules/workflow/workflow-steps/workflow-
 import { WorkflowInstancesModule } from './modules/workflow/workflow-instances/workflow-instances.module.js';
 import { WorkflowActionHistoryModule } from './modules/workflow/workflow-action-history/workflow-action-history.module.js';
 import { RevisionsModule } from './modules/workflow/revisions/revisions.module.js';
+import { PublishingModule } from './modules/workflow/publishing/publishing.module.js';
 import { PublicationsModule } from './modules/workflow/publications/publications.module.js';
 import { WorkflowPoliciesModule } from './modules/workflow/workflow-policies/workflow-policies.module.js';
 import { NotificationsModule } from './modules/workflow/notifications/notifications.module.js';
@@ -93,6 +94,10 @@ import { AppController } from './app.controller.js';
     WorkflowDefinitionsModule,
     WorkflowStepsModule,
     RevisionsModule,
+    // Mounts the /revisions routes, which RevisionsModule deliberately does
+    // not (see both module headers). Listed here rather than left to reach
+    // the graph through whichever feature module happens to import it.
+    PublishingModule,
     PublicationsModule,
     WorkflowActionHistoryModule,
     WorkflowInstancesModule,

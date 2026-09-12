@@ -14,11 +14,20 @@ import { WorkflowStepsService } from '../workflow-steps/workflow-steps.service.j
 import { RevisionsService } from '../revisions/revisions.service.js';
 import { PublicationsService } from '../publications/publications.service.js';
 import { AuditLogsService } from '../audit-logs/audit-logs.service.js';
-import { findPendingContent } from './pending-content.js';
+import { UsersService } from '../../platform-administration/users/users.service.js';
+import { describePublishBlockers, findPublishBlockers } from './publish-blockers.js';
 import { EDITORIAL_ACTIONS } from './editorial-state.dto.js';
+import { projectRevisionContent } from '../../../common/constants/entity-content.js';
 import type { EditorialAction, EditorialStateDto } from './editorial-state.dto.js';
+import type {
+  RevisionDetailDto,
+  RevisionHistoryPageDto,
+  RevisionSummaryDto,
+} from './revision-history.dto.js';
+import type { RevisionListRow } from '../revisions/revisions.repository.js';
 import type { RequestContext } from '../workflow-instances/workflow-instances.service.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
+import type { LocalizedText } from '../../../common/schemas/localized-text.schema.js';
 import type { PublicationEntityType } from '../../../common/constants/workflow-entity-types.js';
 
 /**
@@ -44,6 +53,9 @@ export class PublishingService {
     private readonly revisionsService: RevisionsService,
     private readonly publicationsService: PublicationsService,
     private readonly auditLogsService: AuditLogsService,
+    // History says who saved each version. Only the name is taken — see
+    // `UsersService.findNamesByIds` for why it is not `findByIds`.
+    private readonly usersService: UsersService,
     @InjectConnection() private readonly connection: Connection,
   ) {}
 
@@ -57,7 +69,9 @@ export class PublishingService {
    *
    * @throws ForbiddenException without `<entityType>:Publish`.
    * @throws ConflictException when the policy requires approvals, a review
-   *   is already running, the record moved, or content is still pending.
+   *   is already running, the record moved, or the draft is not ready —
+   *   copy still marked as awaiting the client, or a field this type may
+   *   not be published without still empty.
    */
   async publishDirect(input: {
     entityType: PublicationEntityType;
@@ -68,12 +82,7 @@ export class PublishingService {
   }): Promise<{ revisionId: string; publicationId: string; publishedAt: string }> {
     const { entityType, entityId, actor, expectedUpdatedAt } = input;
 
-    if (!this.hasPermission(actor, entityType, 'Publish')) {
-      throw new ForbiddenException({
-        code: 'forbidden',
-        message: `Missing permission: Publish on ${entityType}.`,
-      });
-    }
+    this.assertPermission(actor, entityType, 'Publish');
 
     const resolved = await this.policiesService.resolve(entityType, 'Edit');
 
@@ -112,12 +121,9 @@ export class PublishingService {
       });
     }
 
-    const pending = findPendingContent(record);
-    if (pending.length > 0) {
-      throw new ConflictException({
-        code: 'pendingContent',
-        message: `Content is still marked as awaiting the client: ${pending.join(', ')}.`,
-      });
+    const blockers = findPublishBlockers(entityType, record);
+    if (blockers.length > 0) {
+      throw new ConflictException(describePublishBlockers(blockers));
     }
 
     const actorId = new Types.ObjectId(actor.userId);
@@ -195,12 +201,12 @@ export class PublishingService {
     }
 
     const record = await this.loadRecord(entityType, entityId);
-    const pending = findPendingContent(record);
-    if (pending.length > 0) {
-      throw new ConflictException({
-        code: 'pendingContent',
-        message: `Content is still marked as awaiting the client: ${pending.join(', ')}.`,
-      });
+    // Held to the same readiness bar as a direct publish: a review that ends
+    // in approval publishes, so content that may not be published may not be
+    // sent for approval either.
+    const blockers = findPublishBlockers(entityType, record);
+    if (blockers.length > 0) {
+      throw new ConflictException(describePublishBlockers(blockers));
     }
 
     const actorId = new Types.ObjectId(actor.userId);
@@ -318,6 +324,133 @@ export class PublishingService {
     return { restoredFromVersion: revision.versionNumber };
   }
 
+  /**
+   * A record's version history, newest first, with what became of each.
+   *
+   * Generic by entity type, like everything else here: the dashboard's
+   * history panel takes an `entityType` and an `entityId` and works for any
+   * of the twelve, so the eleven pages after this one need no second
+   * implementation.
+   *
+   * @throws ForbiddenException without `<entityType>:Read`.
+   */
+  async revisionHistory(
+    entityType: PublicationEntityType,
+    entityId: Types.ObjectId,
+    actor: AuthenticatedUser,
+    page: number,
+    limit: number,
+  ): Promise<RevisionHistoryPageDto> {
+    this.assertMayReadHistory(actor, entityType);
+
+    const { items: rows, total } = await this.revisionsService.findForEntity(
+      entityType,
+      entityId,
+      (page - 1) * limit,
+      limit,
+    );
+
+    // Both joins are scoped to the page rather than the record: annotating
+    // twenty rows must not cost what reading the whole history cost.
+    const [publications, names] = await Promise.all([
+      this.publicationsService.findByRevisionIds(rows.map((row) => row._id)),
+      this.usersService.findNamesByIds(rows.map((row) => String(row.createdBy))),
+    ]);
+    const byRevision = new Map(publications.map((publication) => [publication.revisionId.toString(), publication]));
+
+    return {
+      items: rows.map((row) => this.toSummary(row, byRevision.get(row._id.toString()) ?? null, names)),
+      total,
+      page,
+      limit,
+    };
+  }
+
+  /**
+   * One version's content, reduced to the fields its type allows a reader to
+   * see.
+   *
+   * The stored snapshot is never returned as it stands. Snapshots are
+   * immutable, so a row frozen before a field was retired still carries that
+   * field — filtering only on the way in leaves every row already in the
+   * database unfiltered (owner decision 2026-09-12).
+   *
+   * @throws ForbiddenException without `<entityType>:Read` for the type the
+   *   revision belongs to — `revisions:Read` alone would grant the history
+   *   of every entity type at once.
+   * @throws NotFoundException when no revision has that id.
+   */
+  async readRevision(revisionId: string, actor: AuthenticatedUser): Promise<RevisionDetailDto> {
+    const revision = await this.revisionsService.findById(revisionId);
+    if (!revision) {
+      throw new NotFoundException('That revision does not exist.');
+    }
+
+    this.assertMayReadHistory(actor, revision.entityType);
+
+    const frozenId = revision._id as Types.ObjectId;
+    const [publication, names] = await Promise.all([
+      this.publicationsService.findByRevisionId(frozenId),
+      this.usersService.findNamesByIds([String(revision.createdBy)]),
+    ]);
+
+    // `timestamps` adds `createdAt` at runtime and the class does not declare
+    // it, so the document's type has to be widened once here.
+    const { createdAt } = revision as typeof revision & { createdAt: Date };
+
+    return {
+      ...this.toSummary(
+        { _id: frozenId, versionNumber: revision.versionNumber, createdAt, createdBy: revision.createdBy },
+        publication,
+        names,
+      ),
+      entityType: revision.entityType,
+      entityId: revision.entityId.toString(),
+      content: projectRevisionContent(revision.entityType, revision.snapshotData),
+    };
+  }
+
+  /**
+   * `revisions:Read` says the caller may read history at all; it does not say
+   * whose. Holding it alone would open every entity type's past text to
+   * anyone who may read any of it — so the type's own Read permission is
+   * checked too, and it is checked here rather than in the controller so no
+   * future route can mount this without it.
+   */
+  private assertMayReadHistory(actor: AuthenticatedUser, entityType: PublicationEntityType): void {
+    this.assertPermission(actor, entityType, 'Read');
+  }
+
+  /** @throws ForbiddenException when the caller lacks the pair. One place,
+   *  because the refusal's shape is what the dashboard branches on. */
+  private assertPermission(actor: AuthenticatedUser, entityType: PublicationEntityType, action: string): void {
+    if (this.hasPermission(actor, entityType, action)) {
+      return;
+    }
+    throw new ForbiddenException({
+      code: 'forbidden',
+      message: `Missing permission: ${action} on ${entityType}.`,
+    });
+  }
+
+  private toSummary(
+    row: Pick<RevisionListRow, '_id' | 'versionNumber' | 'createdAt' | 'createdBy'>,
+    publication: { status: string; publishedAt: Date } | null,
+    names: ReadonlyMap<string, LocalizedText>,
+  ): RevisionSummaryDto {
+    const createdBy = String(row.createdBy);
+    const name = names.get(createdBy);
+
+    return {
+      id: row._id.toString(),
+      versionNumber: row.versionNumber,
+      createdAt: row.createdAt.toISOString(),
+      createdBy: { id: createdBy, name: name ? { en: name.en, ar: name.ar } : null },
+      state: (publication?.status ?? 'Draft') as RevisionSummaryDto['state'],
+      publishedAt: publication ? publication.publishedAt.toISOString() : null,
+    };
+  }
+
   /** Everything the dashboard's status panel needs, in one read. */
   async editorialState(
     entityType: PublicationEntityType,
@@ -332,7 +465,7 @@ export class PublishingService {
     ]);
 
     const canEdit = await this.canEdit(entityType, entityId, actor);
-    const pendingContent = findPendingContent(record);
+    const publishBlockers = findPublishBlockers(entityType, record);
     const canPublish = this.hasPermission(actor, entityType, 'Publish');
     const canUpdate = this.hasPermission(actor, entityType, 'Update');
     const canApprove = this.hasPermission(actor, entityType, 'Approve');
@@ -342,7 +475,7 @@ export class PublishingService {
       actions.add('save');
     }
 
-    const publishable = pendingContent.length === 0;
+    const publishable = publishBlockers.length === 0;
 
     if (!active && publishable) {
       if (resolved.mode === 'direct' && canPublish) {
@@ -375,7 +508,7 @@ export class PublishingService {
       canEdit,
       availableActions: EDITORIAL_ACTIONS.filter((action) => actions.has(action)),
       updatedAt: record.updatedAt instanceof Date ? record.updatedAt.toISOString() : null,
-      pendingContent,
+      publishBlockers,
     };
   }
 

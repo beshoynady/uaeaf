@@ -55,6 +55,19 @@ export const BUTTON_DESTRUCTIVE = `${BUTTON_BASE} bg-[color:var(--color-semantic
 export const BUTTON_GHOST = `${BUTTON_BASE} bg-transparent text-[color:var(--color-text-secondary)] hover:bg-[color:var(--color-surface-sunken)] hover:text-[color:var(--color-text-primary)] active:bg-[color:var(--color-surface-skeleton)] disabled:text-[color:var(--color-text-disabled)]`;
 
 /**
+ * A control whose whole label is its icon — a dismiss, a close, a reveal.
+ *
+ * Square rather than text-width: an icon button styled as a ghost button with
+ * `px-4` is 44px tall and 56px wide around a 16px glyph, which reads as a
+ * misaligned box rather than a control. `w-11` matches the height so the hit
+ * area is the 44x44 square Protocol §14 asks for and nothing more.
+ *
+ * Whatever sits inside it must be `aria-hidden`, and the button must carry an
+ * `aria-label` — an icon is not an accessible name.
+ */
+export const BUTTON_ICON = `inline-flex ${TOUCH_TARGET} w-11 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-transparent text-[color:var(--color-text-secondary)] ${TRANSITION} ${FOCUS_RING} hover:bg-[color:var(--color-surface-sunken)] hover:text-[color:var(--color-text-primary)] active:bg-[color:var(--color-surface-skeleton)] disabled:cursor-not-allowed disabled:text-[color:var(--color-text-disabled)]`;
+
+/**
  * A field's outer shell carries the focus treatment, because the input inside
  * fills it edge to edge and a ring drawn on the input would be clipped by the
  * shell's own border radius.
@@ -132,6 +145,7 @@ export const INTERACTIVE_CLASS_NAMES = {
   BUTTON_SECONDARY,
   BUTTON_DESTRUCTIVE,
   BUTTON_GHOST,
+  BUTTON_ICON,
   FIELD_SHELL,
   FIELD_INPUT,
   FIELD_CONTROL,

@@ -8,6 +8,7 @@ import type { UserResponseDto } from './dto/user-response.dto.js';
 import type { UpdatePreferencesDto } from './dto/update-preferences.dto.js';
 import { LOCKOUT_DURATION_MINUTES, LOCKOUT_THRESHOLD } from '../../../config/auth.config.js';
 import type { AccountStatus } from './schemas/user.schema.js';
+import type { LocalizedText } from '../../../common/schemas/localized-text.schema.js';
 import { RolesService } from '../roles/roles.service.js';
 import { AuthSessionsService } from '../auth-sessions/auth-sessions.service.js';
 import { FederationPersonnelsService } from '../../federation-governance/federation-personnel/federation-personnel.service.js';
@@ -122,6 +123,20 @@ export class UsersService {
 
   async findById(id: string): Promise<UserDocument | null> {
     return this.repository.findById(id);
+  }
+
+  /**
+   * Display names for a set of user ids, keyed by id.
+   *
+   * Deliberately narrower than `findByIds`: a caller that wants to label
+   * "who saved version 3" needs a name, and handing it whole user documents
+   * would put email addresses and account state into a screen that has no
+   * business showing them. An id with no matching account is simply absent
+   * from the map — a deleted account must not break a history listing.
+   */
+  async findNamesByIds(ids: readonly string[]): Promise<Map<string, LocalizedText>> {
+    const users = await this.repository.findByIds([...new Set(ids)]);
+    return new Map(users.map((user) => [String(user._id), user.name]));
   }
 
   async findByEmail(email: string): Promise<UserDocument | null> {

@@ -48,6 +48,7 @@ function sourceFiles(dir: string): string[] {
  */
 function classAttributes(file: string): ClassAttr[] {
   const source = readFileSync(file, "utf-8");
+  const aliases = localAliases(source);
   const found: ClassAttr[] = [];
   const marker = /className=/g;
 
@@ -77,11 +78,53 @@ function classAttributes(file: string): ClassAttr[] {
     found.push({
       file: file.replace(APP_SRC, "src"),
       line: source.slice(0, match.index).split("\n").length,
-      value: expand(value),
+      value: expand(value, aliases),
     });
   }
 
   return found;
+}
+
+/**
+ * One hop through a lookup table a file builds from the registered constants.
+ *
+ * `Button` picks its classes out of a local `Record<ButtonVariant, string>`
+ * assembled from `BUTTON_PRIMARY` and its siblings, so its `className` names
+ * the table rather than any constant — and the rules below reported the one
+ * component in this codebase that composes them most carefully as having no
+ * focus treatment at all.
+ *
+ * This loosens nothing: an alias counts only when its own definition
+ * references a registered constant, so a table of hand-written class strings
+ * still carries exactly what it actually carries.
+ */
+function localAliases(source: string): Map<string, string> {
+  const aliases = new Map<string, string>();
+
+  for (const match of source.matchAll(/const\s+([A-Za-z_$][\w$]*)[^=;]*=\s*\{/g)) {
+    let index = (match.index ?? 0) + match[0].length - 1;
+    const start = index;
+    let depth = 0;
+    for (; index < source.length; index += 1) {
+      if (source[index] === "{") depth += 1;
+      else if (source[index] === "}") {
+        depth -= 1;
+        if (depth === 0) break;
+      }
+    }
+
+    const body = source.slice(start, index + 1);
+    const classes = Object.entries(INTERACTIVE_CLASS_NAMES)
+      .filter(([name]) => new RegExp(`\\b${name}\\b`).test(body))
+      .map(([, value]) => value)
+      .join(" ");
+
+    if (classes) {
+      aliases.set(match[1], classes);
+    }
+  }
+
+  return aliases;
 }
 
 /**
@@ -90,9 +133,14 @@ function classAttributes(file: string): ClassAttr[] {
  * shared definitions — passing only when the states are pasted inline, which
  * is the duplication that caused the defects in the first place.
  */
-function expand(value: string): string {
+function expand(value: string, aliases: Map<string, string>): string {
   let expanded = value;
-  for (const [name, classes] of Object.entries(INTERACTIVE_CLASS_NAMES)) {
+  const definitions: [string, string][] = [
+    ...Object.entries(INTERACTIVE_CLASS_NAMES),
+    ...aliases,
+  ];
+
+  for (const [name, classes] of definitions) {
     if (new RegExp(`\\b${name}\\b`).test(value)) {
       expanded += ` ${classes}`;
     }

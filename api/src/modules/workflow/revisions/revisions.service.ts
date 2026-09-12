@@ -3,6 +3,7 @@ import { InjectConnection } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 import type { Connection } from 'mongoose';
 import { RevisionsRepository } from './revisions.repository.js';
+import type { RevisionListRow } from './revisions.repository.js';
 import type { RevisionDocument } from './schemas/revision.schema.js';
 import type { PublicationEntityType } from '../../../common/constants/workflow-entity-types.js';
 import { isDuplicateKeyError } from '../../../common/utils/mongo-errors.util.js';
@@ -16,7 +17,15 @@ import { isDuplicateKeyError } from '../../../common/utils/mongo-errors.util.js'
  * belongs in a snapshot — and a published snapshot is served to visitors
  * verbatim, so leaving the editors' user ids in it would publish them.
  */
-const NOT_CONTENT = ['__v', 'createdBy', 'updatedBy', 'archivedAt', 'archivedBy', 'publicationState', 'revisionId'];
+export const NOT_CONTENT = [
+  '__v',
+  'createdBy',
+  'updatedBy',
+  'archivedAt',
+  'archivedBy',
+  'publicationState',
+  'revisionId',
+];
 
 /**
  * How many times a revision is numbered before the submission is refused.
@@ -90,6 +99,18 @@ export class RevisionsService {
     entityId: Types.ObjectId,
   ): Promise<RevisionDocument | null> {
     return this.repository.findLatest(entityType, entityId);
+  }
+
+  /** One page of a record's history, newest first, without the snapshots. The
+   *  caller joins publication status onto it — this service has no business
+   *  knowing what became of a version, only that it exists. */
+  async findForEntity(
+    entityType: PublicationEntityType,
+    entityId: Types.ObjectId,
+    skip: number,
+    limit: number,
+  ): Promise<{ items: RevisionListRow[]; total: number }> {
+    return this.repository.findForEntity(entityType, entityId, skip, limit);
   }
 
   /**

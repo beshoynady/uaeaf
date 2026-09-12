@@ -46,6 +46,27 @@ export class PublicationsService {
     return this.repository.findLive(entityType, entityId);
   }
 
+  /** Every publication this record has had, whatever its status — what the
+   *  dashboard's version history joins against to say whether a given
+   *  version is the live one, was retired, or was never published. */
+  async findForEntity(
+    entityType: PublicationEntityType,
+    entityId: Types.ObjectId,
+  ): Promise<PublicationDocument[]> {
+    return this.repository.findForEntity(entityType, entityId);
+  }
+
+  /** What became of each of the given versions, in one query. */
+  async findByRevisionIds(revisionIds: Types.ObjectId[]): Promise<PublicationDocument[]> {
+    return this.repository.findByRevisionIds(revisionIds);
+  }
+
+  /** What became of one specific version — null when it was never
+   *  published. */
+  async findByRevisionId(revisionId: Types.ObjectId): Promise<PublicationDocument | null> {
+    return this.repository.findByRevisionId(revisionId);
+  }
+
   /** @throws ConflictException when the publication is not currently Live
    *  (including when it doesn't exist at all). */
   async unpublish(id: string): Promise<PublicationDocument | null> {

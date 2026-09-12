@@ -534,71 +534,77 @@ type UserRef = { id: string; name: LocalizedText }; // الاسم فقط، بل�
 
 ## المرحلة ج — الداش بورد (السيرفرات: api + dashboard)
 
-### ج١: الـ toasts
-- **Files:** `apps/dashboard/src/components/ui/toast/*`، و`(app)/layout.tsx`، و`messages/ar.json` و`en.json` (namespace `Toasts`).
-- **Tests:**
-  - `shows at most three and queues the rest`.
-  - `merges a duplicate dedupeKey into one toast with a counter`.
-  - `promise replaces the loading toast in the same slot`.
-  - `an error toast never auto-dismisses`.
-  - `timers pause on hover and focus-within`.
-  - `success is announced politely and errors assertively`.
-  - `never moves focus`.
-  - `sits at the inline end in both directions`.
-  - `appears without transform under reduced motion`.
-  - `unknown API codes fall back to the generic message`.
+> **نُقِّحت 2026-09-12 بقرارات المالك.** ما يلي يلغي الصياغة السابقة لهذه المرحلة.
+> القرارات الحاكمة: (١) كل ما يتكرر في الصفحات الإحدى عشرة القادمة يُبنى **عامًّا**
+> يأخذ `entityType` و`entityId` — الـ toasts، ولوحة الحالة، وقائمة الإصدارات
+> والاسترجاع. (٢) المقارنة كلمة بكلمة **خارج النطاق** ولا بنية تحتية لها.
+> (٣) الاسترجاع والإصدارات **داخل النطاق**. (٤) صفحة مستقلة `/president-message`
+> برابط تنقّل بصلاحية. (٥) التحديث عند الإجراء + زر يدوي، ورسالة صريحة لـ
+> `staleRecord`. (٦) حارس النشر يشمل غياب `featuredImageId`، ومؤشر جاهزية يعرض
+> ما ينقص بدل رسالة خطأ عند الضغط.
 
-### ج٢: `Button` بحالة loading + `ConfirmDialog`
-- **Files:** `components/ui/button.tsx` (يغلّف ثوابت `interactive.ts`)، و`components/ui/confirm-dialog.tsx` (عنصر `<dialog>` أصلي و`showModal`، بلا dependency).
-- **Tests:**
-  - `keeps its width while loading`.
-  - `sets aria-busy and disables while pending`.
-  - `a second click during a pending request sends nothing`.
-  - `dialog traps focus and returns it to the trigger`.
-  - `pauses toast timers while open`.
+### ج٠: الـ backend الذي تحتاجه المرحلة ج — **تم**
+- `common/constants/entity-content.ts`: `PUBLISH_REQUIREMENTS` و`REVISION_READ_FIELDS` للأنواع الاثني عشر، و`projectRevisionContent`.
+- `publishing/publish-blockers.ts`: `findPublishBlockers` و`describePublishBlockers`؛ رمز `missingRequiredField`.
+- `editorialState.pendingContent` → `publishBlockers[{kind, field}]`.
+- `GET /revisions?entityType=&entityId=` (جديد) و`GET /revisions/:id` (يعيد `content` مُسقَطًا لا `snapshotData` خامًا)، وكلاهما يتحقق من `<entityType>:Read` داخل الخدمة.
+- `RevisionsController` انتقل إلى `PublishingModule` (الدورة: `PublicationsModule` يستورد `RevisionsModule`).
+- **خلل أُصلح:** `PATCH` كان يمسح الصور لأن `key in dto` يصدق على كل حقل تحت `useDefineForClassFields`.
 
-### ج٣: الـ BFF
-- **Files:** `app/api/admin/president-message/[id]/{route.ts, publish, submit, resubmit, restore}/route.ts`، و`app/api/admin/workflow-instances/[id]/[action]/route.ts` (approve، وreject، وreturn، وcancel فقط)، و`app/api/admin/workflow-policies/[entityType]/[operation]/route.ts`، و`lib/api/admin-write.ts` (الرموز الجديدة).
-- **Tests:**
-  - `forwards each action and maps every new API code`.
-  - `delegate is not routable`.
+### ج١: الـ toasts العام — **تم**
+- **Files:** `components/ui/toast/{toast-store.ts, toast-provider.tsx, toast-region.tsx, index.ts}`، و`(app)/layout.tsx`، و`messages/{ar,en}.json` (`Toasts`).
+- ينفّذ FB.6 وFB.11 وFB.16 وFB.17 وFB.21 وFB.22 (`source` إلزامي) وFB.25 (`eventId`).
+- **غير منفَّذ بقرار موثّق في رأس الملف:** FB.23 (لا تدفّق أحداث في الداش بورد؛ الطابور مقيَّد بدلًا منه) وFB.24 (أحداث الجلسة ليست من حمولة المنطقة).
 
-### ج٤: محرر TipTap (بعد موافقة الـ dependencies، س٦)
-- **Files:** `components/admin/rich-text/{rich-text-editor.tsx, toolbar.tsx, paste-cleanup.ts, allowlist.ts, paragraph-mismatch.ts}`. تحميل كسول للـ route.
-- **Tests:**
-  - `the Arabic toolbar has no italic and no alignment`.
-  - `pasting Word HTML strips styles, fonts, tables and Arabic italic and reports counts`.
-  - `warns on paragraph count or length mismatch`.
-  - `editor output passes the same allowlist as the API`: نسخة من الـ allowlist، مع اختبار تطابق.
+### ج٢: `Button` بحالة loading + `ConfirmDialog` — **تم**
+- **Files:** `components/ui/{button.tsx, confirm-dialog.tsx}`، و`BUTTON_ICON` جديد في `interactive.ts`.
+- الاسم الميسّر يبقى أثناء التحميل (`opacity-0` لا `invisible`)، والعرض والارتفاع ثابتان.
+- **jsdom 29 لا ينفّذ أيًّا من دوال `<dialog>`** — وسيط موثّق في `vitest.setup.ts`. الطبقة العليا وفخّ التركيز وتعطيل ما خلفها **غير مغطّاة باختبار**؛ تحقق يدوي.
+- `ConfirmDialog` بلا مستدعٍ في هذه المرحلة بعد قرار الاسترجاع في ج٧ — قرار إبقائه أو حذفه معلّق على المالك.
 
-### ج٥: أقسام التحرير الستة
-- **Files:** `components/admin/president-message/{editor.tsx, hero-section.tsx, quote-section.tsx, body-section.tsx, closing-section.tsx, values-section.tsx, seo-section.tsx}`، و`lib/icons/value-icons.tsx` (Lucide مضمَّن، س١٧أ)، و`app/[locale]/(app)/president-message/page.tsx`، و`lib/navigation.ts`.
-- **Tests:**
-  - `values reorder with keyboard-operable up and down buttons`.
-  - `icon select offers exactly VALUE_ICON_KEYS`.
-  - `closing shows the derived date read-only`.
-  - `SEO counters and fallbacks`.
-  - `unsaved-changes guard`.
+### ج٣: الـ BFF العام
+- **Files:** `app/api/admin/editorial/[entityType]/[id]/[action]/route.ts` مع سجلّ يربط `entityType` بمساره الأعلى — **السجلّ هو الحد الأمني**، بلا سجلّ يكون المتصل هو من يختار وجهة جسمه.
+- الإجراءات قائمة مغلقة: `publish`، و`submit`، و`resubmit`، و`restore`، و`approve`، و`reject`، و`return`. **`delegate` غير موجود فيها فلا يمكن توجيهه.**
+- **Files:** كذلك `lib/api/admin-write.ts` (الرموز الجديدة: `missingRequiredField`).
+- **Tests:** `forwards each action and maps every new API code`؛ `an unregistered entityType is refused`؛ `delegate is not routable`.
 
-### ج٦: لوحة الحالة والموافقات + السجل + إعداد النشر
-- **Files:** `status-panel.tsx`، و`timeline.tsx`، و`policy-settings.tsx`.
-- **Tests:**
-  - `renders the action set from editorial-state for each of the policy × permission cases in أ٢`.
-  - `reject and return require a reason`.
-  - `shows "direct publishing without approvals" and confirms before publishing`.
-  - `no delegate control exists`.
-  - `progress reads "1 of 2" from approvalsInCurrentCycle`.
+### ج٤: محرر TipTap (الاعتماديات معتمَدة، س٦)
+- **Files:** `components/admin/rich-text/{rich-text-editor.tsx, toolbar.tsx, paste-cleanup.ts, allowlist.ts, paragraph-mismatch.ts}`. تحميل كسول في مسار المحرر وحده.
+- **Tests:** الشريط العربي بلا مائل ولا محاذاة (الامتداد **لا يُسجَّل** أصلًا، فلا اختصار لوحة مفاتيح يصل إليه)؛ تنظيف اللصق يبلّغ بالأعداد؛ تحذير عند اختلاف عدد الفقرات؛ **اختبار تطابق يقرأ ملف الـ API نفسه** (`api/src/common/rich-text/rich-text-allowlist.ts`).
 
-### ج٧: الإصدارات
-- **Files:** `versions-panel.tsx`، و`version-diff.tsx`، و`lib/diff/word-diff.ts`.
-- **Tests:**
-  - `word diff marks insertions and deletions per paragraph`.
-  - `restore asks for confirmation and toasts on success`.
+### ج٥: أقسام التحرير الستة والصفحة والتنقل
+- **Files:** `components/admin/president-message/{editor.tsx, hero-section.tsx, quote-section.tsx, body-section.tsx, closing-section.tsx, values-section.tsx, seo-section.tsx}`، و`lib/icons/value-icons.tsx` (SVG مضمَّن)، و`app/[locale]/(app)/president-message/page.tsx`، و`lib/navigation.ts`.
+- الرابط يظهر فقط لمن يملك صلاحية التحرير أو المراجعة، **والسيرفر يرفض الوصول المباشر للمسار**.
+- **Tests:** إعادة الترتيب بلوحة المفاتيح؛ قائمة الأيقونات = `VALUE_ICON_KEYS` بالضبط؛ التاريخ المشتق للقراءة فقط؛ عدّادات SEO؛ حارس المغادرة.
+
+### ج٦: لوحة الحالة والموافقات العامة
+- **Files:** `components/admin/editorial/{status-panel.tsx, timeline.tsx, readiness-list.tsx, policy-settings.tsx}` — تأخذ `{entityType, entityId, state, onAction}` ولا تعرف شيئًا عن صفحة الرئيس.
+- **مؤشر الجاهزية** فوق أزرار النشر دائمًا يسرد `publishBlockers`؛ زر النشر معطَّل و`aria-describedby` يشير إلى القائمة.
+- **`staleRecord`:** «عدّل شخص آخر هذا السجل بعد أن فتحتَه» مع زر إعادة تحميل — لا رمز خطأ خام.
+- **Tests:** مجموعة الإجراءات لكل حالة policy × permission؛ الرفض والإرجاع يستلزمان سببًا؛ لا عنصر `delegate`؛ التقدّم «١ من ٢».
+
+### ج٧: الإصدارات والاسترجاع العامان (بلا مقارنة كلمة بكلمة)
+- **Files:** `components/admin/editorial/{revisions-panel.tsx, revision-reader.tsx}` — تأخذ `{entityType, entityId}` فقط.
+- تعرض لكل نسخة: الرقم، والتاريخ، والفاعل، والحالة (منشورة / مؤرشفة / مسحوبة / مسودة)، مع فتحها للقراءة.
+- **الاسترجاع (قرار المالك 2026-09-12):** الخطر في التعديلات غير المحفوظة لا في الاسترجاع نفسه، فيُزال الخطر بدل رفع التحذير:
+  1. عند وجود تعديلات غير محفوظة **يُمنع الاسترجاع** وتظهر رسالة صريحة بخيارين: احفظ المسودة أولًا، أو تجاهل التعديلات.
+  2. بعد أن تصبح الصفحة نظيفة، الاسترجاع يمر **بلوحة تأكيد داخل الصفحة** (سابقة أرشفة الدور، وADR-0016 «أدنى مستوى كافٍ») توضح: رقم النسخة وتاريخها، وأن المحتوى الحالي سيُستبدل، وأن المسترجع يعود كمسودة فيمر بالنشر العادي.
+  3. بعد الاسترجاع، toast نجاح يذكر رقم النسخة.
+- **Tests:** `restore is refused while there are unsaved changes`؛ لوحة التأكيد تذكر رقم النسخة وأن العودة كمسودة؛ toast النجاح يذكر الرقم.
+- **خارج النطاق بقرار المالك:** المقارنة كلمة بكلمة — مسجَّلة في `docs/engineering/post-delivery-backlog.md` بسببها.
+
+### ج٨: ترحيل الشاشات الثلاث إلى الـ toasts — **في نهاية المرحلة فقط**
+- يشمل **رسائل نتيجة الإجراء فقط** (حُفظ، نُشر، فشل). أخطاء الحقول تبقى inline (س٧).
+- لكل شاشة: شغّل اختباراتها **قبل** التعديل وبعده واذكر الأرقام. أي اختبار يتحقق من الرسالة داخل الصفحة **يُحدَّث لا يُحذف**.
+- لو اتضح أن الترحيل أكبر مما يبدو: **توقف وأخبر المالك** قبل إكماله.
+
+### ج٩: الوثيقتان
+- `docs/engineering/post-delivery-backlog.md` — بند واحد فقط (المقارنة كلمة بكلمة) بسببه، وفي رأسه «وثيقة داخلية — لا تُسلَّم للعميل بصيغتها هذه». **لا يُضاف إليه بند آخر بلا قرار صريح.**
+- `docs/DOCUMENTATION-INDEX.md` — تصنيف ثلاثي (تُسلَّم للعميل / داخلية / مؤقتة). **تصنيف فقط: لا حذف ولا نقل.**
 
 **Done المرحلة ج:**
-- suite الداش بورد كاملة.
-- lint 0.
-- `tsc` 0.
+- suite الداش بورد كاملة مرة واحدة والسيرفرات متوقفة.
+- lint 0، و`tsc` 0.
 - تحقق يدوي بـ api + dashboard.
 - تقرير.
 

@@ -76,6 +76,11 @@ export class PresidentMessagePagesService {
 
     const set: Record<string, unknown> = { updatedBy };
 
+    // `!== undefined`, never `key in dto`. The project compiles to ES2023, so
+    // `useDefineForClassFields` is on and every field the DTO class declares
+    // exists on the instance whether the request carried it or not — a
+    // presence test reports all of them as sent. `null` still means "clear
+    // this", because only an absent key is `undefined`.
     for (const key of [
       'heroTitle',
       'heroSubtitle',
@@ -86,19 +91,19 @@ export class PresidentMessagePagesService {
       'signatoryName',
       'signatoryTitle',
     ] as const) {
-      if (key in dto) {
+      if (dto[key] !== undefined) {
         set[key] = dto[key];
       }
     }
 
     for (const key of IMAGE_REF_KEYS) {
-      if (key in dto) {
+      if (dto[key] !== undefined) {
         const value = dto[key];
         set[key] = value ? new Types.ObjectId(value) : null;
       }
     }
 
-    if ('seo' in dto) {
+    if (dto.seo !== undefined) {
       set.seo = dto.seo ? this.toSeo(dto.seo) : null;
     }
 

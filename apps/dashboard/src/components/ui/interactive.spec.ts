@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   BUTTON_DESTRUCTIVE,
   BUTTON_GHOST,
+  BUTTON_ICON,
   BUTTON_PRIMARY,
   BUTTON_SECONDARY,
   FIELD_INPUT,
@@ -38,6 +39,7 @@ const PRESSABLE = {
   BUTTON_SECONDARY,
   BUTTON_DESTRUCTIVE,
   BUTTON_GHOST,
+  BUTTON_ICON,
   SELECTABLE_ROW,
   TOGGLE_SEGMENT,
 };
@@ -111,6 +113,7 @@ describe("INTERACTIVE_CLASS_NAMES", () => {
       [
         "BUTTON_DESTRUCTIVE",
         "BUTTON_GHOST",
+        "BUTTON_ICON",
         "BUTTON_PRIMARY",
         "BUTTON_SECONDARY",
         "FIELD_BOX",

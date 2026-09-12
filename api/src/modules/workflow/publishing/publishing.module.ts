@@ -5,10 +5,12 @@ import { WorkflowStepsModule } from '../workflow-steps/workflow-steps.module.js'
 import { RevisionsModule } from '../revisions/revisions.module.js';
 import { PublicationsModule } from '../publications/publications.module.js';
 import { AuditLogsModule } from '../audit-logs/audit-logs.module.js';
+import { UsersModule } from '../../platform-administration/users/users.module.js';
 import { PublishingService } from './publishing.service.js';
+import { RevisionsController } from './revisions.controller.js';
 
 /**
- * Has no controller of its own on purpose.
+ * Mounts no publishing routes of its own, on purpose.
  *
  * Publishing is always an action on some entity — `POST
  * /president-message-page/:id/publish`, not `POST /publishing`. The
@@ -16,6 +18,13 @@ import { PublishingService } from './publishing.service.js';
  * and a generic endpoint taking the entity type in its body would have no
  * decorator to read. Each entity module mounts its own routes and calls
  * this service.
+ *
+ * `RevisionsController` is the one controller here, and it is here for a
+ * different reason: reading a version's history needs `revisions` and
+ * `publications` together, and `PublicationsModule` already imports
+ * `RevisionsModule`, so the revisions module cannot import it back. Its
+ * generic `GET /revisions` read compensates for the missing per-type
+ * decorator by checking `<entityType>:Read` inside the service.
  */
 @Module({
   imports: [
@@ -25,7 +34,10 @@ import { PublishingService } from './publishing.service.js';
     RevisionsModule,
     PublicationsModule,
     AuditLogsModule,
+    // Version history names who saved each version.
+    UsersModule,
   ],
+  controllers: [RevisionsController],
   providers: [PublishingService],
   exports: [PublishingService],
 })

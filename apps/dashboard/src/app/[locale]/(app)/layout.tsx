@@ -9,6 +9,7 @@ import { SidebarNav } from "@/components/shell/sidebar-nav";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
 import { LanguageToggle } from "@/components/shell/language-toggle";
 import { SignOutButton } from "@/components/shell/sign-out-button";
+import { ToastProvider } from "@/components/ui/toast";
 import type { AppLocale } from "@/i18n/routing";
 import { resolveLocale } from "@/i18n/params";
 
@@ -51,55 +52,61 @@ export default async function AppLayout({
   const items = visibleNavItems(me?.permissions ?? []);
 
   return (
-    <div className="flex min-h-screen flex-col bg-[color:var(--color-surface-sunken)] lg:flex-row">
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-4 focus:rounded-[var(--radius-md)] focus:bg-[color:var(--color-surface-raised)] focus:px-4 focus:py-2"
-      >
-        {t("skipLink")}
-      </a>
+    // One toast queue for the whole signed-in shell, not one per screen.
+    // Chapter 8 L4 FB.6 caps how many messages are visible at once, and a
+    // cap each screen applied only to itself would stack three regions the
+    // moment one of them navigated.
+    <ToastProvider>
+      <div className="flex min-h-screen flex-col bg-[color:var(--color-surface-sunken)] lg:flex-row">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-4 focus:rounded-[var(--radius-md)] focus:bg-[color:var(--color-surface-raised)] focus:px-4 focus:py-2"
+        >
+          {t("skipLink")}
+        </a>
 
-      <aside className="shrink-0 border-b border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)] p-4 lg:min-h-screen lg:w-[264px] lg:border-b-0 lg:border-e lg:p-6">
-        <p className="mb-6 px-4 text-label font-bold text-[color:var(--color-text-primary)]">
-          {t("brand")}
-        </p>
-        <SidebarNav items={items} />
-      </aside>
+        <aside className="shrink-0 border-b border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)] p-4 lg:min-h-screen lg:w-[264px] lg:border-b-0 lg:border-e lg:p-6">
+          <p className="mb-6 px-4 text-label font-bold text-[color:var(--color-text-primary)]">
+            {t("brand")}
+          </p>
+          <SidebarNav items={items} />
+        </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center justify-between gap-4 border-b border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)] px-6 py-4">
-          <div className="flex min-w-0 flex-col">
-            <p className="truncate text-label font-medium text-[color:var(--color-text-primary)]">
-              {me ? localized(me.name, locale) : ""}
-            </p>
-            <p dir="ltr" className="truncate text-start text-caption text-[color:var(--color-text-muted)]">
-              {me?.email ?? ""}
-            </p>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <LanguageToggle locale={locale} />
-            <ThemeToggle initialTheme={storedTheme === "dark" ? "dark" : "light"} />
-            <SignOutButton locale={locale} />
-          </div>
-        </header>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="flex items-center justify-between gap-4 border-b border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)] px-6 py-4">
+            <div className="flex min-w-0 flex-col">
+              <p className="truncate text-label font-medium text-[color:var(--color-text-primary)]">
+                {me ? localized(me.name, locale) : ""}
+              </p>
+              <p dir="ltr" className="truncate text-start text-caption text-[color:var(--color-text-muted)]">
+                {me?.email ?? ""}
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <LanguageToggle locale={locale} />
+              <ThemeToggle initialTheme={storedTheme === "dark" ? "dark" : "light"} />
+              <SignOutButton locale={locale} />
+            </div>
+          </header>
 
-        <main id="main-content" className="flex-1 px-6 py-8">
-          {/*
-            Fluid, not capped. Chapter 5 §Maximum Container is explicit and
-            applies to exactly this surface: "1440px for the Public
-            Experience … Fluid (100%) for the Dashboard with a fixed Sidebar
-            (Operational Experience) — uses the full available space for
-            dense data presentation (PR-006)."
+          <main id="main-content" className="flex-1 px-6 py-8">
+            {/*
+              Fluid, not capped. Chapter 5 §Maximum Container is explicit and
+              applies to exactly this surface: "1440px for the Public
+              Experience … Fluid (100%) for the Dashboard with a fixed Sidebar
+              (Operational Experience) — uses the full available space for
+              dense data presentation (PR-006).
 
-            This read `max-w-[1100px]` until 2026-09-08, which is the public
-            site's rule applied to the operational one. The cost was visible
-            on the roles screen: a 63-row permission matrix eight columns
-            wide had to scroll sideways inside a container with several
-            hundred unused pixels beside it.
-          */}
-          <div className="flex flex-col gap-8">{children}</div>
-        </main>
+              This read `max-w-[1100px]` until 2026-09-08, which is the public
+              site's rule applied to the operational one. The cost was visible
+              on the roles screen: a 63-row permission matrix eight columns
+              wide had to scroll sideways inside a container with several
+              hundred unused pixels beside it.
+            */}
+            <div className="flex flex-col gap-8">{children}</div>
+          </main>
+        </div>
       </div>
-    </div>
+    </ToastProvider>
   );
 }
