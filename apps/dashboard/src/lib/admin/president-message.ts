@@ -45,6 +45,10 @@ export interface PresidentMessageResponse {
   signatoryTitle: LocalizedText;
   seo: PageSeo | null;
   publicationState: string;
+  /** When the row was inserted. Read only to order the collection: the screen
+   *  edits the oldest record unless the URL names another, and natural order
+   *  is not a contract. */
+  createdAt: string;
   updatedAt: string;
 }
 

@@ -7,6 +7,7 @@ import { localized, type LocalizedText, type RoleResponse } from "@/lib/api/type
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth/password-strength";
 import { toggleSelection } from "@/lib/admin/permission-matrix";
 import { StatusMessage } from "@/components/auth/status-message";
+import { useToast } from "@/components/ui/toast";
 import { PasswordInput } from "@/components/auth/password-input";
 import { TextField } from "@/components/auth/text-field";
 import { SelectField } from "@/components/ui/select-field";
@@ -54,6 +55,7 @@ export function CreateUserForm({
   const t = useTranslations("UsersDirectory");
   const errors = useTranslations("WriteErrors");
   const router = useRouter();
+  const toast = useToast();
 
   const [nameAr, setNameAr] = useState("");
   const [nameEn, setNameEn] = useState("");
@@ -96,6 +98,16 @@ export function CreateUserForm({
         return;
       }
 
+      toast.show({
+        tone: "success",
+        title: t("createdTitle"),
+        // Named, because the form is about to close and the list behind it
+        // holds dozens of rows — "created" alone leaves the reader hunting
+        // for which one.
+        description: t("createdBody", { name: locale === "ar" ? nameAr.trim() : nameEn.trim() }),
+        source: "api",
+        dedupeKey: `user:${email.trim().toLowerCase()}:created`,
+      });
       router.refresh();
       onDone();
     } catch {
@@ -191,7 +203,7 @@ export function CreateUserForm({
                       checked={checked}
                       disabled={saving}
                       onChange={() => setRoleIds((current) => toggleSelection(current, role._id))}
-                      className="size-[18px] accent-[color:var(--color-brand-primary)]"
+                      className="size-[18px] accent-[color:var(--color-brand-primary)] disabled:opacity-[var(--opacity-disabled)]"
                     />
                     <span className="text-label text-[color:var(--color-text-primary)]">
                       {localized(role.name, locale)}

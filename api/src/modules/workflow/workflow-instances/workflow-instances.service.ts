@@ -481,6 +481,16 @@ export class WorkflowInstancesService {
     return this.repository.findActive(entityType, entityId);
   }
 
+  /** Every review this record has been through, finished ones included.
+   *  Exposed for `PublishingService`, whose status panel shows what has
+   *  happened rather than only what may happen next. */
+  async findByEntity(
+    entityType: WorkflowEntityType,
+    entityId: Types.ObjectId,
+  ): Promise<WorkflowInstanceDocument[]> {
+    return this.repository.findByEntity(entityType, entityId);
+  }
+
   /**
    * Approval publishes the instance's revision as the record's public
    * content, so the revision must be one taken of this record: a revision of

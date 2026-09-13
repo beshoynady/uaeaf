@@ -4849,7 +4849,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditorialStateDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -9444,6 +9451,294 @@
           "signatoryName",
           "signatoryTitle",
           "publicationState"
+        ]
+      },
+      "PublishBlockerDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "pendingContent",
+              "missingRequired"
+            ],
+            "description": "`pendingContent` — the field still carries the awaiting-the-client marker. `missingRequired` — the field must hold a value before this type may be published and is empty."
+          },
+          "field": {
+            "type": "string",
+            "description": "Record path, e.g. `pullQuote.en` or `featuredImageId`."
+          }
+        },
+        "required": [
+          "kind",
+          "field"
+        ]
+      },
+      "WorkflowStepSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sequenceOrder": {
+            "type": "number",
+            "description": "Position in the chain; the panel sorts on this, not on insertion order."
+          },
+          "stepType": {
+            "type": "string",
+            "enum": [
+              "Sequential",
+              "Parallel"
+            ]
+          },
+          "requiredApprovals": {
+            "type": "number",
+            "description": "Approvals this step needs before the review moves on."
+          },
+          "approvals": {
+            "type": "number",
+            "description": "Distinct approvers so far in the current submission cycle."
+          },
+          "assignees": {
+            "description": "Who may decide this step. Always named individuals.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RevisionActorDto"
+            }
+          },
+          "isCurrent": {
+            "type": "boolean",
+            "description": "Whether the review is waiting on this step now."
+          }
+        },
+        "required": [
+          "id",
+          "sequenceOrder",
+          "stepType",
+          "requiredApprovals",
+          "approvals",
+          "assignees",
+          "isCurrent"
+        ]
+      },
+      "WorkflowSummaryDto": {
+        "type": "object",
+        "properties": {
+          "instanceId": {
+            "type": "string"
+          },
+          "definitionName": {
+            "nullable": true,
+            "description": "The definition governing this review.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "InProgress",
+              "Approved",
+              "Rejected",
+              "Returned"
+            ]
+          },
+          "steps": {
+            "description": "Every step in the order it runs — not only the current one, so an author can see who is still to come.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkflowStepSummaryDto"
+            }
+          }
+        },
+        "required": [
+          "instanceId",
+          "definitionName",
+          "status",
+          "steps"
+        ]
+      },
+      "EditorialHistoryEntryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "Submitted",
+              "Resubmitted",
+              "Approved",
+              "Rejected",
+              "Returned",
+              "Delegated"
+            ]
+          },
+          "actor": {
+            "$ref": "#/components/schemas/RevisionActorDto"
+          },
+          "reason": {
+            "type": "object",
+            "nullable": true,
+            "description": "Mandatory upstream for Rejected and Returned; null where none was given."
+          },
+          "actionDate": {
+            "type": "string",
+            "description": "ISO date the action was taken."
+          },
+          "workflowStepId": {
+            "type": "string",
+            "description": "The step the action was taken on."
+          },
+          "returnedToStepId": {
+            "type": "object",
+            "nullable": true,
+            "description": "Populated only when the action is `Returned`."
+          }
+        },
+        "required": [
+          "id",
+          "action",
+          "actor",
+          "reason",
+          "actionDate",
+          "workflowStepId",
+          "returnedToStepId"
+        ]
+      },
+      "EditorialStateDto": {
+        "type": "object",
+        "properties": {
+          "publicationState": {
+            "type": "string",
+            "description": "Denormalized publication state of the record itself."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "workflow",
+              "direct",
+              "blocked"
+            ],
+            "description": "How this entity publishes, resolved from workflowPolicies. \"blocked\" means an administrator has not configured a usable policy — drafts still save, nothing publishes."
+          },
+          "blockedReason": {
+            "type": "object",
+            "nullable": true,
+            "description": "Why the mode is blocked; null otherwise."
+          },
+          "publishedAt": {
+            "type": "object",
+            "nullable": true,
+            "description": "ISO date of the current Live publication."
+          },
+          "publishedBy": {
+            "nullable": true,
+            "description": "Who put the current Live version on the site; null when nothing is live. Resolved here because the panel prints a name, and most editors may not call the users route to resolve one themselves.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RevisionActorDto"
+              }
+            ]
+          },
+          "workflowInstanceId": {
+            "type": "object",
+            "nullable": true
+          },
+          "workflowStatus": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "InProgress",
+              "Approved",
+              "Rejected",
+              "Returned"
+            ]
+          },
+          "currentStepId": {
+            "type": "object",
+            "nullable": true,
+            "description": "Id of the step awaiting a decision."
+          },
+          "canEdit": {
+            "type": "boolean",
+            "description": "Whether the caller may edit the draft right now."
+          },
+          "availableActions": {
+            "type": "array",
+            "description": "What this caller may do now, computed server-side.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "save",
+                "submit",
+                "resubmit",
+                "publish",
+                "approve",
+                "reject",
+                "return"
+              ]
+            }
+          },
+          "updatedAt": {
+            "type": "object",
+            "description": "The record's updatedAt, to send back as expectedUpdatedAt when publishing."
+          },
+          "publishBlockers": {
+            "description": "Everything standing between this draft and the public site. Publishing is refused while non-empty, and the dashboard renders it as a readiness list above the publish button rather than waiting to refuse the press.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublishBlockerDto"
+            }
+          },
+          "blockedByReadiness": {
+            "type": "array",
+            "description": "Actions this caller would be allowed if `publishBlockers` were empty, and is not allowed only because it is not. The dashboard draws these as disabled controls described by the readiness list, so a reader hears why they cannot publish rather than finding no button at all. Never overlaps `availableActions`, and never names an action the caller lacks the permission for — \"not ready yet\" and \"not yours to do\" are different answers and must not look alike.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "save",
+                "submit",
+                "resubmit",
+                "publish",
+                "approve",
+                "reject",
+                "return"
+              ]
+            }
+          },
+          "workflow": {
+            "nullable": true,
+            "description": "The review this record is in, with its steps; null when no review has been opened.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/WorkflowSummaryDto"
+              }
+            ]
+          },
+          "history": {
+            "description": "Every decision taken on this record across all of its reviews, newest first. Capped at the most recent 100 — a bound no real review approaches, and one this description states rather than letting the panel truncate in silence.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EditorialHistoryEntryDto"
+            }
+          }
+        },
+        "required": [
+          "publicationState",
+          "mode",
+          "canEdit",
+          "availableActions",
+          "updatedAt",
+          "publishBlockers",
+          "blockedByReadiness",
+          "history"
         ]
       },
       "UpdatePresidentMessagePageDto": {

@@ -22,4 +22,20 @@ export class WorkflowInstancesRepository extends BaseRepository<WorkflowInstance
   ): Promise<WorkflowInstanceDocument | null> {
     return this.findOne({ entityType, entityId, status: { $ne: 'Approved' } });
   }
+
+  /**
+   * Every review this record has been through, including the finished ones.
+   *
+   * `findActive` deliberately excludes `Approved`, which is right for
+   * deciding what may happen next and wrong for showing what happened: a
+   * record published through an approval would otherwise present an empty
+   * history the moment it went live. Served by the `{entityType, entityId}`
+   * index the schema already declares.
+   */
+  async findByEntity(
+    entityType: WorkflowEntityType,
+    entityId: Types.ObjectId,
+  ): Promise<WorkflowInstanceDocument[]> {
+    return this.find({ entityType, entityId });
+  }
 }

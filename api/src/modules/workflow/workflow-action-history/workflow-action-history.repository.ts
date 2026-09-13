@@ -17,6 +17,30 @@ export class WorkflowActionHistoryRepository extends BaseRepository<WorkflowActi
   }
 
   /**
+   * Every action across several instances, newest first — the order the
+   * dashboard's timeline reads in, where the decision that explains the
+   * current state is the one at the top.
+   *
+   * Capped rather than unbounded: this is read on every open of the status
+   * panel. The cap is far above any real review — a record reaching it has
+   * had a hundred decisions taken on it — and the DTO says so rather than
+   * truncating silently.
+   */
+  async findByInstances(
+    workflowInstanceIds: readonly Types.ObjectId[],
+    limit = 100,
+  ): Promise<WorkflowActionHistoryDocument[]> {
+    if (workflowInstanceIds.length === 0) {
+      return [];
+    }
+    return this.model
+      .find({ workflowInstanceId: { $in: workflowInstanceIds }, archivedAt: null })
+      .sort({ actionDate: -1 })
+      .limit(limit)
+      .exec();
+  }
+
+  /**
    * Distinct actors who approved `workflowStepId` in the instance's current
    * cycle — what a step's `requiredApprovals` threshold is measured against.
    *

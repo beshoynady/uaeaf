@@ -17,6 +17,7 @@ import {
 } from "@/lib/admin/permission-matrix";
 import { roleUsage } from "@/lib/admin/directory-stats";
 import { StatusMessage } from "@/components/auth/status-message";
+import { useToast } from "@/components/ui/toast";
 import { RoleList } from "./role-list";
 import { PermissionMatrixTable } from "./permission-matrix-table";
 import { RoleEditor } from "./role-editor";
@@ -57,7 +58,10 @@ export function RoleWorkbench({
   locale: AppLocale;
 }) {
   const t = useTranslations("RolesWorkbench");
+  // Copy, not punctuation this component may choose — see status-panel.
+  const common = useTranslations("Common");
   const router = useRouter();
+  const toast = useToast();
 
   const [selectedRoleId, setSelectedRoleId] = useState<string | null>(roles[0]?._id ?? null);
   const [selection, setSelection] = useState<Set<string>>(
@@ -66,7 +70,15 @@ export function RoleWorkbench({
   const [query, setQuery] = useState("");
   const [rowFilter, setRowFilter] = useState<RowFilter>("all");
   const [saving, setSaving] = useState(false);
-  const [outcome, setOutcome] = useState<{ tone: "success" | "error"; key: string } | null>(null);
+  /**
+   * Why the last action was refused, or null.
+   *
+   * Refusals only (ADR-0016). A result the reader can do nothing about is an
+   * announcement and leaves through the toast region; a refusal is an
+   * instruction, and belongs beside the control that refused — where it can
+   * be re-read, and where it does not vanish on a timer.
+   */
+  const [failureKey, setFailureKey] = useState<string | null>(null);
   // What the detail panel is showing. The matrix is the resting state; the
   // other three are one-at-a-time because they all act on the same role and
   // showing two at once would leave it ambiguous which one a click applies
@@ -114,7 +126,7 @@ export function RoleWorkbench({
       const next = roles.find((candidate) => candidate._id === roleId);
       setSelectedRoleId(roleId);
       setSelection(new Set(next?.permissionIds ?? []));
-      setOutcome(null);
+      setFailureKey(null);
       setPanel("matrix");
       setQuery("");
       setRowFilter("all");
@@ -125,7 +137,7 @@ export function RoleWorkbench({
 
   const toggle = useCallback(
     (permissionId: string) => {
-      setOutcome(null);
+      setFailureKey(null);
       const result = toggleWithImpliedRead(rows, selection, permissionId);
       setAutoAdded(result.autoAdded);
       setSelection(result.next);
@@ -136,7 +148,7 @@ export function RoleWorkbench({
   async function save() {
     if (!role) return;
     setSaving(true);
-    setOutcome(null);
+    setFailureKey(null);
 
     try {
       const response = await fetch(`/api/admin/roles/${role._id}/permissions`, {
@@ -147,19 +159,27 @@ export function RoleWorkbench({
 
       if (!response.ok) {
         const body = (await response.json().catch(() => null)) as { code?: string } | null;
-        setOutcome({ tone: "error", key: `save_${body?.code ?? "serviceUnavailable"}` });
+        setFailureKey(`save_${body?.code ?? "serviceUnavailable"}`);
         setSaving(false);
         return;
       }
 
-      setOutcome({ tone: "success", key: "save_ok" });
+      toast.show({
+        tone: "success",
+        title: t("saveOkTitle"),
+        description: t("save_ok"),
+        source: "api",
+        // Per role: saving two roles in a row is two results, and one
+        // counter reading "2" would not say which two.
+        dedupeKey: `role:${role._id}:permissions-saved`,
+      });
       setSaving(false);
       // The server component above holds the role list; refreshing is what
       // makes `original` match what was just written, so the diff resets to
       // empty without this component guessing at the new state.
       router.refresh();
     } catch {
-      setOutcome({ tone: "error", key: "save_serviceUnavailable" });
+      setFailureKey("save_serviceUnavailable");
       setSaving(false);
     }
   }
@@ -167,14 +187,14 @@ export function RoleWorkbench({
   async function archive() {
     if (!role) return;
     setArchiving(true);
-    setOutcome(null);
+    setFailureKey(null);
 
     try {
       const response = await fetch(`/api/admin/roles/${role._id}`, { method: "DELETE" });
 
       if (!response.ok) {
         const body = (await response.json().catch(() => null)) as { code?: string } | null;
-        setOutcome({ tone: "error", key: `save_${body?.code ?? "serviceUnavailable"}` });
+        setFailureKey(`save_${body?.code ?? "serviceUnavailable"}`);
         setArchiving(false);
         setPanel("matrix");
         return;
@@ -183,12 +203,19 @@ export function RoleWorkbench({
       // The archived role leaves the list on refresh, so the selection has
       // to let go of it first or the panel renders against a role that is
       // no longer there.
+      toast.show({
+        tone: "success",
+        title: t("archivedTitle"),
+        description: t("archivedBody"),
+        source: "api",
+        dedupeKey: `role:${role._id}:archived`,
+      });
       setSelectedRoleId(null);
       setPanel("matrix");
       setArchiving(false);
       router.refresh();
     } catch {
-      setOutcome({ tone: "error", key: "save_serviceUnavailable" });
+      setFailureKey("save_serviceUnavailable");
       setArchiving(false);
       setPanel("matrix");
     }
@@ -256,10 +283,7 @@ export function RoleWorkbench({
                 <RoleEditor
                   mode="edit"
                   role={role}
-                  onDone={() => {
-                    setPanel("matrix");
-                    setOutcome({ tone: "success", key: "detailsSavedBody" });
-                  }}
+                  onDone={() => setPanel("matrix")}
                   onCancel={() => setPanel("matrix")}
                 />
               </div>
@@ -409,19 +433,18 @@ export function RoleWorkbench({
               <div className="px-5 pt-3">
                 <StatusMessage tone="warning" title={t("incoherentTitle")}>
                   {t("incoherentBody", {
-                    resources: incoherent.map((entry) => entry.resourceType).join("، "),
+                    resources: incoherent
+                      .map((entry) => entry.resourceType)
+                      .join(common("listSeparator")),
                   })}
                 </StatusMessage>
               </div>
             ) : null}
 
-            {outcome ? (
+            {failureKey ? (
               <div className="px-5 pt-3">
-                <StatusMessage
-                  tone={outcome.tone}
-                  title={outcome.tone === "success" ? t("saveOkTitle") : t("saveFailedTitle")}
-                >
-                  {t(outcome.key)}
+                <StatusMessage tone="error" title={t("saveFailedTitle")}>
+                  {t(failureKey)}
                 </StatusMessage>
               </div>
             ) : null}
@@ -434,9 +457,12 @@ export function RoleWorkbench({
               </div>
             ) : (
               <>
+                {/* The condition is on the container, not inside it: the
+                    catalogue lens has no filters, and a wrapper that renders
+                    with nothing in it leaves 32px of padded nothing where the
+                    reader looks for a control. */}
+                {lens === "matrix" ? (
                 <div className="flex flex-wrap items-center gap-3 px-5 py-4">
-                  {lens === "matrix" ? (
-                  <>
                   <SearchField
           label={t("searchResources")}
           value={query}
@@ -455,9 +481,8 @@ export function RoleWorkbench({
                   >
                     {t("onlyGranted")}
                   </button>
-                  </>
-                  ) : null}
                 </div>
+                ) : null}
 
                 {/* Sits against the table, not stacked with the permanent
                     "takes effect immediately" notice above: two info boxes

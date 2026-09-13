@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithIntl } from "@/test/render";
+import { ToastProvider } from "@/components/ui/toast";
 import { RoleEditor } from "./role-editor";
 import type { RoleResponse } from "@/lib/api/types";
 
@@ -31,7 +32,11 @@ describe("RoleEditor — creating", () => {
     // name is blank renders as an empty row in every list that shows it.
     const fetchMock = stubFetch(ok());
     const user = userEvent.setup();
-    renderWithIntl(<RoleEditor mode="create" onDone={vi.fn()} onCancel={vi.fn()} />);
+    renderWithIntl(
+      <ToastProvider>
+        <RoleEditor mode="create" onDone={vi.fn()} onCancel={vi.fn()} />
+      </ToastProvider>,
+    );
 
     await user.type(screen.getByLabelText("اسم الدور بالعربية"), "مراجع");
     await user.click(screen.getByRole("button", { name: "إنشاء الدور" }));
@@ -45,7 +50,11 @@ describe("RoleEditor — creating", () => {
     // at once would put a 164-box matrix inside a creation form.
     const fetchMock = stubFetch(ok());
     const user = userEvent.setup();
-    renderWithIntl(<RoleEditor mode="create" onDone={vi.fn()} onCancel={vi.fn()} />);
+    renderWithIntl(
+      <ToastProvider>
+        <RoleEditor mode="create" onDone={vi.fn()} onCancel={vi.fn()} />
+      </ToastProvider>,
+    );
 
     await user.type(screen.getByLabelText("اسم الدور بالعربية"), "مراجع");
     await user.type(screen.getByLabelText("اسم الدور بالإنجليزية"), "Reviewer");
@@ -61,10 +70,34 @@ describe("RoleEditor — creating", () => {
     });
   });
 
+  /** The panel closes on success, which says something happened but not what
+   *  — and a new role with no permissions needs the reader sent to the next
+   *  step, not left guessing. */
+  it("announces the new role, and what is still missing from it", async () => {
+    stubFetch(ok());
+    const user = userEvent.setup();
+    renderWithIntl(
+      <ToastProvider>
+        <RoleEditor mode="create" onDone={vi.fn()} onCancel={vi.fn()} />
+      </ToastProvider>,
+    );
+
+    await user.type(screen.getByLabelText("اسم الدور بالعربية"), "مراجع");
+    await user.type(screen.getByLabelText("اسم الدور بالإنجليزية"), "Reviewer");
+    await user.click(screen.getByRole("button", { name: "إنشاء الدور" }));
+
+    const region = await screen.findByRole("region", { name: "إشعارات الإجراءات" });
+    expect(await within(region).findByText("أُنشئ الدور")).toBeInTheDocument();
+  });
+
   it("names the failure rather than reporting a generic one", async () => {
     stubFetch(new Response(JSON.stringify({ code: "forbidden" }), { status: 403 }));
     const user = userEvent.setup();
-    renderWithIntl(<RoleEditor mode="create" onDone={vi.fn()} onCancel={vi.fn()} />);
+    renderWithIntl(
+      <ToastProvider>
+        <RoleEditor mode="create" onDone={vi.fn()} onCancel={vi.fn()} />
+      </ToastProvider>,
+    );
 
     await user.type(screen.getByLabelText("اسم الدور بالعربية"), "مراجع");
     await user.type(screen.getByLabelText("اسم الدور بالإنجليزية"), "Reviewer");
@@ -76,7 +109,11 @@ describe("RoleEditor — creating", () => {
 
 describe("RoleEditor — editing", () => {
   it("starts from what is stored", () => {
-    renderWithIntl(<RoleEditor mode="edit" role={role} onDone={vi.fn()} onCancel={vi.fn()} />);
+    renderWithIntl(
+      <ToastProvider>
+        <RoleEditor mode="edit" role={role} onDone={vi.fn()} onCancel={vi.fn()} />
+      </ToastProvider>,
+    );
 
     expect(screen.getByLabelText("اسم الدور بالعربية")).toHaveValue("محرّر");
     expect(screen.getByLabelText("الوصف بالإنجليزية")).toHaveValue("Edits");
@@ -87,7 +124,11 @@ describe("RoleEditor — editing", () => {
     // 2026-09-08; before that a description could only be set at creation.
     const fetchMock = stubFetch(ok());
     const user = userEvent.setup();
-    renderWithIntl(<RoleEditor mode="edit" role={role} onDone={vi.fn()} onCancel={vi.fn()} />);
+    renderWithIntl(
+      <ToastProvider>
+        <RoleEditor mode="edit" role={role} onDone={vi.fn()} onCancel={vi.fn()} />
+      </ToastProvider>,
+    );
 
     await user.clear(screen.getByLabelText("الوصف بالعربية"));
     await user.type(screen.getByLabelText("الوصف بالعربية"), "يراجع");
@@ -108,7 +149,11 @@ describe("RoleEditor — editing", () => {
     // strings are a 400, and "no description" is a real state.
     const fetchMock = stubFetch(ok());
     const user = userEvent.setup();
-    renderWithIntl(<RoleEditor mode="edit" role={role} onDone={vi.fn()} onCancel={vi.fn()} />);
+    renderWithIntl(
+      <ToastProvider>
+        <RoleEditor mode="edit" role={role} onDone={vi.fn()} onCancel={vi.fn()} />
+      </ToastProvider>,
+    );
 
     await user.clear(screen.getByLabelText("الوصف بالعربية"));
     await user.clear(screen.getByLabelText("الوصف بالإنجليزية"));
@@ -117,5 +162,25 @@ describe("RoleEditor — editing", () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const [, init] = fetchMock.mock.calls[0] ;
     expect(JSON.parse(init.body as string).description).toBeNull();
+  });
+
+  /** Named for what actually happened. The two modes of this form are two
+   *  different events, and one shared "saved" would report a creation as an
+   *  edit. */
+  it("announces saved details rather than a creation", async () => {
+    stubFetch(ok());
+    const user = userEvent.setup();
+    renderWithIntl(
+      <ToastProvider>
+        <RoleEditor mode="edit" role={role} onDone={vi.fn()} onCancel={vi.fn()} />
+      </ToastProvider>,
+    );
+
+    await user.type(screen.getByLabelText("اسم الدور بالعربية"), "!");
+    await user.click(screen.getByRole("button", { name: "حفظ البيانات" }));
+
+    const region = await screen.findByRole("region", { name: "إشعارات الإجراءات" });
+    expect(await within(region).findByText("حُفظت البيانات")).toBeInTheDocument();
+    expect(within(region).queryByText("أُنشئ الدور")).toBeNull();
   });
 });

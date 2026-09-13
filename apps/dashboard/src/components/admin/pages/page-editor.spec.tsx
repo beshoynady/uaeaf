@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithIntl } from "@/test/render";
+import { ToastProvider } from "@/components/ui/toast";
 import { PageEditor } from "./page-editor";
 import { findStaticPage } from "@/lib/admin/static-pages";
 import type { MediaAssetOption } from "./media-picker";
@@ -29,14 +30,11 @@ const contact = findStaticPage("contact-us")!;
 
 function render(over: Partial<React.ComponentProps<typeof PageEditor>> = {}) {
   return renderWithIntl(
-    <PageEditor
-      page={news}
-      record={null}
-      images={IMAGES}
-      canEdit
-      locale="ar"
-      {...over}
-    />,
+    // The provider comes from the `(app)` layout in production; the form is
+    // rendered here on its own, so the harness supplies it.
+    <ToastProvider>
+      <PageEditor page={news} record={null} images={IMAGES} canEdit locale="ar" {...over} />
+    </ToastProvider>,
   );
 }
 
@@ -113,6 +111,27 @@ describe("PageEditor", () => {
     expect(await screen.findByText("تغييرات غير محفوظة")).toBeInTheDocument();
   });
 
+  /**
+   * This form writes to a live public page with no review step — its own
+   * success message says so ("يظهر على الموقع العام فورًا"). A save with
+   * nothing to save is therefore not harmless: it restamps a published page
+   * on a stray press. The Reset button beside it already refuses when the
+   * form is clean; the one that publishes did not.
+   */
+  it("does not offer to save a page nothing has changed on", async () => {
+    const fetchMock = stubFetch(ok());
+    const user = userEvent.setup();
+    render({
+      record: { heroTitle: { ar: "الأخبار", en: "News" }, heroSubtitle: { ar: "آخر", en: "Latest" } },
+    });
+
+    expect(screen.getByRole("button", { name: "حفظ الصفحة" })).toBeDisabled();
+
+    await user.type(screen.getByLabelText("عنوان الترويسة — بالعربية"), "!");
+    expect(screen.getByRole("button", { name: "حفظ الصفحة" })).toBeEnabled();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("shows the content but no controls without the update grant", () => {
     render({
       canEdit: false,
@@ -122,6 +141,27 @@ describe("PageEditor", () => {
     expect(screen.getByLabelText("عنوان الترويسة — بالعربية")).toBeDisabled();
     expect(screen.queryByRole("button", { name: "حفظ الصفحة" })).not.toBeInTheDocument();
     expect(screen.getByText(/يحتاج صلاحية تحديثها/)).toBeInTheDocument();
+  });
+
+  /**
+   * The result of an action is announced once, in the region the whole shell
+   * shares (ADR-0016). Kept in the form as well, it would be said twice to a
+   * screen reader for one save — and it would still be sitting there,
+   * reading as current, after the next three edits.
+   */
+  it("announces a save in the toast region and nowhere else", async () => {
+    stubFetch(ok());
+    const user = userEvent.setup();
+    render({
+      record: { heroTitle: { ar: "الأخبار", en: "News" }, heroSubtitle: { ar: "آخر", en: "Latest" } },
+    });
+
+    await user.type(screen.getByLabelText("عنوان الترويسة — بالعربية"), "!");
+    await user.click(screen.getByRole("button", { name: "حفظ الصفحة" }));
+
+    const region = await screen.findByRole("region", { name: "إشعارات الإجراءات" });
+    expect(await within(region).findByText("حُفظت الصفحة")).toBeInTheDocument();
+    expect(screen.getAllByText("حُفظت الصفحة")).toHaveLength(1);
   });
 
   it("reports the API's own refusal", async () => {
@@ -142,7 +182,9 @@ describe("PageEditor — the contact page's repeatable rows", () => {
   it("adds and removes a phone number", async () => {
     const user = userEvent.setup();
     renderWithIntl(
-      <PageEditor page={contact} record={null} images={IMAGES} canEdit locale="ar" />,
+      <ToastProvider>
+        <PageEditor page={contact} record={null} images={IMAGES} canEdit locale="ar" />
+      </ToastProvider>,
     );
 
     // Scoped to the phone group: the contact page has two repeatable lists
@@ -161,17 +203,19 @@ describe("PageEditor — the contact page's repeatable rows", () => {
     const fetchMock = stubFetch(ok());
     const user = userEvent.setup();
     renderWithIntl(
-      <PageEditor
-        page={contact}
-        record={{
-          heroTitle: { ar: "اتصل بنا", en: "Contact us" },
-          heroSubtitle: { ar: "نحن هنا", en: "We are here" },
-          email: "info@uaeaf.ae",
-        }}
-        images={IMAGES}
-        canEdit
-        locale="ar"
-      />,
+      <ToastProvider>
+        <PageEditor
+          page={contact}
+          record={{
+            heroTitle: { ar: "اتصل بنا", en: "Contact us" },
+            heroSubtitle: { ar: "نحن هنا", en: "We are here" },
+            email: "info@uaeaf.ae",
+          }}
+          images={IMAGES}
+          canEdit
+          locale="ar"
+        />
+      </ToastProvider>,
     );
 
     await user.type(screen.getByLabelText("المدينة"), "أبوظبي");

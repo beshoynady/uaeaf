@@ -11,6 +11,8 @@ import type { Connection } from 'mongoose';
 import { WorkflowPoliciesService } from '../workflow-policies/workflow-policies.service.js';
 import { WorkflowInstancesService } from '../workflow-instances/workflow-instances.service.js';
 import { WorkflowStepsService } from '../workflow-steps/workflow-steps.service.js';
+import { WorkflowDefinitionsService } from '../workflow-definitions/workflow-definitions.service.js';
+import { WorkflowActionHistoryService } from '../workflow-action-history/workflow-action-history.service.js';
 import { RevisionsService } from '../revisions/revisions.service.js';
 import { PublicationsService } from '../publications/publications.service.js';
 import { AuditLogsService } from '../audit-logs/audit-logs.service.js';
@@ -18,12 +20,21 @@ import { UsersService } from '../../platform-administration/users/users.service.
 import { describePublishBlockers, findPublishBlockers } from './publish-blockers.js';
 import { EDITORIAL_ACTIONS } from './editorial-state.dto.js';
 import { projectRevisionContent } from '../../../common/constants/entity-content.js';
-import type { EditorialAction, EditorialStateDto } from './editorial-state.dto.js';
 import type {
+  EditorialAction,
+  EditorialHistoryEntryDto,
+  EditorialStateDto,
+  WorkflowSummaryDto,
+} from './editorial-state.dto.js';
+import type {
+  RevisionActorDto,
   RevisionDetailDto,
   RevisionHistoryPageDto,
   RevisionSummaryDto,
 } from './revision-history.dto.js';
+import type { WorkflowActionHistoryDocument } from '../workflow-action-history/schemas/workflow-action-history.schema.js';
+import type { WorkflowInstanceDocument } from '../workflow-instances/schemas/workflow-instance.schema.js';
+import type { PublishingMode } from '../workflow-policies/workflow-policies.service.js';
 import type { RevisionListRow } from '../revisions/revisions.repository.js';
 import type { RequestContext } from '../workflow-instances/workflow-instances.service.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
@@ -50,6 +61,9 @@ export class PublishingService {
     private readonly policiesService: WorkflowPoliciesService,
     private readonly instancesService: WorkflowInstancesService,
     private readonly stepsService: WorkflowStepsService,
+    // The status panel names the review and lists what has been decided.
+    private readonly definitionsService: WorkflowDefinitionsService,
+    private readonly actionHistoryService: WorkflowActionHistoryService,
     private readonly revisionsService: RevisionsService,
     private readonly publicationsService: PublicationsService,
     private readonly auditLogsService: AuditLogsService,
@@ -457,11 +471,16 @@ export class PublishingService {
     entityId: Types.ObjectId,
     actor: AuthenticatedUser,
   ): Promise<EditorialStateDto> {
-    const [record, resolved, active, live] = await Promise.all([
+    // `findActive` and `findByEntity` answer different questions on the same
+    // index: what may happen next, and what has already happened. A record
+    // published through an approval has no active instance and still has a
+    // history worth showing.
+    const [record, resolved, active, live, instances] = await Promise.all([
       this.loadRecord(entityType, entityId),
       this.policiesService.resolve(entityType, 'Edit'),
       this.instancesService.findActive(entityType, entityId),
       this.publicationsService.findLive(entityType, entityId),
+      this.instancesService.findByEntity(entityType, entityId),
     ]);
 
     const canEdit = await this.canEdit(entityType, entityId, actor);
@@ -470,38 +489,75 @@ export class PublishingService {
     const canUpdate = this.hasPermission(actor, entityType, 'Update');
     const canApprove = this.hasPermission(actor, entityType, 'Approve');
 
-    const actions = new Set<EditorialAction>();
-    if (canEdit && canUpdate) {
-      actions.add('save');
-    }
+    const permits = { canEdit, canUpdate, canPublish, canApprove };
+    const actions = this.allowedActions(resolved.mode, active, permits, publishBlockers.length === 0);
 
-    const publishable = publishBlockers.length === 0;
+    // What the same reader could do if the draft were ready, minus what they
+    // can already do — so the dashboard can draw those disabled, described by
+    // the readiness list, instead of silently omitting them.
+    //
+    // Computed by running the same rule with readiness satisfied rather than
+    // by a second rule written alongside it: two rules that must agree are
+    // two rules that will not.
+    const ifReady = this.allowedActions(resolved.mode, active, permits, true);
+    const blockedByReadiness = EDITORIAL_ACTIONS.filter(
+      (action) => ifReady.has(action) && !actions.has(action),
+    );
 
-    if (!active && publishable) {
-      if (resolved.mode === 'direct' && canPublish) {
-        actions.add('publish');
-      }
-      if (resolved.mode === 'workflow' && canUpdate) {
-        actions.add('submit');
-      }
-    }
+    const [steps, definition, history] = await Promise.all([
+      active ? this.stepsService.findByDefinition(active.workflowDefinitionId.toString()) : [],
+      active ? this.definitionsService.findById(active.workflowDefinitionId.toString()) : null,
+      this.actionHistoryService.findByInstances(
+        instances.map((instance) => instance._id as Types.ObjectId),
+      ),
+    ]);
 
-    if (active && publishable) {
-      if (active.status === 'InProgress' && canApprove) {
-        actions.add('approve');
-        actions.add('reject');
-        actions.add('return');
-      }
-      if ((active.status === 'Rejected' || active.status === 'Returned') && canUpdate) {
-        actions.add('resubmit');
-      }
-    }
+    // Progress is per step and per cycle, so it is counted per step rather
+    // than derived from the history above — which spans every cycle this
+    // record has been through.
+    const approvals = active
+      ? await Promise.all(
+          steps.map((step) =>
+            this.actionHistoryService.countDistinctApprovers(
+              active._id as Types.ObjectId,
+              step._id as Types.ObjectId,
+            ),
+          ),
+        )
+      : [];
+
+    // One lookup for every person the panel names: who published, who may
+    // decide a step, who has already decided one.
+    const names = await this.usersService.findNamesByIds([
+      ...(live ? [String(live.publishedBy)] : []),
+      ...steps.flatMap((step) => step.assigneeIds.map(String)),
+      ...history.map((entry) => String(entry.actorId)),
+    ]);
+
+    const workflow: WorkflowSummaryDto | null = active
+      ? {
+          instanceId: (active._id as Types.ObjectId).toString(),
+          definitionName: definition ? { en: definition.name.en, ar: definition.name.ar } : null,
+          status: active.status,
+          steps: steps.map((step, index) => ({
+            id: (step._id as Types.ObjectId).toString(),
+            sequenceOrder: step.sequenceOrder,
+            stepType: step.stepType,
+            requiredApprovals: step.requiredApprovals,
+            approvals: approvals[index] ?? 0,
+            assignees: step.assigneeIds.map((assignee) => this.actorRef(String(assignee), names)),
+            isCurrent:
+              active.currentStepId?.toString() === (step._id as Types.ObjectId).toString(),
+          })),
+        }
+      : null;
 
     return {
       publicationState: String(record.publicationState ?? 'Draft'),
       mode: resolved.mode,
       blockedReason: resolved.reason,
       publishedAt: live?.publishedAt ? live.publishedAt.toISOString() : null,
+      publishedBy: live ? this.actorRef(String(live.publishedBy), names) : null,
       workflowInstanceId: active ? (active._id as Types.ObjectId).toString() : null,
       workflowStatus: active?.status ?? null,
       currentStepId: active?.currentStepId ? active.currentStepId.toString() : null,
@@ -509,6 +565,77 @@ export class PublishingService {
       availableActions: EDITORIAL_ACTIONS.filter((action) => actions.has(action)),
       updatedAt: record.updatedAt instanceof Date ? record.updatedAt.toISOString() : null,
       publishBlockers,
+      blockedByReadiness,
+      workflow,
+      history: history.map((entry) => this.toHistoryEntry(entry, names)),
+    };
+  }
+
+  /**
+   * What this reader may do, given the policy, the running review and their
+   * permissions — with readiness as a parameter rather than a fact.
+   *
+   * `editorialState` calls it twice: once truthfully, and once as though the
+   * draft were ready, to tell "not yet" apart from "not yours".
+   */
+  private allowedActions(
+    mode: PublishingMode,
+    active: WorkflowInstanceDocument | null,
+    permits: { canEdit: boolean; canUpdate: boolean; canPublish: boolean; canApprove: boolean },
+    publishable: boolean,
+  ): Set<EditorialAction> {
+    const actions = new Set<EditorialAction>();
+
+    // Saving is never gated on readiness: being unable to publish is not
+    // being unable to work.
+    if (permits.canEdit && permits.canUpdate) {
+      actions.add('save');
+    }
+
+    if (!publishable) {
+      return actions;
+    }
+
+    if (!active) {
+      if (mode === 'direct' && permits.canPublish) {
+        actions.add('publish');
+      }
+      if (mode === 'workflow' && permits.canUpdate) {
+        actions.add('submit');
+      }
+      return actions;
+    }
+
+    if (active.status === 'InProgress' && permits.canApprove) {
+      actions.add('approve');
+      actions.add('reject');
+      actions.add('return');
+    }
+    if ((active.status === 'Rejected' || active.status === 'Returned') && permits.canUpdate) {
+      actions.add('resubmit');
+    }
+
+    return actions;
+  }
+
+  /** A person as the dashboard shows them: a name, never the account. */
+  private actorRef(id: string, names: Map<string, LocalizedText>): RevisionActorDto {
+    const name = names.get(id);
+    return { id, name: name ? { en: name.en, ar: name.ar } : null };
+  }
+
+  private toHistoryEntry(
+    entry: WorkflowActionHistoryDocument,
+    names: Map<string, LocalizedText>,
+  ): EditorialHistoryEntryDto {
+    return {
+      id: (entry._id as Types.ObjectId).toString(),
+      action: entry.action,
+      actor: this.actorRef(String(entry.actorId), names),
+      reason: entry.reason ?? null,
+      actionDate: entry.actionDate.toISOString(),
+      workflowStepId: entry.workflowStepId.toString(),
+      returnedToStepId: entry.returnedToStepId ? entry.returnedToStepId.toString() : null,
     };
   }
 

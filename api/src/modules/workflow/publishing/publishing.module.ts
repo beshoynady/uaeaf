@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { WorkflowPoliciesModule } from '../workflow-policies/workflow-policies.module.js';
 import { WorkflowInstancesModule } from '../workflow-instances/workflow-instances.module.js';
 import { WorkflowStepsModule } from '../workflow-steps/workflow-steps.module.js';
+import { WorkflowDefinitionsModule } from '../workflow-definitions/workflow-definitions.module.js';
+import { WorkflowActionHistoryModule } from '../workflow-action-history/workflow-action-history.module.js';
 import { RevisionsModule } from '../revisions/revisions.module.js';
 import { PublicationsModule } from '../publications/publications.module.js';
 import { AuditLogsModule } from '../audit-logs/audit-logs.module.js';
@@ -31,6 +33,11 @@ import { RevisionsController } from './revisions.controller.js';
     WorkflowPoliciesModule,
     WorkflowInstancesModule,
     WorkflowStepsModule,
+    // The status panel names the review's definition and lists what has
+    // been decided on the record, so both are read here rather than left
+    // for the dashboard to fetch separately and join.
+    WorkflowDefinitionsModule,
+    WorkflowActionHistoryModule,
     RevisionsModule,
     PublicationsModule,
     AuditLogsModule,

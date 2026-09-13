@@ -28,6 +28,14 @@ export class WorkflowActionHistoryService {
     return this.repository.findByInstance(new Types.ObjectId(workflowInstanceId));
   }
 
+  /** Every action across several instances, newest first — one record's
+   *  whole decision history, for the dashboard's timeline. */
+  async findByInstances(
+    workflowInstanceIds: readonly Types.ObjectId[],
+  ): Promise<WorkflowActionHistoryDocument[]> {
+    return this.repository.findByInstances(workflowInstanceIds);
+  }
+
   /** Distinct actors who approved `workflowStepId` in the instance's current
    *  submission cycle — WorkflowInstancesService uses this to decide whether
    *  a step's `requiredApprovals` threshold is met. See the repository for

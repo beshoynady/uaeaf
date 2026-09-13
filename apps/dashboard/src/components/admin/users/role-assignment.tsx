@@ -1,11 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { localized, type RoleResponse, type UserResponse } from "@/lib/api/types";
 import { diffSelection, toggleSelection } from "@/lib/admin/permission-matrix";
 import { StatusMessage } from "@/components/auth/status-message";
+import { useToast } from "@/components/ui/toast";
+
+/** The id of the line saying what is unsaved in one account's roles form.
+ *  Exported because the directory describes its refused close button by it. */
+export const assignDiffId = (userId: string) => `assign-diff-${userId}`;
 
 /**
  * Which roles one account holds.
@@ -24,7 +29,7 @@ export function RoleAssignment({
   roles,
   locale,
   disabled,
-  onDone,
+  onDirtyChange,
 }: {
   user: UserResponse;
   roles: readonly RoleResponse[];
@@ -33,10 +38,14 @@ export function RoleAssignment({
    *  self-assignment with a 403; saying so before the click beats letting
    *  the request explain it. */
   disabled: boolean;
-  onDone: () => void;
+  /** Reports whether this form holds ticks nobody has saved yet. The panel it
+   *  sits in refuses to close while it does: that panel also holds the status
+   *  form, and closing it used to take these ticks with it. */
+  onDirtyChange: (dirty: boolean) => void;
 }) {
   const t = useTranslations("UsersDirectory");
   const router = useRouter();
+  const toast = useToast();
 
   const liveRoleIds = useMemo(() => new Set(roles.map((role) => role._id)), [roles]);
   const original = useMemo(
@@ -49,6 +58,10 @@ export function RoleAssignment({
   const [selection, setSelection] = useState<Set<string>>(() => new Set(original));
   const [saving, setSaving] = useState(false);
   const [errorKey, setErrorKey] = useState<string | null>(null);
+  // Save stays locked until the refreshed roles arrive. Until then the diff is
+  // still measured against the old ones, and would offer to save the same list
+  // a second time.
+  const [refreshing, startRefresh] = useTransition();
 
   const diff = diffSelection(original, selection);
 
@@ -70,8 +83,20 @@ export function RoleAssignment({
         return;
       }
 
-      router.refresh();
-      onDone();
+      toast.show({
+        tone: "success",
+        title: t("rolesSavedTitle"),
+        // Whose roles: the directory lists many accounts, and the toast
+        // outlives the moment it describes.
+        description: t("rolesSavedBody", { name: localized(user.name, locale) }),
+        source: "api",
+        dedupeKey: `user:${user.id}:roles-saved`,
+      });
+      setSaving(false);
+      onDirtyChange(false);
+      // The panel stays open — it also holds the status form — so this form
+      // settles in place rather than disappearing.
+      startRefresh(() => router.refresh());
     } catch {
       setErrorKey("assign_serviceUnavailable");
       setSaving(false);
@@ -115,7 +140,11 @@ export function RoleAssignment({
                     type="checkbox"
                     checked={checked}
                     disabled={disabled}
-                    onChange={() => setSelection((current) => toggleSelection(current, role._id))}
+                    onChange={() => {
+                      const next = toggleSelection(selection, role._id);
+                      setSelection(next);
+                      onDirtyChange(diffSelection(original, next).changed);
+                    }}
                     className="size-[18px] accent-[color:var(--color-brand-primary)] disabled:opacity-[var(--opacity-disabled)]"
                   />
                   <span className="text-label text-[color:var(--color-text-primary)]">
@@ -134,7 +163,7 @@ export function RoleAssignment({
       )}
 
       <div className="flex flex-wrap items-center gap-3">
-        <p aria-live="polite" className="text-caption text-[color:var(--color-text-secondary)]">
+        <p id={assignDiffId(user.id)} aria-live="polite" className="text-caption text-[color:var(--color-text-secondary)]">
           {diff.changed
             ? t("assignDiff", { added: diff.added.length, removed: diff.removed.length })
             : t("assignNoChanges")}
@@ -142,14 +171,21 @@ export function RoleAssignment({
         <div className="ms-auto flex gap-2">
           <button
             type="button"
-            onClick={onDone}
-            className="h-10 rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] px-4 text-label text-[color:var(--color-text-primary)] transition-colors duration-[var(--motion-duration-fast)] hover:border-[color:var(--color-border-strong)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-focus-default)] active:bg-[color:var(--color-surface-skeleton)]"
+            // Discards this form's own ticks and nothing else. It used to close
+            // the whole panel, which closed the status form along with it.
+            disabled={disabled || !diff.changed || saving}
+            onClick={() => {
+              setSelection(new Set(original));
+              setErrorKey(null);
+              onDirtyChange(false);
+            }}
+            className="h-10 rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] px-4 text-label text-[color:var(--color-text-primary)] transition-colors duration-[var(--motion-duration-fast)] hover:border-[color:var(--color-border-strong)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-focus-default)] disabled:cursor-not-allowed disabled:text-[color:var(--color-text-disabled)] active:bg-[color:var(--color-surface-skeleton)]"
           >
             {t("cancel")}
           </button>
           <button
             type="button"
-            disabled={disabled || !diff.changed || saving}
+            disabled={disabled || !diff.changed || saving || refreshing}
             onClick={save}
             className="h-10 rounded-[var(--button-radius)] bg-[color:var(--button-primary-background)] px-5 text-label font-medium text-[color:var(--button-primary-text)] transition-colors duration-[var(--motion-duration-fast)] hover:bg-[color:var(--button-primary-background-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-focus-default)] disabled:cursor-not-allowed disabled:bg-[color:var(--button-disabled-background)] disabled:text-[color:var(--button-disabled-text)] active:bg-[color:var(--button-primary-background-pressed)]"
           >

@@ -249,6 +249,32 @@ async function defineOneStepWorkflow(): Promise<string> {
   return definition.body._id as string;
 }
 
+/** Two steps, the second needing two approvers — the shape that makes the
+ *  panel's step order and its "n of m" progress observable at all. */
+async function defineTwoStepWorkflow(): Promise<string> {
+  const definition = await post('publisher', '/workflow-definitions', {
+    name: { en: 'Two step review', ar: 'مراجعة بخطوتين' },
+    entityType: 'presidentMessagePage',
+  }).expect(201);
+  // Created out of order on purpose: the panel must sort by sequenceOrder,
+  // not trust insertion order.
+  await post('publisher', '/workflow-steps', {
+    workflowDefinitionId: definition.body._id,
+    sequenceOrder: 1,
+    stepType: 'Parallel',
+    assigneeIds: [ids.approver, ids.publisher],
+    requiredApprovals: 2,
+  }).expect(201);
+  await post('publisher', '/workflow-steps', {
+    workflowDefinitionId: definition.body._id,
+    sequenceOrder: 0,
+    stepType: 'Sequential',
+    assigneeIds: [ids.approver],
+    requiredApprovals: 1,
+  }).expect(201);
+  return definition.body._id as string;
+}
+
 // --- The update route ------------------------------------------------------
 
 /** Fields the request never mentioned, before and after the save. */
@@ -618,6 +644,167 @@ describe('GET /president-message-page/:id/editorial-state', () => {
       { kind: 'missingRequired', field: 'featuredImageId' },
     ]);
     expect(state.body.availableActions).not.toContain('publish');
+  });
+
+  /**
+   * The dashboard draws a disabled publish button whose accessible
+   * description is the readiness list (owner decision 2026-09-12). It cannot
+   * work that out from `availableActions` alone: an action is missing from it
+   * whether the reader lacks the permission, a review is running, or the
+   * draft is not ready — three situations, one absence, and only the last one
+   * is a button worth showing at all.
+   *
+   * So the server says which it is, and the panel still infers nothing.
+   */
+  it('separates "not ready yet" from "not yours to do"', async () => {
+    await setPolicy({ workflowRequired: false }).expect(200);
+    const { id } = await storeMessage({ featuredImageId: null });
+
+    const asPublisher = await get('publisher', `/president-message-page/${id}/editorial-state`).expect(200);
+    expect(asPublisher.body.availableActions).not.toContain('publish');
+    expect(asPublisher.body.blockedByReadiness).toContain('publish');
+
+    // An editor holds no Publish. Readiness is not what is stopping them, and
+    // offering them a disabled publish button would tell them the portrait is
+    // the problem when the permission is.
+    const asEditor = await get('editor', `/president-message-page/${id}/editorial-state`).expect(200);
+    expect(asEditor.body.blockedByReadiness).not.toContain('publish');
+  });
+
+  it('holds nothing back by readiness once the draft is ready', async () => {
+    await setPolicy({ workflowRequired: false }).expect(200);
+    const { id } = await storeMessage();
+
+    const state = await get('publisher', `/president-message-page/${id}/editorial-state`).expect(200);
+
+    expect(state.body.availableActions).toContain('publish');
+    expect(state.body.blockedByReadiness).toEqual([]);
+  });
+
+  it('holds submit back by readiness under an approval policy', async () => {
+    await setPolicy({
+      workflowRequired: true,
+      workflowDefinitionId: await defineOneStepWorkflow(),
+    }).expect(200);
+    const { id } = await storeMessage({ featuredImageId: null });
+
+    const state = await get('editor', `/president-message-page/${id}/editorial-state`).expect(200);
+
+    expect(state.body.availableActions).not.toContain('submit');
+    expect(state.body.blockedByReadiness).toEqual(['submit']);
+  });
+
+  // The panel prints "published by X on Y". Resolving X in the dashboard
+  // would mean a second round trip per reader, to a users route most
+  // editors cannot call.
+  it('names who published, not just when', async () => {
+    await setPolicy({ workflowRequired: false }).expect(200);
+    const { id } = await storeMessage();
+    await post('publisher', `/president-message-page/${id}/publish`, {
+      expectedUpdatedAt: await currentUpdatedAt(id),
+    }).expect(201);
+
+    const state = await get('publisher', `/president-message-page/${id}/editorial-state`).expect(200);
+
+    expect(state.body.publishedAt).not.toBeNull();
+    expect(state.body.publishedBy).toEqual({
+      id: ids.publisher,
+      name: { en: 'publisher', ar: 'publisher' },
+    });
+  });
+
+  it('reports no publisher on a record that has never been published', async () => {
+    await setPolicy({ workflowRequired: false }).expect(200);
+    const { id } = await storeMessage();
+
+    const state = await get('publisher', `/president-message-page/${id}/editorial-state`).expect(200);
+
+    expect(state.body.publishedAt).toBeNull();
+    expect(state.body.publishedBy).toBeNull();
+  });
+
+  it('carries no review and no history before anything has happened', async () => {
+    await setPolicy({ workflowRequired: false }).expect(200);
+    const { id } = await storeMessage();
+
+    const state = await get('publisher', `/president-message-page/${id}/editorial-state`).expect(200);
+
+    expect(state.body.workflow).toBeNull();
+    expect(state.body.history).toEqual([]);
+  });
+
+  // Everything the panel draws for a review: the steps in the order they run,
+  // who may decide each one, and how far the current one has got. Without
+  // these the dashboard can say "in review" and nothing else.
+  it('describes the review in step order, with each step\'s approvers and progress', async () => {
+    await setPolicy({
+      workflowRequired: true,
+      workflowDefinitionId: await defineTwoStepWorkflow(),
+    }).expect(200);
+    const { id } = await storeMessage();
+    await post('editor', `/president-message-page/${id}/submit`).expect(201);
+
+    const state = await get('approver', `/president-message-page/${id}/editorial-state`).expect(200);
+
+    expect(state.body.workflow.status).toBe('InProgress');
+    expect(state.body.workflow.definitionName).toEqual({
+      en: 'Two step review',
+      ar: 'مراجعة بخطوتين',
+    });
+    expect(state.body.workflow.instanceId).toBe(state.body.workflowInstanceId);
+
+    const steps = state.body.workflow.steps as Array<Record<string, unknown>>;
+    expect(steps.map((step) => step.sequenceOrder)).toEqual([0, 1]);
+    expect(steps[0]).toMatchObject({
+      sequenceOrder: 0,
+      stepType: 'Sequential',
+      requiredApprovals: 1,
+      approvals: 0,
+      isCurrent: true,
+      assignees: [{ id: ids.approver, name: { en: 'approver', ar: 'approver' } }],
+    });
+    // The second step names its approver too. A panel that showed only the
+    // current step would not tell an editor who still has to see this.
+    expect(steps[1]).toMatchObject({
+      sequenceOrder: 1,
+      requiredApprovals: 2,
+      approvals: 0,
+      isCurrent: false,
+    });
+    expect((steps[1].assignees as Array<{ id: string }>).map((a) => a.id).sort()).toEqual(
+      [ids.approver, ids.publisher].sort(),
+    );
+    expect(steps[0].id).toBe(state.body.currentStepId);
+  });
+
+  it('records every decision in the history, with its actor, reason and date', async () => {
+    await setPolicy({
+      workflowRequired: true,
+      workflowDefinitionId: await defineOneStepWorkflow(),
+    }).expect(200);
+    const { id } = await storeMessage();
+    const submitted = await post('editor', `/president-message-page/${id}/submit`).expect(201);
+    await post('approver', `/workflow-instances/${submitted.body.workflowInstanceId}/reject`, {
+      reason: 'The portrait is the wrong crop.',
+    }).expect(201);
+
+    const state = await get('approver', `/president-message-page/${id}/editorial-state`).expect(200);
+
+    const history = state.body.history as Array<Record<string, unknown>>;
+    // Newest first: the panel reads top-down and the last decision is the
+    // one that explains the current state.
+    expect(history.map((entry) => entry.action)).toEqual(['Rejected', 'Submitted']);
+    expect(history[0]).toMatchObject({
+      action: 'Rejected',
+      reason: 'The portrait is the wrong crop.',
+      actor: { id: ids.approver, name: { en: 'approver', ar: 'approver' } },
+    });
+    expect(typeof history[0].actionDate).toBe('string');
+    expect(history[1]).toMatchObject({
+      action: 'Submitted',
+      actor: { id: ids.editor, name: { en: 'editor', ar: 'editor' } },
+      reason: null,
+    });
   });
 });
 

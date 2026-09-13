@@ -967,3 +967,91 @@ Explicit cross-references (so the two documents never duplicate or silently cont
 * Engineering document §21 Communication Style (pre-implementation feature presentation: understanding/workflow/architecture/decisions/risks/plan) is a companion to this file's §26 Final Report Format (post-implementation/audit report). They apply at different points in the lifecycle and both stay in force.
 
 The engineering document's Superpowers-specific steps apply only when the Superpowers plugin is available in the current session (it is a global/user-level plugin, not installed under this repository's `.claude/skills/`). When unavailable, the document's lifecycle and standards still govern the work directly, without the named skill invocations.
+
+---
+
+# 30. CODE STYLE — OWNER PREFERENCES
+
+These are the owner's explicit preferences for this repository. They override
+any general convention and any automated tool's default, including
+`/simplify`'s. A tool that proposes the opposite is ignored, not negotiated.
+
+1. **Arrow functions are preferred over the `function` keyword.** Do not
+   convert existing code in either direction as a cleanup; write new code the
+   preferred way and leave working code alone.
+
+2. **`try/catch` is an ordinary tool, used where it is needed.** It is not a
+   construct to be avoided, refactored away, or replaced with a
+   result-returning wrapper as a matter of style.
+
+Owner decision 2026-09-12, recorded so both rules hold in every future
+session rather than only the one that agreed them.
+
+**Any other stylistic pattern this file does not name explicitly: do not apply
+it.** Raise it as a proposal instead. Consistency with a rule nobody wrote
+down is indistinguishable, in a diff, from taste.
+
+---
+
+# 31. CHECKS RUN AT THE MOMENT OF ACTION
+
+A guard that protects data is evaluated when the action it guards is
+**executed**, not when that action is **requested**.
+
+Between the request and the execution there is always a window: a
+confirmation waiting for a press, a save still in flight, a list re-rendering
+under a filter. Anything that changes inside that window is exactly what a
+request-time check cannot see. Checked only when the flow began, the guard
+reports "safe" about a state that no longer exists.
+
+Evidence from Phase C (owner decision 2026-09-13):
+
+- `onSaveFirst` returns a boolean, and the restore proceeds only on `true`. A
+  save that failed must not be followed by a restore over the work it failed
+  to keep.
+- The restore confirmation re-checks unsaved changes at the confirming press.
+  Checked only when the restore was asked for, work typed after the
+  confirmation appeared was overwritten.
+- The users directory keeps the row being edited visible while its roles are
+  unsaved. A status filter applied after the ticks were made unmounted the
+  panel and discarded them.
+
+How to apply:
+
+1. Put the check inside the handler that performs the action, immediately
+   before the side effect, reading current state, never a value captured when
+   the flow began.
+2. Prefer making the unsafe state unreachable (an inert modal, a refused
+   control whose reason is described) over a condition someone has to
+   remember. Where both are possible, do both: structure first, and the
+   execution-time check as the backstop.
+3. Every such guard gets a red test that changes the state inside the window
+   and then performs the action.
+
+---
+
+# 32. LOCAL DEV SERVERS — OPERATING PROCEDURES
+
+Two fixed procedures on this machine (owner decision 2026-09-13). Both
+failures look like application bugs and are not. Skipping the first costs the
+machine's memory and ports (7.9 GB RAM, 4 cores); skipping the second costs a
+diagnosis of code that is not broken.
+
+1. **After stopping any server, confirm no orphaned `node` process still holds
+   a port or memory.** Stopping a background task (`TaskStop`) ends its shell
+   only. `nest start --watch`, `node dist/main`, Next's `start-server.js` and
+   its `.next/dev/build/*.js` worker keep running. List `node.exe` processes
+   with their command lines, stop the ones that are the app (`api\dist\main`,
+   `nest.js`, `next ... dev`, `start-server.js`, the `npm run` shells above
+   them), and confirm ports 3000 and 3002 are free. Leave the Playwright and
+   chrome-devtools MCP processes alone: they are the session's own tools.
+
+2. **When the dashboard answers 500 repeatedly, delete `apps/dashboard/.next/dev`
+   and restart before any other diagnosis.** On the slow E: drive two Next
+   writers can race and leave `.next/dev/prerender-manifest.json` as valid JSON
+   followed by the tail of a longer copy of itself. The first request
+   succeeds; every later one fails with `SyntaxError: Unexpected
+   non-whitespace character after JSON` and no application frame in the stack.
+   Stop the Next processes first (procedure 1), delete the directory (it is
+   generated), restart, and verify with several consecutive requests: the
+   broken run also passes its first one.

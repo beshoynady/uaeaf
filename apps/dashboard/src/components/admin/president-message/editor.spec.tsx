@@ -41,6 +41,7 @@ const RECORD: PresidentMessageResponse = {
   signatoryTitle: text("title"),
   seo: { metaTitle: null, metaDescription: null, ogImageId: null },
   publicationState: "Published",
+  createdAt: "2026-09-01T00:00:00.000Z",
   updatedAt: "2026-09-12T00:00:00.000Z",
 };
 
@@ -245,11 +246,17 @@ describe("saving", () => {
     await user.type(heroTitle(), "!");
     await user.click(screen.getByRole("button", { name: "حفظ المسودة" }));
 
-    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
-    const [url, init] = fetchMock.mock.calls[0] as [string, { body: string; method: string }];
+    // The save, picked out by its method: the version panel beside this form
+    // reads the record's history on mount, so a save is no longer the only
+    // request this screen makes.
+    const patch = () =>
+      (fetchMock.mock.calls as Array<[string, { body: string; method?: string }?]>).find(
+        ([, init]) => init?.method === "PATCH",
+      );
+    await waitFor(() => expect(patch()).toBeDefined());
 
+    const [url, init] = patch() as [string, { body: string; method: string }];
     expect(url).toBe("/api/admin/editorial/presidentMessagePage/msg-1");
-    expect(init.method).toBe("PATCH");
     expect(Object.keys(JSON.parse(init.body))).toEqual(["heroTitle"]);
   });
 
@@ -269,8 +276,11 @@ describe("saving", () => {
     await user.type(heroTitle(), "!");
     await user.click(screen.getByRole("button", { name: "حفظ المسودة" }));
 
-    const alert = await screen.findByRole("alert");
-    expect(alert).toHaveTextContent("تعذّر حفظ المسودة.");
+    // Scoped to the save's own alert. The stub refuses every request in this
+    // test, so the version panel beside the form reports its failed read too
+    // — a different task failing, with its own words, which is right.
+    const alert = await screen.findByText(/تعذّر حفظ المسودة\./);
+    expect(alert).toHaveAttribute("role", "alert");
     // The words the API's code maps to, not the code itself.
     expect(alert.textContent).not.toContain("staleRecord");
     expect(heroTitle()).toHaveValue("hero-ع!");
@@ -285,6 +295,93 @@ describe("a reviewer who may decide but not rewrite", () => {
     expect(screen.queryByRole("button", { name: "حفظ المسودة" })).toBeNull();
     expect(heroTitle()).toBeDisabled();
     expect(screen.getByRole("button", { name: "إضافة قيمة" })).toBeDisabled();
+  });
+});
+
+/**
+ * The wiring, not the component.
+ *
+ * `revisions-panel.spec.tsx` proves the guard refuses when it is told there
+ * are unsaved changes. What it cannot prove is that anything ever tells it:
+ * `hasUnsavedChanges` is handed over by this component, from the same `dirty`
+ * the save button reads. A panel wired to a constant `false` would pass every
+ * test in that file and lose an editor's work here.
+ */
+describe("the version panel, wired to this form", () => {
+  const HISTORY = {
+    items: [
+      {
+        id: "rev-1",
+        versionNumber: 1,
+        createdAt: "2026-09-10T09:00:00.000Z",
+        createdBy: { id: "u1", name: { ar: "سارة", en: "Sara" } },
+        state: "Live",
+        publishedAt: "2026-09-10T09:30:00.000Z",
+      },
+    ],
+    total: 1,
+    page: 1,
+    limit: 20,
+  };
+
+  function stub() {
+    const calls: string[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string | URL) => {
+        calls.push(String(url));
+        return {
+          ok: true,
+          status: 200,
+          json: async () => (String(url).includes("/revisions") ? HISTORY : {}),
+        } as Response;
+      }),
+    );
+    return calls;
+  }
+
+  it("refuses a restore while this form has unsaved changes", async () => {
+    const user = userEvent.setup();
+    const calls = stub();
+    renderEditor();
+
+    await screen.findByRole("list", { name: "إصدارات هذا السجل" });
+    await user.type(heroTitle(), "!");
+    await user.click(screen.getByRole("button", { name: "استرجاع" }));
+
+    expect(await screen.findByText("لديك تغييرات غير محفوظة")).toBeInTheDocument();
+    expect(calls.some((url) => url.endsWith("/restore"))).toBe(false);
+  });
+
+  it("lets it through once the form is clean", async () => {
+    const user = userEvent.setup();
+    stub();
+    renderEditor();
+
+    await screen.findByRole("list", { name: "إصدارات هذا السجل" });
+    await user.click(screen.getByRole("button", { name: "استرجاع" }));
+
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+    expect(screen.queryByText("لديك تغييرات غير محفوظة")).toBeNull();
+  });
+
+  /** Discarding is the editor's own reset, reached from the panel's guard:
+   *  the typed text has to actually leave the field, or "discard and restore"
+   *  restores over work the form still holds. */
+  it("empties the form when the guard's discard is taken", async () => {
+    const user = userEvent.setup();
+    stub();
+    renderEditor();
+
+    await screen.findByRole("list", { name: "إصدارات هذا السجل" });
+    await user.type(heroTitle(), "!");
+    expect(heroTitle()).toHaveValue("hero-ع!");
+
+    await user.click(screen.getByRole("button", { name: "استرجاع" }));
+    await user.click(await screen.findByRole("button", { name: "تجاهل تغييراتي واسترجع" }));
+
+    expect(heroTitle()).toHaveValue("hero-ع");
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
   });
 });
 

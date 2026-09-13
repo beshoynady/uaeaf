@@ -2,10 +2,14 @@
 
 import { SelectField } from "@/components/ui/select-field";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import type { UserResponse } from "@/lib/api/types";
+import { localized, type UserResponse } from "@/lib/api/types";
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useToast } from "@/components/ui/toast";
+import type { AppLocale } from "@/i18n/routing";
 
 const STATUSES: ReadonlyArray<UserResponse["accountStatus"]> = [
   "Active",
@@ -13,13 +17,34 @@ const STATUSES: ReadonlyArray<UserResponse["accountStatus"]> = [
   "Deactivated",
 ];
 
+/** Only the states that end sessions are asked about, and the confirming
+ *  button names that act rather than its category. */
+const CONFIRM_ACTION: Record<Exclude<UserResponse["accountStatus"], "Active">, string> = {
+  Suspended: "statusConfirmSuspend",
+  Deactivated: "statusConfirmDeactivate",
+};
+
 /**
  * Changes one account's state.
  *
- * Deliberately a confirm-then-apply control rather than a select that writes
- * on change. Suspending an account signs that person out of every session
- * they have, immediately — a consequence worth one deliberate click, and one
- * the confirmation names before it happens rather than after.
+ * Deliberately a choose-then-apply control rather than a select that writes on
+ * change. Suspending or deactivating an account signs that person out of every
+ * session they have, on every device, at once.
+ *
+ * So that change is asked about before it is sent, in the same `ConfirmDialog`
+ * the publish action uses, worded the way archiving a role is: what happens,
+ * to whom, and that it happens immediately. Its button says "Suspend account"
+ * or "Deactivate account", as "Archive role" does, because a button reading
+ * "Change status" reads the same in front of either. Reactivating ends nothing and
+ * applies without a dialog — a confirmation in front of a harmless change
+ * teaches the reader to click through the one in front of a harmful one.
+ *
+ * The consequence is stated three times, and none of them is redundant: the
+ * line under the control predicts it while the choice can still change, the
+ * dialog asks, and the toast confirms it happened.
+ *
+ * It does not close the panel it sits in. That panel also holds the roles
+ * form, and closing it on success threw away any role ticks not yet saved.
  *
  * Disabled on the signed-in administrator's own row: the API refuses it
  * (403, "You cannot change the status of your own account."), for the same
@@ -29,23 +54,31 @@ const STATUSES: ReadonlyArray<UserResponse["accountStatus"]> = [
  */
 export function StatusControl({
   user,
+  locale,
   disabled,
-  onDone,
 }: {
   user: UserResponse;
+  /** Which half of the stored name the confirmation and result say out loud. */
+  locale: AppLocale;
   disabled: boolean;
-  onDone: () => void;
 }) {
   const t = useTranslations("UsersDirectory");
   const statuses = useTranslations("AccountStatus");
   const router = useRouter();
+  const toast = useToast();
 
   const [target, setTarget] = useState<UserResponse["accountStatus"]>(user.accountStatus);
   const [saving, setSaving] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const [errorKey, setErrorKey] = useState<string | null>(null);
+  // Apply stays locked until the refreshed account arrives. Until then
+  // `changed` is still measured against the old status, and would offer to
+  // apply the same change a second time.
+  const [refreshing, startRefresh] = useTransition();
 
   const changed = target !== user.accountStatus;
   const endsSessions = changed && target !== "Active";
+  const name = localized(user.name, locale);
 
   async function save() {
     setSaving(true);
@@ -61,15 +94,28 @@ export function StatusControl({
       if (!response.ok) {
         const body = (await response.json().catch(() => null)) as { code?: string } | null;
         setErrorKey(`status_${body?.code ?? "serviceUnavailable"}`);
-        setSaving(false);
         return;
       }
 
-      router.refresh();
-      onDone();
+      toast.show({
+        tone: "success",
+        title: t("statusChangedTitle"),
+        // The dialog asked whether sessions should end; this says they did.
+        description: t(endsSessions ? "statusChangedEndedSessions" : "statusChangedBody", {
+          name,
+          status: statuses(target),
+        }),
+        source: "api",
+        dedupeKey: `user:${user.id}:status-changed`,
+      });
+      startRefresh(() => router.refresh());
     } catch {
       setErrorKey("status_serviceUnavailable");
+    } finally {
+      // The dialog closes whatever the outcome. A refusal is shown inline,
+      // beside the control that was refused, where it can be re-read.
       setSaving(false);
+      setConfirming(false);
     }
   }
 
@@ -100,14 +146,22 @@ export function StatusControl({
           className="min-w-[200px]"
         />
 
-        <button
-          type="button"
-          disabled={!changed || disabled || saving}
-          onClick={save}
-          className="h-10 rounded-[var(--button-radius)] bg-[color:var(--button-primary-background)] px-4 text-label font-medium text-[color:var(--button-primary-text)] transition-colors duration-[var(--motion-duration-fast)] hover:bg-[color:var(--button-primary-background-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-focus-default)] disabled:cursor-not-allowed disabled:bg-[color:var(--button-disabled-background)] disabled:text-[color:var(--button-disabled-text)] active:bg-[color:var(--button-primary-background-pressed)]"
+        {/* `Button`, with its loading state: the most consequential control on
+            the four admin screens used to swap its label for "saving" while
+            it worked, and stood at 40px against Protocol §14's 44px target. */}
+        <Button
+          loading={saving}
+          disabled={!changed || disabled || refreshing}
+          onClick={() => {
+            if (endsSessions) {
+              setConfirming(true);
+              return;
+            }
+            void save();
+          }}
         >
-          {saving ? t("saving") : t("applyStatus")}
-        </button>
+          {t("applyStatus")}
+        </Button>
       </div>
 
       <p aria-live="polite" className="text-caption text-[color:var(--color-text-secondary)]">
@@ -117,6 +171,20 @@ export function StatusControl({
             ? t("statusEndsSessions")
             : t("statusNoChange")}
       </p>
+
+      <ConfirmDialog
+        open={confirming}
+        tone="destructive"
+        busy={saving}
+        title={t("statusConfirmTitle", { name, status: statuses(target) })}
+        // Mounted while closed; it never opens on "Active", which ends nothing.
+        confirmLabel={target === "Active" ? "" : t(CONFIRM_ACTION[target])}
+        cancelLabel={t("cancel")}
+        onConfirm={() => void save()}
+        onCancel={() => setConfirming(false)}
+      >
+        {t("statusConfirmBody", { active: statuses("Active") })}
+      </ConfirmDialog>
     </div>
   );
 }

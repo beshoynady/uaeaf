@@ -100,11 +100,15 @@ export type WriteErrorCode =
  *  the user a change landed on a record that does not exist. */
 export class MissingRecordError extends Error {}
 
-export async function forwardWrite(
+/**
+ * The whole pipe: session boundary, upstream call, empty-body guard, failure
+ * vocabulary. Both exported doors are this function — they differ only in
+ * whether they carry a method and a body, and every line they shared was a
+ * line that could be fixed in one and left broken in the other.
+ */
+async function forward(
   path: string,
-  // PUT is here for the singleton content pages: there is exactly one
-  // row of each, it may not exist yet, and the API upserts it.
-  init: { method: "POST" | "PUT" | "PATCH" | "DELETE"; body?: unknown },
+  init?: { method: "POST" | "PUT" | "PATCH" | "DELETE"; body?: unknown },
 ): Promise<NextResponse> {
   const store = await cookies();
   const accessToken = readAccessToken((name) => store.get(name)?.value);
@@ -122,6 +126,33 @@ export async function forwardWrite(
     const { status, code } = classifyWriteFailure(error);
     return NextResponse.json({ code }, { status });
   }
+}
+
+export async function forwardWrite(
+  path: string,
+  // PUT is here for the singleton content pages: there is exactly one
+  // row of each, it may not exist yet, and the API upserts it.
+  init: { method: "POST" | "PUT" | "PATCH" | "DELETE"; body?: unknown },
+): Promise<NextResponse> {
+  return forward(path, init);
+}
+
+/**
+ * The read half of the same pipe.
+ *
+ * The status panel re-reads its state from the browser — on an explicit
+ * refresh and after every decision — so that read needs a route handler for
+ * exactly the reason every write has one: the access token is httpOnly and
+ * the API has no CORS, so the browser cannot call it directly.
+ *
+ * It reuses `classifyWriteFailure` rather than growing a second error
+ * vocabulary. A refused read and a refused write fail for the same reasons
+ * here — an expired session, a missing permission, a record that is gone —
+ * and a screen that had two names for each would need two sets of copy for
+ * one situation.
+ */
+export async function forwardRead(path: string): Promise<NextResponse> {
+  return forward(path);
 }
 
 export function classifyWriteFailure(error: unknown): { status: number; code: WriteErrorCode } {

@@ -11,6 +11,7 @@ import {
   type StaticPage,
 } from "@/lib/admin/static-pages";
 import { StatusMessage } from "@/components/auth/status-message";
+import { useToast } from "@/components/ui/toast";
 import { TextField } from "@/components/auth/text-field";
 import { SelectField } from "@/components/ui/select-field";
 import { RequiredHint } from "@/components/ui/required-field";
@@ -76,37 +77,45 @@ export function PageEditor({
   const t = useTranslations("SitePages");
   const errors = useTranslations("WriteErrors");
   const router = useRouter();
+  const toast = useToast();
 
   const initial = useMemo(() => toFormState(page, record), [page, record]);
   const [state, setState] = useState(initial);
   const [saving, setSaving] = useState(false);
-  const [outcome, setOutcome] = useState<{ tone: "success" | "error"; key: string } | null>(null);
+  /**
+   * Why the save was refused, or null.
+   *
+   * Refusals only (ADR-0016): a success is an announcement and leaves through
+   * the toast region, while a refusal is something the reader must act on and
+   * belongs beside the control that refused — where they are already looking,
+   * and where it can be re-read.
+   */
+  const [failureKey, setFailureKey] = useState<string | null>(null);
 
   const dirty = JSON.stringify(state) !== JSON.stringify(initial);
 
   function patch(name: string, value: unknown) {
-    setOutcome(null);
+    setFailureKey(null);
     setState((current) => ({ ...current, [name]: value }));
   }
 
   async function save() {
-    const missing = page.fields.some(
-      (field) =>
-        field.kind === "localized" &&
-        field.required &&
-        !bothHalvesFilled(state[field.name] as LocalizedText),
-    );
-    const missingText = page.fields.some(
-      (field) =>
-        field.kind === "text" && field.required && String(state[field.name] ?? "").trim().length === 0,
-    );
-    if (missing || missingText) {
-      setOutcome({ tone: "error", key: "__missingFields" });
+    // One pass, one predicate: the two scans this replaced were never read
+    // apart, and two names that close in spelling for one condition is a
+    // reader's problem before it is anyone else's.
+    const incomplete = page.fields.some((field) => {
+      if (!("required" in field) || !field.required) return false;
+      if (field.kind === "localized") return !bothHalvesFilled(state[field.name] as LocalizedText);
+      if (field.kind === "text") return String(state[field.name] ?? "").trim().length === 0;
+      return false;
+    });
+    if (incomplete) {
+      setFailureKey("__missingFields");
       return;
     }
 
     setSaving(true);
-    setOutcome(null);
+    setFailureKey(null);
 
     try {
       const response = await fetch(`/api/admin/pages/${page.key}`, {
@@ -117,19 +126,27 @@ export function PageEditor({
 
       if (!response.ok) {
         const body = (await response.json().catch(() => null)) as { code?: string } | null;
-        setOutcome({ tone: "error", key: body?.code ?? "serviceUnavailable" });
+        setFailureKey(body?.code ?? "serviceUnavailable");
         setSaving(false);
         return;
       }
 
-      setOutcome({ tone: "success", key: "__saved" });
+      toast.show({
+        tone: "success",
+        title: t("savedTitle"),
+        description: t("savedBody"),
+        source: "api",
+        // Per page, not per screen: saving two pages in a row is two results,
+        // and one counter reading "2" would not say which.
+        dedupeKey: `page:${page.key}:saved`,
+      });
       setSaving(false);
       // The server component above holds the record; refreshing is what makes
       // `initial` match what was written, so the diff resets without this
       // component guessing at the new state.
       router.refresh();
     } catch {
-      setOutcome({ tone: "error", key: "serviceUnavailable" });
+      setFailureKey("serviceUnavailable");
       setSaving(false);
     }
   }
@@ -143,18 +160,13 @@ export function PageEditor({
       }}
       className="flex flex-col gap-6 px-5 py-5"
     >
-      {outcome ? (
-        <StatusMessage
-          tone={outcome.tone}
-          title={outcome.tone === "success" ? t("savedTitle") : t("saveFailedTitle")}
-        >
-          {outcome.key === "__saved"
-            ? t("savedBody")
-            : outcome.key === "__missingFields"
-              ? t("missingFields")
-              : errors.has(outcome.key)
-                ? errors(outcome.key)
-                : errors("serviceUnavailable")}
+      {failureKey ? (
+        <StatusMessage tone="error" title={t("saveFailedTitle")}>
+          {failureKey === "__missingFields"
+            ? t("missingFields")
+            : errors.has(failureKey)
+              ? errors(failureKey)
+              : errors("serviceUnavailable")}
         </StatusMessage>
       ) : null}
 
@@ -197,7 +209,7 @@ export function PageEditor({
               disabled={!dirty || saving}
               onClick={() => {
                 setState(initial);
-                setOutcome(null);
+                setFailureKey(null);
               }}
               className="h-10 rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] px-4 text-label text-[color:var(--color-text-primary)] transition-colors duration-[var(--motion-duration-fast)] hover:border-[color:var(--color-border-strong)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-focus-default)] disabled:cursor-not-allowed disabled:text-[color:var(--color-text-disabled)] active:bg-[color:var(--color-surface-skeleton)]"
             >
@@ -205,7 +217,10 @@ export function PageEditor({
             </button>
             <button
               type="submit"
-              disabled={saving}
+              // `!dirty` as well, matching the Reset button beside it: this
+              // form publishes straight to the live page, so a save with
+              // nothing to save restamps a public record for no reason.
+              disabled={!dirty || saving}
               className="h-10 rounded-[var(--button-radius)] bg-[color:var(--button-primary-background)] px-5 text-label font-medium text-[color:var(--button-primary-text)] transition-colors duration-[var(--motion-duration-fast)] hover:bg-[color:var(--button-primary-background-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-focus-default)] disabled:cursor-not-allowed disabled:bg-[color:var(--button-disabled-background)] disabled:text-[color:var(--button-disabled-text)] active:bg-[color:var(--button-primary-background-pressed)]"
             >
               {saving ? t("saving") : t("save")}

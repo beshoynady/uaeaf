@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import { localized, type RoleResponse, type UserResponse } from "@/lib/api/types";
 import { StatusMessage } from "@/components/auth/status-message";
-import { RoleAssignment } from "./role-assignment";
+import { RoleAssignment, assignDiffId } from "./role-assignment";
 import { StatusControl } from "./status-control";
 import { CreateUserForm, type PersonOption } from "./create-user-form";
 import type { AppLocale } from "@/i18n/routing";
@@ -62,6 +62,11 @@ export function UserDirectory({
   const [roleId, setRoleId] = useState<string>("all");
   const [editing, setEditing] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  // Whether the open panel's roles form holds ticks nobody has saved. While it
+  // does, the panel may not close and no other panel may open: either would
+  // unmount the form and take the ticks with it.
+  const [dirty, setDirty] = useState(false);
+  const locked = dirty && editing !== null;
 
   const roleById = useMemo(
     () => new Map(roles.map((role) => [role._id, role])),
@@ -71,6 +76,9 @@ export function UserDirectory({
   const visible = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return users.filter((user) => {
+      // The account being edited stays on screen while its roles are unsaved:
+      // a filter that hid its row would unmount the panel under the reader.
+      if (dirty && user.id === editing) return true;
       if (status !== "all" && user.accountStatus !== status) return false;
       if (roleId === "none" && user.roleIds.length > 0) return false;
       if (roleId !== "all" && roleId !== "none" && !user.roleIds.includes(roleId)) return false;
@@ -81,7 +89,7 @@ export function UserDirectory({
         user.name.en.toLowerCase().includes(needle)
       );
     });
-  }, [users, query, status, roleId]);
+  }, [users, query, status, roleId, dirty, editing]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -171,8 +179,11 @@ export function UserDirectory({
               {visible.map((user) => {
                 const isSelf = actorUserId !== null && user.id === actorUserId;
                 const open = editing === user.id;
+                // Two `<tr>` per user, with no wrapper element: a `<div>`
+                // between `<tbody>` and `<tr>` is invalid table markup and
+                // browsers hoist it out, taking the rows with it.
                 return (
-                  <RowGroup key={user.id}>
+                  <Fragment key={user.id}>
                     <tr className="border-b border-[color:var(--color-border-default)] align-middle">
                       <th scope="row" className="px-4 py-3 text-start">
                         <span className="flex flex-wrap items-center gap-2">
@@ -214,7 +225,15 @@ export function UserDirectory({
                           <button
                             type="button"
                             aria-expanded={open}
-                            onClick={() => setEditing(open ? null : user.id)}
+                            // Refused while a panel holds unsaved role ticks,
+                            // and described by the line that says what they
+                            // are, so the refusal carries its reason.
+                            disabled={locked}
+                            aria-describedby={locked && editing ? assignDiffId(editing) : undefined}
+                            onClick={() => {
+                              setEditing(open ? null : user.id);
+                              setDirty(false);
+                            }}
                             // Openable even on your own row: the API refuses
                             // both a self role-assignment and a self status
                             // change, and the panel is where those refusals
@@ -238,20 +257,20 @@ export function UserDirectory({
                               roles={roles}
                               locale={locale}
                               disabled={isSelf}
-                              onDone={() => setEditing(null)}
+                              onDirtyChange={setDirty}
                             />
                             <div className="border-t border-[color:var(--color-border-default)] pt-5">
                               <StatusControl
                                 user={user}
+                                locale={locale}
                                 disabled={isSelf}
-                                onDone={() => setEditing(null)}
                               />
                             </div>
                           </div>
                         </td>
                       </tr>
                     ) : null}
-                  </RowGroup>
+                  </Fragment>
                 );
               })}
             </tbody>
@@ -266,11 +285,6 @@ export function UserDirectory({
       ) : null}
     </div>
   );
-}
-
-/** Two `<tr>` elements per user without an invalid wrapper element. */
-function RowGroup({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
 }
 
 function RoleChips({

@@ -7,14 +7,8 @@ import { PageHeader } from "@/components/ui/page-header";
 import { AccessDenied } from "@/components/ui/access-denied";
 import { StatTiles, type StatTile } from "@/components/admin/stat-tiles";
 import { PageWorkbench, type PageEntry } from "@/components/admin/pages/page-workbench";
-import type { MediaAssetOption } from "@/components/admin/pages/media-picker";
+import { toMediaOptions } from "@/lib/admin/media-options";
 import { resolveLocale } from "@/i18n/params";
-
-interface MediaAssetResponse {
-  _id: string;
-  caption: LocalizedText;
-  file: { url: string; mimeType: string };
-}
 
 /**
  * The site's singleton content pages.
@@ -48,7 +42,7 @@ export default async function SitePagesScreen({
         fetchAsUser<Record<string, unknown> | null>(page.apiPath, locale),
       ),
     ),
-    fetchAsUser<MediaAssetResponse[]>("/media-assets", locale),
+    fetchAsUser<unknown[]>("/media-assets", locale),
     readGrants(locale),
   ]);
 
@@ -70,11 +64,10 @@ export default async function SitePagesScreen({
     );
   }
 
-  const images: MediaAssetOption[] = (media ?? [])
-    // A header background is an image. A PDF in the same library is not a
-    // choice this field can offer.
-    .filter((asset) => asset.file?.mimeType?.startsWith("image/"))
-    .map((asset) => ({ id: asset._id, caption: asset.caption, url: asset.file.url }));
+  // Shared with every other screen that has an image field: the `_id` → `id`
+  // mapping and the "a PDF is not a choice this field can offer" filter are
+  // both the kind that get forgotten when each screen writes its own.
+  const images = toMediaOptions(media);
 
   const emptyCount = entries.filter((entry) => entry.record === null).length;
 

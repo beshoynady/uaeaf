@@ -181,6 +181,30 @@ describe("interaction state contract", () => {
     expect(offenders).toEqual([]);
   });
 
+  it("replaces a removed outline with the system's ring, not with a border colour", () => {
+    // The rule above asks whether *something* focus-visible survives
+    // `outline-none`. That is too weak, and one control proved it: a textarea
+    // that suppressed the UA outline and answered focus by recolouring a
+    // border it already had. A 1px hue change on an existing edge is not the
+    // indicator ADR-0051 specified — `ring-2` with a painted `ring-offset-2`,
+    // sized and contrasted to stay visible on every register the system can
+    // produce. Every other control in both applications already draws it.
+    //
+    // So: `outline-none` obliges the ring specifically, on the element or on a
+    // wrapper in the same file. Nothing else counts.
+    const ringDrawn = new Set(
+      ALL.filter(({ value }) => /\bfocus(-visible|-within)?:ring-2\b/.test(value)).map(
+        ({ file }) => file,
+      ),
+    );
+
+    const offenders = ALL.filter(
+      ({ file, value }) => /\boutline-(none|hidden)\b/.test(value) && !ringDrawn.has(file),
+    ).map(({ file, line }) => `${file}:${line}`);
+
+    expect(offenders).toEqual([]);
+  });
+
   it("gives every interactive element a focus-visible indicator", () => {
     // A wrapper may legitimately carry the ring for a control nested inside it
     // (`focus-within:` on the field shell), so an element whose own class

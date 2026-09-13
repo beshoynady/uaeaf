@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
 import { THEME_COOKIE } from "@/lib/auth/cookies";
 import { AuthUtilities } from "./auth-utilities";
+import { BrandMark } from "@/components/brand/brand-mark";
 import type { AppLocale } from "@/i18n/routing";
 
 /**
@@ -46,22 +47,7 @@ export async function AuthShell({
     <div className="flex min-h-screen flex-col bg-[color:var(--color-surface-sunken)]">
       <header className="flex items-center justify-between gap-4 border-b border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)] px-6 py-4">
         <div className="flex min-w-0 items-center gap-3">
-          <Image
-            // The matched trio in docs/design-system/brand-assets shares one
-            // 170x168 viewBox, so the colour and white marks are the same
-            // artwork rather than two differently-proportioned lockups. The
-            // theme is already known here from the cookie, so the correct
-            // file is chosen on the server — no swap flashes on hydration.
-            // §9: the mark is never mirrored, recoloured or stretched.
-            src={theme === "dark" ? "/brand/uaeaf-logo-white.svg" : "/brand/uaeaf-logo-color.svg"}
-            // The federation's own name is the alt text, not "logo": a
-            // screen-reader user needs to know whose dashboard this is.
-            alt={t("federation")}
-            width={170}
-            height={168}
-            priority
-            className="h-10 w-[40.5px] shrink-0"
-          />
+          <BrandMark initialTheme={theme} />
           <p className="truncate text-label font-bold text-[color:var(--color-text-primary)]">
             {t("platform")}
           </p>

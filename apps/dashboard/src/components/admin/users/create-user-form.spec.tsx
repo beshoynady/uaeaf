@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithIntl } from "@/test/render";
+import { ToastProvider } from "@/components/ui/toast";
 import { CreateUserForm } from "./create-user-form";
 import type { PersonOption } from "./create-user-form";
 import type { RoleResponse } from "@/lib/api/types";
@@ -37,7 +38,11 @@ async function fillRequired(user: ReturnType<typeof userEvent.setup>) {
 
 function render(extra: Partial<React.ComponentProps<typeof CreateUserForm>> = {}) {
   return renderWithIntl(
-    <CreateUserForm roles={roles} people={people} locale="ar" onDone={vi.fn()} onCancel={vi.fn()} {...extra} />,
+    // The provider comes from the `(app)` layout in production; the form is
+    // rendered here on its own, so the harness supplies it.
+    <ToastProvider>
+      <CreateUserForm roles={roles} people={people} locale="ar" onDone={vi.fn()} onCancel={vi.fn()} {...extra} />
+    </ToastProvider>,
   );
 }
 
@@ -116,5 +121,21 @@ describe("CreateUserForm", () => {
 
     expect(screen.queryByLabelText("الربط بسجلّ موظّف")).not.toBeInTheDocument();
     expect(screen.getByText(/صلاحية منفصلة/)).toBeInTheDocument();
+  });
+
+  /** The form closes on success and the new account appears in the list
+   *  behind it — which is a change, not an answer. Naming the person is what
+   *  makes it one. */
+  it("announces the created account by name", async () => {
+    stubFetch(new Response(JSON.stringify({ id: "u9" }), { status: 201 }));
+    const user = userEvent.setup();
+    render();
+
+    await fillRequired(user);
+    await user.click(screen.getByRole("button", { name: "إنشاء الحساب" }));
+
+    const region = await screen.findByRole("region", { name: "إشعارات الإجراءات" });
+    expect(await within(region).findByText("أُنشئ الحساب")).toBeInTheDocument();
+    expect(within(region).getByText(/سارة/)).toBeInTheDocument();
   });
 });

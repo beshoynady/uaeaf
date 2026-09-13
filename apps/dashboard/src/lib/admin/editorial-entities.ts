@@ -81,6 +81,22 @@ export const EDITORIAL_ENTITIES: readonly EditorialEntity[] = [
   },
 ];
 
+/**
+ * Whether an action is taken on the workflow instance rather than the record.
+ *
+ * Exported because the browser needs the same answer the route handler needs:
+ * the panel has to send the instance id for a review decision and the record
+ * id for everything else. It held its own copy of this list until the two were
+ * one edit away from disagreeing — and disagreeing means a 404 at best, and a
+ * decision recorded against someone else's record at worst.
+ *
+ * This module stays importable from a client component because it imports
+ * nothing itself. Keep it that way.
+ */
+export function isInstanceAction(action: EditorialAction): boolean {
+  return ACTION_TARGETS[action] === "workflowInstance";
+}
+
 export function findEditorialEntity(entityType: string): EditorialEntity | undefined {
   return EDITORIAL_ENTITIES.find((entity) => entity.entityType === entityType);
 }
@@ -107,4 +123,45 @@ export function editorialActionPath(entity: EditorialEntity, action: EditorialAc
  *  itself, with a body of content rather than a decision. */
 export function editorialSavePath(entity: EditorialEntity, id: string): string {
   return `${entity.apiPath}/${id}`;
+}
+
+/**
+ * Where the status panel reads from.
+ *
+ * A read, not an action, and it goes through the registry for the same
+ * reason the writes do: without it `/api/admin/editorial/users/<id>/state`
+ * would let the URL choose which upstream record is disclosed.
+ */
+export function editorialStatePath(entity: EditorialEntity, id: string): string {
+  return `${entity.apiPath}/${id}/editorial-state`;
+}
+
+/**
+ * One page of a record's version history.
+ *
+ * Upstream this is a generic route with the record in its query string —
+ * `GET /revisions?entityType=…&entityId=…` — not a sub-resource of the entity.
+ * The registry lookup is what keeps that from becoming a hole: the browser
+ * asks for a record by a path segment this application resolves, and only the
+ * resolved `entityType` is ever put into the query.
+ */
+export function editorialRevisionsPath(
+  entity: EditorialEntity,
+  id: string,
+  page: number,
+  limit: number,
+): string {
+  const query = new URLSearchParams({
+    entityType: entity.entityType,
+    entityId: id,
+    page: String(page),
+    limit: String(limit),
+  });
+  return `/revisions?${query.toString()}`;
+}
+
+/** One version's content. The record is not in the path upstream, so the
+ *  service checks the revision belongs to the caller's entity type itself. */
+export function editorialRevisionPath(revisionId: string): string {
+  return `/revisions/${revisionId}`;
 }

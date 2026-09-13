@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
@@ -15,6 +15,7 @@ import {
   RestorePresidentMessagePageDto,
 } from './dto/publish-president-message-page.dto.js';
 import { PublishingService } from '../../workflow/publishing/publishing.service.js';
+import { EditorialStateDto } from '../../workflow/publishing/editorial-state.dto.js';
 
 const ENTITY_TYPE = 'presidentMessagePage' as const;
 
@@ -59,6 +60,7 @@ export class PresidentMessagePagesController {
    *  dashboard never has to re-derive the rules and disagree. */
   @Get(':id/editorial-state')
   @RequirePermission('presidentMessagePage', 'Read')
+  @ApiOkResponse({ type: EditorialStateDto })
   editorialState(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.publishingService.editorialState(ENTITY_TYPE, new Types.ObjectId(id), user);
   }

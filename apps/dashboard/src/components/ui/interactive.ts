@@ -129,6 +129,26 @@ export const FIELD_BOX = `${FIELD_CONTROL} field-shell`;
  */
 export const FIELD_SELECT = `field-control ${FIELD_EDGE} w-full appearance-none pe-11 text-body text-[color:var(--color-text-primary)] outline-none disabled:cursor-not-allowed disabled:opacity-[var(--opacity-disabled)] aria-[invalid=true]:border-[color:var(--color-semantic-error)]`;
 
+/**
+ * A `<textarea>` in the same box.
+ *
+ * Here for the reason `FIELD_SELECT` is here: a textarea is its own box, not a
+ * control living inside a shell, so it draws its own edge and its own ring.
+ * Written by hand at the one call site that needed it, it drew the edge and
+ * answered focus by recolouring that edge — no ring at all, on the field the
+ * president's message is typed into. `outline-none` obliges the ring, and the
+ * contract test now enforces that specifically rather than accepting any
+ * focus-visible declaration.
+ *
+ * `disabled:`, not `has-[:disabled]:`, for `FIELD_SELECT`'s reason: `:has()`
+ * on a textarea resolves against its text content, so the `has-` form would
+ * never match.
+ *
+ * `resize-y` because the two language halves sit in a two-column grid, and
+ * dragging one wider would push it out of its own cell.
+ */
+export const FIELD_TEXTAREA = `field-control ${FIELD_EDGE} min-h-[84px] w-full resize-y text-body text-[color:var(--color-text-primary)] outline-none disabled:cursor-not-allowed disabled:text-[color:var(--color-text-disabled)] aria-[invalid=true]:border-[color:var(--color-semantic-error)]`;
+
 /** A row or card that selects something — list items, media tiles, page rows. */
 export const SELECTABLE_ROW = `w-full ${TOUCH_TARGET} rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)] px-3 py-2 text-start ${TRANSITION} ${FOCUS_RING} hover:border-[color:var(--color-border-strong)] hover:bg-[color:var(--color-surface-sunken)] active:bg-[color:var(--color-surface-skeleton)] disabled:cursor-not-allowed disabled:opacity-[var(--opacity-disabled)] aria-[current=true]:border-[color:var(--color-brand-primary)] aria-[pressed=true]:border-[color:var(--color-brand-primary)]`;
 
@@ -151,6 +171,7 @@ export const INTERACTIVE_CLASS_NAMES = {
   FIELD_CONTROL,
   FIELD_BOX,
   FIELD_SELECT,
+  FIELD_TEXTAREA,
   SELECTABLE_ROW,
   TOGGLE_SEGMENT,
 } as const;

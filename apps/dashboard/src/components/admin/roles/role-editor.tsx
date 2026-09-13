@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { LocalizedText, RoleResponse } from "@/lib/api/types";
 import { StatusMessage } from "@/components/auth/status-message";
+import { useToast } from "@/components/ui/toast";
 import { BilingualField } from "@/components/admin/bilingual-field";
 import { RequiredHint } from "@/components/ui/required-field";
 
@@ -33,6 +34,7 @@ export function RoleEditor({
   onCancel: () => void;
 }) {
   const t = useTranslations("RolesWorkbench");
+  const toast = useToast();
   const errors = useTranslations("WriteErrors");
   const router = useRouter();
 
@@ -87,6 +89,16 @@ export function RoleEditor({
         return;
       }
 
+      // Announced here rather than by the panel above: this is the half that
+      // knows which of the two things just happened, and one shared "saved"
+      // would report a creation as an edit.
+      toast.show({
+        tone: "success",
+        title: mode === "create" ? t("createdTitle") : t("detailsSavedTitle"),
+        description: mode === "create" ? t("createdBody") : t("detailsSavedBody"),
+        source: "api",
+        dedupeKey: `role:${mode === "create" ? "new" : role?._id}:details-saved`,
+      });
       router.refresh();
       onDone();
     } catch {

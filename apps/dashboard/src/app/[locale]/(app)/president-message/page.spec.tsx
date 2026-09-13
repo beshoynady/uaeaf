@@ -5,6 +5,7 @@ import { ToastProvider } from "@/components/ui/toast";
 import type { ReactElement } from "react";
 import arabic from "../../../../../messages/ar.json";
 import type { PermissionGrant } from "@/lib/auth/permissions";
+import type { EditorialState } from "@/lib/admin/editorial-state";
 
 /**
  * The enforcement half of the pair.
@@ -57,13 +58,52 @@ const RECORD = {
   signatoryTitle: { ar: "منصب", en: "Title" },
   seo: null,
   publicationState: "Published",
+  createdAt: "2026-09-01T00:00:00.000Z",
   updatedAt: "2026-09-12T00:00:00.000Z",
 };
 
-async function open(grants: PermissionGrant[]) {
+/** A second row in the same collection — what a test record looks like from
+ *  this screen's side. Created later than `RECORD`, which is what decides
+ *  which of the two the bare URL opens. */
+const LATER = {
+  ...RECORD,
+  _id: "msg-2",
+  createdAt: "2026-09-20T00:00:00.000Z",
+};
+
+/** The status panel's own read. Its content is covered by
+ *  `status-panel.spec.tsx`; here it only has to be a well-formed state, so
+ *  that what this file is about — who gets through the door — is what fails
+ *  when it fails. */
+const EDITORIAL: EditorialState = {
+  publicationState: "Published",
+  mode: "direct",
+  blockedReason: null,
+  publishedAt: null,
+  publishedBy: null,
+  workflowInstanceId: null,
+  workflowStatus: null,
+  currentStepId: null,
+  canEdit: true,
+  availableActions: ["save"],
+  blockedByReadiness: [],
+  updatedAt: "2026-09-12T00:00:00.000Z",
+  publishBlockers: [],
+  workflow: null,
+  history: [],
+};
+
+/** The editor is open when its own saved/unsaved line is on screen. Asserted
+ *  by that line rather than by `role="status"`: the status panel beside it is
+ *  a live region too, and a query that matches either would pass on the wrong
+ *  one. */
+const editorIsOpen = () => screen.queryByText(arabic.PresidentMessage.allSaved);
+
+async function open(grants: PermissionGrant[], search: Record<string, string> = {}) {
   readGrants.mockResolvedValue(grants);
   const element = (await PresidentMessagePage({
     params: Promise.resolve({ locale: "ar" }),
+    searchParams: Promise.resolve(search),
   })) as ReactElement;
 
   return render(
@@ -78,10 +118,14 @@ async function open(grants: PermissionGrant[]) {
 beforeEach(() => {
   readGrants.mockReset();
   fetchAsUser.mockReset();
-  fetchAsUser.mockImplementation((path: string) =>
-    Promise.resolve(path === "/president-message-page" ? [RECORD] : []),
-  );
+  fetchAsUser.mockImplementation((path: string) => Promise.resolve(defaultFetch(path)));
 });
+
+function defaultFetch(path: string): unknown {
+  if (path === "/president-message-page") return [RECORD];
+  if (path.endsWith("/editorial-state")) return EDITORIAL;
+  return [];
+}
 
 describe("who the route opens for", () => {
   it.each([
@@ -90,7 +134,7 @@ describe("who the route opens for", () => {
   ])("opens for %s", async (_who, grants) => {
     await open(grants);
 
-    expect(screen.getByRole("status")).toBeInTheDocument();
+    expect(editorIsOpen()).toBeInTheDocument();
   });
 
   /**
@@ -108,7 +152,7 @@ describe("who the route opens for", () => {
     await open(grants);
 
     expect(screen.getByText(arabic.Common.accessDenied)).toBeInTheDocument();
-    expect(screen.queryByRole("status")).toBeNull();
+    expect(editorIsOpen()).toBeNull();
   });
 
   /** The decision is made before the record is asked for, so a refused
@@ -129,7 +173,7 @@ describe("when there is no message to edit", () => {
    */
   it("says the API refused when it refused", async () => {
     fetchAsUser.mockImplementation((path: string) =>
-      Promise.resolve(path === "/president-message-page" ? null : []),
+      Promise.resolve(path === "/president-message-page" ? null : defaultFetch(path)),
     );
 
     await open([{ resourceType: "presidentMessagePage", action: "Update" }]);
@@ -149,17 +193,120 @@ describe("when there is no message to edit", () => {
   });
 });
 
+/**
+ * The collection holds more than one row as soon as anyone creates a test
+ * record to rehearse publishing on, and two rows make "which one is this
+ * screen editing?" a question the URL has to be able to answer.
+ */
+describe("which record the screen edits", () => {
+  const EDITOR = [{ resourceType: "presidentMessagePage", action: "Update" }];
+
+  function listReturns(records: unknown[]) {
+    fetchAsUser.mockImplementation((path: string) =>
+      Promise.resolve(path === "/president-message-page" ? records : defaultFetch(path)),
+    );
+  }
+
+  it("opens the record the URL names", async () => {
+    listReturns([RECORD, LATER]);
+
+    await open(EDITOR, { record: "msg-2" });
+
+    expect(fetchAsUser).toHaveBeenCalledWith("/president-message-page/msg-2/editorial-state");
+  });
+
+  /**
+   * The dangerous failure, and the reason this is not a silent fallback: an
+   * editor who opened a test record by id and was quietly handed the real
+   * message would publish the federation's front page believing it was a
+   * rehearsal.
+   */
+  it("refuses to substitute another record when the named one is not there", async () => {
+    listReturns([RECORD, LATER]);
+
+    await open(EDITOR, { record: "ghost" });
+
+    expect(screen.getByText(arabic.PresidentMessage.recordNotFoundTitle)).toBeInTheDocument();
+    expect(editorIsOpen()).toBeNull();
+  });
+
+  /** Oldest first, not "whatever the database returned first": natural order
+   *  is not a contract, and the bare URL must keep opening the record that
+   *  was there before any test row was added. */
+  it("edits the oldest record when the URL names none", async () => {
+    listReturns([LATER, RECORD]);
+
+    await open(EDITOR);
+
+    expect(fetchAsUser).toHaveBeenCalledWith("/president-message-page/msg-1/editorial-state");
+  });
+});
+
 describe("the image library", () => {
+  /**
+   * The API returns raw records — `_id`, and PDFs alongside photographs —
+   * and the picker keys every tile by `id`. Forwarded unmapped, the grid
+   * renders and selects nothing, with no error anywhere. Asserted through
+   * the chosen thumbnail: it resolves only when the record's stored id
+   * matches an option's id.
+   */
+  it("hands the picker options it can actually match the stored image to", async () => {
+    fetchAsUser.mockImplementation((path: string) =>
+      Promise.resolve(
+        path === "/media-assets"
+          ? [
+              {
+                _id: "portrait-1",
+                caption: { ar: "صورة الرئيس", en: "The president" },
+                file: { url: "https://cdn.example/p.jpg", mimeType: "image/jpeg" },
+              },
+            ]
+          : path === "/president-message-page"
+            ? [{ ...RECORD, featuredImageId: "portrait-1" }]
+            : defaultFetch(path),
+      ),
+    );
+
+    await open([{ resourceType: "presidentMessagePage", action: "Update" }]);
+
+    expect(screen.getByRole("img", { name: "صورة الرئيس" })).toBeInTheDocument();
+  });
+
   /** `mediaAssets:Read` is its own grant. Refused, it is an absence — the
    *  picker offers upload only, rather than an empty grid that reads as a
    *  broken screen. */
   it("opens the screen even when the media library is refused", async () => {
     fetchAsUser.mockImplementation((path: string) =>
-      Promise.resolve(path === "/president-message-page" ? [RECORD] : null),
+      Promise.resolve(path === "/media-assets" ? null : defaultFetch(path)),
     );
 
     await open([{ resourceType: "presidentMessagePage", action: "Update" }]);
 
-    expect(screen.getByRole("status")).toBeInTheDocument();
+    expect(editorIsOpen()).toBeInTheDocument();
+  });
+});
+
+describe("the status panel", () => {
+  it("is drawn beside the editor, reading the record's own state", async () => {
+    await open([{ resourceType: "presidentMessagePage", action: "Update" }]);
+
+    expect(fetchAsUser).toHaveBeenCalledWith("/president-message-page/msg-1/editorial-state");
+    expect(
+      screen.getByRole("complementary", { name: arabic.Editorial.panelTitle }),
+    ).toBeInTheDocument();
+  });
+
+  /** Losing the panel is losing a panel, not the screen. An editor whose
+   *  account may change the message but not read its status still has the
+   *  form, and is not sent an access notice for the whole page. */
+  it("is left out, and the editor kept, when the state is refused", async () => {
+    fetchAsUser.mockImplementation((path: string) =>
+      Promise.resolve(path.endsWith("/editorial-state") ? null : defaultFetch(path)),
+    );
+
+    await open([{ resourceType: "presidentMessagePage", action: "Update" }]);
+
+    expect(editorIsOpen()).toBeInTheDocument();
+    expect(screen.queryByRole("complementary")).toBeNull();
   });
 });

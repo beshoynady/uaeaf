@@ -2,6 +2,7 @@
 
 import { TextField } from "@/components/auth/text-field";
 import { FieldLabel } from "@/components/ui/required-field";
+import { FIELD_TEXTAREA } from "@/components/ui/interactive";
 
 /**
  * One value, recorded in both languages.
@@ -155,9 +156,7 @@ function TextArea({
         // match, and the label would float on first paint and stay there.
         placeholder=" "
         onChange={(event) => onChange(event.target.value)}
-        // Vertical resize only: the two halves sit in a two-column grid, and
-        // dragging one wider would push it out of its own cell.
-        className={`field-control min-h-[84px] resize-y border border-[color:var(--color-border-strong)] text-body outline-none transition-[border-color] duration-[var(--motion-duration-fast)] hover:border-[color:var(--color-brand-primary)] active:border-[color:var(--color-brand-primary)] focus:border-[color:var(--color-brand-primary)] focus-visible:border-[color:var(--color-brand-primary)] disabled:cursor-not-allowed disabled:text-[color:var(--color-text-disabled)]`}
+        className={FIELD_TEXTAREA}
       />
     </div>
   );

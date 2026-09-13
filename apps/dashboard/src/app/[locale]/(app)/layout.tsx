@@ -6,6 +6,7 @@ import { localized } from "@/lib/api/types";
 import { visibleNavItems } from "@/lib/navigation";
 import { THEME_COOKIE } from "@/lib/auth/cookies";
 import { SidebarNav } from "@/components/shell/sidebar-nav";
+import { BrandMark } from "@/components/brand/brand-mark";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
 import { LanguageToggle } from "@/components/shell/language-toggle";
 import { SignOutButton } from "@/components/shell/sign-out-button";
@@ -66,9 +67,11 @@ export default async function AppLayout({
         </a>
 
         <aside className="shrink-0 border-b border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)] p-4 lg:min-h-screen lg:w-[264px] lg:border-b-0 lg:border-e lg:p-6">
-          <p className="mb-6 px-4 text-label font-bold text-[color:var(--color-text-primary)]">
-            {t("brand")}
-          </p>
+          {/* The federation's mark where the shell used to say "Dashboard":
+              nothing else on the signed-in screens said whose they were. */}
+          <div className="mb-6 px-4">
+            <BrandMark initialTheme={storedTheme === "dark" ? "dark" : "light"} />
+          </div>
           <SidebarNav items={items} />
         </aside>
 

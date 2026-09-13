@@ -7,6 +7,7 @@ import {
   BUTTON_SECONDARY,
   FIELD_INPUT,
   FIELD_SHELL,
+  FIELD_TEXTAREA,
   INTERACTIVE_CLASS_NAMES,
   SELECTABLE_ROW,
   TOGGLE_SEGMENT,
@@ -100,6 +101,15 @@ describe("FIELD_SHELL and FIELD_INPUT", () => {
     expect(FIELD_INPUT).toMatch(/\boutline-none\b/);
   });
 
+  /** The gap that let one textarea answer focus with a border colour and no
+   *  ring: the contract test accepted any `focus-visible:` declaration, so the
+   *  obligation has to be stated here, on the string itself. */
+  it("draws the system ring on the textarea that removes its own outline", () => {
+    expect(FIELD_TEXTAREA).toMatch(/outline-none/);
+    expect(FIELD_TEXTAREA).toMatch(/focus-within:ring-2 /);
+    expect(FIELD_TEXTAREA).toMatch(/focus-within:ring-offset-2 /);
+  });
+
   it("styles the disabled field rather than only setting the attribute", () => {
     // `disabled={saving}` with no matching style renders identically to an
     // enabled field: ten controls in this codebase did exactly that.
@@ -121,6 +131,7 @@ describe("INTERACTIVE_CLASS_NAMES", () => {
         "FIELD_INPUT",
         "FIELD_SELECT",
         "FIELD_SHELL",
+        "FIELD_TEXTAREA",
         "SELECTABLE_ROW",
         "TOGGLE_SEGMENT",
       ].sort(),

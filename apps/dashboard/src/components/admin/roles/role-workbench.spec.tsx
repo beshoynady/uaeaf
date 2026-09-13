@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithIntl } from "@/test/render";
+import { ToastProvider } from "@/components/ui/toast";
 import type { PermissionResponse, RoleResponse, UserResponse } from "@/lib/api/types";
 import { RoleWorkbench } from "./role-workbench";
 
@@ -57,14 +58,18 @@ const ALL_GRANTS = [
 
 function renderWorkbench(over: Partial<Parameters<typeof RoleWorkbench>[0]> = {}) {
   return renderWithIntl(
-    <RoleWorkbench
-      roles={ROLES}
-      permissions={PERMISSIONS}
-      users={USERS}
-      actorGrants={ALL_GRANTS}
-      locale="ar"
-      {...over}
-    />,
+    // The provider comes from the `(app)` layout in production; the workbench
+    // is rendered here on its own, so the harness supplies it.
+    <ToastProvider>
+      <RoleWorkbench
+        roles={ROLES}
+        permissions={PERMISSIONS}
+        users={USERS}
+        actorGrants={ALL_GRANTS}
+        locale="ar"
+        {...over}
+      />
+    </ToastProvider>,
   );
 }
 
@@ -148,6 +153,39 @@ describe("RoleWorkbench", () => {
     // only way out of the state.
     await user.click(screen.getByRole("checkbox", { name: "حذف — albums" }));
     expect(screen.getByRole("button", { name: "حفظ التغييرات" })).toBeEnabled();
+  });
+
+  /**
+   * One announcement, in the region the whole shell shares (ADR-0016). The
+   * banner this replaced stayed on screen after the reader moved on to the
+   * next role, still reading as if it had just happened.
+   */
+  it("announces a saved permission change in the toast region and nowhere else", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("{}", { status: 200 })));
+    const user = userEvent.setup();
+    renderWorkbench();
+
+    await user.click(screen.getByRole("checkbox", { name: "إنشاء — users" }));
+    await user.click(screen.getByRole("button", { name: "حفظ التغييرات" }));
+
+    const region = await screen.findByRole("region", { name: "إشعارات الإجراءات" });
+    expect(await within(region).findByText("حُفظت الصلاحيات")).toBeInTheDocument();
+    expect(screen.getAllByText("حُفظت الصلاحيات")).toHaveLength(1);
+  });
+
+  /** An archive removes the role from the list beside it, so the screen
+   *  changes either way — but "did that work?" is still unanswered without a
+   *  word for it. */
+  it("announces an archived role", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response("{}", { status: 200 })));
+    const user = userEvent.setup();
+    renderWorkbench();
+
+    await user.click(screen.getByRole("button", { name: "أرشفة الدور" }));
+    await user.click(screen.getByRole("button", { name: "أرشف الدور" }));
+
+    const region = await screen.findByRole("region", { name: "إشعارات الإجراءات" });
+    expect(await within(region).findByText("أُرشف الدور")).toBeInTheDocument();
   });
 
   it("surfaces the API's own refusal rather than a generic failure", async () => {
