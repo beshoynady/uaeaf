@@ -1,3 +1,5 @@
+// Type-only, so erased: it loads nothing before the env vars below are set.
+import type { INestApplication } from '@nestjs/common';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { apiPath } from './support/api-path.js';
 import { configureTestApp } from './support/test-app.js';
@@ -21,7 +23,6 @@ afterAll(async () => {
 describe('Workflow engine (e2e)', () => {
   it('runs the golden path, a reject/resubmit/approve cycle, concurrency rejection, revision ownership, simultaneous revision numbering, and the HardDelete gate against a real, ephemeral MongoDB', async () => {
     const { Test } = await import('@nestjs/testing');
-    const { INestApplication } = await import('@nestjs/common');
     const { getModelToken } = await import('@nestjs/mongoose');
     const request = (await import('supertest')).default;
     const { Types } = await import('mongoose');
@@ -42,7 +43,7 @@ describe('Workflow engine (e2e)', () => {
     const bcrypt = (await import('bcryptjs')).default;
 
     const moduleFixture = await Test.createTestingModule({ imports: [AppModule] }).compile();
-    const app: InstanceType<typeof INestApplication> = moduleFixture.createNestApplication();
+    const app: INestApplication = moduleFixture.createNestApplication();
     configureTestApp(app);
     await app.init();
 

@@ -1,3 +1,5 @@
+// Type-only, so erased: it loads nothing before the env vars below are set.
+import type { INestApplication } from '@nestjs/common';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { apiPath } from './support/api-path.js';
 import { configureTestApp } from './support/test-app.js';
@@ -30,7 +32,6 @@ afterAll(async () => {
 describe('User responses never leak passwordHash (e2e)', () => {
   it('excludes authMethods/passwordHash from GET /users, GET /users/:id, GET /users/me — login still works', async () => {
     const { Test } = await import('@nestjs/testing');
-    const { INestApplication } = await import('@nestjs/common');
     const { getModelToken } = await import('@nestjs/mongoose');
     const request = (await import('supertest')).default;
     const bcrypt = await import('bcryptjs');
@@ -43,7 +44,7 @@ describe('User responses never leak passwordHash (e2e)', () => {
     const { User } = await import('../../src/modules/platform-administration/users/schemas/user.schema.js');
 
     const moduleFixture = await Test.createTestingModule({ imports: [AppModule] }).compile();
-    const app: InstanceType<typeof INestApplication> = moduleFixture.createNestApplication();
+    const app: INestApplication = moduleFixture.createNestApplication();
     configureTestApp(app);
     await app.init();
 

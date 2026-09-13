@@ -1,3 +1,7 @@
+// Type-only, so erased: they load nothing before MONGODB_URI is set.
+import type { FederationAppointmentDocument } from '../../src/modules/federation-governance/federation-appointments/schemas/federation-appointments.schema.js';
+import type { PresidentMessagePageDocument } from '../../src/modules/federation-governance/president-message-page/schemas/president-message-page.schema.js';
+import type { RevisionDocument } from '../../src/modules/workflow/revisions/schemas/revision.schema.js';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { apiPath } from './support/api-path.js';
 import { configureTestApp } from './support/test-app.js';
@@ -27,14 +31,14 @@ type Who = 'publisher' | 'editor' | 'approver' | 'outsider';
 
 let mongoServer: MongoMemoryServer;
 let app: { close(): Promise<void>; getHttpServer(): unknown };
-let request: typeof import('supertest').default;
+let request: typeof import('supertest');
 let Types: typeof import('mongoose').Types;
-let messageModel: import('mongoose').Model<{ _id: unknown }>;
+let messageModel: import('mongoose').Model<PresidentMessagePageDocument>;
 let policyModel: import('mongoose').Model<unknown>;
-let appointmentModel: import('mongoose').Model<{ _id: unknown }>;
+let appointmentModel: import('mongoose').Model<FederationAppointmentDocument>;
 let auditModel: import('mongoose').Model<unknown>;
 let publicationModel: import('mongoose').Model<unknown>;
-let revisionModel: import('mongoose').Model<{ _id: unknown }>;
+let revisionModel: import('mongoose').Model<RevisionDocument>;
 
 const tokens = {} as Record<Who, string>;
 const ids = {} as Record<Who, string>;

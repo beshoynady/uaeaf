@@ -199,7 +199,7 @@ describe('AuditLogInterceptor', () => {
           .intercept(makeContext(patchRequest()), makeHandler(responseBody))
           .subscribe(() => resolve());
       });
-      return auditLogsService.write.mock.calls[0]?.[0] as Record<string, unknown> | undefined;
+      return auditLogsService.write.mock.calls[0]?.[0];
     }
 
     it('records the record as it was before the change', async () => {

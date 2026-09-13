@@ -1,5 +1,4 @@
 import { Model, Types } from 'mongoose';
-import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { NotificationSchema } from './schemas/notification.schema.js';
 import type { NotificationDocument } from './schemas/notification.schema.js';
@@ -8,6 +7,7 @@ import {
   connectTestDatabase,
   disconnectTestDatabase,
   clearTestDatabase,
+  registerTestModel,
 } from '../../../../test/utils/mongo-memory-server.js';
 
 describe('NotificationsRepository', () => {
@@ -17,7 +17,7 @@ describe('NotificationsRepository', () => {
 
   beforeAll(async () => {
     server = await connectTestDatabase();
-    model = mongoose.model<NotificationDocument>('Notification', NotificationSchema);
+    model = registerTestModel<NotificationDocument>('Notification', NotificationSchema);
     await model.ensureIndexes();
     repository = new NotificationsRepository(model);
   });

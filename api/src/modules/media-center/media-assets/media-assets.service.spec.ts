@@ -45,9 +45,9 @@ describe('MediaAssetsService', () => {
     }) as unknown as jest.Mocked<MediaAssetsRepository>;
 
   const makeAlbumModel = () => {
-    const exec = jest.fn().mockResolvedValue({ acknowledged: true });
+    const exec = jest.fn<() => Promise<{ acknowledged: boolean }>>().mockResolvedValue({ acknowledged: true });
     const updateOne = jest.fn().mockReturnValue({ exec });
-    return { updateOne, exec } as unknown as jest.Mocked<Model<AlbumDocument>> & { exec: jest.Mock };
+    return { updateOne, exec } as unknown as Model<AlbumDocument> & { updateOne: jest.Mock; exec: jest.Mock };
   };
 
   const baseDto: CreateMediaAssetDto = {
@@ -235,7 +235,7 @@ describe('MediaAssetsService', () => {
         STORAGE_FOLDERS.pages,
       );
 
-      const created = repository.create.mock.calls[0][0] as { file: Record<string, unknown> };
+      const created = repository.create.mock.calls[0][0] as { file: MediaAssetDocument['file'] };
       expect(created.file).toMatchObject({
         url: 'https://res.cloudinary.com/demo/image/upload/v1/uaeaf/pages/hero-ab12.png',
         storageKey: 'uaeaf/pages/hero-ab12',
@@ -346,7 +346,7 @@ describe('MediaAssetsService', () => {
         STORAGE_FOLDERS.pages,
       );
 
-      const created = repository.create.mock.calls[0][0] as { file: Record<string, unknown> };
+      const created = repository.create.mock.calls[0][0] as { file: MediaAssetDocument['file'] };
       expect(created.file.photographer).toBe('A. Al Mansoori');
       expect(created.file.captureDate).toEqual(new Date('2026-03-14'));
     });

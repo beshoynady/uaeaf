@@ -1,5 +1,4 @@
 import { Model } from 'mongoose';
-import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { UserSchema } from './schemas/user.schema.js';
 import type { UserDocument } from './schemas/user.schema.js';
@@ -8,6 +7,7 @@ import {
   connectTestDatabase,
   disconnectTestDatabase,
   clearTestDatabase,
+  registerTestModel,
 } from '../../../../test/utils/mongo-memory-server.js';
 
 describe('UsersRepository (email normalization)', () => {
@@ -17,7 +17,7 @@ describe('UsersRepository (email normalization)', () => {
 
   beforeAll(async () => {
     server = await connectTestDatabase();
-    model = mongoose.model<UserDocument>('User', UserSchema);
+    model = registerTestModel<UserDocument>('User', UserSchema);
     await model.ensureIndexes();
     repository = new UsersRepository(model);
   });

@@ -1,3 +1,5 @@
+// Type-only, so erased: it loads nothing before the env vars below are set.
+import type { INestApplication } from '@nestjs/common';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { apiPath } from './support/api-path.js';
 import { configureTestApp } from './support/test-app.js';
@@ -29,7 +31,6 @@ afterAll(async () => {
 describe('Refresh and access tokens cannot be used as each other (e2e)', () => {
   it('rejects a refresh token used as a Bearer access token, on routes with and without @RequirePermission()', async () => {
     const { Test } = await import('@nestjs/testing');
-    const { INestApplication } = await import('@nestjs/common');
     const { getModelToken } = await import('@nestjs/mongoose');
     const request = (await import('supertest')).default;
     const bcrypt = await import('bcryptjs');
@@ -38,7 +39,7 @@ describe('Refresh and access tokens cannot be used as each other (e2e)', () => {
     const { User } = await import('../../src/modules/platform-administration/users/schemas/user.schema.js');
 
     const moduleFixture = await Test.createTestingModule({ imports: [AppModule] }).compile();
-    const app: InstanceType<typeof INestApplication> = moduleFixture.createNestApplication();
+    const app: INestApplication = moduleFixture.createNestApplication();
     configureTestApp(app);
     await app.init();
 

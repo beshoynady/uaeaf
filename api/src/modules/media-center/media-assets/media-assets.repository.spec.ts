@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import mongoose, { Types } from 'mongoose';
+import { Types } from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MediaAssetSchema } from './schemas/media-asset.schema.js';
 import type { MediaAssetDocument } from './schemas/media-asset.schema.js';
@@ -8,6 +8,8 @@ import {
   connectTestDatabase,
   disconnectTestDatabase,
   clearTestDatabase,
+  registerTestModel,
+  type QueryPlannerExplanation,
 } from '../../../../test/utils/mongo-memory-server.js';
 
 describe('MediaAssetsRepository', () => {
@@ -17,7 +19,7 @@ describe('MediaAssetsRepository', () => {
 
   beforeAll(async () => {
     server = await connectTestDatabase();
-    model = mongoose.model<MediaAssetDocument>('MediaAsset', MediaAssetSchema);
+    model = registerTestModel<MediaAssetDocument>('MediaAsset', MediaAssetSchema);
     await model.ensureIndexes();
     repository = new MediaAssetsRepository(model);
   });
@@ -42,6 +44,8 @@ describe('MediaAssetsRepository', () => {
       originalName: 'a.jpg',
       storageKey: 'media/a.jpg',
       checksum: null,
+      photographer: null,
+      captureDate: null,
     },
     caption: { en: 'Caption', ar: 'تعليق' },
     altText: { en: 'Alt', ar: 'بديل' },
@@ -52,7 +56,7 @@ describe('MediaAssetsRepository', () => {
     await repository.create(baseAsset);
 
     const explanation = await model.find({ albumId }).sort({ displayOrder: 1 }).explain('queryPlanner');
-    const plan = JSON.stringify(explanation.queryPlanner.winningPlan);
+    const plan = JSON.stringify((explanation as unknown as QueryPlannerExplanation).queryPlanner.winningPlan);
 
     expect(plan).toContain('IXSCAN');
     expect(plan).not.toContain('COLLSCAN');
@@ -65,7 +69,7 @@ describe('MediaAssetsRepository', () => {
       .find({ albumId, isVisible: true })
       .sort({ displayOrder: 1 })
       .explain('queryPlanner');
-    const plan = JSON.stringify(explanation.queryPlanner.winningPlan);
+    const plan = JSON.stringify((explanation as unknown as QueryPlannerExplanation).queryPlanner.winningPlan);
 
     expect(plan).toContain('IXSCAN');
     expect(plan).toContain('albumId_1_isVisible_1_displayOrder_1');

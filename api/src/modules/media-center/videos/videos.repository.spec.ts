@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import mongoose, { Types } from 'mongoose';
+import { Types } from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { VideoSchema } from './schemas/video.schema.js';
 import type { VideoDocument } from './schemas/video.schema.js';
@@ -8,6 +8,7 @@ import {
   connectTestDatabase,
   disconnectTestDatabase,
   clearTestDatabase,
+  registerTestModel,
 } from '../../../../test/utils/mongo-memory-server.js';
 
 describe('VideosRepository', () => {
@@ -17,7 +18,7 @@ describe('VideosRepository', () => {
 
   beforeAll(async () => {
     server = await connectTestDatabase();
-    model = mongoose.model<VideoDocument>('Video', VideoSchema);
+    model = registerTestModel<VideoDocument>('Video', VideoSchema);
     repository = new VideosRepository(model);
   });
 

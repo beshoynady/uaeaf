@@ -1,5 +1,4 @@
 import { Model, Types } from 'mongoose';
-import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { AuditLogSchema } from './schemas/audit-log.schema.js';
 import type { AuditLogDocument } from './schemas/audit-log.schema.js';
@@ -8,6 +7,7 @@ import {
   connectTestDatabase,
   disconnectTestDatabase,
   clearTestDatabase,
+  registerTestModel,
 } from '../../../../test/utils/mongo-memory-server.js';
 
 describe('AuditLogsRepository', () => {
@@ -17,7 +17,7 @@ describe('AuditLogsRepository', () => {
 
   beforeAll(async () => {
     server = await connectTestDatabase();
-    model = mongoose.model<AuditLogDocument>('AuditLog', AuditLogSchema);
+    model = registerTestModel<AuditLogDocument>('AuditLog', AuditLogSchema);
     await model.ensureIndexes();
     repository = new AuditLogsRepository(model);
   });

@@ -25,8 +25,8 @@ const RESULT = {
 function fake(overrides: Partial<CloudinaryUploader> = {}): CloudinaryUploader {
   return {
     upload_stream: jest.fn(),
-    upload: jest.fn().mockResolvedValue(RESULT),
-    destroy: jest.fn().mockResolvedValue({ result: 'ok' }),
+    upload: jest.fn<CloudinaryUploader['upload']>().mockResolvedValue(RESULT),
+    destroy: jest.fn<CloudinaryUploader['destroy']>().mockResolvedValue({ result: 'ok' }),
     ...overrides,
   } as CloudinaryUploader;
 }
@@ -71,7 +71,7 @@ describe('CloudinaryStorageProvider', () => {
     const uploader = fake();
     await new CloudinaryStorageProvider(uploader).upload(request);
 
-    const options = (uploader.upload as jest.Mock).mock.calls[0][1];
+    const options = (uploader.upload as jest.MockedFunction<CloudinaryUploader['upload']>).mock.calls[0][1];
     expect(options.folder).toBe('uaeaf/pages');
   });
 
@@ -81,7 +81,7 @@ describe('CloudinaryStorageProvider', () => {
     const uploader = fake();
     await new CloudinaryStorageProvider(uploader).upload(request);
 
-    const options = (uploader.upload as jest.Mock).mock.calls[0][1];
+    const options = (uploader.upload as jest.MockedFunction<CloudinaryUploader['upload']>).mock.calls[0][1];
     expect(options.public_id).toMatch(/^contact-hero-[a-z0-9]+$/);
   });
 
@@ -91,12 +91,12 @@ describe('CloudinaryStorageProvider', () => {
     const uploader = fake();
     await new CloudinaryStorageProvider(uploader).upload(request);
 
-    const options = (uploader.upload as jest.Mock).mock.calls[0][1];
+    const options = (uploader.upload as jest.MockedFunction<CloudinaryUploader['upload']>).mock.calls[0][1];
     expect(options.resource_type).toBe('image');
   });
 
   it('reports a provider failure as unavailability, not as a bad request', async () => {
-    const uploader = fake({ upload: jest.fn().mockRejectedValue(new Error('rate limited')) });
+    const uploader = fake({ upload: jest.fn<CloudinaryUploader['upload']>().mockRejectedValue(new Error('rate limited')) });
     await expect(new CloudinaryStorageProvider(uploader).upload(request)).rejects.toBeInstanceOf(
       ServiceUnavailableException,
     );
@@ -115,7 +115,7 @@ describe('CloudinaryStorageProvider', () => {
   it('treats an already-absent object as destroyed', async () => {
     // Purging a record whose object was removed upstream by hand has to
     // converge. Failing forever would leave a row nothing can clear.
-    const uploader = fake({ destroy: jest.fn().mockResolvedValue({ result: 'not found' }) });
+    const uploader = fake({ destroy: jest.fn<CloudinaryUploader['destroy']>().mockResolvedValue({ result: 'not found' }) });
     await expect(
       new CloudinaryStorageProvider(uploader).destroy('uaeaf/pages/gone'),
     ).resolves.toBeUndefined();
@@ -124,7 +124,7 @@ describe('CloudinaryStorageProvider', () => {
   it('raises a provider error on destroy rather than reporting success', async () => {
     // The caller hard-deletes the row on success; a swallowed failure here
     // is exactly how an orphaned object starts consuming quota unseen.
-    const uploader = fake({ destroy: jest.fn().mockRejectedValue(new Error('network')) });
+    const uploader = fake({ destroy: jest.fn<CloudinaryUploader['destroy']>().mockRejectedValue(new Error('network')) });
     await expect(
       new CloudinaryStorageProvider(uploader).destroy('uaeaf/pages/hero_ab12'),
     ).rejects.toBeInstanceOf(ServiceUnavailableException);

@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import mongoose, { Types } from 'mongoose';
+import { Types } from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { AlbumSchema } from './schemas/album.schema.js';
 import type { AlbumDocument } from './schemas/album.schema.js';
@@ -8,6 +8,8 @@ import {
   connectTestDatabase,
   disconnectTestDatabase,
   clearTestDatabase,
+  registerTestModel,
+  type QueryPlannerExplanation,
 } from '../../../../test/utils/mongo-memory-server.js';
 
 describe('AlbumsRepository', () => {
@@ -17,7 +19,7 @@ describe('AlbumsRepository', () => {
 
   beforeAll(async () => {
     server = await connectTestDatabase();
-    model = mongoose.model<AlbumDocument>('Album', AlbumSchema);
+    model = registerTestModel<AlbumDocument>('Album', AlbumSchema);
     await model.ensureIndexes();
     repository = new AlbumsRepository(model);
   });
@@ -49,7 +51,7 @@ describe('AlbumsRepository', () => {
     const explanation = await model
       .find({ contentCategoryId: baseAlbum.contentCategoryId, publicationState: 'Draft' })
       .explain('queryPlanner');
-    const plan = JSON.stringify(explanation.queryPlanner.winningPlan);
+    const plan = JSON.stringify((explanation as unknown as QueryPlannerExplanation).queryPlanner.winningPlan);
 
     expect(plan).toContain('IXSCAN');
     expect(plan).not.toContain('COLLSCAN');
@@ -163,7 +165,7 @@ describe('AlbumsRepository', () => {
           $or: [{ associations: { $elemMatch: { ownerType: 'championships', ownerId: championshipId } } }],
         })
         .explain('queryPlanner');
-      const plan = JSON.stringify(explanation.queryPlanner.winningPlan);
+      const plan = JSON.stringify((explanation as unknown as QueryPlannerExplanation).queryPlanner.winningPlan);
 
       expect(plan).toContain('IXSCAN');
       expect(plan).not.toContain('COLLSCAN');

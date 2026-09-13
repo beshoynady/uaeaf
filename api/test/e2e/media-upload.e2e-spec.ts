@@ -1,3 +1,5 @@
+// Type-only, so erased: it loads nothing before the env vars below are set.
+import type { INestApplication } from '@nestjs/common';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -51,7 +53,6 @@ const HERO = join(
 describe('Media upload and purge (e2e)', () => {
   it('gates the route, verifies the bytes, and destroys the object before the record', async () => {
     const { Test } = await import('@nestjs/testing');
-    const { INestApplication } = await import('@nestjs/common');
     const { getModelToken } = await import('@nestjs/mongoose');
     const request = (await import('supertest')).default;
 
@@ -90,7 +91,7 @@ describe('Media upload and purge (e2e)', () => {
       .overrideProvider(STORAGE_PROVIDER)
       .useValue(storage)
       .compile();
-    const app: InstanceType<typeof INestApplication> = moduleFixture.createNestApplication();
+    const app: INestApplication = moduleFixture.createNestApplication();
     configureTestApp(app);
     await app.init();
 

@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import mongoose, { Types } from 'mongoose';
+import { Types } from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { AlbumSchema } from './schemas/album.schema.js';
 import type { AlbumDocument } from './schemas/album.schema.js';
@@ -13,6 +13,7 @@ import {
   connectTestDatabase,
   disconnectTestDatabase,
   clearTestDatabase,
+  registerTestModel,
 } from '../../../../test/utils/mongo-memory-server.js';
 
 /** Real-Mongo coverage for the individual public album page
@@ -27,11 +28,13 @@ describe('AlbumsService.getPublicBySlug (integration)', () => {
 
   beforeAll(async () => {
     server = await connectTestDatabase();
-    albumModel = mongoose.model<AlbumDocument>('Album', AlbumSchema);
-    mediaAssetModel = mongoose.model<MediaAssetDocument>('MediaAsset', MediaAssetSchema);
+    albumModel = registerTestModel<AlbumDocument>('Album', AlbumSchema);
+    mediaAssetModel = registerTestModel<MediaAssetDocument>('MediaAsset', MediaAssetSchema);
     const albumsRepository = new AlbumsRepository(albumModel);
     const mediaAssetsRepository = new MediaAssetsRepository(mediaAssetModel);
-    const mediaAssetsService = new MediaAssetsService(mediaAssetsRepository, albumModel);
+    // `getPublicBySlug` never reaches storage, so it is given none: undefined
+    // is what the service holds either way, stated rather than left out.
+    const mediaAssetsService = new MediaAssetsService(mediaAssetsRepository, albumModel, undefined as never);
     albumsService = new AlbumsService(albumsRepository, mediaAssetsService);
   });
 

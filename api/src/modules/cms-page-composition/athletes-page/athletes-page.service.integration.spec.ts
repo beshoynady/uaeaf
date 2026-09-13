@@ -1,6 +1,5 @@
 import { jest } from '@jest/globals';
 import { Model } from 'mongoose';
-import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { AthletesPageSchema } from './schemas/athletes-page.schema.js';
 import type { AthletesPageDocument } from './schemas/athletes-page.schema.js';
@@ -11,6 +10,7 @@ import {
   connectTestDatabase,
   disconnectTestDatabase,
   clearTestDatabase,
+  registerTestModel,
 } from '../../../../test/utils/mongo-memory-server.js';
 
 /** Confirms confirmed decision #8 against a real database: a singleton
@@ -24,7 +24,7 @@ describe('AthletesPageService (integration)', () => {
 
   beforeAll(async () => {
     server = await connectTestDatabase();
-    model = mongoose.model<AthletesPageDocument>('AthletesPage', AthletesPageSchema);
+    model = registerTestModel<AthletesPageDocument>('AthletesPage', AthletesPageSchema);
     const mediaAssetsService = {
       assertUsableImage: jest.fn(),
     } as unknown as MediaAssetsService;

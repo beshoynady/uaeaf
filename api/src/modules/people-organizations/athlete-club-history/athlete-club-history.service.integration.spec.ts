@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import mongoose, { Types } from 'mongoose';
+import { Types } from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { AthleteClubHistorySchema } from './schemas/athlete-club-history.schema.js';
 import type { AthleteClubHistoryDocument } from './schemas/athlete-club-history.schema.js';
@@ -9,6 +9,7 @@ import {
   connectTestDatabase,
   disconnectTestDatabase,
   clearTestDatabase,
+  registerTestModel,
 } from '../../../../test/utils/mongo-memory-server.js';
 
 /** Confirms the 2026-09-02 correction against a real database: creating a
@@ -21,7 +22,7 @@ describe('AthleteClubHistoryService (integration)', () => {
 
   beforeAll(async () => {
     server = await connectTestDatabase();
-    model = mongoose.model<AthleteClubHistoryDocument>('AthleteClubHistory', AthleteClubHistorySchema);
+    model = registerTestModel<AthleteClubHistoryDocument>('AthleteClubHistory', AthleteClubHistorySchema);
     service = new AthleteClubHistoryService(new AthleteClubHistoryRepository(model));
   });
 

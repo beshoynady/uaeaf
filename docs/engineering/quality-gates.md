@@ -22,7 +22,7 @@
 
 | الـ job | الفحوص | ما يحتاجه داخل الـ runner |
 |---|---|---|
-| `api-checks` | فحص الأنواع والترجمة، ثم تطابق `openapi.json` بنفس منطق الـ hook، ثم lint (`oxlint`) | MongoDB service container للمولّد |
+| `api-checks` | فحص الأنواع والترجمة، ثم تطابق `openapi.json` بنفس منطق الـ hook، ثم فحص أنواع الـ API **مع اختباراته** (`tsc --noEmit -p tsconfig.json --incremental false`)، ثم lint (`oxlint`). فحص أنواع الاختبارات والـ lint يُبلِّغان كلٌّ وحده، أيًّا كانت نتيجة ما قبلهما | MongoDB service container للمولّد |
 | `api-unit` | اختبارات الوحدة (Jest) | mongod داخل الذاكرة لكل suite (`mongodb-memory-server`) |
 | `api-e2e` | اختبارات e2e (Jest) | mongod داخل الذاكرة لكل suite، وقيم env تضعها كل suite لنفسها |
 | `apps` (`web`، `dashboard`) | بناء الـ design tokens، ثم `next typegen`، ثم `tsc --noEmit` وlint واختبارات Vitest | لا شيء خارجي |
@@ -31,6 +31,7 @@
 
 **تشغيل أي فحص محليًا:** في `api/`:
 - `npm run generate:openapi`
+- `npx tsc --noEmit -p tsconfig.json --incremental false` — الوحيد الذي يفحص أنواع الاختبارات: `nest build` يستثني `**/*spec.ts` و`test/`، وts-jest يترجم دون فحص (`isolatedModules`)
 - `npm run lint`
 - `npm test`
 - `npm run test:e2e`
@@ -42,7 +43,7 @@
 
 ## ما لا يفحصه أيٌّ منهما بعد
 
-- **أنواع كود الاختبارات في `api`:** ts-jest لا يفحص الأنواع (`isolatedModules`)، و`tsc -p tsconfig.json` يُظهر 97 خطأ في 39 ملف اختبار (2026-09-11). يُضاف إلى الـ CI بعد إصلاحها.
+- **أنواع كود الاختبارات في `api` داخل الـ pre-push hook:** يفحصها الـ CI وحده. الـ hook يبقى على فحص مصادر الإنتاج كي يبقى قصيرًا.
 - **pre-commit / lint-staged:** مؤجَّل.
 
 ## متى يُقبل `git push --no-verify`

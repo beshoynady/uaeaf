@@ -1,3 +1,5 @@
+// Type-only, so erased: it loads nothing before the env vars below are set.
+import type { INestApplication } from '@nestjs/common';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { apiPath } from './support/api-path.js';
 import { configureTestApp } from './support/test-app.js';
@@ -21,7 +23,6 @@ afterAll(async () => {
 describe('People & Organizations + Documents (e2e)', () => {
   it('covers a Local athlete + profile, a Guest athlete with no profile, and a documents attach-to-club flow', async () => {
     const { Test } = await import('@nestjs/testing');
-    const { INestApplication } = await import('@nestjs/common');
     const { getModelToken } = await import('@nestjs/mongoose');
     const request = (await import('supertest')).default;
 
@@ -33,7 +34,7 @@ describe('People & Organizations + Documents (e2e)', () => {
     const bcrypt = (await import('bcryptjs')).default;
 
     const moduleFixture = await Test.createTestingModule({ imports: [AppModule] }).compile();
-    const app: InstanceType<typeof INestApplication> = moduleFixture.createNestApplication();
+    const app: INestApplication = moduleFixture.createNestApplication();
     configureTestApp(app);
     await app.init();
 

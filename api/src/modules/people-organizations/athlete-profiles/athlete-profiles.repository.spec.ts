@@ -1,5 +1,4 @@
 import { Model, Types } from 'mongoose';
-import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { AthleteProfileSchema } from './schemas/athlete-profile.schema.js';
 import type { AthleteProfileDocument } from './schemas/athlete-profile.schema.js';
@@ -8,6 +7,7 @@ import {
   connectTestDatabase,
   disconnectTestDatabase,
   clearTestDatabase,
+  registerTestModel,
 } from '../../../../test/utils/mongo-memory-server.js';
 
 /**
@@ -27,7 +27,7 @@ describe('AthleteProfilesRepository (partial unique index on slug)', () => {
 
   beforeAll(async () => {
     server = await connectTestDatabase();
-    model = mongoose.model<AthleteProfileDocument>('AthleteProfile', AthleteProfileSchema);
+    model = registerTestModel<AthleteProfileDocument>('AthleteProfile', AthleteProfileSchema);
     await model.ensureIndexes();
     repository = new AthleteProfilesRepository(model);
   });

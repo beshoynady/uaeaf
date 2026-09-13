@@ -1,5 +1,6 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
+import type { Connection, Model, Schema } from 'mongoose';
 
 /** Starts an ephemeral, real MongoDB instance and connects Mongoose to it
  *  (see BE-PLAN-010 §5.3) — used by both repository unit tests and e2e specs.
@@ -26,3 +27,27 @@ export async function clearTestDatabase(): Promise<void> {
     await collections[key].deleteMany({});
   }
 }
+
+/** Compiles a schema into a model typed the way the application's
+ *  repositories receive one: `Model<XDocument>`.
+ *
+ *  The repositories declare `Model<HydratedDocument<X>>`, which Mongoose 9's
+ *  `model()` generics do not produce from a `Schema<X>`. Nest injects models
+ *  untyped, so the application never meets the mismatch; a test that compiles
+ *  its own model does. The one cast that bridges it lives here rather than in
+ *  every such test. The root is in the repositories, recorded as a separate
+ *  item in docs/engineering/plans/president-message-plan.md.
+ *
+ *  Without `connection` it registers on the global mongoose instance, the one
+ *  `connectTestDatabase()` connects. */
+export const registerTestModel = <TDocument>(
+  name: string,
+  schema: Schema,
+  connection?: Connection,
+): Model<TDocument> =>
+  (connection ? connection.model(name, schema) : mongoose.model(name, schema)) as unknown as Model<TDocument>;
+
+/** The part of an `explain('queryPlanner')` result the index tests read.
+ *  Mongoose types `explain()` as returning the query itself; the server
+ *  answers with its explain document. */
+export type QueryPlannerExplanation = { queryPlanner: { winningPlan: unknown } };

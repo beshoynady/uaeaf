@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, type HydratedDocument } from 'mongoose';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { BaseSchema } from '../schemas/base.schema.js';
@@ -9,6 +9,7 @@ import {
   connectTestDatabase,
   disconnectTestDatabase,
   clearTestDatabase,
+  registerTestModel,
 } from '../../../test/utils/mongo-memory-server.js';
 
 @Schema()
@@ -18,16 +19,16 @@ class TestDoc extends BaseSchema {
 }
 const TestDocSchema = SchemaFactory.createForClass(TestDoc);
 
-class TestDocRepository extends BaseRepository<TestDoc> {}
+class TestDocRepository extends BaseRepository<HydratedDocument<TestDoc>> {}
 
 describe('BaseRepository', () => {
   let server: MongoMemoryServer;
-  let model: Model<TestDoc>;
+  let model: Model<HydratedDocument<TestDoc>>;
   let repository: TestDocRepository;
 
   beforeAll(async () => {
     server = await connectTestDatabase();
-    model = mongoose.model<TestDoc>('TestDoc', TestDocSchema);
+    model = registerTestModel<HydratedDocument<TestDoc>>('TestDoc', TestDocSchema);
     repository = new TestDocRepository(model);
   });
 

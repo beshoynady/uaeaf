@@ -1,9 +1,10 @@
 import mongoose from 'mongoose';
 import type { Connection } from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { Permission, PermissionSchema } from './schemas/permission.schema.js';
+import { PermissionSchema, type PermissionDocument } from './schemas/permission.schema.js';
 import { PermissionsRepository } from './permissions.repository.js';
 import { PermissionsService } from './permissions.service.js';
+import { registerTestModel } from '../../../../test/utils/mongo-memory-server.js';
 
 /**
  * Deliberately does NOT use the shared `connectTestDatabase()` helper.
@@ -32,7 +33,7 @@ describe('PermissionsService', () => {
     // Stands in for the real UsersModule: a model whose collection name is
     // "users", matching the resourceType the first test seeds.
     connection.model('User', new mongoose.Schema({}, { collection: 'users' }));
-    const model = connection.model<Permission>('Permission', PermissionSchema);
+    const model = registerTestModel<PermissionDocument>('Permission', PermissionSchema, connection);
     repository = new PermissionsRepository(model);
     service = new PermissionsService(repository, connection);
   });

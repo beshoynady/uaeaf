@@ -45,7 +45,9 @@ describe('PagesService', () => {
     it('never leaks BaseSchema audit fields or the internal status flag to a public reader', () => {
       const service = new PagesService(makeRepository(), makeMediaAssets());
 
-      const result = service.toPublicResponse(makeDocument()) as Record<string, unknown>;
+      // Cast through unknown on purpose: the loop below reads keys the DTO
+      // does not declare, to prove none of them reached the response.
+      const result = service.toPublicResponse(makeDocument()) as unknown as Record<string, unknown>;
 
       // `status` is the server-side routing gate (only `Published` resolves),
       // not display data — same reasoning as heroSlides' `active` field.

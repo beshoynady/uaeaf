@@ -2,8 +2,8 @@ import { jest } from '@jest/globals';
 import { Types } from 'mongoose';
 import { DocumentsService } from './documents.service.js';
 import { DocumentsRepository } from './documents.repository.js';
-import { PublicationsService } from '../workflow/publications/publications.service.js';
-import { RevisionsService } from '../workflow/revisions/revisions.service.js';
+import type { PublicationsService } from '../../workflow/publications/publications.service.js';
+import type { RevisionsService } from '../../workflow/revisions/revisions.service.js';
 
 describe('DocumentsService', () => {
   const makeRepository = () =>

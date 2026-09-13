@@ -1,6 +1,5 @@
 import { jest } from '@jest/globals';
 import { Model } from 'mongoose';
-import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { AlbumsPageSchema } from './schemas/albums-page.schema.js';
 import type { AlbumsPageDocument } from './schemas/albums-page.schema.js';
@@ -11,6 +10,7 @@ import {
   connectTestDatabase,
   disconnectTestDatabase,
   clearTestDatabase,
+  registerTestModel,
 } from '../../../../test/utils/mongo-memory-server.js';
 
 /** Confirms `albumsPage` never accumulates a second row — the same
@@ -24,7 +24,7 @@ describe('AlbumsPageService (integration)', () => {
 
   beforeAll(async () => {
     server = await connectTestDatabase();
-    model = mongoose.model<AlbumsPageDocument>('AlbumsPage', AlbumsPageSchema);
+    model = registerTestModel<AlbumsPageDocument>('AlbumsPage', AlbumsPageSchema);
     const mediaAssetsService = {
       assertUsableImage: jest.fn(),
     } as unknown as MediaAssetsService;

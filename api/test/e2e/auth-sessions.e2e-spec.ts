@@ -1,3 +1,5 @@
+// Type-only, so erased: it loads nothing before the env vars below are set.
+import type { INestApplication } from '@nestjs/common';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { apiPath } from './support/api-path.js';
 import { configureTestApp } from './support/test-app.js';
@@ -29,7 +31,6 @@ afterAll(async () => {
 describe('Auth sessions: logout, logout-all, and refresh-token reuse detection (e2e)', () => {
   it('logout invalidates that refresh token; a reused rotated token is rejected; logout-all kills every session', async () => {
     const { Test } = await import('@nestjs/testing');
-    const { INestApplication } = await import('@nestjs/common');
     const { getModelToken } = await import('@nestjs/mongoose');
     const request = (await import('supertest')).default;
     const bcrypt = await import('bcryptjs');
@@ -38,7 +39,7 @@ describe('Auth sessions: logout, logout-all, and refresh-token reuse detection (
     const { User } = await import('../../src/modules/platform-administration/users/schemas/user.schema.js');
 
     const moduleFixture = await Test.createTestingModule({ imports: [AppModule] }).compile();
-    const app: InstanceType<typeof INestApplication> = moduleFixture.createNestApplication();
+    const app: INestApplication = moduleFixture.createNestApplication();
     configureTestApp(app);
     await app.init();
 

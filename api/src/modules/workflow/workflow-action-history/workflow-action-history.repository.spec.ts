@@ -1,5 +1,4 @@
 import { Model, Types } from 'mongoose';
-import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { WorkflowActionHistorySchema } from './schemas/workflow-action-history.schema.js';
 import type { WorkflowAction, WorkflowActionHistoryDocument } from './schemas/workflow-action-history.schema.js';
@@ -8,6 +7,7 @@ import {
   connectTestDatabase,
   disconnectTestDatabase,
   clearTestDatabase,
+  registerTestModel,
 } from '../../../../test/utils/mongo-memory-server.js';
 
 /**
@@ -30,7 +30,7 @@ describe('WorkflowActionHistoryRepository.countDistinctApprovers', () => {
 
   beforeAll(async () => {
     server = await connectTestDatabase();
-    model = mongoose.model<WorkflowActionHistoryDocument>('WorkflowActionHistory', WorkflowActionHistorySchema);
+    model = registerTestModel<WorkflowActionHistoryDocument>('WorkflowActionHistory', WorkflowActionHistorySchema);
     await model.ensureIndexes();
     repository = new WorkflowActionHistoryRepository(model);
   });

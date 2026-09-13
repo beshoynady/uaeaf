@@ -57,7 +57,7 @@ describe('PermissionsGuard', () => {
     );
 
     expect(auditLogsService.write).toHaveBeenCalledTimes(1);
-    const [entry] = auditLogsService.write.mock.calls[0] as [Record<string, unknown>];
+    const [entry] = auditLogsService.write.mock.calls[0];
     expect(entry.action).toBe('AccessDenied');
     expect(entry.entityType).toBe('roles');
     expect((entry.entityId as { toString(): string }).toString()).toBe('507f1f77bcf86cd799439099');
@@ -78,7 +78,7 @@ describe('PermissionsGuard', () => {
     await expect(guard.canActivate(makeContext(user, {}))).rejects.toThrow(ForbiddenException);
 
     expect(auditLogsService.write).toHaveBeenCalledTimes(1);
-    const [entry] = auditLogsService.write.mock.calls[0] as [Record<string, unknown>];
+    const [entry] = auditLogsService.write.mock.calls[0];
     expect(entry.action).toBe('AccessDenied');
     expect(entry.entityType).toBe('roles');
     expect(entry.entityId).toBeNull();

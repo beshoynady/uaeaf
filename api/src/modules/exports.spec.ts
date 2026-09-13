@@ -34,7 +34,7 @@ describe('CSV exports', () => {
     service: new (...args: never[]) => unknown,
     repositoryToken: unknown,
     extraProviders: { provide: unknown; useValue: unknown }[] = [],
-  ): Promise<{ service: never; repository: { find: jest.Mock } }> {
+  ): Promise<{ service: never; repository: { find: jest.Mock; findPage: jest.Mock } }> {
     const repository = mockRepo();
     const module: TestingModule = await Test.createTestingModule({
       providers: [

@@ -69,6 +69,12 @@ jobs:
             echo "::error file=api/openapi.json::api/openapi.json تغيّر عن الـ commit: شغّل npm run generate:openapi داخل api/ واعمل commit للنتيجة. / api/openapi.json is out of date: run npm run generate:openapi in api/ and commit the result."
             exit 1
           fi
+      # The only step that type-checks the tests: nest build leaves out every
+      # spec and test/, and ts-jest transpiles without checking. It reports on
+      # its own, like Lint. --incremental false keeps a tsbuildinfo out of dist/.
+      - name: Type-check the API with its tests
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npx tsc --noEmit -p tsconfig.json --incremental false
       # Lint reports on its own, whatever happened to the steps above.
       - name: Lint
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}

@@ -1,3 +1,5 @@
+// Type-only, so erased: it loads nothing before MONGODB_URI is set.
+import type { VisionMissionPageDocument } from '../../src/modules/federation-governance/vision-mission-page/schemas/vision-mission-page.schema.js';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { apiPath } from './support/api-path.js';
 import { configureTestApp } from './support/test-app.js';
@@ -31,9 +33,9 @@ let mongoServer: MongoMemoryServer;
 // Assigned in beforeAll: the application, its HTTP server, and the models
 // the assertions read directly.
 let app: { close(): Promise<void>; getHttpServer(): unknown };
-let request: typeof import('supertest').default;
+let request: typeof import('supertest');
 let Types: typeof import('mongoose').Types;
-let pageModel: import('mongoose').Model<{ _id: unknown }>;
+let pageModel: import('mongoose').Model<VisionMissionPageDocument>;
 let instanceModel: import('mongoose').Model<unknown>;
 let publicationModel: import('mongoose').Model<unknown>;
 // The instance the service calls, so a test can hold its reads (see holdConcurrentReads).

@@ -1,3 +1,4 @@
+import type { RequiredPermission } from '../../../common/decorators/permissions.decorator.js';
 import { jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
@@ -172,7 +173,7 @@ describe('RolesService', () => {
     };
 
     /** Holds everything, so only the coherence rule can refuse. */
-    const superAdmin = [
+    const superAdmin: RequiredPermission[] = [
       { resourceType: 'athletes', action: 'Delete' },
       { resourceType: 'athletes', action: 'Read' },
       { resourceType: 'newsPage', action: 'Update' },
