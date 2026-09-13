@@ -218,6 +218,20 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
     // public read is enough to build a complete page today.
     listEndpoint: null,
   },
+  {
+    // Not one of the twelve singleton wrappers: its own entity with its own
+    // publishing workflow (ADR-0069), registered here for its URL, register,
+    // schema type and indexability like any other public page.
+    key: "president-message",
+    route: "/about/president",
+    apiPath: "/president-message-page/current/public",
+    messageKey: "president-message",
+    register: "green",
+    registerBasis:
+      "Same guide caption and same §3.34.2 row as the board (page-president-message.md §7.4, Register row).",
+    schemaType: "AboutPage",
+    listEndpoint: null,
+  },
 ];
 
 export function findPublicPage(key: string): PublicPage | undefined {

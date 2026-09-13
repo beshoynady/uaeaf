@@ -1,5 +1,11 @@
 import { fetchPublic } from "@/lib/api/public-client";
-import type { AthletePublic, CommitteesPage, ContactUsPage, Paginated } from "@/lib/api/types";
+import type {
+  AthletePublic,
+  CommitteesPage,
+  ContactUsPage,
+  Paginated,
+  PresidentMessagePublic,
+} from "@/lib/api/types";
 import type { PublicPage } from "./public-pages";
 
 /**
@@ -30,6 +36,12 @@ export async function isIndexable(page: PublicPage): Promise<boolean> {
     case "committees": {
       const record = await fetchPublic<CommitteesPage>(page.apiPath);
       return Boolean(record?.introText);
+    }
+    case "president-message": {
+      // The public read answers only while a message is Live, and a Live
+      // message always carries its body in both languages.
+      const record = await fetchPublic<PresidentMessagePublic>(page.apiPath);
+      return Boolean(record?.messageBody);
     }
     case "board-members": {
       const members = await fetchPublic<unknown[]>("/federation-personnel/public");

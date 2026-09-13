@@ -17,8 +17,11 @@ import { PENDING_CONTENT_MARKER } from '../modules/workflow/publishing/pending-c
  *   desktop one is stored as a candidate behind the marker.
  * - The clause English ¶5 drops (PM-D10).
  * - The master portrait. That one is an absent `featuredImageId`, which the
- *   marker cannot express — a missing image is not a string. The editor
- *   surfaces it; the publish guard does not.
+ *   marker cannot express — a missing image is not a string. The publish
+ *   guard refuses it all the same, through `PUBLISH_REQUIREMENTS`
+ *   (`common/constants/entity-content.ts`): a message without its portrait
+ *   can be neither published directly nor submitted for review, and the
+ *   editor lists it among the blockers.
  *
  * The H1 is NOT the Figma frames' "رئيس الاتحاد"/"Chairman's Message":
  * IA §8.1 rules the label is "كلمة الرئيس"/"President's Message", and a

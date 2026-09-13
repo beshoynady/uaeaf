@@ -21,39 +21,59 @@ export interface Crumb {
  * The separator is a CSS-generated character on the list item rather than
  * markup, so it is never read out. Rendering "/" as text makes a screen
  * reader announce "slash" between every level.
+ *
+ * A link is underlined at rest, not only under a pointer: on a phone there is
+ * no hover, and a muted word next to another muted word does not say which
+ * one can be followed. The current page takes the ground's own text colour
+ * rather than the muted one, so the trail reads as a path that ends here
+ * (owner decision 2026-09-13).
+ *
+ * Over a photograph the muted register colour is not safe. Under the hero
+ * scrim at its lightest (64% black over a white picture, ground #5C5C5C) the
+ * black register's muted text measures 3.51:1, below the 4.5:1 a 13px caption
+ * needs. The parents there take the ground's own text at 85%, the treatment
+ * the hero subtitle already uses over a picture: 5.41:1 at the same point.
  */
 export function Breadcrumb({
   trail,
   label,
   register,
+  overPhoto = false,
 }: {
   trail: readonly Crumb[];
   /** Accessible name for the landmark — several navs can share a page, so
    *  each needs its own name (WCAG 2.1 §1.3.1). */
   label: string;
   register: Register;
+  /** True when the trail sits on a photograph under `HERO_SCRIM`. */
+  overPhoto?: boolean;
 }) {
   const tone = REGISTER_CLASSES[register];
+  const parentTone = overPhoto ? "opacity-85" : tone.muted;
 
   return (
     <nav aria-label={label} className="mb-4">
-      <ol className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-caption ${tone.muted}`}>
+      <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-caption">
         {trail.map((crumb, index) => {
           const isCurrent = index === trail.length - 1;
           return (
             <li
               key={`${crumb.name}-${index}`}
-              className="flex items-center gap-x-2 before:content-['/'] before:opacity-50 first:before:hidden"
+              className={`flex items-center gap-x-2 before:content-['/'] before:opacity-50 first:before:hidden ${
+                isCurrent ? "" : parentTone
+              }`}
             >
               {crumb.route && !isCurrent ? (
                 <Link
                   href={crumb.route}
-                  className="rounded-xs underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-easing-standard)] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--a11y-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--a11y-focus-offset)]"
+                  className="rounded-xs underline underline-offset-4 transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-easing-standard)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--a11y-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--a11y-focus-offset)]"
                 >
                   {crumb.name}
                 </Link>
               ) : (
-                <span aria-current={isCurrent ? "page" : undefined}>{crumb.name}</span>
+                <span aria-current={isCurrent ? "page" : undefined} className={isCurrent ? "font-medium" : undefined}>
+                  {crumb.name}
+                </span>
               )}
             </li>
           );

@@ -1,0 +1,162 @@
+- generic [active] [ref=f24e1]:
+  - banner [ref=f24e2]:
+    - link "تخطَّ إلى المحتوى الرئيسي" [ref=f24e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - link "الصفحة الرئيسية — اتحاد الإمارات لألعاب القوى" [ref=f24e4] [cursor=pointer]:
+      - /url: /ar
+    - generic [ref=f24e15]:
+      - button "التبديل إلى المظهر الداكن" [ref=f24e16] [cursor=pointer]:
+        - generic [aria-hidden] [ref=f24e17]: ☾
+      - button "بحث" [ref=f24e18] [cursor=pointer]
+      - link "التبديل إلى English" [ref=f24e19] [cursor=pointer]:
+        - /url: /en/review/president-hero/c
+        - generic [ref=f24e20]: English
+      - button "قائمة التنقّل" [ref=f24e21] [cursor=pointer]
+  - main [ref=f24e23]:
+    - region [ref=f24e24]:
+      - navigation "مسار التنقّل" [ref=f24e27]:
+        - list [ref=f24e28]:
+          - listitem [ref=f24e29]:
+            - link "الرئيسية" [ref=f24e30] [cursor=pointer]:
+              - /url: /ar
+          - listitem [ref=f24e31]:
+            - text: /
+            - generic [ref=f24e32]: عن الاتحاد
+          - listitem [ref=f24e33]:
+            - text: /
+            - generic [ref=f24e34]: كلمة الرئيس
+      - generic [ref=f24e35]:
+        - generic [ref=f24e36]:
+          - heading "كلمة الرئيس" [level=1] [ref=f24e37]
+          - paragraph [ref=f24e38]: سعادة اللواء الدكتور محمد عبدالله المر
+          - paragraph [ref=f24e39]: كلمة رئيس اتحاد الإمارات لألعاب القوى
+        - img "محمد المر" [ref=f24e46]
+    - region "ما يلي الـ hero (معاينة، ليست جزءًا من الاتجاه)" [ref=f24e47]:
+      - paragraph [ref=f24e49]: يتبنّى اتحاد الإمارات لألعاب القوى منظومة متكاملة ترسخ تمكين جميع لاعبي ولاعبات منتخباتنا الوطنية المختلفة بأفضل الممارسات لاكتشاف مواهبهم وتطوير قدراتهم وصقل تجاربهم، لإثراء الواقع الخاص بهذه اللعبة، لتحقيق نتائج واعدة تستشرف مستقبلها لرفع رايات دولتنا الغالية في منصات التتويج العالمية.
+    - navigation "اتجاهات الـ hero" [ref=f24e50]:
+      - generic [ref=f24e51]:
+        - paragraph [ref=f24e52]:
+          - generic [ref=f24e53]: الاتجاه ج.
+          - text: الاتجاه ب على صورة أرضية تحت scrim. الأرضية بديلة من تصدير Figma؛ السجل المنشور بلا صورة خلفية. مراجعة داخلية، غير مفهرسة.
+        - list [ref=f24e54]:
+          - listitem [ref=f24e55]:
+            - link "الاتجاه أ" [ref=f24e56] [cursor=pointer]:
+              - /url: /ar/review/president-hero/a
+          - listitem [ref=f24e57]:
+            - link "الاتجاه ب" [ref=f24e58] [cursor=pointer]:
+              - /url: /ar/review/president-hero/b
+          - listitem [ref=f24e59]:
+            - link "الاتجاه ج" [ref=f24e60] [cursor=pointer]:
+              - /url: /ar/review/president-hero/c
+  - contentinfo [ref=f24e61]:
+    - generic [ref=f24e62]:
+      - generic [ref=f24e63]:
+        - heading "اتحاد الإمارات لألعاب القوى" [level=2] [ref=f24e74]
+        - paragraph [ref=f24e75]: الجهة الرسمية المشرفة على رياضة ألعاب القوى في دولة الإمارات العربية المتحدة، عضو في الاتحاد الدولي لألعاب القوى واتحاد ألعاب القوى الآسيوي.
+        - list [ref=f24e76]:
+          - listitem [ref=f24e77]:
+            - link "تيك توك" [ref=f24e78] [cursor=pointer]:
+              - /url: https://www.tiktok.com/@uaeaf
+          - listitem [ref=f24e80]:
+            - link "فيسبوك" [ref=f24e81] [cursor=pointer]:
+              - /url: https://www.facebook.com/uaeaf
+          - listitem [ref=f24e83]:
+            - link "يوتيوب" [ref=f24e84] [cursor=pointer]:
+              - /url: https://www.youtube.com/@uaeaf
+          - listitem [ref=f24e86]:
+            - link "إكس" [ref=f24e87] [cursor=pointer]:
+              - /url: https://x.com/uaeaf
+          - listitem [ref=f24e89]:
+            - link "إنستغرام" [ref=f24e90] [cursor=pointer]:
+              - /url: https://www.instagram.com/uaeaf
+      - navigation "روابط سريعة" [ref=f24e92]:
+        - heading "روابط سريعة" [level=2] [ref=f24e93]
+        - list [ref=f24e94]:
+          - listitem [ref=f24e95]:
+            - link "الرئيسية" [ref=f24e96] [cursor=pointer]:
+              - /url: /ar
+          - listitem [ref=f24e97]:
+            - link "نبذة عن الاتحاد" [ref=f24e98] [cursor=pointer]:
+              - /url: /ar/about
+          - listitem [ref=f24e99]:
+            - link "كلمة الرئيس" [ref=f24e100] [cursor=pointer]:
+              - /url: /ar/about/president
+          - listitem [ref=f24e101]:
+            - link "مجلس الإدارة" [ref=f24e102] [cursor=pointer]:
+              - /url: /ar/about/board-members
+          - listitem [ref=f24e103]:
+            - link "اللجان" [ref=f24e104] [cursor=pointer]:
+              - /url: /ar/about/committees
+          - listitem [ref=f24e105]:
+            - link "الهيكل التنظيمي" [ref=f24e106] [cursor=pointer]:
+              - /url: /ar/about/organisational-structure
+          - listitem [ref=f24e107]:
+            - link "الرؤية والرسالة" [ref=f24e108] [cursor=pointer]:
+              - /url: /ar/about/governance/vision-mission
+          - listitem [ref=f24e109]:
+            - link "الخطة الاستراتيجية" [ref=f24e110] [cursor=pointer]:
+              - /url: /ar/about/governance/strategic-plan
+          - listitem [ref=f24e111]:
+            - link "السياسات واللوائح" [ref=f24e112] [cursor=pointer]:
+              - /url: /ar/about/governance/policies
+          - listitem [ref=f24e113]:
+            - link "الأندية" [ref=f24e114] [cursor=pointer]:
+              - /url: /ar/clubs
+          - listitem [ref=f24e115]:
+            - link "الرياضيون" [ref=f24e116] [cursor=pointer]:
+              - /url: /ar/athletes
+          - listitem [ref=f24e117]:
+            - link "المدرّبون" [ref=f24e118] [cursor=pointer]:
+              - /url: /ar/coaches
+          - listitem [ref=f24e119]:
+            - link "الحكّام" [ref=f24e120] [cursor=pointer]:
+              - /url: /ar/officials
+          - listitem [ref=f24e121]:
+            - link "البطولات" [ref=f24e122] [cursor=pointer]:
+              - /url: /ar/championships
+          - listitem [ref=f24e123]:
+            - link "الفعاليات" [ref=f24e124] [cursor=pointer]:
+              - /url: /ar/events/federation-events
+          - listitem [ref=f24e125]:
+            - link "الأخبار والمقالات" [ref=f24e126] [cursor=pointer]:
+              - /url: /ar/news
+          - listitem [ref=f24e127]:
+            - link "ألبوم الصور" [ref=f24e128] [cursor=pointer]:
+              - /url: /ar/media/albums
+          - listitem [ref=f24e129]:
+            - link "الفيديوهات" [ref=f24e130] [cursor=pointer]:
+              - /url: /ar/media/videos
+          - listitem [ref=f24e131]:
+            - link "تواصل معنا" [ref=f24e132] [cursor=pointer]:
+              - /url: /ar/contact
+      - generic [ref=f24e133]:
+        - heading "الموقع" [level=2] [ref=f24e134]
+        - generic [ref=f24e138]:
+          - generic [ref=f24e139]: مدينة زايد الرياضية
+          - generic [ref=f24e140]: أبوظبي، الإمارات
+      - generic [ref=f24e141]:
+        - heading "التواصل" [level=2] [ref=f24e142]
+        - paragraph [ref=f24e143]:
+          - generic [ref=f24e145]: مدينة زايد الرياضية، أبوظبي، الإمارات العربية المتحدة
+        - link "info@uaeaf.ae" [ref=f24e146] [cursor=pointer]:
+          - /url: mailto:info@uaeaf.ae
+        - paragraph [ref=f24e147]: الأحد-الخميس، 08:00-15:00
+        - link "مركز المساعدة" [ref=f24e148] [cursor=pointer]:
+          - /url: /ar/help
+    - generic [ref=f24e149]:
+      - paragraph [ref=f24e150]: © 2026 اتحاد الإمارات لألعاب القوى. جميع الحقوق محفوظة.
+      - navigation "روابط قانونية" [ref=f24e151]:
+        - list [ref=f24e152]:
+          - listitem [ref=f24e153]:
+            - link "بيان إمكانية الوصول" [ref=f24e154] [cursor=pointer]:
+              - /url: /ar/accessibility
+          - listitem [ref=f24e155]:
+            - link "سياسة الخصوصية" [ref=f24e156] [cursor=pointer]:
+              - /url: /ar/privacy
+          - listitem [ref=f24e157]:
+            - link "شروط الاستخدام" [ref=f24e158] [cursor=pointer]:
+              - /url: /ar/terms
+          - listitem [ref=f24e159]:
+            - link "خريطة الموقع" [ref=f24e160] [cursor=pointer]:
+              - /url: /ar/sitemap
+  - button "Open Next.js Dev Tools" [ref=f24e166] [cursor=pointer]

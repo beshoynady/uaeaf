@@ -117,6 +117,9 @@ describe("document structure", () => {
       // the shared one, so it owns its `<h1>` for the same reason `page-hero`
       // does — the heading and the composition it sits in are one thing.
       "src/components/pages/contact/contact-hero.tsx",
+      // The President's Message opens with its portrait hero, which owns its
+      // `<h1>` for the same reason: heading and composition are one thing.
+      "src/components/pages/president/president-hero.tsx",
       "src/app/[locale]/page.tsx",
       "src/app/[locale]/not-found.tsx",
     ];

@@ -1,3 +1,5 @@
+import type { RichTextNode } from "@/components/rich-text/rich-text";
+
 /**
  * The public API's response shapes.
  *
@@ -104,6 +106,46 @@ export interface ContactMapContent {
   /** Routing target, distinct from `googleMapsUrl`, which opens the place. */
   directionsUrl?: string | null;
   note?: LocalizedText | null;
+}
+
+/** `PublicImageDto`: an image the projection has already resolved, with the
+ *  asset's own alt text. */
+export interface PublicImage {
+  url: string;
+  altText: LocalizedText;
+  width: number;
+  height: number;
+}
+
+/** `PublicValueDto`. `iconKey` is one of the API's twelve value-icon keys. */
+export interface PublicValue {
+  title: LocalizedText;
+  description: LocalizedText;
+  iconKey: string;
+  displayOrder: number;
+}
+
+/** `PresidentMessagePublicResponseDto` from
+ *  `GET /president-message-page/current/public`: the Live publication's
+ *  snapshot, field by field (ADR-0069 D3). */
+export interface PresidentMessagePublic {
+  heroTitle: LocalizedText;
+  heroSubtitle: LocalizedText;
+  signatoryName: LocalizedText;
+  signatoryTitle: LocalizedText;
+  pullQuote: LocalizedText | null;
+  messageBody: { ar: RichTextNode; en: RichTextNode };
+  valuesTitle: LocalizedText | null;
+  values: PublicValue[];
+  heroImage: PublicImage | null;
+  featuredImage: PublicImage | null;
+  seo: {
+    metaTitle: LocalizedText | null;
+    metaDescription: LocalizedText | null;
+    ogImage: PublicImage | null;
+  } | null;
+  /** The Live publication's date, which the message is signed with. */
+  publishedAt: string;
 }
 
 /** `MediaAssetPublicResponseDto` from `GET /media-assets/public?ids=…`.

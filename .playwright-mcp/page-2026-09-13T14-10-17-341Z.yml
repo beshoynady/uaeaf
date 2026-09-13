@@ -1,0 +1,184 @@
+- generic [active] [ref=f17e1]:
+  - banner [ref=f17e2]:
+    - link "Skip to main content" [ref=f17e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - link "Home — UAE Athletics Federation" [ref=f17e4] [cursor=pointer]:
+      - /url: /en
+    - navigation "Main navigation" [ref=f17e15]:
+      - list [ref=f17e16]:
+        - listitem [ref=f17e17]:
+          - link "Home" [ref=f17e18] [cursor=pointer]:
+            - /url: /en
+        - listitem [ref=f17e21]:
+          - button "About the Federation" [ref=f17e22] [cursor=pointer]
+        - listitem [ref=f17e27]:
+          - button "Members" [ref=f17e28] [cursor=pointer]
+        - listitem [ref=f17e33]:
+          - link "Championships" [ref=f17e34] [cursor=pointer]:
+            - /url: /en/championships
+        - listitem [ref=f17e37]:
+          - link "Events" [ref=f17e38] [cursor=pointer]:
+            - /url: /en/events/federation-events
+        - listitem [ref=f17e41]:
+          - link "News & Articles" [ref=f17e42] [cursor=pointer]:
+            - /url: /en/news
+        - listitem [ref=f17e45]:
+          - button "Media Center" [ref=f17e46] [cursor=pointer]
+        - listitem [ref=f17e51]:
+          - link "Contact Us" [ref=f17e52] [cursor=pointer]:
+            - /url: /en/contact
+    - generic [ref=f17e55]:
+      - button "Switch to dark mode" [ref=f17e56] [cursor=pointer]:
+        - generic [aria-hidden] [ref=f17e57]: ☾
+      - button "Search" [ref=f17e58] [cursor=pointer]
+      - link "Switch to العربية" [ref=f17e59] [cursor=pointer]:
+        - /url: /ar/review/president-hero/c
+        - generic [ref=f17e60]: العربية
+  - main [ref=f17e61]:
+    - region [ref=f17e62]:
+      - navigation "Breadcrumb" [ref=f17e65]:
+        - list [ref=f17e66]:
+          - listitem [ref=f17e67]:
+            - link "Home" [ref=f17e68] [cursor=pointer]:
+              - /url: /en
+          - listitem [ref=f17e69]:
+            - text: /
+            - generic [ref=f17e70]: About the Federation
+          - listitem [ref=f17e71]:
+            - text: /
+            - generic [ref=f17e72]: President's Message
+      - generic [ref=f17e73]:
+        - generic [ref=f17e74]:
+          - heading "President's Message" [level=1] [ref=f17e75]
+          - paragraph [ref=f17e76]: Dr. Muhammad Abdullah Al-Murr
+          - paragraph [ref=f17e77]: President of the UAE Athletics Federation
+        - img "محمد المر" [ref=f17e84]
+    - region "What follows the hero (preview, not part of the direction)" [ref=f17e85]:
+      - paragraph [ref=f17e87]: The UAE Athletics Federation adopts an integrated system that consolidates the empowerment of all male and female players of our various national teams with the best practices to discover their talents, develop their capabilities and refine their experiences, to enrich the reality of this game, to achieve promising results that look forward to its future, to raise the flags of our dear country on the international podiums.
+    - navigation "Hero directions" [ref=f17e88]:
+      - generic [ref=f17e89]:
+        - paragraph [ref=f17e90]:
+          - generic [ref=f17e91]: Direction C.
+          - text: Direction B on a photographic ground under the scrim. The ground is a stand-in from the Figma export; the published record has no background image. Internal review, not indexed.
+        - list [ref=f17e92]:
+          - listitem [ref=f17e93]:
+            - link "Direction A" [ref=f17e94] [cursor=pointer]:
+              - /url: /en/review/president-hero/a
+          - listitem [ref=f17e95]:
+            - link "Direction B" [ref=f17e96] [cursor=pointer]:
+              - /url: /en/review/president-hero/b
+          - listitem [ref=f17e97]:
+            - link "Direction C" [ref=f17e98] [cursor=pointer]:
+              - /url: /en/review/president-hero/c
+  - contentinfo [ref=f17e99]:
+    - generic [ref=f17e100]:
+      - generic [ref=f17e101]:
+        - heading "UAE Athletics Federation" [level=2] [ref=f17e112]
+        - paragraph [ref=f17e113]: The official governing body for athletics in the United Arab Emirates, a member of World Athletics and the Asian Athletics Federation.
+        - list [ref=f17e114]:
+          - listitem [ref=f17e115]:
+            - link "TikTok" [ref=f17e116] [cursor=pointer]:
+              - /url: https://www.tiktok.com/@uaeaf
+          - listitem [ref=f17e118]:
+            - link "Facebook" [ref=f17e119] [cursor=pointer]:
+              - /url: https://www.facebook.com/uaeaf
+          - listitem [ref=f17e121]:
+            - link "YouTube" [ref=f17e122] [cursor=pointer]:
+              - /url: https://www.youtube.com/@uaeaf
+          - listitem [ref=f17e124]:
+            - link "X" [ref=f17e125] [cursor=pointer]:
+              - /url: https://x.com/uaeaf
+          - listitem [ref=f17e127]:
+            - link "Instagram" [ref=f17e128] [cursor=pointer]:
+              - /url: https://www.instagram.com/uaeaf
+      - navigation "Quick Links" [ref=f17e130]:
+        - heading "Quick Links" [level=2] [ref=f17e131]
+        - list [ref=f17e132]:
+          - listitem [ref=f17e133]:
+            - link "Home" [ref=f17e134] [cursor=pointer]:
+              - /url: /en
+          - listitem [ref=f17e135]:
+            - link "About the Federation" [ref=f17e136] [cursor=pointer]:
+              - /url: /en/about
+          - listitem [ref=f17e137]:
+            - link "President's Message" [ref=f17e138] [cursor=pointer]:
+              - /url: /en/about/president
+          - listitem [ref=f17e139]:
+            - link "Board of Directors" [ref=f17e140] [cursor=pointer]:
+              - /url: /en/about/board-members
+          - listitem [ref=f17e141]:
+            - link "Committees" [ref=f17e142] [cursor=pointer]:
+              - /url: /en/about/committees
+          - listitem [ref=f17e143]:
+            - link "Organisational Structure" [ref=f17e144] [cursor=pointer]:
+              - /url: /en/about/organisational-structure
+          - listitem [ref=f17e145]:
+            - link "Vision & Mission" [ref=f17e146] [cursor=pointer]:
+              - /url: /en/about/governance/vision-mission
+          - listitem [ref=f17e147]:
+            - link "Strategic Plan" [ref=f17e148] [cursor=pointer]:
+              - /url: /en/about/governance/strategic-plan
+          - listitem [ref=f17e149]:
+            - link "Policies & Regulations" [ref=f17e150] [cursor=pointer]:
+              - /url: /en/about/governance/policies
+          - listitem [ref=f17e151]:
+            - link "Clubs" [ref=f17e152] [cursor=pointer]:
+              - /url: /en/clubs
+          - listitem [ref=f17e153]:
+            - link "Athletes" [ref=f17e154] [cursor=pointer]:
+              - /url: /en/athletes
+          - listitem [ref=f17e155]:
+            - link "Coaches" [ref=f17e156] [cursor=pointer]:
+              - /url: /en/coaches
+          - listitem [ref=f17e157]:
+            - link "Officials" [ref=f17e158] [cursor=pointer]:
+              - /url: /en/officials
+          - listitem [ref=f17e159]:
+            - link "Championships" [ref=f17e160] [cursor=pointer]:
+              - /url: /en/championships
+          - listitem [ref=f17e161]:
+            - link "Events" [ref=f17e162] [cursor=pointer]:
+              - /url: /en/events/federation-events
+          - listitem [ref=f17e163]:
+            - link "News & Articles" [ref=f17e164] [cursor=pointer]:
+              - /url: /en/news
+          - listitem [ref=f17e165]:
+            - link "Photo Albums" [ref=f17e166] [cursor=pointer]:
+              - /url: /en/media/albums
+          - listitem [ref=f17e167]:
+            - link "Videos" [ref=f17e168] [cursor=pointer]:
+              - /url: /en/media/videos
+          - listitem [ref=f17e169]:
+            - link "Contact Us" [ref=f17e170] [cursor=pointer]:
+              - /url: /en/contact
+      - generic [ref=f17e171]:
+        - heading "Location" [level=2] [ref=f17e172]
+        - generic [ref=f17e176]:
+          - generic [ref=f17e177]: Zayed Sports City
+          - generic [ref=f17e178]: Abu Dhabi, UAE
+      - generic [ref=f17e179]:
+        - heading "Contact" [level=2] [ref=f17e180]
+        - paragraph [ref=f17e181]:
+          - generic [ref=f17e183]: Zayed Sports City, Abu Dhabi, United Arab Emirates
+        - link "info@uaeaf.ae" [ref=f17e184] [cursor=pointer]:
+          - /url: mailto:info@uaeaf.ae
+        - paragraph [ref=f17e185]: Sun–Thu, 08:00–15:00
+        - link "Help Center" [ref=f17e186] [cursor=pointer]:
+          - /url: /en/help
+    - generic [ref=f17e187]:
+      - paragraph [ref=f17e188]: © 2026 UAE Athletics Federation. All rights reserved.
+      - navigation "Legal Links" [ref=f17e189]:
+        - list [ref=f17e190]:
+          - listitem [ref=f17e191]:
+            - link "Accessibility Statement" [ref=f17e192] [cursor=pointer]:
+              - /url: /en/accessibility
+          - listitem [ref=f17e193]:
+            - link "Privacy Policy" [ref=f17e194] [cursor=pointer]:
+              - /url: /en/privacy
+          - listitem [ref=f17e195]:
+            - link "Terms of Use" [ref=f17e196] [cursor=pointer]:
+              - /url: /en/terms
+          - listitem [ref=f17e197]:
+            - link "Sitemap" [ref=f17e198] [cursor=pointer]:
+              - /url: /en/sitemap
+  - button "Open Next.js Dev Tools" [ref=f17e204] [cursor=pointer]

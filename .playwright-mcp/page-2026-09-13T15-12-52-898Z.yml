@@ -1,0 +1,152 @@
+- generic [active] [ref=f25e1]:
+  - banner [ref=f25e2]:
+    - link "تخطَّ إلى المحتوى الرئيسي" [ref=f25e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - link "الصفحة الرئيسية — اتحاد الإمارات لألعاب القوى" [ref=f25e4] [cursor=pointer]:
+      - /url: /ar
+    - navigation "التنقل الرئيسي" [ref=f25e15]:
+      - list [ref=f25e16]:
+        - listitem [ref=f25e17]:
+          - link "الرئيسية" [ref=f25e18] [cursor=pointer]:
+            - /url: /ar
+        - listitem [ref=f25e21]:
+          - button "عن الاتحاد" [ref=f25e22] [cursor=pointer]
+        - listitem [ref=f25e27]:
+          - button "الأعضاء" [ref=f25e28] [cursor=pointer]
+        - listitem [ref=f25e33]:
+          - link "البطولات" [ref=f25e34] [cursor=pointer]:
+            - /url: /ar/championships
+        - listitem [ref=f25e37]:
+          - link "الفعاليات" [ref=f25e38] [cursor=pointer]:
+            - /url: /ar/events/federation-events
+        - listitem [ref=f25e41]:
+          - link "الأخبار والمقالات" [ref=f25e42] [cursor=pointer]:
+            - /url: /ar/news
+        - listitem [ref=f25e45]:
+          - button "المركز الإعلامي" [ref=f25e46] [cursor=pointer]
+        - listitem [ref=f25e51]:
+          - link "تواصل معنا" [ref=f25e52] [cursor=pointer]:
+            - /url: /ar/contact
+    - generic [ref=f25e55]:
+      - button "التبديل إلى المظهر الداكن" [ref=f25e56] [cursor=pointer]:
+        - generic [aria-hidden] [ref=f25e57]: ☾
+      - button "بحث" [ref=f25e58] [cursor=pointer]
+      - link "التبديل إلى English" [ref=f25e59] [cursor=pointer]:
+        - /url: /en
+        - generic [ref=f25e60]: English
+  - main [ref=f25e61]:
+    - generic [ref=f25e62]:
+      - heading "اتحاد الإمارات لألعاب القوى" [level=1] [ref=f25e63]
+      - paragraph [ref=f25e64]: الهيكل العام للموقع (الترويسة والتذييل) جاهز. أقسام الصفحة الرئيسية قيد التنفيذ.
+  - contentinfo [ref=f25e65]:
+    - generic [ref=f25e66]:
+      - generic [ref=f25e67]:
+        - heading "اتحاد الإمارات لألعاب القوى" [level=2] [ref=f25e78]
+        - paragraph [ref=f25e79]: الجهة الرسمية المشرفة على رياضة ألعاب القوى في دولة الإمارات العربية المتحدة، عضو في الاتحاد الدولي لألعاب القوى واتحاد ألعاب القوى الآسيوي.
+        - list [ref=f25e80]:
+          - listitem [ref=f25e81]:
+            - link "تيك توك" [ref=f25e82] [cursor=pointer]:
+              - /url: https://www.tiktok.com/@uaeaf
+          - listitem [ref=f25e84]:
+            - link "فيسبوك" [ref=f25e85] [cursor=pointer]:
+              - /url: https://www.facebook.com/uaeaf
+          - listitem [ref=f25e87]:
+            - link "يوتيوب" [ref=f25e88] [cursor=pointer]:
+              - /url: https://www.youtube.com/@uaeaf
+          - listitem [ref=f25e90]:
+            - link "إكس" [ref=f25e91] [cursor=pointer]:
+              - /url: https://x.com/uaeaf
+          - listitem [ref=f25e93]:
+            - link "إنستغرام" [ref=f25e94] [cursor=pointer]:
+              - /url: https://www.instagram.com/uaeaf
+      - navigation "روابط سريعة" [ref=f25e96]:
+        - heading "روابط سريعة" [level=2] [ref=f25e97]
+        - list [ref=f25e98]:
+          - listitem [ref=f25e99]:
+            - link "الرئيسية" [ref=f25e100] [cursor=pointer]:
+              - /url: /ar
+          - listitem [ref=f25e101]:
+            - link "نبذة عن الاتحاد" [ref=f25e102] [cursor=pointer]:
+              - /url: /ar/about
+          - listitem [ref=f25e103]:
+            - link "كلمة الرئيس" [ref=f25e104] [cursor=pointer]:
+              - /url: /ar/about/president
+          - listitem [ref=f25e105]:
+            - link "مجلس الإدارة" [ref=f25e106] [cursor=pointer]:
+              - /url: /ar/about/board-members
+          - listitem [ref=f25e107]:
+            - link "اللجان" [ref=f25e108] [cursor=pointer]:
+              - /url: /ar/about/committees
+          - listitem [ref=f25e109]:
+            - link "الهيكل التنظيمي" [ref=f25e110] [cursor=pointer]:
+              - /url: /ar/about/organisational-structure
+          - listitem [ref=f25e111]:
+            - link "الرؤية والرسالة" [ref=f25e112] [cursor=pointer]:
+              - /url: /ar/about/governance/vision-mission
+          - listitem [ref=f25e113]:
+            - link "الخطة الاستراتيجية" [ref=f25e114] [cursor=pointer]:
+              - /url: /ar/about/governance/strategic-plan
+          - listitem [ref=f25e115]:
+            - link "السياسات واللوائح" [ref=f25e116] [cursor=pointer]:
+              - /url: /ar/about/governance/policies
+          - listitem [ref=f25e117]:
+            - link "الأندية" [ref=f25e118] [cursor=pointer]:
+              - /url: /ar/clubs
+          - listitem [ref=f25e119]:
+            - link "الرياضيون" [ref=f25e120] [cursor=pointer]:
+              - /url: /ar/athletes
+          - listitem [ref=f25e121]:
+            - link "المدرّبون" [ref=f25e122] [cursor=pointer]:
+              - /url: /ar/coaches
+          - listitem [ref=f25e123]:
+            - link "الحكّام" [ref=f25e124] [cursor=pointer]:
+              - /url: /ar/officials
+          - listitem [ref=f25e125]:
+            - link "البطولات" [ref=f25e126] [cursor=pointer]:
+              - /url: /ar/championships
+          - listitem [ref=f25e127]:
+            - link "الفعاليات" [ref=f25e128] [cursor=pointer]:
+              - /url: /ar/events/federation-events
+          - listitem [ref=f25e129]:
+            - link "الأخبار والمقالات" [ref=f25e130] [cursor=pointer]:
+              - /url: /ar/news
+          - listitem [ref=f25e131]:
+            - link "ألبوم الصور" [ref=f25e132] [cursor=pointer]:
+              - /url: /ar/media/albums
+          - listitem [ref=f25e133]:
+            - link "الفيديوهات" [ref=f25e134] [cursor=pointer]:
+              - /url: /ar/media/videos
+          - listitem [ref=f25e135]:
+            - link "تواصل معنا" [ref=f25e136] [cursor=pointer]:
+              - /url: /ar/contact
+      - generic [ref=f25e137]:
+        - heading "الموقع" [level=2] [ref=f25e138]
+        - generic [ref=f25e142]:
+          - generic [ref=f25e143]: مدينة زايد الرياضية
+          - generic [ref=f25e144]: أبوظبي، الإمارات
+      - generic [ref=f25e145]:
+        - heading "التواصل" [level=2] [ref=f25e146]
+        - paragraph [ref=f25e147]:
+          - generic [ref=f25e149]: مدينة زايد الرياضية، أبوظبي، الإمارات العربية المتحدة
+        - link "info@uaeaf.ae" [ref=f25e150] [cursor=pointer]:
+          - /url: mailto:info@uaeaf.ae
+        - paragraph [ref=f25e151]: الأحد-الخميس، 08:00-15:00
+        - link "مركز المساعدة" [ref=f25e152] [cursor=pointer]:
+          - /url: /ar/help
+    - generic [ref=f25e153]:
+      - paragraph [ref=f25e154]: © 2026 اتحاد الإمارات لألعاب القوى. جميع الحقوق محفوظة.
+      - navigation "روابط قانونية" [ref=f25e155]:
+        - list [ref=f25e156]:
+          - listitem [ref=f25e157]:
+            - link "بيان إمكانية الوصول" [ref=f25e158] [cursor=pointer]:
+              - /url: /ar/accessibility
+          - listitem [ref=f25e159]:
+            - link "سياسة الخصوصية" [ref=f25e160] [cursor=pointer]:
+              - /url: /ar/privacy
+          - listitem [ref=f25e161]:
+            - link "شروط الاستخدام" [ref=f25e162] [cursor=pointer]:
+              - /url: /ar/terms
+          - listitem [ref=f25e163]:
+            - link "خريطة الموقع" [ref=f25e164] [cursor=pointer]:
+              - /url: /ar/sitemap
+  - button "Open Next.js Dev Tools" [ref=f25e170] [cursor=pointer]

@@ -539,3 +539,197 @@
     animation: uaeaf-spin var(--motion-duration-slower) linear infinite;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+ * The President's Message — ADR-0069 D10
+ *
+ * The portrait hero's entrance, played once on load, and the one-shot reveal
+ * below it. `transform` only: every element is painted in its first frame, so
+ * a static render, a crawler or a print shows the page complete. Everything
+ * sits inside `no-preference`; under `reduce` the page is drawn at rest,
+ * identity lines included.
+ * ══════════════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Breadcrumb, title, name, role: the 45° ascent in reading sequence. The
+     sequence follows the language; the angle does not mirror (ADR-0059 §D7.1). */
+  .pm-settle {
+    animation: pm-settle var(--motion-duration-base) var(--motion-easing-decelerate) both;
+    animation-delay: calc(var(--pm-step) * var(--motion-ascent-stagger));
+  }
+
+  /* The portrait rises out of the hero's bottom edge by the text's distance. */
+  .pm-portrait {
+    animation: pm-portrait var(--motion-duration-slower) var(--motion-easing-decelerate) both;
+  }
+
+  /* Each identity stroke slides along its own axis from outside the frame, one
+     travel for all four so they move at one speed. Both groups start together;
+     inside a group the strokes follow the reading order. */
+  .il-stroke {
+    --il-order: var(--il-order-ltr);
+    animation: il-enter var(--motion-duration-slow) var(--motion-easing-decelerate) both;
+    animation-delay: calc((var(--pm-lines-step) + var(--il-order)) * var(--motion-ascent-stagger));
+  }
+
+  [dir="rtl"] .il-stroke {
+    --il-order: var(--il-order-rtl);
+  }
+
+  @media (width < 48rem) {
+    .il-stroke {
+      animation-duration: var(--motion-duration-base);
+    }
+  }
+
+  /* Below the hero. A block `reveal-once.tsx` found outside the viewport waits
+     offset and plays once when it enters; without the script no block is ever
+     marked, so nothing waits. Vertical, not 45°: a diagonal would move the edge
+     the eye returns to on every line. Half the distance on a phone. */
+  [data-reveal] {
+    --reveal-rise: calc(var(--motion-ascent-offset) / 2);
+  }
+
+  @media (width >= 48rem) {
+    [data-reveal] {
+      --reveal-rise: var(--motion-ascent-offset);
+    }
+  }
+
+  [data-reveal-state="waiting"] [data-reveal-part="rise"] {
+    transform: translateY(var(--reveal-rise));
+  }
+
+  [data-reveal-state="waiting"] [data-reveal-part="rule"] {
+    transform: scaleY(0);
+  }
+
+  [data-reveal-state="waiting"] [data-reveal-part="chip"] {
+    transform: translateY(var(--reveal-rise)) scale(0.92);
+  }
+
+  /* One step per block that entered with it, capped at §5.7's ten, plus the
+     part's own place inside its block. */
+  [data-reveal-state="revealed"] [data-reveal-part] {
+    animation-duration: var(--motion-duration-base);
+    animation-timing-function: var(--motion-easing-decelerate);
+    animation-fill-mode: both;
+    animation-delay: calc(
+      (min(var(--reveal-batch, 0), var(--motion-ascent-stagger-steps)) + var(--reveal-step, 0)) *
+        var(--motion-ascent-stagger)
+    );
+  }
+
+  [data-reveal-state="revealed"] [data-reveal-part="rise"] {
+    animation-name: pm-reveal-rise;
+  }
+
+  [data-reveal-state="revealed"] [data-reveal-part="rule"] {
+    animation-name: pm-reveal-rule;
+    animation-duration: var(--motion-duration-slow);
+  }
+
+  [data-reveal-state="revealed"] [data-reveal-part="chip"] {
+    animation-name: pm-reveal-chip;
+  }
+}
+
+@keyframes pm-settle {
+  from {
+    transform: translate(calc(-1 * var(--pm-rise)), var(--pm-rise));
+  }
+  to {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes pm-portrait {
+  from {
+    transform: translateY(var(--pm-rise));
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes il-enter {
+  from {
+    transform: translate(calc(-1 * var(--il-travel)), var(--il-travel));
+  }
+  to {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes pm-reveal-rise {
+  from {
+    transform: translateY(var(--reveal-rise));
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes pm-reveal-rule {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes pm-reveal-chip {
+  from {
+    transform: translateY(var(--reveal-rise)) scale(0.92);
+  }
+  to {
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* The President's Message background plane, composition C only (ADR-0069 D8,
+   D9): opaque from its first frame, settling from 104% over `ambient`. Not an
+   entrance and never on content: `ambient` is bound to this one use. Under
+   `reduce` it is not played. */
+@media (prefers-reduced-motion: no-preference) {
+  .pm-ground {
+    animation: pm-ground var(--motion-duration-ambient) var(--motion-easing-decelerate) both;
+  }
+}
+
+@keyframes pm-ground {
+  from {
+    transform: scale(1.04);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* The President's Message's own custom properties, declared once with the
+   value each starts from. The components set every one of them per element
+   and per breakpoint (Tailwind arbitrary properties and inline styles), which
+   always win over this base layer; declaring them here is what lets the token
+   contract tell a local property from a misspelt token. */
+@layer base {
+  :where(section[data-composition]) {
+    --il-unit: calc(var(--space-24) / 81.2);
+    --il-margin: var(--grid-margin-xs);
+    --il-unit-keep-portrait: calc(var(--space-24) / 81.2);
+    --il-travel: 0px;
+    --il-reserve: 0px;
+    --il-order-ltr: 0;
+    --il-order-rtl: 0;
+    --pm-rise: calc(var(--motion-ascent-offset) / 2);
+    --pm-step: 0;
+    --pm-lines-step: 0;
+    --pm-portrait-cap: calc(100svh - var(--space-24));
+    --pm-portrait-track: auto;
+  }
+
+  :where([data-reveal]) {
+    --reveal-step: 0;
+    --reveal-batch: 0;
+  }
+}

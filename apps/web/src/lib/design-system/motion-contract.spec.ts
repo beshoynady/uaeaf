@@ -199,6 +199,19 @@ describe("motion implementation", () => {
     }
     expect(offenders).toEqual([]);
   });
+  it("binds the ambient duration to the President's Message background plane alone", () => {
+    // ADR-0069 D9: `ambient` is for one-shot decorative motion on a ground
+    // plane, never on content, a control or a state change, and its single
+    // authorised use is the portrait hero's background settle. A second use
+    // needs a new ADR, so the list of selectors that consume it is exact.
+    const uses = CSS.flatMap(({ file, source }) =>
+      [...source.matchAll(/([^{}]*)\{[^{}]*var\(--motion-duration-ambient\)/g)].map(
+        (match) => `${file.split(/[\\/]/).pop()}: ${match[1].trim()}`,
+      ),
+    );
+    expect(uses).toEqual(["motion.css: .pm-ground"]);
+  });
+
   it("never puts a scroll-driven entry and an interaction lift on one element", () => {
     // `.rise-scroll` is a scroll-driven animation on `transform`, and the
     // animation origin outranks every normal declaration — so a `.lift` on the

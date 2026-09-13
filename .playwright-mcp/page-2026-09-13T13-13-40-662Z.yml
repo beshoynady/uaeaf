@@ -1,0 +1,184 @@
+- generic [active] [ref=f1e1]:
+  - banner [ref=f1e2]:
+    - link "تخطَّ إلى المحتوى الرئيسي" [ref=f1e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - link "الصفحة الرئيسية — اتحاد الإمارات لألعاب القوى" [ref=f1e4] [cursor=pointer]:
+      - /url: /ar
+    - navigation "التنقل الرئيسي" [ref=f1e15]:
+      - list [ref=f1e16]:
+        - listitem [ref=f1e17]:
+          - link "الرئيسية" [ref=f1e18] [cursor=pointer]:
+            - /url: /ar
+        - listitem [ref=f1e21]:
+          - button "عن الاتحاد" [ref=f1e22] [cursor=pointer]
+        - listitem [ref=f1e27]:
+          - button "الأعضاء" [ref=f1e28] [cursor=pointer]
+        - listitem [ref=f1e33]:
+          - link "البطولات" [ref=f1e34] [cursor=pointer]:
+            - /url: /ar/championships
+        - listitem [ref=f1e37]:
+          - link "الفعاليات" [ref=f1e38] [cursor=pointer]:
+            - /url: /ar/events/federation-events
+        - listitem [ref=f1e41]:
+          - link "الأخبار والمقالات" [ref=f1e42] [cursor=pointer]:
+            - /url: /ar/news
+        - listitem [ref=f1e45]:
+          - button "المركز الإعلامي" [ref=f1e46] [cursor=pointer]
+        - listitem [ref=f1e51]:
+          - link "تواصل معنا" [ref=f1e52] [cursor=pointer]:
+            - /url: /ar/contact
+    - generic [ref=f1e55]:
+      - button "التبديل إلى المظهر الداكن" [ref=f1e56] [cursor=pointer]:
+        - generic [aria-hidden] [ref=f1e57]: ☾
+      - button "بحث" [ref=f1e58] [cursor=pointer]
+      - link "التبديل إلى English" [ref=f1e59] [cursor=pointer]:
+        - /url: /en/_review/president-hero/a
+        - generic [ref=f1e60]: English
+  - main [ref=f1e61]:
+    - region [ref=f1e62]:
+      - generic [ref=f1e63]:
+        - generic [ref=f1e64]:
+          - navigation "مسار التنقّل" [ref=f1e65]:
+            - list [ref=f1e66]:
+              - listitem [ref=f1e67]:
+                - link "الرئيسية" [ref=f1e68] [cursor=pointer]:
+                  - /url: /ar
+              - listitem [ref=f1e69]:
+                - text: /
+                - generic [ref=f1e70]: عن الاتحاد
+              - listitem [ref=f1e71]:
+                - text: /
+                - generic [ref=f1e72]: كلمة الرئيس
+          - heading "كلمة الرئيس" [level=1] [ref=f1e73]
+          - paragraph [ref=f1e74]: سعادة اللواء الدكتور محمد عبدالله المر
+          - paragraph [ref=f1e75]: كلمة رئيس اتحاد الإمارات لألعاب القوى
+        - img "محمد المر" [ref=f1e82]
+    - region "ما يلي الـ hero (معاينة، ليست جزءًا من الاتجاه)" [ref=f1e83]:
+      - paragraph [ref=f1e85]: يتبنّى اتحاد الإمارات لألعاب القوى منظومة متكاملة ترسخ تمكين جميع لاعبي ولاعبات منتخباتنا الوطنية المختلفة بأفضل الممارسات لاكتشاف مواهبهم وتطوير قدراتهم وصقل تجاربهم، لإثراء الواقع الخاص بهذه اللعبة، لتحقيق نتائج واعدة تستشرف مستقبلها لرفع رايات دولتنا الغالية في منصات التتويج العالمية.
+    - navigation "اتجاهات الـ hero" [ref=f1e86]:
+      - generic [ref=f1e87]:
+        - paragraph [ref=f1e88]:
+          - generic [ref=f1e89]: الاتجاه أ.
+          - text: "الصورة داخل النطاق: تقف على خط العنوان، ويُغلق النطاق بهامشه تحتهما. مراجعة داخلية، غير مفهرسة."
+        - list [ref=f1e90]:
+          - listitem [ref=f1e91]:
+            - link "الاتجاه أ" [ref=f1e92] [cursor=pointer]:
+              - /url: /ar/_review/president-hero/a
+          - listitem [ref=f1e93]:
+            - link "الاتجاه ب" [ref=f1e94] [cursor=pointer]:
+              - /url: /ar/_review/president-hero/b
+          - listitem [ref=f1e95]:
+            - link "الاتجاه ج" [ref=f1e96] [cursor=pointer]:
+              - /url: /ar/_review/president-hero/c
+  - contentinfo [ref=f1e97]:
+    - generic [ref=f1e98]:
+      - generic [ref=f1e99]:
+        - heading "اتحاد الإمارات لألعاب القوى" [level=2] [ref=f1e110]
+        - paragraph [ref=f1e111]: الجهة الرسمية المشرفة على رياضة ألعاب القوى في دولة الإمارات العربية المتحدة، عضو في الاتحاد الدولي لألعاب القوى واتحاد ألعاب القوى الآسيوي.
+        - list [ref=f1e112]:
+          - listitem [ref=f1e113]:
+            - link "تيك توك" [ref=f1e114] [cursor=pointer]:
+              - /url: https://www.tiktok.com/@uaeaf
+          - listitem [ref=f1e116]:
+            - link "فيسبوك" [ref=f1e117] [cursor=pointer]:
+              - /url: https://www.facebook.com/uaeaf
+          - listitem [ref=f1e119]:
+            - link "يوتيوب" [ref=f1e120] [cursor=pointer]:
+              - /url: https://www.youtube.com/@uaeaf
+          - listitem [ref=f1e122]:
+            - link "إكس" [ref=f1e123] [cursor=pointer]:
+              - /url: https://x.com/uaeaf
+          - listitem [ref=f1e125]:
+            - link "إنستغرام" [ref=f1e126] [cursor=pointer]:
+              - /url: https://www.instagram.com/uaeaf
+      - navigation "روابط سريعة" [ref=f1e128]:
+        - heading "روابط سريعة" [level=2] [ref=f1e129]
+        - list [ref=f1e130]:
+          - listitem [ref=f1e131]:
+            - link "الرئيسية" [ref=f1e132] [cursor=pointer]:
+              - /url: /ar
+          - listitem [ref=f1e133]:
+            - link "نبذة عن الاتحاد" [ref=f1e134] [cursor=pointer]:
+              - /url: /ar/about
+          - listitem [ref=f1e135]:
+            - link "كلمة الرئيس" [ref=f1e136] [cursor=pointer]:
+              - /url: /ar/about/president
+          - listitem [ref=f1e137]:
+            - link "مجلس الإدارة" [ref=f1e138] [cursor=pointer]:
+              - /url: /ar/about/board-members
+          - listitem [ref=f1e139]:
+            - link "اللجان" [ref=f1e140] [cursor=pointer]:
+              - /url: /ar/about/committees
+          - listitem [ref=f1e141]:
+            - link "الهيكل التنظيمي" [ref=f1e142] [cursor=pointer]:
+              - /url: /ar/about/organisational-structure
+          - listitem [ref=f1e143]:
+            - link "الرؤية والرسالة" [ref=f1e144] [cursor=pointer]:
+              - /url: /ar/about/governance/vision-mission
+          - listitem [ref=f1e145]:
+            - link "الخطة الاستراتيجية" [ref=f1e146] [cursor=pointer]:
+              - /url: /ar/about/governance/strategic-plan
+          - listitem [ref=f1e147]:
+            - link "السياسات واللوائح" [ref=f1e148] [cursor=pointer]:
+              - /url: /ar/about/governance/policies
+          - listitem [ref=f1e149]:
+            - link "الأندية" [ref=f1e150] [cursor=pointer]:
+              - /url: /ar/clubs
+          - listitem [ref=f1e151]:
+            - link "الرياضيون" [ref=f1e152] [cursor=pointer]:
+              - /url: /ar/athletes
+          - listitem [ref=f1e153]:
+            - link "المدرّبون" [ref=f1e154] [cursor=pointer]:
+              - /url: /ar/coaches
+          - listitem [ref=f1e155]:
+            - link "الحكّام" [ref=f1e156] [cursor=pointer]:
+              - /url: /ar/officials
+          - listitem [ref=f1e157]:
+            - link "البطولات" [ref=f1e158] [cursor=pointer]:
+              - /url: /ar/championships
+          - listitem [ref=f1e159]:
+            - link "الفعاليات" [ref=f1e160] [cursor=pointer]:
+              - /url: /ar/events/federation-events
+          - listitem [ref=f1e161]:
+            - link "الأخبار والمقالات" [ref=f1e162] [cursor=pointer]:
+              - /url: /ar/news
+          - listitem [ref=f1e163]:
+            - link "ألبوم الصور" [ref=f1e164] [cursor=pointer]:
+              - /url: /ar/media/albums
+          - listitem [ref=f1e165]:
+            - link "الفيديوهات" [ref=f1e166] [cursor=pointer]:
+              - /url: /ar/media/videos
+          - listitem [ref=f1e167]:
+            - link "تواصل معنا" [ref=f1e168] [cursor=pointer]:
+              - /url: /ar/contact
+      - generic [ref=f1e169]:
+        - heading "الموقع" [level=2] [ref=f1e170]
+        - generic [ref=f1e174]:
+          - generic [ref=f1e175]: مدينة زايد الرياضية
+          - generic [ref=f1e176]: أبوظبي، الإمارات
+      - generic [ref=f1e177]:
+        - heading "التواصل" [level=2] [ref=f1e178]
+        - paragraph [ref=f1e179]:
+          - generic [ref=f1e181]: مدينة زايد الرياضية، أبوظبي، الإمارات العربية المتحدة
+        - link "info@uaeaf.ae" [ref=f1e182] [cursor=pointer]:
+          - /url: mailto:info@uaeaf.ae
+        - paragraph [ref=f1e183]: الأحد-الخميس، 08:00-15:00
+        - link "مركز المساعدة" [ref=f1e184] [cursor=pointer]:
+          - /url: /ar/help
+    - generic [ref=f1e185]:
+      - paragraph [ref=f1e186]: © 2026 اتحاد الإمارات لألعاب القوى. جميع الحقوق محفوظة.
+      - navigation "روابط قانونية" [ref=f1e187]:
+        - list [ref=f1e188]:
+          - listitem [ref=f1e189]:
+            - link "بيان إمكانية الوصول" [ref=f1e190] [cursor=pointer]:
+              - /url: /ar/accessibility
+          - listitem [ref=f1e191]:
+            - link "سياسة الخصوصية" [ref=f1e192] [cursor=pointer]:
+              - /url: /ar/privacy
+          - listitem [ref=f1e193]:
+            - link "شروط الاستخدام" [ref=f1e194] [cursor=pointer]:
+              - /url: /ar/terms
+          - listitem [ref=f1e195]:
+            - link "خريطة الموقع" [ref=f1e196] [cursor=pointer]:
+              - /url: /ar/sitemap
+  - button "Open Next.js Dev Tools" [ref=f1e202] [cursor=pointer]

@@ -6,7 +6,8 @@
       "base": { "value": "220ms", "type": "duration" },
       "slow": { "value": "320ms", "type": "duration" },
       "slower": { "value": "480ms", "type": "duration", "comment": "Hero celebratory motion only" },
-      "comment": "5 values max (Chapter 3 §3.14) — Chapter 5 §5.6"
+      "ambient": { "value": "1200ms", "type": "duration", "comment": "ADR-0069 D9. Non-interactive, one-shot, decorative motion on a background or ground plane only. MUST NOT be used for a state change, transition, entrance or exit, and MUST NOT be applied to text, a control or any element carrying content. Under prefers-reduced-motion: reduce it is not played. Single authorised use: the portrait hero's background settle (ADR-0069 D8); a second use needs a new ADR." },
+      "comment": "6 values max (Chapter 3 §3.14, amended by ADR-0069 D9) — Chapter 5 §5.6"
     },
     "easing": {
       "standard": { "value": "cubic-bezier(0.4,0,0.2,1)", "type": "cubicBezier" },
