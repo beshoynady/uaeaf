@@ -1,0 +1,140 @@
+{
+  "heroTitle": { "ar": "الرؤية والرسالة", "en": "Vision & Mission" },
+  "heroSubtitle": {
+    "ar": "رؤيتنا لمستقبل ألعاب القوى في الإمارات",
+    "en": "Our vision for the future of athletics in the UAE"
+  },
+  "heroImage": null,
+  "visionTitle": {
+    "ar": "أن نكون من أفضل الاتحادات في العالم",
+    "en": "To Be Among the World's Leading Athletics Federations"
+  },
+  "visionText": {
+    "ar": "نسعى إلى بناء اتحاد وطني يحتذى به على المستوى العالمي، يرسخ مكانة الإمارات في خريطة ألعاب القوى الدولية، ويصنع أبطالاً يحملون راية الوطن في أرقى المحافل الرياضية.",
+    "en": "We aspire to build a national and global sports entity that elevates the UAE's presence on the international athletics map and creates champions who proudly represent their nation on the world stage."
+  },
+  "visionImage": null,
+  "missionTitle": {
+    "ar": "تمكين وتطوير رياضيي ألعاب القوى لتحقيق التميز العالمي",
+    "en": "Empowering & Developing Athletics for Global Excellence"
+  },
+  "missionText": {
+    "ar": "نسعى لتنظيم وتطوير رياضات ألعاب القوى لتحقيق التميز العالمي من خلال بناء قاعدة رياضية واسعة واكتشاف المواهب وتمكين الرياضيين والمدربين والحكام.",
+    "en": "We strive to organize and develop athletics to achieve global excellence through building a broad sports base, discovering talent, and empowering athletes, coaches, and officials."
+  },
+  "missionImage": null,
+  "goalsTitle": {
+    "ar": "أهدافنا الاستراتيجية لبناء مستقبل رياضي مشرق",
+    "en": "Our Strategic Goals for a Bright Sporting Future"
+  },
+  "strategicGoals": [
+    {
+      "title": { "ar": "تطوير المواهب الوطنية", "en": "Developing National Talent" },
+      "description": {
+        "ar": "اكتشاف ورعاية المواهب الرياضية الإماراتية وتأهيلها للمنافسة على المستوى الدولي.",
+        "en": "Discovering and nurturing Emirati sports talents and qualifying them to compete on the international stage."
+      },
+      "displayOrder": 1
+    },
+    {
+      "title": { "ar": "التميز في البطولات الدولية", "en": "Excellence in International Championships" },
+      "description": {
+        "ar": "تحقيق نتائج متقدمة في البطولات العربية والآسيوية والأولمبية في ألعاب القوى.",
+        "en": "Achieving advanced results in Arab, Asian, and Olympic athletics championships."
+      },
+      "displayOrder": 2
+    },
+    {
+      "title": { "ar": "بناء بنية تحتية رياضية", "en": "Building World-Class Infrastructure" },
+      "description": {
+        "ar": "توفير منشآت ومرافق تدريبية عالمية المستوى لدعم الرياضيين والمدربين.",
+        "en": "Providing world-class training facilities and infrastructure to support athletes and coaches."
+      },
+      "displayOrder": 3
+    },
+    {
+      "title": { "ar": "تعزيز الحوكمة والشفافية", "en": "Strengthening Governance & Transparency" },
+      "description": {
+        "ar": "تطبيق أعلى معايير الحوكمة والنزاهة في إدارة الاتحاد وعملياته.",
+        "en": "Applying the highest standards of governance and integrity in managing the federation and operations."
+      },
+      "displayOrder": 4
+    },
+    {
+      "title": { "ar": "توسيع قاعدة المشاركة", "en": "Expanding Participation Base" },
+      "description": {
+        "ar": "زيادة عدد الممارسين لرياضات ألعاب القوى على مستوى الدولة وفي جميع الإمارات.",
+        "en": "Increasing the number of athletics practitioners across all UAE Emirates and communities."
+      },
+      "displayOrder": 5
+    },
+    {
+      "title": { "ar": "شراكات استراتيجية فاعلة", "en": "Strategic Partnerships" },
+      "description": {
+        "ar": "بناء شراكات مع المؤسسات المحلية والدولية لدعم تطوير الرياضة في الإمارات.",
+        "en": "Building active partnerships with local and international institutions to support overall sports development."
+      },
+      "displayOrder": 6
+    }
+  ],
+  "coreValues": [
+    {
+      "title": { "ar": "التميز", "en": "Excellence" },
+      "description": {
+        "ar": "نرفع معايير الأداء الرياضي والإداري باستمرار، ونسعى إلى تحقيق نتائج تليق بطموحات الرياضة الإماراتية.",
+        "en": "We constantly raise the standards of athletic and administrative performance, striving for results that match sports ambitions."
+      },
+      "iconKey": "award",
+      "displayOrder": 1
+    },
+    {
+      "title": { "ar": "العمل الجماعي", "en": "Teamwork" },
+      "description": {
+        "ar": "نؤمن بأن تحقيق النتائج الكبيرة يستلزم تعاون الجميع، من الرياضي إلى الجهاز الفني والإداري.",
+        "en": "We believe that achieving great results requires everyone's cooperation, from athletes to technical and administrative staff."
+      },
+      "iconKey": "users",
+      "displayOrder": 2
+    },
+    {
+      "title": { "ar": "النزاهة", "en": "Integrity" },
+      "description": {
+        "ar": "نلتزم بالشفافية والعدالة والمسؤولية في إدارة الرياضة وصناعة القرارات.",
+        "en": "We commit to transparency, justice, and responsibility in managing sports and decision-making."
+      },
+      "iconKey": "shield-check",
+      "displayOrder": 3
+    },
+    {
+      "title": { "ar": "الابتكار", "en": "Innovation" },
+      "description": {
+        "ar": "نعتمد الحلول الإبداعية والتكنولوجيا الحديثة لتطوير الرياضة وتحسين تجربة الرياضيين والجماهير.",
+        "en": "We adopt creative solutions and technology to develop sports and improve everyone's experience."
+      },
+      "iconKey": "zap",
+      "displayOrder": 4
+    },
+    {
+      "title": { "ar": "الاستدامة", "en": "Sustainability" },
+      "description": {
+        "ar": "نبني منظومة قادرة على النمو والاستمرار، وتوفير فرص أفضل للأجيال القادمة.",
+        "en": "We build a system capable of growing, continuing, and providing better opportunities for future generations."
+      },
+      "iconKey": "target",
+      "displayOrder": 5
+    },
+    {
+      "title": { "ar": "الشفافية", "en": "Transparency" },
+      "description": {
+        "ar": "نتيح المعلومات ونعزز الثقة مع جميع أصحاب المصلحة من رياضيين وأندية وشركاء ومجتمع.",
+        "en": "We provide information and foster trust with all stakeholders, including athletes, clubs, and partners."
+      },
+      "iconKey": "eye",
+      "displayOrder": 6
+    }
+  ],
+  "valuesImage": null,
+  "ctaImage": null,
+  "seo": null,
+  "publishedAt": "2026-09-14T08:00:00.000Z"
+}

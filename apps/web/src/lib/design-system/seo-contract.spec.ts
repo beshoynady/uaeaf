@@ -59,9 +59,10 @@ describe("every public page implements Chapter 14", () => {
     // §3: Meta Title, Meta Description and a Social Sharing Image "MUST exist
     // for every page without exception". A route with no `generateMetadata`
     // and no `metadata` export inherits the layout's, which names the site
-    // rather than the page — so every page would share one title.
+    // rather than the page — so every page would share one title. Either form
+    // of the export counts: new code prefers arrow functions (CLAUDE.md §30).
     const offenders = ROUTES.filter(
-      ({ source }) => !/export (async )?(function generateMetadata|const metadata)/.test(source),
+      ({ source }) => !/export (async )?(function generateMetadata|const (generateMetadata|metadata)\b)/.test(source),
     ).map(({ file }) => file);
     expect(offenders).toEqual([]);
   });
@@ -117,9 +118,10 @@ describe("document structure", () => {
       // the shared one, so it owns its `<h1>` for the same reason `page-hero`
       // does — the heading and the composition it sits in are one thing.
       "src/components/pages/contact/contact-hero.tsx",
-      // The President's Message opens with its portrait hero, which owns its
-      // `<h1>` for the same reason: heading and composition are one thing.
-      "src/components/pages/president/president-hero.tsx",
+      // The identity-lines hero of the President's Message and Vision &
+      // Mission owns its `<h1>` for the same reason: heading and composition
+      // are one thing.
+      "src/components/ui/identity-hero.tsx",
       "src/app/[locale]/page.tsx",
       "src/app/[locale]/not-found.tsx",
     ];

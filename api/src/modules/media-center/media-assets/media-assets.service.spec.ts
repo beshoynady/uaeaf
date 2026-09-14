@@ -523,3 +523,69 @@ describe('MediaAssetsService.findPublicByIds', () => {
     expect(repository.findVisibleByIds).not.toHaveBeenCalled();
   });
 });
+
+/**
+ * The page projections' image lookup (ADR-0070 D3): every image a page record
+ * points at, resolved in one query and keyed by id, so each page asks once and
+ * reads its fields from the map.
+ */
+describe('MediaAssetsService.resolvePublicImages', () => {
+  const makeRepository = () =>
+    ({ findVisibleByIds: jest.fn() }) as unknown as jest.Mocked<MediaAssetsRepository>;
+  const albumModel = {} as never;
+  const storage = {} as never;
+
+  const asset = (id: Types.ObjectId) =>
+    ({
+      _id: id,
+      file: {
+        url: `https://cdn/${id.toString()}.jpg`,
+        mimeType: 'image/jpeg',
+        width: 1600,
+        height: 900,
+        size: 1,
+        photographer: null,
+        captureDate: null,
+      },
+      caption: { en: 'c', ar: 'ت' },
+      altText: { en: 'a', ar: 'ب' },
+      displayOrder: 0,
+      isFeatured: false,
+    }) as unknown as MediaAssetDocument;
+
+  it('keys each image by its id, in the shape a public page draws', async () => {
+    const repository = makeRepository();
+    const hero = new Types.ObjectId();
+    repository.findVisibleByIds.mockResolvedValue([asset(hero)]);
+    const service = new MediaAssetsService(repository, albumModel, storage);
+
+    const images = await service.resolvePublicImages([hero]);
+
+    expect(images.get(hero.toString())).toEqual({
+      url: `https://cdn/${hero.toString()}.jpg`,
+      altText: { en: 'a', ar: 'ب' },
+      width: 1600,
+      height: 900,
+    });
+  });
+
+  it('skips empty refs and asks once for an image two fields share', async () => {
+    const repository = makeRepository();
+    repository.findVisibleByIds.mockResolvedValue([]);
+    const service = new MediaAssetsService(repository, albumModel, storage);
+    const id = new Types.ObjectId();
+
+    await service.resolvePublicImages([id, null, undefined, '', id.toString()]);
+
+    expect(repository.findVisibleByIds).toHaveBeenCalledTimes(1);
+    expect(repository.findVisibleByIds.mock.calls[0][0]).toHaveLength(1);
+  });
+
+  it('does not reach the database when the record points at no image', async () => {
+    const repository = makeRepository();
+    const service = new MediaAssetsService(repository, albumModel, storage);
+
+    await expect(service.resolvePublicImages([null, undefined])).resolves.toEqual(new Map());
+    expect(repository.findVisibleByIds).not.toHaveBeenCalled();
+  });
+});

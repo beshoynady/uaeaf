@@ -65,6 +65,15 @@ export const NAV_ITEMS: readonly NavItem[] = [
       { resourceType: "workflowInstances", action: "Approve" },
     ],
   },
+  /** Vision & Mission, opened by the same two jobs for the same reasons. */
+  {
+    key: "visionMission",
+    href: "/vision-mission",
+    requires: [
+      { resourceType: "visionMissionPage", action: "Update" },
+      { resourceType: "workflowInstances", action: "Approve" },
+    ],
+  },
 ];
 
 /** Whether these grants satisfy one requirement. */

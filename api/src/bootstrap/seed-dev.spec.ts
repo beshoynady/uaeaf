@@ -54,6 +54,10 @@ import {
   PresidentMessagePageSchema,
 } from '../modules/federation-governance/president-message-page/schemas/president-message-page.schema.js';
 import {
+  VisionMissionPage,
+  VisionMissionPageSchema,
+} from '../modules/federation-governance/vision-mission-page/schemas/vision-mission-page.schema.js';
+import {
   DEV_FIXTURE_SETS,
   assertNoSecrets,
   exportDevFixtures,
@@ -87,6 +91,7 @@ const MODELS: Array<[string, Schema]> = [
   [RecordsPage.name, RecordsPageSchema],
   [ResultsRankingsPage.name, ResultsRankingsPageSchema],
   [VideosPage.name, VideosPageSchema],
+  [VisionMissionPage.name, VisionMissionPageSchema],
 ];
 
 /** A deep, independent copy: the fixtures are EJSON, so EJSON is the copy. */
@@ -153,8 +158,14 @@ describe('dev fixtures', () => {
       // One known exception, named rather than tolerated: every board member
       // points at a `countries` document that does not exist in the source
       // database either. It was dangling before these fixtures were taken,
-      // and `countries` is not seeded. Anything else unresolved fails here.
-      expect([...new Set(unresolved)]).toEqual(['federationPersonnel.nationalityId']);
+      // and `countries` is not seeded. The second is the same case: the vision
+      // and mission page names its federation, and no `federation` document
+      // exists in the source database either (read 2026-09-14), so none is
+      // seeded. Anything else unresolved fails here.
+      expect([...new Set(unresolved)]).toEqual([
+        'federationPersonnel.nationalityId',
+        'visionMissionPage.federationId',
+      ]);
     });
 
     it('carry nothing that looks like a credential', () => {

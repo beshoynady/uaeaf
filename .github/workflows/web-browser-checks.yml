@@ -61,6 +61,10 @@ jobs:
       # locales of the page answer.
       - name: Wait for the page
         run: |
+          for path in ar/about/governance/vision-mission en/about/governance/vision-mission; do
+            curl --silent --fail --retry 60 --retry-delay 5 --retry-all-errors --max-time 300 \
+              --output /dev/null "$WEB_BASE_URL/$path"
+          done
           for locale in ar en; do
             curl --silent --fail --retry 60 --retry-delay 5 --retry-all-errors --max-time 300 \
               --output /dev/null "$WEB_BASE_URL/$locale/about/president"

@@ -1,34 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
-
-/** The image shape the public page needs: where it is and what it says.
- *  Alt text belongs to the asset (`mediaAssets.altText`), so it travels
- *  with the image rather than being duplicated onto the page record. */
-export class PublicImageDto {
-  @ApiProperty() url: string;
-  @ApiProperty({ type: LocalizedTextDto }) altText: LocalizedTextDto;
-  @ApiProperty() width: number;
-  @ApiProperty() height: number;
-}
-
-/** One value card. `iconKey` is one of the twelve approved keys. */
-export class PublicValueDto {
-  @ApiProperty({ type: LocalizedTextDto }) title: LocalizedTextDto;
-  @ApiProperty({ type: LocalizedTextDto }) description: LocalizedTextDto;
-  @ApiProperty() iconKey: string;
-  @ApiProperty() displayOrder: number;
-}
-
-export class PublicSeoDto {
-  @ApiProperty({ type: LocalizedTextDto, required: false, nullable: true })
-  metaTitle: LocalizedTextDto | null;
-
-  @ApiProperty({ type: LocalizedTextDto, required: false, nullable: true })
-  metaDescription: LocalizedTextDto | null;
-
-  @ApiProperty({ type: PublicImageDto, required: false, nullable: true })
-  ogImage: PublicImageDto | null;
-}
+import {
+  PublicImageDto,
+  PublicSeoDto,
+  PublicValueDto,
+} from '../../../../common/dto/public-page.dto.js';
 
 /**
  * What `/about/president` receives — an explicit list of fields, built

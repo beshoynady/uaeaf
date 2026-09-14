@@ -1,0 +1,37 @@
+/*
+ * Proposed values for the two-mode lists — NOT tokens.
+ *
+ * Read only by the internal review page (route.ts beside this file), which
+ * inlines it; nothing on the site imports it. The selectors mirror the token
+ * build's, so an element carrying `data-theme` resolves these the way it would
+ * resolve a real token, and the review can hold one panel in each mode.
+ *
+ * Every value is an existing step of a ramp already in `base.css`, or a binding
+ * to a role that already exists; none is minted. The series colours are in
+ * `palettes.css`.
+ */
+
+:root,
+[data-theme="light"] {
+  /* corrections to existing tokens (approved) */
+  --proposed-button-primary-text: var(--color-text-on-brand); /* was {color.text.inverse}: a role that flips, on three grounds that do not */
+  --proposed-color-semantic-warning: #B08506; /* warning.600 — was .500, 2.23:1 as a shape on the page */
+
+  /* state colours as text: new, one per state (approved) */
+  --proposed-color-semantic-success-text: #1A7039; /* success.600 */
+  --proposed-color-semantic-error-text: #D32F2F; /* error.500 */
+  --proposed-color-semantic-warning-text: #92600C; /* warning.700 */
+  --proposed-color-semantic-info-text: #2471A3; /* info.600 */
+}
+
+[data-theme="dark"] {
+  /* corrections to existing tokens (approved) */
+  --proposed-button-primary-text: var(--color-text-on-brand); /* was {color.text.inverse} = #000000: 4.37 / 3.15 / 2.23 on rest, hover, pressed */
+  --proposed-color-semantic-warning: #EAB308; /* unchanged in dark */
+
+  /* state colours as text: new, one per state (approved) */
+  --proposed-color-semantic-success-text: #34A95E; /* success.400 */
+  --proposed-color-semantic-error-text: #E96C6C; /* error.300 */
+  --proposed-color-semantic-warning-text: #D09E07; /* warning.500 */
+  --proposed-color-semantic-info-text: #3498DB; /* info.400 */
+}

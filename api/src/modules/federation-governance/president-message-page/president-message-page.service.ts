@@ -8,13 +8,10 @@ import { UpdatePresidentMessagePageDto } from './dto/update-president-message-pa
 import { PublicationsService } from '../../workflow/publications/publications.service.js';
 import { RevisionsService } from '../../workflow/revisions/revisions.service.js';
 import { MediaAssetsService } from '../../media-center/media-assets/media-assets.service.js';
-import type { PageSeo } from '../../../common/schemas/page-seo.schema.js';
+import { toPageSeo } from '../../../common/dto/page-seo.dto.js';
 import { FederationAppointmentsService } from '../federation-appointments/federation-appointments.service.js';
 import type { LocalizedTextDto } from '../../../common/dto/localized-text.dto.js';
-import type {
-  PresidentMessagePublicResponseDto,
-  PublicImageDto,
-} from './dto/president-message-public-response.dto.js';
+import type { PresidentMessagePublicResponseDto } from './dto/president-message-public-response.dto.js';
 
 /** The media-asset refs this entity carries; each must resolve to a usable
  *  image before it is stored, whichever route supplied it. */
@@ -52,7 +49,7 @@ export class PresidentMessagePagesService {
       values: dto.values ?? [],
       signatoryName: dto.signatoryName,
       signatoryTitle: dto.signatoryTitle,
-      seo: dto.seo ? this.toSeo(dto.seo) : null,
+      seo: dto.seo ? toPageSeo(dto.seo) : null,
       publicationState: dto.publicationState,
     });
   }
@@ -104,7 +101,7 @@ export class PresidentMessagePagesService {
     }
 
     if (dto.seo !== undefined) {
-      set.seo = dto.seo ? this.toSeo(dto.seo) : null;
+      set.seo = dto.seo ? toPageSeo(dto.seo) : null;
     }
 
     const updated = await this.repository.updateById(id, {
@@ -190,7 +187,7 @@ export class PresidentMessagePagesService {
   ): Promise<PresidentMessagePublicResponseDto> {
     const seo = (snapshot.seo ?? null) as Record<string, unknown> | null;
 
-    const images = await this.resolveImages([
+    const images = await this.mediaAssetsService.resolvePublicImages([
       snapshot.heroImageId,
       snapshot.featuredImageId,
       seo?.ogImageId,
@@ -227,28 +224,6 @@ export class PresidentMessagePagesService {
     };
   }
 
-  /** Resolves the record's image refs in one query, keyed by id string. */
-  private async resolveImages(ids: unknown[]): Promise<Map<string, PublicImageDto>> {
-    const wanted = ids.filter((id): id is Types.ObjectId | string => Boolean(id)).map(String);
-    if (wanted.length === 0) {
-      return new Map();
-    }
-
-    const assets = await this.mediaAssetsService.findPublicByIds([...new Set(wanted)]);
-
-    return new Map(
-      assets.map((asset) => [
-        asset.id,
-        {
-          url: asset.file.url,
-          altText: asset.altText,
-          width: asset.file.width,
-          height: asset.file.height,
-        },
-      ]),
-    );
-  }
-
   /** @throws ForbiddenException when at least one revision exists. */
   async assertHardDeletable(id: string): Promise<void> {
     return this.revisionsService.assertHardDeletable('presidentMessagePage', new Types.ObjectId(id));
@@ -275,13 +250,5 @@ export class PresidentMessagePagesService {
     if (ogImageId) {
       await this.mediaAssetsService.assertUsableImage(ogImageId);
     }
-  }
-
-  private toSeo(seo: NonNullable<CreatePresidentMessagePageDto['seo']>): PageSeo {
-    return {
-      metaTitle: seo.metaTitle ?? null,
-      metaDescription: seo.metaDescription ?? null,
-      ogImageId: seo.ogImageId ? new Types.ObjectId(seo.ogImageId) : null,
-    };
   }
 }

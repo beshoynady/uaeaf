@@ -452,7 +452,7 @@ export function ContactForm({
           // holds its own reduced-motion and disabled behaviour, so the
           // reader who turns motion off still gets every colour change and a
           // button mid-request stops answering the pointer entirely.
-          className={`flex min-h-13 w-full items-center justify-center gap-2.5 rounded-[var(--button-radius)] bg-[color:var(--color-brand-primary)] shadow-[var(--elevation-card)] text-body font-bold text-[color:var(--color-text-on-brand)] ${LIFT} transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-easing-standard)] hover:bg-[color:var(--color-green-600)] active:bg-[color:var(--color-green-700)] disabled:cursor-progress disabled:opacity-70 ${FOCUS}`}
+          className={`flex min-h-13 w-full items-center justify-center gap-2.5 rounded-[var(--button-radius)] bg-[color:var(--button-primary-background)] shadow-[var(--elevation-card)] text-body font-bold text-[color:var(--button-primary-text)] ${LIFT} transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-easing-standard)] hover:bg-[color:var(--button-primary-background-hover)] active:bg-[color:var(--button-primary-background-pressed)] disabled:cursor-progress disabled:opacity-70 ${FOCUS}`}
         >
           {state === "sending" ? (
             // The label changes as well as the spinner turning: a pending

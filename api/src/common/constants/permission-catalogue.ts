@@ -180,6 +180,8 @@ export const PERMISSION_CATALOGUE: readonly PermissionCatalogueEntry[] = [
   { resourceType: 'videosPage', action: 'Update' },
   { resourceType: 'visionMissionPage', action: 'Create' },
   { resourceType: 'visionMissionPage', action: 'Read' },
+  { resourceType: 'visionMissionPage', action: 'Update' },
+  { resourceType: 'visionMissionPage', action: 'Publish' },
   { resourceType: 'visionMissionPage', action: 'Delete' },
   { resourceType: 'workflowActionHistory', action: 'Read' },
   { resourceType: 'workflowDefinitions', action: 'Create' },

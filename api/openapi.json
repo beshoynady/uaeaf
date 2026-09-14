@@ -4436,6 +4436,27 @@
         ]
       }
     },
+    "/api/v1/vision-mission-page/current/public": {
+      "get": {
+        "operationId": "VisionMissionPagesController_getCurrentPublic_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VisionMissionPublicResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "vision-mission-page"
+        ]
+      }
+    },
     "/api/v1/vision-mission-page/{id}": {
       "get": {
         "operationId": "VisionMissionPagesController_findOne_v1",
@@ -4449,6 +4470,37 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "vision-mission-page"
+        ]
+      },
+      "patch": {
+        "operationId": "VisionMissionPagesController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVisionMissionPageDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": ""
@@ -4472,6 +4524,125 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "vision-mission-page"
+        ]
+      }
+    },
+    "/api/v1/vision-mission-page/{id}/editorial-state": {
+      "get": {
+        "operationId": "VisionMissionPagesController_editorialState_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditorialStateDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "vision-mission-page"
+        ]
+      }
+    },
+    "/api/v1/vision-mission-page/{id}/publish": {
+      "post": {
+        "operationId": "VisionMissionPagesController_publish_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishEditorialDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "vision-mission-page"
+        ]
+      }
+    },
+    "/api/v1/vision-mission-page/{id}/submit": {
+      "post": {
+        "operationId": "VisionMissionPagesController_submit_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "vision-mission-page"
+        ]
+      }
+    },
+    "/api/v1/vision-mission-page/{id}/restore": {
+      "post": {
+        "operationId": "VisionMissionPagesController_restore_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestoreEditorialDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -9023,303 +9194,6 @@
           "displayOrder"
         ]
       },
-      "IconedContentBlockDto": {
-        "type": "object",
-        "properties": {
-          "title": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "description": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "displayOrder": {
-            "type": "number"
-          },
-          "iconKey": {
-            "type": "string",
-            "description": "Client-side icon identifier (e.g. a lucide-react name)."
-          }
-        },
-        "required": [
-          "title",
-          "description",
-          "displayOrder",
-          "iconKey"
-        ]
-      },
-      "CreateVisionMissionPageDto": {
-        "type": "object",
-        "properties": {
-          "heroImageId": {
-            "type": "string",
-            "description": "ref → mediaAssets, must be an image."
-          },
-          "heroTitle": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "heroSubtitle": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "federationId": {
-            "type": "string"
-          },
-          "visionText": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "missionText": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "strategicGoals": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ContentBlockDto"
-            }
-          },
-          "coreValues": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/IconedContentBlockDto"
-            }
-          },
-          "publicationState": {
-            "type": "string",
-            "enum": [
-              "Draft",
-              "Live",
-              "Unpublished",
-              "Archived"
-            ]
-          }
-        },
-        "required": [
-          "heroTitle",
-          "heroSubtitle",
-          "federationId",
-          "visionText",
-          "missionText",
-          "publicationState"
-        ]
-      },
-      "ImpactMetricDto": {
-        "type": "object",
-        "properties": {
-          "value": {
-            "type": "string",
-            "description": "Plain string, e.g. \"2030\" or \"+45%\"."
-          },
-          "label": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "displayOrder": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "value",
-          "label",
-          "displayOrder"
-        ]
-      },
-      "CreateStrategicPlansPageDto": {
-        "type": "object",
-        "properties": {
-          "heroImageId": {
-            "type": "string",
-            "description": "ref → mediaAssets, must be an image."
-          },
-          "heroTitle": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "heroSubtitle": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "federationId": {
-            "type": "string"
-          },
-          "introHeading": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "introText": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "periodStart": {
-            "type": "string"
-          },
-          "periodEnd": {
-            "type": "string"
-          },
-          "foundationPillars": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/IconedContentBlockDto"
-            }
-          },
-          "strategicAxes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ContentBlockDto"
-            }
-          },
-          "objectives": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ContentBlockDto"
-            }
-          },
-          "impactMetrics": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ImpactMetricDto"
-            }
-          },
-          "documentId": {
-            "type": "string",
-            "description": "ref → documents. Attached file, not independently approved."
-          },
-          "documentVersion": {
-            "type": "string",
-            "description": "e.g. \"1.0\" — accompanies documentId."
-          },
-          "publicationState": {
-            "type": "string",
-            "enum": [
-              "Draft",
-              "Live",
-              "Unpublished",
-              "Archived"
-            ]
-          }
-        },
-        "required": [
-          "heroTitle",
-          "heroSubtitle",
-          "federationId",
-          "introHeading",
-          "introText",
-          "periodStart",
-          "periodEnd",
-          "publicationState"
-        ]
-      },
-      "AchievementDto": {
-        "type": "object",
-        "properties": {
-          "text": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "year": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "text",
-          "year"
-        ]
-      },
-      "CreateAboutFederationPageDto": {
-        "type": "object",
-        "properties": {
-          "heroImageId": {
-            "type": "string",
-            "description": "ref → mediaAssets, must be an image."
-          },
-          "heroTitle": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "heroSubtitle": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "foundingDate": {
-            "type": "string"
-          },
-          "historicalIntro": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "foundingDecreeCaption": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "roleHeading": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "roleText": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "globalMembershipYear": {
-            "type": "number",
-            "description": "e.g. 1976."
-          },
-          "globalMembershipHeading": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "globalMembershipText": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "firstPresidentPhoto": {
-            "type": "string",
-            "description": "ref → mediaAssets, must be an image."
-          },
-          "firstPresidentName": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "firstPresidentTitle": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "firstPresidentBio": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "achievements": {
-            "maxItems": 10,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AchievementDto"
-            }
-          },
-          "publicationState": {
-            "type": "string",
-            "enum": [
-              "Draft",
-              "Live",
-              "Unpublished",
-              "Archived"
-            ]
-          }
-        },
-        "required": [
-          "heroTitle",
-          "heroSubtitle",
-          "foundingDate",
-          "historicalIntro",
-          "foundingDecreeCaption",
-          "roleHeading",
-          "roleText",
-          "globalMembershipYear",
-          "globalMembershipHeading",
-          "globalMembershipText",
-          "firstPresidentName",
-          "firstPresidentTitle",
-          "firstPresidentBio",
-          "publicationState"
-        ]
-      },
-      "LocalizedRichTextDto": {
-        "type": "object",
-        "properties": {
-          "en": {
-            "type": "object",
-            "additionalProperties": true,
-            "description": "English body as a ProseMirror/TipTap document. Allowed nodes: doc, paragraph, text, heading (level 2-3), bulletList, orderedList, listItem, blockquote, horizontalRule, hardBreak. Allowed marks: bold, link (https/http/mailto), italic."
-          },
-          "ar": {
-            "type": "object",
-            "additionalProperties": true,
-            "description": "Arabic body as a ProseMirror/TipTap document. Same allowlist as English MINUS italic, which breaks Arabic letter joins (Chapter 4 §4.6). No textAlign in either language, which is how justify and manual alignment are refused."
-          }
-        },
-        "required": [
-          "en",
-          "ar"
-        ]
-      },
       "IconKeyedContentBlockDto": {
         "type": "object",
         "properties": {
@@ -9373,7 +9247,7 @@
           }
         }
       },
-      "CreatePresidentMessagePageDto": {
+      "CreateVisionMissionPageDto": {
         "type": "object",
         "properties": {
           "heroImageId": {
@@ -9386,49 +9260,55 @@
           "heroSubtitle": {
             "$ref": "#/components/schemas/LocalizedTextDto"
           },
-          "federationAppointmentId": {
-            "type": "string",
-            "description": "Canonical link to the presidential appointment/term."
+          "federationId": {
+            "type": "string"
           },
-          "featuredImageId": {
-            "type": "string",
-            "description": "The president's portrait — ref → mediaAssets."
+          "visionImageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "The photograph behind the vision statement: ref → mediaAssets, must be an image."
           },
-          "pullQuote": {
+          "missionImageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "The photograph behind the mission statement: ref → mediaAssets, must be an image."
+          },
+          "valuesImageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "The photograph behind the values band: ref → mediaAssets, must be an image."
+          },
+          "ctaImageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "The photograph behind the call to the strategic plan: ref → mediaAssets, must be an image."
+          },
+          "visionTitle": {
             "$ref": "#/components/schemas/LocalizedTextDto"
           },
-          "messageBody": {
-            "description": "ProseMirror/TipTap document per language, checked against the ADR-0069 allowlist.",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LocalizedRichTextDto"
-              }
-            ]
-          },
-          "valuesTitle": {
+          "visionText": {
             "$ref": "#/components/schemas/LocalizedTextDto"
           },
-          "values": {
+          "missionTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "missionText": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "goalsTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "strategicGoals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContentBlockDto"
+            }
+          },
+          "coreValues": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/IconKeyedContentBlockDto"
             }
-          },
-          "signatoryName": {
-            "description": "Denormalized display snapshot — canonical identity is federationAppointmentId.",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LocalizedTextDto"
-              }
-            ]
-          },
-          "signatoryTitle": {
-            "description": "Denormalized display snapshot.",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LocalizedTextDto"
-              }
-            ]
           },
           "seo": {
             "$ref": "#/components/schemas/PageSeoDto"
@@ -9446,11 +9326,230 @@
         "required": [
           "heroTitle",
           "heroSubtitle",
-          "federationAppointmentId",
-          "messageBody",
-          "signatoryName",
-          "signatoryTitle",
+          "federationId",
+          "visionText",
+          "missionText",
           "publicationState"
+        ]
+      },
+      "PublicImageDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "altText": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "width": {
+            "type": "number"
+          },
+          "height": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "url",
+          "altText",
+          "width",
+          "height"
+        ]
+      },
+      "PublicContentBlockDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "description": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "displayOrder": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "displayOrder"
+        ]
+      },
+      "PublicValueDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "description": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "iconKey": {
+            "type": "string"
+          },
+          "displayOrder": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "iconKey",
+          "displayOrder"
+        ]
+      },
+      "PublicSeoDto": {
+        "type": "object",
+        "properties": {
+          "metaTitle": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "metaDescription": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "ogImage": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicImageDto"
+              }
+            ]
+          }
+        }
+      },
+      "VisionMissionPublicResponseDto": {
+        "type": "object",
+        "properties": {
+          "heroTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "heroSubtitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "heroImage": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicImageDto"
+              }
+            ]
+          },
+          "visionTitle": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "visionText": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "visionImage": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicImageDto"
+              }
+            ]
+          },
+          "missionTitle": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "missionText": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "missionImage": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicImageDto"
+              }
+            ]
+          },
+          "goalsTitle": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "strategicGoals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicContentBlockDto"
+            }
+          },
+          "coreValues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicValueDto"
+            }
+          },
+          "valuesImage": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicImageDto"
+              }
+            ]
+          },
+          "ctaImage": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicImageDto"
+              }
+            ]
+          },
+          "seo": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicSeoDto"
+              }
+            ]
+          },
+          "publishedAt": {
+            "type": "string",
+            "description": "When the Live version was published, from the publication, never stored."
+          }
+        },
+        "required": [
+          "heroTitle",
+          "heroSubtitle",
+          "visionText",
+          "missionText",
+          "strategicGoals",
+          "coreValues",
+          "publishedAt"
         ]
       },
       "PublishBlockerDto": {
@@ -9739,6 +9838,445 @@
           "publishBlockers",
           "blockedByReadiness",
           "history"
+        ]
+      },
+      "UpdateVisionMissionPageDto": {
+        "type": "object",
+        "properties": {
+          "heroImageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "ref → mediaAssets, or null."
+          },
+          "visionImageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "The photograph behind the vision statement: ref → mediaAssets, or null."
+          },
+          "missionImageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "The photograph behind the mission statement: ref → mediaAssets, or null."
+          },
+          "valuesImageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "The photograph behind the values band: ref → mediaAssets, or null."
+          },
+          "ctaImageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "The photograph behind the call to the strategic plan: ref → mediaAssets, or null."
+          },
+          "heroTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "heroSubtitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "visionTitle": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "visionText": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "missionTitle": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "missionText": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "goalsTitle": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "strategicGoals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContentBlockDto"
+            }
+          },
+          "coreValues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IconKeyedContentBlockDto"
+            }
+          },
+          "seo": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PageSeoDto"
+              }
+            ]
+          }
+        }
+      },
+      "PublishEditorialDto": {
+        "type": "object",
+        "properties": {
+          "expectedUpdatedAt": {
+            "type": "string",
+            "description": "The record's updatedAt as last read, ISO-8601. Publishing is refused if it has changed.",
+            "example": "2026-09-14T08:31:04.512Z"
+          }
+        },
+        "required": [
+          "expectedUpdatedAt"
+        ]
+      },
+      "RestoreEditorialDto": {
+        "type": "object",
+        "properties": {
+          "revisionId": {
+            "type": "string",
+            "description": "The revision to copy back over the draft. Publishes nothing."
+          }
+        },
+        "required": [
+          "revisionId"
+        ]
+      },
+      "IconedContentBlockDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "description": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "displayOrder": {
+            "type": "number"
+          },
+          "iconKey": {
+            "type": "string",
+            "description": "Client-side icon identifier (e.g. a lucide-react name)."
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "displayOrder",
+          "iconKey"
+        ]
+      },
+      "ImpactMetricDto": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "description": "Plain string, e.g. \"2030\" or \"+45%\"."
+          },
+          "label": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "displayOrder": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "value",
+          "label",
+          "displayOrder"
+        ]
+      },
+      "CreateStrategicPlansPageDto": {
+        "type": "object",
+        "properties": {
+          "heroImageId": {
+            "type": "string",
+            "description": "ref → mediaAssets, must be an image."
+          },
+          "heroTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "heroSubtitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "federationId": {
+            "type": "string"
+          },
+          "introHeading": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "introText": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "periodStart": {
+            "type": "string"
+          },
+          "periodEnd": {
+            "type": "string"
+          },
+          "foundationPillars": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IconedContentBlockDto"
+            }
+          },
+          "strategicAxes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContentBlockDto"
+            }
+          },
+          "objectives": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContentBlockDto"
+            }
+          },
+          "impactMetrics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ImpactMetricDto"
+            }
+          },
+          "documentId": {
+            "type": "string",
+            "description": "ref → documents. Attached file, not independently approved."
+          },
+          "documentVersion": {
+            "type": "string",
+            "description": "e.g. \"1.0\" — accompanies documentId."
+          },
+          "publicationState": {
+            "type": "string",
+            "enum": [
+              "Draft",
+              "Live",
+              "Unpublished",
+              "Archived"
+            ]
+          }
+        },
+        "required": [
+          "heroTitle",
+          "heroSubtitle",
+          "federationId",
+          "introHeading",
+          "introText",
+          "periodStart",
+          "periodEnd",
+          "publicationState"
+        ]
+      },
+      "AchievementDto": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "year": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "text",
+          "year"
+        ]
+      },
+      "CreateAboutFederationPageDto": {
+        "type": "object",
+        "properties": {
+          "heroImageId": {
+            "type": "string",
+            "description": "ref → mediaAssets, must be an image."
+          },
+          "heroTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "heroSubtitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "foundingDate": {
+            "type": "string"
+          },
+          "historicalIntro": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "foundingDecreeCaption": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "roleHeading": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "roleText": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "globalMembershipYear": {
+            "type": "number",
+            "description": "e.g. 1976."
+          },
+          "globalMembershipHeading": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "globalMembershipText": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "firstPresidentPhoto": {
+            "type": "string",
+            "description": "ref → mediaAssets, must be an image."
+          },
+          "firstPresidentName": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "firstPresidentTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "firstPresidentBio": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "achievements": {
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AchievementDto"
+            }
+          },
+          "publicationState": {
+            "type": "string",
+            "enum": [
+              "Draft",
+              "Live",
+              "Unpublished",
+              "Archived"
+            ]
+          }
+        },
+        "required": [
+          "heroTitle",
+          "heroSubtitle",
+          "foundingDate",
+          "historicalIntro",
+          "foundingDecreeCaption",
+          "roleHeading",
+          "roleText",
+          "globalMembershipYear",
+          "globalMembershipHeading",
+          "globalMembershipText",
+          "firstPresidentName",
+          "firstPresidentTitle",
+          "firstPresidentBio",
+          "publicationState"
+        ]
+      },
+      "LocalizedRichTextDto": {
+        "type": "object",
+        "properties": {
+          "en": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "English body as a ProseMirror/TipTap document. Allowed nodes: doc, paragraph, text, heading (level 2-3), bulletList, orderedList, listItem, blockquote, horizontalRule, hardBreak. Allowed marks: bold, link (https/http/mailto), italic."
+          },
+          "ar": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Arabic body as a ProseMirror/TipTap document. Same allowlist as English MINUS italic, which breaks Arabic letter joins (Chapter 4 §4.6). No textAlign in either language, which is how justify and manual alignment are refused."
+          }
+        },
+        "required": [
+          "en",
+          "ar"
+        ]
+      },
+      "CreatePresidentMessagePageDto": {
+        "type": "object",
+        "properties": {
+          "heroImageId": {
+            "type": "string",
+            "description": "ref → mediaAssets, must be an image."
+          },
+          "heroTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "heroSubtitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "federationAppointmentId": {
+            "type": "string",
+            "description": "Canonical link to the presidential appointment/term."
+          },
+          "featuredImageId": {
+            "type": "string",
+            "description": "The president's portrait — ref → mediaAssets."
+          },
+          "pullQuote": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "messageBody": {
+            "description": "ProseMirror/TipTap document per language, checked against the ADR-0069 allowlist.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedRichTextDto"
+              }
+            ]
+          },
+          "valuesTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IconKeyedContentBlockDto"
+            }
+          },
+          "signatoryName": {
+            "description": "Denormalized display snapshot — canonical identity is federationAppointmentId.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "signatoryTitle": {
+            "description": "Denormalized display snapshot.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "seo": {
+            "$ref": "#/components/schemas/PageSeoDto"
+          },
+          "publicationState": {
+            "type": "string",
+            "enum": [
+              "Draft",
+              "Live",
+              "Unpublished",
+              "Archived"
+            ]
+          }
+        },
+        "required": [
+          "heroTitle",
+          "heroSubtitle",
+          "federationAppointmentId",
+          "messageBody",
+          "signatoryName",
+          "signatoryTitle",
+          "publicationState"
         ]
       },
       "UpdatePresidentMessagePageDto": {

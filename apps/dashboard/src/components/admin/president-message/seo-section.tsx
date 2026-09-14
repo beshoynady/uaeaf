@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { BilingualField } from "@/components/admin/bilingual-field";
 import { MediaPicker } from "@/components/admin/pages/media-picker";
-import { SEO_GUIDANCE, seoLength } from "@/lib/admin/president-message";
+import { SEO_GUIDANCE, seoLength } from "@/lib/admin/editorial-draft";
 import type { LocalizedText } from "@/lib/api/types";
 import type { ImageSectionProps } from "./section-props";
 

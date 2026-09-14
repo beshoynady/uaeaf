@@ -1,0 +1,314 @@
+/*
+ * Candidate palettes for the palette-expansion review (owner batch 2026-09-14) — NOT tokens.
+ *
+ * Read only by the internal review page (route.ts beside this file), which inlines it; nothing on the
+ * site imports it. Generated from measurement, not typed. Each new ramp is ten steps of one OKLCH hue:
+ * lightness per step is the mean of the green, red, steel-blue and teal ramps, chroma follows their shape
+ * and never exceeds Federation Red's. The roles below were chosen per mode on that mode's own grounds.
+ * Accents are limited to steps 200–700, because 50–100 and 800–900 are the steps the cards use as grounds.
+ */
+
+:root {
+  /* الهادئة 1 — أزرق ليلي · hue 274° · peak chroma 0.078 */
+  --palette-calm-1-50: #EDEFF7;
+  --palette-calm-1-100: #C9CFE5;
+  --palette-calm-1-200: #A2ACD2;
+  --palette-calm-1-300: #808CBC;
+  --palette-calm-1-400: #6A75A7;
+  --palette-calm-1-500: #56608E;
+  --palette-calm-1-600: #454D72;
+  --palette-calm-1-700: #343B58;
+  --palette-calm-1-800: #24293E;
+  --palette-calm-1-900: #141725;
+  /* الهادئة 2 — رمادي مزرق · hue 232° · peak chroma 0.078 */
+  --palette-calm-2-50: #E9F1F5;
+  --palette-calm-2-100: #BDD4E1;
+  --palette-calm-2-200: #8BB5CB;
+  --palette-calm-2-300: #5E97B4;
+  --palette-calm-2-400: #44819F;
+  --palette-calm-2-500: #326B86;
+  --palette-calm-2-600: #27566C;
+  --palette-calm-2-700: #1D4153;
+  --palette-calm-2-800: #132E3A;
+  --palette-calm-2-900: #0A1A23;
+  /* الهادئة 3 — موف · hue 318° · peak chroma 0.078 */
+  --palette-calm-3-50: #F3EEF4;
+  --palette-calm-3-100: #D9CADE;
+  --palette-calm-3-200: #BDA3C5;
+  --palette-calm-3-300: #A280AC;
+  --palette-calm-3-400: #8C6A97;
+  --palette-calm-3-500: #75567F;
+  --palette-calm-3-600: #5E4466;
+  --palette-calm-3-700: #48344E;
+  --palette-calm-3-800: #322437;
+  --palette-calm-3-900: #1D1420;
+  /* الهادئة 4 — زيتوني حجري · hue 122° · peak chroma 0.04 */
+  --palette-calm-4-50: #EFF0EC;
+  --palette-calm-4-100: #CED2C7;
+  --palette-calm-4-200: #ABB19E;
+  --palette-calm-4-300: #8A927A;
+  --palette-calm-4-400: #747D63;
+  --palette-calm-4-500: #5F674F;
+  --palette-calm-4-600: #4D533F;
+  --palette-calm-4-700: #3A3F30;
+  --palette-calm-4-800: #282C21;
+  --palette-calm-4-900: #171912;
+  /* الحيّة 1 — أزرق ملكي · hue 274° · peak chroma 0.197 */
+  --palette-vivid-1-50: #EBEFFF;
+  --palette-vivid-1-100: #C1CDFF;
+  --palette-vivid-1-200: #95A7FF;
+  --palette-vivid-1-300: #6E80FE;
+  --palette-vivid-1-400: #5966EA;
+  --palette-vivid-1-500: #4751CA;
+  --palette-vivid-1-600: #3941A4;
+  --palette-vivid-1-700: #2B327E;
+  --palette-vivid-1-800: #1D225A;
+  --palette-vivid-1-900: #0F1337;
+  /* الحيّة 2 — بنفسجي · hue 292° · peak chroma 0.177 */
+  --palette-vivid-2-50: #EFEDFF;
+  --palette-vivid-2-100: #D0C8FB;
+  --palette-vivid-2-200: #B09FF6;
+  --palette-vivid-2-300: #9377EB;
+  --palette-vivid-2-400: #7E5ED6;
+  --palette-vivid-2-500: #684AB8;
+  --palette-vivid-2-600: #543B95;
+  --palette-vivid-2-700: #402D73;
+  --palette-vivid-2-800: #2C1F52;
+  --palette-vivid-2-900: #191131;
+  /* الحيّة 3 — فوشي · hue 332° · peak chroma 0.197 */
+  --palette-vivid-3-50: #FBEAF7;
+  --palette-vivid-3-100: #EFBEE7;
+  --palette-vivid-3-200: #E18BD5;
+  --palette-vivid-3-300: #CD5BC0;
+  --palette-vivid-3-400: #B73FAB;
+  --palette-vivid-3-500: #9B2B91;
+  --palette-vivid-3-600: #7D2275;
+  --palette-vivid-3-700: #601A5A;
+  --palette-vivid-3-800: #44113F;
+  --palette-vivid-3-900: #290926;
+  /* الحيّة 4 — برتقالي أو سماوي · hue 48° · peak chroma 0.176 */
+  --palette-vivid-4-50: #FFEBE1;
+  --palette-vivid-4-100: #FCC1A4;
+  --palette-vivid-4-200: #F4915B;
+  --palette-vivid-4-300: #E06501;
+  --palette-vivid-4-400: #BF5501;
+  --palette-vivid-4-500: #9E4501;
+  --palette-vivid-4-600: #813700;
+  --palette-vivid-4-700: #642900;
+  --palette-vivid-4-800: #471B00;
+  --palette-vivid-4-900: #2C0E00;
+  /* ليل الملعب 1 — أزرق بترولي · hue 216° · peak chroma 0.098 */
+  --palette-night-1-50: #E7F2F5;
+  --palette-night-1-100: #B4D7E1;
+  --palette-night-1-200: #79B9CA;
+  --palette-night-1-300: #3E9DB3;
+  --palette-night-1-400: #13879D;
+  --palette-night-1-500: #016F83;
+  --palette-night-1-600: #005A6A;
+  --palette-night-1-700: #004552;
+  --palette-night-1-800: #01303A;
+  --palette-night-1-900: #021C22;
+  /* ليل الملعب 2 — نيلي · hue 258° · peak chroma 0.137 */
+  --palette-night-2-50: #E8F0FC;
+  --palette-night-2-100: #BAD2F4;
+  --palette-night-2-200: #87B0EB;
+  --palette-night-2-300: #5A8FDD;
+  --palette-night-2-400: #4178C8;
+  --palette-night-2-500: #3062AC;
+  --palette-night-2-600: #264F8B;
+  --palette-night-2-700: #1C3C6B;
+  --palette-night-2-800: #122A4C;
+  --palette-night-2-900: #09182E;
+  /* ليل الملعب 3 — بنفسجي · hue 288° · peak chroma 0.156 */
+  --palette-night-3-50: #EEEEFD;
+  --palette-night-3-100: #CDCAF8;
+  --palette-night-3-200: #AAA2F0;
+  --palette-night-3-300: #8B7DE3;
+  --palette-night-3-400: #7665CE;
+  --palette-night-3-500: #6250B1;
+  --palette-night-3-600: #4E408F;
+  --palette-night-3-700: #3B316E;
+  --palette-night-3-800: #29224F;
+  --palette-night-3-900: #17132F;
+  /* ليل الملعب 4 — برقوقي · hue 336° · peak chroma 0.138 */
+  --palette-night-4-50: #F8EBF4;
+  --palette-night-4-100: #E8C3DE;
+  --palette-night-4-200: #D596C5;
+  --palette-night-4-300: #BF6EAD;
+  --palette-night-4-400: #A95597;
+  --palette-night-4-500: #8F427F;
+  --palette-night-4-600: #743566;
+  --palette-night-4-700: #59284E;
+  --palette-night-4-800: #3F1B37;
+  --palette-night-4-900: #250F20;
+}
+
+/* Figma, goals card 1499:2258 as drawn. Light only: Figma has no dark frame for these cards. */
+:root {
+  --figma-card-1-surface: #E8F5ED;
+  --figma-card-1-accent: #1A9448;
+  --figma-card-1-edge: #14B8A6;
+  --figma-card-2-surface: #E6FFFB;
+  --figma-card-2-accent: #14B8A6;
+  --figma-card-2-edge: #14B8A6;
+  --figma-card-3-surface: #E0F2FE;
+  --figma-card-3-accent: #0EA5E9;
+  --figma-card-3-edge: #0EA5E9;
+  --figma-card-4-surface: #FEF3C7;
+  --figma-card-4-accent: #D97706;
+  --figma-card-4-edge: #D97706;
+  --figma-card-5-surface: #FEE2E2;
+  --figma-card-5-accent: #EF4444;
+  --figma-card-5-edge: #EF4444;
+  --figma-card-6-surface: #FFFBEB;
+  --figma-card-6-accent: #D97706;
+  --figma-card-6-edge: #D97706;
+  --figma-card-on-accent: #FFFFFF;
+}
+
+:root,
+[data-theme="light"] {
+  /* card 1 — Federation Green */
+  --proposed-card-green-surface: #E8F5ED; /* green.50 */
+  --proposed-card-green-accent: #1A9448; /* green.400 */
+  --proposed-card-green-on-accent: #000000; /* black */
+  --proposed-card-green-label: #006B31; /* green.600 */
+  /* card 6 — Federation Black */
+  --proposed-card-black-surface: #F5F4F1; /* neutral-warm.100 */
+  --proposed-card-black-accent: #000000; /* black */
+  --proposed-card-black-on-accent: #FFFFFF; /* white */
+  --proposed-card-black-label: #000000; /* black */
+  /* الهادئة 1 — أزرق ليلي */
+  --proposed-palette-calm-1-surface: var(--palette-calm-1-50);
+  --proposed-palette-calm-1-accent: var(--palette-calm-1-700);
+  --proposed-palette-calm-1-on-accent: #FFFFFF;
+  --proposed-palette-calm-1-label: var(--palette-calm-1-700);
+  /* الهادئة 2 — رمادي مزرق */
+  --proposed-palette-calm-2-surface: var(--palette-calm-2-50);
+  --proposed-palette-calm-2-accent: var(--palette-calm-2-400);
+  --proposed-palette-calm-2-on-accent: #000000;
+  --proposed-palette-calm-2-label: var(--palette-calm-2-500);
+  /* الهادئة 3 — موف */
+  --proposed-palette-calm-3-surface: var(--palette-calm-3-50);
+  --proposed-palette-calm-3-accent: var(--palette-calm-3-500);
+  --proposed-palette-calm-3-on-accent: #FFFFFF;
+  --proposed-palette-calm-3-label: var(--palette-calm-3-500);
+  /* الهادئة 4 — زيتوني حجري */
+  --proposed-palette-calm-4-surface: var(--palette-calm-4-50);
+  --proposed-palette-calm-4-accent: var(--palette-calm-4-400);
+  --proposed-palette-calm-4-on-accent: #000000;
+  --proposed-palette-calm-4-label: var(--palette-calm-4-500);
+  /* الحيّة 1 — أزرق ملكي */
+  --proposed-palette-vivid-1-surface: var(--palette-vivid-1-50);
+  --proposed-palette-vivid-1-accent: var(--palette-vivid-1-400);
+  --proposed-palette-vivid-1-on-accent: #FFFFFF;
+  --proposed-palette-vivid-1-label: var(--palette-vivid-1-500);
+  /* الحيّة 2 — بنفسجي */
+  --proposed-palette-vivid-2-surface: var(--palette-vivid-2-50);
+  --proposed-palette-vivid-2-accent: var(--palette-vivid-2-400);
+  --proposed-palette-vivid-2-on-accent: #FFFFFF;
+  --proposed-palette-vivid-2-label: var(--palette-vivid-2-500);
+  /* الحيّة 3 — فوشي */
+  --proposed-palette-vivid-3-surface: var(--palette-vivid-3-50);
+  --proposed-palette-vivid-3-accent: var(--palette-vivid-3-700);
+  --proposed-palette-vivid-3-on-accent: #FFFFFF;
+  --proposed-palette-vivid-3-label: var(--palette-vivid-3-700);
+  /* الحيّة 4 — برتقالي أو سماوي */
+  --proposed-palette-vivid-4-surface: var(--palette-vivid-4-50);
+  --proposed-palette-vivid-4-accent: var(--palette-vivid-4-700);
+  --proposed-palette-vivid-4-on-accent: #FFFFFF;
+  --proposed-palette-vivid-4-label: var(--palette-vivid-4-700);
+  /* ليل الملعب 1 — أزرق بترولي */
+  --proposed-palette-night-1-surface: var(--palette-night-1-50);
+  --proposed-palette-night-1-accent: var(--palette-night-1-400);
+  --proposed-palette-night-1-on-accent: #000000;
+  --proposed-palette-night-1-label: var(--palette-night-1-500);
+  /* ليل الملعب 2 — نيلي */
+  --proposed-palette-night-2-surface: var(--palette-night-2-50);
+  --proposed-palette-night-2-accent: var(--palette-night-2-500);
+  --proposed-palette-night-2-on-accent: #FFFFFF;
+  --proposed-palette-night-2-label: var(--palette-night-2-500);
+  /* ليل الملعب 3 — بنفسجي */
+  --proposed-palette-night-3-surface: var(--palette-night-3-50);
+  --proposed-palette-night-3-accent: var(--palette-night-3-700);
+  --proposed-palette-night-3-on-accent: #FFFFFF;
+  --proposed-palette-night-3-label: var(--palette-night-3-700);
+  /* ليل الملعب 4 — برقوقي */
+  --proposed-palette-night-4-surface: var(--palette-night-4-50);
+  --proposed-palette-night-4-accent: var(--palette-night-4-700);
+  --proposed-palette-night-4-on-accent: #FFFFFF;
+  --proposed-palette-night-4-label: var(--palette-night-4-700);
+}
+
+[data-theme="dark"] {
+  /* card 1 — Federation Green */
+  --proposed-card-green-surface: #003A1B; /* green.800 */
+  --proposed-card-green-accent: #1A9448; /* green.400 */
+  --proposed-card-green-on-accent: #000000; /* black */
+  --proposed-card-green-label: #3DAD65; /* green.300 */
+  /* card 6 — Federation Black */
+  --proposed-card-black-surface: #33322D; /* neutral-warm.800 */
+  --proposed-card-black-accent: #FAFAF8; /* neutral-warm.50 — black inverts on a dark page, as focus.default does */
+  --proposed-card-black-on-accent: #000000; /* black */
+  --proposed-card-black-label: #FAFAF8; /* neutral-warm.50 */
+  /* الهادئة 1 — أزرق ليلي */
+  --proposed-palette-calm-1-surface: var(--palette-calm-1-800);
+  --proposed-palette-calm-1-accent: var(--palette-calm-1-200);
+  --proposed-palette-calm-1-on-accent: #000000;
+  --proposed-palette-calm-1-label: var(--palette-calm-1-200);
+  /* الهادئة 2 — رمادي مزرق */
+  --proposed-palette-calm-2-surface: var(--palette-calm-2-800);
+  --proposed-palette-calm-2-accent: var(--palette-calm-2-300);
+  --proposed-palette-calm-2-on-accent: #000000;
+  --proposed-palette-calm-2-label: var(--palette-calm-2-200);
+  /* الهادئة 3 — موف */
+  --proposed-palette-calm-3-surface: var(--palette-calm-3-800);
+  --proposed-palette-calm-3-accent: var(--palette-calm-3-400);
+  --proposed-palette-calm-3-on-accent: #000000;
+  --proposed-palette-calm-3-label: var(--palette-calm-3-200);
+  /* الهادئة 4 — زيتوني حجري */
+  --proposed-palette-calm-4-surface: var(--palette-calm-4-800);
+  --proposed-palette-calm-4-accent: var(--palette-calm-4-200);
+  --proposed-palette-calm-4-on-accent: #000000;
+  --proposed-palette-calm-4-label: var(--palette-calm-4-200);
+  /* الحيّة 1 — أزرق ملكي */
+  --proposed-palette-vivid-1-surface: var(--palette-vivid-1-800);
+  --proposed-palette-vivid-1-accent: var(--palette-vivid-1-400);
+  --proposed-palette-vivid-1-on-accent: #FFFFFF;
+  --proposed-palette-vivid-1-label: var(--palette-vivid-1-200);
+  /* الحيّة 2 — بنفسجي */
+  --proposed-palette-vivid-2-surface: var(--palette-vivid-2-800);
+  --proposed-palette-vivid-2-accent: var(--palette-vivid-2-400);
+  --proposed-palette-vivid-2-on-accent: #FFFFFF;
+  --proposed-palette-vivid-2-label: var(--palette-vivid-2-200);
+  /* الحيّة 3 — فوشي */
+  --proposed-palette-vivid-3-surface: var(--palette-vivid-3-800);
+  --proposed-palette-vivid-3-accent: var(--palette-vivid-3-400);
+  --proposed-palette-vivid-3-on-accent: #FFFFFF;
+  --proposed-palette-vivid-3-label: var(--palette-vivid-3-200);
+  /* الحيّة 4 — برتقالي أو سماوي */
+  --proposed-palette-vivid-4-surface: var(--palette-vivid-4-800);
+  --proposed-palette-vivid-4-accent: var(--palette-vivid-4-300);
+  --proposed-palette-vivid-4-on-accent: #000000;
+  --proposed-palette-vivid-4-label: var(--palette-vivid-4-200);
+  /* ليل الملعب 1 — أزرق بترولي */
+  --proposed-palette-night-1-surface: var(--palette-night-1-800);
+  --proposed-palette-night-1-accent: var(--palette-night-1-400);
+  --proposed-palette-night-1-on-accent: #000000;
+  --proposed-palette-night-1-label: var(--palette-night-1-200);
+  /* ليل الملعب 2 — نيلي */
+  --proposed-palette-night-2-surface: var(--palette-night-2-800);
+  --proposed-palette-night-2-accent: var(--palette-night-2-200);
+  --proposed-palette-night-2-on-accent: #000000;
+  --proposed-palette-night-2-label: var(--palette-night-2-200);
+  /* ليل الملعب 3 — بنفسجي */
+  --proposed-palette-night-3-surface: var(--palette-night-3-800);
+  --proposed-palette-night-3-accent: var(--palette-night-3-400);
+  --proposed-palette-night-3-on-accent: #FFFFFF;
+  --proposed-palette-night-3-label: var(--palette-night-3-200);
+  /* ليل الملعب 4 — برقوقي */
+  --proposed-palette-night-4-surface: var(--palette-night-4-800);
+  --proposed-palette-night-4-accent: var(--palette-night-4-300);
+  --proposed-palette-night-4-on-accent: #000000;
+  --proposed-palette-night-4-label: var(--palette-night-4-200);
+}

@@ -3,7 +3,7 @@
 **Status:** Accepted
 **Date:** 2026-09-12
 **Owner approval:** explicit, on Q1–Q17 of `docs/engineering/plans/president-message-plan.md` §Part 3, before this record was written. Q3 was answered as an **interim** decision (D7 below).
-**Amended:** 2026-09-13 — Decision D10 (the identity lines in the portrait hero, the entrance, the one-shot reveal), which amends D8. Owner approval for D10 is recorded in D10.
+**Amended:** 2026-09-13 — Decision D10 (the identity lines in the portrait hero, the entrance, the one-shot reveal), which amends D8. Owner approval for D10 is recorded in D10. 2026-09-14 — Decision D11 (the pull-quote stays in the neutral text colour until the colour-system batch), owner decision recorded in D11.
 **Extends:** ADR-0057 (audit capture), ADR-0058 (machine-readable error codes), ADR-0059 §D7 (the ascent), ADR-0066 D5 (hero composition, artwork never behind text), ADR-0067 D2/D3/D4 (first screen, opening sequence, section entrances)
 **Amends:** Chapter 3 §3.14 (Motion Durations, 5 → 6); `docs/design-specs/page-president-message.md` §7.4 (Personality row) and §7.5 (owner decisions 1, 2, 3, 4); by D10, §7.4's Hero composition and Decorative swooshes rows
 **Depends on:** Chapter 4 §4.6, Chapter 5 §5.6/§5.7, Chapter 6, Chapter 8 L4 (FB.6/FB.11/FB.16/FB.17/FB.20/FB.21, ADR-0016), Chapter 14 §3/§4, Visual Protocol §4/§13
@@ -328,7 +328,32 @@ Short portrait phones broke Chapter 5 §5.10's 90vh cap: at 375×667 the hero me
 
 ### What D10 does not decide
 
-- **The lines on any other page.** A separate decision.
+- **The lines on any other page.** A separate decision. Taken for Vision & Mission's hero by ADR-0070, and for a band between sections by ADR-0071 D8, which also draws the black stroke in the logo's ink on the page's own ground.
+
+## Decision D11 — The pull-quote stays in the neutral text colour until the colour-system batch (owner decision 2026-09-14)
+
+The frames set the quote in `--color-green-600` on a `--color-green-50` card with a `--color-green-500` border (`2705:6`), and `page-president-message.md` §7.4, *Pull-quote colours*, still names those three tokens (5.95:1 on the green-50 ground). The page sets it in `--color-text-primary` on the page's own ground, beside a `--color-brand-primary` rule on its reading-start edge. Why the green was not used was never recorded.
+
+**Measured** (WCAG 2.x contrast, 2026-09-14), against the page ground in each theme:
+
+| Shade | Light ground `#FAFAF8` | Dark ground `#131210` |
+| --- | --- | --- |
+| `green-600` `#006B31` | **6.38:1** | 2.81:1 |
+| `green-500` `#00843D` | 4.60:1 | 3.89:1 |
+| `green-400` `#1A9448` | 3.74:1 | 4.79:1 |
+| `green-300` `#3DAD65` | 2.73:1 | **6.56:1** |
+
+No shade clears 4.5:1 in both themes. A shade per theme does: `green-600` in light and `green-300` in dark, the widest margin in each. They are the pair `--color-text-link` already switches between (`light.css` `#006B31`, `dark.css` `#3DAD65`), which is the precedent. ADR-0063 does not stand in the way: its rule is that a text colour follows its ground, and a per-theme pair does.
+
+**Why it stops.** ADR-0065 D2 gives Federation Green the role **Action** (primary buttons, links, active and selected state, governance regions) and names where it never goes: "Card fills, section headings, panel tints — anywhere without an action". R2 allows no colour for decoration. A quote is not an action, so a green quote needs ADR-0065 amended. That amendment belongs to the colour-system batch the owner is opening, so the rule changes once rather than twice. **This record does not amend ADR-0065.**
+
+**Three sources disagree. Recorded here, not resolved:**
+
+1. `page-president-message.md` §7.4, *Pull-quote colours*: green-50, green-500, green-600.
+2. ADR-0065 D2 and R2: green only where there is an action.
+3. The implementation: neutral text, with the choice recorded nowhere until this decision.
+
+Until the colour-system batch, the implementation stands and the spec row is left as written; this decision is the pointer between them.
 
 ---
 
@@ -360,7 +385,7 @@ The file is view-only; every item below is a new visual state with no Figma fram
 
 1. The portrait hero: title block on the reading edge, portrait in the far column, no overlap, no bleed above the hero, scrim over any background image.
 2. The values band on the `green` register, cards on the reading edge at one shared height.
-3. The pull-quote at `h3` with its rule on the reading-start edge.
+3. The pull-quote at `h3` in the neutral text colour, with its `brand.primary` rule on the reading-start edge (D11).
 4. The closing block: name, title, and the derived date.
 5. The single-column reading measure at every breakpoint.
 6. The dashboard editor screen in full — no Figma frame exists for any dashboard surface (ADR-0068 D8).
@@ -374,6 +399,7 @@ The file is view-only; every item below is a new visual state with no Figma fram
 - **`createLive` atomicity.** Named in D5 as a known constraint; not fixed by this record.
 - **The approver list.** Interim by D7 until the client settles it.
 - **How Lucide reaches the code.** Q17 settled it for this page — the twelve keys ship as vendored SVGs, no runtime dependency, per ADR-0065 D6's threshold. A general icon-delivery decision remains ADR-0068 D6's open item.
+- **The pull-quote's colour.** Neutral until the colour-system batch (D11).
 
 ## Implementation
 

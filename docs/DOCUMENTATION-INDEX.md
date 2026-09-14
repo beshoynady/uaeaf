@@ -56,12 +56,18 @@
 
 ### قرارات معمارية (ADRs)
 
-`ADR-0054` … `ADR-0069` — ستة عشر ملفًا في `docs/design-system/`. كل واحد يوثّق
+`ADR-0054` … `ADR-0071` — ثمانية عشر ملفًا في `docs/design-system/`. كل واحد يوثّق
 قرارًا واحدًا وسببه والبديل المرفوض. **هذه أهم ما يُسلَّم**: هي الجواب على «لماذا
 بُني هكذا» بعد أن ينسى الجميع.
 
-أحدثها: `ADR-0069-President-Message-Rich-Text-Publishing-Policy-Binding-And-Portrait-Hero.md`
+`ADR-0069-President-Message-Rich-Text-Publishing-Policy-Binding-And-Portrait-Hero.md`
 — يحكم المرحلة ج كاملة.
+
+`ADR-0070-Vision-Mission-Page-Schema-Editorial-Routes-Shared-Editor-And-Identity-Hero.md`
+— صفحة الرؤية والرسالة: الـ schema، ومسارات التحرير، وأجزاء المحرر المشتركة، وhero خطوط الهوية.
+
+أحدثها: `ADR-0071-Colour-Corrections-Three-List-Guard-Color-Scheme-And-Vision-Mission-Visual-Direction.md`
+— تصحيحات الألوان وحارس القوائم الثلاث و`color-scheme`، والاتجاه البصري لصفحة الرؤية والرسالة. ألوان البنود فيه **موقوفة بالقياس** (D9).
 
 ### حوكمة بصرية
 
@@ -119,6 +125,7 @@
 | الملف | ملاحظة |
 |---|---|
 | `engineering/plans/president-message-plan.md` | خطة المرحلة ج وسجلّ قراراتها |
+| `engineering/plans/colour-modes-proposal.md` | اقتراح قائمتي الألوان وقياساته؛ §9.3 يسجّل ما حُسم وما سقط |
 | `engineering/post-delivery-backlog.md` | متأخرات ما بعد التسليم — **بند واحد فقط، ولا يُضاف إليه دون قرار المالك** |
 | `engineering/UAEAF-PHASE-1-BUILD-PLAN-2026-09-07.md` | خطة بناء المرحلة ١ |
 | `engineering/UAEAF-FRONTEND-BUILDOUT-PLAN-2026-09-07.md` | خطة بناء الواجهة |
@@ -130,6 +137,8 @@
 |---|---|
 | `engineering/UAEAF-ENGINEERING-OPERATING-MODEL.md` | نموذج التشغيل الهندسي |
 | `engineering/quality-gates.md` | بوابات الجودة (hook + CI) |
+| `engineering/how-colour-system-works.md` | كيف يعمل نظام الألوان: من JSON إلى الشاشة، ومواضع الكسر، والحراس |
+| `engineering/how-vision-mission-direction-works.md` | ما بُني في دفعة الاتجاه البصري: الحارس، و`color-scheme`، والـ hero الشريط، والخطوط بين الأقسام |
 | `design-system/UAEAF-DESIGN-CRITIQUE-JURY-PROTOCOL.md` | بروتوكول تقييم المقترحات — أداة عمل داخلية لا مرجع تصميم |
 | `design-system/figma-reference/README.md` | دليل لقطات Figma المرجعية |
 

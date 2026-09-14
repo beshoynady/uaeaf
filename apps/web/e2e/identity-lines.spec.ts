@@ -13,6 +13,23 @@ import { expect, test, type Page } from "@playwright/test";
  *
  * Phones and tablets are emulated as mobile devices: a desktop scrollbar turns
  * a 390px viewport into a 375px layout.
+ *
+ * How much of it to run (owner decision 2026-09-14, ADR-0070 *Tests*). Each
+ * stroke case takes about 19 seconds, so one route on every viewport is about
+ * 6.5 minutes and the cost grows with every page that carries the lines.
+ *
+ * - While a page is being built: `ONLY_ROUTE=<route> ONLY_VIEWPORTS=work`,
+ *   the three viewports that cover the hero's layouts — the smallest phone
+ *   (360×640), below `lg` (768×1024) and the desktop frame (1440×900) — in
+ *   both languages, about 2 minutes.
+ * - At the end of the batch: the changed route on every viewport, and every
+ *   route when `IdentityHero` itself changed.
+ * - CI runs every route on every viewport on every push, with neither
+ *   variable set, so a narrowed local run is never the only check.
+ *
+ * A filter that matches nothing throws rather than reporting "No tests
+ * found": in Git Bash, `ONLY_ROUTE=/about/...` arrives rewritten as a Windows
+ * path unless `MSYS_NO_PATHCONV=1` is set, and an empty run reads as a pass.
  */
 
 const SAFE_DISTANCE = 32;
@@ -32,12 +49,29 @@ const VIEWPORTS = [
   { width: 1440, height: 900, isMobile: false },
 ] as const;
 
+/** The working set named in the header: one viewport per layout the hero has. */
+const WORK_VIEWPORTS = ["360x640", "768x1024", "1440x900"];
+
+const viewportsToRun = () => {
+  const wanted = process.env.ONLY_VIEWPORTS;
+  if (!wanted) return [...VIEWPORTS];
+  const names = wanted === "work" ? WORK_VIEWPORTS : wanted.split(",").map((name) => name.trim());
+  const known = new Set(VIEWPORTS.map((viewport) => `${viewport.width}x${viewport.height}`));
+  const unknown = names.filter((name) => !known.has(name));
+  if (unknown.length > 0) {
+    throw new Error(`ONLY_VIEWPORTS names ${unknown.join(", ")}; expected "work" or any of ${[...known].join(", ")}.`);
+  }
+  return VIEWPORTS.filter((viewport) => names.includes(`${viewport.width}x${viewport.height}`));
+};
+
 interface Clearance {
   distance: number;
   against: string;
   atMs: number;
   frames: number;
   strokes: number;
+  /** Text runs and images measured against in the last frame. */
+  contents: number;
   overflowFrames: number;
 }
 
@@ -68,15 +102,19 @@ const measureClearance = (page: Page) =>
         return rects;
       };
 
-      const animations = document.getAnimations();
+      // Time-based animations only. A scroll-driven one (the photograph's
+      // parallax) runs on scroll position, not time: its endTime is a CSS
+      // percentage, which would make `end` NaN and skip every frame. It moves
+      // only the photograph, which is not measured here.
+      const animations = document
+        .getAnimations()
+        .filter((animation) => typeof animation.effect?.getComputedTiming().endTime === "number");
       animations.forEach((animation) => animation.pause());
-      const end = Math.max(
-        0,
-        ...animations.map((animation) => Number(animation.effect?.getComputedTiming().endTime ?? 0)),
-      );
+      const end = Math.max(0, ...animations.map((animation) => Number(animation.effect?.getComputedTiming().endTime)));
 
       let best = { distance: Infinity, against: "", atMs: 0 };
       let frames = 0;
+      let contents = 0;
       let overflowFrames = 0;
       for (let t = 0; t <= end + step; t += step) {
         animations.forEach((animation) => {
@@ -85,6 +123,7 @@ const measureClearance = (page: Page) =>
         frames += 1;
         if (document.documentElement.scrollWidth > document.documentElement.clientWidth) overflowFrames += 1;
         const rects = contentRects();
+        contents = rects.length;
         for (const path of paths) {
           const matrix = path.getScreenCTM();
           if (!matrix) continue;
@@ -103,61 +142,223 @@ const measureClearance = (page: Page) =>
         }
       }
       animations.forEach((animation) => animation.finish());
-      return { ...best, distance: Math.round(best.distance * 10) / 10, frames, strokes: paths.length, overflowFrames };
+      return {
+        ...best,
+        distance: Math.round(best.distance * 10) / 10,
+        frames,
+        strokes: paths.length,
+        contents,
+        overflowFrames,
+      };
     },
     { step: FRAME_STEP_MS, points: OUTLINE_POINTS },
   );
 
-for (const locale of ["ar", "en"] as const) {
-  for (const viewport of VIEWPORTS) {
-    test.describe(`${locale} ${viewport.width}x${viewport.height}`, () => {
-      test.use({
-        viewport: { width: viewport.width, height: viewport.height },
-        isMobile: viewport.isMobile,
-        hasTouch: viewport.isMobile,
-        deviceScaleFactor: viewport.isMobile ? 2 : 1,
-        reducedMotion: "no-preference",
-      });
+/** Every page whose hero carries the identity lines: the President's Message
+ *  (ADR-0069 D10) and Vision & Mission (ADR-0070). `ONLY_ROUTE` narrows a run
+ *  to one of them. */
+const ALL_ROUTES = ["/about/president", "/about/governance/vision-mission"];
 
-      test("keeps every identity stroke 32px from the hero's content, at rest and through the entrance", async ({
-        page,
-      }) => {
-        await page.goto(`/${locale}/about/president`, { waitUntil: "domcontentloaded" });
-        await page.evaluate(() => document.fonts.ready);
-        const clearance = await measureClearance(page);
-        test.info().annotations.push({ type: "clearance", description: JSON.stringify(clearance) });
+const ROUTES = ALL_ROUTES.filter((route) => !process.env.ONLY_ROUTE || route === process.env.ONLY_ROUTE);
 
-        expect(clearance.strokes, "the hero draws its four identity strokes").toBe(4);
-        expect(clearance.overflowFrames, "no frame scrolls the page sideways").toBe(0);
-        expect(
-          clearance.distance,
-          `closest stroke reaches ${clearance.distance}px from the ${clearance.against} at ${clearance.atMs}ms`,
-        ).toBeGreaterThanOrEqual(SAFE_DISTANCE);
+/** Bands between sections that carry the lines (ADR-0071 D8), per route. */
+const BANDS: Record<string, number> = {
+  "/about/president": 0,
+  "/about/governance/vision-mission": 1,
+};
+
+/**
+ * IL-5 in a band between sections: its strokes against every text run and
+ * photograph of the page's content, not only the band's own. Group B stands on
+ * the band's bottom edge, which is the next section's top edge, so the heading
+ * below it is as close as anything inside. The strokes are static; what moves
+ * is the content, which waits offset below the first screen and rises when
+ * revealed, so every frame of the running animations is measured, and a band
+ * with none is measured once, at rest.
+ */
+const measureBand = (page: Page, index: number) =>
+  page.evaluate(
+    ({ index, step, points }): Clearance => {
+      const band = document.querySelectorAll<HTMLElement>("[data-identity-band]")[index];
+      if (!band) throw new Error(`no band ${index} on the page`);
+
+      const paths = [...band.querySelectorAll<SVGPathElement>("[data-il-stroke] path")].filter(
+        (path) => (path.closest("[data-il-stroke]") as HTMLElement).getClientRects().length > 0,
+      );
+
+      // The page's content: `<main>`, without the hero, whose photograph is the
+      // ground its own lines stand on and whose text its own case measures.
+      const content = document.querySelector("main") ?? document.body;
+      const hero = content.querySelector("section[data-composition]");
+      const contentRects = () => {
+        const rects: { rect: DOMRect; label: string }[] = [];
+        const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+          const parent = node.parentElement;
+          if (!node.textContent?.trim() || !parent || parent.closest("[data-identity-lines]")) continue;
+          if (hero?.contains(parent) || parent.closest("script, style")) continue;
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          for (const rect of range.getClientRects()) {
+            rects.push({ rect, label: `${parent.tagName.toLowerCase()} "${node.textContent.trim().slice(0, 16)}"` });
+          }
+        }
+        for (const image of content.querySelectorAll("img")) {
+          if (hero?.contains(image)) continue;
+          rects.push({ rect: image.getBoundingClientRect(), label: "photograph" });
+        }
+        return rects;
+      };
+
+      const animations = document
+        .getAnimations()
+        .filter((animation) => typeof animation.effect?.getComputedTiming().endTime === "number");
+      animations.forEach((animation) => animation.pause());
+      const end = Math.max(0, ...animations.map((animation) => Number(animation.effect?.getComputedTiming().endTime)));
+
+      let best = { distance: Infinity, against: "", atMs: 0 };
+      let frames = 0;
+      let contents = 0;
+      let overflowFrames = 0;
+      for (let t = 0; t <= end + step; t += step) {
+        animations.forEach((animation) => {
+          animation.currentTime = Math.min(t, end);
+        });
+        frames += 1;
+        if (document.documentElement.scrollWidth > document.documentElement.clientWidth) overflowFrames += 1;
+        const rects = contentRects();
+        contents = rects.length;
+        for (const path of paths) {
+          const matrix = path.getScreenCTM();
+          if (!matrix) continue;
+          const length = path.getTotalLength();
+          for (let i = 0; i <= points; i += 1) {
+            const p = path.getPointAtLength((length * i) / points);
+            const x = matrix.a * p.x + matrix.c * p.y + matrix.e;
+            const y = matrix.b * p.x + matrix.d * p.y + matrix.f;
+            for (const { rect, label } of rects) {
+              const dx = Math.max(rect.left - x, 0, x - rect.right);
+              const dy = Math.max(rect.top - y, 0, y - rect.bottom);
+              const distance = Math.hypot(dx, dy);
+              if (distance < best.distance) best = { distance, against: label, atMs: Math.min(t, end) };
+            }
+          }
+        }
+      }
+      animations.forEach((animation) => animation.finish());
+      return { ...best, distance: Math.round(best.distance * 10) / 10, frames, strokes: paths.length, contents, overflowFrames };
+    },
+    { index, step: FRAME_STEP_MS, points: OUTLINE_POINTS },
+  );
+
+if (ROUTES.length === 0) {
+  throw new Error(`ONLY_ROUTE is "${process.env.ONLY_ROUTE}"; expected one of ${ALL_ROUTES.join(", ")}.`);
+}
+
+for (const route of ROUTES) {
+  for (const locale of ["ar", "en"] as const) {
+    for (const viewport of viewportsToRun()) {
+      test.describe(`${route} ${locale} ${viewport.width}x${viewport.height}`, () => {
+        test.use({
+          viewport: { width: viewport.width, height: viewport.height },
+          isMobile: viewport.isMobile,
+          hasTouch: viewport.isMobile,
+          deviceScaleFactor: viewport.isMobile ? 2 : 1,
+          reducedMotion: "no-preference",
+        });
+
+        test("keeps every identity stroke 32px from the hero's content, at rest and through the entrance", async ({
+          page,
+        }) => {
+          await page.goto(`/${locale}${route}`, { waitUntil: "domcontentloaded" });
+          await page.evaluate(() => document.fonts.ready);
+          const clearance = await measureClearance(page);
+          test.info().annotations.push({ type: "clearance", description: JSON.stringify(clearance) });
+
+          expect(clearance.strokes, "the hero draws its four identity strokes").toBe(4);
+          // A distance is only evidence if something was measured: a run that
+          // scrubbed no frame, or found no text, reports Infinity and would pass.
+          expect(clearance.frames, "the entrance was scrubbed frame by frame").toBeGreaterThan(0);
+          expect(clearance.contents, "the hero's text was found to measure against").toBeGreaterThan(0);
+          expect(Number.isFinite(clearance.distance), "a distance was measured").toBe(true);
+          expect(clearance.overflowFrames, "no frame scrolls the page sideways").toBe(0);
+          expect(
+            clearance.distance,
+            `closest stroke reaches ${clearance.distance}px from the ${clearance.against} at ${clearance.atMs}ms`,
+          ).toBeGreaterThanOrEqual(SAFE_DISTANCE);
+        });
+
+        test("keeps the strokes between sections 32px from their band's content, before and after it is revealed", async ({
+          page,
+        }) => {
+          await page.goto(`/${locale}${route}`, { waitUntil: "domcontentloaded" });
+          await page.evaluate(() => document.fonts.ready);
+          const bands = page.locator("[data-identity-band]");
+          expect(await bands.count(), "the page's bands between sections").toBe(BANDS[route]);
+
+          for (let index = 0; index < BANDS[route]; index += 1) {
+            // As loaded: a band below the first screen waits offset by its reveal.
+            const waiting = await measureBand(page, index);
+            // Every block, not the band's top: on a short phone the band is
+            // taller than the screen, and a block below the view never reveals.
+            const blocks = bands.nth(index).locator("[data-reveal]");
+            for (let block = 0; block < (await blocks.count()); block += 1) {
+              await blocks.nth(block).scrollIntoViewIfNeeded();
+            }
+            await page.waitForFunction(
+              (i) =>
+                ![...document.querySelectorAll("[data-identity-band]")[i].querySelectorAll("[data-reveal]")].some(
+                  (block) => (block as HTMLElement).dataset.revealState === "waiting",
+                ),
+              index,
+            );
+            // Revealed: every frame of the rise, then at rest.
+            const revealed = await measureBand(page, index);
+
+            for (const [moment, clearance] of [
+              ["as loaded", waiting],
+              ["through its reveal", revealed],
+            ] as const) {
+              test.info().annotations.push({ type: `band ${index} ${moment}`, description: JSON.stringify(clearance) });
+              expect(clearance.strokes, `band ${index} draws four strokes`).toBe(4);
+              expect(clearance.frames, `band ${index} ${moment}: frames measured`).toBeGreaterThan(0);
+              expect(clearance.contents, `band ${index} ${moment}: content found`).toBeGreaterThan(0);
+              expect(Number.isFinite(clearance.distance), `band ${index} ${moment}: a distance`).toBe(true);
+              expect(clearance.overflowFrames, `band ${index} ${moment}: no sideways scroll`).toBe(0);
+              expect(
+                clearance.distance,
+                `band ${index} ${moment}: closest stroke reaches ${clearance.distance}px from the ${clearance.against} at ${clearance.atMs}ms`,
+              ).toBeGreaterThanOrEqual(SAFE_DISTANCE);
+            }
+          }
+        });
       });
-    });
+    }
   }
 }
 
 test.describe("reduced motion", () => {
   test.use({ reducedMotion: "reduce", viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
 
-  for (const locale of ["ar", "en"] as const) {
-    test(`${locale}: the hero and its lines are drawn at rest, with nothing animating`, async ({ page }) => {
-      await page.goto(`/${locale}/about/president`, { waitUntil: "domcontentloaded" });
-      const running = await page.evaluate(() => document.getAnimations().length);
-      expect(running).toBe(0);
-    });
+  for (const route of ROUTES) {
+    for (const locale of ["ar", "en"] as const) {
+      test(`${route} ${locale}: the hero and its lines are drawn at rest, with nothing animating`, async ({ page }) => {
+        await page.goto(`/${locale}${route}`, { waitUntil: "domcontentloaded" });
+        const running = await page.evaluate(() => document.getAnimations().length);
+        expect(running).toBe(0);
+      });
+    }
   }
 });
 
 test.describe("the largest paint", () => {
-  for (const locale of ["ar", "en"] as const) {
+  for (const route of ROUTES) for (const locale of ["ar", "en"] as const) {
     // The page's own content, inside `<main>`. The site header is shared and
     // protected, and its drawer items fade in; they are not this page's paint.
-    test(`${locale}: no animation in the page's content changes opacity, so the title and the portrait paint in their first frame`, async ({
+    test(`${route} ${locale}: no animation in the page's content changes opacity, so the title and the portrait paint in their first frame`, async ({
       page,
     }) => {
-      await page.goto(`/${locale}/about/president`, { waitUntil: "domcontentloaded" });
+      await page.goto(`/${locale}${route}`, { waitUntil: "domcontentloaded" });
       const opacityAnimations = await page.evaluate(() =>
         document
           .getAnimations()

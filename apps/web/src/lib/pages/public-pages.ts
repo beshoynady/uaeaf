@@ -232,6 +232,20 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
     schemaType: "AboutPage",
     listEndpoint: null,
   },
+  {
+    // Its own workflow-governed entity, like the President's Message (ADR-0070).
+    // The route is the one IA §8.1's navigation already gives it, under About ›
+    // Governance & Strategy.
+    key: "vision-mission",
+    route: "/about/governance/vision-mission",
+    apiPath: "/vision-mission-page/current/public",
+    messageKey: "vision-mission",
+    register: "green",
+    registerBasis:
+      "Governance: guide §3.3 gives administration green, and §3.34.2 files governance pages under Quiet/Institutional, 'White + Green only' — the board's row.",
+    schemaType: "AboutPage",
+    listEndpoint: null,
+  },
 ];
 
 export function findPublicPage(key: string): PublicPage | undefined {

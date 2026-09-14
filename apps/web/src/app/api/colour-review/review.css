@@ -1,0 +1,822 @@
+/*
+ * Layout of the internal colour-review page (route.ts beside this file).
+ * Every colour here is a token from the build or a value from proposal.css or
+ * palettes.css. The only literals are the 44px touch target (Visual Protocol
+ * §9), the breakpoint widths, which CSS cannot read from custom properties, and
+ * the hue strip's 120 columns, one per 3° of hue.
+ */
+
+.cr {
+  margin: 0;
+  background: var(--color-surface-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-arabic);
+  font-size: var(--typography-body-desktop);
+  line-height: 1.6;
+}
+
+.cr h1,
+.cr h2,
+.cr h3,
+.cr h4,
+.cr p {
+  margin: 0;
+}
+
+.cr a {
+  color: var(--color-text-link);
+}
+
+/* ---- control bar */
+
+.cr-bar {
+  position: sticky;
+  top: 0;
+  z-index: var(--zIndex-sticky);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-6);
+  background: var(--color-surface-raised);
+  border-bottom: var(--border-width-default) solid var(--color-border-strong);
+}
+
+.cr-bar h1 {
+  font-size: var(--typography-heading-subsection-desktop);
+  font-weight: var(--font-weight-black);
+  line-height: 1.3;
+}
+
+.cr-bar p {
+  color: var(--color-text-muted);
+  font-size: var(--typography-body-sm-desktop);
+}
+
+.cr-jump {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-4);
+}
+
+.cr-jump a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--typography-body-sm-desktop);
+  font-weight: var(--font-weight-bold);
+}
+
+.cr-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.cr-switch {
+  display: inline-flex;
+  border: var(--border-width-default) solid var(--color-border-strong);
+  border-radius: var(--button-radius);
+  overflow: hidden;
+}
+
+.cr-switch button {
+  min-height: 44px;
+  padding-inline: var(--space-4);
+  border: 0;
+  background: transparent;
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: var(--typography-body-sm-desktop);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+}
+
+.cr-switch button + button {
+  border-inline-start: var(--border-width-default) solid var(--color-border-strong);
+}
+
+.cr-switch button[aria-pressed="true"] {
+  background: var(--button-primary-background);
+  color: var(--proposed-button-primary-text);
+}
+
+.cr button:focus-visible,
+.cr a:focus-visible {
+  outline: var(--a11y-focus-ring-width) solid var(--a11y-focus-ring);
+  outline-offset: var(--a11y-focus-offset-width);
+}
+
+/* ---- blocks */
+
+.cr-main {
+  max-width: var(--container-public-max);
+  margin-inline: auto;
+  padding: var(--space-8) var(--space-6) var(--space-24);
+}
+
+.cr-block + .cr-block {
+  margin-top: var(--space-16);
+}
+
+.cr-block h2 {
+  font-size: var(--typography-heading-section-desktop);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.25;
+}
+
+.cr-lead {
+  max-width: 80ch;
+  margin-top: var(--space-3);
+  color: var(--color-text-secondary);
+}
+
+.cr-table-wrap {
+  margin-top: var(--space-8);
+  overflow-x: auto;
+}
+
+/* ---- what the measurement allows */
+
+.cr-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: var(--space-6) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cr-facts li {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-6);
+  background: var(--color-surface-raised);
+  border: var(--border-width-default) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+}
+
+.cr-facts b {
+  font-family: var(--font-family-mono);
+  font-size: var(--typography-heading-section-desktop);
+  line-height: 1;
+}
+
+.cr-facts span {
+  color: var(--color-text-secondary);
+  font-size: var(--typography-body-sm-desktop);
+}
+
+.cr-strips {
+  margin: var(--space-8) 0 0;
+}
+
+.cr-strips figcaption {
+  max-width: 80ch;
+  color: var(--color-text-secondary);
+  font-size: var(--typography-body-sm-desktop);
+}
+
+.cr-strip {
+  margin-top: var(--space-4);
+}
+
+.cr-strip__label {
+  color: var(--color-text-secondary);
+  font-size: var(--typography-label-desktop);
+  font-weight: var(--font-weight-bold);
+}
+
+.cr-strip__cells {
+  display: grid;
+  grid-template-columns: repeat(120, minmax(0, 1fr));
+  align-items: end;
+  block-size: var(--space-8);
+  margin-top: var(--space-1);
+  border-bottom: var(--border-width-default) solid var(--color-border-default);
+}
+
+.cr-strip__cells span {
+  block-size: 100%;
+}
+
+/* Height carries the verdict as well as colour: full, half, a rule. */
+.cr-strip__cells span[data-state="pass"] {
+  background: var(--color-text-primary);
+}
+
+.cr-strip__cells span[data-state="near"] {
+  block-size: 50%;
+  background: var(--color-text-muted);
+}
+
+.cr-strip__cells span[data-state="fail"] {
+  block-size: var(--border-width-thick);
+  background: var(--color-border-strong);
+}
+
+.cr-strip__hues {
+  border-bottom: 0;
+}
+
+.cr-strip__axis {
+  display: flex;
+  justify-content: space-between;
+  color: var(--color-text-muted);
+  font-family: var(--font-family-mono);
+  font-size: var(--typography-caption-desktop);
+}
+
+/* ---- one palette */
+
+.cr-palette {
+  padding-top: var(--space-12);
+  border-top: var(--border-width-default) solid var(--color-border-strong);
+}
+
+.cr-verdicts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: var(--space-3);
+  margin: var(--space-6) 0 0;
+}
+
+.cr-verdicts div {
+  padding: var(--space-3) var(--space-4);
+  border: var(--border-width-default) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+}
+
+.cr-verdicts div[data-pass="false"],
+.cr-wing[data-pass="false"] {
+  outline: var(--border-width-thick) solid var(--color-semantic-error);
+  outline-offset: calc(-1 * var(--border-width-thick));
+}
+
+.cr-verdicts dt {
+  color: var(--color-text-muted);
+  font-size: var(--typography-label-desktop);
+}
+
+.cr-verdicts dd {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--typography-body-sm-desktop);
+}
+
+.cr-verdicts b {
+  color: var(--color-text-primary);
+  font-family: var(--font-family-mono);
+  font-size: var(--typography-title-desktop);
+}
+
+/* A verdict in words keeps the Arabic face: the mono face has no Arabic glyphs. */
+.cr-verdicts strong {
+  color: var(--color-text-primary);
+  font-size: var(--typography-title-desktop);
+}
+
+.cr-ramps {
+  margin-top: var(--space-8);
+}
+
+.cr-ramps__title {
+  margin-top: var(--space-6);
+  font-size: var(--typography-heading-group-desktop);
+  font-weight: var(--font-weight-bold);
+}
+
+.cr-ramp {
+  margin-top: var(--space-3);
+}
+
+.cr-ramp__name {
+  font-size: var(--typography-body-sm-desktop);
+  font-weight: var(--font-weight-bold);
+}
+
+.cr-ramp__name span {
+  margin-inline-start: var(--space-2);
+  color: var(--color-text-muted);
+  font-family: var(--font-family-mono);
+  font-weight: var(--font-weight-regular);
+}
+
+.cr-ramp__steps {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  margin: var(--space-1) 0 0;
+  padding: 0;
+  list-style: none;
+  border: var(--border-width-default) solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.cr-ramp__steps li {
+  display: grid;
+  place-items: center;
+  block-size: var(--space-12);
+  font-family: var(--font-family-mono);
+  font-size: var(--typography-caption-desktop);
+  font-weight: var(--font-weight-bold);
+}
+
+.cr-ramp__use {
+  margin-top: var(--space-1);
+  color: var(--color-text-secondary);
+  font-size: var(--typography-caption-desktop);
+}
+
+.cr-compare {
+  display: grid;
+  gap: var(--space-6);
+  margin-top: var(--space-8);
+}
+
+.cr-stage {
+  padding: var(--space-6);
+  background: var(--color-surface-base);
+  color: var(--color-text-primary);
+  border: var(--border-width-default) solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+}
+
+.cr-stage__label {
+  font-size: var(--typography-label-desktop);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-muted);
+}
+
+.cr-stage__note {
+  max-width: 80ch;
+  margin-top: var(--space-1);
+  color: var(--color-text-secondary);
+  font-size: var(--typography-body-sm-desktop);
+}
+
+/* Figma's 3 × 2, two across below `lg`, one on a phone. */
+.cr-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Card 1 is Federation Green and card 6 Federation Black in every palette. */
+.cr-card[data-series="1"] {
+  --series-surface: var(--proposed-card-green-surface);
+  --series-accent: var(--proposed-card-green-accent);
+  --series-on-accent: var(--proposed-card-green-on-accent);
+  --series-label: var(--proposed-card-green-label);
+}
+.cr-card[data-series="6"] {
+  --series-surface: var(--proposed-card-black-surface);
+  --series-accent: var(--proposed-card-black-accent);
+  --series-on-accent: var(--proposed-card-black-on-accent);
+  --series-label: var(--proposed-card-black-label);
+}
+
+/* Cards 2–5: the palette's four new colours. */
+.cr-cards[data-palette="calm"] .cr-card[data-series="2"] {
+  --series-surface: var(--proposed-palette-calm-1-surface);
+  --series-accent: var(--proposed-palette-calm-1-accent);
+  --series-on-accent: var(--proposed-palette-calm-1-on-accent);
+  --series-label: var(--proposed-palette-calm-1-label);
+}
+.cr-cards[data-palette="calm"] .cr-card[data-series="3"] {
+  --series-surface: var(--proposed-palette-calm-2-surface);
+  --series-accent: var(--proposed-palette-calm-2-accent);
+  --series-on-accent: var(--proposed-palette-calm-2-on-accent);
+  --series-label: var(--proposed-palette-calm-2-label);
+}
+.cr-cards[data-palette="calm"] .cr-card[data-series="4"] {
+  --series-surface: var(--proposed-palette-calm-3-surface);
+  --series-accent: var(--proposed-palette-calm-3-accent);
+  --series-on-accent: var(--proposed-palette-calm-3-on-accent);
+  --series-label: var(--proposed-palette-calm-3-label);
+}
+.cr-cards[data-palette="calm"] .cr-card[data-series="5"] {
+  --series-surface: var(--proposed-palette-calm-4-surface);
+  --series-accent: var(--proposed-palette-calm-4-accent);
+  --series-on-accent: var(--proposed-palette-calm-4-on-accent);
+  --series-label: var(--proposed-palette-calm-4-label);
+}
+.cr-cards[data-palette="vivid"] .cr-card[data-series="2"] {
+  --series-surface: var(--proposed-palette-vivid-1-surface);
+  --series-accent: var(--proposed-palette-vivid-1-accent);
+  --series-on-accent: var(--proposed-palette-vivid-1-on-accent);
+  --series-label: var(--proposed-palette-vivid-1-label);
+}
+.cr-cards[data-palette="vivid"] .cr-card[data-series="3"] {
+  --series-surface: var(--proposed-palette-vivid-2-surface);
+  --series-accent: var(--proposed-palette-vivid-2-accent);
+  --series-on-accent: var(--proposed-palette-vivid-2-on-accent);
+  --series-label: var(--proposed-palette-vivid-2-label);
+}
+.cr-cards[data-palette="vivid"] .cr-card[data-series="4"] {
+  --series-surface: var(--proposed-palette-vivid-3-surface);
+  --series-accent: var(--proposed-palette-vivid-3-accent);
+  --series-on-accent: var(--proposed-palette-vivid-3-on-accent);
+  --series-label: var(--proposed-palette-vivid-3-label);
+}
+.cr-cards[data-palette="vivid"] .cr-card[data-series="5"] {
+  --series-surface: var(--proposed-palette-vivid-4-surface);
+  --series-accent: var(--proposed-palette-vivid-4-accent);
+  --series-on-accent: var(--proposed-palette-vivid-4-on-accent);
+  --series-label: var(--proposed-palette-vivid-4-label);
+}
+.cr-cards[data-palette="night"] .cr-card[data-series="2"] {
+  --series-surface: var(--proposed-palette-night-1-surface);
+  --series-accent: var(--proposed-palette-night-1-accent);
+  --series-on-accent: var(--proposed-palette-night-1-on-accent);
+  --series-label: var(--proposed-palette-night-1-label);
+}
+.cr-cards[data-palette="night"] .cr-card[data-series="3"] {
+  --series-surface: var(--proposed-palette-night-2-surface);
+  --series-accent: var(--proposed-palette-night-2-accent);
+  --series-on-accent: var(--proposed-palette-night-2-on-accent);
+  --series-label: var(--proposed-palette-night-2-label);
+}
+.cr-cards[data-palette="night"] .cr-card[data-series="4"] {
+  --series-surface: var(--proposed-palette-night-3-surface);
+  --series-accent: var(--proposed-palette-night-3-accent);
+  --series-on-accent: var(--proposed-palette-night-3-on-accent);
+  --series-label: var(--proposed-palette-night-3-label);
+}
+.cr-cards[data-palette="night"] .cr-card[data-series="5"] {
+  --series-surface: var(--proposed-palette-night-4-surface);
+  --series-accent: var(--proposed-palette-night-4-accent);
+  --series-on-accent: var(--proposed-palette-night-4-on-accent);
+  --series-label: var(--proposed-palette-night-4-label);
+}
+
+/* Figma's six as drawn, white numbers included: shown for comparison, not proposed. */
+.cr-cards[data-palette="figma"] .cr-card[data-series="1"] {
+  --series-surface: var(--figma-card-1-surface);
+  --series-accent: var(--figma-card-1-accent);
+  --series-edge: var(--figma-card-1-edge);
+  --series-on-accent: var(--figma-card-on-accent);
+  --series-label: var(--figma-card-1-accent);
+}
+.cr-cards[data-palette="figma"] .cr-card[data-series="2"] {
+  --series-surface: var(--figma-card-2-surface);
+  --series-accent: var(--figma-card-2-accent);
+  --series-edge: var(--figma-card-2-edge);
+  --series-on-accent: var(--figma-card-on-accent);
+  --series-label: var(--figma-card-2-accent);
+}
+.cr-cards[data-palette="figma"] .cr-card[data-series="3"] {
+  --series-surface: var(--figma-card-3-surface);
+  --series-accent: var(--figma-card-3-accent);
+  --series-edge: var(--figma-card-3-edge);
+  --series-on-accent: var(--figma-card-on-accent);
+  --series-label: var(--figma-card-3-accent);
+}
+.cr-cards[data-palette="figma"] .cr-card[data-series="4"] {
+  --series-surface: var(--figma-card-4-surface);
+  --series-accent: var(--figma-card-4-accent);
+  --series-edge: var(--figma-card-4-edge);
+  --series-on-accent: var(--figma-card-on-accent);
+  --series-label: var(--figma-card-4-accent);
+}
+.cr-cards[data-palette="figma"] .cr-card[data-series="5"] {
+  --series-surface: var(--figma-card-5-surface);
+  --series-accent: var(--figma-card-5-accent);
+  --series-edge: var(--figma-card-5-edge);
+  --series-on-accent: var(--figma-card-on-accent);
+  --series-label: var(--figma-card-5-accent);
+}
+.cr-cards[data-palette="figma"] .cr-card[data-series="6"] {
+  --series-surface: var(--figma-card-6-surface);
+  --series-accent: var(--figma-card-6-accent);
+  --series-edge: var(--figma-card-6-edge);
+  --series-on-accent: var(--figma-card-on-accent);
+  --series-label: var(--figma-card-6-accent);
+}
+
+.cr-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-6);
+  background: var(--series-surface);
+  border-top: var(--border-width-thick) solid var(--series-edge, var(--series-accent));
+  border-radius: var(--card-radius);
+}
+
+.cr-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.cr-card__badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--series-accent);
+  color: var(--series-on-accent);
+  font-family: var(--font-family-mono);
+  font-size: var(--typography-body-sm-desktop);
+  font-weight: var(--font-weight-bold);
+}
+
+.cr-card__kicker {
+  color: var(--series-label);
+  font-size: var(--typography-label-desktop);
+  font-weight: var(--font-weight-bold);
+}
+
+.cr-card__title {
+  font-size: var(--typography-title-desktop);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.4;
+  color: var(--color-text-primary);
+}
+
+.cr-card__text {
+  font-size: var(--typography-body-sm-desktop);
+  color: var(--color-text-secondary);
+}
+
+.cr-vision-target[data-vision="deutan"] .cr-cards,
+.cr-vision-target[data-vision="deutan"] .cr-ramps {
+  filter: url(#cr-deutan);
+}
+
+.cr-vision-target[data-vision="protan"] .cr-cards,
+.cr-vision-target[data-vision="protan"] .cr-ramps {
+  filter: url(#cr-protan);
+}
+
+/* ---- measurement tables */
+
+.cr-measure {
+  inline-size: 100%;
+  min-inline-size: 64rem;
+  border-collapse: collapse;
+  font-size: var(--typography-body-sm-desktop);
+}
+
+.cr-scenarios {
+  min-inline-size: 40rem;
+}
+
+.cr-measure caption {
+  padding-block-end: var(--space-2);
+  color: var(--color-text-secondary);
+  text-align: start;
+}
+
+.cr-measure th,
+.cr-measure td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: var(--border-width-default) solid var(--color-border-default);
+  text-align: start;
+  vertical-align: top;
+}
+
+.cr-measure thead th {
+  color: var(--color-text-muted);
+  font-size: var(--typography-label-desktop);
+}
+
+.cr-measure td > span,
+.cr-measure td small {
+  display: block;
+}
+
+.cr-measure small {
+  color: var(--color-text-muted);
+  font-size: var(--typography-caption-desktop);
+}
+
+.cr-measure b {
+  font-family: var(--font-family-mono);
+}
+
+.cr-measure span[data-pass="false"]::after {
+  content: " ✗ يسقط";
+}
+
+.cr-measure td[data-pass="false"] b {
+  text-decoration: underline;
+  text-decoration-thickness: var(--border-width-thick);
+  text-decoration-color: var(--color-semantic-error);
+}
+
+.cr-pairs {
+  margin-top: var(--space-4);
+  color: var(--color-text-secondary);
+  font-size: var(--typography-body-sm-desktop);
+}
+
+/* ---- the lists: one name in the spine, one value on each side */
+
+.cr-palette-pick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.cr-palette-pick a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: var(--space-4);
+  border: var(--border-width-default) solid var(--color-border-strong);
+  border-radius: var(--button-radius);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-bold);
+  text-decoration: none;
+}
+
+.cr-palette-pick a[aria-current="page"] {
+  background: var(--button-primary-background);
+  color: var(--proposed-button-primary-text);
+}
+
+.cr-group {
+  margin-top: var(--space-12);
+}
+
+.cr-group__head h3 {
+  font-size: var(--typography-heading-group-desktop);
+  font-weight: var(--font-weight-bold);
+}
+
+.cr-group__head p {
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--typography-body-sm-desktop);
+}
+
+.cr-spine {
+  margin-top: var(--space-4);
+  border-top: var(--border-width-default) solid var(--color-border-default);
+}
+
+.cr-spine__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(12rem, 16rem) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-4);
+  padding-block: var(--space-3);
+  border-bottom: var(--border-width-default) solid var(--color-border-default);
+}
+
+.cr-spine__row--head {
+  padding-block: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--typography-label-desktop);
+  font-weight: var(--font-weight-bold);
+}
+
+.cr-spine__row--head span:nth-child(2) {
+  text-align: center;
+}
+
+.cr-name {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  text-align: center;
+}
+
+.cr-name code {
+  font-family: var(--font-family-mono);
+  font-size: var(--typography-body-sm-desktop);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  overflow-wrap: anywhere;
+}
+
+.cr-name span {
+  color: var(--color-text-secondary);
+  font-size: var(--typography-body-sm-desktop);
+}
+
+.cr-status {
+  color: var(--color-text-muted);
+  font-size: var(--typography-label-desktop);
+  font-style: normal;
+}
+
+.cr-spine__row[data-status="new"] .cr-status,
+.cr-spine__row[data-status="changed"] .cr-status {
+  color: var(--color-text-link);
+  font-weight: var(--font-weight-bold);
+}
+
+.cr-name small {
+  color: var(--color-text-muted);
+  font-size: var(--typography-caption-desktop);
+}
+
+.cr-wing {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0 var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-surface-base);
+  color: var(--color-text-primary);
+  border: var(--border-width-default) solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+}
+
+.cr-specimen {
+  grid-row: span 3;
+  display: grid;
+  place-items: center;
+  inline-size: 3.5rem;
+  block-size: 3.5rem;
+  border: var(--border-width-default) solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  font-size: var(--typography-title-desktop);
+  font-weight: var(--font-weight-bold);
+}
+
+.cr-specimen__shape {
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  border-radius: var(--radius-xs);
+}
+
+.cr-hex {
+  font-family: var(--font-family-mono);
+  font-size: var(--typography-body-sm-desktop);
+}
+
+.cr-ratio b {
+  font-family: var(--font-family-mono);
+  font-size: var(--typography-title-desktop);
+}
+
+.cr-verdict,
+.cr-partner,
+.cr-binding {
+  color: var(--color-text-secondary);
+  font-size: var(--typography-caption-desktop);
+}
+
+.cr-partner,
+.cr-binding,
+.cr-was {
+  grid-column: 2;
+}
+
+.cr-was {
+  color: var(--color-text-muted);
+  font-size: var(--typography-caption-desktop);
+  text-decoration: line-through;
+}
+
+@media (max-width: 1023px) {
+  .cr-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 767px) {
+  .cr-bar,
+  .cr-main {
+    padding-inline: var(--space-4);
+  }
+
+  /* Wrapped onto several lines, a sticky bar would hold a third of a phone screen. */
+  .cr-bar {
+    position: static;
+  }
+
+  .cr-facts,
+  .cr-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cr-ramp__steps li {
+    block-size: var(--space-8);
+  }
+
+  .cr-spine__row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cr-spine__row--head {
+    display: none;
+  }
+
+  .cr-name {
+    order: -1;
+    text-align: start;
+  }
+}

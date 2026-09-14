@@ -66,8 +66,8 @@ export interface EditorialEntity {
 /**
  * The types with an editorial screen today.
  *
- * Only one so far. The other eleven are registered here as each is built —
- * one line, no new route, no new handler. A type absent from this list is
+ * Two so far. The other ten are registered here as each is built — one
+ * line, no new route, no new handler. A type absent from this list is
  * refused by the route rather than forwarded, which is what makes the
  * absence safe rather than merely incomplete.
  */
@@ -78,6 +78,13 @@ export const EDITORIAL_ENTITIES: readonly EditorialEntity[] = [
     readPermission: "presidentMessagePage:Read",
     updatePermission: "presidentMessagePage:Update",
     publishPermission: "presidentMessagePage:Publish",
+  },
+  {
+    entityType: "visionMissionPage",
+    apiPath: "/vision-mission-page",
+    readPermission: "visionMissionPage:Read",
+    updatePermission: "visionMissionPage:Update",
+    publishPermission: "visionMissionPage:Publish",
   },
 ];
 

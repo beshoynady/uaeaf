@@ -18,6 +18,7 @@ const president = EDITORIAL_ENTITIES[0];
 describe("findEditorialEntity", () => {
   it("resolves a registered type", () => {
     expect(findEditorialEntity("presidentMessagePage")?.apiPath).toBe("/president-message-page");
+    expect(findEditorialEntity("visionMissionPage")?.apiPath).toBe("/vision-mission-page");
   });
 
   // Without this the URL would choose the upstream module, and
@@ -26,7 +27,7 @@ describe("findEditorialEntity", () => {
   it("refuses a type that is not registered, however plausible", () => {
     expect(findEditorialEntity("users")).toBeUndefined();
     expect(findEditorialEntity("roles")).toBeUndefined();
-    expect(findEditorialEntity("visionMissionPage")).toBeUndefined();
+    expect(findEditorialEntity("strategicPlansPage")).toBeUndefined();
   });
 
   it("refuses a traversal attempt rather than treating it as a path", () => {

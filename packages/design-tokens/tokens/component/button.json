@@ -4,13 +4,13 @@
       "background": { "value": "{color.brand.primary}", "type": "color", "comment": "ADR-0051 — corrected from {color.semantic.success}, was violating Brand Guide v1.0 §11.3 (\"do not use Brand Green as Success\" applied in reverse: Primary must not ride on the Success token)" },
       "background-hover": { "value": "{color.green.600}", "type": "color", "comment": "ADR-0051 — direct primitive step per Brand Guide v1.0 §8.2, not routed through semantic.success-hover" },
       "background-pressed": { "value": "{color.green.700}", "type": "color", "comment": "ADR-0051" },
-      "text": { "value": "{color.text.inverse}", "type": "color" }
+      "text": { "value": "{color.text.on-brand}", "type": "color", "comment": "ADR-0071 D1 — was {color.text.inverse}, a role that flips to black in the dark theme while the three grounds above never change: 4.37 / 3.15 / 2.23 there. on-brand is the role for text on a filled brand ground and does not flip: 4.81 / 6.67 / 9.40 in every theme" }
     },
     "danger": {
-      "background": { "value": "{color.semantic.error}", "type": "color", "comment": "ADR-0051 — corrected from {color.semantic.danger} (which aliased {color.brand.secondary}), was violating Brand Guide v1.0 §11.3 (\"do not use Brand Red as Error\"). This is the `Destructive` variant per Brand Guide §8.1." },
+      "background": { "value": "{color.error.500}", "type": "color", "comment": "ADR-0071 D2 — was {color.semantic.error}, which follows the theme (#E53E3E in dark) while hover and pressed below do not. The three grounds are now fixed in every theme, as the primary button's are. The `Destructive` variant per Brand Guide §8.1; not Brand Red (ADR-0051, §11.3)" },
       "background-hover": { "value": "{color.error.600}", "type": "color", "comment": "ADR-0051" },
       "background-pressed": { "value": "{color.error.700}", "type": "color", "comment": "ADR-0051" },
-      "text": { "value": "{color.text.inverse}", "type": "color" }
+      "text": { "value": "{color.text.on-brand}", "type": "color", "comment": "ADR-0071 D2 — was {color.text.inverse}: black on the fixed hover and pressed grounds in dark, 3.20 / 2.58. White measures 4.98 / 6.57 / 8.15 in every theme" }
     },
     "disabled": {
       "background": { "value": "{color.neutral-warm.300}", "type": "color", "comment": "ADR-0051 — new, shared by all button variants per Brand Guide v1.0 §8.2" },

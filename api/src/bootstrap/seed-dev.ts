@@ -47,6 +47,7 @@ export const DEV_FIXTURE_SETS: readonly DevFixtureSet[] = [
   { collection: 'recordsPage', singleton: true },
   { collection: 'resultsRankingsPage', singleton: true },
   { collection: 'videosPage', singleton: true },
+  { collection: 'visionMissionPage', singleton: true },
 ];
 
 export type DevDocument = { _id: Types.ObjectId; [field: string]: unknown };

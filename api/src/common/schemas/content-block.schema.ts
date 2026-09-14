@@ -31,7 +31,7 @@ export const ContentBlockSchema = SchemaFactory.createForClass(ContentBlock);
 
 /**
  * `{ title, description, iconKey, displayOrder }` — the icon-bearing
- * variant, used by `visionMissionPage.coreValues` and
+ * variant with a free `iconKey`, used by
  * `strategicPlansPage.foundationPillars`.
  *
  * `iconKey` is a plain string identifier (e.g. a lucide-react icon name)
@@ -48,13 +48,12 @@ export const IconedContentBlockSchema = SchemaFactory.createForClass(IconedConte
 
 /**
  * `{ title, description, iconKey, displayOrder }` with `iconKey` closed to
- * `VALUE_ICON_KEYS` (ADR-0069 D2).
+ * `VALUE_ICON_KEYS` (ADR-0069 D2), used by `presidentMessagePage.values`
+ * and `visionMissionPage.coreValues` (ADR-0070).
  *
- * A separate class rather than a tightening of `IconedContentBlock`,
- * because that type's two existing consumers (`visionMissionPage.coreValues`,
- * `strategicPlansPage.foundationPillars`) were seeded against the free
- * string and are not in this change's scope. Narrowing theirs is a
- * migration of its own; this one starts closed.
+ * A separate class rather than a tightening of `IconedContentBlock`, because
+ * `strategicPlansPage.foundationPillars` still takes the free string.
+ * `visionMissionPage.coreValues` moved here with no stored row to migrate.
  */
 @Schema({ _id: false })
 export class IconKeyedContentBlock extends ContentBlock {

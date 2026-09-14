@@ -85,6 +85,7 @@
     "committees": "Committees",
     "contact-us": "Contact us",
     "president-message": "President's Message",
+    "vision-mission": "Vision & Mission",
     "breadcrumbLabel": "Breadcrumb"
   },
   "Sections": {
@@ -155,5 +156,15 @@
     "description": "The link you opened does not point to a page on this site. It may still be in preparation, or its address may have changed.",
     "backHome": "Back to the homepage",
     "available": "Pages available now"
+  },
+  "VisionMission": {
+    "vision": "Vision",
+    "mission": "Mission",
+    "goals": "Goals",
+    "values": "Our Values",
+    "ctaTitle": "Our Strategy Charts the Path to the Future",
+    "ctaText": "Discover the strategic priorities and pillars guiding the Federation’s journey through the next phase.",
+    "ctaPrimary": "Explore Our Strategic Plan",
+    "ctaSecondary": "About the Federation"
   }
 }

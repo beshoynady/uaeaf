@@ -120,7 +120,9 @@ describe("logo on dark grounds (Chapter 1 ADR-0002)", () => {
 
   it("resolves all three logo inks to the monochrome mark under the dark theme", () => {
     const css = readFileSync(join(WEB, GLOBALS), "utf8");
-    const darkBlock = css.match(/\[data-theme="dark"\]\s*\{([^}]*)\}/);
+    // The block that declares the inks, as `rootBlock` below finds its own:
+    // globals.css has more than one dark block (`color-scheme` has its own).
+    const darkBlock = css.match(/\[data-theme="dark"\]\s*\{([^}]*--logo-ink[^}]*)\}/);
     expect(darkBlock, "globals.css declares no [data-theme=\"dark\"] block").not.toBeNull();
     for (const ink of ["--logo-ink", "--logo-green", "--logo-red"]) {
       expect(darkBlock![1]).toMatch(new RegExp(`${ink}\\s*:\\s*currentColor`));

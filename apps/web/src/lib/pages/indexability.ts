@@ -5,6 +5,7 @@ import type {
   ContactUsPage,
   Paginated,
   PresidentMessagePublic,
+  VisionMissionPublic,
 } from "@/lib/api/types";
 import type { PublicPage } from "./public-pages";
 
@@ -42,6 +43,12 @@ export async function isIndexable(page: PublicPage): Promise<boolean> {
       // message always carries its body in both languages.
       const record = await fetchPublic<PresidentMessagePublic>(page.apiPath);
       return Boolean(record?.messageBody);
+    }
+    case "vision-mission": {
+      // Answered only while a version is Live, which always carries both
+      // statements in both languages.
+      const record = await fetchPublic<VisionMissionPublic>(page.apiPath);
+      return Boolean(record?.visionText);
     }
     case "board-members": {
       const members = await fetchPublic<unknown[]>("/federation-personnel/public");

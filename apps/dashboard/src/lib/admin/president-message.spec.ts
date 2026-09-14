@@ -1,12 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { SEO_GUIDANCE, seoLength } from "./editorial-draft";
 import {
-  SEO_GUIDANCE,
   addValue,
   changedFields,
   isDirty,
   moveValue,
   removeValue,
-  seoLength,
   toDraft,
   toPatchBody,
 } from "./president-message";

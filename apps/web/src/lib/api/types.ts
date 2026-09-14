@@ -148,6 +148,35 @@ export interface PresidentMessagePublic {
   publishedAt: string;
 }
 
+/** `PublicContentBlockDto`: a strategic goal, which carries no icon. */
+export interface PublicContentBlock {
+  title: LocalizedText;
+  description: LocalizedText;
+  displayOrder: number;
+}
+
+/** `VisionMissionPublicResponseDto` from
+ *  `GET /vision-mission-page/current/public`: the newest Live publication,
+ *  field by field (ADR-0070). */
+export interface VisionMissionPublic {
+  heroTitle: LocalizedText;
+  heroSubtitle: LocalizedText;
+  heroImage: PublicImage | null;
+  visionTitle: LocalizedText | null;
+  visionText: LocalizedText;
+  visionImage: PublicImage | null;
+  missionTitle: LocalizedText | null;
+  missionText: LocalizedText;
+  missionImage: PublicImage | null;
+  goalsTitle: LocalizedText | null;
+  strategicGoals: PublicContentBlock[];
+  coreValues: PublicValue[];
+  valuesImage: PublicImage | null;
+  ctaImage: PublicImage | null;
+  seo: PresidentMessagePublic["seo"];
+  publishedAt: string;
+}
+
 /** `MediaAssetPublicResponseDto` from `GET /media-assets/public?ids=…`.
  *  Excludes `storageKey`, `checksum` and `albumId` upstream. */
 export interface MediaAssetPublic {

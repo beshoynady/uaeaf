@@ -318,16 +318,17 @@ export const HERO_MEDIA = "rise-ground size-full object-cover";
  * Shared by every hero that can carry an image so the guarantee is the same
  * one everywhere, rather than re-derived per page and wrong on the twelfth.
  *
- * Written as `color-mix` over `--color-brand-black` rather than `rgb(0 0 0 /
- * …)`. Byte-identical output — Federation Black is `#000000` — but §16 forbids
- * a hardcoded colour where a token exists, and `surface-standard.spec.ts`
- * enforces that on this module rather than trusting it. The two percentages
- * are the measured floor, not a token, and that is the honest reading: they
- * are the answer to "what makes white text clear AA over a pure white
- * photograph", which no colour token can express.
+ * Written as `color-mix` over `--color-surface-overlay`, the scrim role, rather
+ * than `rgb(0 0 0 / …)`: §16 forbids a hardcoded colour where a token exists,
+ * and `surface-standard.spec.ts` enforces that on this module rather than
+ * trusting it. The role is `#000000` in all three themes, the value this
+ * scrim was measured with (ADR-0071 D5). The two percentages are the measured
+ * floor, not a token, and that is the honest reading: they are the answer to
+ * "what makes white text clear AA over a pure white photograph", which no
+ * colour token can express.
  */
 export const HERO_SCRIM =
-  "absolute inset-0 bg-[linear-gradient(to_bottom,color-mix(in_srgb,var(--color-brand-black)_64%,transparent),color-mix(in_srgb,var(--color-brand-black)_74%,transparent))]";
+  "absolute inset-0 bg-[linear-gradient(to_bottom,color-mix(in_srgb,var(--color-surface-overlay)_64%,transparent),color-mix(in_srgb,var(--color-surface-overlay)_74%,transparent))]";
 
 /**
  * A section's contents entering as the reader reaches them.

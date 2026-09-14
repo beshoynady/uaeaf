@@ -41,8 +41,24 @@
   --font-mono: var(--font-ibm-plex-mono), ui-monospace, monospace;
 }
 
+/*
+ * `color-scheme` follows the stamped theme, not the operating system
+ * (ADR-0071 D3).
+ *
+ * It decides what the browser paints for the page itself: the scrollbars, the
+ * system colours (`Canvas`, `CanvasText`, `ButtonBorder`) and native controls.
+ * `light dark` handed that choice to the operating system while the theme
+ * button changes only `data-theme`, so a dark site on a light system drew a
+ * white scrollbar track beside a `#131210` page (measured 2026-09-14). The
+ * dashboard fixed the same line on 2026-09-08. The boot script in `layout.tsx`
+ * stamps the attribute before the first paint; without it the page is light,
+ * and so is this. High contrast paints a white page and keeps the light scheme.
+ */
 html {
-  color-scheme: light dark;
+  color-scheme: light;
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 /*

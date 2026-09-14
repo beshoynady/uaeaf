@@ -35,7 +35,7 @@ import type { PresidentMessagePublic } from "@/lib/api/types";
  * characters a line and `80ch` in IBM Plex Sans measured 105. These widths
  * are the ones that measured inside the range on the rendered page.
  */
-const MEASURE: Record<AppLocale, string> = {
+export const MEASURE: Record<AppLocale, string> = {
   ar: "max-w-[47ch]",
   en: "max-w-[61ch]",
 };

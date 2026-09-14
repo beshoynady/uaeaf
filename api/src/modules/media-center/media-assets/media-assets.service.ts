@@ -8,6 +8,7 @@ import { UploadMediaAssetDto } from './dto/upload-media-asset.dto.js';
 import { assertUploadable, type UploadCandidate } from './upload/upload-constraints.js';
 import { STORAGE_PROVIDER, type StorageFolder, type StorageProvider } from '../storage/storage-provider.js';
 import { MediaAssetPublicResponseDto } from './dto/media-asset-public-response.dto.js';
+import type { PublicImageDto } from '../../../common/dto/public-page.dto.js';
 import { Album } from '../albums/schemas/album.schema.js';
 import type { AlbumDocument } from '../albums/schemas/album.schema.js';
 
@@ -240,6 +241,27 @@ export class MediaAssetsService {
     }
     const assets = await this.repository.findVisibleByIds(valid);
     return assets.map((asset) => this.toPublicResponse(asset));
+  }
+
+  /**
+   * Every image a page record points at, resolved in one query and keyed by
+   * id, in the shape a public page draws (ADR-0070 D3). Empty refs are
+   * skipped, and an image two fields share is asked for once.
+   */
+  async resolvePublicImages(ids: readonly unknown[]): Promise<Map<string, PublicImageDto>> {
+    const wanted = [...new Set(ids.filter(Boolean).map(String))];
+    if (wanted.length === 0) {
+      return new Map();
+    }
+
+    const assets = await this.findPublicByIds(wanted);
+
+    return new Map(
+      assets.map((asset) => [
+        asset.id,
+        { url: asset.file.url, altText: asset.altText, width: asset.file.width, height: asset.file.height },
+      ]),
+    );
   }
 
   /** Maps a full `MediaAsset` document to its public-safe shape (excludes
