@@ -11,11 +11,11 @@ import type { PresidentMessagePublic } from "@/lib/api/types";
 export const PresidentHero = ({
   record,
   locale,
-  breadcrumb,
+  breadcrumb = null,
 }: {
   record: PresidentMessagePublic;
   locale: AppLocale;
-  breadcrumb: ReactNode;
+  breadcrumb?: ReactNode;
 }) => (
   <IdentityHero
     titleId="president-hero-title"

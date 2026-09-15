@@ -156,6 +156,9 @@ describe("every colour is measured against what it sits on", () => {
     expect(failures).toEqual([]);
   });
 
+  // Reads every source file of both applications and the token CSS: seconds on
+  // the project drive, and past Vitest's default 5s while the whole web suite
+  // runs its files at once (seen 7.7s). The time is spent reading, not measuring.
   it("leaves a colour unpaired only while nothing uses it", () => {
     const files = [join(ROOT, "apps", "web", "src"), join(ROOT, "apps", "dashboard", "src"), join(ROOT, "packages", "design-tokens", "css")]
       .flatMap(sources)
@@ -166,7 +169,7 @@ describe("every colour is measured against what it sits on", () => {
       for (const { file, source } of files) if (source.includes(`var(${name})`)) offenders.push(`${name} is unpaired but used in ${relative(file)}`);
     }
     expect(offenders).toEqual([]);
-  });
+  }, 30_000);
 });
 
 describe("the application uses roles, not ramp steps (Chapter 7 §7.7)", () => {
@@ -179,25 +182,11 @@ describe("the application uses roles, not ramp steps (Chapter 7 §7.7)", () => {
   const EXCLUDED = ["apps/web/src/app/api/colour-review/"];
 
   /**
-   * Usages with no role to move to yet, by file and count. Each is open in
-   * ADR-0071 D5; the count must fall to zero, and the entry be removed, when
-   * the role exists.
+   * Usages with no role to move to yet, by file and count, each with its
+   * reason. Empty since ADR-0072 D13: every use has a role. An entry added
+   * here names the file, the count and why no role exists, and has to shrink.
    */
-  const PENDING: Record<string, { count: number; reason: string }> = {
-    "apps/web/src/components/pages/contact/contact-map.tsx": {
-      count: 4,
-      reason:
-        "the outlined link's edge and its two tints (green.500), and the map marker (red.500); ADR-0068 D3 records Secondary and Tertiary as a DESIGN SYSTEM GAP with no button.secondary.* tokens, and the marker has no wayfinding role",
-    },
-    "apps/web/src/components/pages/vision-mission/strategy-cta.tsx": {
-      count: 3,
-      reason: "the outlined link's edge and its two tints (green.500), the same gap as the contact map's",
-    },
-    "apps/web/src/components/ui/surface.ts": {
-      count: 1,
-      reason: "the card icon's glyph (green.500): no role names an icon on a recessed chip, and the identity token is kept out of text utilities",
-    },
-  };
+  const PENDING: Record<string, { count: number; reason: string }> = {};
 
   it("finds no ramp step outside the recorded pending usages", () => {
     const counts: Record<string, number> = {};
@@ -209,5 +198,156 @@ describe("the application uses roles, not ramp steps (Chapter 7 §7.7)", () => {
     }
     const expected = Object.fromEntries(Object.entries(PENDING).map(([path, { count }]) => [path, count]));
     expect(counts).toEqual(expected);
+  });
+});
+
+/**
+ * 4. Item distinction (ADR-0072 D1): the four item colours that mark cards in a
+ *    closed set (goals, values) are told apart by their ink, the colour of the
+ *    card's number and icon.
+ *
+ * - Among the four inks: ΔE ≥ 10 in the worst of normal, deuteranope and
+ *   protanope vision. The number and the title already tell the cards apart,
+ *   so colour is a second cue (WCAG 1.4.1), not the only one.
+ * - Against every resting state colour and its text name: ΔE ≥ 15 under the
+ *   same three visions, because an item read as an error or a success
+ *   misinforms. The `-hover` variants are not in the set: they appear only
+ *   under the pointer on a labelled control, never as a sign on their own.
+ *   Measured with them, light has no set at all (desert sand .800 ↔
+ *   `error-hover` 12.85; green .200 ↔ dark `success-hover` 8.22).
+ * - High contrast draws the items without hue: no step of desert sand clears
+ *   both 15 from that theme's dark state colours and 3:1 on white.
+ *
+ * Simulation: Viénot, Brettel and Mollon (1999) as one linear-RGB matrix per
+ * deficiency; ΔE is CIE76 on CIELAB (D65), compared unrounded.
+ */
+describe("the four item colours stay apart (ADR-0072 D1)", () => {
+  const ITEMS = [1, 2, 3, 4] as const;
+  const ROLES = ["surface", "ink", "edge"] as const;
+  const AMONG = 10;
+  const FROM_STATES = 15;
+  const HUED = ["light", "dark"] as const;
+
+  const channels = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  const linear = (c: number) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  const multiply = (a: number[][], b: number[][]) =>
+    a.map((row) => b[0].map((_, j) => row.reduce((sum, value, k) => sum + value * b[k][j], 0)));
+  const apply = (m: number[][], v: number[]) => m.map((row) => row.reduce((sum, value, k) => sum + value * v[k], 0));
+
+  const RGB_TO_LMS = [
+    [17.8824, 43.5161, 4.11935],
+    [3.45565, 27.1554, 3.86714],
+    [0.0299566, 0.184309, 1.46709],
+  ];
+  const LMS_TO_RGB = [
+    [0.0809444479, -0.130504409, 0.116721066],
+    [-0.0102485335, 0.0540193266, -0.113614708],
+    [-0.000365296938, -0.00412161469, 0.693511405],
+  ];
+  const SIMULATION = {
+    protan: multiply(LMS_TO_RGB, multiply([[0, 2.02344, -2.52581], [0, 1, 0], [0, 0, 1]], RGB_TO_LMS)),
+    deutan: multiply(LMS_TO_RGB, multiply([[1, 0, 0], [0.494207, 0, 1.24827], [0, 0, 1]], RGB_TO_LMS)),
+  };
+  const VISIONS = ["normal", "deutan", "protan"] as const;
+
+  const lab = (hex: string, vision: (typeof VISIONS)[number]) => {
+    const rgb = channels(hex).map(linear);
+    const [r, g, b] = (vision === "normal" ? rgb : apply(SIMULATION[vision], rgb)).map((c) => Math.min(1, Math.max(0, c)));
+    const f = (t: number) => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
+    const fx = f((0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.95047);
+    const fy = f(0.2126 * r + 0.7152 * g + 0.0722 * b);
+    const fz = f((0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.08883);
+    return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
+  };
+  const worst = (a: string, b: string) =>
+    Math.min(
+      ...VISIONS.map((vision) => {
+        const [p, q] = [lab(a, vision), lab(b, vision)];
+        return Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]);
+      }),
+    );
+
+  it.each(THEMES)("declares a surface, an ink and an edge for every item in the %s list", (theme) => {
+    const values = resolved(theme);
+    const missing = ITEMS.flatMap((item) => ROLES.map((role) => `--color-item-${item}-${role}`)).filter(
+      (name) => !HEX.test(values[name] ?? ""),
+    );
+    expect(missing).toEqual([]);
+  });
+
+  it.each(HUED)("keeps the four inks at least 10 apart under every vision in %s", (theme) => {
+    const values = resolved(theme);
+    const failures: string[] = [];
+    let pairs = 0;
+    for (const a of ITEMS)
+      for (const b of ITEMS.filter((other) => other > a)) {
+        const [x, y] = [values[`--color-item-${a}-ink`], values[`--color-item-${b}-ink`]];
+        if (!HEX.test(x ?? "") || !HEX.test(y ?? "")) continue;
+        pairs += 1;
+        const d = worst(x, y);
+        if (d < AMONG) failures.push(`item ${a} ${x} ↔ item ${b} ${y}: ${d.toFixed(2)} < ${AMONG}`);
+      }
+    expect(pairs, "six pairs measured").toBe(6);
+    expect(failures).toEqual([]);
+  });
+
+  it.each(HUED)("keeps every ink at least 15 from every state colour under every vision in %s", (theme) => {
+    const values = resolved(theme);
+    const states = Object.entries(values).filter(
+      ([name, value]) => /^--color-semantic-(success|error|warning|info)(-text)?$/.test(name) && HEX.test(value),
+    );
+    const failures: string[] = [];
+    let inks = 0;
+    for (const item of ITEMS) {
+      const ink = values[`--color-item-${item}-ink`];
+      if (!HEX.test(ink ?? "")) continue;
+      inks += 1;
+      for (const [name, value] of states) {
+        const d = worst(ink, value);
+        if (d < FROM_STATES) failures.push(`item ${item} ${ink} ↔ ${name} ${value}: ${d.toFixed(2)} < ${FROM_STATES}`);
+      }
+    }
+    expect(inks, "four inks measured").toBe(4);
+    expect(states.length, "the four states and their text names").toBeGreaterThanOrEqual(8);
+    expect(failures).toEqual([]);
+  });
+
+  // ADR-0074 D2: the values stand on the green register on both pages, and the
+  // owner's condition is a card boundary of 3:1 there in dark. Each ramp's 200
+  // step clears it, and the page grounds as well.
+  it("draws every item's edge at 3:1 or more in dark, against the page grounds and the green register", () => {
+    const values = resolved("dark");
+    const luminance = (hex: string) => {
+      const [r, g, b] = channels(hex).map(linear);
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    const ratio = (a: string, b: string) => {
+      const [x, y] = [luminance(a), luminance(b)].sort((p, q) => q - p);
+      return (x + 0.05) / (y + 0.05);
+    };
+    const grounds = ["--color-surface-base", "--color-surface-sunken", "--color-section-green-surface"];
+    const failures = ITEMS.flatMap((item) =>
+      grounds.flatMap((ground) => {
+        const [edge, under] = [values[`--color-item-${item}-edge`], values[ground]];
+        if (!HEX.test(edge ?? "") || !HEX.test(under ?? "")) return [`item ${item} edge or ${ground} is missing`];
+        const measured = ratio(edge, under);
+        return measured < 3 ? [`item ${item} edge ${edge} on ${ground} ${under}: ${measured.toFixed(2)} < 3`] : [];
+      }),
+    );
+    expect(failures).toEqual([]);
+  });
+
+  it("draws the items without hue in high contrast: the raised ground, the primary ink, the strong edge", () => {
+    const values = resolved("high-contrast");
+    const drift = ITEMS.flatMap((item) =>
+      [
+        [`--color-item-${item}-surface`, "--color-surface-raised"],
+        [`--color-item-${item}-ink`, "--color-text-primary"],
+        [`--color-item-${item}-edge`, "--color-border-strong"],
+      ]
+        .filter(([name, role]) => !HEX.test(values[name] ?? "") || values[name] !== values[role])
+        .map(([name, role]) => `${name} ${values[name]} is not ${role} ${values[role]}`),
+    );
+    expect(drift).toEqual([]);
   });
 });

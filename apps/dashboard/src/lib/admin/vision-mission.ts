@@ -1,5 +1,4 @@
 import type { LocalizedText } from "@/lib/api/types";
-import type { BlockDraft } from "@/lib/admin/content-blocks";
 import { editorialDraft, type PageSeo, type SeoDraft, type ValueBlock } from "@/lib/admin/editorial-draft";
 
 /**
@@ -7,8 +6,6 @@ import { editorialDraft, type PageSeo, type SeoDraft, type ValueBlock } from "@/
  * two shapes and its save body come from `editorialDraft`; this file names
  * the fields and their kinds.
  */
-
-export type GoalBlock = Omit<BlockDraft, "iconKey">;
 
 export interface VisionMissionResponse {
   _id: string;
@@ -22,7 +19,7 @@ export interface VisionMissionResponse {
   missionText: LocalizedText;
   missionImageId: string | null;
   goalsTitle: LocalizedText | null;
-  strategicGoals: GoalBlock[];
+  strategicGoals: ValueBlock[];
   coreValues: ValueBlock[];
   valuesImageId: string | null;
   ctaImageId: string | null;
@@ -44,7 +41,7 @@ export interface VisionMissionDraft {
   missionText: LocalizedText;
   missionImageId: string;
   goalsTitle: LocalizedText;
-  strategicGoals: GoalBlock[];
+  strategicGoals: ValueBlock[];
   coreValues: ValueBlock[];
   valuesImageId: string;
   ctaImageId: string;

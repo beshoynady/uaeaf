@@ -1,87 +1,116 @@
 import type { CSSProperties } from "react";
 import { getTranslations } from "next-intl/server";
 import { FOCUS, TRANSITION } from "@/components/ui/interactive";
-import { PHOTO_PANEL, PhotoGround } from "@/components/ui/photo-ground";
-import { Section } from "@/components/ui/section";
+import { REGISTER_CLASSES, Section } from "@/components/ui/section";
+import { SlantedPhoto } from "@/components/ui/slanted-photo";
 import { HERO_MEASURE } from "@/components/ui/surface";
 import { Link } from "@/i18n/navigation";
 import type { AppLocale } from "@/i18n/routing";
 import type { PublicImage } from "@/lib/api/types";
 
 /**
- * The closing call to the strategic plan (Figma `1178:2506`, EN `1507:2654`).
+ * The closing call to the strategic plan (Figma `1178:2506`, EN `1507:2654`;
+ * ADR-0072 D5).
  *
  * The words are the frames', transcribed into the `VisionMission` messages
  * rather than stored: they point at two places in the site's navigation, not
- * at anything this page's record says, as the header's labels do (ADR-0070).
- * Its photograph is stored: every picture the page prints is content with a
- * field (owner rule 2026-09-14). With one, the call stands on it in a panel
- * the width of the container; without one, on the neutral band.
+ * at anything a page's record says, as the header's labels do (ADR-0070). Its
+ * photograph is stored where a record has one: every picture a page prints is
+ * content with a field (owner rule 2026-09-14).
  *
- * Both destinations are the routes IA §8.1 gives them, the same ones the
- * header already links. The strategic plan is the next page to be built.
- *
- * - The primary action is the plan, the lesser errand is About; the recipes
- *   are the contact page's own: the form's filled green and the map's outlined
- *   link (ADR-0068 D1). Both are opaque, so neither depends on the ground.
- * - The arrow points along the reading direction and is hidden from assistive
- *   technology, which already has the link's name.
+ * - The band takes the ground opposite the section before it: the neutral
+ *   ground after the green values, on both pages (ADR-0074 D2).
+ * - With a photograph, the words hold seven of the twelve columns from `lg` at
+ *   the start and the photograph the other five at the end, cut on a slant
+ *   and running to the page edge (`SlantedPhoto`); below `lg` the photograph
+ *   follows the words. Without one,
+ *   the call is one centred column.
+ * - The primary action is the plan, the lesser errand is About. Both links
+ *   resolve (the plan's page is in preparation). The primary is the button
+ *   recipe on the page's ground and the band's inverse on the green register,
+ *   so it always outweighs the secondary: an outline in the band's text colour
+ *   on green, and in the accent colour on the page's ground.
+ * - The arrows point along the reading direction and are hidden from assistive
+ *   technology, which already has each link's name.
  */
 
-/** The focus ring is added where each link is drawn, as the contact map does,
- *  so the interaction-state contract sees it at the call site. */
+/** The focus ring is added where each link is drawn, so the interaction-state
+ *  contract sees it at the call site. */
 const BUTTON = `inline-flex min-h-11 items-center justify-center gap-2 rounded-[var(--button-radius)] px-4 py-3.5 text-body-sm font-semibold ${TRANSITION}`;
 
 const PRIMARY = `${BUTTON} bg-[color:var(--button-primary-background)] text-[color:var(--button-primary-text)] hover:bg-[color:var(--button-primary-background-hover)] active:bg-[color:var(--button-primary-background-pressed)]`;
 
-const SECONDARY = `${BUTTON} border border-[color:var(--color-green-500)] bg-[color:var(--color-surface-base)] text-[color:var(--color-text-link)] hover:bg-[color-mix(in_srgb,var(--color-green-500)_8%,var(--color-surface-base))] active:bg-[color-mix(in_srgb,var(--color-green-500)_16%,var(--color-surface-base))]`;
+/** On the green register the primary takes the band's inverse: the band's text
+ *  colour as its ground and the band's colour as its text, 9.40:1, and 6.1:1 at
+ *  its pressed step. The button recipe's green fill measured 1.95:1 against the
+ *  band, so the outlined secondary outweighed it. */
+const PRIMARY_ON_GREEN = `${BUTTON} bg-[color:var(--color-section-green-text)] text-[color:var(--color-section-green-surface)] hover:bg-[color-mix(in_srgb,var(--color-section-green-text)_88%,var(--color-section-green-surface))] active:bg-[color-mix(in_srgb,var(--color-section-green-text)_76%,var(--color-section-green-surface))]`;
+
+const SECONDARY = `${BUTTON} border border-[color:var(--color-border-accent)] bg-[color:var(--color-surface-base)] text-[color:var(--color-text-link)] hover:bg-[color-mix(in_srgb,var(--color-border-accent)_8%,var(--color-surface-base))] active:bg-[color-mix(in_srgb,var(--color-border-accent)_16%,var(--color-surface-base))]`;
+
+const SECONDARY_ON_GREEN = `${BUTTON} border border-[color:var(--color-section-green-text)] text-[color:var(--color-section-green-text)] hover:bg-[color-mix(in_srgb,var(--color-section-green-text)_12%,transparent)] active:bg-[color-mix(in_srgb,var(--color-section-green-text)_20%,transparent)]`;
+
+const Arrow = () => (
+  <span aria-hidden="true" className="rtl:-scale-x-100">
+    →
+  </span>
+);
 
 const revealStep = (n: number): CSSProperties => ({ "--reveal-step": n }) as CSSProperties;
 
-export const StrategyCta = async ({ locale, ground = null }: { locale: AppLocale; ground?: PublicImage | null }) => {
+export const StrategyCta = async ({
+  locale,
+  ground = null,
+  register = "green",
+}: {
+  locale: AppLocale;
+  ground?: PublicImage | null;
+  register?: "green" | "neutral";
+}) => {
   const t = await getTranslations({ locale, namespace: "VisionMission" });
   const titleId = "vision-mission-cta-title";
-
-  const call = (
-    <div data-reveal="" className={`mx-auto flex ${HERO_MEASURE} flex-col items-center gap-4 text-center`}>
-      <h2
-        id={titleId}
-        data-reveal-part="rise"
-        className={`text-h2 text-balance ${ground ? "" : "text-[color:var(--color-text-primary)]"}`}
-      >
-        {t("ctaTitle")}
-      </h2>
-      <p
-        data-reveal-part="rise"
-        style={revealStep(1)}
-        className={`text-body-lg text-pretty ${ground ? "opacity-85" : "text-[color:var(--color-text-secondary)]"}`}
-      >
-        {t("ctaText")}
-      </p>
-      <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-        <Link href="/about/governance/strategic-plan" className={`${PRIMARY} ${FOCUS}`}>
-          {t("ctaPrimary")}
-        </Link>
-        <Link href="/about" className={`${SECONDARY} ${FOCUS}`}>
-          {t("ctaSecondary")}
-          <span aria-hidden="true" className="rtl:-scale-x-100">
-            →
-          </span>
-        </Link>
-      </div>
-    </div>
-  );
+  const onGreen = register === "green";
 
   return (
-    <Section enter={false} labelledBy={titleId} className="py-12 md:py-16">
-      {ground ? (
-        <div className={`${PHOTO_PANEL} px-6 py-12 md:px-12 md:py-16`}>
-          <PhotoGround image={ground} locale={locale} />
-          {call}
+    <Section
+      register={register}
+      enter={false}
+      labelledBy={titleId}
+      className="relative isolate overflow-clip py-12 md:py-16 lg:py-24"
+    >
+      <div className={ground ? "grid gap-8 lg:grid-cols-12 lg:gap-x-6 xl:gap-x-8" : undefined}>
+        <div
+          data-reveal=""
+          className={`flex ${HERO_MEASURE} flex-col gap-4 ${ground ? "items-start text-start lg:col-span-7 lg:col-start-1" : "mx-auto items-center text-center"}`}
+        >
+          <h2 id={titleId} data-reveal-part="rise" className="text-h2 text-balance">
+            {t("ctaTitle")}
+          </h2>
+          <p
+            data-reveal-part="rise"
+            style={revealStep(1)}
+            className={`text-body-lg text-pretty ${onGreen ? REGISTER_CLASSES.green.muted : "text-[color:var(--color-text-secondary)]"}`}
+          >
+            {t("ctaText")}
+          </p>
+          <div
+            data-reveal-part="rise"
+            style={revealStep(2)}
+            className={`mt-4 flex flex-wrap items-center gap-3 ${ground ? "" : "justify-center"}`}
+          >
+            <Link href="/about/governance/strategic-plan" className={`${onGreen ? PRIMARY_ON_GREEN : PRIMARY} ${FOCUS}`}>
+              {t("ctaPrimary")}
+              <Arrow />
+            </Link>
+            <Link href="/about" className={`${onGreen ? SECONDARY_ON_GREEN : SECONDARY} ${FOCUS}`}>
+              {t("ctaSecondary")}
+              <Arrow />
+            </Link>
+          </div>
         </div>
-      ) : (
-        call
-      )}
+
+        {ground ? <SlantedPhoto image={ground} locale={locale} side="end" sizes="(min-width: 1024px) 42vw, 100vw" /> : null}
+      </div>
     </Section>
   );
 };

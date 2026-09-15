@@ -12,6 +12,7 @@
       "black": { "value": "900", "type": "fontWeight" }
     },
     "size": {
+      "display-2xl": { "value": { "desktop": "128px", "mobile": "80px" }, "lineHeight": { "desktop": "1", "mobile": "1" }, "weight": "black", "type": "fontSize", "comment": "ADR-0072 D4 — one octave above display-xl (64 / 40), for the ordinals beside a statement. 128 is --space-32 on the 8-point grid" },
       "display-xl": { "value": { "desktop": "64px", "mobile": "40px" }, "lineHeight": { "desktop": "1.05", "mobile": "1.1" }, "weight": "black", "type": "fontSize" },
       "display-l": { "value": { "desktop": "56px", "mobile": "36px" }, "lineHeight": { "desktop": "1.1", "mobile": "1.15" }, "weight": "black", "type": "fontSize" },
       "h1": { "value": { "desktop": "40px", "mobile": "28px" }, "lineHeight": { "desktop": "1.2", "mobile": "1.25" }, "weight": "black", "type": "fontSize" },

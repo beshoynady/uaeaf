@@ -104,10 +104,10 @@ export async function ContactMap({
                 colour is wayfinding rather than one of ADR-0065 D2's roles. It
                 has to separate from whatever map imagery sits behind it, and
                 the ground is a photograph, so the value must not follow the
-                theme. `--color-red-500` rather than `--color-brand-secondary`:
-                both are #C8102E, and `token-contract.spec.ts` keeps the
-                identity token out of text utilities. */}
-            <ContactIcon name="mapPinAnchor" className="size-3 text-[color:var(--color-red-500)]" />
+                theme: `--color-map-marker` holds one red in every theme
+                (ADR-0072 D13), under a name `token-contract.spec.ts` allows
+                in text utilities, unlike `--color-brand-secondary`. */}
+            <ContactIcon name="mapPinAnchor" className="size-3 text-[color:var(--color-map-marker)]" />
           </div>
         ) : null}
       </div>
@@ -119,7 +119,7 @@ export async function ContactMap({
               href={record.googleMapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className={`${BUTTON} ${FOCUS} border border-[color:var(--color-green-500)] bg-[color:var(--color-surface-base)] text-[color:var(--color-text-link)] hover:bg-[color-mix(in_srgb,var(--color-green-500)_8%,var(--color-surface-base))] active:bg-[color-mix(in_srgb,var(--color-green-500)_16%,var(--color-surface-base))]`}
+              className={`${BUTTON} ${FOCUS} border border-[color:var(--color-border-accent)] bg-[color:var(--color-surface-base)] text-[color:var(--color-text-link)] hover:bg-[color-mix(in_srgb,var(--color-border-accent)_8%,var(--color-surface-base))] active:bg-[color-mix(in_srgb,var(--color-border-accent)_16%,var(--color-surface-base))]`}
             >
               {t("map.viewOnMaps")}
             </a>

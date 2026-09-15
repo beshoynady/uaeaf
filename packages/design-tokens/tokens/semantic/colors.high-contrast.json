@@ -1,5 +1,11 @@
 {
   "color": {
+    "action": {
+      "default": { "value": "{color.green.500}", "type": "color", "comment": "ADR-0072 D13 — the Action role (ADR-0065 D2): the edge a control takes under the pointer and the icon that answers it. Federation Green at the point of interaction, the same value in every theme" }
+    },
+    "map": {
+      "marker": { "value": "{color.red.500}", "type": "color", "comment": "ADR-0072 D13 — the location pin on a map card. It stands on map imagery, an unknown ground, so its value does not follow the theme (contact-map.tsx): the same red in every list, measured on the pin card's base ground" }
+    },
     "text": {
       "primary": { "value": "#000000", "type": "color" },
       "secondary": { "value": "#000000", "type": "color" },
@@ -24,6 +30,7 @@
       "adjacent-separator": { "value": "#000000", "type": "color", "comment": "ADR-0059 — a solid black rule, since the registers themselves no longer differ" }
     },
     "border": {
+      "accent": { "value": "#000000", "type": "color", "comment": "ADR-0072 D3 — the accent rule, black in high contrast" },
       "subtle": { "value": "#000000", "type": "color", "comment": "ADR-0059 — high contrast collapses subtle into default by design; a weaker rule would defeat the mode" },
       "default": { "value": "#000000", "type": "color" },
       "strong": { "value": "#000000", "type": "color" }
@@ -47,6 +54,28 @@
       "medal-gold": { "value": "{color.gold.800}", "type": "color" },
       "medal-silver": { "value": "{color.silver.800}", "type": "color" },
       "medal-bronze": { "value": "{color.bronze.800}", "type": "color" }
+    },
+    "item": {
+      "1": {
+        "surface": { "value": "#FFFFFF", "type": "color", "comment": "ADR-0072 D1 — item 1 of a closed set: the card's ground, under the title, the description and the ink" },
+        "ink": { "value": "#000000", "type": "color", "comment": "ADR-0072 D1 — the item's number and icon. Without hue in this theme: the number and the title tell the cards apart" },
+        "edge": { "value": "#000000", "type": "color", "comment": "ADR-0072 D1 — the card's edge: its own ground where colour carries the item, drawn in high contrast" }
+      },
+      "2": {
+        "surface": { "value": "#FFFFFF", "type": "color", "comment": "ADR-0072 D1 — item 2 of a closed set: the card's ground, under the title, the description and the ink" },
+        "ink": { "value": "#000000", "type": "color", "comment": "ADR-0072 D1 — the item's number and icon. Without hue in this theme: the number and the title tell the cards apart" },
+        "edge": { "value": "#000000", "type": "color", "comment": "ADR-0072 D1 — the card's edge: its own ground where colour carries the item, drawn in high contrast" }
+      },
+      "3": {
+        "surface": { "value": "#FFFFFF", "type": "color", "comment": "ADR-0072 D1 — item 3 of a closed set: the card's ground, under the title, the description and the ink" },
+        "ink": { "value": "#000000", "type": "color", "comment": "ADR-0072 D1 — the item's number and icon. Without hue in this theme: the number and the title tell the cards apart" },
+        "edge": { "value": "#000000", "type": "color", "comment": "ADR-0072 D1 — the card's edge: its own ground where colour carries the item, drawn in high contrast" }
+      },
+      "4": {
+        "surface": { "value": "#FFFFFF", "type": "color", "comment": "ADR-0072 D1 — item 4 of a closed set: the card's ground, under the title, the description and the ink" },
+        "ink": { "value": "#000000", "type": "color", "comment": "ADR-0072 D1 — the item's number and icon. Without hue in this theme: the number and the title tell the cards apart" },
+        "edge": { "value": "#000000", "type": "color", "comment": "ADR-0072 D1 — the card's edge: its own ground where colour carries the item, drawn in high contrast" }
+      }
     },
     "avatar": {
       "fallback-bg": { "value": "#FFFFFF", "type": "color" },

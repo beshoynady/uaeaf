@@ -1,5 +1,11 @@
 {
   "color": {
+    "action": {
+      "default": { "value": "{color.green.500}", "type": "color", "comment": "ADR-0072 D13 — the Action role (ADR-0065 D2): the edge a control takes under the pointer and the icon that answers it. Federation Green at the point of interaction, the same value in every theme" }
+    },
+    "map": {
+      "marker": { "value": "{color.red.500}", "type": "color", "comment": "ADR-0072 D13 — the location pin on a map card. It stands on map imagery, an unknown ground, so its value does not follow the theme (contact-map.tsx): the same red in every list, measured on the pin card's base ground" }
+    },
     "text": {
       "primary": { "value": "{color.neutral-warm.50}", "type": "color" },
       "secondary": { "value": "{color.neutral-warm.300}", "type": "color", "comment": "ADR-0059 — was .400. Ladder shifted one step lighter so the tier below it can clear AA" },
@@ -42,6 +48,7 @@
       "adjacent-separator": { "value": "{color.neutral-warm.50}", "type": "color", "comment": "ADR-0059 — MANDATORY between a green and a red section. Measured contrast between the two registers is 1.15:1: stacked directly they have no visible boundary whatsoever, and the pair is the classic red/green confusion besides. The guide never abuts them either — in the four-stroke motif there is always white or black between" }
     },
     "border": {
+      "accent": { "value": "{color.green.400}", "type": "color", "comment": "ADR-0072 D3 — the accent rule on the dark page grounds, a shape at 3" },
       "subtle": { "value": "{color.neutral-warm.800}", "type": "color", "comment": "ADR-0059 — deliberately EQUAL to border.default in this theme, not a distinct value. The neutral ramp has no step between .800 (the default rule) and .900 (which is surface.raised itself), so a genuinely fainter rule would be invisible against the card it divides. Light theme does have the .150 step and so does differentiate" },
       "default": { "value": "{color.neutral-warm.800}", "type": "color" },
       "strong": { "value": "{color.neutral-warm.500}", "type": "color", "comment": "ADR-0051 — corrected from neutral-warm.600 (2.97:1 on neutral-warm.950, fails); .500 measures 4.00:1" }
@@ -65,6 +72,28 @@
       "medal-gold": { "value": "{color.gold.400}", "type": "color" },
       "medal-silver": { "value": "{color.silver.400}", "type": "color" },
       "medal-bronze": { "value": "{color.bronze.400}", "type": "color" }
+    },
+    "item": {
+      "1": {
+        "surface": { "value": "{color.green.800}", "type": "color", "comment": "ADR-0072 D1 — item 1 of a closed set: the card's ground, under the title, the description and the ink" },
+        "ink": { "value": "{color.green.200}", "type": "color", "comment": "ADR-0072 D1 — the item's number and icon. Measured on the dark page grounds and on its own ground" },
+        "edge": { "value": "{color.green.200}", "type": "color", "comment": "ADR-0074 D2 — the card's edge in dark: the ramp's 200 step, at least 3:1 on the page grounds and on the green register" }
+      },
+      "2": {
+        "surface": { "value": "{color.teal.800}", "type": "color", "comment": "ADR-0072 D1 — item 2 of a closed set: the card's ground, under the title, the description and the ink" },
+        "ink": { "value": "{color.teal.200}", "type": "color", "comment": "ADR-0072 D1 — the item's number and icon. Measured on the dark page grounds and on its own ground" },
+        "edge": { "value": "{color.teal.200}", "type": "color", "comment": "ADR-0074 D2 — the card's edge in dark: the ramp's 200 step, at least 3:1 on the page grounds and on the green register" }
+      },
+      "3": {
+        "surface": { "value": "{color.steel-blue.900}", "type": "color", "comment": "ADR-0072 D1 — item 3 of a closed set: the card's ground, under the title, the description and the ink" },
+        "ink": { "value": "{color.steel-blue.300}", "type": "color", "comment": "ADR-0072 D1 — the item's number and icon. Not .400, which reads 3.01 on steel-blue .800" },
+        "edge": { "value": "{color.steel-blue.200}", "type": "color", "comment": "ADR-0074 D2 — the card's edge in dark: the ramp's 200 step, at least 3:1 on the page grounds and on the green register" }
+      },
+      "4": {
+        "surface": { "value": "{color.desert-sand.900}", "type": "color", "comment": "ADR-0072 D1 — item 4 of a closed set: the card's ground, under the title, the description and the ink" },
+        "ink": { "value": "{color.desert-sand.100}", "type": "color", "comment": "ADR-0072 D1 — the item's number and icon. Measured on the dark page grounds and on its own ground" },
+        "edge": { "value": "{color.desert-sand.200}", "type": "color", "comment": "ADR-0074 D2 — the card's edge in dark: the ramp's 200 step, at least 3:1 on the page grounds and on the green register" }
+      }
     },
     "avatar": {
       "fallback-bg": { "value": "{color.neutral-warm.800}", "type": "color" },

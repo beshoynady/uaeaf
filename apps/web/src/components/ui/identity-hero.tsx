@@ -25,17 +25,19 @@ import type { PublicImage } from "@/lib/api/types";
  *   the title, the lines and the portrait cannot all fit it grows instead.
  *   With neither, its content's height: ADR-0067 D2 gives the first screen to
  *   a hero that has something to fill it with, and `PageHero` does the same.
- * - From `lg` the title block follows group A's reserve directly, as it
- *   follows the breadcrumb in the Figma frames (`1219:2300`, `1268:2321`),
- *   rather than standing on the bottom edge 525px below the breadcrumb; the
- *   portrait stays on the bottom edge.
+ * - A trail row only where the page passes one. The institutional pages pass
+ *   none (owner decision 2026-09-15, ADR-0072 D7) and keep the trail in their
+ *   structured data.
+ * - From `lg` the title block follows group A's reserve directly rather than
+ *   standing on the bottom edge; the portrait stays on the bottom edge.
  * - The identity lines in place of the motif, under D10's distribution rule.
  */
 
 /**
- * The identity lines (ADR-0069 D10).
+ * The identity lines (ADR-0069 D10, as amended by ADR-0072 D2).
  *
- * - Shape: the footer's four ribbons, `public/brand/swoosh-*.svg`.
+ * - Shape: the footer's four ribbons, `public/brand/swoosh-*.svg`, at the light
+ *   weight: a third of the ribbon's own thickness for its length.
  * - Order, lengths, spacing, angle: the logo's strokes as ADR-0059 §D7 measured
  *   them in `uaeaf-ribbon-motif.svg`, in ribbon units: red 40.8, green 81.2,
  *   black 56.0, red 23.4 from the left, tails on one baseline 32.66 apart, 45°.
@@ -44,12 +46,11 @@ import type { PublicImage } from "@/lib/api/types";
  *   hero's diagonal, at the same scale and angle (IL-2).
  * - Scale: one ribbon unit is the green stroke's length over 81.2 (IL-4).
  * - Safe distance: `--space-8`, measured along the perpendicular, from every
- *   stroke to every piece of content, at rest and throughout the entrance
- *   (IL-5). The portrait is inset by B's footprint and the path B rises along,
- *   and the title column reserves A's footprint and the path A slides along.
- *   Both reserves also carry the distance the text and the portrait themselves
- *   travel in their entrance, which the guard measured closing the gap to
- *   30.6px without it.
+ *   stroke to every text run, at rest and throughout the entrance (IL-5). The
+ *   hero still keeps the portrait clear by construction: it is inset by B's
+ *   footprint and the path B rises along, and the title column reserves A's
+ *   footprint and the path A slides along. Both reserves also carry the
+ *   distance the text and the portrait themselves travel in their entrance.
  * - Physical in both languages (IL-7). Black is drawn white on a photograph,
  *   as the footer draws it on a dark ground (IL-8).
  * - Arabic below `lg`: group A stands at the title's level instead of above it
@@ -90,6 +91,10 @@ interface Stroke {
 
 const SPACING = 32.66;
 
+/** IL-1's light weight (ADR-0072 D2): the stroke keeps the ribbon's shape and
+ *  its length, at a third of the ribbon's thickness for that length. */
+const WEIGHT = 1 / 3;
+
 const GROUP_A: readonly Stroke[] = [
   { ribbon: RIBBONS.red, tone: "red", length: 40.8, tail: 0 },
   { ribbon: RIBBONS.green, tone: "green", length: 81.2, tail: SPACING },
@@ -100,7 +105,7 @@ const GROUP_B: readonly Stroke[] = [
   { ribbon: RIBBONS.redSmall, tone: "red", length: 23.4, tail: SPACING },
 ];
 
-const thickness = (s: Stroke): number => (s.ribbon.height * s.length) / s.ribbon.width;
+const thickness = (s: Stroke): number => (s.ribbon.height * s.length * WEIGHT) / s.ribbon.width;
 
 /** How far a stroke reaches right of and above its tail at 45°, cap included. */
 const reach = (s: Stroke): number => s.length * Math.SQRT1_2 + (thickness(s) * Math.SQRT1_2) / 2;
@@ -214,6 +219,7 @@ const LineStroke = ({
   position,
   className = "",
   entrance = true,
+  reveal = false,
 }: {
   group: "a" | "b";
   stroke: Stroke;
@@ -223,16 +229,20 @@ const LineStroke = ({
   ink: Ink;
   position: CSSProperties;
   className?: string;
-  /** The hero's entrance (`.il-stroke`); a band between sections draws its
-   *  strokes at rest. */
+  /** The hero's entrance on load (`.il-stroke`). */
   entrance?: boolean;
+  /** Drawn from its tail when its block is revealed further down the page. */
+  reveal?: boolean;
 }) => {
   const size = reach(stroke);
+  const scale = stroke.length / stroke.ribbon.width;
   return (
     <span
       className={`${entrance ? "il-stroke " : ""}absolute ${className}`}
       data-il-group={group}
       data-il-stroke={index}
+      data-il-weight="light"
+      data-reveal-part={reveal ? "draw" : undefined}
       style={
         {
           ...position,
@@ -240,6 +250,7 @@ const LineStroke = ({
           height: unit(size),
           "--il-order-ltr": order.ltr,
           "--il-order-rtl": order.rtl,
+          "--reveal-step": reveal ? order.ltr + 2 : undefined,
         } as CSSProperties
       }
     >
@@ -252,7 +263,7 @@ const LineStroke = ({
         <path
           d={stroke.ribbon.d}
           fill={strokeFill(stroke.tone, ink)}
-          transform={`rotate(-45) scale(${(stroke.length / stroke.ribbon.width).toFixed(4)}) translate(0 ${-stroke.ribbon.height / 2})`}
+          transform={`rotate(-45) scale(${scale.toFixed(4)} ${(scale * WEIGHT).toFixed(4)}) translate(0 ${-stroke.ribbon.height / 2})`}
         />
       </svg>
     </span>
@@ -271,11 +282,13 @@ const GroupA = ({
   className,
   top,
   entrance = true,
+  reveal = false,
 }: {
   ink: Ink;
   className: string;
   top: string;
   entrance?: boolean;
+  reveal?: boolean;
 }) =>
   GROUP_A.map((stroke, i) => (
     <LineStroke
@@ -287,13 +300,24 @@ const GroupA = ({
       ink={ink}
       className={className}
       entrance={entrance}
+      reveal={reveal}
       position={{ left: unit(stroke.tail), top: `calc(${top} + ${unit(A_HEIGHT - reach(stroke))})` }}
     />
   ));
 
 /** Group B's strokes on the frame's right edge, their tails `bottom` above the
  *  bottom edge of the box they are placed in. */
-const GroupB = ({ ink, entrance = true, bottom = "0px" }: { ink: Ink; entrance?: boolean; bottom?: string }) =>
+const GroupB = ({
+  ink,
+  entrance = true,
+  reveal = false,
+  bottom = "0px",
+}: {
+  ink: Ink;
+  entrance?: boolean;
+  reveal?: boolean;
+  bottom?: string;
+}) =>
   GROUP_B.map((stroke, i) => (
     <LineStroke
       key={`b${i}`}
@@ -304,6 +328,7 @@ const GroupB = ({ ink, entrance = true, bottom = "0px" }: { ink: Ink; entrance?:
       ink={ink}
       className="block"
       entrance={entrance}
+      reveal={reveal}
       position={{ right: unit(B_WIDTH - stroke.tail - reach(stroke)), bottom: `calc(${bottom})` }}
     />
   ));
@@ -341,48 +366,92 @@ const IdentityLines = ({ onPhoto, besideTitle }: { onPhoto: boolean; besideTitle
 );
 
 /**
- * A band between sections that carries the identity lines (ADR-0071 D8), on
- * the page's own neutral ground.
+ * The lines on a photograph beside a statement or a call (ADR-0072 D2).
  *
- * The hero's rule, applied to a band: A on the frame's left edge, B on the
- * frame's right edge, one scale (IL-1 to IL-4), below the content in paint
- * order (IL-6), physical in both languages (IL-7). The strokes do not enter: a
- * band further down the page is not a stage, and nothing on it moves but its
- * content's one-shot rise.
+ * Group A at twice its length, in the logo's red and green, order and spacing:
+ * set on the corner of the photograph's cut edge so its tails stand on the
+ * picture and its heads cross the cut into the page. The corner is physical
+ * (IL-7): the bottom of that edge for a photograph on the left, its top for one
+ * on the right, so each reading direction names its own. IL-5 as amended holds
+ * the strokes 32px from text only; the set stays inside the photograph's own
+ * box, which stands `--space-8` and the column gap away from the words.
  *
- * IL-5 holds by construction, on both sides of each edge:
- * - A's highest point and B's tails stand the diagonal clearance inside the
- *   band's top and bottom edges, as A stands `--space-8` below the breadcrumb
- *   in the hero (IL-3). B's tails once sat on the bottom edge, and the guard
- *   measured the goals heading below it 0px away in Arabic, where that heading
- *   holds the right edge.
- * - The content starts below that clearance, A's height and the clearance
- *   again, and ends above B's height, the clearance twice and the content's
- *   own rise, which carries it downward while it waits to be revealed: the
- *   hero's reserves, without the breadcrumb and the entry path a static group
- *   does not travel.
+ * Drawn at rest; where its block waits to be revealed, each stroke grows from
+ * its tail (`motion.css`).
  */
-const BAND_EDGE = DIAGONAL_SAFE;
-const BAND_A_RESERVE = `calc(${BAND_EDGE} + ${unit(A_HEIGHT)} + ${DIAGONAL_SAFE})`;
-const BAND_B_RESERVE = `calc(${BAND_EDGE} + ${unit(B_HEIGHT)} + ${DIAGONAL_SAFE} + var(--pm-rise))`;
+const PHOTO_GROUP: readonly Stroke[] = GROUP_A.map((stroke) => ({ ...stroke, length: stroke.length * 2, tail: stroke.tail * 2 }));
+const PHOTO_WIDTH = groupWidth(PHOTO_GROUP);
+const PHOTO_HEIGHT = groupHeight(PHOTO_GROUP);
 
-export const IdentityBand = ({ children }: { children: ReactNode }) => (
+const PHOTO_CORNER: Record<"start" | "end", string> = {
+  start: "ltr:right-0 ltr:bottom-0 rtl:left-0 rtl:top-0",
+  end: "ltr:left-0 ltr:top-0 rtl:right-0 rtl:bottom-0",
+};
+
+export const PhotoLines = ({ side }: { side: "start" | "end" }) => (
   <div
-    data-identity-band=""
-    data-register="neutral"
-    className={`relative isolate w-full overflow-clip ${ilVariables(false)} ${REGISTER_CLASSES.neutral.surface}`}
+    aria-hidden="true"
+    data-identity-lines=""
+    className={`pointer-events-none absolute ${PHOTO_CORNER[side]} ${ilVariables(false)}`}
+    style={{ width: unit(PHOTO_WIDTH), height: unit(PHOTO_HEIGHT) }}
   >
-    <div
-      aria-hidden="true"
-      data-identity-lines=""
-      className="pointer-events-none absolute inset-0 mx-auto max-w-[1440px] overflow-clip"
-      style={{ zIndex: "var(--zIndex-base)" }}
-    >
-      <GroupA ink="page" className="block" top={BAND_EDGE} entrance={false} />
-      <GroupB ink="page" entrance={false} bottom={BAND_EDGE} />
+    {PHOTO_GROUP.map((stroke, i) => (
+      <LineStroke
+        key={`p${i}`}
+        group="a"
+        stroke={stroke}
+        index={i}
+        order={{ ltr: i, rtl: PHOTO_GROUP.length - 1 - i }}
+        ink="register"
+        className="block"
+        entrance={false}
+        reveal
+        position={{ left: unit(stroke.tail), top: unit(PHOTO_HEIGHT - reach(stroke)) }}
+      />
+    ))}
+  </div>
+);
+
+/** The section rhythm's vertical padding (`py-12 md:py-16 lg:py-24`,
+ *  `page-building-guide.md` §2), which every section on either side of a seam
+ *  shares. */
+const SEAM_PAD = "[--seam-pad:var(--space-12)] md:[--seam-pad:var(--space-16)] lg:[--seam-pad:var(--space-24)]";
+
+/**
+ * The lines on the seam between a section and the one before it (ADR-0073 D2).
+ *
+ * Two neutral sections do not show where one ends by their grounds: base and
+ * sunken measure ΔE 2.13 apart in light, and high contrast paints both white.
+ * The strokes mark the seam, and give the later section a section-scale
+ * identity element, in the corner a section leaves empty: the reading end of
+ * the seam, away from the heading at its start.
+ *
+ * - Physical, as every set of lines is (IL-7). The reading end is the frame's
+ *   left in Arabic, where group A stands, and its right in English, where group
+ *   B stands (IL-3); each direction draws its own group and hides the other.
+ * - IL-4's scale, centred on the seam where the previous section's padding
+ *   allows: a group never rises nearer than `--space-8` to that section's
+ *   content. Below the seam the strokes run into this section's top padding
+ *   beside the heading, which the guard measures (IL-5).
+ * - Out of the flow and clipped to the 1440 frame: no room reserved, nothing
+ *   pushed aside, no sideways scroll. Its section must be positioned.
+ * - Drawn at rest; each stroke grows from its tail when the seam enters the view.
+ */
+const seamTop = (height: number): string => `max(calc(var(--space-8) - var(--seam-pad)), calc(${unit(height)} / -2))`;
+
+export const SeamLines = () => (
+  <div
+    aria-hidden="true"
+    data-identity-lines=""
+    data-seam-lines=""
+    data-reveal=""
+    className={`pointer-events-none absolute inset-x-0 top-0 mx-auto max-w-[1440px] ${SEAM_PAD} ${ilVariables(false)}`}
+  >
+    <div className="absolute inset-x-0 overflow-clip ltr:hidden" style={{ top: seamTop(A_HEIGHT), height: unit(A_HEIGHT) }}>
+      <GroupA ink="page" className="block" top="0px" entrance={false} reveal />
     </div>
-    <div className={`relative ${CONTAINER}`} style={{ paddingTop: BAND_A_RESERVE, paddingBottom: BAND_B_RESERVE }}>
-      {children}
+    <div className="absolute inset-x-0 overflow-clip rtl:hidden" style={{ top: seamTop(B_HEIGHT), height: unit(B_HEIGHT) }}>
+      <GroupB ink="page" entrance={false} reveal />
     </div>
   </div>
 );
@@ -435,7 +504,7 @@ export const IdentityHero = ({
   ground,
   portrait = null,
   locale,
-  breadcrumb,
+  breadcrumb = null,
   height = "first-screen",
 }: {
   titleId: string;
@@ -450,9 +519,10 @@ export const IdentityHero = ({
   ground: PublicImage | null;
   portrait?: PublicImage | null;
   locale: AppLocale;
-  /** The trail, already built for this ground: a photograph under the scrim
-   *  is a dark ground whatever the page's register says. */
-  breadcrumb: ReactNode;
+  /** The trail, already built for this ground, where the page shows one: a
+   *  photograph under the scrim is a dark ground whatever the page's register
+   *  says. */
+  breadcrumb?: ReactNode;
   /**
    * `first-screen`: with a picture or a portrait the hero fills the first
    * screen (ADR-0067 D2). `content`: it is a band its content's height whatever
@@ -492,15 +562,16 @@ export const IdentityHero = ({
         </>
       ) : null}
 
-      {/* The trail opens the hero on a row of its own, on the reading edge of
-          the language. The title and the portrait below keep their fixed sides. */}
-      <div className={`relative ${CONTAINER} pt-6 lg:pt-8`}>
-        {breadcrumb ? (
+      {/* The trail, where there is one, opens the hero on a row of its own, on
+          the reading edge of the language. The title and the portrait below
+          keep their fixed sides. */}
+      {breadcrumb ? (
+        <div data-hero-trail="" className={`relative ${CONTAINER} pt-6 lg:pt-8`}>
           <div className="pm-settle" style={step(0)}>
             {breadcrumb}
           </div>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
 
       <div className="relative flex flex-1 flex-col">
         <IdentityLines onPhoto={onPhoto} besideTitle={Boolean(portrait)} />

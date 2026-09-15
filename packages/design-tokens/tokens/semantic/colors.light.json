@@ -1,5 +1,11 @@
 {
   "color": {
+    "action": {
+      "default": { "value": "{color.green.500}", "type": "color", "comment": "ADR-0072 D13 — the Action role (ADR-0065 D2): the edge a control takes under the pointer and the icon that answers it. Federation Green at the point of interaction, the same value in every theme" }
+    },
+    "map": {
+      "marker": { "value": "{color.red.500}", "type": "color", "comment": "ADR-0072 D13 — the location pin on a map card. It stands on map imagery, an unknown ground, so its value does not follow the theme (contact-map.tsx): the same red in every list, measured on the pin card's base ground" }
+    },
     "text": {
       "primary": { "value": "{color.black}", "type": "color", "comment": "ADR-0051 — repointed from {color.gray.1000}" },
       "secondary": { "value": "{color.neutral-warm.700}", "type": "color", "comment": "ADR-0059 — was .600. Shifted one step down so the whole ladder clears AA on every surface, not only on white; 9.04 / 9.04 / 8.22 on base/raised/sunken" },
@@ -42,6 +48,7 @@
       "adjacent-separator": { "value": "{color.white}", "type": "color", "comment": "ADR-0059 — MANDATORY between a green and a red section. Measured contrast between the two registers is 1.15:1: stacked directly they have no visible boundary whatsoever, and the pair is the classic red/green confusion besides. The guide never abuts them either — in the four-stroke motif there is always white or black between" }
     },
     "border": {
+      "accent": { "value": "{color.green.500}", "type": "color", "comment": "ADR-0072 D3 — the accent rule: the short dash before a label and the pull-quote's edge. 4.61 / 4.81 / 4.38 on base / raised / sunken, a shape at 3" },
       "default": { "value": "{color.neutral-warm.200}", "type": "color" },
       "subtle": { "value": "{color.neutral-warm.150}", "type": "color", "comment": "ADR-0059 — row separators inside dense tables, where `default` reads as a grid of boxes. Was referenced by permission-catalogue-lens.tsx and never defined, so every one of its 170 row rules fell back to currentColor" },
       "strong": { "value": "{color.neutral-warm.500}", "type": "color", "comment": "4.68 on white, 4.48 on base, 4.25 on sunken — clears WCAG 1.4.11 non-text 3:1 on all three" }
@@ -65,6 +72,28 @@
       "medal-gold": { "value": "{color.brand.medal.gold}", "type": "color" },
       "medal-silver": { "value": "{color.brand.medal.silver}", "type": "color" },
       "medal-bronze": { "value": "{color.brand.medal.bronze}", "type": "color" }
+    },
+    "item": {
+      "1": {
+        "surface": { "value": "{color.green.100}", "type": "color", "comment": "ADR-0072 D1 — item 1 of a closed set: the card's ground, under the title, the description and the ink" },
+        "ink": { "value": "{color.green.900}", "type": "color", "comment": "ADR-0072 D1 — the item's number and icon. The darkest green: every step from .300 to .700 stands under 15 from the success colours for a deuteranope or protanope, and .800 falls within 10 of desert sand's ink" },
+        "edge": { "value": "{color.green.100}", "type": "color", "comment": "ADR-0072 D1 — the card's edge: its own ground where colour carries the item, drawn in high contrast" }
+      },
+      "2": {
+        "surface": { "value": "{color.teal.100}", "type": "color", "comment": "ADR-0072 D1 — item 2 of a closed set: the card's ground, under the title, the description and the ink" },
+        "ink": { "value": "{color.teal.600}", "type": "color", "comment": "ADR-0072 D1 — the item's number and icon. Not .700, which is category 2 itself" },
+        "edge": { "value": "{color.teal.100}", "type": "color", "comment": "ADR-0072 D1 — the card's edge: its own ground where colour carries the item, drawn in high contrast" }
+      },
+      "3": {
+        "surface": { "value": "{color.steel-blue.100}", "type": "color", "comment": "ADR-0072 D1 — item 3 of a closed set: the card's ground, under the title, the description and the ink" },
+        "ink": { "value": "{color.steel-blue.600}", "type": "color", "comment": "ADR-0072 D1 — the item's number and icon. Not .500, which stands under 15 from the info colours" },
+        "edge": { "value": "{color.steel-blue.100}", "type": "color", "comment": "ADR-0072 D1 — the card's edge: its own ground where colour carries the item, drawn in high contrast" }
+      },
+      "4": {
+        "surface": { "value": "{color.desert-sand.100}", "type": "color", "comment": "ADR-0072 D1 — item 4 of a closed set: the card's ground, under the title, the description and the ink" },
+        "ink": { "value": "{color.desert-sand.800}", "type": "color", "comment": "ADR-0072 D1 — the item's number and icon. Not .500 to .700, which stand under 15 from the warning colours" },
+        "edge": { "value": "{color.desert-sand.100}", "type": "color", "comment": "ADR-0072 D1 — the card's edge: its own ground where colour carries the item, drawn in high contrast" }
+      }
     },
     "avatar": {
       "fallback-bg": { "value": "{color.neutral-warm.200}", "type": "color" },

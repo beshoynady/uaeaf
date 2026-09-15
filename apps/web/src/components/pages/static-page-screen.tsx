@@ -169,7 +169,8 @@ export async function StaticPageScreen({
           address={contact?.address}
         />
       ) : null}
-      {/* Emitted only where the visible breadcrumb is — Chapter 14 §4. */}
+      {/* Emitted wherever the page has a trail: beside the visible one elsewhere,
+          and on its own on an institutional page (ADR-0072 D7). */}
       {trail.length > 0 ? (
         <BreadcrumbJsonLd
           locale={locale}
@@ -185,7 +186,7 @@ export async function StaticPageScreen({
         heroImage={heroImage}
         locale={locale}
         breadcrumb={
-          trail.length > 0 ? (
+          trail.length > 0 && !isInstitutional(page.route) ? (
             <Breadcrumb
               trail={trail}
               label={t("breadcrumbLabel")}
@@ -205,9 +206,17 @@ export async function StaticPageScreen({
   );
 }
 
+/**
+ * The institutional pages: About and every page under it. Their trail is not
+ * shown in the hero (owner decision 2026-09-15, ADR-0072 D7): the site is
+ * shallow and the header's About menu already carries the place. It stays in
+ * the structured data. Deeper entity pages elsewhere keep a visible trail.
+ */
+export const isInstitutional = (route: string): boolean => route === "/about" || route.startsWith("/about/");
+
 /** IA §8.5: mandatory from depth ≥ 2, so a top-level page gets none. */
 export function breadcrumbTrail(
-  page: PublicPage,
+  page: Pick<PublicPage, "route" | "messageKey">,
   pageName: (key: string) => string,
   navName: (key: string) => string,
 ): Crumb[] {

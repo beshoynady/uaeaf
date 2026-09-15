@@ -10,14 +10,12 @@ import { PUBLIC_PAGES } from "@/lib/pages/public-pages";
  *
  * IA §4.5 files this as **P0** — "platform is not launchable without these" —
  * and until now the site had Next.js's unstyled default, outside the app
- * shell, in one language. It is reached often today: the approved
- * nine-item navigation (IA §8.1) points at nine destinations that have no
- * page yet, so `/about`, `/championships`, `/events/federation-events`
- * and `/media` all land here, as do the footer's `/help`, `/accessibility`,
- * `/privacy`, `/terms` and `/sitemap`.
+ * shell, in one language. Every link the header and footer carry resolves
+ * (a destination not built yet is a page in preparation, `PREPARING_PAGES`),
+ * so what lands here is a mistyped or outdated address.
  *
- * PR-010 forbids showing "Coming Soon" to the public, so this page does not
- * claim the missing pages are on their way. It says the link does not resolve
+ * This page does not claim a missing page is on its way (PR-010 lists "Coming
+ * Soon" on public pages as an anti-pattern). It says the link does not resolve
  * and offers the pages that do exist — which is both honest and the more
  * useful of the two.
  *

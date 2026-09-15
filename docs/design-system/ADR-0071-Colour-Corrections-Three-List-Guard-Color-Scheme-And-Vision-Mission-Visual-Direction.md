@@ -5,6 +5,7 @@
 - **Accepted and built for Vision & Mission:** D6. Its scope beyond this page is an **open decision**.
 - **Blocked by measurement, nothing built:** D9 (the item colours).
 - **Recorded, not built:** D10 (what the reference shows that was not built, and why).
+- **Amended by ADR-0072 (2026-09-15):** D7 (the ordinals: `display-2xl`, the item ink, beside the text), D8 (the band is removed: the lines stand on the photographs, without reserves), D9 (built, with the owner's thresholds of 2026-09-15) and D10 (every item resolved there). D6 is unchanged.
 
 **Date:** 2026-09-15
 **Authority:** Owner batch brief of 2026-09-14, «دفعة: اللوحة النهائية + تطبيق الاتجاه البصري على صفحة الرؤية والرسالة». It approves: the palette decisions (§3–§6); the delete button's option A, `color-scheme`, the two corrections, the four state-text names, the four-part guard, form A and three lists (§7); and the visual direction on this page (§8).

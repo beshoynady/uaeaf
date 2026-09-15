@@ -464,8 +464,8 @@
 .lift:hover .card-icon,
 .lift:focus-within .card-icon,
 .lift:focus-visible .card-icon {
-  background-color: var(--color-brand-primary);
-  border-color: var(--color-brand-primary);
+  background-color: var(--color-action-default);
+  border-color: var(--color-action-default);
   color: var(--color-text-on-brand);
 }
 
@@ -513,7 +513,7 @@
 .lift[aria-disabled="true"] .card-icon {
   background-color: var(--color-surface-sunken);
   border-color: var(--color-border-strong);
-  color: var(--color-brand-primary);
+  color: var(--color-action-default);
 }
 
 /*
@@ -632,6 +632,46 @@
   [data-reveal-state="revealed"] [data-reveal-part="chip"] {
     animation-name: pm-reveal-chip;
   }
+
+  /* ADR-0072 D8: the cinematic parts of the same one-shot reveal. Transform
+     only, so a block that never reveals is painted and in place; the order
+     comes from each part's step and each block's batch, as above. */
+
+  /* A statement's ordinal climbs three rises and settles from 90%, slower than
+     the words beside it. */
+  [data-reveal-state="waiting"] [data-reveal-part="numeral"] {
+    transform: translateY(calc(var(--reveal-rise) * 3)) scale(0.9);
+  }
+
+  /* A photograph slides in from the page edge on its side, inside its own cut,
+     so nothing outside the cut moves and nothing widens the page. */
+  [data-reveal-state="waiting"] [data-reveal-part="slide"] {
+    transform: translateX(var(--slide-from));
+  }
+
+  /* Each stroke on a photograph grows from its tail along its own axis. */
+  [data-reveal-part="draw"] {
+    transform-origin: 0 100%;
+  }
+
+  [data-reveal-state="waiting"] [data-reveal-part="draw"] {
+    transform: scale(0);
+  }
+
+  [data-reveal-state="revealed"] [data-reveal-part="numeral"] {
+    animation-name: pm-reveal-numeral;
+    animation-duration: var(--motion-duration-slower);
+  }
+
+  [data-reveal-state="revealed"] [data-reveal-part="slide"] {
+    animation-name: pm-reveal-slide;
+    animation-duration: var(--motion-duration-slower);
+  }
+
+  [data-reveal-state="revealed"] [data-reveal-part="draw"] {
+    animation-name: pm-reveal-draw;
+    animation-duration: var(--motion-duration-slow);
+  }
 }
 
 @keyframes pm-settle {
@@ -688,6 +728,45 @@
   }
 }
 
+@keyframes pm-reveal-numeral {
+  from {
+    transform: translateY(calc(var(--reveal-rise) * 3)) scale(0.9);
+  }
+  to {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pm-reveal-slide {
+  from {
+    transform: translateX(var(--slide-from));
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes pm-reveal-draw {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* Where a photograph slides in from: the page edge it stands against, which is
+   physical, so each reading direction names its own. */
+[data-slanted-photo][data-side="start"],
+[dir="rtl"] [data-slanted-photo][data-side="end"] {
+  --slide-from: -100%;
+}
+
+[data-slanted-photo][data-side="end"],
+[dir="rtl"] [data-slanted-photo][data-side="start"] {
+  --slide-from: 100%;
+}
+
 /* The President's Message background plane, composition C only (ADR-0069 D8,
    D9): opaque from its first frame, settling from 104% over `ambient`. Not an
    entrance and never on content: `ambient` is bound to this one use. Under
@@ -731,5 +810,14 @@
   :where([data-reveal]) {
     --reveal-step: 0;
     --reveal-batch: 0;
+  }
+
+  :where([data-slanted-photo]) {
+    --slant: var(--space-12);
+    --slide-from: -100%;
+  }
+
+  :where([data-seam-lines]) {
+    --seam-pad: var(--space-12);
   }
 }

@@ -56,7 +56,7 @@
 
 ### قرارات معمارية (ADRs)
 
-`ADR-0054` … `ADR-0071` — ثمانية عشر ملفًا في `docs/design-system/`. كل واحد يوثّق
+`ADR-0054` … `ADR-0074` — واحد وعشرون ملفًا في `docs/design-system/`. كل واحد يوثّق
 قرارًا واحدًا وسببه والبديل المرفوض. **هذه أهم ما يُسلَّم**: هي الجواب على «لماذا
 بُني هكذا» بعد أن ينسى الجميع.
 
@@ -66,8 +66,14 @@
 `ADR-0070-Vision-Mission-Page-Schema-Editorial-Routes-Shared-Editor-And-Identity-Hero.md`
 — صفحة الرؤية والرسالة: الـ schema، ومسارات التحرير، وأجزاء المحرر المشتركة، وhero خطوط الهوية.
 
-أحدثها: `ADR-0071-Colour-Corrections-Three-List-Guard-Color-Scheme-And-Vision-Mission-Visual-Direction.md`
-— تصحيحات الألوان وحارس القوائم الثلاث و`color-scheme`، والاتجاه البصري لصفحة الرؤية والرسالة. ألوان البنود فيه **موقوفة بالقياس** (D9).
+أحدثها: `ADR-0074-Closing-Vision-Mission-Pre-Handover-Images-Green-Values-Publishing-Gate-And-Rule-Calibration.md`
+— إغلاق دفعة الرؤية والرسالة: صور ما قبل التسليم (سبعة من ثمانية أصول مولَّدة بدليل C2PA)، والقيم على السجل الأخضر بحافة البطاقة في الداكن، والقاعدة ٦ بوابة نشر، ومبدأ الكثافة، ومعايرة القواعد على كلمة الرئيس وأعضاء المجلس. خيارا المجموعة B ينتظران قرار المالك.
+
+وقبله: `ADR-0073-Vision-Mission-Model-Page-Athletics-Photographs-Seam-Lines-And-Page-Rules.md`
+— صفحة الرؤية والرسالة نموذجًا: صور ألعاب القوى، وخطوط الحدّ بين الأقسام، وقواعد الصفحة الخمس الأولى وفحوصها.
+
+`ADR-0072-Item-Palette-Rule-Evolutions-And-The-Two-Institutional-Pages.md`
+— لوحة ألوان البنود، وتطوير قواعد الخطوط والحركة، وبناء صفحتي كلمة الرئيس والرؤية والرسالة.
 
 ### حوكمة بصرية
 
@@ -138,7 +144,9 @@
 | `engineering/UAEAF-ENGINEERING-OPERATING-MODEL.md` | نموذج التشغيل الهندسي |
 | `engineering/quality-gates.md` | بوابات الجودة (hook + CI) |
 | `engineering/how-colour-system-works.md` | كيف يعمل نظام الألوان: من JSON إلى الشاشة، ومواضع الكسر، والحراس |
+| `engineering/page-building-guide.md` | دليل بناء الصفحات المؤسسية القادمة: اللوحة، وبنية الصفحة، والحركة، والخطوط القطرية، والأنماط الجاهزة، وجدول القواعد المطوَّرة (ADR-0072 وADR-0074)، وقواعد الصفحة الست بفحوصها وبوابة النشر ومبدأ الكثافة (§٨، ADR-0073 وADR-0074) |
 | `engineering/how-vision-mission-direction-works.md` | ما بُني في دفعة الاتجاه البصري: الحارس، و`color-scheme`، والـ hero الشريط، والخطوط بين الأقسام |
+| `engineering/how-green-values-work.md` | القيم على السجل الأخضر في صفحة الرؤية والرسالة، وحافة البطاقة في الداكن: لماذا، والملفات بترتيبها، وتتبّع بطاقة حقيقية، ومواضع الكسر، والحراس |
 | `design-system/UAEAF-DESIGN-CRITIQUE-JURY-PROTOCOL.md` | بروتوكول تقييم المقترحات — أداة عمل داخلية لا مرجع تصميم |
 | `design-system/figma-reference/README.md` | دليل لقطات Figma المرجعية |
 

@@ -76,6 +76,13 @@ export const REGISTER_CLASSES: Record<
  * 1440 − 2×64 = 1312px, which is the width the approved footer composition
  * already uses. No new number is introduced here.
  */
+/**
+ * The neutral register's second ground (ADR-0072 D5). A page alternates its
+ * neutral sections between the base and this sunken step, so its rhythm is
+ * carried by the grounds. Every text tier and item colour is measured on both.
+ */
+const SUNKEN_SURFACE = "bg-[color:var(--color-surface-sunken)] text-[color:var(--color-text-primary)]";
+
 export const CONTAINER = "mx-auto w-full max-w-[1440px] px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16";
 
 export function Section({
@@ -86,6 +93,7 @@ export function Section({
   labelledBy,
   bleed = false,
   enter = true,
+  ground = "base",
 }: {
   register?: Register;
   children: ReactNode;
@@ -113,15 +121,19 @@ export function Section({
    * Ignored under `bleed`, which has no container to move.
    */
   enter?: boolean;
+  /** The neutral register's ground: `base`, or `sunken` for every other band. */
+  ground?: "base" | "sunken";
 }) {
   const tone = REGISTER_CLASSES[register];
+  const surface = register === "neutral" && ground === "sunken" ? SUNKEN_SURFACE : tone.surface;
   const inner = enter ? SECTION_ENTER : "";
   return (
     <section
       id={id}
       aria-labelledby={labelledBy}
       data-register={register}
-      className={`w-full ${tone.surface}${className ? ` ${className}` : ""}`}
+      data-ground={register === "neutral" ? ground : undefined}
+      className={`w-full ${surface}${className ? ` ${className}` : ""}`}
     >
       {/* A bleed band keeps its children as direct descendants and gets no
           entrance. Its content reaches the viewport edge by definition, so

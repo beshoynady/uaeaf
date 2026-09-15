@@ -6,7 +6,7 @@ import { ValuesBand } from "@/components/pages/president/values-band";
 import { StrategicGoals } from "@/components/pages/vision-mission/goals";
 import { VisionMissionStatements } from "@/components/pages/vision-mission/statements";
 import { StrategyCta } from "@/components/pages/vision-mission/strategy-cta";
-import { Breadcrumb, type Crumb } from "@/components/ui/breadcrumb";
+import type { Crumb } from "@/components/ui/breadcrumb";
 import { IdentityHero } from "@/components/ui/identity-hero";
 import type { AppLocale } from "@/i18n/routing";
 import { fetchPublic } from "@/lib/api/public-client";
@@ -92,12 +92,12 @@ const VisionMissionPage = async ({ params }: { params: Promise<{ locale: AppLoca
   if (!record) notFound();
 
   const nav = await getTranslations({ locale, namespace: "Nav" });
-  const pages = await getTranslations({ locale, namespace: "Pages" });
   const copy = await getTranslations({ locale, namespace: "VisionMission" });
   const { title, description } = await describe(record, locale);
 
-  // IA §8.1: Home / About / Governance & Strategy / the page. The two groups
-  // have no landing page of their own, so they are text, not links.
+  // IA §8.1: Home / About / Governance & Strategy / the page, in the structured
+  // data only: an institutional page shows no trail (owner decision 2026-09-15,
+  // ADR-0072 D7), and the header's menu carries the place.
   const trail: Crumb[] = [
     { name: nav("home"), route: "/" },
     { name: nav("about"), route: null },
@@ -126,25 +126,22 @@ const VisionMissionPage = async ({ params }: { params: Promise<{ locale: AppLoca
         locale={locale}
         // A band, not the first screen: the content starts in view (ADR-0071 D6).
         height="content"
-        breadcrumb={
-          <Breadcrumb
-            trail={trail}
-            label={pages("breadcrumbLabel")}
-            register={record.heroImage ? "black" : "green"}
-            overPhoto={Boolean(record.heroImage)}
-          />
-        }
       />
       <VisionMissionStatements record={record} locale={locale} />
       <StrategicGoals record={record} locale={locale} />
+      {/* The values on the green register and the call after them on the page's
+          ground, as the President's Message sets them: the base and sunken
+          grounds alone do not show the seam after the goals, and a second card
+          grid on a neutral ground reads as one set with the goals (owner
+          decision, closing brief M2; ADR-0074 D2). */}
       <ValuesBand
         record={{ values: record.coreValues, valuesTitle: { ar: valuesLabel, en: valuesLabel } }}
         locale={locale}
         titleId="vision-mission-values-title"
         field="coreValues"
-        ground={record.valuesImage}
+        register="green"
       />
-      <StrategyCta locale={locale} ground={record.ctaImage} />
+      <StrategyCta locale={locale} register="neutral" ground={record.ctaImage} />
       <RevealOnce />
     </>
   );

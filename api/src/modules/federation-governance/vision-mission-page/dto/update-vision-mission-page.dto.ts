@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsMongoId, IsOptional, ValidateNested } from 'class-validator';
 import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
-import { ContentBlockDto, IconKeyedContentBlockDto } from '../../../../common/dto/content-block.dto.js';
+import { IconKeyedContentBlockDto } from '../../../../common/dto/content-block.dto.js';
 import { PageSeoDto } from '../../../../common/dto/page-seo.dto.js';
 
 /**
@@ -89,12 +89,12 @@ export class UpdateVisionMissionPageDto {
   @Type(() => LocalizedTextDto)
   goalsTitle?: LocalizedTextDto | null;
 
-  @ApiProperty({ type: [ContentBlockDto], required: false })
+  @ApiProperty({ type: [IconKeyedContentBlockDto], required: false })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => ContentBlockDto)
-  strategicGoals?: ContentBlockDto[];
+  @Type(() => IconKeyedContentBlockDto)
+  strategicGoals?: IconKeyedContentBlockDto[];
 
   @ApiProperty({ type: [IconKeyedContentBlockDto], required: false })
   @IsOptional()

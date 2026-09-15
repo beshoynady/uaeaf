@@ -6,10 +6,7 @@ import type { VisionMissionPageDocument } from './schemas/vision-mission-page.sc
 import { CreateVisionMissionPageDto } from './dto/create-vision-mission-page.dto.js';
 import { UpdateVisionMissionPageDto } from './dto/update-vision-mission-page.dto.js';
 import type { VisionMissionPublicResponseDto } from './dto/vision-mission-public-response.dto.js';
-import type {
-  PublicContentBlockDto,
-  PublicValueDto,
-} from '../../../common/dto/public-page.dto.js';
+import type { PublicValueDto } from '../../../common/dto/public-page.dto.js';
 import { PublicationsService } from '../../workflow/publications/publications.service.js';
 import { RevisionsService } from '../../workflow/revisions/revisions.service.js';
 import { MediaAssetsService } from '../../media-center/media-assets/media-assets.service.js';
@@ -180,10 +177,11 @@ export class VisionMissionPagesService {
     ]);
     const imageOf = (key: (typeof IMAGE_KEYS)[number]) => images.get(String(snapshot[key])) ?? null;
 
-    const strategicGoals: PublicContentBlockDto[] = list(snapshot.strategicGoals)
+    const strategicGoals: PublicValueDto[] = list(snapshot.strategicGoals)
       .map((goal) => ({
         title: goal.title as LocalizedTextDto,
         description: goal.description as LocalizedTextDto,
+        iconKey: String(goal.iconKey),
         displayOrder: Number(goal.displayOrder ?? 0),
       }))
       .sort(byOrder);

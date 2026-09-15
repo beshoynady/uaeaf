@@ -161,51 +161,35 @@ const ALL_ROUTES = ["/about/president", "/about/governance/vision-mission"];
 
 const ROUTES = ALL_ROUTES.filter((route) => !process.env.ONLY_ROUTE || route === process.env.ONLY_ROUTE);
 
-/** Bands between sections that carry the lines (ADR-0071 D8), per route. */
-const BANDS: Record<string, number> = {
-  "/about/president": 0,
-  "/about/governance/vision-mission": 1,
-};
-
 /**
- * IL-5 in a band between sections: its strokes against every text run and
- * photograph of the page's content, not only the band's own. Group B stands on
- * the band's bottom edge, which is the next section's top edge, so the heading
- * below it is as close as anything inside. The strokes are static; what moves
- * is the content, which waits offset below the first screen and rises when
- * revealed, so every frame of the running animations is measured, and a band
- * with none is measured once, at rest.
+ * IL-5 as amended (ADR-0072 D2) outside the hero: every stroke drawn on a
+ * photograph beside a statement or a call, and on a seam between two sections
+ * (ADR-0073 D2), against every text run of the page's content. A photograph is
+ * no longer measured against, so a stroke may cross it; a word is. Below the
+ * first screen a block waits to be revealed, and its strokes grow from their
+ * tails as it plays, so every frame of the running animations is measured.
  */
-const measureBand = (page: Page, index: number) =>
+const measurePhotoLines = (page: Page) =>
   page.evaluate(
-    ({ index, step, points }): Clearance => {
-      const band = document.querySelectorAll<HTMLElement>("[data-identity-band]")[index];
-      if (!band) throw new Error(`no band ${index} on the page`);
-
-      const paths = [...band.querySelectorAll<SVGPathElement>("[data-il-stroke] path")].filter(
+    ({ step, points }): Clearance => {
+      const content = document.querySelector("main") ?? document.body;
+      const paths = [
+        ...content.querySelectorAll<SVGPathElement>("[data-slanted-photo] [data-il-stroke] path, [data-seam-lines] [data-il-stroke] path"),
+      ].filter(
         (path) => (path.closest("[data-il-stroke]") as HTMLElement).getClientRects().length > 0,
       );
 
-      // The page's content: `<main>`, without the hero, whose photograph is the
-      // ground its own lines stand on and whose text its own case measures.
-      const content = document.querySelector("main") ?? document.body;
-      const hero = content.querySelector("section[data-composition]");
       const contentRects = () => {
         const rects: { rect: DOMRect; label: string }[] = [];
         const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
         for (let node = walker.nextNode(); node; node = walker.nextNode()) {
           const parent = node.parentElement;
-          if (!node.textContent?.trim() || !parent || parent.closest("[data-identity-lines]")) continue;
-          if (hero?.contains(parent) || parent.closest("script, style")) continue;
+          if (!node.textContent?.trim() || !parent || parent.closest("[data-identity-lines], script, style")) continue;
           const range = document.createRange();
           range.selectNodeContents(node);
           for (const rect of range.getClientRects()) {
             rects.push({ rect, label: `${parent.tagName.toLowerCase()} "${node.textContent.trim().slice(0, 16)}"` });
           }
-        }
-        for (const image of content.querySelectorAll("img")) {
-          if (hero?.contains(image)) continue;
-          rects.push({ rect: image.getBoundingClientRect(), label: "photograph" });
         }
         return rects;
       };
@@ -248,7 +232,7 @@ const measureBand = (page: Page, index: number) =>
       animations.forEach((animation) => animation.finish());
       return { ...best, distance: Math.round(best.distance * 10) / 10, frames, strokes: paths.length, contents, overflowFrames };
     },
-    { index, step: FRAME_STEP_MS, points: OUTLINE_POINTS },
+    { step: FRAME_STEP_MS, points: OUTLINE_POINTS },
   );
 
 if (ROUTES.length === 0) {
@@ -288,48 +272,49 @@ for (const route of ROUTES) {
           ).toBeGreaterThanOrEqual(SAFE_DISTANCE);
         });
 
-        test("keeps the strokes between sections 32px from their band's content, before and after it is revealed", async ({
+        test("keeps the strokes on the photographs and the seams 32px from every text run, as loaded and through their reveal", async ({
           page,
         }) => {
           await page.goto(`/${locale}${route}`, { waitUntil: "domcontentloaded" });
           await page.evaluate(() => document.fonts.ready);
-          const bands = page.locator("[data-identity-band]");
-          expect(await bands.count(), "the page's bands between sections").toBe(BANDS[route]);
+          const photos = await page.locator("main [data-slanted-photo]").count();
+          // Each seam draws one group of two: A in Arabic, B in English.
+          const seams = await page.locator("main [data-seam-lines]").count();
+          test.info().annotations.push({ type: "photographs and seams", description: `${photos} and ${seams}` });
 
-          for (let index = 0; index < BANDS[route]; index += 1) {
-            // As loaded: a band below the first screen waits offset by its reveal.
-            const waiting = await measureBand(page, index);
-            // Every block, not the band's top: on a short phone the band is
-            // taller than the screen, and a block below the view never reveals.
-            const blocks = bands.nth(index).locator("[data-reveal]");
-            for (let block = 0; block < (await blocks.count()); block += 1) {
-              await blocks.nth(block).scrollIntoViewIfNeeded();
-            }
-            await page.waitForFunction(
-              (i) =>
-                ![...document.querySelectorAll("[data-identity-band]")[i].querySelectorAll("[data-reveal]")].some(
-                  (block) => (block as HTMLElement).dataset.revealState === "waiting",
-                ),
-              index,
-            );
-            // Revealed: every frame of the rise, then at rest.
-            const revealed = await measureBand(page, index);
+          // As loaded: a block below the first screen waits to be revealed.
+          const waiting = await measurePhotoLines(page);
+          expect(waiting.strokes, "two strokes on each photograph and on each seam").toBe((photos + seams) * 2);
+          // A page with neither draws no strokes outside the hero.
+          if (photos + seams === 0) return;
 
-            for (const [moment, clearance] of [
-              ["as loaded", waiting],
-              ["through its reveal", revealed],
-            ] as const) {
-              test.info().annotations.push({ type: `band ${index} ${moment}`, description: JSON.stringify(clearance) });
-              expect(clearance.strokes, `band ${index} draws four strokes`).toBe(4);
-              expect(clearance.frames, `band ${index} ${moment}: frames measured`).toBeGreaterThan(0);
-              expect(clearance.contents, `band ${index} ${moment}: content found`).toBeGreaterThan(0);
-              expect(Number.isFinite(clearance.distance), `band ${index} ${moment}: a distance`).toBe(true);
-              expect(clearance.overflowFrames, `band ${index} ${moment}: no sideways scroll`).toBe(0);
-              expect(
-                clearance.distance,
-                `band ${index} ${moment}: closest stroke reaches ${clearance.distance}px from the ${clearance.against} at ${clearance.atMs}ms`,
-              ).toBeGreaterThanOrEqual(SAFE_DISTANCE);
-            }
+          // Every block, so that none below the view is left waiting.
+          const blocks = page.locator("main [data-reveal]");
+          for (let block = 0; block < (await blocks.count()); block += 1) {
+            await blocks.nth(block).scrollIntoViewIfNeeded();
+          }
+          await page.waitForFunction(
+            () =>
+              ![...document.querySelectorAll("main [data-reveal]")].some(
+                (block) => (block as HTMLElement).dataset.revealState === "waiting",
+              ),
+          );
+          // Revealed: every frame of the strokes growing and the pictures sliding, then at rest.
+          const revealed = await measurePhotoLines(page);
+
+          for (const [moment, clearance] of [
+            ["as loaded", waiting],
+            ["through its reveal", revealed],
+          ] as const) {
+            test.info().annotations.push({ type: `photographs ${moment}`, description: JSON.stringify(clearance) });
+            expect(clearance.frames, `${moment}: frames measured`).toBeGreaterThan(0);
+            expect(clearance.contents, `${moment}: text found`).toBeGreaterThan(0);
+            expect(Number.isFinite(clearance.distance), `${moment}: a distance`).toBe(true);
+            expect(clearance.overflowFrames, `${moment}: no sideways scroll`).toBe(0);
+            expect(
+              clearance.distance,
+              `${moment}: closest stroke reaches ${clearance.distance}px from the ${clearance.against} at ${clearance.atMs}ms`,
+            ).toBeGreaterThanOrEqual(SAFE_DISTANCE);
           }
         });
       });

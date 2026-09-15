@@ -117,15 +117,15 @@ export const LIFT = "lift";
  * (ADR-0065); `active:` accompanies `hover:` because hover is mouse-only
  * feedback and this layer is mobile-priority (PR-006).
  */
-export const CARD_INTERACTIVE = `${LIFT} ${CARD} transition-colors duration-[var(--motion-duration-instant)] ease-[var(--motion-easing-standard)] hover:border-[color:var(--color-brand-primary)] focus-within:border-[color:var(--color-brand-primary)] active:border-[color:var(--color-brand-primary)]`;
+export const CARD_INTERACTIVE = `${LIFT} ${CARD} transition-colors duration-[var(--motion-duration-instant)] ease-[var(--motion-easing-standard)] hover:border-[color:var(--color-action-default)] focus-within:border-[color:var(--color-action-default)] active:border-[color:var(--color-action-default)]`;
 
 /**
  * The icon inside a card: a considered colour at rest, an inversion on hover.
  *
- * `--color-green-500` is #00843D, the same value as `--color-brand-primary`
- * under a name that is not the identity token: `token-contract.spec.ts`
- * keeps the identity out of text utilities, and the codebase already takes
- * this route for the red map marker.
+ * `--color-action-default` is the Action role (ADR-0065 D2, ADR-0072 D13):
+ * Federation Green at the point of interaction, one value in every theme,
+ * under a name that is not the identity token, which `token-contract.spec.ts`
+ * keeps out of text utilities.
  *
  * At rest the glyph is Federation Green on the recessed step — measured
  * **4.37:1** light and **4.37:1** dark, above the 3:1 floor for a non-text
@@ -139,7 +139,7 @@ export const CARD_INTERACTIVE = `${LIFT} ${CARD} transition-colors duration-[var
  * the card's hover and not to the icon's own state.
  */
 export const CARD_ICON =
-  "card-icon flex shrink-0 items-center justify-center rounded-full border border-[color:var(--color-border-strong)] bg-[color:var(--color-surface-sunken)] text-[color:var(--color-green-500)]";
+  "card-icon flex shrink-0 items-center justify-center rounded-full border border-[color:var(--color-border-strong)] bg-[color:var(--color-surface-sunken)] text-[color:var(--color-action-default)]";
 
 /**
  * The resting and interactive edges of a form control.
@@ -148,7 +148,7 @@ export const CARD_ICON =
  * card's does not.
  */
 export const FIELD_EDGE =
-  "border border-[color:var(--color-border-strong)] hover:border-[color:var(--color-brand-primary)] active:border-[color:var(--color-brand-primary)] focus:border-[color:var(--color-brand-primary)]";
+  "border border-[color:var(--color-border-strong)] hover:border-[color:var(--color-action-default)] active:border-[color:var(--color-action-default)] focus:border-[color:var(--color-action-default)]";
 
 /**
  * The hero, sized to the first screen.

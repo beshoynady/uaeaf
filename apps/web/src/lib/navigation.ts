@@ -50,11 +50,11 @@
  *
  * Every existing route is unchanged, per the owner's constraint — including
  * `/events/federation-events`, which keeps its path behind the shorter label.
- * The nine destinations that have no page yet take paths derived from the
- * pattern already in use (`/about/board-members`, `/about/committees`): a
- * section segment then a clean slug, per Chapter 14 §5. They resolve to the
- * 404 screen today, which is the owner's explicit decision — see
- * `built-routes.ts` for how that is kept honest for crawlers.
+ * The destinations whose full pages are not built yet take paths derived from
+ * the pattern already in use (`/about/board-members`, `/about/committees`): a
+ * section segment then a clean slug, per Chapter 14 §5. Each is served as a
+ * page in preparation (`PREPARING_PAGES` in `lib/pages/public-pages.ts`) until
+ * its full page replaces it at the same path.
  */
 
 export interface NavItem {

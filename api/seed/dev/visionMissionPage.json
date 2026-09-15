@@ -59,6 +59,7 @@
           "ar": "اكتشاف ورعاية المواهب الرياضية الإماراتية وتأهيلها للمنافسة على المستوى الدولي.",
           "en": "Discovering and nurturing Emirati sports talents and qualifying them to compete on the international stage."
         },
+        "iconKey": "star",
         "displayOrder": 1
       },
       {
@@ -70,6 +71,7 @@
           "ar": "تحقيق نتائج متقدمة في البطولات العربية والآسيوية والأولمبية في ألعاب القوى.",
           "en": "Achieving advanced results in Arab, Asian, and Olympic athletics championships."
         },
+        "iconKey": "trophy",
         "displayOrder": 2
       },
       {
@@ -81,6 +83,7 @@
           "ar": "توفير منشآت ومرافق تدريبية عالمية المستوى لدعم الرياضيين والمدربين.",
           "en": "Providing world-class training facilities and infrastructure to support athletes and coaches."
         },
+        "iconKey": "flag",
         "displayOrder": 3
       },
       {
@@ -92,6 +95,7 @@
           "ar": "تطبيق أعلى معايير الحوكمة والنزاهة في إدارة الاتحاد وعملياته.",
           "en": "Applying the highest standards of governance and integrity in managing the federation and operations."
         },
+        "iconKey": "shield-check",
         "displayOrder": 4
       },
       {
@@ -103,6 +107,7 @@
           "ar": "زيادة عدد الممارسين لرياضات ألعاب القوى على مستوى الدولة وفي جميع الإمارات.",
           "en": "Increasing the number of athletics practitioners across all UAE Emirates and communities."
         },
+        "iconKey": "users",
         "displayOrder": 5
       },
       {
@@ -114,6 +119,7 @@
           "ar": "بناء شراكات مع المؤسسات المحلية والدولية لدعم تطوير الرياضة في الإمارات.",
           "en": "Building active partnerships with local and international institutions to support overall sports development."
         },
+        "iconKey": "handshake",
         "displayOrder": 6
       }
     ],

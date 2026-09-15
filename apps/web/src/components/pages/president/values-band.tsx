@@ -1,44 +1,36 @@
-import type { CSSProperties } from "react";
-import { PHOTO_PANEL, PhotoGround } from "@/components/ui/photo-ground";
+import { AccentRule } from "@/components/ui/accent-rule";
+import { ItemCard, itemTone } from "@/components/ui/item-card";
 import { Section } from "@/components/ui/section";
-import { CARD, CARD_ICON } from "@/components/ui/surface";
 import type { AppLocale } from "@/i18n/routing";
-import type { PresidentMessagePublic, PublicImage } from "@/lib/api/types";
-import { ValueIcon } from "@/lib/icons/value-icons";
+import type { PresidentMessagePublic } from "@/lib/api/types";
 
 /**
- * The values band (`page-president-message.md` §7.4, §7.5-2).
+ * The values band (`page-president-message.md` §7.4; ADR-0072 D1, D5).
  *
- * - The page's own `green` register; Figma's `#0d1f12` matches no register.
- * - Cards are the shared `CARD` recipe as it stands, standing on the green
- *   band (owner decision 2026-09-13; PENDING FIGMA BACK-SYNC). They are not
- *   links, so they carry no lift (§7.4 I5).
- * - One green icon chip for every value (PM-D23), the vendored glyph the
- *   editor picked. Icon, title and text on the reading edge (PM-D27).
+ * - On the green register on both pages: the President's Message's own, and
+ *   Vision & Mission's after the goals, where the neutral grounds alone did not
+ *   show the seam (ADR-0074 D2). The neutral register stays available.
+ * - Each value is an `ItemCard` in the colour its position gives it, with the
+ *   glyph the editor picked in the item's ink and no chip; no number, because
+ *   the values are not ordered. Not links, so no lift and no arrow.
+ * - The heading is marked by the accent rule, in the band's own text colour on
+ *   the green register.
  * - The grid collapses as extracted (§1.3 rule 4): five across from `xl`, two
  *   from `md` with an odd last card taking the whole row, one on a phone.
- *   Cards in a row share its height (PM-D12). Gaps: 16px on a phone as
- *   extracted, 24px from `md` as on the board-members grid (Figma's 20px is
- *   not on the spacing scale).
+ *   Cards in a row share its height (PM-D12). Gaps: 16px on a phone, 24px from
+ *   `md`.
  *
- * With a photograph (Vision & Mission's `valuesImage`, a field on its record:
- * owner rule 2026-09-14), the band stands on it in a panel the width of the
- * container under the shared scrim, and the cards are unchanged. The
- * President's Message passes none and keeps the green register.
- *
- * Each card is marked for the one-shot reveal: the chip rises from 92%, the
- * words follow two steps later, and the script staggers cards that enter the
- * view together in reading order. The surface itself never moves.
+ * Each card is marked for the one-shot reveal, and cards that enter the view
+ * together follow one another in reading order.
  */
-
-const revealStep = (n: number): CSSProperties => ({ "--reveal-step": n }) as CSSProperties;
 
 export const ValuesBand = ({
   record,
   locale,
   titleId = "president-values-title",
   field,
-  ground = null,
+  register = "green",
+  ground = "base",
 }: {
   /** Also the federation's values on Vision & Mission (ADR-0070), passed in
    *  this shape. */
@@ -49,8 +41,9 @@ export const ValuesBand = ({
    *  against the stored record in a browser: marks the list and each card's
    *  title and description. */
   field?: string;
-  /** The band's stored photograph, where the page's record has one. */
-  ground?: PublicImage | null;
+  register?: "green" | "neutral";
+  /** The neutral register's ground, where the band stands on it. */
+  ground?: "base" | "sunken";
 }) => {
   const values = [...record.values].sort((a, b) => a.displayOrder - b.displayOrder);
   if (values.length === 0) return null;
@@ -61,62 +54,36 @@ export const ValuesBand = ({
   // three across in two rows (Figma `1160:2166`), never five and one.
   const wide = values.length % 3 === 0 && values.length % 5 !== 0 ? "xl:grid-cols-3" : "xl:grid-cols-5";
 
-  const body = (
-    <>
+  return (
+    <Section
+      register={register}
+      ground={ground}
+      enter={false}
+      labelledBy={title ? titleId : undefined}
+      className="py-12 md:py-16 lg:py-24"
+    >
       {title ? (
         <div data-reveal="">
-          <h2 id={titleId} data-reveal-part="rise" className="text-h2 text-balance">
+          <h2 id={titleId} data-reveal-part="rise" className="flex items-center gap-4 text-h2 text-balance">
+            <AccentRule onRegister={register === "green"} />
             {title}
           </h2>
         </div>
       ) : null}
 
-      <ul data-field={field} className={`${title ? "mt-8" : ""} grid gap-4 md:grid-cols-2 md:gap-6 ${wide}`}>
+      <ul data-field={field} className={`${title ? "mt-8 md:mt-12" : ""} grid gap-4 md:grid-cols-2 md:gap-6 ${wide}`}>
         {values.map((value, index) => (
-          <li
+          <ItemCard
             key={`${value.displayOrder}-${value.iconKey}`}
-            data-reveal=""
-            className={`${CARD} flex flex-col items-start gap-4 px-6 py-8 text-start ${
-              odd && index === values.length - 1 ? "md:max-xl:col-span-2" : ""
-            }`}
-          >
-            <span data-reveal-part="chip" style={revealStep(0)} className={`${CARD_ICON} size-14`}>
-              <ValueIcon iconKey={value.iconKey} className="size-6" />
-            </span>
-            <div data-reveal-part="rise" style={revealStep(2)}>
-              <h3
-                data-part={field ? "title" : undefined}
-                className="text-h4 text-balance text-[color:var(--color-text-primary)]"
-              >
-                {value.title[locale]}
-              </h3>
-              <p
-                data-part={field ? "description" : undefined}
-                className="mt-2 text-body-sm text-pretty text-[color:var(--color-text-secondary)]"
-              >
-                {value.description[locale]}
-              </p>
-            </div>
-          </li>
+            tone={itemTone(index)}
+            iconKey={value.iconKey}
+            title={value.title[locale]}
+            description={value.description[locale]}
+            field={Boolean(field)}
+            className={odd && index === values.length - 1 ? "md:max-xl:col-span-2" : ""}
+          />
         ))}
       </ul>
-    </>
-  );
-
-  if (ground) {
-    return (
-      <Section enter={false} labelledBy={title ? titleId : undefined} className="py-12 md:py-16">
-        <div className={`${PHOTO_PANEL} px-6 py-10 md:px-12 md:py-14`}>
-          <PhotoGround image={ground} locale={locale} />
-          {body}
-        </div>
-      </Section>
-    );
-  }
-
-  return (
-    <Section register="green" enter={false} labelledBy={title ? titleId : undefined} className="py-12 md:py-16">
-      {body}
     </Section>
   );
 };

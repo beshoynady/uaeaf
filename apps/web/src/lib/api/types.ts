@@ -148,10 +148,12 @@ export interface PresidentMessagePublic {
   publishedAt: string;
 }
 
-/** `PublicContentBlockDto`: a strategic goal, which carries no icon. */
+/** A strategic goal, sent as `PublicValueDto`: `iconKey` is one of the API's
+ *  twelve value-icon keys, as a value's is. */
 export interface PublicContentBlock {
   title: LocalizedText;
   description: LocalizedText;
+  iconKey: string;
   displayOrder: number;
 }
 

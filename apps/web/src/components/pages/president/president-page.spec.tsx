@@ -144,6 +144,20 @@ describe("PresidentMessage", () => {
     expect(flow[1].querySelector("blockquote")?.textContent).toBe("«نعمل على بناء منظومة متكاملة»");
   });
 
+  // ADR-0072 D9: from `lg` the quote and the body stand side by side, as in the
+  // owner's reference; the DOM order, and so the phone's reading order, is unchanged.
+  it("sets the pull-quote in a column of its own beside the body from lg, alongside every paragraph", () => {
+    const { container } = render(<PresidentMessage record={RECORD} locale="ar" />);
+    const flow = container.querySelector<HTMLElement>("article > div")!;
+    expect(flow.className).toContain("lg:grid");
+    const figure = flow.querySelector<HTMLElement>("figure")!;
+    expect(figure.className).toContain("lg:col-start-2");
+    expect(figure.style.gridRow).toBe("1 / span 3");
+    // Beside the body, one column gap away, rather than at the container's far edge.
+    expect(figure.className).toContain("lg:justify-self-start");
+    expect(figure.querySelector("[data-quote-mark]")).toHaveAttribute("aria-hidden", "true");
+    expect(figure.querySelector("[data-reveal-part='rule']")!.className).toContain("var(--color-border-accent)");
+  });
   it("draws no figure when the record has no pull-quote", () => {
     const { container } = render(<PresidentMessage record={{ ...RECORD, pullQuote: null }} locale="en" />);
     expect(container.querySelector("figure")).toBeNull();
@@ -160,6 +174,15 @@ describe("PresidentMessage", () => {
 
     const english = render(<PresidentMessage record={RECORD} locale="en" />).container;
     expect(english.querySelector("time")?.textContent).toBe("September 13, 2026");
+  });
+
+  // Chapter 4 §4.10: no text under 13px. The caption role is 12px on a phone
+  // (§4.4), so the date takes body-sm, 13px there (owner decision, closing brief M4).
+  it("sets the signature's date at no less than 13px on a phone: body-sm, not the caption role", () => {
+    const { container } = render(<PresidentMessage record={RECORD} locale="ar" />);
+    const date = container.querySelector("article > footer time")!.parentElement!;
+    expect(date.className).toContain("text-body-sm");
+    expect(date.className).not.toContain("text-caption");
   });
 });
 

@@ -1,6 +1,8 @@
 # ADR-0065 — Colour Roles, Categorical Encoding, and the Interaction Layer
 
 **Status:** Accepted
+
+> **Amended by ADR-0072 D1 (2026-09-15):** item colours are a second role beside D3's categories — a card in a closed set takes the colour of its position, never on a category badge, never with a category colour in one element, never in a view with a category legend; R2 counts a measured item colour as a second cue, not decoration; D2's green for card fills is used through ramp steps, never `brand.primary` itself.
 **Date:** 2026-09-09
 **Authority:** Product Owner decision, on a measured audit presented before any code was written.
 **Supersedes in part:** §3.34.1's element-scale colour guidance (already replaced at region scale by ADR-0059 D2; this ADR replaces what remained at element scale). Widens the usage scope recorded on `color.accent.*` by ADR-0051.

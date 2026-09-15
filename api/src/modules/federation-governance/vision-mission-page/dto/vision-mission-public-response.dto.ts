@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
 import {
-  PublicContentBlockDto,
   PublicImageDto,
   PublicSeoDto,
   PublicValueDto,
@@ -40,7 +39,7 @@ export class VisionMissionPublicResponseDto {
   @ApiProperty({ type: LocalizedTextDto, required: false, nullable: true })
   goalsTitle: LocalizedTextDto | null;
 
-  @ApiProperty({ type: [PublicContentBlockDto] }) strategicGoals: PublicContentBlockDto[];
+  @ApiProperty({ type: [PublicValueDto] }) strategicGoals: PublicValueDto[];
   @ApiProperty({ type: [PublicValueDto] }) coreValues: PublicValueDto[];
 
   @ApiProperty({ type: PublicImageDto, required: false, nullable: true })

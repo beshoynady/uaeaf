@@ -1,0 +1,225 @@
+- generic [active] [ref=f2e1]:
+  - banner [ref=f2e2]:
+    - link "Skip to main content" [ref=f2e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - link "Home — UAE Athletics Federation" [ref=f2e4] [cursor=pointer]:
+      - /url: /en
+    - generic [ref=f2e15]:
+      - button "Switch to light mode" [ref=f2e16] [cursor=pointer]:
+        - generic [aria-hidden] [ref=f2e17]: ☀
+      - button "Search" [ref=f2e18] [cursor=pointer]
+      - link "Switch to العربية" [ref=f2e19] [cursor=pointer]:
+        - /url: /ar/about/governance/vision-mission
+        - generic [ref=f2e20]: العربية
+      - button "Navigation menu" [ref=f2e21] [cursor=pointer]
+  - main [ref=f2e23]:
+    - region [ref=f2e24]:
+      - generic:
+        - img "An athletics stadium at night with its red track"
+      - generic [ref=f2e30]:
+        - heading "Vision & Mission" [level=1] [ref=f2e31]
+        - paragraph [ref=f2e32]: Our vision for the future of athletics in the UAE
+    - region [ref=f2e34]:
+      - generic [ref=f2e36]:
+        - generic [ref=f2e37]:
+          - generic [aria-hidden] [ref=f2e38]: "01"
+          - generic [ref=f2e39]:
+            - heading "Vision" [level=2] [ref=f2e40]
+            - paragraph [ref=f2e42]: To Be Among the World's Leading Athletics Federations
+            - paragraph [ref=f2e43]: We aspire to build a national and global sports entity that elevates the UAE's presence on the international athletics map and creates champions who proudly represent their nation on the world stage.
+        - img "A floodlit football stadium under an evening sky" [ref=f2e46]
+    - region [ref=f2e47]:
+      - generic [ref=f2e49]:
+        - generic [ref=f2e50]:
+          - generic [aria-hidden] [ref=f2e51]: "02"
+          - generic [ref=f2e52]:
+            - heading "Mission" [level=2] [ref=f2e53]
+            - paragraph [ref=f2e55]: Empowering & Developing Athletics for Global Excellence
+            - paragraph [ref=f2e56]: We strive to organize and develop athletics to achieve global excellence through building a broad sports base, discovering talent, and empowering athletes, coaches, and officials.
+        - img "Runners on an athletics track at sunset" [ref=f2e59]
+    - region [ref=f2e60]:
+      - generic [ref=f2e61]:
+        - generic [ref=f2e62]:
+          - heading "Goals" [level=2] [ref=f2e63]
+          - paragraph [ref=f2e65]: Our Strategic Goals for a Bright Sporting Future
+        - list [ref=f2e66]:
+          - listitem [ref=f2e67]:
+            - generic [aria-hidden] [ref=f2e69]: "01"
+            - generic [ref=f2e73]:
+              - heading "Developing National Talent" [level=3] [ref=f2e74]
+              - paragraph [ref=f2e75]: Discovering and nurturing Emirati sports talents and qualifying them to compete on the international stage.
+          - listitem [ref=f2e76]:
+            - generic [aria-hidden] [ref=f2e78]: "02"
+            - generic [ref=f2e85]:
+              - heading "Excellence in International Championships" [level=3] [ref=f2e86]
+              - paragraph [ref=f2e87]: Achieving advanced results in Arab, Asian, and Olympic athletics championships.
+          - listitem [ref=f2e88]:
+            - generic [aria-hidden] [ref=f2e90]: "03"
+            - generic [ref=f2e95]:
+              - heading "Building World-Class Infrastructure" [level=3] [ref=f2e96]
+              - paragraph [ref=f2e97]: Providing world-class training facilities and infrastructure to support athletes and coaches.
+          - listitem [ref=f2e98]:
+            - generic [aria-hidden] [ref=f2e100]: "04"
+            - generic [ref=f2e106]:
+              - heading "Strengthening Governance & Transparency" [level=3] [ref=f2e107]
+              - paragraph [ref=f2e108]: Applying the highest standards of governance and integrity in managing the federation and operations.
+          - listitem [ref=f2e109]:
+            - generic [aria-hidden] [ref=f2e111]: "05"
+            - generic [ref=f2e118]:
+              - heading "Expanding Participation Base" [level=3] [ref=f2e119]
+              - paragraph [ref=f2e120]: Increasing the number of athletics practitioners across all UAE Emirates and communities.
+          - listitem [ref=f2e121]:
+            - generic [aria-hidden] [ref=f2e123]: "06"
+            - generic [ref=f2e129]:
+              - heading "Strategic Partnerships" [level=3] [ref=f2e130]
+              - paragraph [ref=f2e131]: Building active partnerships with local and international institutions to support overall sports development.
+    - region [ref=f2e132]:
+      - generic [ref=f2e133]:
+        - heading "Our Values" [level=2] [ref=f2e135]
+        - list [ref=f2e137]:
+          - listitem [ref=f2e138]:
+            - heading "Excellence" [level=3] [ref=f2e141]
+            - paragraph [ref=f2e148]: We constantly raise the standards of athletic and administrative performance, striving for results that match sports ambitions.
+          - listitem [ref=f2e149]:
+            - heading "Teamwork" [level=3] [ref=f2e152]
+            - paragraph [ref=f2e160]: We believe that achieving great results requires everyone's cooperation, from athletes to technical and administrative staff.
+          - listitem [ref=f2e161]:
+            - heading "Integrity" [level=3] [ref=f2e164]
+            - paragraph [ref=f2e171]: We commit to transparency, justice, and responsibility in managing sports and decision-making.
+          - listitem [ref=f2e172]:
+            - heading "Innovation" [level=3] [ref=f2e175]
+            - paragraph [ref=f2e180]: We adopt creative solutions and technology to develop sports and improve everyone's experience.
+          - listitem [ref=f2e181]:
+            - heading "Sustainability" [level=3] [ref=f2e184]
+            - paragraph [ref=f2e192]: We build a system capable of growing, continuing, and providing better opportunities for future generations.
+          - listitem [ref=f2e193]:
+            - heading "Transparency" [level=3] [ref=f2e196]
+            - paragraph [ref=f2e203]: We provide information and foster trust with all stakeholders, including athletes, clubs, and partners.
+    - region [ref=f2e204]:
+      - generic [ref=f2e206]:
+        - generic [ref=f2e207]:
+          - heading "Our Strategy Charts the Path to the Future" [level=2] [ref=f2e208]
+          - paragraph [ref=f2e209]: Discover the strategic priorities and pillars guiding the Federation’s journey through the next phase.
+          - generic [ref=f2e210]:
+            - link "Explore Our Strategic Plan" [ref=f2e211] [cursor=pointer]:
+              - /url: /en/about/governance/strategic-plan
+              - text: Explore Our Strategic Plan
+              - generic [aria-hidden] [ref=f2e212]: →
+            - link "About the Federation" [ref=f2e213] [cursor=pointer]:
+              - /url: /en/about
+              - text: About the Federation
+              - generic [aria-hidden] [ref=f2e214]: →
+        - img "Runners on a stadium track at sunset" [ref=f2e217]
+  - contentinfo [ref=f2e218]:
+    - generic [ref=f2e219]:
+      - generic [ref=f2e220]:
+        - heading "UAE Athletics Federation" [level=2] [ref=f2e231]
+        - paragraph [ref=f2e232]: The official governing body for athletics in the United Arab Emirates, a member of World Athletics and the Asian Athletics Federation.
+        - list [ref=f2e233]:
+          - listitem [ref=f2e234]:
+            - link "TikTok" [ref=f2e235] [cursor=pointer]:
+              - /url: https://www.tiktok.com/@uaeaf
+          - listitem [ref=f2e237]:
+            - link "Facebook" [ref=f2e238] [cursor=pointer]:
+              - /url: https://www.facebook.com/uaeaf
+          - listitem [ref=f2e240]:
+            - link "YouTube" [ref=f2e241] [cursor=pointer]:
+              - /url: https://www.youtube.com/@uaeaf
+          - listitem [ref=f2e243]:
+            - link "X" [ref=f2e244] [cursor=pointer]:
+              - /url: https://x.com/uaeaf
+          - listitem [ref=f2e246]:
+            - link "Instagram" [ref=f2e247] [cursor=pointer]:
+              - /url: https://www.instagram.com/uaeaf
+      - navigation "Quick Links" [ref=f2e249]:
+        - heading "Quick Links" [level=2] [ref=f2e250]
+        - list [ref=f2e251]:
+          - listitem [ref=f2e252]:
+            - link "Home" [ref=f2e253] [cursor=pointer]:
+              - /url: /en
+          - listitem [ref=f2e254]:
+            - link "About the Federation" [ref=f2e255] [cursor=pointer]:
+              - /url: /en/about
+          - listitem [ref=f2e256]:
+            - link "President's Message" [ref=f2e257] [cursor=pointer]:
+              - /url: /en/about/president
+          - listitem [ref=f2e258]:
+            - link "Board of Directors" [ref=f2e259] [cursor=pointer]:
+              - /url: /en/about/board-members
+          - listitem [ref=f2e260]:
+            - link "Committees" [ref=f2e261] [cursor=pointer]:
+              - /url: /en/about/committees
+          - listitem [ref=f2e262]:
+            - link "Organisational Structure" [ref=f2e263] [cursor=pointer]:
+              - /url: /en/about/organisational-structure
+          - listitem [ref=f2e264]:
+            - link "Vision & Mission" [ref=f2e265] [cursor=pointer]:
+              - /url: /en/about/governance/vision-mission
+          - listitem [ref=f2e266]:
+            - link "Strategic Plan" [ref=f2e267] [cursor=pointer]:
+              - /url: /en/about/governance/strategic-plan
+          - listitem [ref=f2e268]:
+            - link "Policies & Regulations" [ref=f2e269] [cursor=pointer]:
+              - /url: /en/about/governance/policies
+          - listitem [ref=f2e270]:
+            - link "Clubs" [ref=f2e271] [cursor=pointer]:
+              - /url: /en/clubs
+          - listitem [ref=f2e272]:
+            - link "Athletes" [ref=f2e273] [cursor=pointer]:
+              - /url: /en/athletes
+          - listitem [ref=f2e274]:
+            - link "Coaches" [ref=f2e275] [cursor=pointer]:
+              - /url: /en/coaches
+          - listitem [ref=f2e276]:
+            - link "Officials" [ref=f2e277] [cursor=pointer]:
+              - /url: /en/officials
+          - listitem [ref=f2e278]:
+            - link "Championships" [ref=f2e279] [cursor=pointer]:
+              - /url: /en/championships
+          - listitem [ref=f2e280]:
+            - link "Events" [ref=f2e281] [cursor=pointer]:
+              - /url: /en/events/federation-events
+          - listitem [ref=f2e282]:
+            - link "News & Articles" [ref=f2e283] [cursor=pointer]:
+              - /url: /en/news
+          - listitem [ref=f2e284]:
+            - link "Photo Albums" [ref=f2e285] [cursor=pointer]:
+              - /url: /en/media/albums
+          - listitem [ref=f2e286]:
+            - link "Videos" [ref=f2e287] [cursor=pointer]:
+              - /url: /en/media/videos
+          - listitem [ref=f2e288]:
+            - link "Contact Us" [ref=f2e289] [cursor=pointer]:
+              - /url: /en/contact
+      - generic [ref=f2e290]:
+        - heading "Location" [level=2] [ref=f2e291]
+        - generic [ref=f2e295]:
+          - generic [ref=f2e296]: Zayed Sports City
+          - generic [ref=f2e297]: Abu Dhabi, UAE
+      - generic [ref=f2e298]:
+        - heading "Contact" [level=2] [ref=f2e299]
+        - paragraph [ref=f2e300]:
+          - generic [ref=f2e302]: Zayed Sports City, Abu Dhabi, United Arab Emirates
+        - link "info@uaeaf.ae" [ref=f2e303] [cursor=pointer]:
+          - /url: mailto:info@uaeaf.ae
+        - paragraph [ref=f2e304]: Sun–Thu, 08:00–15:00
+        - link "Help Center" [ref=f2e305] [cursor=pointer]:
+          - /url: /en/help
+    - generic [ref=f2e306]:
+      - paragraph [ref=f2e307]: © 2026 UAE Athletics Federation. All rights reserved.
+      - navigation "Legal Links" [ref=f2e308]:
+        - list [ref=f2e309]:
+          - listitem [ref=f2e310]:
+            - link "Accessibility Statement" [ref=f2e311] [cursor=pointer]:
+              - /url: /en/accessibility
+          - listitem [ref=f2e312]:
+            - link "Privacy Policy" [ref=f2e313] [cursor=pointer]:
+              - /url: /en/privacy
+          - listitem [ref=f2e314]:
+            - link "Terms of Use" [ref=f2e315] [cursor=pointer]:
+              - /url: /en/terms
+          - listitem [ref=f2e316]:
+            - link "Sitemap" [ref=f2e317] [cursor=pointer]:
+              - /url: /en/sitemap
+  - button "Open Next.js Dev Tools" [ref=f2e323] [cursor=pointer]
+  - alert [ref=f2e327]

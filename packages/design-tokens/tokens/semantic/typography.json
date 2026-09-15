@@ -1,5 +1,6 @@
 {
   "typography": {
+    "display-2xl": { "value": "{font.size.display-2xl}", "type": "typography" },
     "display-xl": { "value": "{font.size.display-xl}", "type": "typography" },
     "display-l": { "value": "{font.size.display-l}", "type": "typography" },
     "heading": {

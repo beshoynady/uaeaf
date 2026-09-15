@@ -3,12 +3,7 @@ import { Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { HeroPageSchema } from '../../../../common/schemas/hero-page.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
-import {
-  ContentBlock,
-  ContentBlockSchema,
-  IconKeyedContentBlock,
-  IconKeyedContentBlockSchema,
-} from '../../../../common/schemas/content-block.schema.js';
+import { IconKeyedContentBlock, IconKeyedContentBlockSchema } from '../../../../common/schemas/content-block.schema.js';
 import { PageSeo, PageSeoSchema } from '../../../../common/schemas/page-seo.schema.js';
 import { PUBLICATION_STATES } from '../../../../common/constants/publication-states.js';
 import type { PublicationState } from '../../../../common/constants/publication-states.js';
@@ -73,8 +68,10 @@ export class VisionMissionPage extends HeroPageSchema {
   @Prop({ type: LocalizedTextSchema, default: null })
   goalsTitle: LocalizedText | null;
 
-  @Prop({ type: [ContentBlockSchema], default: [] })
-  strategicGoals: ContentBlock[];
+  /** `iconKey` closed to the twelve keys, as `coreValues` is (owner decision
+   *  2026-09-15): goals and values are drawn the same way. */
+  @Prop({ type: [IconKeyedContentBlockSchema], default: [] })
+  strategicGoals: IconKeyedContentBlock[];
 
   /** `iconKey` closed to the twelve keys, as the message's values are
    *  (ADR-0070, ADR-0069 D2). Retyped with no stored row to migrate. */

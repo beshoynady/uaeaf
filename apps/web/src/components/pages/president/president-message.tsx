@@ -9,7 +9,12 @@ import type { PresidentMessagePublic } from "@/lib/api/types";
  * `<article>` on the neutral band (`page-president-message.md` §7.4, ADR-0069
  * D10).
  *
- * - **One centred reading column** at Chapter 4 §4.6's measure (§7.5-3), in
+ * - **Two columns from `lg`** (ADR-0072 D9, the owner's reference): the body at
+ *   Chapter 4 §4.6's measure on the reading-start side, the pull-quote one column
+ *   gap beside it at the same measure, under a decorative quotation mark in the
+ *   accent colour, alongside every paragraph and held in
+ *   view while the body scrolls. Below `lg`, one centred reading column at the
+ *   measure (§7.5-3), in
  *   place of Figma's 1344px line (PM-D26). `body` type, `text-secondary`, and
  *   `space-4` between paragraphs; the bold lead-ins carry `text-primary`
  *   (PM-D13, D24, D28).
@@ -40,6 +45,13 @@ export const MEASURE: Record<AppLocale, string> = {
   en: "max-w-[61ch]",
 };
 
+/** From `lg` the body keeps its measure and the quote takes the rest of the row.
+ *  Written per locale in full, so the class scanner finds each one. */
+const COLUMNS: Record<AppLocale, string> = {
+  ar: "lg:grid-cols-[minmax(0,47ch)_minmax(0,1fr)]",
+  en: "lg:grid-cols-[minmax(0,61ch)_minmax(0,1fr)]",
+};
+
 /** The federation's own time zone, so the date a message is signed with does
  *  not depend on where the page was rendered. */
 const DATE_FORMAT: Record<AppLocale, Intl.DateTimeFormat> = {
@@ -49,16 +61,30 @@ const DATE_FORMAT: Record<AppLocale, Intl.DateTimeFormat> = {
 
 const revealStep = (n: number): CSSProperties => ({ "--reveal-step": n }) as CSSProperties;
 
-const PullQuote = ({ quote }: { quote: string }) => (
+const PullQuote = ({ quote, rows, locale }: { quote: string; rows: number; locale: AppLocale }) => (
   // `md:mb-2 lg:mb-4` on top of the column's `gap-4`: the quote stands 24px
   // above the body at `md` and 32px from `lg`, one step with the Speech Card's
   // padding ramp (§1.3 rule 3, PM-D22). On a phone the column's 16px holds.
-  <figure data-reveal="" className="relative m-0 ps-6 md:order-first md:mb-2 lg:mb-4">
+  // From `lg` the figure spans every row the body's paragraphs take, so the body
+  // runs on without a gap beside it.
+  <figure
+    data-reveal=""
+    className={`relative m-0 ps-6 md:order-first md:mb-2 lg:sticky lg:top-[var(--space-32)] lg:order-none lg:col-start-2 lg:mb-0 lg:self-start lg:justify-self-start ${MEASURE[locale]}`}
+    style={{ gridRow: `1 / span ${rows}` }}
+  >
     <span
       aria-hidden="true"
       data-reveal-part="rule"
-      className="absolute inset-y-0 start-0 w-[var(--border-width-thick)] origin-top bg-[color:var(--color-brand-primary)]"
+      className="absolute inset-y-0 start-0 w-[var(--border-width-thick)] origin-top bg-[color:var(--color-border-accent)]"
     />
+    <span
+      aria-hidden="true"
+      data-quote-mark=""
+      data-reveal-part="rise"
+      className="block text-display-xl leading-none text-[color:var(--color-border-accent)]"
+    >
+      “
+    </span>
     <blockquote data-reveal-part="rise" style={revealStep(1)} className="m-0 text-h3 text-balance text-[color:var(--color-text-primary)]">
       <p>{quote}</p>
     </blockquote>
@@ -71,10 +97,10 @@ export const PresidentMessage = ({ record, locale }: { record: PresidentMessageP
 
   return (
     <Section enter={false} className="py-12 md:py-16">
-      <article className={`mx-auto ${MEASURE[locale]} text-body text-[color:var(--color-text-secondary)]`}>
-        <div className="flex flex-col gap-4 text-pretty">
+      <article className={`mx-auto ${MEASURE[locale]} text-body text-[color:var(--color-text-secondary)] lg:max-w-none`}>
+        <div className={`flex flex-col gap-4 text-pretty lg:grid ${COLUMNS[locale]} lg:gap-x-16`}>
           {first}
-          {quote ? <PullQuote quote={quote} /> : null}
+          {quote ? <PullQuote quote={quote} rows={1 + rest.length} locale={locale} /> : null}
           {rest}
         </div>
 
@@ -85,7 +111,9 @@ export const PresidentMessage = ({ record, locale }: { record: PresidentMessageP
           <p data-reveal-part="rise" style={revealStep(1)} className="mt-1 text-body">
             {record.signatoryTitle[locale]}
           </p>
-          <p data-reveal-part="rise" style={revealStep(2)} className="mt-2 text-caption text-[color:var(--color-text-muted)]">
+          {/* `body-sm`, 13px on a phone: the caption role is 12px there, under
+              Chapter 4 §4.10's minimum (owner decision, closing brief M4). */}
+          <p data-reveal-part="rise" style={revealStep(2)} className="mt-2 text-body-sm text-[color:var(--color-text-muted)]">
             <time dateTime={record.publishedAt}>{DATE_FORMAT[locale].format(new Date(record.publishedAt))}</time>
           </p>
         </footer>

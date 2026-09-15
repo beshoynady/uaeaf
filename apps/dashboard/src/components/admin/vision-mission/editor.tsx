@@ -136,7 +136,7 @@ export const VisionMissionEditor = ({
                 items={draft.strategicGoals}
                 onChange={(strategicGoals) => change({ strategicGoals })}
                 disabled={disabled}
-                withIcon={false}
+                withIcon
                 labels={{
                   legend: (number, total) => t("goalLegend", { number, total }),
                   add: t("addGoal"),

@@ -108,6 +108,14 @@ body {
  * Tailwind's --text-* namespace) because every level needs a genuine two-step Desktop/Mobile
  * value per §4.7, not a single fluid size Tailwind's namespace expects.
  */
+@utility text-display-2xl {
+  font-size: var(--typography-display-2xl-mobile);
+  line-height: 1;
+  font-weight: var(--font-weight-black);
+  @variant md {
+    font-size: var(--typography-display-2xl-desktop);
+  }
+}
 @utility text-display-xl {
   font-size: var(--typography-display-xl-mobile);
   line-height: 1.1;

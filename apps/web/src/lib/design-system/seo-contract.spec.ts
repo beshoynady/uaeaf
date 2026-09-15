@@ -3,7 +3,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { stripComments } from "@uaeaf/design-tokens/testing";
-import { PUBLIC_PAGES } from "@/lib/pages/public-pages";
+import { PREPARING_PAGES, PUBLIC_PAGES } from "@/lib/pages/public-pages";
 
 /**
  * Chapter 14, enforced mechanically.
@@ -72,10 +72,11 @@ describe("every public page implements Chapter 14", () => {
     // nowhere else. A route that hand-rolls a `Metadata` object gets a title
     // and silently loses both — which is invisible in review and invisible in
     // the browser, and shows up months later as duplicate-content dilution.
+    // The two page builders both end in `buildMetadata`.
     const offenders = ROUTES.filter(
       ({ source }) =>
         /generateMetadata/.test(source) &&
-        !/buildStaticPageMetadata|buildMetadata/.test(source),
+        !/buildStaticPageMetadata|buildPreparingPageMetadata|buildMetadata/.test(source),
     ).map(({ file }) => file);
     expect(offenders).toEqual([]);
   });
@@ -83,13 +84,15 @@ describe("every public page implements Chapter 14", () => {
   it("has a route file for every registered page, and a registry entry for every route", () => {
     // The two drift in opposite directions and both are silent: a registered
     // page with no file is a 404 in the sitemap, and a file with no registry
-    // entry has no register, no schema type and no indexability rule.
-    const missingFiles = PUBLIC_PAGES.filter(
+    // entry has no register, no schema type and no indexability rule. A page
+    // in preparation is registered too, under the route its full page takes.
+    const pages = [...PUBLIC_PAGES, ...PREPARING_PAGES];
+    const missingFiles = pages.filter(
       (page) => !existsSync(join(APP, "[locale]", ...page.route.split("/").filter(Boolean), "page.tsx")),
     ).map((page) => page.route);
     expect(missingFiles).toEqual([]);
 
-    const registered = new Set(PUBLIC_PAGES.map((page) => page.route));
+    const registered = new Set(pages.map((page) => page.route));
     const unregistered = ROUTES.map(({ file }) => file)
       .map((file) => file.replace("src/app/[locale]", "").replace("/page.tsx", ""))
       .filter((route) => route !== "" && !registered.has(route));

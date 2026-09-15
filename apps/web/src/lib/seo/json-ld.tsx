@@ -204,8 +204,9 @@ export function ContactPageJsonLd({
  * Breadcrumbs.
  *
  * IA §8.5 makes a breadcrumb mandatory from depth ≥ 2, and Chapter 14 §1
- * notes that the same hierarchy generates it. Emitted only where the visible
- * breadcrumb is rendered — §4's rule again.
+ * notes that the same hierarchy generates it. Emitted where the visible
+ * breadcrumb is rendered (§4's rule), and on the institutional pages, which
+ * show no trail but keep it here (ADR-0072 D7).
  */
 export function BreadcrumbJsonLd({
   locale,

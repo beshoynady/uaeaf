@@ -9175,25 +9175,6 @@
           "publicationState"
         ]
       },
-      "ContentBlockDto": {
-        "type": "object",
-        "properties": {
-          "title": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "description": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "displayOrder": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "title",
-          "description",
-          "displayOrder"
-        ]
-      },
       "IconKeyedContentBlockDto": {
         "type": "object",
         "properties": {
@@ -9301,7 +9282,7 @@
           "strategicGoals": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ContentBlockDto"
+              "$ref": "#/components/schemas/IconKeyedContentBlockDto"
             }
           },
           "coreValues": {
@@ -9353,25 +9334,6 @@
           "altText",
           "width",
           "height"
-        ]
-      },
-      "PublicContentBlockDto": {
-        "type": "object",
-        "properties": {
-          "title": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "description": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "displayOrder": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "title",
-          "description",
-          "displayOrder"
         ]
       },
       "PublicValueDto": {
@@ -9501,7 +9463,7 @@
           "strategicGoals": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/PublicContentBlockDto"
+              "$ref": "#/components/schemas/PublicValueDto"
             }
           },
           "coreValues": {
@@ -9910,7 +9872,7 @@
           "strategicGoals": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ContentBlockDto"
+              "$ref": "#/components/schemas/IconKeyedContentBlockDto"
             }
           },
           "coreValues": {
@@ -9977,6 +9939,25 @@
           "description",
           "displayOrder",
           "iconKey"
+        ]
+      },
+      "ContentBlockDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "description": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "displayOrder": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "title",
+          "description",
+          "displayOrder"
         ]
       },
       "ImpactMetricDto": {

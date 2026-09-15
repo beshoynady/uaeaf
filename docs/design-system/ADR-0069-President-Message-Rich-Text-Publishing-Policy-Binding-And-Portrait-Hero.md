@@ -206,6 +206,8 @@ Written so it can apply to any hero. Adopting the lines on another page is a sep
 | **IL-8 Colour** | `--color-brand-secondary` for red, `--color-brand-primary` for green, `--color-brand-black` for black. On a background photograph under the scrim, black is drawn in `--color-text-on-brand`, as the footer draws it. |
 | **IL-9 When space runs out** | Clearance wins over compactness. The portrait yields first. The hero grows only where an approved exception allows it: landscape phones and 200% zoom. |
 
+> **Amended by ADR-0072 D2 (2026-09-15):** IL-1 — each stroke at a third of the ribbon's thickness for its length (the light weight); IL-5 — 32px from every text run (a stroke may cross a photograph); outside the hero, no band and no reserve: group A at twice IL-4's length on a photograph's cut corner, or in an empty place, never pushing content aside.
+
 **Composition decided with the rule:**
 
 - The portrait stands on the **right in both languages**, the title block on the left (owner decision, Phase D1). The president faces the left of the frame, so on the right he faces the text in either language, and a photograph of a real person is never mirrored. The breadcrumb is a row of its own on the reading side. Below `lg` the title block comes first, then the portrait (Chapter 5 §5.10).

@@ -12,6 +12,8 @@ One record for the batch. It decides the schema, the editorial routes, what the 
 
 ## D1 — The schema: three one-line titles and `seo` added, `coreValues` closed
 
+> **Amended by ADR-0072 D10 (2026-09-15):** `strategicGoals` is `IconKeyedContentBlock[]` like `coreValues`, closed to the same twelve keys. **Amended by ADR-0072 D5:** the values and the call to action no longer stand in photograph panels (D4 below).
+
 The frames print each statement as a one-line headline over a body, and head the goals with a sentence. The schema had the bodies only.
 
 **The rule for images** (owner decision 2026-09-14, for this page and every content page after it): «كل صورة تظهر في صفحة محتوى هي محتوى له حقل في السجل، لا أصل ثابت في الكود.» Every picture a content page prints is content with a field on its record, not a fixed asset in the code. A section background is content exactly as the hero's picture is; having a field already is not the criterion.
@@ -167,6 +169,10 @@ Two limits of the tools met on this page. `get_metadata` returned the photograph
 2. Search title, description and share image, in both languages.
 3. **The English translation shown is not approved.** The goals carry the desktop frame's English and the values the tablet frame's, as the frames give them; the canonical English for both is the client's to supply.
 4. **أيقونتا الاستدامة (`target`) والشفافية (`eye`) اختيار مؤقت — تحتاج اعتماد الاتحاد، والبدائل المتاحة ضمن الـ 12 مفتاحًا** (the Sustainability and Transparency icons are a temporary choice that needs the federation's approval). The alternatives within the twelve keys: for Transparency, `handshake` (trust) or `lightbulb` (clarity); for Sustainability none says growth or continuity, and the nearest are `flag` or `star`. The twelve keys are not extended for this (owner decision 2026-09-14): choosing an icon is an editorial decision, not a technical one.
+
+5. **The six goal icons are a temporary choice** (ADR-0072 D10): 1 `star`, 2 `trophy`, 3 `flag`, 4 `shield-check`, 5 `users`, 6 `handshake`, chosen from the twelve keys by meaning, for the federation's approval. The weakest fit is `flag` for sports infrastructure: none of the twelve says building.
+6. **The values' photograph is no longer printed** (ADR-0072 D5): the values stand on the page's own ground as in the owner's reference. The field and the uploaded picture stay.
+7. **The owner's reference prints different copy** (goal 03 repeated as 06, the value «الالتزام» for «النزاهة»). The record's copy is printed; the reference is for layout and character.
 
 ## What this record does not decide
 

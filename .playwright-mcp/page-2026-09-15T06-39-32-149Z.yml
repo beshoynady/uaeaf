@@ -1,0 +1,246 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - link "تخطَّ إلى المحتوى الرئيسي" [ref=e3] [cursor=pointer]:
+      - /url: "#main-content"
+    - link "الصفحة الرئيسية — اتحاد الإمارات لألعاب القوى" [ref=e4] [cursor=pointer]:
+      - /url: /ar
+    - navigation "التنقل الرئيسي" [ref=e15]:
+      - list [ref=e16]:
+        - listitem [ref=e17]:
+          - link "الرئيسية" [ref=e18] [cursor=pointer]:
+            - /url: /ar
+        - listitem [ref=e21]:
+          - button "عن الاتحاد" [ref=e22] [cursor=pointer]
+        - listitem [ref=e27]:
+          - button "الأعضاء" [ref=e28] [cursor=pointer]
+        - listitem [ref=e33]:
+          - link "البطولات" [ref=e34] [cursor=pointer]:
+            - /url: /ar/championships
+        - listitem [ref=e37]:
+          - link "الفعاليات" [ref=e38] [cursor=pointer]:
+            - /url: /ar/events/federation-events
+        - listitem [ref=e41]:
+          - link "الأخبار والمقالات" [ref=e42] [cursor=pointer]:
+            - /url: /ar/news
+        - listitem [ref=e45]:
+          - button "المركز الإعلامي" [ref=e46] [cursor=pointer]
+        - listitem [ref=e51]:
+          - link "تواصل معنا" [ref=e52] [cursor=pointer]:
+            - /url: /ar/contact
+    - generic [ref=e55]:
+      - button "التبديل إلى المظهر الداكن" [ref=e56] [cursor=pointer]:
+        - generic [aria-hidden] [ref=e57]: ☾
+      - button "بحث" [ref=e58] [cursor=pointer]
+      - link "التبديل إلى English" [ref=e59] [cursor=pointer]:
+        - /url: /en/about/governance/vision-mission
+        - generic [ref=e60]: English
+  - main [ref=e61]:
+    - region [ref=e62]:
+      - generic:
+        - img "ملعب ألعاب القوى ليلًا بمضماره الأحمر"
+      - generic [ref=e68]:
+        - heading "الرؤية والرسالة" [level=1] [ref=e69]
+        - paragraph [ref=e70]: رؤيتنا لمستقبل ألعاب القوى في الإمارات
+    - region [ref=e72]:
+      - generic [ref=e74]:
+        - generic [ref=e75]:
+          - generic [aria-hidden] [ref=e76]: "01"
+          - generic [ref=e77]:
+            - heading "الرؤية" [level=2] [ref=e78]
+            - paragraph [ref=e80]: أن نكون من أفضل الاتحادات في العالم
+            - paragraph [ref=e81]: نسعى إلى بناء اتحاد وطني يحتذى به على المستوى العالمي، يرسخ مكانة الإمارات في خريطة ألعاب القوى الدولية، ويصنع أبطالاً يحملون راية الوطن في أرقى المحافل الرياضية.
+        - img "ملعب كرة قدم مضاء تحت سماء المساء" [ref=e84]
+    - region [ref=e85]:
+      - generic [ref=e87]:
+        - generic [ref=e88]:
+          - generic [aria-hidden] [ref=e89]: "02"
+          - generic [ref=e90]:
+            - heading "الرسالة" [level=2] [ref=e91]
+            - paragraph [ref=e93]: تمكين وتطوير رياضيي ألعاب القوى لتحقيق التميز العالمي
+            - paragraph [ref=e94]: نسعى لتنظيم وتطوير رياضات ألعاب القوى لتحقيق التميز العالمي من خلال بناء قاعدة رياضية واسعة واكتشاف المواهب وتمكين الرياضيين والمدربين والحكام.
+        - img "عدّاؤون على مضمار ألعاب القوى عند الغروب" [ref=e97]
+    - region [ref=e98]:
+      - generic [ref=e99]:
+        - generic [ref=e100]:
+          - heading "الأهداف" [level=2] [ref=e101]
+          - paragraph [ref=e103]: أهدافنا الاستراتيجية لبناء مستقبل رياضي مشرق
+        - list [ref=e104]:
+          - listitem [ref=e105]:
+            - generic [aria-hidden] [ref=e107]: "01"
+            - generic [ref=e111]:
+              - heading "تطوير المواهب الوطنية" [level=3] [ref=e112]
+              - paragraph [ref=e113]: اكتشاف ورعاية المواهب الرياضية الإماراتية وتأهيلها للمنافسة على المستوى الدولي.
+          - listitem [ref=e114]:
+            - generic [aria-hidden] [ref=e116]: "02"
+            - generic [ref=e123]:
+              - heading "التميز في البطولات الدولية" [level=3] [ref=e124]
+              - paragraph [ref=e125]: تحقيق نتائج متقدمة في البطولات العربية والآسيوية والأولمبية في ألعاب القوى.
+          - listitem [ref=e126]:
+            - generic [aria-hidden] [ref=e128]: "03"
+            - generic [ref=e133]:
+              - heading "بناء بنية تحتية رياضية" [level=3] [ref=e134]
+              - paragraph [ref=e135]: توفير منشآت ومرافق تدريبية عالمية المستوى لدعم الرياضيين والمدربين.
+          - listitem [ref=e136]:
+            - generic [aria-hidden] [ref=e138]: "04"
+            - generic [ref=e144]:
+              - heading "تعزيز الحوكمة والشفافية" [level=3] [ref=e145]
+              - paragraph [ref=e146]: تطبيق أعلى معايير الحوكمة والنزاهة في إدارة الاتحاد وعملياته.
+          - listitem [ref=e147]:
+            - generic [aria-hidden] [ref=e149]: "05"
+            - generic [ref=e156]:
+              - heading "توسيع قاعدة المشاركة" [level=3] [ref=e157]
+              - paragraph [ref=e158]: زيادة عدد الممارسين لرياضات ألعاب القوى على مستوى الدولة وفي جميع الإمارات.
+          - listitem [ref=e159]:
+            - generic [aria-hidden] [ref=e161]: "06"
+            - generic [ref=e167]:
+              - heading "شراكات استراتيجية فاعلة" [level=3] [ref=e168]
+              - paragraph [ref=e169]: بناء شراكات مع المؤسسات المحلية والدولية لدعم تطوير الرياضة في الإمارات.
+    - region [ref=e170]:
+      - generic [ref=e171]:
+        - heading "قيمنا" [level=2] [ref=e173]
+        - list [ref=e175]:
+          - listitem [ref=e176]:
+            - heading "التميز" [level=3] [ref=e179]
+            - paragraph [ref=e186]: نرفع معايير الأداء الرياضي والإداري باستمرار، ونسعى إلى تحقيق نتائج تليق بطموحات الرياضة الإماراتية.
+          - listitem [ref=e187]:
+            - heading "العمل الجماعي" [level=3] [ref=e190]
+            - paragraph [ref=e198]: نؤمن بأن تحقيق النتائج الكبيرة يستلزم تعاون الجميع، من الرياضي إلى الجهاز الفني والإداري.
+          - listitem [ref=e199]:
+            - heading "النزاهة" [level=3] [ref=e202]
+            - paragraph [ref=e209]: نلتزم بالشفافية والعدالة والمسؤولية في إدارة الرياضة وصناعة القرارات.
+          - listitem [ref=e210]:
+            - heading "الابتكار" [level=3] [ref=e213]
+            - paragraph [ref=e218]: نعتمد الحلول الإبداعية والتكنولوجيا الحديثة لتطوير الرياضة وتحسين تجربة الرياضيين والجماهير.
+          - listitem [ref=e219]:
+            - heading "الاستدامة" [level=3] [ref=e222]
+            - paragraph [ref=e230]: نبني منظومة قادرة على النمو والاستمرار، وتوفير فرص أفضل للأجيال القادمة.
+          - listitem [ref=e231]:
+            - heading "الشفافية" [level=3] [ref=e234]
+            - paragraph [ref=e241]: نتيح المعلومات ونعزز الثقة مع جميع أصحاب المصلحة من رياضيين وأندية وشركاء ومجتمع.
+    - region [ref=e242]:
+      - generic [ref=e244]:
+        - generic [ref=e245]:
+          - heading "استراتيجيتنا ترسم الطريق إلى المستقبل" [level=2] [ref=e246]
+          - paragraph [ref=e247]: تعرّف على الأولويات والمحاور التي توجه مسيرة الاتحاد خلال المرحلة القادمة.
+          - generic [ref=e248]:
+            - link "استكشف الخطة الاستراتيجية" [ref=e249] [cursor=pointer]:
+              - /url: /ar/about/governance/strategic-plan
+              - text: استكشف الخطة الاستراتيجية
+              - generic [aria-hidden] [ref=e250]: →
+            - link "عن الاتحاد" [ref=e251] [cursor=pointer]:
+              - /url: /ar/about
+              - text: عن الاتحاد
+              - generic [aria-hidden] [ref=e252]: →
+        - img "عدّاؤون على مضمار ملعب عند الغروب" [ref=e255]
+  - contentinfo [ref=e256]:
+    - generic [ref=e257]:
+      - generic [ref=e258]:
+        - heading "اتحاد الإمارات لألعاب القوى" [level=2] [ref=e269]
+        - paragraph [ref=e270]: الجهة الرسمية المشرفة على رياضة ألعاب القوى في دولة الإمارات العربية المتحدة، عضو في الاتحاد الدولي لألعاب القوى واتحاد ألعاب القوى الآسيوي.
+        - list [ref=e271]:
+          - listitem [ref=e272]:
+            - link "تيك توك" [ref=e273] [cursor=pointer]:
+              - /url: https://www.tiktok.com/@uaeaf
+          - listitem [ref=e275]:
+            - link "فيسبوك" [ref=e276] [cursor=pointer]:
+              - /url: https://www.facebook.com/uaeaf
+          - listitem [ref=e278]:
+            - link "يوتيوب" [ref=e279] [cursor=pointer]:
+              - /url: https://www.youtube.com/@uaeaf
+          - listitem [ref=e281]:
+            - link "إكس" [ref=e282] [cursor=pointer]:
+              - /url: https://x.com/uaeaf
+          - listitem [ref=e284]:
+            - link "إنستغرام" [ref=e285] [cursor=pointer]:
+              - /url: https://www.instagram.com/uaeaf
+      - navigation "روابط سريعة" [ref=e287]:
+        - heading "روابط سريعة" [level=2] [ref=e288]
+        - list [ref=e289]:
+          - listitem [ref=e290]:
+            - link "الرئيسية" [ref=e291] [cursor=pointer]:
+              - /url: /ar
+          - listitem [ref=e292]:
+            - link "نبذة عن الاتحاد" [ref=e293] [cursor=pointer]:
+              - /url: /ar/about
+          - listitem [ref=e294]:
+            - link "كلمة الرئيس" [ref=e295] [cursor=pointer]:
+              - /url: /ar/about/president
+          - listitem [ref=e296]:
+            - link "مجلس الإدارة" [ref=e297] [cursor=pointer]:
+              - /url: /ar/about/board-members
+          - listitem [ref=e298]:
+            - link "اللجان" [ref=e299] [cursor=pointer]:
+              - /url: /ar/about/committees
+          - listitem [ref=e300]:
+            - link "الهيكل التنظيمي" [ref=e301] [cursor=pointer]:
+              - /url: /ar/about/organisational-structure
+          - listitem [ref=e302]:
+            - link "الرؤية والرسالة" [ref=e303] [cursor=pointer]:
+              - /url: /ar/about/governance/vision-mission
+          - listitem [ref=e304]:
+            - link "الخطة الاستراتيجية" [ref=e305] [cursor=pointer]:
+              - /url: /ar/about/governance/strategic-plan
+          - listitem [ref=e306]:
+            - link "السياسات واللوائح" [ref=e307] [cursor=pointer]:
+              - /url: /ar/about/governance/policies
+          - listitem [ref=e308]:
+            - link "الأندية" [ref=e309] [cursor=pointer]:
+              - /url: /ar/clubs
+          - listitem [ref=e310]:
+            - link "الرياضيون" [ref=e311] [cursor=pointer]:
+              - /url: /ar/athletes
+          - listitem [ref=e312]:
+            - link "المدرّبون" [ref=e313] [cursor=pointer]:
+              - /url: /ar/coaches
+          - listitem [ref=e314]:
+            - link "الحكّام" [ref=e315] [cursor=pointer]:
+              - /url: /ar/officials
+          - listitem [ref=e316]:
+            - link "البطولات" [ref=e317] [cursor=pointer]:
+              - /url: /ar/championships
+          - listitem [ref=e318]:
+            - link "الفعاليات" [ref=e319] [cursor=pointer]:
+              - /url: /ar/events/federation-events
+          - listitem [ref=e320]:
+            - link "الأخبار والمقالات" [ref=e321] [cursor=pointer]:
+              - /url: /ar/news
+          - listitem [ref=e322]:
+            - link "ألبوم الصور" [ref=e323] [cursor=pointer]:
+              - /url: /ar/media/albums
+          - listitem [ref=e324]:
+            - link "الفيديوهات" [ref=e325] [cursor=pointer]:
+              - /url: /ar/media/videos
+          - listitem [ref=e326]:
+            - link "تواصل معنا" [ref=e327] [cursor=pointer]:
+              - /url: /ar/contact
+      - generic [ref=e328]:
+        - heading "الموقع" [level=2] [ref=e329]
+        - generic [ref=e333]:
+          - generic [ref=e334]: مدينة زايد الرياضية
+          - generic [ref=e335]: أبوظبي، الإمارات
+      - generic [ref=e336]:
+        - heading "التواصل" [level=2] [ref=e337]
+        - paragraph [ref=e338]:
+          - generic [ref=e340]: مدينة زايد الرياضية، أبوظبي، الإمارات العربية المتحدة
+        - link "info@uaeaf.ae" [ref=e341] [cursor=pointer]:
+          - /url: mailto:info@uaeaf.ae
+        - paragraph [ref=e342]: الأحد-الخميس، 08:00-15:00
+        - link "مركز المساعدة" [ref=e343] [cursor=pointer]:
+          - /url: /ar/help
+    - generic [ref=e344]:
+      - paragraph [ref=e345]: © 2026 اتحاد الإمارات لألعاب القوى. جميع الحقوق محفوظة.
+      - navigation "روابط قانونية" [ref=e346]:
+        - list [ref=e347]:
+          - listitem [ref=e348]:
+            - link "بيان إمكانية الوصول" [ref=e349] [cursor=pointer]:
+              - /url: /ar/accessibility
+          - listitem [ref=e350]:
+            - link "سياسة الخصوصية" [ref=e351] [cursor=pointer]:
+              - /url: /ar/privacy
+          - listitem [ref=e352]:
+            - link "شروط الاستخدام" [ref=e353] [cursor=pointer]:
+              - /url: /ar/terms
+          - listitem [ref=e354]:
+            - link "خريطة الموقع" [ref=e355] [cursor=pointer]:
+              - /url: /ar/sitemap
+  - button "Open Next.js Dev Tools" [ref=e361] [cursor=pointer]

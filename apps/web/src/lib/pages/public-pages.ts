@@ -251,3 +251,130 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
 export function findPublicPage(key: string): PublicPage | undefined {
   return PUBLIC_PAGES.find((page) => page.key === key);
 }
+
+/**
+ * A destination the site already links to whose full page is not built yet.
+ *
+ * Every link resolves (batch brief 2026-09-15 §6.4): until its page is built,
+ * each destination here is served by `PreparingPageScreen` with its title, its
+ * trail and one status line from the `Preparing` messages, and no other copy.
+ * Building the full page moves its entry into `PUBLIC_PAGES` under the same
+ * route, so no link changes.
+ *
+ * A list of its own rather than a state on `PublicPage`: a page in preparation
+ * has no API read, no schema type and no `Pages` label, and `apiPath` is a
+ * string every built route hands straight to `fetchPublic`.
+ *
+ * Out of the index and the sitemap by construction (Chapter 14 §11, §13): its
+ * metadata is always `noindex, follow`, and the sitemap reads `PUBLIC_PAGES`.
+ *
+ * PR-010 lists "Coming Soon" on public pages as an anti-pattern. The status
+ * line is the owner's explicit instruction of 2026-09-15, which CLAUDE.md §1
+ * ranks above it.
+ */
+export interface PreparingPage {
+  key: string;
+  /** Locale-relative, as in `PublicPage`. */
+  route: string;
+  /** Dotted path to the label the header or footer already prints for this
+   *  destination (`Nav.*`, `Legal.*`, `Footer.*`): the page carries the name
+   *  its link carries rather than a new one. */
+  titleKey: string;
+  register: Register;
+  registerBasis: string;
+}
+
+export const PREPARING_PAGES: readonly PreparingPage[] = [
+  {
+    key: "about",
+    route: "/about",
+    titleKey: "Nav.aboutOverview",
+    register: "green",
+    registerBasis:
+      "Derived (CLAUDE.md §1a): §3.34.2 files the About section's pages it names (board, committees, policies, strategic plan) under Quiet/Institutional, 'White + Green only'.",
+  },
+  {
+    key: "organisational-structure",
+    route: "/about/organisational-structure",
+    titleKey: "Nav.organisationalStructure",
+    register: "green",
+    registerBasis:
+      "Derived (CLAUDE.md §1a): guide §3.3 gives administration green; the structure is the board's and committees' own subject, §3.34.2 Quiet/Institutional.",
+  },
+  {
+    key: "strategic-plan",
+    route: "/about/governance/strategic-plan",
+    titleKey: "Nav.strategicPlan",
+    register: "green",
+    registerBasis: "§3.34.2 names Strategic Plan in the Quiet/Institutional row, 'White + Green only' — the board's row.",
+  },
+  {
+    key: "policies",
+    route: "/about/governance/policies",
+    titleKey: "Nav.policies",
+    register: "green",
+    registerBasis: "§3.34.2 names Policies in the same Quiet/Institutional row as the board.",
+  },
+  {
+    key: "officials",
+    route: "/officials",
+    titleKey: "Nav.officials",
+    register: "red",
+    registerBasis: "Guide §2.3 — referees wear red; the basis records takes for officiating.",
+  },
+  {
+    key: "championships",
+    route: "/championships",
+    titleKey: "Nav.championships",
+    register: "red",
+    registerBasis:
+      "Guide §4.3 onward — every local championship garment is red; the basis records and results-rankings take.",
+  },
+  {
+    key: "federation-events",
+    route: "/events/federation-events",
+    titleKey: "Nav.events",
+    register: "neutral",
+    registerBasis:
+      "DESIGN DECISION REQUIRED: §3.34.2's Dynamic/Athletic row names championships and 'live/major events', and IA §8.1 keeps Events distinct from Championships (CLAUDE.md §11). The neutral base surface commits to neither until the page's register is decided.",
+  },
+  {
+    key: "help",
+    route: "/help",
+    titleKey: "Footer.helpCenter",
+    register: "neutral",
+    registerBasis:
+      "Derived (CLAUDE.md §1a) from §3.34.2 Contact Us, the service row: 'Neutral-dominant'. Its flat dark hero is that category's alone.",
+  },
+  {
+    key: "accessibility",
+    route: "/accessibility",
+    titleKey: "Legal.accessibility",
+    register: "neutral",
+    registerBasis: "Same service row of §3.34.2 as help.",
+  },
+  {
+    key: "privacy",
+    route: "/privacy",
+    titleKey: "Legal.privacy",
+    register: "neutral",
+    registerBasis: "Same service row of §3.34.2 as help.",
+  },
+  {
+    key: "terms",
+    route: "/terms",
+    titleKey: "Legal.terms",
+    register: "neutral",
+    registerBasis: "Same service row of §3.34.2 as help.",
+  },
+  {
+    key: "sitemap",
+    route: "/sitemap",
+    titleKey: "Legal.sitemap",
+    register: "neutral",
+    registerBasis: "Same service row of §3.34.2 as help.",
+  },
+];
+
+export const findPreparingPage = (key: string): PreparingPage | undefined =>
+  PREPARING_PAGES.find((page) => page.key === key);

@@ -134,3 +134,33 @@ describe('VisionMissionPagesService — section photographs', () => {
     expect(set).not.toHaveProperty('valuesImageId');
   });
 });
+
+/** A goal carries one of the twelve icon keys, as a core value does (owner
+ *  decision 2026-09-15), and the public page prints it. */
+describe('VisionMissionPagesService — strategic goals', () => {
+  it('prints each goal with its icon, in the order the goals declare', async () => {
+    const { service, repository, publications, media } = make();
+    repository.find.mockResolvedValue([{ _id: new Types.ObjectId() }]);
+    publications.findLive.mockResolvedValue({ publishedAt: new Date('2026-09-14T11:23:32.000Z') });
+    publications.getPublicSnapshot.mockResolvedValue({
+      heroTitle: text('h'),
+      heroSubtitle: text('s'),
+      visionText: text('v'),
+      missionText: text('m'),
+      strategicGoals: [
+        { title: text('second'), description: text('b'), iconKey: 'trophy', displayOrder: 2 },
+        { title: text('first'), description: text('a'), iconKey: 'star', displayOrder: 1 },
+      ],
+      coreValues: [],
+      seo: null,
+    });
+    media.resolvePublicImages.mockResolvedValue(new Map());
+
+    const page = await service.getCurrentPublic();
+
+    expect(page?.strategicGoals).toEqual([
+      { title: text('first'), description: text('a'), iconKey: 'star', displayOrder: 1 },
+      { title: text('second'), description: text('b'), iconKey: 'trophy', displayOrder: 2 },
+    ]);
+  });
+});

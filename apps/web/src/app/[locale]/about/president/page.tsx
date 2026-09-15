@@ -5,7 +5,8 @@ import { PresidentHero } from "@/components/pages/president/president-hero";
 import { PresidentMessage } from "@/components/pages/president/president-message";
 import { RevealOnce } from "@/components/pages/president/reveal-once";
 import { ValuesBand } from "@/components/pages/president/values-band";
-import { Breadcrumb, type Crumb } from "@/components/ui/breadcrumb";
+import { StrategyCta } from "@/components/pages/vision-mission/strategy-cta";
+import type { Crumb } from "@/components/ui/breadcrumb";
 import type { AppLocale } from "@/i18n/routing";
 import { fetchPublic } from "@/lib/api/public-client";
 import type { PresidentMessagePublic } from "@/lib/api/types";
@@ -85,11 +86,10 @@ export default async function PresidentMessagePage({
   if (!record) notFound();
 
   const nav = await getTranslations({ locale, namespace: "Nav" });
-  const pages = await getTranslations({ locale, namespace: "Pages" });
   const { title, description } = await describe(record, locale);
 
-  // IA §8.5: Home / About / the page. About groups pages and has no landing
-  // page of its own, so it is text, not a link.
+  // IA §8.5: Home / About / the page, in the structured data only: an
+  // institutional page shows no trail (owner decision 2026-09-15, ADR-0072 D7).
   const trail: Crumb[] = [
     { name: nav("home"), route: "/" },
     { name: nav("about"), route: null },
@@ -107,17 +107,10 @@ export default async function PresidentMessagePage({
       <PresidentHero
         record={record}
         locale={locale}
-        breadcrumb={
-          <Breadcrumb
-            trail={trail}
-            label={pages("breadcrumbLabel")}
-            register={record.heroImage ? "black" : "green"}
-            overPhoto={Boolean(record.heroImage)}
-          />
-        }
       />
       <PresidentMessage record={record} locale={locale} />
       <ValuesBand record={record} locale={locale} />
+      <StrategyCta locale={locale} register="neutral" />
       <RevealOnce />
     </>
   );
