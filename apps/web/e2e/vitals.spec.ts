@@ -27,6 +27,9 @@ const CASES = [
 
 const IMAGE_DELAY_MS = 1500;
 
+/** The page under test: the President's Message unless `VITALS_ROUTE` names another. */
+const ROUTE = process.env.VITALS_ROUTE ?? "/about/president";
+
 interface Vitals {
   cls: number;
   pageShifts: string[];
@@ -59,7 +62,7 @@ for (const motion of ["no-preference", "reduce"] as const) {
               await route.continue();
             },
           );
-          await page.goto(`/${locale}/about/president`, { waitUntil: "domcontentloaded" });
+          await page.goto(`/${locale}${ROUTE}`, { waitUntil: "domcontentloaded" });
 
           const vitals = await page.evaluate(
             (settleMs) =>
