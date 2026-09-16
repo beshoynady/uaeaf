@@ -56,7 +56,7 @@
 
 ### قرارات معمارية (ADRs)
 
-`ADR-0054` … `ADR-0074` — واحد وعشرون ملفًا في `docs/design-system/`. كل واحد يوثّق
+`ADR-0054` … `ADR-0075` — اثنان وعشرون ملفًا في `docs/design-system/`. كل واحد يوثّق
 قرارًا واحدًا وسببه والبديل المرفوض. **هذه أهم ما يُسلَّم**: هي الجواب على «لماذا
 بُني هكذا» بعد أن ينسى الجميع.
 
@@ -66,8 +66,11 @@
 `ADR-0070-Vision-Mission-Page-Schema-Editorial-Routes-Shared-Editor-And-Identity-Hero.md`
 — صفحة الرؤية والرسالة: الـ schema، ومسارات التحرير، وأجزاء المحرر المشتركة، وhero خطوط الهوية.
 
-أحدثها: `ADR-0074-Closing-Vision-Mission-Pre-Handover-Images-Green-Values-Publishing-Gate-And-Rule-Calibration.md`
-— إغلاق دفعة الرؤية والرسالة: صور ما قبل التسليم (سبعة من ثمانية أصول مولَّدة بدليل C2PA)، والقيم على السجل الأخضر بحافة البطاقة في الداكن، والقاعدة ٦ بوابة نشر، ومبدأ الكثافة، ومعايرة القواعد على كلمة الرئيس وأعضاء المجلس. خيارا المجموعة B ينتظران قرار المالك.
+أحدثها: `ADR-0075-Strategic-Plan-Page-Domain-Seams-In-Every-Mode-And-Seam-Lines-Below-A-Band.md`
+— صفحة الخطة الاستراتيجية: إكمال domain `strategic-plans-page` بـschema الأقسام الثمانية وشاشة إدارة، وحدّ الأشرطة الملوّنة في التباين العالي (القاعدة ٣ في الأوضاع الثلاثة)، وخطوط الحدّ تحت الشريط الملوّن (`SeamLines placement="below"`)، والمجموعة B بالخيار (أ)، وتراتب الـhero، ونطاق القاعدة ٢.
+
+وقبله: `ADR-0074-Closing-Vision-Mission-Pre-Handover-Images-Green-Values-Publishing-Gate-And-Rule-Calibration.md`
+— إغلاق دفعة الرؤية والرسالة: صور ما قبل التسليم (سبعة من ثمانية أصول مولَّدة بدليل C2PA)، والقيم على السجل الأخضر بحافة البطاقة في الداكن، والقاعدة ٦ بوابة نشر، ومبدأ الكثافة، ومعايرة القواعد على كلمة الرئيس وأعضاء المجلس.
 
 وقبله: `ADR-0073-Vision-Mission-Model-Page-Athletics-Photographs-Seam-Lines-And-Page-Rules.md`
 — صفحة الرؤية والرسالة نموذجًا: صور ألعاب القوى، وخطوط الحدّ بين الأقسام، وقواعد الصفحة الخمس الأولى وفحوصها.
@@ -132,6 +135,7 @@
 |---|---|
 | `engineering/plans/president-message-plan.md` | خطة المرحلة ج وسجلّ قراراتها |
 | `engineering/plans/colour-modes-proposal.md` | اقتراح قائمتي الألوان وقياساته؛ §9.3 يسجّل ما حُسم وما سقط |
+| `engineering/plans/strategic-plan-page-plan.md` | خطة صفحة الخطة الاستراتيجية: القرارات المعمارية، والـschema، والمهمة صفر، وتسلسل الأقسام الثمانية، والمحتوى المستخرج من Figma، وشاشة الإدارة، والاختبارات |
 | `engineering/post-delivery-backlog.md` | متأخرات ما بعد التسليم — **بند واحد فقط، ولا يُضاف إليه دون قرار المالك** |
 | `engineering/UAEAF-PHASE-1-BUILD-PLAN-2026-09-07.md` | خطة بناء المرحلة ١ |
 | `engineering/UAEAF-FRONTEND-BUILDOUT-PLAN-2026-09-07.md` | خطة بناء الواجهة |
@@ -147,6 +151,8 @@
 | `engineering/page-building-guide.md` | دليل بناء الصفحات المؤسسية القادمة: اللوحة، وبنية الصفحة، والحركة، والخطوط القطرية، والأنماط الجاهزة، وجدول القواعد المطوَّرة (ADR-0072 وADR-0074)، وقواعد الصفحة الست بفحوصها وبوابة النشر ومبدأ الكثافة (§٨، ADR-0073 وADR-0074) |
 | `engineering/how-vision-mission-direction-works.md` | ما بُني في دفعة الاتجاه البصري: الحارس، و`color-scheme`، والـ hero الشريط، والخطوط بين الأقسام |
 | `engineering/how-green-values-work.md` | القيم على السجل الأخضر في صفحة الرؤية والرسالة، وحافة البطاقة في الداكن: لماذا، والملفات بترتيبها، وتتبّع بطاقة حقيقية، ومواضع الكسر، والحراس |
+| `content/strategic-plan-federation-questions.md` | ما نحتاجه من الاتحاد لصفحة الخطة: ربط الأهداف بالمحاور، وخطوط أساس المؤشرات وسنواتها، وفترة الخطة، وتواريخ المراحل، ووصف خطوات التنفيذ، ووثيقة الخطة، والصور الحقيقية، ومراجعة النص الإنجليزي |
+| `engineering/how-strategic-plan-page-works.md` | صفحة الخطة الاستراتيجية: الـdomain وشاشة الإدارة والصفحة العامة بالبنود التسعة — لماذا، والملفات بترتيب سلسلة العمل، وتتبّع إضافة محور سابع من الداشبورد حتى الصفحة، ومواضع الكسر، والحراس (ADR-0075) |
 | `design-system/UAEAF-DESIGN-CRITIQUE-JURY-PROTOCOL.md` | بروتوكول تقييم المقترحات — أداة عمل داخلية لا مرجع تصميم |
 | `design-system/figma-reference/README.md` | دليل لقطات Figma المرجعية |
 

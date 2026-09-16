@@ -4710,6 +4710,27 @@
         ]
       }
     },
+    "/api/v1/strategic-plans-page/current/public": {
+      "get": {
+        "operationId": "StrategicPlansPagesController_getCurrentPublic_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StrategicPlanPublicResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "strategic-plans-page"
+        ]
+      }
+    },
     "/api/v1/strategic-plans-page/{id}": {
       "get": {
         "operationId": "StrategicPlansPagesController_findOne_v1",
@@ -4723,6 +4744,37 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "strategic-plans-page"
+        ]
+      },
+      "patch": {
+        "operationId": "StrategicPlansPagesController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStrategicPlansPageDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": ""
@@ -4754,6 +4806,173 @@
         ]
       }
     },
+    "/api/v1/strategic-plans-page/{id}/editorial-state": {
+      "get": {
+        "operationId": "StrategicPlansPagesController_editorialState_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditorialStateDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "strategic-plans-page"
+        ]
+      }
+    },
+    "/api/v1/strategic-plans-page/{id}/lists/{list}/order": {
+      "patch": {
+        "operationId": "StrategicPlansPagesController_reorderList_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "list",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "phases",
+                "pillars",
+                "objectives",
+                "metrics",
+                "executionSteps"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderPlanListDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "strategic-plans-page"
+        ]
+      }
+    },
+    "/api/v1/strategic-plans-page/{id}/publish": {
+      "post": {
+        "operationId": "StrategicPlansPagesController_publish_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishEditorialDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "strategic-plans-page"
+        ]
+      }
+    },
+    "/api/v1/strategic-plans-page/{id}/submit": {
+      "post": {
+        "operationId": "StrategicPlansPagesController_submit_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "strategic-plans-page"
+        ]
+      }
+    },
+    "/api/v1/strategic-plans-page/{id}/restore": {
+      "post": {
+        "operationId": "StrategicPlansPagesController_restore_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestoreEditorialDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "strategic-plans-page"
+        ]
+      }
+    },
     "/api/v1/strategic-plans-page/{id}/public": {
       "get": {
         "operationId": "StrategicPlansPagesController_getPublicSnapshot_v1",
@@ -4769,7 +4988,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StrategicPlanPublicResponseDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -9917,9 +10143,13 @@
           "revisionId"
         ]
       },
-      "IconedContentBlockDto": {
+      "PlanPhaseDto": {
         "type": "object",
         "properties": {
+          "_id": {
+            "type": "string",
+            "description": "The item's id when it already exists; omitted for a new item."
+          },
           "title": {
             "$ref": "#/components/schemas/LocalizedTextDto"
           },
@@ -9929,9 +10159,19 @@
           "displayOrder": {
             "type": "number"
           },
+          "isVisible": {
+            "type": "boolean",
+            "default": true
+          },
           "iconKey": {
             "type": "string",
-            "description": "Client-side icon identifier (e.g. a lucide-react name)."
+            "enum": [
+              "layers",
+              "trending-up",
+              "trophy",
+              "sparkles"
+            ],
+            "description": "One of the four approved phase icon keys."
           }
         },
         "required": [
@@ -9941,9 +10181,13 @@
           "iconKey"
         ]
       },
-      "ContentBlockDto": {
+      "PlanListItemDto": {
         "type": "object",
         "properties": {
+          "_id": {
+            "type": "string",
+            "description": "The item's id when it already exists; omitted for a new item."
+          },
           "title": {
             "$ref": "#/components/schemas/LocalizedTextDto"
           },
@@ -9952,6 +10196,10 @@
           },
           "displayOrder": {
             "type": "number"
+          },
+          "isVisible": {
+            "type": "boolean",
+            "default": true
           }
         },
         "required": [
@@ -9960,23 +10208,63 @@
           "displayOrder"
         ]
       },
-      "ImpactMetricDto": {
+      "PlanMetricDto": {
         "type": "object",
         "properties": {
+          "_id": {
+            "type": "string",
+            "description": "The item's id when it already exists; omitted for a new item."
+          },
           "value": {
             "type": "string",
-            "description": "Plain string, e.g. \"2030\" or \"+45%\"."
+            "description": "Free text, e.g. \"2030\", \"15\" or \"+30%\"."
           },
           "label": {
             "$ref": "#/components/schemas/LocalizedTextDto"
           },
           "displayOrder": {
             "type": "number"
+          },
+          "isVisible": {
+            "type": "boolean",
+            "default": true
           }
         },
         "required": [
           "value",
           "label",
+          "displayOrder"
+        ]
+      },
+      "PlanStepDto": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "The item's id when it already exists; omitted for a new item."
+          },
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "description": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "displayOrder": {
+            "type": "number"
+          },
+          "isVisible": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "title",
           "displayOrder"
         ]
       },
@@ -10002,43 +10290,89 @@
           "introText": {
             "$ref": "#/components/schemas/LocalizedTextDto"
           },
-          "periodStart": {
-            "type": "string"
+          "introImageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "The photograph beside the overview: ref → mediaAssets, must be an image."
           },
-          "periodEnd": {
-            "type": "string"
+          "phasesTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
           },
-          "foundationPillars": {
+          "phases": {
+            "maxItems": 10,
+            "description": "Stands in one row: at most 10 items, hidden ones counted (refused with `listTooLong`).",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/IconedContentBlockDto"
+              "$ref": "#/components/schemas/PlanPhaseDto"
             }
           },
-          "strategicAxes": {
+          "pillarsTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "pillarsText": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "pillars": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ContentBlockDto"
+              "$ref": "#/components/schemas/PlanListItemDto"
             }
+          },
+          "objectivesTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "objectivesImageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "The photograph beside the objectives: ref → mediaAssets, must be an image."
           },
           "objectives": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ContentBlockDto"
+              "$ref": "#/components/schemas/PlanListItemDto"
             }
           },
-          "impactMetrics": {
+          "metricsTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "metricsImageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "The photograph behind the metrics band: ref → mediaAssets, must be an image."
+          },
+          "metrics": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ImpactMetricDto"
+              "$ref": "#/components/schemas/PlanMetricDto"
             }
           },
-          "documentId": {
-            "type": "string",
-            "description": "ref → documents. Attached file, not independently approved."
+          "executionTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
           },
-          "documentVersion": {
-            "type": "string",
-            "description": "e.g. \"1.0\" — accompanies documentId."
+          "executionText": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "executionSteps": {
+            "maxItems": 10,
+            "description": "Stands in one row: at most 10 items, hidden ones counted (refused with `listTooLong`).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlanStepDto"
+            }
+          },
+          "ctaTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "ctaText": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "ctaImageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "The photograph behind the closing call: ref → mediaAssets, must be an image."
+          },
+          "seo": {
+            "$ref": "#/components/schemas/PageSeoDto"
           },
           "publicationState": {
             "type": "string",
@@ -10056,9 +10390,439 @@
           "federationId",
           "introHeading",
           "introText",
-          "periodStart",
-          "periodEnd",
+          "pillarsTitle",
+          "objectivesTitle",
+          "metricsTitle",
+          "executionTitle",
+          "ctaTitle",
           "publicationState"
+        ]
+      },
+      "PublicPlanPhaseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "description": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "displayOrder": {
+            "type": "number"
+          },
+          "iconKey": {
+            "type": "string",
+            "description": "One of the four approved phase icon keys."
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "description",
+          "displayOrder",
+          "iconKey"
+        ]
+      },
+      "PublicPlanItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "description": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "displayOrder": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "description",
+          "displayOrder"
+        ]
+      },
+      "PublicPlanMetricDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string",
+            "description": "Free text, e.g. \"2030\" or \"+30%\"."
+          },
+          "label": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "displayOrder": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "value",
+          "label",
+          "displayOrder"
+        ]
+      },
+      "PublicPlanStepDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "description": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "displayOrder": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "displayOrder"
+        ]
+      },
+      "StrategicPlanPublicResponseDto": {
+        "type": "object",
+        "properties": {
+          "heroTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "heroSubtitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "heroImage": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicImageDto"
+              }
+            ]
+          },
+          "introHeading": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "introText": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "introImage": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicImageDto"
+              }
+            ]
+          },
+          "phasesTitle": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "phases": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicPlanPhaseDto"
+            }
+          },
+          "pillarsTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "pillarsText": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "pillars": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicPlanItemDto"
+            }
+          },
+          "objectivesTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "objectivesImage": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicImageDto"
+              }
+            ]
+          },
+          "objectives": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicPlanItemDto"
+            }
+          },
+          "metricsTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "metricsImage": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicImageDto"
+              }
+            ]
+          },
+          "metrics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicPlanMetricDto"
+            }
+          },
+          "executionTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "executionText": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "executionSteps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicPlanStepDto"
+            }
+          },
+          "ctaTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "ctaText": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "ctaImage": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicImageDto"
+              }
+            ]
+          },
+          "seo": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicSeoDto"
+              }
+            ]
+          },
+          "publishedAt": {
+            "type": "string",
+            "description": "When the Live version was published, from the publication, never stored."
+          }
+        },
+        "required": [
+          "heroTitle",
+          "heroSubtitle",
+          "introHeading",
+          "introText",
+          "phases",
+          "pillarsTitle",
+          "pillars",
+          "objectivesTitle",
+          "objectives",
+          "metricsTitle",
+          "metrics",
+          "executionTitle",
+          "executionSteps",
+          "ctaTitle",
+          "publishedAt"
+        ]
+      },
+      "UpdateStrategicPlansPageDto": {
+        "type": "object",
+        "properties": {
+          "heroImageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "ref → mediaAssets, or null."
+          },
+          "heroTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "heroSubtitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "introHeading": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "introText": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "introImageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "The photograph beside the overview: ref → mediaAssets, or null."
+          },
+          "phasesTitle": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "phases": {
+            "maxItems": 10,
+            "description": "Stands in one row: at most 10 items, hidden ones counted (refused with `listTooLong`).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlanPhaseDto"
+            }
+          },
+          "pillarsTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "pillarsText": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "pillars": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlanListItemDto"
+            }
+          },
+          "objectivesTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "objectivesImageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "The photograph beside the objectives: ref → mediaAssets, or null."
+          },
+          "objectives": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlanListItemDto"
+            }
+          },
+          "metricsTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "metricsImageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "The photograph behind the metrics band: ref → mediaAssets, or null."
+          },
+          "metrics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlanMetricDto"
+            }
+          },
+          "executionTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "executionText": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "executionSteps": {
+            "maxItems": 10,
+            "description": "Stands in one row: at most 10 items, hidden ones counted (refused with `listTooLong`).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlanStepDto"
+            }
+          },
+          "ctaTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "ctaText": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "ctaImageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "The photograph behind the closing call: ref → mediaAssets, or null."
+          },
+          "seo": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PageSeoDto"
+              }
+            ]
+          }
+        }
+      },
+      "ReorderPlanListDto": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "description": "Every item id of the list, in the new order.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "ids"
         ]
       },
       "AchievementDto": {

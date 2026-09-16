@@ -94,14 +94,19 @@ describe("VisionMissionStatements", () => {
     expect(statement(container, "mission-title")).toHaveAttribute("data-ground", "sunken");
   });
 
-  it("prints each ordinal at the largest display size in its item's ink, hidden from assistive technology", async () => {
+  // Owner decision (brief 2026-09-15 §٣, ADR-0075): the ordinals fall to
+  // Display L and the hero title rises to Display XL — the title is the
+  // message, the ordinal is punctuation.
+  it("prints each ordinal at Display L in its item's ink, hidden from assistive technology", async () => {
     const { container } = render(await VisionMissionStatements({ record: RECORD, locale: "ar" }));
 
     const numeral = (id: string) => statement(container, id).querySelector("[data-numeral]")!;
     expect(numeral("vision-title").textContent).toBe("01");
     expect(numeral("mission-title").textContent).toBe("02");
     expect(numeral("vision-title")).toHaveAttribute("aria-hidden", "true");
-    expect(numeral("vision-title").className).toContain("text-display-2xl");
+    expect(numeral("vision-title").className.split(" ")).toContain("md:text-display-l");
+    expect(numeral("vision-title").className.split(" ")).toContain("text-h1");
+    expect(numeral("vision-title").className).not.toContain("text-display-2xl");
     expect(numeral("vision-title").className).toContain("var(--color-item-1-ink)");
     expect(numeral("mission-title").className).toContain("var(--color-item-2-ink)");
   });
@@ -388,6 +393,26 @@ describe("StrategyCta", () => {
     const { container } = render(await StrategyCta({ locale: "ar", ground: null, register: "neutral" }));
 
     expect(container.querySelector("section")).toHaveAttribute("data-register", "neutral");
+  });
+
+  // Rule 1 (guide §٨): a neutral call with no photograph has no section-scale
+  // identity element, and it follows the green values on both pages, so its
+  // seam lines stand below the seam (ADR-0075 M0-B). With a photograph the
+  // picture is the element and no strokes are added.
+  it("draws seam lines below the seam on the neutral ground when it has no photograph, and none with one", async () => {
+    const without = render(await StrategyCta({ locale: "ar", ground: null, register: "neutral" }));
+    const seam = without.container.querySelector<HTMLElement>("section [data-seam-lines]")!;
+    expect(seam).not.toBeNull();
+    expect(seam).toHaveAttribute("data-placement", "below");
+    expect(without.container.querySelector("section")!.className).toContain("relative");
+    without.unmount();
+
+    const withPhoto = render(await StrategyCta({ locale: "ar", ground: photo("cta"), register: "neutral" }));
+    expect(withPhoto.container.querySelector("[data-seam-lines]")).toBeNull();
+    withPhoto.unmount();
+
+    const onGreen = render(await StrategyCta({ locale: "ar", ground: null, register: "green" }));
+    expect(onGreen.container.querySelector("[data-seam-lines]")).toBeNull();
   });
 
   it("links to the strategic plan and to About", async () => {

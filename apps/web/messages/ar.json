@@ -86,6 +86,7 @@
     "contact-us": "اتصل بنا",
     "president-message": "كلمة الرئيس",
     "vision-mission": "الرؤية والرسالة",
+    "strategic-plan": "الخطة الاستراتيجية",
     "breadcrumbLabel": "مسار التنقّل"
   },
   "Sections": {
@@ -169,5 +170,11 @@
   },
   "Preparing": {
     "status": "هذه الصفحة قيد الإعداد."
+  },
+  "StrategicPlan": {
+    "phasesLabel": "مراحل الخطة الاستراتيجية",
+    "metricsLabel": "مؤشرات الأداء",
+    "executionLabel": "خطوات مسار التنفيذ",
+    "stepOf": "الخطوة {number} من {total}"
   }
 }

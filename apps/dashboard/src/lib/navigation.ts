@@ -74,6 +74,15 @@ export const NAV_ITEMS: readonly NavItem[] = [
       { resourceType: "workflowInstances", action: "Approve" },
     ],
   },
+  /** The Strategic Plan (ADR-0075), opened by the same two jobs. */
+  {
+    key: "strategicPlan",
+    href: "/strategic-plan",
+    requires: [
+      { resourceType: "strategicPlansPage", action: "Update" },
+      { resourceType: "workflowInstances", action: "Approve" },
+    ],
+  },
 ];
 
 /** Whether these grants satisfy one requirement. */

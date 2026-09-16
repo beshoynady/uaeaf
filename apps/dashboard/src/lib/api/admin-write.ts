@@ -88,6 +88,16 @@ export const EDITORIAL_ERROR_CODES = [
   /** The submitted rich text used a node, mark or attribute the language's
    *  allowlist does not permit. */
   "richTextNotAllowed",
+  /** A list was sent with nothing visible in it, which would take its whole
+   *  section off the public page (ADR-0075). */
+  "listNeedsVisibleItem",
+  /** The order sent was not a permutation of the list's current ids: the list
+   *  changed under the editor. */
+  "invalidListOrder",
+  /** A list name no section carries. */
+  "unknownList",
+  /** A list drawn as one row was sent longer than the row holds. */
+  "listTooLong",
 ] as const;
 
 export type WriteErrorCode =
@@ -200,6 +210,13 @@ const FROM_API_CODE: Record<string, WriteErrorCode> = {
   missingRequiredField: "missingRequiredField",
   underReview: "underReview",
   richTextNotAllowed: "richTextNotAllowed",
+  // ADR-0075's list refusals: each names a different thing to do — show an
+  // item again, reload a list that changed, correct a list name, or remove an
+  // item from a full row.
+  listNeedsVisibleItem: "listNeedsVisibleItem",
+  invalidListOrder: "invalidListOrder",
+  unknownList: "unknownList",
+  listTooLong: "listTooLong",
 };
 
 function fallbackFor(status: number): WriteErrorCode {

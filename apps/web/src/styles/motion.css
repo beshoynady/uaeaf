@@ -786,6 +786,34 @@
   }
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+ * The seam edge in high contrast — ADR-0075 M0-A
+ *
+ * Rule 3 (page-building guide §٨) lets a register change mark the seam between
+ * two sections. In the high-contrast list every coloured register and every
+ * item surface is `#FFFFFF`, as the page grounds are, so that change marks
+ * nothing there. Every coloured band therefore draws its own top and bottom
+ * edge in that mode only: `--border-width-default` (2px in that list) in
+ * `--color-border-strong` (`#000000`), 21:1 against the white on either side.
+ *
+ * A pseudo-element with a border, not a border on the section: a border would
+ * change the section's height in one mode and the guards measure geometry in
+ * another. Positioned relative in this mode only, which moves nothing, so the
+ * pseudo-element can stand over the band's own photograph or strokes and stay
+ * visible at both edges. Nothing here paints in light or dark.
+ * ══════════════════════════════════════════════════════════════════════════ */
+[data-theme="high-contrast"] section[data-register]:not([data-register="neutral"]) {
+  position: relative;
+}
+
+[data-theme="high-contrast"] section[data-register]:not([data-register="neutral"])::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-block: var(--border-width-default) solid var(--color-border-strong);
+}
+
 /* The President's Message's own custom properties, declared once with the
    value each starts from. The components set every one of them per element
    and per breakpoint (Tailwind arbitrary properties and inline styles), which
@@ -819,5 +847,21 @@
 
   :where([data-seam-lines]) {
     --seam-pad: var(--space-12);
+  }
+
+  /* The strategic plan's execution path (ADR-0075): each step's rise, in
+     steps of `--space-12`, counted down from the first step to the last, the
+     number of steps the row is divided into, and the column gap each segment
+     of the line spans to reach the next chip. */
+  :where([data-plan-path]) {
+    --plan-step: 0;
+    --plan-steps: 1;
+    --plan-gap: var(--space-4);
+  }
+
+  /* The plan's phases: the number of columns the rail's row is divided into
+     from `lg`, one per phase, set on the list by `phases-band.tsx`. */
+  :where([data-field="phases"]) {
+    --plan-phases: 1;
   }
 }

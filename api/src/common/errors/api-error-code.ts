@@ -55,6 +55,14 @@ export const API_ERROR_CODES = [
   'missingRequiredField',
   'underReview',
   'richTextNotAllowed',
+  // The strategic plan's list refusals (ADR-0075). Four different fixes: show
+  // an item again, reload because the order was computed against a list that
+  // has changed, correct a list name no section carries, and remove an item
+  // from a row that is full. As `badRequest` all four read as one sentence.
+  'listNeedsVisibleItem',
+  'invalidListOrder',
+  'unknownList',
+  'listTooLong',
 ] as const;
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

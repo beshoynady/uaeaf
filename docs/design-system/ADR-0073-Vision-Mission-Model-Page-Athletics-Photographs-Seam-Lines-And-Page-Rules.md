@@ -233,6 +233,13 @@ Compared with this batch's revision, one field differed: the English `heroTitle`
 | Board members | Each member | not printed; the record has `photoId` | — | **no: the page prints no member photograph. Showing them is a code change** | photographs, if the design shows them |
 | Contact (outside the three pages) | Hero | `contact-hero` (generated) | weakly: an aerial view | yes | a real photograph |
 | Contact (outside the three pages) | Map | `contact-map` (generated; garbled place names) | not applicable: a map | yes | a real map |
+| Strategic Plan (ADR-0075) | Hero | `vision-mission-values` (generated; also Vision & Mission's hero) | yes: the red track | yes: *Strategic Plan* editor, «صورة الخلفية» | a real athletics photograph |
+| Strategic Plan | Overview | `contact-hero` (generated; also the vision's) | yes: the track ring in the aerial view | yes: «خلفية النظرة العامة» | a real photograph |
+| Strategic Plan | Objectives | `vision-mission-cta` (generated; also Vision & Mission's call) | yes: runners on the track | yes: «خلفية الأهداف» | a real photograph |
+| Strategic Plan | Indicators | **McKenzie Community Track** — a real photograph (Rick Obst, CC BY 4.0, Wikimedia Commons; licence and source in the asset's caption) | yes: an eight-lane track with its lane numbers | yes: «خلفية المؤشرات» | the federation's own track, when photographed |
+| Strategic Plan | Call to action | `vision-mission-mission` (generated; also the mission's; the runners' faces are synthetic, no real person) | yes: runners, a track, hurdles | yes: «خلفية الدعوة» | a real photograph |
+
+**Rule 2's scope (owner decision, brief 2026-09-15 §٣; ADR-0075).** Rule 2 is written for sport and venue pictures. **Portraits, maps and documents are outside it**: they are not expected to show athletics and are never a rule 2 violation. Rule 6 alone governs their alternative text. The President's portrait and the contact map are the standing cases.
 
 ## Remaining
 

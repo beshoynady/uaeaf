@@ -58,6 +58,10 @@ import {
   VisionMissionPageSchema,
 } from '../modules/federation-governance/vision-mission-page/schemas/vision-mission-page.schema.js';
 import {
+  StrategicPlansPage,
+  StrategicPlansPageSchema,
+} from '../modules/federation-governance/strategic-plans-page/schemas/strategic-plans-page.schema.js';
+import {
   DEV_FIXTURE_SETS,
   assertNoSecrets,
   exportDevFixtures,
@@ -92,6 +96,7 @@ const MODELS: Array<[string, Schema]> = [
   [ResultsRankingsPage.name, ResultsRankingsPageSchema],
   [VideosPage.name, VideosPageSchema],
   [VisionMissionPage.name, VisionMissionPageSchema],
+  [StrategicPlansPage.name, StrategicPlansPageSchema],
 ];
 
 /** A deep, independent copy: the fixtures are EJSON, so EJSON is the copy. */
@@ -161,10 +166,12 @@ describe('dev fixtures', () => {
       // and `countries` is not seeded. The second is the same case: the vision
       // and mission page names its federation, and no `federation` document
       // exists in the source database either (read 2026-09-14), so none is
-      // seeded. Anything else unresolved fails here.
+      // seeded; the strategic plan page names the same federation. Anything
+      // else unresolved fails here.
       expect([...new Set(unresolved)]).toEqual([
         'federationPersonnel.nationalityId',
         'visionMissionPage.federationId',
+        'strategicPlansPage.federationId',
       ]);
     });
 

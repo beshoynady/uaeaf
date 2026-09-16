@@ -166,6 +166,8 @@ export const PERMISSION_CATALOGUE: readonly PermissionCatalogueEntry[] = [
   { resourceType: 'siteSettings', action: 'Update' },
   { resourceType: 'strategicPlansPage', action: 'Create' },
   { resourceType: 'strategicPlansPage', action: 'Read' },
+  { resourceType: 'strategicPlansPage', action: 'Update' },
+  { resourceType: 'strategicPlansPage', action: 'Publish' },
   { resourceType: 'strategicPlansPage', action: 'Delete' },
   { resourceType: 'users', action: 'Create' },
   { resourceType: 'users', action: 'Read' },

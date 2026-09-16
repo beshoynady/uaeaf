@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { getTranslations } from "next-intl/server";
+import { SeamLines } from "@/components/ui/identity-hero";
 import { FOCUS, TRANSITION } from "@/components/ui/interactive";
 import { REGISTER_CLASSES, Section } from "@/components/ui/section";
 import { SlantedPhoto } from "@/components/ui/slanted-photo";
@@ -32,6 +33,15 @@ import type { PublicImage } from "@/lib/api/types";
  *   on green, and in the accent colour on the page's ground.
  * - The arrows point along the reading direction and are hidden from assistive
  *   technology, which already has each link's name.
+ * - On the neutral ground with no photograph the call has no section-scale
+ *   identity element (rule 1), and it follows the green values band, so from
+ *   `lg` its words take the start of the line, as they do beside a photograph,
+ *   and the identity strokes stand below the seam in the far corner, wholly on
+ *   the page's ground (`SeamLines placement="below" from="lg"`, ADR-0075
+ *   M0-B). Below `lg` the heading spans the frame and the guard measured the
+ *   strokes 0–16.5px from it, so they are not drawn there and the finding
+ *   stays recorded for those widths. With a photograph the picture is the
+ *   element; on the green register the register is.
  */
 
 /** The focus ring is added where each link is drawn, so the interaction-state
@@ -70,18 +80,28 @@ export const StrategyCta = async ({
   const t = await getTranslations({ locale, namespace: "VisionMission" });
   const titleId = "vision-mission-cta-title";
   const onGreen = register === "green";
+  const seamLines = !onGreen && !ground;
 
   return (
     <Section
       register={register}
       enter={false}
       labelledBy={titleId}
-      className="relative isolate overflow-clip py-12 md:py-16 lg:py-24"
+      // Sideways clipping only where the strokes stand below the seam: `overflow-clip`
+      // would cut nothing there, but the photograph's bleed still needs the clip.
+      className={`relative isolate ${seamLines ? "overflow-x-clip" : "overflow-clip"} py-12 md:py-16 lg:py-24`}
     >
-      <div className={ground ? "grid gap-8 lg:grid-cols-12 lg:gap-x-6 xl:gap-x-8" : undefined}>
+      {seamLines ? <SeamLines placement="below" from="lg" /> : null}
+      <div className={ground || seamLines ? "grid gap-8 lg:grid-cols-12 lg:gap-x-6 xl:gap-x-8" : undefined}>
         <div
           data-reveal=""
-          className={`flex ${HERO_MEASURE} flex-col gap-4 ${ground ? "items-start text-start lg:col-span-7 lg:col-start-1" : "mx-auto items-center text-center"}`}
+          className={`flex ${HERO_MEASURE} flex-col gap-4 ${
+            ground
+              ? "items-start text-start lg:col-span-7 lg:col-start-1"
+              : seamLines
+                ? "mx-auto items-center text-center lg:mx-0 lg:col-span-7 lg:col-start-1 lg:items-start lg:text-start"
+                : "mx-auto items-center text-center"
+          }`}
         >
           <h2 id={titleId} data-reveal-part="rise" className="text-h2 text-balance">
             {t("ctaTitle")}
@@ -96,7 +116,7 @@ export const StrategyCta = async ({
           <div
             data-reveal-part="rise"
             style={revealStep(2)}
-            className={`mt-4 flex flex-wrap items-center gap-3 ${ground ? "" : "justify-center"}`}
+            className={`mt-4 flex flex-wrap items-center gap-3 ${ground ? "" : seamLines ? "justify-center lg:justify-start" : "justify-center"}`}
           >
             <Link href="/about/governance/strategic-plan" className={`${onGreen ? PRIMARY_ON_GREEN : PRIMARY} ${FOCUS}`}>
               {t("ctaPrimary")}

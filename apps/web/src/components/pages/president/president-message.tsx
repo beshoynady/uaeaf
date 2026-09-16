@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { renderBlocks } from "@/components/rich-text/rich-text";
+import { SeamLines } from "@/components/ui/identity-hero";
 import { Section } from "@/components/ui/section";
 import type { AppLocale } from "@/i18n/routing";
 import type { PresidentMessagePublic } from "@/lib/api/types";
@@ -27,6 +28,16 @@ import type { PresidentMessagePublic } from "@/lib/api/types";
  *   the phone's. Rendered at every breakpoint (PM-D03).
  * - **The signature** takes its name and title from the record and its date
  *   from the Live publication (§7.5-4), in a `<time>`.
+ *
+ * - **The identity strokes below the seam with the hero, from `lg`**
+ *   (`SeamLines placement="below" from="lg"`, ADR-0075 M0-B): the message has
+ *   no photograph and follows the green hero, so its section-scale identity
+ *   element (rule 1) is the strokes, drawn wholly on the page's ground where
+ *   they clear 3:1, in the far corner the two-column layout leaves empty.
+ *   Below `lg` the body opens the section across the frame and the guard
+ *   measured the strokes 0px from it, so they are not drawn there and the
+ *   finding stays recorded for those widths. The section is positioned for
+ *   them and reserves no room.
  *
  * Body paragraphs never move. The quote and the signature are marked for the
  * one-shot reveal (`reveal-once.tsx`); the server HTML is complete and at rest.
@@ -96,7 +107,8 @@ export const PresidentMessage = ({ record, locale }: { record: PresidentMessageP
   const quote = record.pullQuote?.[locale];
 
   return (
-    <Section enter={false} className="py-12 md:py-16">
+    <Section enter={false} className="relative py-12 md:py-16">
+      <SeamLines placement="below" from="lg" />
       <article className={`mx-auto ${MEASURE[locale]} text-body text-[color:var(--color-text-secondary)] lg:max-w-none`}>
         <div className={`flex flex-col gap-4 text-pretty lg:grid ${COLUMNS[locale]} lg:gap-x-16`}>
           {first}

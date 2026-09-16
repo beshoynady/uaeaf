@@ -33,6 +33,7 @@ const LOCALE_APP = join(SRC, "app", "[locale]");
 const ENTRIES = {
   "president page": join(LOCALE_APP, "about", "president", "page.tsx"),
   "vision & mission page": join(LOCALE_APP, "about", "governance", "vision-mission", "page.tsx"),
+  "strategic plan page": join(LOCALE_APP, "about", "governance", "strategic-plan", "page.tsx"),
   // The header and footer every page is framed by.
   "site layout": join(LOCALE_APP, "layout.tsx"),
 } as const;

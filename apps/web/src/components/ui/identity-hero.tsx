@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
+import { AccentRule } from "./accent-rule";
 import { CONTAINER, REGISTER_CLASSES } from "./section";
 import { HERO_MEASURE, HERO_PARALLAX, HERO_SCRIM, HERO_TEXT, HERO_VIEWPORT } from "./surface";
 import type { AppLocale } from "@/i18n/routing";
@@ -100,9 +101,13 @@ const GROUP_A: readonly Stroke[] = [
   { ribbon: RIBBONS.green, tone: "green", length: 81.2, tail: SPACING },
 ];
 
+/** B's red stroke takes A's red length (owner decision 2026-09-15, ADR-0075
+ *  M0-C): at the light weight the logo's 23.4 units drew a 1.08px sliver at
+ *  390 that faded to 3.18:1 in dark. The group keeps the logo's order and
+ *  spacing (IL-2); only this one length departs from the mark's proportions. */
 const GROUP_B: readonly Stroke[] = [
   { ribbon: RIBBONS.ink, tone: "ink", length: 56.0, tail: 0 },
-  { ribbon: RIBBONS.redSmall, tone: "red", length: 23.4, tail: SPACING },
+  { ribbon: RIBBONS.redSmall, tone: "red", length: 40.8, tail: SPACING },
 ];
 
 const thickness = (s: Stroke): number => (s.ribbon.height * s.length * WEIGHT) / s.ribbon.width;
@@ -436,25 +441,57 @@ const SEAM_PAD = "[--seam-pad:var(--space-12)] md:[--seam-pad:var(--space-16)] l
  * - Out of the flow and clipped to the 1440 frame: no room reserved, nothing
  *   pushed aside, no sideways scroll. Its section must be positioned.
  * - Drawn at rest; each stroke grows from its tail when the seam enters the view.
+ * - `placement` (ADR-0075 M0-B). `centered` is the drawing above. `below`
+ *   stands the whole group under the seam, its top edge on the seam, for a
+ *   section that follows a coloured band: centred, half the group would stand
+ *   on that band, where the green stroke measures 1.95:1 and the red 1.60:1.
+ *   On the page's own ground every stroke clears 3:1 in the three lists
+ *   (light 4.60 and 5.63, dark 3.89 and 3.18, high contrast 4.81 and 5.88).
  */
 const seamTop = (height: number): string => `max(calc(var(--space-8) - var(--seam-pad)), calc(${unit(height)} / -2))`;
 
-export const SeamLines = () => (
-  <div
-    aria-hidden="true"
-    data-identity-lines=""
-    data-seam-lines=""
-    data-reveal=""
-    className={`pointer-events-none absolute inset-x-0 top-0 mx-auto max-w-[1440px] ${SEAM_PAD} ${ilVariables(false)}`}
-  >
-    <div className="absolute inset-x-0 overflow-clip ltr:hidden" style={{ top: seamTop(A_HEIGHT), height: unit(A_HEIGHT) }}>
-      <GroupA ink="page" className="block" top="0px" entrance={false} reveal />
+export type SeamPlacement = "centered" | "below";
+
+/**
+ * `from`: drawn from that breakpoint only, for a section whose first line
+ * spans the frame below it, so the far corner is not empty there and the
+ * strokes would stand within IL-5's 32px of the words.
+ * - `lg`: the President's message opens on its body text, and a call without
+ *   a photograph on a centred heading (measured 0–16.5px at 360 and 768).
+ * - `md`: the Strategic Plan's pillars, whose heading spans a phone's line
+ *   (measured 3.7–11px at 360); from 768 the heading leaves the corner free.
+ * The section then has no identity element below that width, which
+ * `page-rules.spec.ts` records as pending below it rather than hiding it.
+ */
+export const SeamLines = ({
+  placement = "centered",
+  from = null,
+}: {
+  placement?: SeamPlacement;
+  from?: "md" | "lg" | null;
+}) => {
+  const top = (height: number): string => (placement === "below" ? "0px" : seamTop(height));
+  return (
+    <div
+      aria-hidden="true"
+      data-identity-lines=""
+      data-seam-lines=""
+      data-placement={placement}
+      data-from={from ?? undefined}
+      data-reveal=""
+      className={`pointer-events-none absolute inset-x-0 top-0 mx-auto max-w-[1440px] ${
+        from === "lg" ? "max-lg:hidden " : from === "md" ? "max-md:hidden " : ""
+      }${SEAM_PAD} ${ilVariables(false)}`}
+    >
+      <div className="absolute inset-x-0 overflow-clip ltr:hidden" style={{ top: top(A_HEIGHT), height: unit(A_HEIGHT) }}>
+        <GroupA ink="page" className="block" top="0px" entrance={false} reveal />
+      </div>
+      <div className="absolute inset-x-0 overflow-clip rtl:hidden" style={{ top: top(B_HEIGHT), height: unit(B_HEIGHT) }}>
+        <GroupB ink="page" entrance={false} reveal />
+      </div>
     </div>
-    <div className="absolute inset-x-0 overflow-clip rtl:hidden" style={{ top: seamTop(B_HEIGHT), height: unit(B_HEIGHT) }}>
-      <GroupB ink="page" entrance={false} reveal />
-    </div>
-  </div>
-);
+  );
+};
 
 /** A plain img element, not next/image: the CDN does the resizing, and a
  *  server component cannot hand next/image the loader function that would say
@@ -498,6 +535,7 @@ const portraitSizing = (portrait: { width: number; height: number }) => {
 export const IdentityHero = ({
   titleId,
   title,
+  eyebrow = null,
   lead = null,
   subtitle,
   subtitleField,
@@ -509,6 +547,11 @@ export const IdentityHero = ({
 }: {
   titleId: string;
   title: string;
+  /** A short label above the title, marked by the accent rule: the section of
+   *  the site the page belongs to, as the Strategic Plan prints «الحوكمة
+   *  والاستراتيجية» (Figma `756:211`; an IA §8.1 label, so it is a message
+   *  rather than a stored field). Takes the trail's step in the entrance. */
+  eyebrow?: string | null;
   /** A line between the title and the subtitle at the h2 size, without the
    *  h2 element: on the President's Message, the name that signs it. */
   lead?: string | null;
@@ -602,7 +645,23 @@ export const IdentityHero = ({
                   <GroupA ink={onPhoto ? "photo" : "register"} className="block" top="0px" />
                 </div>
               ) : null}
-              <h1 id={titleId} className="pm-settle relative text-h1 text-balance" style={step(1)}>
+              {eyebrow ? (
+                <p
+                  data-hero-eyebrow=""
+                  className={`pm-settle relative mb-3 flex items-center gap-3 text-body-sm font-bold ${onPhoto ? "opacity-85" : green.muted}`}
+                  style={step(0)}
+                >
+                  <AccentRule onRegister />
+                  {eyebrow}
+                </p>
+              ) : null}
+              {/* Display XL from `md`, Chapter 4 §4.4's role for a large
+                  heading: the title is the message and outranks every ordinal
+                  on the page (owner decision 2026-09-15, ADR-0075). On a phone
+                  it keeps H1: Display XL's 40px reached 16.8px from group A
+                  beside the President's Arabic title at 360, and the ordinals
+                  take H1 there too, so the title is never outranked. */}
+              <h1 id={titleId} className="pm-settle relative text-h1 text-balance md:text-display-xl" style={step(1)}>
                 {title}
               </h1>
               {lead ? (

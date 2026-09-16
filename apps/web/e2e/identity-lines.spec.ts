@@ -155,9 +155,9 @@ const measureClearance = (page: Page) =>
   );
 
 /** Every page whose hero carries the identity lines: the President's Message
- *  (ADR-0069 D10) and Vision & Mission (ADR-0070). `ONLY_ROUTE` narrows a run
- *  to one of them. */
-const ALL_ROUTES = ["/about/president", "/about/governance/vision-mission"];
+ *  (ADR-0069 D10), Vision & Mission (ADR-0070) and the Strategic Plan
+ *  (ADR-0075). `ONLY_ROUTE` narrows a run to one of them. */
+const ALL_ROUTES = ["/about/president", "/about/governance/vision-mission", "/about/governance/strategic-plan"];
 
 const ROUTES = ALL_ROUTES.filter((route) => !process.env.ONLY_ROUTE || route === process.env.ONLY_ROUTE);
 
@@ -278,8 +278,13 @@ for (const route of ROUTES) {
           await page.goto(`/${locale}${route}`, { waitUntil: "domcontentloaded" });
           await page.evaluate(() => document.fonts.ready);
           const photos = await page.locator("main [data-slanted-photo]").count();
-          // Each seam draws one group of two: A in Arabic, B in English.
-          const seams = await page.locator("main [data-seam-lines]").count();
+          // Each seam draws one group of two: A in Arabic, B in English. A set
+          // drawn only from a width (`SeamLines from="lg"`, ADR-0075) is not
+          // displayed below it and draws nothing there, so only displayed sets
+          // are counted.
+          const seams = await page
+            .locator("main [data-seam-lines]")
+            .evaluateAll((sets) => sets.filter((set) => (set as HTMLElement).getClientRects().length > 0).length);
           test.info().annotations.push({ type: "photographs and seams", description: `${photos} and ${seams}` });
 
           // As loaded: a block below the first screen waits to be revealed.
@@ -288,15 +293,21 @@ for (const route of ROUTES) {
           // A page with neither draws no strokes outside the hero.
           if (photos + seams === 0) return;
 
-          // Every block, so that none below the view is left waiting.
+          // Every displayed block, so that none below the view is left waiting.
+          // A block not displayed at this width (a seam set drawn from `md` or
+          // `lg`) cannot be scrolled to or enter the view, and draws nothing to
+          // measure, as with the count above.
           const blocks = page.locator("main [data-reveal]");
           for (let block = 0; block < (await blocks.count()); block += 1) {
-            await blocks.nth(block).scrollIntoViewIfNeeded();
+            const target = blocks.nth(block);
+            if (await target.evaluate((element) => element.getClientRects().length === 0)) continue;
+            await target.scrollIntoViewIfNeeded();
           }
           await page.waitForFunction(
             () =>
               ![...document.querySelectorAll("main [data-reveal]")].some(
-                (block) => (block as HTMLElement).dataset.revealState === "waiting",
+                (block) =>
+                  block.getClientRects().length > 0 && (block as HTMLElement).dataset.revealState === "waiting",
               ),
           );
           // Revealed: every frame of the strokes growing and the pictures sliding, then at rest.

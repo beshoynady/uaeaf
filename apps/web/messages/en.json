@@ -86,6 +86,7 @@
     "contact-us": "Contact us",
     "president-message": "President's Message",
     "vision-mission": "Vision & Mission",
+    "strategic-plan": "Strategic Plan",
     "breadcrumbLabel": "Breadcrumb"
   },
   "Sections": {
@@ -169,5 +170,11 @@
   },
   "Preparing": {
     "status": "This page is being prepared."
+  },
+  "StrategicPlan": {
+    "phasesLabel": "Phases of the strategic plan",
+    "metricsLabel": "Performance indicators",
+    "executionLabel": "Steps of the execution path",
+    "stepOf": "Step {number} of {total}"
   }
 }

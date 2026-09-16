@@ -86,6 +86,13 @@ export const EDITORIAL_ENTITIES: readonly EditorialEntity[] = [
     updatePermission: "visionMissionPage:Update",
     publishPermission: "visionMissionPage:Publish",
   },
+  {
+    entityType: "strategicPlansPage",
+    apiPath: "/strategic-plans-page",
+    readPermission: "strategicPlansPage:Read",
+    updatePermission: "strategicPlansPage:Update",
+    publishPermission: "strategicPlansPage:Publish",
+  },
 ];
 
 /**

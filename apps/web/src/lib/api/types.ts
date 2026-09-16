@@ -179,6 +179,70 @@ export interface VisionMissionPublic {
   publishedAt: string;
 }
 
+/** One entry of a strategic plan list (`PublicPlanItemDto`). `id` is the
+ *  stored item's own id, stable across reorders, so a key or an anchor never
+ *  changes when the editor moves the item (ADR-0075). Hidden items are not
+ *  sent. */
+export interface PlanItemPublic {
+  id: string;
+  title: LocalizedText;
+  description: LocalizedText;
+  displayOrder: number;
+}
+
+/** A phase of the plan's timeline: an item with one of the four phase icons. */
+export interface PlanPhasePublic extends PlanItemPublic {
+  iconKey: string;
+}
+
+/** A key performance indicator: the figure as stored text ("2030", "+30%")
+ *  and its label. */
+export interface PlanMetricPublic {
+  id: string;
+  value: string;
+  label: LocalizedText;
+  displayOrder: number;
+}
+
+/** A step of the execution path; its description is optional. */
+export interface PlanStepPublic {
+  id: string;
+  title: LocalizedText;
+  description: LocalizedText | null;
+  displayOrder: number;
+}
+
+/** `StrategicPlanPublicResponseDto` from
+ *  `GET /strategic-plans-page/current/public`: the newest Live publication,
+ *  field by field (ADR-0075). */
+export interface StrategicPlanPublic {
+  heroTitle: LocalizedText;
+  heroSubtitle: LocalizedText;
+  heroImage: PublicImage | null;
+  introHeading: LocalizedText;
+  introText: LocalizedText;
+  introImage: PublicImage | null;
+  phasesTitle: LocalizedText | null;
+  phases: PlanPhasePublic[];
+  pillarsTitle: LocalizedText;
+  pillarsText: LocalizedText | null;
+  pillars: PlanItemPublic[];
+  objectivesTitle: LocalizedText;
+  objectivesImage: PublicImage | null;
+  objectives: PlanItemPublic[];
+  metricsTitle: LocalizedText;
+  metricsImage: PublicImage | null;
+  metrics: PlanMetricPublic[];
+  executionTitle: LocalizedText;
+  executionText: LocalizedText | null;
+  executionSteps: PlanStepPublic[];
+  ctaTitle: LocalizedText;
+  ctaText: LocalizedText | null;
+  ctaImage: PublicImage | null;
+  seo: PresidentMessagePublic["seo"];
+  publishedAt: string;
+}
+
 /** `MediaAssetPublicResponseDto` from `GET /media-assets/public?ids=…`.
  *  Excludes `storageKey`, `checksum` and `albumId` upstream. */
 export interface MediaAssetPublic {

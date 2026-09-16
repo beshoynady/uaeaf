@@ -246,6 +246,19 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
     schemaType: "AboutPage",
     listEndpoint: null,
   },
+  {
+    // Its own workflow-governed entity (ADR-0075), under About › Governance &
+    // Strategy as IA §8.1 places it. Moved here from `PREPARING_PAGES` the day
+    // its full page was built, under the same route, so no link changed.
+    key: "strategic-plan",
+    route: "/about/governance/strategic-plan",
+    apiPath: "/strategic-plans-page/current/public",
+    messageKey: "strategic-plan",
+    register: "green",
+    registerBasis: "§3.34.2 names Strategic Plan in the Quiet/Institutional row, 'White + Green only' — the board's row.",
+    schemaType: "AboutPage",
+    listEndpoint: null,
+  },
 ];
 
 export function findPublicPage(key: string): PublicPage | undefined {
@@ -300,13 +313,6 @@ export const PREPARING_PAGES: readonly PreparingPage[] = [
     register: "green",
     registerBasis:
       "Derived (CLAUDE.md §1a): guide §3.3 gives administration green; the structure is the board's and committees' own subject, §3.34.2 Quiet/Institutional.",
-  },
-  {
-    key: "strategic-plan",
-    route: "/about/governance/strategic-plan",
-    titleKey: "Nav.strategicPlan",
-    register: "green",
-    registerBasis: "§3.34.2 names Strategic Plan in the Quiet/Institutional row, 'White + Green only' — the board's row.",
   },
   {
     key: "policies",

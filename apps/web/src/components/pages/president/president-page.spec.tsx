@@ -158,6 +158,21 @@ describe("PresidentMessage", () => {
     expect(figure.querySelector("[data-quote-mark]")).toHaveAttribute("aria-hidden", "true");
     expect(figure.querySelector("[data-reveal-part='rule']")!.className).toContain("var(--color-border-accent)");
   });
+  // Rule 1 (guide §٨): the message follows the green portrait hero with no
+  // photograph of its own, so it carries the identity strokes below the seam,
+  // on the page's ground, where they clear 3:1 (ADR-0075 M0-B; the finding
+  // ADR-0074 D8 left pending).
+  it("draws the identity strokes below the seam with the hero, reserving no room", () => {
+    const { container } = render(<PresidentMessage record={RECORD} locale="ar" />);
+    const section = container.querySelector("section")!;
+    expect(section.className).toContain("relative");
+    const seam = section.querySelector<HTMLElement>("[data-seam-lines]")!;
+    expect(seam).not.toBeNull();
+    expect(seam).toHaveAttribute("data-placement", "below");
+    expect(seam).toHaveAttribute("aria-hidden", "true");
+    expect(container.querySelector("[data-identity-band]")).toBeNull();
+  });
+
   it("draws no figure when the record has no pull-quote", () => {
     const { container } = render(<PresidentMessage record={{ ...RECORD, pullQuote: null }} locale="en" />);
     expect(container.querySelector("figure")).toBeNull();

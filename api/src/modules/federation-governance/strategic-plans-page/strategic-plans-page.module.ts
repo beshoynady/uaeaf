@@ -7,6 +7,7 @@ import { StrategicPlansPagesController } from './strategic-plans-page.controller
 import { PublicationsModule } from '../../workflow/publications/publications.module.js';
 import { RevisionsModule } from '../../workflow/revisions/revisions.module.js';
 import { MediaAssetsModule } from '../../media-center/media-assets/media-assets.module.js';
+import { PublishingModule } from '../../workflow/publishing/publishing.module.js';
 
 @Module({
   imports: [
@@ -14,6 +15,8 @@ import { MediaAssetsModule } from '../../media-center/media-assets/media-assets.
     PublicationsModule,
     RevisionsModule,
     MediaAssetsModule,
+    // Policy resolution, direct publish, submit, restore, editorial state.
+    PublishingModule,
   ],
   controllers: [StrategicPlansPagesController],
   providers: [StrategicPlansPagesRepository, StrategicPlansPagesService],

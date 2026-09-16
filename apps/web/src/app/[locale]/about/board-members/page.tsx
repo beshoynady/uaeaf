@@ -7,6 +7,7 @@ import {
   text,
 } from "@/components/pages/static-page-screen";
 import { Card } from "@/components/ui/card";
+import { SeamLines } from "@/components/ui/identity-hero";
 import { Section } from "@/components/ui/section";
 import { fetchPublic } from "@/lib/api/public-client";
 import type { FederationPersonnelPublic } from "@/lib/api/types";
@@ -59,7 +60,11 @@ export default async function BoardMembersPage({
       itemNames={members.map((member) => member.fullName[locale])}
     >
       {members.length > 0 ? (
-        <Section labelledBy="board-members-heading" className="py-12 md:py-16">
+        <Section labelledBy="board-members-heading" className="relative py-12 md:py-16">
+          {/* Rule 1 (guide §٨): the list follows the green listing hero and
+              prints no photograph, so the identity strokes stand below the
+              seam, wholly on the page's ground (ADR-0075 M0-B). */}
+          <SeamLines placement="below" />
           <h2 id="board-members-heading" className="text-h2">
             {t("boardMembers")}
           </h2>

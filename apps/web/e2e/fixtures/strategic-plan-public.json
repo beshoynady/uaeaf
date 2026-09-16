@@ -1,0 +1,71 @@
+{
+  "heroTitle": { "ar": "الخطة الاستراتيجية", "en": "Strategic Plan" },
+  "heroSubtitle": {
+    "ar": "خارطة طريق واضحة لتطوير ألعاب القوى الإماراتية، وتعزيز الأداء الرياضي، وبناء منظومة مستدامة تضع الرياضي في قلب المستقبل.",
+    "en": "A clear roadmap for developing athletics in the UAE, raising sporting performance, and building a sustainable system that places the athlete at the heart of the future."
+  },
+  "heroImage": null,
+  "introHeading": { "ar": "خارطة طريق نحو المستقبل", "en": "A Roadmap to the Future" },
+  "introText": {
+    "ar": "تمثل الخطة الاستراتيجية إطارًا متكاملًا لتوجيه أعمال الاتحاد وتحديد أولوياته، وتحويل الطموحات إلى أهداف قابلة للتنفيذ والقياس.",
+    "en": "The Strategic Plan is an integrated framework that directs the Federation's work, sets its priorities, and turns ambition into objectives that can be delivered and measured."
+  },
+  "introImage": null,
+  "phasesTitle": null,
+  "phases": [
+    { "id": "6aa5001000000000000000e1", "title": { "ar": "الأساس", "en": "Foundation" }, "description": { "ar": "بناء منظومة مؤسسية قوية ترتكز على الحوكمة والكفاءة.", "en": "Building a strong institutional system grounded in governance and competence." }, "iconKey": "layers", "displayOrder": 1 },
+    { "id": "6aa5001000000000000000e2", "title": { "ar": "التطوير", "en": "Development" }, "description": { "ar": "الاستثمار في الرياضيين والمواهب والكفاءات الفنية.", "en": "Investing in athletes, talent and technical expertise." }, "iconKey": "trending-up", "displayOrder": 2 },
+    { "id": "6aa5001000000000000000e3", "title": { "ar": "التنافسية", "en": "Competitiveness" }, "description": { "ar": "رفع مستوى الأداء وتعزيز حضور ألعاب القوى الإماراتية.", "en": "Raising performance and strengthening the presence of UAE athletics." }, "iconKey": "trophy", "displayOrder": 3 },
+    { "id": "6aa5001000000000000000e4", "title": { "ar": "الأثر", "en": "Impact" }, "description": { "ar": "تحقيق نتائج مستدامة وصناعة إرث رياضي للأجيال القادمة.", "en": "Delivering sustainable results and creating a sporting legacy for future generations." }, "iconKey": "sparkles", "displayOrder": 4 }
+  ],
+  "pillarsTitle": { "ar": "محاورنا الاستراتيجية", "en": "Our Strategic Pillars" },
+  "pillarsText": {
+    "ar": "نركز جهودنا على مجموعة من الأولويات التي تشكل الأساس لتحقيق رؤيتنا وتطوير منظومة ألعاب القوى.",
+    "en": "We focus our efforts on a set of priorities that form the foundation for realising our vision and developing the athletics system."
+  },
+  "pillars": [
+    { "id": "6aa5001000000000000000e5", "title": { "ar": "تطوير الرياضيين", "en": "Athlete Development" }, "description": { "ar": "توفير منظومة متكاملة لدعم الرياضيين ورفع مستويات الأداء والتنافسية.", "en": "Providing an integrated system that supports athletes and raises performance and competitiveness." }, "displayOrder": 1 },
+    { "id": "6aa5001000000000000000e6", "title": { "ar": "اكتشاف المواهب", "en": "Talent Identification" }, "description": { "ar": "توسيع نطاق اكتشاف المواهب وتطوير مسارات واضحة للانتقال من الموهبة إلى الإنجاز.", "en": "Widening talent identification and developing clear pathways from talent to achievement." }, "displayOrder": 2 },
+    { "id": "6aa5001000000000000000e7", "title": { "ar": "التميز الرياضي", "en": "Sporting Excellence" }, "description": { "ar": "تعزيز جودة التدريب والمنافسات والبرامج الفنية بما يواكب المعايير الدولية.", "en": "Enhancing the quality of training, competitions and technical programmes in line with international standards." }, "displayOrder": 3 },
+    { "id": "6aa5001000000000000000e8", "title": { "ar": "تطوير الكفاءات", "en": "Capability Development" }, "description": { "ar": "تمكين المدربين والحكام والإداريين من خلال برامج تطوير وتأهيل مستمرة.", "en": "Empowering coaches, officials and administrators through continuous development and qualification programmes." }, "displayOrder": 4 },
+    { "id": "6aa5001000000000000000e9", "title": { "ar": "الحوكمة المؤسسية", "en": "Institutional Governance" }, "description": { "ar": "تطوير منظومة إدارية فعالة تقوم على الشفافية والمساءلة وجودة اتخاذ القرار.", "en": "Developing an effective administrative system built on transparency, accountability and sound decision-making." }, "displayOrder": 5 },
+    { "id": "6aa5001000000000000000ea", "title": { "ar": "الشراكة والاستدامة", "en": "Partnership and Sustainability" }, "description": { "ar": "بناء شراكات فاعلة مع الأندية والمؤسسات والقطاع الخاص لدعم مستقبل ألعاب القوى.", "en": "Building effective partnerships with clubs, institutions and the private sector to support the future of athletics." }, "displayOrder": 6 }
+  ],
+  "objectivesTitle": { "ar": "من المحاور إلى أهداف ملموسة", "en": "From Pillars to Tangible Objectives" },
+  "objectivesImage": null,
+  "objectives": [
+    { "id": "6aa5001000000000000000eb", "title": { "ar": "رفع مستوى الأداء الرياضي", "en": "Raising Sporting Performance" }, "description": { "ar": "تطوير بيئة التدريب والإعداد بما يساعد الرياضيين على الوصول إلى مستويات تنافسية أعلى.", "en": "Developing the training and preparation environment so athletes can reach higher competitive levels." }, "displayOrder": 1 },
+    { "id": "6aa5001000000000000000ec", "title": { "ar": "توسيع قاعدة المواهب", "en": "Expanding the Talent Base" }, "description": { "ar": "إنشاء مسارات أكثر فعالية لاكتشاف المواهب وتطويرها في مختلف مراحلها.", "en": "Creating more effective pathways to identify and develop talent at every stage." }, "displayOrder": 2 },
+    { "id": "6aa5001000000000000000ed", "title": { "ar": "تعزيز المشاركة", "en": "Strengthening Participation" }, "description": { "ar": "زيادة انتشار ألعاب القوى وتشجيع المشاركة في مختلف الفئات والمجتمعات.", "en": "Increasing the reach of athletics and encouraging participation across all age groups and communities." }, "displayOrder": 3 },
+    { "id": "6aa5001000000000000000ee", "title": { "ar": "تطوير منظومة المنافسات", "en": "Developing the Competition System" }, "description": { "ar": "الارتقاء بجودة البطولات والفعاليات وتنظيمها وفق أفضل الممارسات.", "en": "Raising the quality of championships and events and organising them to best practice." }, "displayOrder": 4 },
+    { "id": "6aa5001000000000000000ef", "title": { "ar": "تعزيز الحوكمة", "en": "Strengthening Governance" }, "description": { "ar": "بناء منظومة مؤسسية أكثر كفاءة وشفافية واستدامة.", "en": "Building a more efficient, transparent and sustainable institutional system." }, "displayOrder": 5 }
+  ],
+  "metricsTitle": { "ar": "نقيس التقدم، ونصنع الأثر", "en": "We Measure Progress and Create Impact" },
+  "metricsImage": null,
+  "metrics": [
+    { "id": "6aa5001000000000000000f1", "value": "2030", "label": { "ar": "أفق الخطة الاستراتيجية", "en": "Strategic plan horizon" }, "displayOrder": 1 },
+    { "id": "6aa5001000000000000000f2", "value": "15", "label": { "ar": "برنامجًا للتطوير والتأهيل", "en": "Development and qualification programmes" }, "displayOrder": 2 },
+    { "id": "6aa5001000000000000000f3", "value": "+30%", "label": { "ar": "زيادة المشاركة في المنافسات", "en": "Increase in competition participation" }, "displayOrder": 3 },
+    { "id": "6aa5001000000000000000f4", "value": "+25%", "label": { "ar": "نمو قاعدة المواهب", "en": "Growth of the talent base" }, "displayOrder": 4 }
+  ],
+  "executionTitle": { "ar": "نحوّل الاستراتيجية إلى واقع", "en": "Turning Strategy into Reality" },
+  "executionText": {
+    "ar": "لا تقاس الاستراتيجية بما نكتبه، بل بما ننجزه. لذلك نربط كل هدف بمبادرات واضحة ومؤشرات أداء تساعدنا على متابعة التقدم وتحقيق الأثر.",
+    "en": "A strategy is measured not by what we write but by what we deliver. That is why every objective is tied to clear initiatives and performance indicators that let us track progress and achieve impact."
+  },
+  "executionSteps": [
+    { "id": "6aa5001000000000000000f5", "title": { "ar": "المحور الاستراتيجي", "en": "Strategic Pillar" }, "description": null, "displayOrder": 1 },
+    { "id": "6aa5001000000000000000f6", "title": { "ar": "الهدف", "en": "Objective" }, "description": null, "displayOrder": 2 },
+    { "id": "6aa5001000000000000000f7", "title": { "ar": "المبادرة", "en": "Initiative" }, "description": null, "displayOrder": 3 },
+    { "id": "6aa5001000000000000000f8", "title": { "ar": "القياس", "en": "Measurement" }, "description": null, "displayOrder": 4 },
+    { "id": "6aa5001000000000000000f9", "title": { "ar": "الأثر", "en": "Impact" }, "description": null, "displayOrder": 5 }
+  ],
+  "ctaTitle": { "ar": "نبني اليوم مستقبل ألعاب القوى الإماراتية", "en": "Building the Future of UAE Athletics Today" },
+  "ctaText": {
+    "ar": "مع رؤية واضحة، واستراتيجية طموحة، وعمل مستمر نحو صناعة أبطال وإنجازات تستمر للأجيال القادمة.",
+    "en": "With a clear vision, an ambitious strategy and sustained work towards creating champions and achievements that endure for generations to come."
+  },
+  "ctaImage": null,
+  "seo": null,
+  "publishedAt": "2026-09-15T12:00:00.000Z"
+}

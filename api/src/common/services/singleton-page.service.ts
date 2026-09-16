@@ -14,11 +14,10 @@ import { BaseRepository } from '../repositories/base.repository.js';
  *
  * Not applied to `visionMissionPage`/`strategicPlansPage`/
  * `aboutFederationPage`/`presidentMessagePage`: those are workflow-governed
- * editorial content rather than hero wrappers, and `strategicPlansPage`
- * in particular carries `periodStart`/`periodEnd`/`documentVersion`, which
- * suggests successive plan periods may legitimately coexist. The live board
- * states no singleton constraint for them, so none is invented here —
- * flagged rather than assumed.
+ * editorial content rather than hero wrappers, and each page's public route
+ * picks the newest Live publication among its rows. The live board states
+ * no singleton constraint for them, so none is invented here — flagged
+ * rather than assumed.
  */
 export abstract class SingletonPageService<TDoc> {
   protected constructor(protected readonly repository: BaseRepository<TDoc>) {}

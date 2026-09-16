@@ -19,10 +19,12 @@ import type { LocalizedText, PublicImage, VisionMissionPublic } from "@/lib/api/
  * - Its name is its `h2`, marked by the accent rule, so a reader moving by
  *   headings hears "Vision", "Mission", "Goals", "Values". The one-line
  *   statement under it takes the h2 size without the element.
- * - Its ordinal, 01 and 02, at `display-2xl` in its item's ink: the two
- *   statements are a closed set, so the first takes item 1's colour and the
- *   second item 2's (ADR-0072 D1). Out of the accessibility tree: the name
- *   already says which statement it is.
+ * - Its ordinal, 01 and 02, at `display-l` from `md` and H1 on a phone, in
+ *   its item's ink: the two statements are a closed set, so the first takes
+ *   item 1's colour and the second item 2's (ADR-0072 D1). Out of the
+ *   accessibility tree: the name already says which statement it is. One step
+ *   under the hero's title at every width: the title is the message, the
+ *   ordinal is punctuation (owner decision 2026-09-15, ADR-0075).
  * - With a photograph, the words hold seven of the twelve columns from `lg` and
  *   the photograph the other five, cut on a slant and running to the page edge
  *   (`SlantedPhoto`). The ordinal stands between the words and the picture.
@@ -96,7 +98,7 @@ const Statement = ({
           aria-hidden="true"
           data-numeral=""
           data-reveal-part="numeral"
-          className={`shrink-0 text-display-2xl tabular-nums ${itemInk(tone)} ${image && imageSide === "end" ? "lg:order-last" : ""}`}
+          className={`shrink-0 text-h1 tabular-nums md:text-display-l ${itemInk(tone)} ${image && imageSide === "end" ? "lg:order-last" : ""}`}
         >
           {ordinal}
         </span>

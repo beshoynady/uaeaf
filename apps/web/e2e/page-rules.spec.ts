@@ -89,6 +89,17 @@ const ALL_ROUTES: RoutePlan[] = [
       holds: (sections) => sections.length > 1,
     },
   },
+  // ADR-0075: eight sections; the three numbered lists (phases, pillars,
+  // objectives) and the numbered execution steps are all read by rule 4.
+  {
+    route: "/about/governance/strategic-plan",
+    numbered: true,
+    minimumSections: 8,
+    published: {
+      reason: "the record carries no photographs (the CI fixture), so the composition these rules read is not the published one",
+      holds: (sections) => sections.some((section) => section.kind !== "hero" && section.photographs > 0),
+    },
+  },
 ];
 
 const ROUTES = ALL_ROUTES.filter((plan) => !process.env.ONLY_ROUTE || plan.route === process.env.ONLY_ROUTE);
@@ -113,29 +124,205 @@ if (ROUTES.length === 0 && READER_ROUTES.length === 0) {
   );
 }
 
-const PENDING: Record<string, Record<string, Partial<Record<Rule, string>>>> = {
+/** A finding held for the owner: everywhere, or only below a width where the
+ *  remedy cannot be drawn (`SeamLines from="lg"`). */
+type Held = string | { reason: string; below: number };
+
+// ADR-0074 D8's three rule 1 findings and `SeamLines placement="below"`
+// (ADR-0075 M0-B): the strokes stand wholly on the page's ground after a
+// coloured band. The board's list takes them at every width. The President's
+// message and call take them from `lg`: below it their first line spans the
+// frame, and the guard measured the strokes 0–16.5px from it (IL-5), so the
+// two findings stay recorded for those widths only.
+const PENDING: Record<string, Record<string, Partial<Record<Rule, Held>>>> = {
   "/about/governance/vision-mission": {},
-  // ADR-0074 D8: calibration findings no existing component fixes, presented to the owner.
   "/about/president": {
     "(unnamed)": {
-      rule1: "the message after the green portrait hero: seam lines there would stand half on the green register, where their green and red measure under 3:1",
+      rule1: { reason: "the message opens on its body text across the frame below lg, leaving no corner 32px clear of words for the strokes", below: 1024 },
     },
     "vision-mission-cta-title": {
-      rule1: "the call on the neutral ground after the green values band: no photograph field, and seam lines would cross that band",
+      rule1: { reason: "the call's heading spans the frame below lg, leaving no corner 32px clear of words for the strokes; no photograph field", below: 1024 },
     },
   },
-  "/about/board-members": {
-    "board-members-heading": {
-      rule1: "the members' list after the green hero: seam lines would cross the green register, and the list has no photograph",
+  "/about/board-members": {},
+  // ADR-0075: the pillars follow the green phases band with no photograph;
+  // their strokes are drawn from md, because on a phone the heading spans the
+  // line and IL-5 measured the strokes 3.7–11px from it. Presented to the owner.
+  "/about/governance/strategic-plan": {
+    "strategic-plan-pillars-title": {
+      rule1: { reason: "the pillars' heading spans a phone's line below md, leaving no corner 32px clear of words for the strokes; the section has no photograph", below: 768 },
     },
   },
 };
+
+const heldAt = (held: Held | undefined, width: number): string | undefined =>
+  typeof held === "string" ? held : held && width < held.below ? held.reason : undefined;
 
 const VIEWPORTS = [
   { width: 1440, height: 900, isMobile: false },
   { width: 768, height: 1024, isMobile: true },
   { width: 390, height: 844, isMobile: true },
 ] as const;
+
+/** The three colour lists (Chapter 7 §7.3), stamped by the boot script from
+ *  `localStorage` before the first paint. */
+const THEMES = ["light", "dark", "high-contrast"] as const;
+
+/** WCAG's floor for a shape or an edge, and ADR-0059 §D2's floor for two
+ *  grounds that read as different regions. */
+const EDGE_FLOOR = 3;
+const GROUND_FLOOR = 1.4;
+
+interface SeamReading {
+  id: string;
+  beforeKind: SectionReading["kind"];
+  /** The two grounds meeting at the seam, and how far apart they measure. */
+  grounds: [string, string];
+  groundContrast: number;
+  /** An edge drawn on either band at the seam: its colour's worst contrast against the two grounds. */
+  edgeContrast: number | null;
+  seamStrokes: number;
+  mirrored: boolean;
+  /** Strokes placed below the seam: whether every sampled point stands on
+   *  the later section, and the worst contrast of their fills on its ground. */
+  below: { onSection: boolean; strokeContrast: number; strokes: number } | null;
+}
+
+/**
+ * Every seam, measured as the page paints it in the current theme: the
+ * computed grounds on either side, any edge the bands draw, the strokes on it.
+ * Contrast is computed from the rendered colours, not from the token files.
+ */
+const readSeams = (page: Page) =>
+  page.evaluate(
+    ({ pointsPerStroke }): SeamReading[] => {
+      const visible = (element: Element) => (element as HTMLElement).getClientRects().length > 0;
+      const main = document.querySelector("main") ?? document.body;
+      const sections = [...main.querySelectorAll<HTMLElement>("section")].filter(
+        (section) => !section.parentElement?.closest("section") && visible(section),
+      );
+
+      const bands: HTMLElement[][] = [];
+      let bottom = -Infinity;
+      for (const section of sections) {
+        const box = section.getBoundingClientRect();
+        const [top, end] = [box.top + scrollY, box.bottom + scrollY];
+        if (bands.length > 0 && top < bottom - 1) {
+          bands[bands.length - 1].push(section);
+          bottom = Math.max(bottom, end);
+        } else {
+          bands.push([section]);
+          bottom = end;
+        }
+      }
+
+      const channel = (v: number) => {
+        const c = v / 255;
+        return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+      };
+      const parse = (color: string): [number, number, number, number] | null => {
+        const m = color.match(/rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)(?:[,\s/]+([\d.]+))?/);
+        return m ? [Number(m[1]), Number(m[2]), Number(m[3]), m[4] === undefined ? 1 : Number(m[4])] : null;
+      };
+      const luminance = (color: string): number | null => {
+        const rgb = parse(color);
+        if (!rgb || rgb[3] === 0) return null;
+        return 0.2126 * channel(rgb[0]) + 0.7152 * channel(rgb[1]) + 0.0722 * channel(rgb[2]);
+      };
+      const contrast = (a: string, b: string): number => {
+        const [x, y] = [luminance(a), luminance(b)];
+        if (x === null || y === null) return 1;
+        const [hi, lo] = x > y ? [x, y] : [y, x];
+        return Math.round(((hi + 0.05) / (lo + 0.05)) * 100) / 100;
+      };
+
+      /** The ground a section paints, or the page's when it paints none (a
+       *  hero standing on its photograph). */
+      const groundOf = (section: HTMLElement): string => {
+        const own = getComputedStyle(section).backgroundColor;
+        return luminance(own) === null ? getComputedStyle(document.body).backgroundColor : own;
+      };
+
+      /** The edge a band draws with a pseudo-element at its top or bottom. */
+      const edgeOf = (section: HTMLElement, side: "top" | "bottom"): string | null => {
+        for (const pseudo of ["::after", "::before"]) {
+          const style = getComputedStyle(section, pseudo);
+          if (style.content === "none" || style.content === "") continue;
+          const width = parseFloat(side === "top" ? style.borderTopWidth : style.borderBottomWidth);
+          const color = side === "top" ? style.borderTopColor : style.borderBottomColor;
+          if (width > 0 && luminance(color) !== null) return color;
+        }
+        return null;
+      };
+
+      const kindOf = (band: HTMLElement[]): SectionReading["kind"] => {
+        const register = band.map((s) => s.dataset.register ?? "neutral").find((n) => n !== "neutral") ?? "neutral";
+        if (band.some((s) => s.querySelector("h1"))) return "hero";
+        if (register !== "neutral") return "band";
+        if (band.some((s) => s.querySelector("li[data-item-tone]"))) return "cards";
+        if (band.some((s) => s.querySelector("[data-slanted-photo]"))) return "statement";
+        return "text";
+      };
+      const sideOf = (band: HTMLElement[]) =>
+        band.map((s) => s.querySelector<HTMLElement>("[data-slanted-photo]")?.dataset.side ?? null).find(Boolean) ?? null;
+
+      const readings: SeamReading[] = [];
+      for (let i = 1; i < bands.length; i += 1) {
+        const before = bands[i - 1];
+        const after = bands[i];
+        const beforeLast = before[before.length - 1];
+        const afterFirst = after[0];
+        const grounds: [string, string] = [groundOf(beforeLast), groundOf(afterFirst)];
+
+        const edges = [edgeOf(beforeLast, "bottom"), edgeOf(afterFirst, "top")].filter((c): c is string => c !== null);
+        const edgeContrast =
+          edges.length > 0 ? Math.max(...edges.map((edge) => Math.min(contrast(edge, grounds[0]), contrast(edge, grounds[1])))) : null;
+
+        const strokes = after.flatMap((s) => [...s.querySelectorAll<HTMLElement>("[data-seam-lines] [data-il-stroke]")]).filter(visible);
+
+        const belowSet = after.flatMap((s) => [...s.querySelectorAll<HTMLElement>('[data-seam-lines][data-placement="below"]')]);
+        let below: SeamReading["below"] = null;
+        if (belowSet.length > 0) {
+          const sectionTop = afterFirst.getBoundingClientRect().top;
+          let onSection = true;
+          let strokeContrast = Infinity;
+          let count = 0;
+          for (const set of belowSet) {
+            for (const stroke of [...set.querySelectorAll<HTMLElement>("[data-il-stroke]")].filter(visible)) {
+              const path = stroke.querySelector("path")!;
+              const matrix = path.getScreenCTM();
+              if (!matrix) continue;
+              count += 1;
+              const length = path.getTotalLength();
+              for (let p = 0; p <= pointsPerStroke; p += 1) {
+                const point = path.getPointAtLength((length * p) / pointsPerStroke);
+                const y = matrix.b * point.x + matrix.d * point.y + matrix.f;
+                if (y < sectionTop - 0.5) onSection = false;
+              }
+              strokeContrast = Math.min(strokeContrast, contrast(getComputedStyle(path).fill, grounds[1]));
+            }
+          }
+          below = { onSection, strokeContrast: count > 0 ? strokeContrast : 0, strokes: count };
+        }
+
+        const mirrored =
+          kindOf(before) === "statement" && kindOf(after) === "statement" && sideOf(before) !== sideOf(after);
+
+        readings.push({
+          id: after.map((s) => s.getAttribute("aria-labelledby") ?? "(unnamed)").join(" + "),
+          beforeKind: kindOf(before),
+          grounds,
+          groundContrast: contrast(grounds[0], grounds[1]),
+          edgeContrast,
+          seamStrokes: strokes.length,
+          mirrored,
+          below,
+        });
+      }
+      return readings;
+    },
+    { pointsPerStroke: 64 },
+  );
 
 /** The page's own bands, in document order, and what each is made of. */
 const readSections = (page: Page) =>
@@ -352,7 +539,7 @@ for (const plan of ROUTES) {
           for (const rule of Object.keys(passes) as Rule[]) {
             sections.forEach((section, index) => {
               const broken = !passes[rule](sections, index);
-              const held = pending[section.id]?.[rule];
+              const held = heldAt(pending[section.id]?.[rule], viewport.width);
               if (broken && !held) violations.push(`${rule}: ${section.id} (${section.kind})`);
               if (!broken && held) fixed.push(`${rule}: ${section.id} passes now; remove it from PENDING`);
             });
@@ -360,6 +547,51 @@ for (const plan of ROUTES) {
           expect(violations, "sections that break a rule").toEqual([]);
           expect(fixed, "pending findings that no longer break their rule").toEqual([]);
         });
+
+        // Rule 3 as ADR-0075 M0-A reads it: the seam is marked in every colour
+        // list. A register change counts where the two grounds measure 1.4:1
+        // apart, and in high contrast — where every register is white — only
+        // with a drawn edge at 3:1 against both grounds. Strokes placed below
+        // the seam (M0-B) must stand wholly on the later section and clear 3:1
+        // on its ground. Measured at this viewport in the three lists, on the
+        // published composition only.
+        if (viewport.width === 1440) {
+          for (const theme of THEMES) {
+            test(`rule 3 in ${theme}: every seam is marked, and strokes below a seam stand on their section at 3:1`, async ({ page }) => {
+              await page.addInitScript((stored) => window.localStorage.setItem("uaeaf-theme", stored), theme);
+              await page.goto(`/${locale}${route}`, { waitUntil: "domcontentloaded" });
+              await page.evaluate(() => document.fonts.ready);
+              expect(await page.evaluate(() => document.documentElement.dataset.theme), "the theme is stamped").toBe(theme);
+
+              const sections = await readSections(page);
+              test.skip(!plan.published.holds(sections), plan.published.reason);
+
+              const seams = await readSeams(page);
+              test.info().annotations.push({ type: `seams in ${theme}`, description: JSON.stringify(seams) });
+              expect(seams.length, "seams were found to measure").toBe(sections.length - 1);
+
+              const unmarked = seams
+                .filter(
+                  (seam) =>
+                    !(
+                      seam.beforeKind === "hero" ||
+                      seam.seamStrokes > 0 ||
+                      seam.mirrored ||
+                      seam.groundContrast >= GROUND_FLOOR ||
+                      (seam.edgeContrast ?? 0) >= EDGE_FLOOR
+                    ),
+                )
+                .map((seam) => `${seam.id}: grounds ${seam.groundContrast}, edge ${seam.edgeContrast ?? "none"}`);
+              expect(unmarked, "seams with no visible separator in this list").toEqual([]);
+
+              for (const seam of seams.filter((s) => s.below)) {
+                expect(seam.below!.strokes, `${seam.id}: strokes below the seam were measured`).toBeGreaterThan(0);
+                expect(seam.below!.onSection, `${seam.id}: every stroke point stands on the later section`).toBe(true);
+                expect(seam.below!.strokeContrast, `${seam.id}: the strokes' worst contrast on the section's ground`).toBeGreaterThanOrEqual(EDGE_FLOOR);
+              }
+            });
+          }
+        }
 
         test("rule 6: every picture offered as content carries an alternative text in the page's language", async ({ page }) => {
           await page.goto(`/${locale}${route}`, { waitUntil: "domcontentloaded" });

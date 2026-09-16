@@ -1,6 +1,6 @@
 // The public API as the browser checks need it in CI, where no database and no
-// NestJS app run: the President's Message and the Vision & Mission page, and a
-// 404 for everything else. `fetchPublic` already treats a 404 as "no content",
+// NestJS app run: the President's Message, the Vision & Mission page and the
+// Strategic Plan, and a 404 for everything else. `fetchPublic` already treats a 404 as "no content",
 // so the header, footer and every other read on the page render exactly as
 // they do when an optional record is missing.
 //
@@ -15,6 +15,7 @@ const fixture = (name) => readFileSync(new URL(`./fixtures/${name}`, import.meta
 const ROUTES = new Map([
   ["/api/v1/president-message-page/current/public", fixture("president-message-public.json")],
   ["/api/v1/vision-mission-page/current/public", fixture("vision-mission-public.json")],
+  ["/api/v1/strategic-plans-page/current/public", fixture("strategic-plan-public.json")],
 ]);
 
 const port = Number(process.env.FIXTURE_API_PORT ?? 3000);

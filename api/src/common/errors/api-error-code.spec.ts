@@ -44,6 +44,18 @@ describe('isApiErrorCode', () => {
     expect(isApiErrorCode('impliedReadMissing')).toBe(true);
   });
 
+  it('carries the strategic plan list refusals', () => {
+    // Each is thrown with a distinct body the dashboard branches on: a list
+    // left with nothing visible, a reorder that is not a permutation, a list
+    // name no section has, and a list longer than one row can hold. Outside
+    // the vocabulary all four arrive as `badRequest`, which is the same
+    // sentence for four different fixes.
+    expect(isApiErrorCode('listNeedsVisibleItem')).toBe(true);
+    expect(isApiErrorCode('invalidListOrder')).toBe(true);
+    expect(isApiErrorCode('unknownList')).toBe(true);
+    expect(isApiErrorCode('listTooLong')).toBe(true);
+  });
+
   it('rejects anything outside it', () => {
     // A typo in a throw site must degrade to the status default rather than
     // reach a client that has no branch for it.
