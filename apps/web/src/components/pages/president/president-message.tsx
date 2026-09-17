@@ -37,7 +37,9 @@ import type { PresidentMessagePublic } from "@/lib/api/types";
  *   Below `lg` the body opens the section across the frame and the guard
  *   measured the strokes 0px from it, so they are not drawn there and the
  *   finding stays recorded for those widths. The section is positioned for
- *   them and reserves no room.
+ *   them and reserves no room. They keep their lg size at xl (`capUnit="lg"`):
+ *   grown, group B stood 31.63px from the English first paragraph at 1280 and
+ *   1366, under IL-5's 32px.
  *
  * Body paragraphs never move. The quote and the signature are marked for the
  * one-shot reveal (`reveal-once.tsx`); the server HTML is complete and at rest.
@@ -108,7 +110,7 @@ export const PresidentMessage = ({ record, locale }: { record: PresidentMessageP
 
   return (
     <Section enter={false} className="relative py-12 md:py-16">
-      <SeamLines placement="below" from="lg" />
+      <SeamLines placement="below" from="lg" capUnit="lg" />
       <article className={`mx-auto ${MEASURE[locale]} text-body text-[color:var(--color-text-secondary)] lg:max-w-none`}>
         <div className={`flex flex-col gap-4 text-pretty lg:grid ${COLUMNS[locale]} lg:gap-x-16`}>
           {first}

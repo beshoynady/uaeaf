@@ -138,6 +138,6 @@ describe("ConfirmDialog", () => {
   it("uses the destructive variant when told the action removes something", () => {
     renderDialog({ tone: "destructive", confirmLabel: "حذف" });
 
-    expect(screen.getByRole("button", { name: "حذف" }).className).toMatch(/--color-semantic-error/);
+    expect(screen.getByRole("button", { name: "حذف" }).className).toMatch(/--button-danger-background/);
   });
 });

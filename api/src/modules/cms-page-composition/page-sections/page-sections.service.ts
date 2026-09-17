@@ -1,10 +1,13 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { PageSectionsRepository } from './page-sections.repository.js';
 import type { PageSectionDocument } from './schemas/page-sections.schema.js';
 import { CreatePageSectionDto } from './dto/create-page-sections.dto.js';
+import { UpdatePageSectionDto } from './dto/update-page-sections.dto.js';
 import type { PageSectionPublicResponseDto } from './dto/page-section-public-response.dto.js';
 import { selectVisibleInWindow } from '../../../common/utils/visibility-window.util.js';
+import { assertHeroSettings } from './hero-settings.js';
+import { wasSent } from '../../../common/utils/partial-update.util.js';
 
 /** Implements: pageSections collection, Domain 11 — CMS & Page
  *  Composition. */
@@ -21,6 +24,9 @@ export class PageSectionsService {
     if (visibleFrom && visibleUntil && visibleUntil < visibleFrom) {
       throw new BadRequestException('visibleUntil must not be earlier than visibleFrom.');
     }
+    // A HERO section's settings have rules of their own; every other section's
+    // configuration stays free-form.
+    if (dto.sectionType === 'HERO') assertHeroSettings(dto.configuration);
 
     return this.repository.create({
       pageId: new Types.ObjectId(dto.pageId),
@@ -42,8 +48,70 @@ export class PageSectionsService {
     });
   }
 
+  /**
+   * Applies a partial edit, checking the window on the section the edit
+   * *produces* rather than on the body.
+   *
+   * A body carrying only `visibleUntil` reads as valid on its own and can
+   * still invert a window against a stored `visibleFrom` — the same state
+   * `create` refuses. So the merged pair is what gets checked.
+   *
+   * @throws NotFoundException when no such section exists.
+   * @throws BadRequestException when the resulting window can never open.
+   */
+  async update(id: string, dto: UpdatePageSectionDto): Promise<PageSectionDocument> {
+    const current = await this.repository.findById(id);
+    if (!current) {
+      throw new NotFoundException('Page section not found.');
+    }
+
+    // Sent means not undefined (`wasSent`): an own-key test is true for every
+    // field the pipeline's DTO instance declares, sent or not.
+    const has = (key: keyof UpdatePageSectionDto) => wasSent(dto, key);
+    const visibleFrom = has('visibleFrom')
+      ? (dto.visibleFrom ? new Date(dto.visibleFrom) : null)
+      : current.visibleFrom;
+    const visibleUntil = has('visibleUntil')
+      ? (dto.visibleUntil ? new Date(dto.visibleUntil) : null)
+      : current.visibleUntil;
+    if (visibleFrom && visibleUntil && visibleUntil < visibleFrom) {
+      throw new BadRequestException('visibleUntil must not be earlier than visibleFrom.');
+    }
+
+    if (has('configuration') && current.sectionType === 'HERO') assertHeroSettings(dto.configuration);
+
+    const update: Record<string, unknown> = {};
+    if (has('sectionTitle')) update.sectionTitle = dto.sectionTitle ?? null;
+    if (has('sectionSubtitle')) update.sectionSubtitle = dto.sectionSubtitle ?? null;
+    if (has('itemLimit')) update.itemLimit = dto.itemLimit ?? null;
+    if (has('ctaText')) update.ctaText = dto.ctaText ?? null;
+    if (has('ctaUrl')) update.ctaUrl = dto.ctaUrl ?? null;
+    if (has('visibleFrom')) update.visibleFrom = visibleFrom;
+    if (has('visibleUntil')) update.visibleUntil = visibleUntil;
+    if (dto.displayOrder !== undefined) update.displayOrder = dto.displayOrder;
+    if (dto.enabled !== undefined) update.enabled = dto.enabled;
+    if (dto.visibility !== undefined) update.visibility = dto.visibility;
+    if (dto.selectionMode !== undefined) update.selectionMode = dto.selectionMode;
+    if (dto.items !== undefined) update.items = dto.items.map((itemId) => new Types.ObjectId(itemId));
+    if (has('filters')) update.filters = dto.filters ?? null;
+    if (has('configuration')) update.configuration = dto.configuration ?? null;
+
+    const saved = await this.repository.updateById(id, update);
+    if (!saved) {
+      throw new NotFoundException('Page section not found.');
+    }
+    return saved;
+  }
+
   async findAll(): Promise<PageSectionDocument[]> {
     return this.repository.find();
+  }
+
+  /** One page's sections in display order, for the editor — disabled and
+   *  out-of-window sections included, since that is what the editor edits. */
+  async findByPage(pageId: string): Promise<PageSectionDocument[]> {
+    const sections = await this.repository.find({ pageId: new Types.ObjectId(pageId) });
+    return [...sections].sort((a, b) => a.displayOrder - b.displayOrder);
   }
 
   async findById(id: string): Promise<PageSectionDocument | null> {

@@ -66,3 +66,9 @@ desktop.ini
 # Playwright browser checks (apps/web/e2e)
 test-results/
 playwright-report/
+
+# Local tool state: session buffers, browser-tool snapshots, hook caches
+# (owner decision 2026-09-17). Review screenshots go to the session scratchpad.
+.remember/
+.playwright-mcp/
+**/.impeccable/hook.cache.json

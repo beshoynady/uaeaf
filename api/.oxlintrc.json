@@ -8,7 +8,13 @@
   "categories": {
     "correctness": "error"
   },
-  "rules": {},
+  "rules": {
+    "func-style": [
+      "warn",
+      "expression"
+    ],
+    "prefer-arrow-callback": "warn"
+  },
   "env": {
     "builtin": true
   }

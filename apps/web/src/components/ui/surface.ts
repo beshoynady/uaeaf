@@ -151,24 +151,23 @@ export const FIELD_EDGE =
   "border border-[color:var(--color-border-strong)] hover:border-[color:var(--color-action-default)] active:border-[color:var(--color-action-default)] focus:border-[color:var(--color-action-default)]";
 
 /**
- * The hero, sized to the first screen.
+ * The hero, sized to the first screen: the header plus the hero is the height
+ * of the reader's screen (owner decision 2026-09-16, ADR-0078).
  *
- * `svh`, never bare `vh`: on a phone `vh` measures the viewport with the
- * browser chrome *hidden*, so a `100vh` hero is taller than the screen the
- * reader is actually looking at until they scroll — the content that was
- * supposed to fit is pushed off the bottom by exactly the height of the URL
- * bar. `svh` is the small viewport, chrome shown, which is what "fills the
- * first screen" has to mean.
+ * The rule itself lives once, in `globals.css` as `.hero-first-screen`, beside
+ * `--header-height` — the header's own height, which the header now draws
+ * itself from. This constant only names it, so every hero that uses it picks
+ * the rule up and none restates the arithmetic.
  *
- * The header is `h-24` — a fixed 96px that never shrinks (`site-header.tsx`
- * says so and explains why), so the hero is the screen minus one spacing
- * token rather than minus a literal.
+ * A minimum, never a height: a hero whose content is taller than the screen
+ * grows past the fold rather than clipping it. `svh` over `vh` (with `vh` as
+ * the fallback) and never `dvh` — the reasons are written beside the rule.
  *
  * Chapter 5 §5 caps a mobile hero at 90vh "to avoid completely hiding the
- * content below it on initial load". This satisfies it by construction and by
- * measurement: at 390×844 the hero is 748px, and 90vh is 759.6px.
+ * content below it on initial load". At 390×844 the hero is 748px and 90vh is
+ * 759.6px, so the rule still satisfies it.
  */
-export const HERO_VIEWPORT = "min-h-[calc(100svh-var(--space-24))]";
+export const HERO_VIEWPORT = "hero-first-screen";
 
 /**
  * The hero composition, shared by every page that opens with one.

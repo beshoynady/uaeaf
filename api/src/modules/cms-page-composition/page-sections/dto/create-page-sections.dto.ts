@@ -106,7 +106,7 @@ export class CreatePageSectionDto {
   @IsObject()
   filters?: Record<string, unknown>;
 
-  @ApiProperty({ required: false, description: 'Free-form section-specific settings.' })
+  @ApiProperty({ required: false, description: 'Free-form section-specific settings. For a HERO section: `nextEvent` { isVisible, label{ar,en} (≤52), name{ar,en} (≤52), venue{ar,en} (≤35), startsAt, endsAt (ISO instants, endsAt ≥ startsAt) } and `playback` { autoplay, intervalMs: 5000 | 7000 | 9000 }. Refused with `incompleteNextEvent` (a visible bar with gaps, listed in `missing`), `nextEventEndsBeforeStart`, `heroTextTooLong` or `invalidPlayback`.' })
   @IsOptional()
   @IsObject()
   configuration?: Record<string, unknown>;

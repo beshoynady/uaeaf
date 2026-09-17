@@ -13,6 +13,12 @@ export interface MediaAssetOption {
   id: string;
   caption: LocalizedText;
   url: string;
+  /** Measured by the storage provider at upload, where the record has it. */
+  width?: number;
+  height?: number;
+  altText?: LocalizedText;
+  /** A generated picture, shown as temporary where a screen marks it. */
+  isAiGenerated?: boolean;
 }
 
 /**
@@ -34,7 +40,7 @@ export interface MediaAssetOption {
  * sending them away mid-edit; this answers it in place, and the new image is
  * selected the moment it exists.
  */
-export function MediaPicker({
+export const MediaPicker = ({
   label,
   value,
   images,
@@ -55,7 +61,7 @@ export function MediaPicker({
   /** Lets the screen add the new image to its own list, so it appears in the
    *  grid without a reload. Absent where the page has no list to update. */
   onUploaded?: (image: MediaAssetOption) => void;
-}) {
+}) => {
   const t = useTranslations("SitePages");
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -155,7 +161,7 @@ export function MediaPicker({
       )}
     </fieldset>
   );
-}
+};
 
 /**
  * Putting a new picture into the library from where it is about to be used.
@@ -177,7 +183,7 @@ export function MediaPicker({
  * not deduced. The fields are read from the container instead, and the
  * button is a plain button.
  */
-function UploadPanel({
+const UploadPanel = ({
   disabled,
   busy,
   setBusy,
@@ -187,7 +193,7 @@ function UploadPanel({
   busy: boolean;
   setBusy: (busy: boolean) => void;
   onUploaded: (image: MediaAssetOption) => void;
-}) {
+}) => {
   const t = useTranslations("SitePages");
   const fieldId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -195,7 +201,7 @@ function UploadPanel({
 
   const id = (name: string) => `${fieldId}-${name}`;
 
-  async function submit() {
+  const submit = async () => {
     const panel = panelRef.current;
     if (!panel) return;
 
@@ -272,7 +278,7 @@ function UploadPanel({
     } finally {
       setBusy(false);
     }
-  }
+  };
 
   // Uncontrolled on purpose — see `reset` above, which clears the panel by
   // hand because it is not inside a `<form>`.
@@ -369,9 +375,9 @@ function UploadPanel({
       </button>
     </div>
   );
-}
+};
 
-function Thumbnail({
+const Thumbnail = ({
   image,
   emptyLabel,
   locale,
@@ -379,7 +385,7 @@ function Thumbnail({
   image: MediaAssetOption | null;
   emptyLabel: string;
   locale: AppLocale;
-}) {
+}) => {
   if (!image) {
     return (
       <span className="flex h-[64px] w-[112px] shrink-0 items-center justify-center rounded-[var(--radius-sm)] border border-dashed border-[color:var(--color-border-default)] text-caption text-[color:var(--color-text-muted)]">
@@ -395,4 +401,4 @@ function Thumbnail({
       className="h-[64px] w-[112px] shrink-0 rounded-[var(--radius-sm)] border border-[color:var(--color-border-default)] object-cover"
     />
   );
-}
+};

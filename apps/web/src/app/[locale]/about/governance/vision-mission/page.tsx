@@ -124,8 +124,6 @@ const VisionMissionPage = async ({ params }: { params: Promise<{ locale: AppLoca
         subtitleField="heroSubtitle"
         ground={record.heroImage}
         locale={locale}
-        // A band, not the first screen: the content starts in view (ADR-0071 D6).
-        height="content"
       />
       <VisionMissionStatements record={record} locale={locale} />
       <StrategicGoals record={record} locale={locale} />

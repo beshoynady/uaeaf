@@ -34,6 +34,26 @@ describe("turning the media library into pickable options", () => {
     expect(toMediaOptions([asset({ _id: "broken", file: null })])).toEqual([]);
   });
 
+  /** The hero screen warns about a picture too narrow for the hero and marks
+   *  a generated one as temporary; both need what the library already stores. */
+  it("carries the stored size, the alternative text and the temporary mark", () => {
+    const stored = asset({
+      altText: { ar: "عدّاؤون", en: "Runners" },
+      isAiGenerated: true,
+      file: { url: "https://cdn.example/runners.jpg", mimeType: "image/jpeg", width: 1536, height: 672 },
+    });
+
+    expect(toMediaOptions([stored])[0]).toEqual({
+      id: "asset-1",
+      caption: { ar: "صورة", en: "Image" },
+      url: "https://cdn.example/runners.jpg",
+      width: 1536,
+      height: 672,
+      altText: { ar: "عدّاؤون", en: "Runners" },
+      isAiGenerated: true,
+    });
+  });
+
   it("treats a refused library as an empty one", () => {
     expect(toMediaOptions(null)).toEqual([]);
   });

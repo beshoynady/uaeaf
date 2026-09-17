@@ -1,5 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import { AccentRule } from "./accent-rule";
+import { IDENTITY_RIBBONS } from "./identity-ribbons";
+import { ScrollCue } from "./scroll-cue";
 import { CONTAINER, REGISTER_CLASSES } from "./section";
 import { HERO_MEASURE, HERO_PARALLAX, HERO_SCRIM, HERO_TEXT, HERO_VIEWPORT } from "./surface";
 import type { AppLocale } from "@/i18n/routing";
@@ -59,28 +61,7 @@ import type { PublicImage } from "@/lib/api/types";
  *   the frame's left edge beside it is free, and the hero fits a short phone's
  *   first screen. English keeps the reserve above the title.
  */
-const RIBBONS = {
-  red: {
-    d: "M0 11.5C70.7 10.35 131.3 3.45 190.457 0C196.806 0 202 5.175 202 11.5C202 17.825 196.806 23 190.457 23C131.3 19.55 70.7 12.65 0 11.5Z",
-    width: 202,
-    height: 23,
-  },
-  green: {
-    d: "M0 19C101.15 17.1 187.85 5.7 270.215 0C280.547 0 289 8.55 289 19C289 29.45 280.547 38 270.215 38C187.85 32.3 101.15 20.9 0 19Z",
-    width: 289,
-    height: 38,
-  },
-  ink: {
-    d: "M0 13C80.85 11.7 150.15 3.9 218.006 0C225.153 0 231 5.85 231 13C231 20.15 225.153 26 218.006 26C150.15 22.1 80.85 14.3 0 13Z",
-    width: 231,
-    height: 26,
-  },
-  redSmall: {
-    d: "M0 8.5C50.75 7.65 94.25 2.55 136.3 0C141.085 0 145 3.825 145 8.5C145 13.175 141.085 17 136.3 17C94.25 14.45 50.75 9.35 0 8.5Z",
-    width: 145,
-    height: 17,
-  },
-};
+const RIBBONS = IDENTITY_RIBBONS;
 
 interface Stroke {
   ribbon: (typeof RIBBONS)[keyof typeof RIBBONS];
@@ -154,12 +135,13 @@ const UNIT_TO_KEEP_PORTRAIT = `calc((100vw - var(--il-margin) - ${PORTRAIT_FLOOR
 const IL_UNIT_KEEP_PORTRAIT = "max-md:rtl:[--il-unit:min(calc(var(--space-24)/81.2),var(--il-unit-keep-portrait))]";
 
 /** Per-breakpoint variables the lines, the portrait inset and the title
- *  reserve all read, so the three cannot disagree. */
-const ilVariables = (portrait: boolean): string => [
+ *  reserve all read, so the three cannot disagree. `capAtLg` leaves out the xl
+ *  step, so the lines keep their lg size on wider screens. */
+const ilVariables = (portrait: boolean, capAtLg = false): string => [
   "[--il-unit:calc(var(--space-24)/81.2)]",
   ...(portrait ? [IL_UNIT_KEEP_PORTRAIT] : []),
   "md:[--il-unit:calc((var(--space-24)_+_var(--space-2))/81.2)]",
-  "xl:[--il-unit:calc((var(--space-32)_+_var(--space-16))/81.2)]",
+  ...(capAtLg ? [] : ["xl:[--il-unit:calc((var(--space-32)_+_var(--space-16))/81.2)]"]),
   "[--il-margin:var(--grid-margin-xs)]",
   "sm:[--il-margin:var(--grid-margin-sm)]",
   "md:[--il-margin:var(--grid-margin-md)]",
@@ -466,9 +448,17 @@ export type SeamPlacement = "centered" | "below";
 export const SeamLines = ({
   placement = "centered",
   from = null,
+  capUnit = null,
 }: {
   placement?: SeamPlacement;
   from?: "md" | "lg" | null;
+  /**
+   * `lg`: the lines keep their lg size on xl screens instead of growing, for a
+   * section whose first words sit too close to the grown group. The President's
+   * message in English measured group B 31.63px from its first paragraph at 1280
+   * and 1366 with the xl unit, under IL-5's 32px.
+   */
+  capUnit?: "lg" | null;
 }) => {
   const top = (height: number): string => (placement === "below" ? "0px" : seamTop(height));
   return (
@@ -478,10 +468,11 @@ export const SeamLines = ({
       data-seam-lines=""
       data-placement={placement}
       data-from={from ?? undefined}
+      data-cap-unit={capUnit ?? undefined}
       data-reveal=""
       className={`pointer-events-none absolute inset-x-0 top-0 mx-auto max-w-[1440px] ${
         from === "lg" ? "max-lg:hidden " : from === "md" ? "max-md:hidden " : ""
-      }${SEAM_PAD} ${ilVariables(false)}`}
+      }${SEAM_PAD} ${ilVariables(false, capUnit === "lg")}`}
     >
       <div className="absolute inset-x-0 overflow-clip ltr:hidden" style={{ top: top(A_HEIGHT), height: unit(A_HEIGHT) }}>
         <GroupA ink="page" className="block" top="0px" entrance={false} reveal />
@@ -506,7 +497,7 @@ const cdnSrc = (url: string, width: number): string =>
  * hero past the first screen.
  */
 const PORTRAIT_CAP =
-  "[--pm-portrait-cap:calc(100svh_-_var(--space-24))] lg:[--pm-portrait-cap:calc(100svh_-_var(--space-24)_-_var(--space-8)_-_var(--typography-caption-desktop)_*_1.4_-_var(--space-4)_-_var(--space-8))]";
+  "[--pm-portrait-cap:calc(100svh_-_var(--header-height))] lg:[--pm-portrait-cap:calc(100svh_-_var(--header-height)_-_var(--space-8)_-_var(--typography-caption-desktop)_*_1.4_-_var(--space-4)_-_var(--space-8))]";
 
 /**
  * The portrait's size, known before the picture arrives.
@@ -543,7 +534,6 @@ export const IdentityHero = ({
   portrait = null,
   locale,
   breadcrumb = null,
-  height = "first-screen",
 }: {
   titleId: string;
   title: string;
@@ -566,17 +556,16 @@ export const IdentityHero = ({
    *  photograph under the scrim is a dark ground whatever the page's register
    *  says. */
   breadcrumb?: ReactNode;
-  /**
-   * `first-screen`: with a picture or a portrait the hero fills the first
-   * screen (ADR-0067 D2). `content`: it is a band its content's height whatever
-   * it stands on, for a page whose ADR says so (Vision & Mission, ADR-0071 D6).
-   */
-  height?: "first-screen" | "content";
 }) => {
   const onPhoto = Boolean(ground);
   const green = REGISTER_CLASSES.green;
   const sizing = portrait ? portraitSizing(portrait) : null;
-  const fillsFirstScreen = height === "first-screen" && Boolean(ground || portrait);
+  // Every hero fills the first screen: header plus hero is the screen's
+  // height (owner decision 2026-09-16, ADR-0078), which retires the per-page
+  // `height="content"` band ADR-0071 D6 gave Vision & Mission and the Strategic
+  // Plan. The condition that remains is ADR-0067 D2's own: without a picture or
+  // a portrait there is no composition to fill a screen with.
+  const fillsFirstScreen = Boolean(ground || portrait);
 
   return (
     <section
@@ -711,6 +700,12 @@ export const IdentityHero = ({
           ) : null}
         </div>
       </div>
+
+      {/* The first screen is the whole screen here, so say there is more below
+          (ADR-0079). Below `lg` a portrait stands on the bottom edge where the
+          cue would go (measured: no free 56px at 768, 390 or 360), so there
+          the cue is not drawn rather than drawn over the portrait. */}
+      {fillsFirstScreen ? <ScrollCue className={portrait ? "max-lg:hidden" : ""} /> : null}
     </section>
   );
 };

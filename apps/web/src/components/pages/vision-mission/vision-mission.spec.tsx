@@ -302,28 +302,27 @@ describe("StrategicGoals", () => {
 });
 
 describe("IdentityHero", () => {
-  const hero = (height?: "first-screen" | "content") =>
+  const hero = () =>
     render(
-      <IdentityHero titleId="t" title="الرؤية والرسالة" subtitle="ع" ground={photo("hero")} locale="ar" height={height} />,
+      <IdentityHero titleId="t" title="الرؤية والرسالة" subtitle="ع" ground={photo("hero")} locale="ar" />,
     ).container.querySelector("section[data-composition]")!;
 
-  it("fills the first screen with a photograph by default (ADR-0067 D2)", () => {
-    expect(hero().className).toContain("min-h-[calc(100svh-var(--space-24))]");
-  });
-
-  it("takes its content's height where the page makes it a band (ADR-0071 D6)", () => {
-    expect(hero("content").className).not.toContain("min-h-[calc(100svh-var(--space-24))]");
+  // Owner decision 2026-09-16 (ADR-0078): header plus hero is the screen's
+  // height on every page. This retires ADR-0071 D6's content-height band, which
+  // is why there is no longer a mode to test the opposite of.
+  it("fills the first screen with a photograph, on every page (ADR-0078)", () => {
+    expect(hero().className.split(" ")).toContain("hero-first-screen");
   });
 
   // Owner decision 2026-09-15: institutional pages carry no visible trail.
   it("opens straight on the lines and the title when the page gives no trail", () => {
-    const section = hero("content");
+    const section = hero();
     expect(section.querySelector("nav")).toBeNull();
     expect(section.querySelector("[data-hero-trail]")).toBeNull();
   });
 
   it("draws its strokes at the light weight", () => {
-    const strokes = hero("content").querySelectorAll("[data-il-stroke]");
+    const strokes = hero().querySelectorAll("[data-il-stroke]");
     expect(strokes).toHaveLength(4);
     for (const stroke of strokes) expect(stroke).toHaveAttribute("data-il-weight", "light");
   });

@@ -63,6 +63,34 @@ export const API_ERROR_CODES = [
   'invalidListOrder',
   'unknownList',
   'listTooLong',
+  // The hero slide's two buttons (owner decision 2026-09-16). Three codes
+  // because they are three different fixes, and as one `badRequest` an editor
+  // would read the same sentence for all of them: write the missing half,
+  // shorten what you wrote, or correct a link that goes nowhere the site
+  // allows. The last is the one worth separating hardest — a link stored as
+  // `http://` or `javascript:` is a defect the editor cannot see and every
+  // visitor can.
+  'incompleteCta',
+  'ctaLabelTooLong',
+  'invalidCtaUrl',
+  // `ltrImageMode: separate` without its English picture or that picture's
+  // focal point. Its own code so the dashboard can point at the English
+  // picture panel rather than at the slide.
+  'incompleteLtrImage',
+  // The dashboard's save is a publish (owner decision 2026-09-17): a visible
+  // slide must be complete, and no hero text may be longer than its field holds
+  // at 390px. Two codes, two fixes: write what is missing, or shorten.
+  'incompleteSlide',
+  'heroTextTooLong',
+  // A slide's window that ends before it opens: the slide would never show
+  // and only read "scheduled". Its own code so the fix points at the end.
+  'scheduleEndsBeforeStart',
+  // The HERO section's next-event bar and playback (owner decision
+  // 2026-09-17): fill in what a visible bar needs, set an end no earlier than
+  // the start, or choose one of the supported durations.
+  'incompleteNextEvent',
+  'nextEventEndsBeforeStart',
+  'invalidPlayback',
 ] as const;
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
@@ -84,10 +112,10 @@ const BY_STATUS: ReadonlyMap<number, ApiErrorCode> = new Map([
  * as `badRequest` rather than `internalError` — the difference is whether the
  * client is told to fix something or to retry.
  */
-export function codeForStatus(status: number): ApiErrorCode {
+export const codeForStatus = (status: number): ApiErrorCode => {
   return BY_STATUS.get(status) ?? (status >= 500 ? 'internalError' : 'badRequest');
-}
+};
 
-export function isApiErrorCode(value: unknown): value is ApiErrorCode {
+export const isApiErrorCode = (value: unknown): value is ApiErrorCode => {
   return typeof value === 'string' && (API_ERROR_CODES as readonly string[]).includes(value);
-}
+};

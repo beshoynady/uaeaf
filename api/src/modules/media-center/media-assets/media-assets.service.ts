@@ -74,6 +74,7 @@ export class MediaAssetsService {
       displayOrder: dto.displayOrder,
       isVisible: dto.isVisible ?? true,
       isFeatured: dto.isFeatured ?? false,
+      isAiGenerated: dto.isAiGenerated ?? false,
     });
     if (asset.albumId) {
       await this.albumModel.updateOne({ _id: asset.albumId }, { $inc: { assetCount: 1 } }).exec();
@@ -137,6 +138,7 @@ export class MediaAssetsService {
         displayOrder: dto.displayOrder ?? 0,
         isVisible: true,
         isFeatured: false,
+        isAiGenerated: dto.isAiGenerated ?? false,
       });
     } catch (cause) {
       // The caller has to learn why the request really failed, so a failure

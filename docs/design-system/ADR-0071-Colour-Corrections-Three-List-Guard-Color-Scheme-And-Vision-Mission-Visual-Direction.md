@@ -6,6 +6,7 @@
 - **Blocked by measurement, nothing built:** D9 (the item colours).
 - **Recorded, not built:** D10 (what the reference shows that was not built, and why).
 - **Amended by ADR-0072 (2026-09-15):** D7 (the ordinals: `display-2xl`, the item ink, beside the text), D8 (the band is removed: the lines stand on the photographs, without reserves), D9 (built, with the owner's thresholds of 2026-09-15) and D10 (every item resolved there). D6 is unchanged.
+- **D6 retired by ADR-0078 (2026-09-16, owner decision):** `IdentityHero` no longer takes `height`. Every hero with a picture, Vision & Mission included, fills the screen less the header; the open scope question is closed by that rule.
 
 **Date:** 2026-09-15
 **Authority:** Owner batch brief of 2026-09-14, «دفعة: اللوحة النهائية + تطبيق الاتجاه البصري على صفحة الرؤية والرسالة». It approves: the palette decisions (§3–§6); the delete button's option A, `color-scheme`, the two corrections, the four state-text names, the four-part guard, form A and three lists (§7); and the visual direction on this page (§8).
@@ -47,6 +48,31 @@ Every value is an existing ramp step. Measured on the page grounds of each theme
 
 - **Before, in dark:** 5.09 at rest, **3.20** on hover, **2.58** pressed. `on-brand` on the old dark rest ground measured 4.13, which is why both sides move together.
 - **Consumers:** none today in either application.
+
+### D2.1 — The dashboard's destructive button takes these grounds (amendment, 2026-09-17)
+
+The dashboard's `BUTTON_DESTRUCTIVE` (`apps/dashboard/src/components/ui/interactive.ts`) never took D2's tokens. It drew on `--color-semantic-error` and `--color-semantic-error-hover`, which follow the theme and are registered in `pairings.json` as a **shape** (3:1 against the page grounds), not as a ground for text. An axe run on the homepage hero screen found it (`color-contrast`, dark theme).
+
+- **Decision:** bind the button to `--button-danger-background`, `-hover`, `-pressed` and `--button-danger-text`. No token value changes.
+- **Rejected: darkening `--color-semantic-error` in dark.** `error.500` on the dark page ground measures about 2.7:1, which would break the token's own shape pairing (icons, field edges, the error summary's border).
+- **Measured on the production build** (the slide editor's Delete button and the destructive confirm dialog, identical):
+
+  | Theme | Before, rest / hover | After, rest / hover |
+  | --- | --- | --- |
+  | Light | 4.98 / 6.57 | 4.98 / 6.57 |
+  | Dark | **4.13 / 3.08** | 4.98 / 6.57 |
+  | High contrast | 10.39 / 13.78 | 4.98 / 6.57 |
+
+- **High contrast falls from 10.39 to 4.98.** It stays above the 4.5 floor and matches D2's rule ("fixed in every theme") and the primary button (4.81 in every theme). A separate high-contrast step for the delete button would be a new rule, for the Design System owner to decide; it is not built.
+- **Consumers now:** the dashboard's `Button variant="destructive"` and `ConfirmDialog tone="destructive"`: the hero editor (delete, leave), the revisions panel, the user status control, and the role workbench's delete.
+- **Evidence:** `scratchpad/evidence/destructive-token/{before,after}-{light,dark,high-contrast}-{delete-button,confirm-dialog}.png` and `{before,after}.json`.
+
+### D2.2 — Buttons in high contrast — **Pending decision** (owner, 2026-09-17)
+
+«في وضع التباين العالي، أزرار primary و danger ≥ 7:1». Recorded, not built: it belongs to the design-system batch after 2 October.
+
+- **Today, every theme:** the primary button measures 4.81 at rest, the delete button 4.98 (D1, D2).
+- **What it would change:** high contrast gets its own button grounds, a step darker than the fixed ones. That departs from D2's "fixed in every theme" for that theme only, and needs its pairings in `pairings.json` measured against 7:1.
 
 ## D3 — `color-scheme` follows the stamped theme
 

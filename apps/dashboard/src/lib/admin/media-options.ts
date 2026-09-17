@@ -21,10 +21,12 @@ import type { MediaAssetOption } from "@/components/admin/pages/media-picker";
 interface RawMediaAsset {
   _id?: unknown;
   caption?: unknown;
-  file?: { url?: unknown; mimeType?: unknown } | null;
+  altText?: unknown;
+  isAiGenerated?: unknown;
+  file?: { url?: unknown; mimeType?: unknown; width?: unknown; height?: unknown } | null;
 }
 
-export function toMediaOptions(assets: readonly unknown[] | null | undefined): MediaAssetOption[] {
+export const toMediaOptions = (assets: readonly unknown[] | null | undefined): MediaAssetOption[] => {
   // A refused library is an absence, not an error (the picker then offers
   // upload only), so it maps to the same empty list as a library nobody has
   // put anything in.
@@ -46,6 +48,14 @@ export function toMediaOptions(assets: readonly unknown[] | null | undefined): M
       return [];
     }
 
-    return [{ id: asset._id, caption: asset.caption as LocalizedText, url }];
+    // The size, the alternative text and the provenance mark are carried when
+    // the record has them: the hero screen warns about a picture too narrow
+    // for the hero and marks a generated one as temporary.
+    const option: MediaAssetOption = { id: asset._id, caption: asset.caption as LocalizedText, url };
+    if (typeof asset.file?.width === "number") option.width = asset.file.width;
+    if (typeof asset.file?.height === "number") option.height = asset.file.height;
+    if (asset.altText) option.altText = asset.altText as LocalizedText;
+    if (typeof asset.isAiGenerated === "boolean") option.isAiGenerated = asset.isAiGenerated;
+    return [option];
   });
-}
+};

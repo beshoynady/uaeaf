@@ -6,17 +6,21 @@ import { HeroSlidesRepository } from './hero-slides.repository.js';
 import { MediaAssetsService } from '../../media-center/media-assets/media-assets.service.js';
 
 describe('HeroSlidesService', () => {
+  // `find` answers with an empty section by default: `create` counts the
+  // slides already there before writing, so a mock that returned `undefined`
+  // would fail on the limit check rather than on what each test is about.
   const makeRepository = () =>
-    ({ create: jest.fn(), find: jest.fn() }) as unknown as jest.Mocked<HeroSlidesRepository>;
+    ({ create: jest.fn(), find: jest.fn(async () => []) }) as unknown as jest.Mocked<HeroSlidesRepository>;
   const makeMediaAssets = () =>
-    ({ assertUsableImage: jest.fn() }) as unknown as jest.Mocked<MediaAssetsService>;
+    ({
+      assertUsableImage: jest.fn(),
+      resolvePublicImages: jest.fn(async () => new Map()),
+    }) as unknown as jest.Mocked<MediaAssetsService>;
 
   const base = {
     pageSectionId: new Types.ObjectId().toString(),
     title: { en: 'T', ar: 'ع' },
     subtitle: { en: 'S', ar: 'ع' },
-    ctaText: { en: 'Go', ar: 'اذهب' },
-    ctaUrl: '/somewhere',
     displayOrder: 1,
   };
 
@@ -34,10 +38,14 @@ describe('HeroSlidesService', () => {
     expect(repository.create).toHaveBeenCalledTimes(1);
   });
 
-  it('rejects an IMAGE slide with no imageAssetId', async () => {
+  // A hidden slide may be saved before its picture is chosen (owner decision
+  // 2026-09-17); the picture is required the moment the slide is shown.
+  it('rejects a visible IMAGE slide with no imageAssetId', async () => {
     const service = new HeroSlidesService(makeRepository(), makeMediaAssets());
 
-    await expect(service.create({ ...base, mediaType: 'IMAGE' })).rejects.toThrow(BadRequestException);
+    await expect(service.create({ ...base, mediaType: 'IMAGE', active: true })).rejects.toMatchObject({
+      response: { code: 'incompleteSlide', missing: ['imageAssetId'] },
+    });
   });
 
   it('rejects an IMAGE slide that also carries a videoId', async () => {
@@ -89,7 +97,7 @@ describe('HeroSlidesService', () => {
   describe('findPublicBySection', () => {
     const pageSectionId = new Types.ObjectId().toString();
 
-    function makeSlide(overrides: Partial<Record<string, unknown>> = {}) {
+    const makeSlide = (overrides: Partial<Record<string, unknown>> = {}) => {
       return {
         _id: new Types.ObjectId(),
         mediaType: 'IMAGE',
@@ -105,7 +113,7 @@ describe('HeroSlidesService', () => {
         scheduledTo: null,
         ...overrides,
       };
-    }
+    };
 
     it('excludes the visibility-gate fields from the mapped shape', async () => {
       const repository = makeRepository();

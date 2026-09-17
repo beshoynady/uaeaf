@@ -831,7 +831,7 @@
     --pm-rise: calc(var(--motion-ascent-offset) / 2);
     --pm-step: 0;
     --pm-lines-step: 0;
-    --pm-portrait-cap: calc(100svh - var(--space-24));
+    --pm-portrait-cap: calc(100svh - var(--header-height));
     --pm-portrait-track: auto;
   }
 
@@ -863,5 +863,299 @@
      from `lg`, one per phase, set on the list by `phases-band.tsx`. */
   :where([data-field="phases"]) {
     --plan-phases: 1;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+ * The homepage hero (2026-09-16, `docs/plans/homepage-hero-design.md` §6.2)
+ *
+ * The hero is a scroll-snap track, not a JavaScript carousel, and that choice
+ * is what makes the owner's condition literally true rather than approximately
+ * true: every slide is present, laid out and readable with no script running
+ * at all. JavaScript adds automatic advance and the controls that WCAG 2.2.2
+ * then requires — it never creates the content and never changes the layout,
+ * so hydration moves nothing and CLS stays at zero.
+ *
+ * Nothing below animates `opacity`. `identity-lines.spec.ts` asserts that no
+ * animation inside `<main>` carries an opacity keyframe, because the hero's
+ * title and picture are the page's Largest Contentful Paint and must land in
+ * their first frame. Movement here is `transform` only, which is also what
+ * ADR-0009 permits.
+ * ══════════════════════════════════════════════════════════════════════════ */
+
+/* The track. Without JavaScript it is the hero: a horizontal scroller with
+   `scroll-snap`, every slide laid out, painted and reachable. */
+.hero-track {
+  display: flex;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.hero-track::-webkit-scrollbar {
+  display: none;
+}
+
+.hero-track > * {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* The stage, once `hero-controls.tsx` has mounted and set `data-enhanced`.
+ *
+ * The slides stop being a row and become layers in one grid cell, so a
+ * transition can draw the next picture over the current one. Nothing moves when
+ * this switches on: the first slide already filled the frame, the cell is as
+ * tall as the tallest slide exactly as the row was, and `visibility` rather
+ * than `display` keeps every slide in that measurement. A hidden slide is out
+ * of the tab order and the accessibility tree; the one being read is not.
+ *
+ * `touch-action: pan-y` hands vertical movement to the page and keeps the
+ * horizontal swipe for the controller, so a swipe never fights the scroll. */
+.hero-track[data-enhanced] {
+  display: grid;
+  /* Still a scroll container, as the track is without JavaScript: switching to
+     `overflow: clip` measured CLS 0.1008 at 390 and 0.0596 at 1440 on the
+     production build, with nothing changing size, because the Layout Instability
+     API counts the change of box type as the whole track moving. The slides fill
+     the cell exactly and each clips its own picture, so there is nothing to
+     scroll. Guarded by `hero-stage-shift.spec.ts`. */
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: none;
+  touch-action: pan-y;
+}
+
+.hero-track[data-enhanced] > * {
+  grid-area: 1 / 1;
+  visibility: hidden;
+}
+
+.hero-track[data-enhanced] > [data-active="true"],
+.hero-track[data-enhanced] > [data-leaving="true"] {
+  visibility: visible;
+}
+
+/* The arriving slide paints over the leaving one while its reveal runs. */
+.hero-track[data-enhanced] > [data-active="true"] {
+  z-index: 1;
+}
+
+/* One word, and the window it moves through.
+ *
+ * The outer span clips vertically only: a word leaves by sliding down out of
+ * its own line box and arrives by sliding up into it, with no opacity at all.
+ * The padding and the equal negative margin widen the window by 0.25em above
+ * and below so Arabic marks and descenders are never cut at rest, without
+ * changing the line's height. Horizontally nothing is clipped, because Arabic
+ * joining strokes may reach past a word's box. */
+.hero-word-mask {
+  display: inline-block;
+  overflow-x: visible;
+  overflow-y: clip;
+  padding-block: 0.25em;
+  margin-block: -0.25em;
+  vertical-align: top;
+}
+
+.hero-word {
+  display: inline-block;
+}
+
+/* The focal point, applied per breakpoint.
+ *
+ * `<source>` cannot carry a style, so the two framings cannot ride on the
+ * elements that select them. They ride on the one image element instead, as two
+ * custom properties the media query swaps between, which is also why the
+ * breakpoint here and the `media` attribute in `hero-picture.tsx` must stay
+ * the same number: they are two halves of one switch. */
+/* Declared, not merely used: the token contract requires every custom
+   property a source references to be declared in the app's own CSS, and
+   `@property` also gives these a type so a malformed value from a record is
+   ignored rather than inherited. The type is `<length-percentage>+` ("x% y%"):
+   `<position>` is not a registrable component, and an invalid syntax silently
+   voids the whole rule (the production build reported it; a guard now checks). */
+@property --hero-focus-desktop {
+  syntax: "<length-percentage>+";
+  inherits: false;
+  initial-value: 50% 50%;
+}
+
+@property --hero-focus-mobile {
+  syntax: "<length-percentage>+";
+  inherits: false;
+  initial-value: 50% 50%;
+}
+
+@property --hero-origin-desktop {
+  syntax: "<length-percentage>+";
+  inherits: false;
+  initial-value: 50% 50%;
+}
+
+@property --hero-origin-mobile {
+  syntax: "<length-percentage>+";
+  inherits: false;
+  initial-value: 50% 50%;
+}
+
+.hero-picture {
+  /* Declared here as well as by `@property` above: the token contract reads
+     declarations, and an unframed slide must fall back to the centre even if
+     the record sends nothing. */
+  --hero-focus-desktop: 50% 50%;
+  --hero-focus-mobile: 50% 50%;
+  object-position: var(--hero-focus-mobile);
+}
+
+/* The Ken Burns layer. It scales about the point the reader sees the subject
+ * at, so the camera moves towards the subject rather than towards the frame's
+ * centre. For a mirrored picture that point is the flipped one, which is why
+ * the origin is its own pair of properties and not the object-position. */
+.hero-ken-burns {
+  --hero-origin-desktop: 50% 50%;
+  --hero-origin-mobile: 50% 50%;
+  transform-origin: var(--hero-origin-mobile);
+}
+
+@media (min-width: 641px) {
+  .hero-picture {
+    object-position: var(--hero-focus-desktop);
+  }
+
+  .hero-ken-burns {
+    transform-origin: var(--hero-origin-desktop);
+  }
+}
+
+/* `ltrImageMode: mirror` (ADR-0080). The picture alone flips, on the server's
+ * own markup, so the flipped frame is the first frame: no text, control or
+ * identity stroke is inside this element, which is how "the flip never touches
+ * them" holds by construction. `scale` rather than `transform`, so the Ken
+ * Burns transform on the layer outside it can never overwrite the flip. A
+ * portrait phone picture is never mirrored: below the switch, a slide that has
+ * one draws it as it is. */
+.hero-mirror {
+  scale: -1 1;
+}
+
+@media (max-width: 640px) {
+  .hero-mirror[data-has-mobile] {
+    scale: none;
+  }
+}
+
+/* The scroll cue (ADR-0079). Three nudges along the block axis, 1.92s in all
+ * with the wait before them, then still: under WCAG 2.2.2's five-second allowance for movement that starts
+ * on its own. `translate`, not `transform`, and never opacity. Reduced motion
+ * leaves it still, and the first scroll removes it (`scroll-cue.tsx`). */
+@keyframes scroll-cue-nudge {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+
+  50% {
+    translate: 0 var(--space-2);
+  }
+}
+
+.scroll-cue {
+  animation: scroll-cue-nudge var(--motion-duration-slower) var(--motion-easing-standard) var(--motion-duration-slower) 3 both;
+}
+
+/* Once scrolled the cue is gone for good, and so is its animation: hidden with
+ * `visibility` alone it would still count among the page's animations, which
+ * the identity-lines guard scrubs to the end of the longest. */
+.scroll-cue[data-scrolled] {
+  visibility: hidden;
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-cue {
+    animation: none;
+  }
+}
+
+/* The hero's lanes transition (`hero-controls.tsx`, ADR-0076 D8.3): one still
+ * band per lane, each holding a copy of the arriving picture. Drawn only while
+ * a transition runs. */
+.hero-lanes {
+  position: absolute;
+  inset: 0;
+  overflow: clip;
+  pointer-events: none;
+}
+
+/* A lane's still band: it clips, and the copy of the picture moves inside it
+   by transform only, which the compositor runs (`laneBand`). */
+.hero-lanes > * {
+  position: absolute;
+  inset-inline: 0;
+  overflow: hidden;
+}
+
+/* The moving copy, promoted for the transition only: the lanes are created when
+   a transition starts and removed when it ends. */
+.hero-lanes > * > * {
+  position: absolute;
+  inset-inline: 0;
+  will-change: transform;
+}
+
+/* The buttons' window: tall enough that a focus ring (2px plus a 2px offset)
+   is never cut at rest. */
+.hero-word-mask-roomy {
+  display: block;
+  padding-block: var(--space-2);
+  margin-block: calc(-1 * var(--space-2));
+}
+
+/* The foot of the homepage hero: the editorial controls, and the next-event
+ * bar when there is one, laid over the picture (`hero.tsx`). The text keeps
+ * their height clear beneath it, plus `--space-8`, so the words, the numbers
+ * and the bar never meet at any width. The bar's height is fixed per
+ * breakpoint so this reserve can be known before anything renders: three short
+ * lines on a phone, one from `md`. */
+.hero-stage {
+  --hero-event-height: 0px;
+}
+
+.hero-stage[data-has-event] {
+  --hero-event-height: var(--space-24);
+}
+
+@media (min-width: 768px) {
+  .hero-stage[data-has-event] {
+    --hero-event-height: var(--space-16);
+  }
+}
+
+.hero-stage-text {
+  padding-block-end: calc(var(--hero-event-height) + var(--space-4) + var(--space-12) + var(--space-8));
+}
+
+/* The homepage hero's reading wash (`hero.tsx`). The gradients are
+ * `heroScrim` from `@uaeaf/content/hero`, set on the element as custom
+ * properties so the dashboard's preview draws the same wash from the same
+ * source; this picks one by breakpoint and reading direction. Declared here
+ * for the token contract, with a transparent default. */
+.hero-story-scrim {
+  --hero-scrim-narrow: none;
+  --hero-scrim-wide-rtl: none;
+  --hero-scrim-wide-ltr: none;
+  background-image: var(--hero-scrim-narrow);
+}
+
+@media (min-width: 768px) {
+  [dir="rtl"] .hero-story-scrim {
+    background-image: var(--hero-scrim-wide-rtl);
+  }
+
+  [dir="ltr"] .hero-story-scrim {
+    background-image: var(--hero-scrim-wide-ltr);
   }
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
@@ -7,6 +7,7 @@ import { Public } from '../../../common/decorators/public.decorator.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 import { PageSectionsService } from './page-sections.service.js';
 import { CreatePageSectionDto } from './dto/create-page-sections.dto.js';
+import { UpdatePageSectionDto } from './dto/update-page-sections.dto.js';
 import { PageSectionPublicResponseDto } from './dto/page-section-public-response.dto.js';
 
 /** Implements: pageSections collection, Domain 11 — CMS & Page Composition. */
@@ -37,10 +38,25 @@ export class PageSectionsController {
     return this.service.findPublicByPage(pageId);
   }
 
+  /** The editor's read of one page: disabled and out-of-window sections
+   *  included. Declared ahead of `GET :id` so `by-page` is never read as an
+   *  id, the same ordering rule `public` follows. */
+  @Get('by-page/:pageId')
+  @RequirePermission('pageSections', 'Read')
+  findByPage(@Param('pageId') pageId: string) {
+    return this.service.findByPage(pageId);
+  }
+
   @Get(':id')
   @RequirePermission('pageSections', 'Read')
   findOne(@Param('id') id: string) {
     return this.service.findById(id);
+  }
+
+  @Patch(':id')
+  @RequirePermission('pageSections', 'Update')
+  update(@Param('id') id: string, @Body() dto: UpdatePageSectionDto) {
+    return this.service.update(id, dto);
   }
 
   @Delete(':id')

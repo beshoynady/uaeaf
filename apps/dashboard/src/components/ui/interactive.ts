@@ -45,11 +45,16 @@ export const BUTTON_PRIMARY = `${BUTTON_BASE} bg-[color:var(--button-primary-bac
 export const BUTTON_SECONDARY = `${BUTTON_BASE} border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)] text-[color:var(--color-text-primary)] hover:border-[color:var(--color-border-strong)] hover:bg-[color:var(--color-surface-sunken)] active:bg-[color:var(--color-surface-skeleton)] disabled:border-[color:var(--color-border-default)] disabled:bg-[color:var(--color-surface-sunken)] disabled:text-[color:var(--color-text-disabled)]`;
 
 /**
- * Irreversible action. Uses `semantic.error`, not `brand.secondary` — ADR-0051
+ * Irreversible action. The error family, not `brand.secondary` — ADR-0051
  * separated the two precisely so that "this deletes something" and "this is
  * the federation's red" can never be confused for one another.
+ *
+ * Bound to the button's own grounds (`--button-danger-*`, ADR-0071 D2), fixed in
+ * every theme: white measures 4.98 at rest, 6.57 on hover, 8.15 pressed. It was
+ * on `--color-semantic-error`, which follows the theme and is registered as a
+ * shape, not a ground: 4.13 at rest and 3.08 on hover in the dark theme.
  */
-export const BUTTON_DESTRUCTIVE = `${BUTTON_BASE} bg-[color:var(--color-semantic-error)] text-[color:var(--color-text-on-brand)] hover:bg-[color:var(--color-semantic-error-hover)] active:bg-[color:var(--color-semantic-error-hover)] disabled:bg-[color:var(--button-disabled-background)] disabled:text-[color:var(--color-text-disabled)] disabled:opacity-[var(--opacity-disabled)]`;
+export const BUTTON_DESTRUCTIVE = `${BUTTON_BASE} bg-[color:var(--button-danger-background)] text-[color:var(--button-danger-text)] hover:bg-[color:var(--button-danger-background-hover)] active:bg-[color:var(--button-danger-background-pressed)] disabled:bg-[color:var(--button-disabled-background)] disabled:text-[color:var(--color-text-disabled)] disabled:opacity-[var(--opacity-disabled)]`;
 
 /** Low-emphasis action inside a dense surface. */
 export const BUTTON_GHOST = `${BUTTON_BASE} bg-transparent text-[color:var(--color-text-secondary)] hover:bg-[color:var(--color-surface-sunken)] hover:text-[color:var(--color-text-primary)] active:bg-[color:var(--color-surface-skeleton)] disabled:text-[color:var(--color-text-disabled)]`;

@@ -24,13 +24,13 @@ import { stripComments, themeTokens } from "@uaeaf/design-tokens/testing";
 const SRC = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const SURFACE = join(SRC, "components", "ui", "surface.ts");
 
-function sourceFiles(dir: string): string[] {
+const sourceFiles = (dir: string): string[] => {
   return readdirSync(dir).flatMap((entry) => {
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) return sourceFiles(full);
     return /\.tsx$/.test(entry) && !/\.(spec|test)\.tsx$/.test(entry) ? [full] : [];
   });
-}
+};
 
 /** The surfaces the standard governs: cards and panels in the content flow.
  *
@@ -169,12 +169,12 @@ describe("the raised-surface standard", () => {
 
 /** The declaration block a CSS selector opens, found by name rather than by a
  *  regex that has to guess where the rule ends. */
-function ruleFor(css: string, selector: string): string {
+const ruleFor = (css: string, selector: string): string => {
   const at = css.indexOf(selector);
   if (at === -1) return "";
   const open = css.indexOf("{", at);
   return css.slice(at, css.indexOf("}", open) + 1);
-}
+};
 
 describe("the interaction standard", () => {
   const standard = stripComments(readFileSync(SURFACE, "utf-8"));
@@ -250,17 +250,25 @@ describe("the layout standard", () => {
   });
 
   it("sizes a hero to the screen minus the header, in a unit that survives a phone", () => {
-    // `vh` on a phone measures the viewport with the browser chrome hidden,
-    // so a `100vh` hero is taller than the screen the reader is looking at
-    // until they scroll. `svh` is the small viewport — chrome shown — which
-    // is what "fills the first screen" has to mean.
+    // ADR-0078: the rule lives in one class, `.hero-first-screen`, that every
+    // first-screen hero takes through `HERO_VIEWPORT`, and the header height is
+    // a property the header itself is drawn with.
     //
-    // The header is `h-24`: a fixed 96px that never shrinks, so the hero is
-    // the screen minus one spacing token rather than minus a literal.
-    expect(standard).toContain("HERO_VIEWPORT");
-    expect(standard).toContain("100svh");
-    expect(standard, "the hero height is not derived from a token").toContain("var(--space-24)");
-    const bareVh = /[^s]\b\d+vh\b/.test(standard);
+    // `vh` on a phone measures the viewport with the browser chrome hidden, so
+    // a `100vh` hero is taller than the screen the reader is looking at until
+    // they scroll. `svh` is the small viewport, chrome shown, which is what
+    // "fills the first screen" has to mean. The owner kept `vh` as a fallback
+    // for engines without `svh`, so it may appear only before the `svh`
+    // declaration that overrides it, never alone.
+    expect(standard).toMatch(/HERO_VIEWPORT = "hero-first-screen"/);
+    const globals = stripComments(readFileSync(join(SRC, "app", "[locale]", "globals.css"), "utf-8"));
+    expect(globals, "the header height is not derived from a token").toMatch(/--header-height:\s*var\(--space-24\)/);
+    const rule = /\.hero-first-screen\s*\{([^}]*)\}/.exec(globals)?.[1] ?? "";
+    expect(rule, "the first-screen rule was found").not.toBe("");
+    const declarations = rule.split(";").map((line) => line.trim()).filter(Boolean);
+    expect(declarations.at(-1), "svh is the declaration that wins").toBe("min-height: calc(100svh - var(--header-height))");
+    expect(declarations.every((line) => line.startsWith("min-height")), "a minimum, never a height: content is never clipped").toBe(true);
+    const bareVh = /[^s]d+vh/.test(standard);
     expect(bareVh, "a bare vh unit does not survive a phone's browser bars").toBe(false);
   });
 });

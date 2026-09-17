@@ -980,6 +980,13 @@ any general convention and any automated tool's default, including
    convert existing code in either direction as a cleanup; write new code the
    preferred way and leave working code alone.
 
+   **Amended (owner decision 2026-09-17):** every new function is an arrow
+   function, and every file that is touched has its functions converted to
+   arrows, except class methods (NestJS above all), functions relying on a
+   dynamic `this` (Mongoose hooks), generators, overloads, functions using
+   `arguments`, and anything called before its definition while the module
+   loads. Files nobody touches are not converted.
+
 2. **`try/catch` is an ordinary tool, used where it is needed.** It is not a
    construct to be avoided, refactored away, or replaced with a
    result-returning wrapper as a matter of style.

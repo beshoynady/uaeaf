@@ -100,9 +100,66 @@ export const EDITORIAL_ERROR_CODES = [
   "listTooLong",
 ] as const;
 
+/**
+ * Failures only the homepage hero screen can produce (owner decisions
+ * 2026-09-16 and 2026-09-17). Apart from the editorial list for the same reason
+ * that list is apart from the base one: `write-error-copy.spec.ts` asks for
+ * copy on every surface a code can reach, and these reach one.
+ */
+export const HERO_ERROR_CODES = [
+  /** A visible button without a label in both languages or without a link. */
+  "incompleteCta",
+  /** A button label longer than the button holds at 390px. */
+  "ctaLabelTooLong",
+  /** A button link that is neither an internal path nor an https URL. */
+  "invalidCtaUrl",
+  /** A separate English picture without the picture or its focal point. */
+  "incompleteLtrImage",
+  /** A visible slide missing a title, a subtitle or its picture. */
+  "incompleteSlide",
+  /** A hero text longer than its field holds at 390px. */
+  "heroTextTooLong",
+  /** A slide's schedule that ends before it starts. */
+  "scheduleEndsBeforeStart",
+  /** A visible next-event bar with a gap. */
+  "incompleteNextEvent",
+  /** A next event that ends before it starts. */
+  "nextEventEndsBeforeStart",
+  /** A slide duration the site does not support. */
+  "invalidPlayback",
+] as const;
+
 export type WriteErrorCode =
   | (typeof WRITE_ERROR_CODES)[number]
-  | (typeof EDITORIAL_ERROR_CODES)[number];
+  | (typeof EDITORIAL_ERROR_CODES)[number]
+  | (typeof HERO_ERROR_CODES)[number];
+
+/** What a refusal says about where it happened, beside its code. */
+export interface FailureDetails {
+  field?: string;
+  missing?: string[];
+  limit?: number;
+}
+
+/**
+ * The parts of an API refusal that point at a field: which one, which ones are
+ * missing, and the limit crossed. Picked one by one and type-checked, so
+ * nothing else in the upstream body (a message, a stack) reaches the browser,
+ * and a malformed value is dropped rather than trusted.
+ */
+export const failureDetails = (error: unknown): FailureDetails => {
+  if (!(error instanceof UpstreamError) || typeof error.payload !== "object" || error.payload === null) {
+    return {};
+  }
+  const payload = error.payload as Record<string, unknown>;
+  const details: FailureDetails = {};
+  if (typeof payload.field === "string") details.field = payload.field;
+  if (Array.isArray(payload.missing) && payload.missing.every((entry) => typeof entry === "string")) {
+    details.missing = payload.missing as string[];
+  }
+  if (typeof payload.limit === "number") details.limit = payload.limit;
+  return details;
+};
 
 /** The API returns 200 with an empty body instead of 404 on four routes
  *  (PATCH roles/:id/name, PATCH roles/:id/permissions, DELETE roles/:id,
@@ -116,10 +173,10 @@ export class MissingRecordError extends Error {}
  * whether they carry a method and a body, and every line they shared was a
  * line that could be fixed in one and left broken in the other.
  */
-async function forward(
+const forward = async (
   path: string,
   init?: { method: "POST" | "PUT" | "PATCH" | "DELETE"; body?: unknown },
-): Promise<NextResponse> {
+): Promise<NextResponse> => {
   const store = await cookies();
   const accessToken = readAccessToken((name) => store.get(name)?.value);
   if (!accessToken) {
@@ -134,18 +191,18 @@ async function forward(
     return NextResponse.json(result);
   } catch (error) {
     const { status, code } = classifyWriteFailure(error);
-    return NextResponse.json({ code }, { status });
+    return NextResponse.json({ code, ...failureDetails(error) }, { status });
   }
-}
+};
 
-export async function forwardWrite(
+export const forwardWrite = async (
   path: string,
   // PUT is here for the singleton content pages: there is exactly one
   // row of each, it may not exist yet, and the API upserts it.
   init: { method: "POST" | "PUT" | "PATCH" | "DELETE"; body?: unknown },
-): Promise<NextResponse> {
+): Promise<NextResponse> => {
   return forward(path, init);
-}
+};
 
 /**
  * The read half of the same pipe.
@@ -161,11 +218,11 @@ export async function forwardWrite(
  * and a screen that had two names for each would need two sets of copy for
  * one situation.
  */
-export async function forwardRead(path: string): Promise<NextResponse> {
+export const forwardRead = async (path: string): Promise<NextResponse> => {
   return forward(path);
-}
+};
 
-export function classifyWriteFailure(error: unknown): { status: number; code: WriteErrorCode } {
+export const classifyWriteFailure = (error: unknown): { status: number; code: WriteErrorCode } => {
   if (error instanceof MissingRecordError) {
     return { status: 404, code: "notFound" };
   }
@@ -176,7 +233,7 @@ export function classifyWriteFailure(error: unknown): { status: number; code: Wr
 
   const status = STATUS_PASSTHROUGH.has(error.status) ? error.status : 502;
   return { status, code: FROM_API_CODE[error.apiCode ?? ""] ?? fallbackFor(status) };
-}
+};
 
 /** Statuses the browser is told verbatim. Anything else — a 500, a 502 from a
  *  proxy, an unmapped 4xx — becomes a 502: the screen's only useful reaction
@@ -217,9 +274,19 @@ const FROM_API_CODE: Record<string, WriteErrorCode> = {
   invalidListOrder: "invalidListOrder",
   unknownList: "unknownList",
   listTooLong: "listTooLong",
+  incompleteCta: "incompleteCta",
+  ctaLabelTooLong: "ctaLabelTooLong",
+  invalidCtaUrl: "invalidCtaUrl",
+  incompleteLtrImage: "incompleteLtrImage",
+  incompleteSlide: "incompleteSlide",
+  heroTextTooLong: "heroTextTooLong",
+  incompleteNextEvent: "incompleteNextEvent",
+  nextEventEndsBeforeStart: "nextEventEndsBeforeStart",
+  scheduleEndsBeforeStart: "scheduleEndsBeforeStart",
+  invalidPlayback: "invalidPlayback",
 };
 
-function fallbackFor(status: number): WriteErrorCode {
+const fallbackFor = (status: number): WriteErrorCode => {
   switch (status) {
     case 400:
       return "invalidRequest";
@@ -245,4 +312,4 @@ function fallbackFor(status: number): WriteErrorCode {
     default:
       return "serviceUnavailable";
   }
-}
+};

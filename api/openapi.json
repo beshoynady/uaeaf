@@ -5956,6 +5956,29 @@
         ]
       }
     },
+    "/api/v1/page-sections/by-page/{pageId}": {
+      "get": {
+        "operationId": "PageSectionsController_findByPage_v1",
+        "parameters": [
+          {
+            "name": "pageId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "page-sections"
+        ]
+      }
+    },
     "/api/v1/page-sections/{id}": {
       "get": {
         "operationId": "PageSectionsController_findOne_v1",
@@ -5969,6 +5992,37 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "page-sections"
+        ]
+      },
+      "patch": {
+        "operationId": "PageSectionsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePageSectionDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": ""
@@ -6059,6 +6113,53 @@
         ]
       }
     },
+    "/api/v1/hero-slides/by-section/{pageSectionId}": {
+      "get": {
+        "operationId": "HeroSlidesController_findBySection_v1",
+        "parameters": [
+          {
+            "name": "pageSectionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "hero-slides"
+        ]
+      }
+    },
+    "/api/v1/hero-slides/reorder": {
+      "patch": {
+        "operationId": "HeroSlidesController_reorder_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderHeroSlidesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "hero-slides"
+        ]
+      }
+    },
     "/api/v1/hero-slides/{id}": {
       "get": {
         "operationId": "HeroSlidesController_findOne_v1",
@@ -6072,6 +6173,37 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "hero-slides"
+        ]
+      },
+      "patch": {
+        "operationId": "HeroSlidesController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateHeroSlideDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": ""
@@ -7336,6 +7468,11 @@
           "isFeatured": {
             "type": "boolean",
             "default": false
+          },
+          "isAiGenerated": {
+            "type": "boolean",
+            "default": false,
+            "description": "Internal provenance mark: the picture was generated rather than photographed. Shown only in the dashboard, as a \"temporary\" chip and a filter; never returned on a public route."
           }
         },
         "required": [
@@ -7379,6 +7516,11 @@
           "captureDate": {
             "type": "string",
             "description": "When the photograph was taken."
+          },
+          "isAiGenerated": {
+            "type": "boolean",
+            "default": false,
+            "description": "Internal provenance mark; never public."
           }
         },
         "required": [
@@ -11660,7 +11802,7 @@
           },
           "configuration": {
             "type": "object",
-            "description": "Free-form section-specific settings."
+            "description": "Free-form section-specific settings. For a HERO section: `nextEvent` { isVisible, label{ar,en} (≤52), name{ar,en} (≤52), venue{ar,en} (≤35), startsAt, endsAt (ISO instants, endsAt ≥ startsAt) } and `playback` { autoplay, intervalMs: 5000 | 7000 | 9000 }. Refused with `incompleteNextEvent` (a visible bar with gaps, listed in `missing`), `nextEventEndsBeforeStart`, `heroTextTooLong` or `invalidPlayback`."
           }
         },
         "required": [
@@ -11759,12 +11901,160 @@
           "items"
         ]
       },
+      "UpdatePageSectionDto": {
+        "type": "object",
+        "properties": {
+          "sectionTitle": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "sectionSubtitle": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "itemLimit": {
+            "type": "object",
+            "nullable": true
+          },
+          "ctaText": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "ctaUrl": {
+            "type": "object",
+            "nullable": true
+          },
+          "visibleFrom": {
+            "type": "object",
+            "nullable": true
+          },
+          "visibleUntil": {
+            "type": "object",
+            "nullable": true
+          },
+          "displayOrder": {
+            "type": "number"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "Everyone",
+              "AuthenticatedOnly",
+              "AdminPreviewOnly"
+            ]
+          },
+          "selectionMode": {
+            "type": "string",
+            "enum": [
+              "MANUAL",
+              "AUTOMATIC"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "filters": {
+            "type": "object",
+            "nullable": true,
+            "description": "Free-form section-specific settings. For a HERO section: `nextEvent` { isVisible, label{ar,en} (≤52), name{ar,en} (≤52), venue{ar,en} (≤35), startsAt, endsAt (ISO instants, endsAt ≥ startsAt) } and `playback` { autoplay, intervalMs: 5000 | 7000 | 9000 }. Refused with `incompleteNextEvent` (a visible bar with gaps, listed in `missing`), `nextEventEndsBeforeStart`, `heroTextTooLong` or `invalidPlayback`."
+          },
+          "configuration": {
+            "type": "object",
+            "nullable": true
+          }
+        }
+      },
+      "FocalPointDto": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "default": 50
+          },
+          "y": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "default": 50
+          }
+        },
+        "required": [
+          "x",
+          "y"
+        ]
+      },
+      "HeroTextDto": {
+        "type": "object",
+        "properties": {
+          "ar": {
+            "type": "string",
+            "description": "Arabic text; may be empty while the slide is hidden."
+          },
+          "en": {
+            "type": "string",
+            "description": "English text; may be empty while the slide is hidden."
+          }
+        },
+        "required": [
+          "ar",
+          "en"
+        ]
+      },
+      "HeroCtaDto": {
+        "type": "object",
+        "properties": {
+          "isVisible": {
+            "type": "boolean"
+          },
+          "label": {
+            "nullable": true,
+            "description": "Required in both languages when visible; at most 32 characters each (refused with `incompleteCta` / `ctaLabelTooLong`).",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HeroTextDto"
+              }
+            ]
+          },
+          "url": {
+            "type": "object",
+            "nullable": true,
+            "description": "Required when visible. Either an internal path beginning with a single `/` — the site adds the locale — or an absolute `https://` URL (refused with `invalidCtaUrl`)."
+          }
+        },
+        "required": [
+          "isVisible"
+        ]
+      },
       "CreateHeroSlideDto": {
         "type": "object",
         "properties": {
           "pageSectionId": {
             "type": "string",
-            "description": "The HERO pageSections instance this slide belongs to."
+            "description": "The HERO pageSections instance this slide belongs to. A section holds at most 5 slides (refused with `listTooLong`)."
           },
           "mediaType": {
             "type": "string",
@@ -11775,29 +12065,90 @@
           },
           "imageAssetId": {
             "type": "string",
-            "description": "Required when mediaType=IMAGE."
+            "description": "Required when mediaType=IMAGE and the slide is active (refused with `incompleteSlide`)."
+          },
+          "desktopFocalPoint": {
+            "description": "Where the landscape picture must keep looking under the hero crop. Defaults to the centre.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FocalPointDto"
+              }
+            ]
+          },
+          "useMobileImage": {
+            "type": "boolean",
+            "description": "When true, `mobileImageAssetId` is required (refused with `missingRequiredField`)."
+          },
+          "mobileImageAssetId": {
+            "type": "string",
+            "description": "The portrait crop phones show when `useMobileImage` is true."
+          },
+          "mobileFocalPoint": {
+            "$ref": "#/components/schemas/FocalPointDto"
+          },
+          "ltrImageMode": {
+            "type": "string",
+            "enum": [
+              "same",
+              "mirror",
+              "separate"
+            ],
+            "default": "mirror",
+            "description": "What English readers see: `mirror` flips the landscape picture and its focal point; `same` keeps it; `separate` uses `ltrImageAssetId`. Never mirror a picture with a flag, writing or a known landmark."
+          },
+          "ltrImageAssetId": {
+            "type": "string",
+            "description": "Required when ltrImageMode=separate (refused with `incompleteLtrImage`)."
+          },
+          "ltrFocalPoint": {
+            "description": "Required when ltrImageMode=separate.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FocalPointDto"
+              }
+            ]
           },
           "videoId": {
             "type": "string",
             "description": "Required when mediaType=VIDEO."
           },
+          "eyebrow": {
+            "description": "Short line above the title (at most 52 characters).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HeroTextDto"
+              }
+            ]
+          },
           "title": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
+            "description": "At most 44 characters; both halves required when active (`incompleteSlide`, `heroTextTooLong`).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HeroTextDto"
+              }
+            ]
           },
           "subtitle": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
+            "description": "At most 116 characters; both halves required when active.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HeroTextDto"
+              }
+            ]
           },
-          "ctaText": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
+          "primaryCta": {
+            "$ref": "#/components/schemas/HeroCtaDto"
           },
-          "ctaUrl": {
-            "type": "string"
+          "secondaryCta": {
+            "$ref": "#/components/schemas/HeroCtaDto"
           },
           "displayOrder": {
             "type": "number"
           },
           "active": {
-            "type": "boolean"
+            "type": "boolean",
+            "default": false,
+            "description": "A new slide is hidden unless this says otherwise (owner decision 2026-09-17)."
           },
           "scheduledFrom": {
             "type": "string"
@@ -11809,12 +12160,118 @@
         "required": [
           "pageSectionId",
           "mediaType",
-          "title",
-          "subtitle",
-          "ctaText",
-          "ctaUrl",
           "displayOrder"
         ]
+      },
+      "ReorderHeroSlidesDto": {
+        "type": "object",
+        "properties": {
+          "pageSectionId": {
+            "type": "string",
+            "description": "The HERO pageSections instance whose slides are being ordered."
+          },
+          "slideIds": {
+            "description": "Slide ids in their new display order, first to last.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "pageSectionId",
+          "slideIds"
+        ]
+      },
+      "UpdateHeroSlideDto": {
+        "type": "object",
+        "properties": {
+          "mediaType": {
+            "type": "string",
+            "enum": [
+              "IMAGE",
+              "VIDEO"
+            ]
+          },
+          "imageAssetId": {
+            "type": "string"
+          },
+          "desktopFocalPoint": {
+            "$ref": "#/components/schemas/FocalPointDto"
+          },
+          "useMobileImage": {
+            "type": "boolean"
+          },
+          "mobileImageAssetId": {
+            "type": "object",
+            "nullable": true,
+            "description": "null clears the portrait crop."
+          },
+          "mobileFocalPoint": {
+            "$ref": "#/components/schemas/FocalPointDto"
+          },
+          "ltrImageMode": {
+            "type": "string",
+            "enum": [
+              "same",
+              "mirror",
+              "separate"
+            ]
+          },
+          "ltrImageAssetId": {
+            "type": "object",
+            "nullable": true,
+            "description": "null clears the English picture."
+          },
+          "ltrFocalPoint": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FocalPointDto"
+              }
+            ]
+          },
+          "videoId": {
+            "type": "string"
+          },
+          "eyebrow": {
+            "nullable": true,
+            "description": "null clears the eyebrow.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/HeroTextDto"
+              }
+            ]
+          },
+          "title": {
+            "$ref": "#/components/schemas/HeroTextDto"
+          },
+          "subtitle": {
+            "$ref": "#/components/schemas/HeroTextDto"
+          },
+          "primaryCta": {
+            "$ref": "#/components/schemas/HeroCtaDto"
+          },
+          "secondaryCta": {
+            "$ref": "#/components/schemas/HeroCtaDto"
+          },
+          "displayOrder": {
+            "type": "number"
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "scheduledFrom": {
+            "type": "object",
+            "nullable": true
+          },
+          "scheduledTo": {
+            "type": "object",
+            "nullable": true
+          }
+        }
       },
       "UpsertAthletesPageDto": {
         "type": "object",

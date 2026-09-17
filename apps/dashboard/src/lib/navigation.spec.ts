@@ -1,5 +1,8 @@
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { NAV_ITEMS, visibleNavItems } from "./navigation";
+import { HOMEPAGE_HERO_GRANTS, NAV_ITEMS, visibleNavItems } from "./navigation";
 import { UNCLASSIFIED_DOMAIN_KEY, domainKeyFor } from "./admin/resource-domains";
 import { STATIC_PAGES } from "./admin/static-pages";
 
@@ -29,7 +32,7 @@ describe("visibleNavItems", () => {
     // One grant per requirement, using the exact action where the item names
     // one — a link that asks for `Update` is not satisfied by `Read`.
     const grants = NAV_ITEMS.flatMap((item) =>
-      (item.requires ?? []).map((rule) => ({
+      [...(item.requires ?? []), ...(item.requiresAll ?? [])].map((rule) => ({
         resourceType: rule.resourceType,
         action: rule.action ?? "Read",
       })),
@@ -101,7 +104,53 @@ describe("the president's message link", () => {
   });
 });
 
+describe("the homepage hero screen's grants and the API catalogue", () => {
+  // Every grant the screen checks must be a catalogue row: the seed creates the
+  // rows from that list, so a grant missing there is one no administrator of a
+  // new environment could ever hold, and the screen would never open.
+  it("asks only for grants the API seeds", () => {
+    const catalogue = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..", "api", "src", "common", "constants", "permission-catalogue.ts"), "utf8");
+    const missing = HOMEPAGE_HERO_GRANTS.filter(
+      ({ resourceType, action }) => !catalogue.includes(`{ resourceType: '${resourceType}', action: '${action}' }`),
+    );
+    expect(missing).toEqual([]);
+  });
+});
+
+describe("the homepage group", () => {
+  // Everything one Save can send, and the two reads the screen opens with.
+  const editor = [
+    { resourceType: "heroSlides", action: "Read" },
+    { resourceType: "heroSlides", action: "Create" },
+    { resourceType: "heroSlides", action: "Update" },
+    { resourceType: "heroSlides", action: "Delete" },
+    { resourceType: "pageSections", action: "Read" },
+    { resourceType: "pageSections", action: "Update" },
+  ];
+
+  it("appears with its hero screen beneath it for someone who can edit the hero", () => {
+    const homepage = visibleNavItems(editor).find((entry) => entry.key === "homepage");
+    expect(homepage?.children?.map((child) => [child.key, child.href])).toEqual([["homepageHero", "/homepage/hero"]]);
+  });
+
+  it("stays hidden from someone who can only read slides", () => {
+    expect(visibleNavItems([{ resourceType: "heroSlides", action: "Read" }]).map((entry) => entry.key)).not.toContain("homepage");
+  });
+
+  it("stays hidden from someone who can edit slides but not the hero's settings, which the screen saves too", () => {
+    const withoutSettings = editor.filter((grant) => grant.resourceType !== "pageSections");
+    expect(visibleNavItems(withoutSettings).map((entry) => entry.key)).not.toContain("homepage");
+  });
+
+  it("stays hidden from someone who can update slides but not add or delete them, which one Save may do", () => {
+    const withoutCreateOrDelete = editor.filter((grant) => grant.action !== "Create" && grant.action !== "Delete");
+    expect(visibleNavItems(withoutCreateOrDelete).map((entry) => entry.key)).not.toContain("homepage");
+  });
+});
+
 /** Every resource any link asks for, however many rules it carries. */
-function requiredResources(): string[] {
-  return NAV_ITEMS.flatMap((item) => (item.requires ?? []).map((rule) => rule.resourceType));
-}
+const requiredResources = (): string[] => {
+  return NAV_ITEMS.flatMap((item) => [item, ...(item.children ?? [])]).flatMap((item) =>
+    (item.requires ?? []).map((rule) => rule.resourceType),
+  );
+};

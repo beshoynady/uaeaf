@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
@@ -7,6 +7,7 @@ import { Public } from '../../../common/decorators/public.decorator.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 import { HeroSlidesService } from './hero-slides.service.js';
 import { CreateHeroSlideDto } from './dto/create-hero-slides.dto.js';
+import { ReorderHeroSlidesDto, UpdateHeroSlideDto } from './dto/update-hero-slides.dto.js';
 
 /** Implements: heroSlides collection, Domain 11 — CMS & Page Composition. */
 @ApiTags('hero-slides')
@@ -36,10 +37,32 @@ export class HeroSlidesController {
     return this.service.findPublicBySection(pageSectionId);
   }
 
+  /** The editor's read of one section: inactive and out-of-window slides
+   *  included, because staging a slide before it goes live is what `active`
+   *  is for. Declared ahead of `GET :id` for the same reason `public` is. */
+  @Get('by-section/:pageSectionId')
+  @RequirePermission('heroSlides', 'Read')
+  findBySection(@Param('pageSectionId') pageSectionId: string) {
+    return this.service.findBySection(pageSectionId);
+  }
+
+  /** Declared ahead of `PATCH :id` so `reorder` is never read as an id. */
+  @Patch('reorder')
+  @RequirePermission('heroSlides', 'Update')
+  reorder(@Body() dto: ReorderHeroSlidesDto) {
+    return this.service.reorder(dto);
+  }
+
   @Get(':id')
   @RequirePermission('heroSlides', 'Read')
   findOne(@Param('id') id: string) {
     return this.service.findById(id);
+  }
+
+  @Patch(':id')
+  @RequirePermission('heroSlides', 'Update')
+  update(@Param('id') id: string, @Body() dto: UpdateHeroSlideDto) {
+    return this.service.update(id, dto);
   }
 
   @Delete(':id')

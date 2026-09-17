@@ -39,4 +39,14 @@ export class CreateMediaAssetDto {
   @IsOptional()
   @IsBoolean()
   isFeatured?: boolean;
+
+  @ApiProperty({
+    default: false,
+    required: false,
+    description:
+      'Internal provenance mark: the picture was generated rather than photographed. Shown only in the dashboard, as a "temporary" chip and a filter; never returned on a public route.',
+  })
+  @IsOptional()
+  @IsBoolean()
+  isAiGenerated?: boolean;
 }

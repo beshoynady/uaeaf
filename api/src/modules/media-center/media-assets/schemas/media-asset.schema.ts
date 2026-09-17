@@ -43,6 +43,24 @@ export class MediaAsset extends BaseSchema {
    *  single designated cover, not a "featured" flag on the asset itself. */
   @Prop({ type: Boolean, default: false })
   isFeatured: boolean;
+
+  /**
+   * Whether this picture was generated rather than photographed.
+   *
+   * **Internal only.** It reaches the dashboard — where it draws a "temporary"
+   * chip in the media library and backs a filter for finding every such asset
+   * before launch — and it reaches no visitor in any form: no caption, no
+   * badge, no attribute, and nothing in the public HTML. `MediaAssetsService`
+   * builds the public shape field by field, and this field is not among them,
+   * which is what makes the guarantee structural rather than a habit (owner
+   * decision 2026-09-16).
+   *
+   * It belongs to the asset and not to the slide that uses it: provenance is
+   * a property of the file, so two pages showing the same picture cannot
+   * disagree about where it came from.
+   */
+  @Prop({ type: Boolean, default: false })
+  isAiGenerated: boolean;
 }
 
 export const MediaAssetSchema = SchemaFactory.createForClass(MediaAsset);

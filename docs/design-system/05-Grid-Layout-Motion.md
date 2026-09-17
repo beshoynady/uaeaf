@@ -140,7 +140,9 @@ See ADR-0009 — `transform`/`opacity` only for repeated animations. Any animati
 | -------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | Stacking | Elements placed side-by-side at `lg`+ **MUST** stack vertically at `xs`/`sm` in a logical order (most important first)                     |
 | Reflow   | Complex tables (Chapter 8) **SHOULD** transform into cards (Card List) below `md`, rather than using a horizontal table with hidden Scroll |
-| Hero     | Hero height **MUST NOT** exceed 90vh on mobile to avoid completely hiding the content below it on initial load                             |
+| Hero     | Hero height **MUST NOT** exceed 90vh on mobile to avoid completely hiding the content below it on initial load. **Exception (ADR-0078, owner decision 2026-09-16):** the hero exceeds the cap only when its own content requires it; not clipping the content comes before the cap |
+
+**§5.10 Hero exception — ADR-0078.** A first-screen hero is `min-height: 100svh − var(--header-height)` and never `height`, so where its text needs more than the screen it grows rather than clipping. The cap therefore holds wherever the hero equals the screen (748 ≤ 760px at 390×844; 544 ≤ 576px at 360×640) and is exceeded only where the content governs: at 360×640 the President's Message in English (590px) and Contact in both languages (695px), and every hero in a landscape phone (844×390). President and Contact exceeded the cap in exactly these cases before ADR-0078, under ADR-0067 D2's identical formula. Measured table: ADR-0078 *Measured*.
 
 ## 5.10.1 Safe Area Support (PWA)
 
@@ -182,7 +184,7 @@ Tooltip (z-tooltip) ← highest layer always
 ☐ No unintended horizontal Overflow at any Breakpoint
 ☐ No Horizontal Scroll outside components intentionally designed for it (Carousel)
 ☐ The grid (§5.2) does not break at any screen width
-☐ Hero does not exceed 90vh on mobile (§5.10)
+☐ Hero does not exceed 90vh on mobile (§5.10), except where its content requires it (ADR-0078)
 ☐ CLS remains below 0.1 (Chapter 0)
 ☐ Safe Area (§5.10.1) is applied to every fixed element
 ☐ Layer ordering follows §5.10.2 without custom z-index values

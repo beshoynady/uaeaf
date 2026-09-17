@@ -72,7 +72,7 @@ export function SiteHeader({ activePath }: { activePath?: string }) {
       <header
         onKeyDown={onHeaderKeyDown}
         data-scrolled={scrolled}
-        className={`site-header sticky top-0 z-50 flex h-24 w-full items-center justify-between gap-2 border-b bg-[color:var(--color-surface-base)] px-4 sm:px-6 ${
+        className={`site-header sticky top-0 z-50 flex h-[var(--header-height)] w-full items-center justify-between gap-2 border-b bg-[color:var(--color-surface-base)] px-4 sm:px-6 ${
           scrolled
             ? "border-[color:var(--color-border-strong)] shadow-dropdown"
             : "border-[color:var(--color-border-default)]"

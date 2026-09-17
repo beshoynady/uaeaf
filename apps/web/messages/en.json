@@ -176,5 +176,23 @@
     "metricsLabel": "Performance indicators",
     "executionLabel": "Steps of the execution path",
     "stepOf": "Step {number} of {total}"
+  },
+  "HomeHero": {
+    "pageHeading": "UAE Athletics Federation",
+    "carousel": "carousel",
+    "slide": "slide",
+    "slideLabel": "Slide {current} of {total}",
+    "play": "Start automatic slideshow",
+    "pause": "Stop automatic slideshow",
+    "goTo": "Go to slide",
+    "opensInNewTab": "opens in a new tab",
+    "progress": "Time left on this slide",
+    "nextEvent": {
+      "live": "Happening now",
+      "days": "days",
+      "hours": "hrs",
+      "minutes": "min",
+      "countdown": "{days} days, {hours} hours and {minutes} minutes to go"
+    }
   }
 }

@@ -142,8 +142,6 @@ const StrategicPlanPage = async ({ params }: { params: Promise<{ locale: AppLoca
         subtitleField="heroSubtitle"
         ground={record.heroImage}
         locale={locale}
-        // A band, not the first screen: the content starts in view (ADR-0071 D6).
-        height="content"
       />
       <PlanOverview record={record} locale={locale} sizes={sizesFor(record.introImage, "overview")} />
       <PlanPhasesBand phases={record.phases} title={record.phasesTitle?.[locale] ?? null} label={copy("phasesLabel")} locale={locale} />

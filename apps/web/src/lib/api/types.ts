@@ -296,3 +296,100 @@ export interface Paginated<T> {
   page: number;
   limit: number;
 }
+
+/** `PagePublicResponseDto` — `GET /pages/public/:slug`.
+ *
+ *  The route answers HTTP 200 with a literal `null` body for a slug that is
+ *  missing or still Draft, so `null` is a routing state here rather than a
+ *  fault. `status` is absent on purpose: only a Published row ever resolves,
+ *  which makes the flag the gate and not display data. */
+export interface PagePublic {
+  id: string;
+  slug: string;
+  title: LocalizedText;
+  seo: {
+    metaTitle: LocalizedText | null;
+    metaDescription: LocalizedText | null;
+    ogImageId: string | null;
+  } | null;
+}
+
+/** `PageSectionPublicResponseDto` — `GET /page-sections/public/by-page/:pageId`.
+ *
+ *  `configuration` is a free-form object upstream and stays one here: the
+ *  board declares it section-specific and unconstrained, so narrowing it in
+ *  this file would be inventing a contract the API does not keep. Each
+ *  consumer reads the keys it knows and treats the rest as absent. */
+export interface PageSectionPublic {
+  id: string;
+  sectionType: string;
+  sectionTitle: LocalizedText | null;
+  sectionSubtitle: LocalizedText | null;
+  itemLimit: number | null;
+  ctaText: LocalizedText | null;
+  ctaUrl: string | null;
+  displayOrder: number;
+  selectionMode: string;
+  items: string[];
+  configuration: Record<string, unknown> | null;
+}
+
+/** `FocalPointDto` — where a picture must keep looking under a crop, as
+ *  percentages that map straight onto `object-position`. */
+export interface FocalPoint {
+  x: number;
+  y: number;
+}
+
+/** `HeroImagePublicResponseDto` — a picture with the point this slide framed
+ *  it on. The point belongs to the slide, not to the asset: the same
+ *  photograph is cropped differently on another page. */
+export interface HeroImage {
+  image: PublicImage;
+  focalPoint: FocalPoint;
+}
+
+/** `HeroLtrImagePublicResponseDto` — the landscape picture a left-to-right
+ *  reader sees, already resolved from the slide's `ltrImageMode`. The focal
+ *  point is where the subject stands in what the reader sees: for a mirrored
+ *  picture, the flipped one. */
+export interface HeroLtrImage extends HeroImage {
+  mirrored: boolean;
+}
+
+/** `HeroCtaPublicResponseDto`. Only a visible button is sent, so there is no
+ *  `isVisible` here — receiving the object *is* the visibility. */
+export interface HeroCta {
+  label: LocalizedText;
+  url: string;
+  /** An absolute `https://` link. The reader opens it in a new tab with
+   *  `rel="noopener noreferrer"`; an internal path is routed with the
+   *  locale prefix instead. */
+  isExternal: boolean;
+}
+
+/** `HeroSlidePublicResponseDto` — `GET /hero-slides/public/by-section/:id`.
+ *
+ *  The images arrive resolved rather than as ids: the hero is the page's
+ *  Largest Contentful Paint, and a reader that received ids would owe another
+ *  round trip before it could emit an `img src`. `mobile` is `null` unless the
+ *  slide switched its phone crop on, and the reader falls back to `desktop`
+ *  with its own focal point rather than drawing an empty frame.
+ *
+ *  `mediaAssets.isAiGenerated` is structurally absent: the provenance mark is
+ *  an internal editorial signal and reaches no visitor in any form. */
+export interface HeroSlidePublic {
+  id: string;
+  mediaType: "IMAGE" | "VIDEO";
+  desktop: HeroImage | null;
+  /** For English. `null` falls back to `desktop` as it is. */
+  desktopLtr: HeroLtrImage | null;
+  mobile: HeroImage | null;
+  videoId: string | null;
+  eyebrow: LocalizedText | null;
+  title: LocalizedText;
+  subtitle: LocalizedText;
+  primaryCta: HeroCta | null;
+  secondaryCta: HeroCta | null;
+  displayOrder: number;
+}

@@ -56,7 +56,7 @@
 
 ### قرارات معمارية (ADRs)
 
-`ADR-0054` … `ADR-0075` — اثنان وعشرون ملفًا في `docs/design-system/`. كل واحد يوثّق
+`ADR-0054` … `ADR-0084` — واحد وثلاثون ملفًا في `docs/design-system/`. كل واحد يوثّق
 قرارًا واحدًا وسببه والبديل المرفوض. **هذه أهم ما يُسلَّم**: هي الجواب على «لماذا
 بُني هكذا» بعد أن ينسى الجميع.
 
@@ -66,7 +66,19 @@
 `ADR-0070-Vision-Mission-Page-Schema-Editorial-Routes-Shared-Editor-And-Identity-Hero.md`
 — صفحة الرؤية والرسالة: الـ schema، ومسارات التحرير، وأجزاء المحرر المشتركة، وhero خطوط الهوية.
 
-أحدثها: `ADR-0075-Strategic-Plan-Page-Domain-Seams-In-Every-Mode-And-Seam-Lines-Below-A-Band.md`
+**هيرو الصفحة الرئيسية** (أحدثها):
+- `ADR-0084-Homepage-Hero-Dashboard-Save-Is-Publish.md` — شاشة إدارة الهيرو: الحفظ نشر ودين المسودة، والشريحة الجديدة مخفية، والانحرافات عن الوصف، وما كشفه التحقق الحي وأُصلح، وفجوة تباين زر الحذف في الداكن.
+- `ADR-0083-The-Hero-Rules-Shared-By-The-Site-And-The-Dashboard.md` — الوحدة المشتركة `@uaeaf/content/hero` ومكانها: القص والقلب والارتفاع وحالات شريط الحدث والحدود، للموقع والمعاينة معًا.
+- `ADR-0082-Video-Slides-In-The-Homepage-Hero.md` — شرائح الفيديو، مقترح.
+- `ADR-0081-The-Next-Event-Bar-And-Its-Data-Source.md` — شريط الحدث القادم: D4 الشريط اليدوي بلا رابط، وD2 مصدر البيانات مقترح.
+- `ADR-0080-Homepage-Hero-Identity-In-The-Picture-English-Picture-And-Editorial-Controls.md` — الهوية في الصورة، وصورة النسخة الإنجليزية (`ltrImageMode`)، وأدوات التحكم التحريرية.
+- `ADR-0079-The-Scroll-Cue-On-First-Screen-Heroes.md` — علامة التمرير على heroes الشاشة الأولى.
+- `ADR-0078-The-First-Screen-Is-Header-Plus-Hero.md` — الهيدر + الهيرو = الشاشة.
+- `ADR-0076-Site-Motion-Library-And-The-Hero-That-Needs-No-JavaScript.md` — مكتبة الحركة والهيرو بلا JavaScript.
+
+`ADR-0077-Sponsorship-Model-Evolution-And-The-Global-Sponsor-Strip-Settings.md` — نموذج الرعاية وإعدادات شريط الرعاة.
+
+وقبلها: `ADR-0075-Strategic-Plan-Page-Domain-Seams-In-Every-Mode-And-Seam-Lines-Below-A-Band.md`
 — صفحة الخطة الاستراتيجية: إكمال domain `strategic-plans-page` بـschema الأقسام الثمانية وشاشة إدارة، وحدّ الأشرطة الملوّنة في التباين العالي (القاعدة ٣ في الأوضاع الثلاثة)، وخطوط الحدّ تحت الشريط الملوّن (`SeamLines placement="below"`)، والمجموعة B بالخيار (أ)، وتراتب الـhero، ونطاق القاعدة ٢.
 
 وقبله: `ADR-0074-Closing-Vision-Mission-Pre-Handover-Images-Green-Values-Publishing-Gate-And-Rule-Calibration.md`
@@ -135,6 +147,9 @@
 |---|---|
 | `engineering/plans/president-message-plan.md` | خطة المرحلة ج وسجلّ قراراتها |
 | `engineering/plans/colour-modes-proposal.md` | اقتراح قائمتي الألوان وقياساته؛ §9.3 يسجّل ما حُسم وما سقط |
+| `plans/homepage-hero-design.md` | تصميم هيرو الصفحة الرئيسية وسجل تقدمه (§٢٧ شاشة الإدارة: جدول المطابقة، والحدود المقاسة، والمراحل، وما كشفه التحقق الحي) |
+| `plans/homepage-hero-dashboard-plan.md` | خطة شاشة إدارة الهيرو: المهام مرتبة بالاعتماديات، وملفاتها وواجهاتها |
+| `content/hero-image-prompts.md` | توجيه صور الهيرو الفني: الأوصاف لكل تخصص، ونسختا Midjourney وGPT Image، والنص السلبي |
 | `engineering/plans/strategic-plan-page-plan.md` | خطة صفحة الخطة الاستراتيجية: القرارات المعمارية، والـschema، والمهمة صفر، وتسلسل الأقسام الثمانية، والمحتوى المستخرج من Figma، وشاشة الإدارة، والاختبارات |
 | `engineering/post-delivery-backlog.md` | متأخرات ما بعد التسليم — **بند واحد فقط، ولا يُضاف إليه دون قرار المالك** |
 | `engineering/UAEAF-PHASE-1-BUILD-PLAN-2026-09-07.md` | خطة بناء المرحلة ١ |
@@ -153,6 +168,7 @@
 | `engineering/how-green-values-work.md` | القيم على السجل الأخضر في صفحة الرؤية والرسالة، وحافة البطاقة في الداكن: لماذا، والملفات بترتيبها، وتتبّع بطاقة حقيقية، ومواضع الكسر، والحراس |
 | `content/strategic-plan-federation-questions.md` | ما نحتاجه من الاتحاد لصفحة الخطة: ربط الأهداف بالمحاور، وخطوط أساس المؤشرات وسنواتها، وفترة الخطة، وتواريخ المراحل، ووصف خطوات التنفيذ، ووثيقة الخطة، والصور الحقيقية، ومراجعة النص الإنجليزي |
 | `engineering/how-strategic-plan-page-works.md` | صفحة الخطة الاستراتيجية: الـdomain وشاشة الإدارة والصفحة العامة بالبنود التسعة — لماذا، والملفات بترتيب سلسلة العمل، وتتبّع إضافة محور سابع من الداشبورد حتى الصفحة، ومواضع الكسر، والحراس (ADR-0075) |
+| `engineering/how-hero-dashboard-works.md` | شاشة إدارة هيرو الصفحة الرئيسية بالبنود التسعة — لماذا، والملفات بترتيب سلسلة العمل، وتتبّع «الأدمن يحرك نقطة التركيز ويقلب ويحفظ، والزائر الإنجليزي على الموبايل يرى القص المقلوب»، ومواضع الكسر، والحراس (ADR-0083 وADR-0084) |
 | `design-system/UAEAF-DESIGN-CRITIQUE-JURY-PROTOCOL.md` | بروتوكول تقييم المقترحات — أداة عمل داخلية لا مرجع تصميم |
 | `design-system/figma-reference/README.md` | دليل لقطات Figma المرجعية |
 

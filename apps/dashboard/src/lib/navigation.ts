@@ -26,7 +26,26 @@ export interface NavItem {
   /** `null` for screens every authenticated user may open. Otherwise the
    *  link appears when the user satisfies **any one** of these. */
   requires: readonly NavRequirement[] | null;
+  /** Held in addition to one of `requires`, all of them: for a screen that
+   *  saves to more than one resource and would fail half way without each. */
+  requiresAll?: readonly NavRequirement[];
+  /** Screens grouped under this entry, each filtered by its own requirements. */
+  children?: readonly NavItem[];
 }
+
+/**
+ * Every grant the homepage hero screen uses: the two reads it opens with, and
+ * each write one Save can send (a slide added, changed, reordered or deleted,
+ * and the section's settings). The page and its link check the same list.
+ */
+export const HOMEPAGE_HERO_GRANTS = [
+  { resourceType: "heroSlides", action: "Read" },
+  { resourceType: "heroSlides", action: "Create" },
+  { resourceType: "heroSlides", action: "Update" },
+  { resourceType: "heroSlides", action: "Delete" },
+  { resourceType: "pageSections", action: "Read" },
+  { resourceType: "pageSections", action: "Update" },
+] as const satisfies readonly NavRequirement[];
 
 export const NAV_ITEMS: readonly NavItem[] = [
   { key: "overview", href: "/", requires: null },
@@ -83,27 +102,51 @@ export const NAV_ITEMS: readonly NavItem[] = [
       { resourceType: "workflowInstances", action: "Approve" },
     ],
   },
+  /**
+   * The homepage, with its hero screen beneath it (owner decision 2026-09-17).
+   *
+   * The hero screen asks for every grant one Save can use (`HOMEPAGE_HERO_GRANTS`):
+   * holding only some would let an editor reach a Save that fails half way. The
+   * group links to its only screen today; the homepage's other sections join it
+   * as they are built.
+   */
+  {
+    key: "homepage",
+    href: "/homepage/hero",
+    requires: [{ resourceType: "heroSlides", action: "Update" }],
+    requiresAll: HOMEPAGE_HERO_GRANTS,
+    children: [
+      {
+        key: "homepageHero",
+        href: "/homepage/hero",
+        requires: [{ resourceType: "heroSlides", action: "Update" }],
+        requiresAll: HOMEPAGE_HERO_GRANTS,
+      },
+    ],
+  },
 ];
 
 /** Whether these grants satisfy one requirement. */
-export function satisfies(
+export const satisfies = (
   grants: readonly PermissionGrant[],
   requirement: NavRequirement,
-): boolean {
+): boolean => {
   return requirement.action === undefined
     ? canAccessResource(grants, requirement.resourceType)
     : hasPermission(grants, requirement.resourceType, requirement.action);
-}
+};
 
 /** Hides what the user cannot open. This is presentation, not enforcement:
  *  typing the URL directly still reaches the screen, and the screen's own
  *  fetch is refused by the API — or, where the screen asks for a specific
  *  action, by the screen's own server-side check. Hiding it just stops the
  *  menu from advertising dead ends. */
-export function visibleNavItems(grants: readonly PermissionGrant[]): NavItem[] {
-  return NAV_ITEMS.filter(
-    (item) =>
-      item.requires === null ||
-      item.requires.some((requirement) => satisfies(grants, requirement)),
+const reachable = (grants: readonly PermissionGrant[], item: NavItem): boolean =>
+  (item.requires === null || item.requires.some((requirement) => satisfies(grants, requirement))) &&
+  (item.requiresAll ?? []).every((requirement) => satisfies(grants, requirement));
+
+export const visibleNavItems = (grants: readonly PermissionGrant[]): NavItem[] => {
+  return NAV_ITEMS.filter((item) => reachable(grants, item)).map((item) =>
+    item.children ? { ...item, children: item.children.filter((child) => reachable(grants, child)) } : item,
   );
-}
+};

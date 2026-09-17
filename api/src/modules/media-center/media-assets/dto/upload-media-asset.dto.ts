@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
+  IsBoolean,
   IsDateString,
   IsDefined,
   IsInt,
@@ -70,4 +71,15 @@ export class UploadMediaAssetDto {
   @IsOptional()
   @IsDateString()
   captureDate?: string;
+
+  /** Whether the picture was generated. Internal only: the dashboard shows it
+   *  as a "temporary" chip and filters by it, and no public shape carries it
+   *  (owner decision 2026-09-16). A multipart part is text, so only the words
+   *  `true` and `false` become booleans; anything else stays as sent and
+   *  `@IsBoolean()` refuses it, rather than `Boolean("false")` storing true. */
+  @ApiProperty({ required: false, default: false, description: 'Internal provenance mark; never public.' })
+  @IsOptional()
+  @Transform(({ value }) => (value === 'true' ? true : value === 'false' ? false : value))
+  @IsBoolean()
+  isAiGenerated?: boolean;
 }

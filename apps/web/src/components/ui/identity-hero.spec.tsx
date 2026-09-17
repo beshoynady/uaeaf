@@ -54,12 +54,25 @@ describe("SeamLines", () => {
     expect(seam.className.split(" ")).toContain("max-md:hidden");
     expect(seam.className.split(" ")).not.toContain("max-lg:hidden");
   });
+
+  // IL-5 on the President's message in English at 1280 and 1366: at the xl unit
+  // group B stood 31.63px from the first paragraph. The page keeps the lg unit
+  // through xl; every other seam keeps growing at xl as approved.
+  it("keeps the lg unit through xl where a page caps it, and grows at xl otherwise", () => {
+    const capped = render(<SeamLines placement="below" from="lg" capUnit="lg" />).container.querySelector<HTMLElement>("[data-seam-lines]")!;
+    expect(capped).toHaveAttribute("data-cap-unit", "lg");
+    expect(capped.className).not.toContain("xl:[--il-unit");
+    expect(capped.className).toContain("md:[--il-unit");
+
+    const free = render(<SeamLines placement="below" from="lg" />).container.querySelector<HTMLElement>("[data-seam-lines]")!;
+    expect(free.className).toContain("xl:[--il-unit");
+  });
 });
 
 describe("IdentityHero", () => {
   const photo = { url: "/hero.png", altText: { ar: "صورة", en: "picture" }, width: 1536, height: 672 };
   const hero = () =>
-    render(<IdentityHero titleId="t" title="الخطة" subtitle="ع" ground={photo} locale="ar" height="content" />).container;
+    render(<IdentityHero titleId="t" title="الخطة" subtitle="ع" ground={photo} locale="ar" />).container;
 
   // Owner decision (brief §٣): the title is the message, the ordinal is
   // punctuation. Display XL is Chapter 4 §4.4's role for a large heading.

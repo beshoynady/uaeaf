@@ -66,6 +66,21 @@ describe('runBootstrap', () => {
     // removable from the dashboard.
   });
 
+  // The dashboard's homepage hero screen opens only with all six (its
+  // HOMEPAGE_HERO_GRANTS). A fresh environment gets them from this run, which
+  // seed:dev performs, with no separate step: found missing on a database
+  // seeded before the rows were added (2026-09-17), which a re-run repairs.
+  it('lets the administrator of an empty database open and save the homepage hero screen', async () => {
+    const result = await runBootstrap(models, input);
+
+    const role = await models.roles.findById(result.roleId).lean().exec();
+    const held = await models.permissions.find({ _id: { $in: role?.permissionIds ?? [] } }).lean().exec();
+    const grants = new Set(held.map((permission) => `${permission.resourceType}:${permission.action}`));
+    for (const grant of ['heroSlides:Read', 'heroSlides:Create', 'heroSlides:Update', 'heroSlides:Delete', 'pageSections:Read', 'pageSections:Update']) {
+      expect(grants.has(grant)).toBe(true);
+    }
+  });
+
   it('creates the administrator holding that role, with a hashed password', async () => {
     const result = await runBootstrap(models, input);
 

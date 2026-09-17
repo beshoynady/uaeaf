@@ -247,6 +247,20 @@ describe('MediaAssetsService', () => {
       });
     });
 
+    it('marks an uploaded picture as generated when the editor says so, and as not generated otherwise', async () => {
+      // The dashboard's "temporary" chip reads this mark; an upload that could
+      // not set it would put every generated picture in the library unmarked.
+      const repository = makeRepository();
+      repository.create.mockResolvedValue({ albumId: null } as unknown as MediaAssetDocument);
+      const service = new MediaAssetsService(repository, albumModel, makeStorage());
+
+      await service.uploadAndCreate(upload(), { ...meta, isAiGenerated: true }, STORAGE_FOLDERS.pages);
+      await service.uploadAndCreate(upload(), meta, STORAGE_FOLDERS.pages);
+
+      expect((repository.create.mock.calls[0][0] as { isAiGenerated: boolean }).isAiGenerated).toBe(true);
+      expect((repository.create.mock.calls[1][0] as { isAiGenerated: boolean }).isAiGenerated).toBe(false);
+    });
+
     it('refuses a file that is not an image before reaching the store', async () => {
       // The point of ordering it this way: a rejected upload must not have
       // cost bandwidth or quota.

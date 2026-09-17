@@ -7,6 +7,7 @@ import { Alexandria, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import { routing, localeDirection, type AppLocale } from "@/i18n/routing";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { MotionProvider } from "@/components/ui/motion-provider";
 import "./globals.css";
 
 // Chapter 4 §ADR-0007 official typeface decision. Chapter 4 §4.8: Variable Fonts preferred
@@ -98,13 +99,15 @@ export default async function RootLayout({ children, params }: LayoutProps) {
       </head>
       <body className={`min-h-full flex flex-col ${bodyFontClass[locale]} text-body`}>
         <NextIntlClientProvider>
-          <SiteHeader />
-          {/* Target for the header's skip link (WCAG 2.2 SC 2.4.1). `flex-1` keeps
-              the footer at the bottom on short pages. */}
-          <main id="main-content" className="flex-1">
-            {children}
-          </main>
-          <SiteFooter />
+          <MotionProvider>
+            <SiteHeader />
+            {/* Target for the header's skip link (WCAG 2.2 SC 2.4.1). `flex-1` keeps
+                the footer at the bottom on short pages. */}
+            <main id="main-content" className="flex-1">
+              {children}
+            </main>
+            <SiteFooter />
+          </MotionProvider>
         </NextIntlClientProvider>
       </body>
     </html>

@@ -125,6 +125,16 @@ describe("document structure", () => {
       // Mission owns its `<h1>` for the same reason: heading and composition
       // are one thing.
       "src/components/ui/identity-hero.tsx",
+      // The homepage hero owns its `<h1>` for the same reason, with one
+      // difference worth stating: its `<h1>` is not any slide's title. The
+      // slides rotate and are promotional, so none of them is the page's
+      // heading; the `<h1>` is the federation's own name, visually hidden and
+      // labelling the section, and it belongs to the composition that carries
+      // it rather than to the route above it.
+      "src/components/pages/home/hero.tsx",
+      // `page.tsx` keeps one for the state where the hero has no slides — the
+      // API unreachable, or the page not filled in — which renders the site's
+      // name and one sentence instead, and stays `noindex` while it does.
       "src/app/[locale]/page.tsx",
       "src/app/[locale]/not-found.tsx",
     ];

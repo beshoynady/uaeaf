@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { UpstreamError } from "./upstream";
-import { MissingRecordError, classifyWriteFailure } from "./admin-write";
+import { MissingRecordError, classifyWriteFailure, failureDetails } from "./admin-write";
 
 describe("classifyWriteFailure", () => {
   it("separates the four distinct 403s by the code the API sends", () => {
@@ -132,5 +132,43 @@ describe("classifyWriteFailure", () => {
       status: 502,
       code: "serviceUnavailable",
     });
+  });
+});
+
+describe("the homepage hero's refusals", () => {
+  it("names each hero refusal by its own code, so each gets its own fix on screen", () => {
+    for (const code of [
+      "incompleteCta",
+      "ctaLabelTooLong",
+      "invalidCtaUrl",
+      "incompleteLtrImage",
+      "incompleteSlide",
+      "heroTextTooLong",
+      "incompleteNextEvent",
+      "nextEventEndsBeforeStart",
+      "invalidPlayback",
+    ]) {
+      expect(classifyWriteFailure(new UpstreamError(400, { code }))).toEqual({ status: 400, code });
+    }
+  });
+
+  it("carries the field, the missing list and the limit, so a refusal lands beside its field", () => {
+    expect(
+      failureDetails(
+        new UpstreamError(400, {
+          code: "incompleteSlide",
+          message: "A visible slide needs title.en.",
+          missing: ["title.en", "imageAssetId"],
+          field: "title.en",
+          limit: 44,
+          stack: "never forwarded",
+        }),
+      ),
+    ).toEqual({ field: "title.en", missing: ["title.en", "imageAssetId"], limit: 44 });
+  });
+
+  it("carries nothing it cannot vouch for", () => {
+    expect(failureDetails(new UpstreamError(400, { field: 42, missing: "title" }))).toEqual({});
+    expect(failureDetails(new Error("offline"))).toEqual({});
   });
 });

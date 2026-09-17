@@ -44,6 +44,8 @@ Measured on the live page, all four locale/theme combinations: rest `transform: 
 ## Decision D2 — The first screen follows the picture, not a flag
 
 > **Amended by ADR-0071 D6 (2026-09-15).** `IdentityHero` takes `height`. Vision & Mission passes `content`: with a photograph its hero is a band its content's height (628 of 900px at 1440). Every other page keeps this decision; whether the band extends to other pages is an open decision recorded in ADR-0071 D6.
+>
+> **Amended by ADR-0078 (2026-09-16).** The band is withdrawn: every hero with a picture fills the first screen again, Vision & Mission and Strategic Plan included. The formula is now `--header-height` and the `.hero-first-screen` class (`100svh − header`, `vh` fallback, `min-height` so content is never clipped).
 
 `PageHero` no longer takes `fillsFirstScreen`. It takes `heroImage`, resolved from the page record's `heroImageId` in `loadStaticPage`, and derives everything from whether one is present:
 

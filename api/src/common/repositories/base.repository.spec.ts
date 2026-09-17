@@ -128,4 +128,27 @@ describe('BaseRepository', () => {
       spy.mockRestore();
     });
   });
+
+  // A partial update built from a validated DTO carries every field the class
+  // declares, `undefined` when the request did not send it. Whether that clears
+  // stored data is decided here, by Mongoose, and every explicit-field update in
+  // the API relies on the answer (2026-09-17 audit of the partial-update defect).
+  describe('updateById with fields a request did not send', () => {
+    it('leaves a stored field alone when its value in the update is undefined', async () => {
+      const created = await repository.create({ name: 'Kept' });
+
+      const updated = await repository.updateById(created._id.toString(), { name: undefined });
+
+      expect(updated?.name).toBe('Kept');
+      expect((await model.findById(created._id).lean())?.name).toBe('Kept');
+    });
+
+    it('clears a stored field only when the update sends null', async () => {
+      const created = await repository.create({ name: 'Cleared' });
+
+      await repository.updateById(created._id.toString(), { name: null } as unknown as { name: string });
+
+      expect((await model.findById(created._id).lean())?.name).toBeNull();
+    });
+  });
 });

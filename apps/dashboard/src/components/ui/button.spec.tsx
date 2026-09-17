@@ -82,7 +82,7 @@ describe("Button", () => {
     const button = screen.getByRole("button", { name: "Delete" });
     // The registry's own contract test proves the string carries every state;
     // this proves the variant actually reaches the element.
-    expect(button.className).toMatch(/--color-semantic-error/);
+    expect(button.className).toMatch(/--button-danger-background/);
     expect(button.className).toMatch(/hover:/);
   });
 

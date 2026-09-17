@@ -176,5 +176,23 @@
     "metricsLabel": "مؤشرات الأداء",
     "executionLabel": "خطوات مسار التنفيذ",
     "stepOf": "الخطوة {number} من {total}"
+  },
+  "HomeHero": {
+    "pageHeading": "اتحاد الإمارات لألعاب القوى",
+    "carousel": "معرض شرائح",
+    "slide": "شريحة",
+    "slideLabel": "شريحة {current} من {total}",
+    "play": "تشغيل العرض التلقائي",
+    "pause": "إيقاف العرض التلقائي",
+    "goTo": "اذهب إلى الشريحة",
+    "opensInNewTab": "يفتح في تبويب جديد",
+    "progress": "الوقت المتبقي لهذه الشريحة",
+    "nextEvent": {
+      "live": "جارية الآن",
+      "days": "يوم",
+      "hours": "ساعة",
+      "minutes": "دقيقة",
+      "countdown": "متبقٍ {days} يوم و{hours} ساعة و{minutes} دقيقة"
+    }
   }
 }
