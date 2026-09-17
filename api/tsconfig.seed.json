@@ -1,0 +1,12 @@
+// The build `npm run seed:sponsors` runs. It compiles the same sources as
+// tsconfig.build.json into dist-seed/, never dist/: `nest build` deletes dist/
+// and stops a running `npm run start:dev`, and a seed must be runnable while the
+// API serves (owner decision 2026-09-17). Its tsbuildinfo lives inside it, so
+// deleting the folder makes the next build cold rather than stale.
+{
+  "extends": "./tsconfig.build.json",
+  "compilerOptions": {
+    "outDir": "./dist-seed",
+    "tsBuildInfoFile": "./dist-seed/.tsbuildinfo"
+  }
+}

@@ -9,8 +9,9 @@ export type PageSectionDocument = HydratedDocument<PageSection>;
 /** Closed list, verbatim from the live board (re-read fresh 2026-09-03).
  *  `LIVE_STREAM` is deliberately absent — it was merged into
  *  `VIDEO_LIBRARY` (a live item is just a `videos` record with
- *  `isLive=true`, featured within that same section). `PARTNERS` is
- *  present with its design not yet built, space reserved. */
+ *  `isLive=true`, featured within that same section). `PARTNERS` and
+ *  `MEMBERSHIPS` (added by ADR-0085, closing ADR-0077 Risk 4) are separate
+ *  sections, never merged with `SPONSORS` (ADR-0037). */
 export const PAGE_SECTION_TYPES = [
   'HERO',
   'FEDERATION_STATS',
@@ -24,6 +25,7 @@ export const PAGE_SECTION_TYPES = [
   'EXTERNAL_MEDIA',
   'SPONSORS',
   'PARTNERS',
+  'MEMBERSHIPS',
   'NEWSLETTER_CTA',
 ] as const;
 export type PageSectionType = (typeof PAGE_SECTION_TYPES)[number];

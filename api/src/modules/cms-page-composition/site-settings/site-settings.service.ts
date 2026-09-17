@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { SingletonPageService } from '../../../common/services/singleton-page.service.js';
 import { MediaAssetsService } from '../../media-center/media-assets/media-assets.service.js';
@@ -6,6 +6,8 @@ import { SiteSettingsRepository } from './site-settings.repository.js';
 import type { SiteSettingsDocument } from './schemas/site-settings.schema.js';
 import { UpsertSiteSettingsDto } from './dto/upsert-site-settings.dto.js';
 import { SiteSettingsPublicResponseDto } from './dto/site-settings-public-response.dto.js';
+import { SponsorStripSettingsDto } from './dto/sponsor-strip.dto.js';
+import { normalizeSponsorStrip } from './schemas/sponsor-strip.schema.js';
 
 /** Implements: siteSettings collection, Domain 11 — CMS & Page Composition.
  *  Singleton (decision #8) — see `SingletonPageService`.
@@ -61,6 +63,35 @@ export class SiteSettingsService extends SingletonPageService<SiteSettingsDocume
     });
   }
 
+  /**
+   * Writes the sponsor strip's settings and nothing else, so saving the strip
+   * never resets the footer or the SEO defaults, and `upsert` (which does not
+   * name `sponsorStrip`) never resets the strip.
+   *
+   * @throws BadRequestException `missingRequiredField` when a manual selection
+   * names no sponsorship — an editor hides the strip with `isVisible`.
+   */
+  async upsertSponsorStrip(dto: SponsorStripSettingsDto): Promise<SiteSettingsDocument> {
+    if (dto.selection === 'manual' && dto.sponsorshipIds.length === 0) {
+      throw new BadRequestException({
+        code: 'missingRequiredField',
+        message: 'A manual selection needs at least one sponsorship; hide the strip with isVisible instead.',
+        field: 'sponsorStrip.sponsorshipIds',
+      });
+    }
+    return this.upsertDocument({
+      sponsorStrip: {
+        isVisible: dto.isVisible,
+        displayMode: dto.displayMode,
+        selection: dto.selection,
+        sponsorshipIds: dto.sponsorshipIds.map((id) => new Types.ObjectId(id)),
+        order: dto.order,
+        pinTopTier: dto.pinTopTier,
+        speed: dto.speed,
+      },
+    });
+  }
+
   /** Public-safe view — `null` before settings are first saved. */
   async getPublic(): Promise<SiteSettingsPublicResponseDto | null> {
     const settings = await this.get();
@@ -90,6 +121,7 @@ export class SiteSettingsService extends SingletonPageService<SiteSettingsDocume
       cookieConsentEnabled: settings.cookieConsentEnabled,
       cookieConsentText: settings.cookieConsentText,
       maintenanceMessage: settings.maintenanceMessage,
+      sponsorStrip: normalizeSponsorStrip(settings.sponsorStrip),
     };
   }
 }

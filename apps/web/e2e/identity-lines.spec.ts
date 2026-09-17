@@ -275,6 +275,11 @@ for (const route of ROUTES) {
         test("keeps the strokes on the photographs and the seams 32px from every text run, as loaded and through their reveal", async ({
           page,
         }) => {
+          // Longer than the suite's 180s (owner decision 2026-09-17, ADR-0079):
+          // the scroll cue's 1.92s nudge sets how far the measurement as loaded
+          // is scrubbed. On the Strategic Plan at 1440x900 this test measured up
+          // to 274.2s alone (168.6s with the cue still); 274.2s + 30%.
+          test.setTimeout(357_000);
           await page.goto(`/${locale}${route}`, { waitUntil: "domcontentloaded" });
           await page.evaluate(() => document.fonts.ready);
           const photos = await page.locator("main [data-slanted-photo]").count();

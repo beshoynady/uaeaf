@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="120" viewBox="0 0 240 120">
+  <rect width="240" height="120" fill="#FFFFFF"/>
+  <rect x="20" y="30" width="56" height="56" rx="10" fill="#1F4E5F"/><rect x="34" y="44" width="28" height="28" rx="4" fill="#5FA8A0"/>
+  <text x="96" y="60" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="#1F4E5F">PALMSTONE</text>
+  <text x="96" y="84" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" letter-spacing="3" fill="#5FA8A0">DEMO</text>
+</svg>

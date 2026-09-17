@@ -393,3 +393,55 @@ export interface HeroSlidePublic {
   secondaryCta: HeroCta | null;
   displayOrder: number;
 }
+
+/** An organisation's name as it writes itself (ADR-0085 D4): either side may be
+ *  `null`, never both. Drawn through `displayName` from `@uaeaf/content/sponsors`. */
+export interface OrganizationNamePublic {
+  ar: string | null;
+  en: string | null;
+}
+
+/** `SponsorPublicResponseDto` — a sponsor inside a running sponsorship. The
+ *  contract terms (`restricted`) and the demo mark never reach the site. */
+export interface SponsorPublic {
+  id: string;
+  name: OrganizationNamePublic;
+  logo: PublicImage | null;
+  website: string | null;
+  categoryLabel: LocalizedText | null;
+}
+
+/** `SponsorshipPublicResponseDto` — `GET /sponsorships/public`: visible, running
+ *  at the time of the request, not cancelled. The site asks the window again at
+ *  render time (`isInWindow`), because this read is cached. */
+export interface SponsorshipPublic {
+  id: string;
+  sponsor: SponsorPublic;
+  tier: "Strategic" | "Official" | "Supporting";
+  targetType: "Federation" | "Championship" | "Event";
+  scopeLabel: LocalizedText | null;
+  isFeatured: boolean;
+  displayOrder: number;
+  startDate: string;
+  endDate: string | null;
+}
+
+/** `OrganizationCardPublicDto` — `GET /partnerships/public` and
+ *  `GET /memberships/public`: a logo and a name. */
+export interface OrganizationCardPublic {
+  id: string;
+  name: OrganizationNamePublic;
+  logo: PublicImage | null;
+  displayOrder: number;
+}
+
+/** `SponsorStripSettingsDto`, on `GET /site-settings/public` (ADR-0077 D5). */
+export interface SponsorStripSettingsPublic {
+  isVisible: boolean;
+  displayMode: "logo" | "logoName" | "logoNameScope";
+  selection: "allActive" | "manual";
+  sponsorshipIds: string[];
+  order: "tier" | "manual";
+  pinTopTier: boolean;
+  speed: "slow" | "medium" | "fast";
+}

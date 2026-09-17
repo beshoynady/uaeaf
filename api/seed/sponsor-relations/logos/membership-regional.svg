@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#FFFFFF"/>
+  <path d="M100 20 L150 36 V74 Q150 112 100 132 Q50 112 50 74 V36 Z" fill="#6B1F2E"/><path d="M100 44 L126 70 L100 96 L74 70 Z" fill="#E0B04A"/>
+  <text x="100" y="170" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#6B1F2E">REGIONAL</text>
+  <text x="100" y="190" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="700" letter-spacing="3" fill="#E0B04A">DEMO</text>
+</svg>

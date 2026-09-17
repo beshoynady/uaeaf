@@ -3,6 +3,7 @@ import { Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
+import { SponsorStripSettings, SponsorStripSettingsSchema } from './sponsor-strip.schema.js';
 
 export type SiteSettingsDocument = HydratedDocument<SiteSettings>;
 
@@ -116,6 +117,11 @@ export class SiteSettings extends BaseSchema {
    *  address. */
   @Prop({ type: String, default: null })
   systemEmailSender: string | null;
+
+  /** `[PUBLIC]` — the global sponsor strip (ADR-0077 D5, ADR-0085 D7).
+   *  Written through its own route, so a settings save never resets it. */
+  @Prop({ type: SponsorStripSettingsSchema, default: null })
+  sponsorStrip: SponsorStripSettings | null;
 }
 
 export const SiteSettingsSchema = SchemaFactory.createForClass(SiteSettings);

@@ -95,7 +95,11 @@
     "visionMission": "Vision & Mission",
     "strategicPlan": "Strategic Plan",
     "homepage": "Homepage",
-    "homepageHero": "Hero"
+    "homepageHero": "Hero",
+    "homepageSponsors": "Sponsors",
+    "homepagePartners": "Partners",
+    "homepageMemberships": "Memberships",
+    "homepageSponsorStrip": "Sponsor strip"
   },
   "Overview": {
     "title": "Overview",
@@ -160,7 +164,11 @@
     "incompleteNextEvent": "The next-event bar is visible and missing a field: the label, name or venue in both languages, or when it starts or ends.",
     "nextEventEndsBeforeStart": "The event ends before it starts.",
     "invalidPlayback": "The slide duration must be one of the options offered.",
-    "scheduleEndsBeforeStart": "The slide hides before it shows."
+    "scheduleEndsBeforeStart": "The slide hides before it shows.",
+    "sponsorshipEndsBeforeStart": "The end date is before the start date. Choose an end on or after the start day.",
+    "sponsorshipEndRequired": "A championship or event sponsorship needs an end date, because it ends with the event.",
+    "invalidSponsorshipTarget": "A federation sponsorship points at the federation record, or at nothing.",
+    "organizationNameTooLong": "The name is longer than 150 characters."
   },
   "AccountStatus": {
     "Active": "Active",
@@ -1070,5 +1078,206 @@
     "leaveBody": "Leaving now discards the changes that were not saved; none of them reach the site.",
     "leaveConfirm": "Leave without saving",
     "leaveCancel": "Stay here"
+  },
+  "SponsorRelations": {
+    "trailHome": "Homepage",
+    "trail": "Where you are",
+    "saved": "Saved and published",
+    "unsaved": "Unsaved changes",
+    "saving": "Saving…",
+    "save": "Save",
+    "noChanges": "Nothing to save",
+    "savedToast": "Saved and published",
+    "savedToastBody": "The site shows the change within a minute.",
+    "summaryTitle": "This could not be saved",
+    "summaryPartial": "Part of this was saved; the rest could not be",
+    "leaveTitle": "Leave without saving?",
+    "leaveBody": "Your changes on this screen have not been saved and will be lost.",
+    "leaveConfirm": "Leave",
+    "leaveCancel": "Stay",
+    "cancel": "Cancel",
+    "removeConfirm": "Remove",
+    "removeBody": "It is removed from the site when you save.",
+    "demoBadge": "Demo data",
+    "shownBadge": "Shown",
+    "hiddenBadge": "Hidden",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "remove": "Remove",
+    "untitled": "No name yet",
+    "entryNumber": "Entry {number}",
+    "preview": "Preview",
+    "previewHint": "What the site shows now, in the site's order and with its naming rule.",
+    "previewEmpty": "Nothing is shown on the site.",
+    "nameAr": "Name in Arabic",
+    "nameEn": "Name in English",
+    "nameHint": "Arabic, English or both, as the organisation writes itself. Never translated.",
+    "characters": "{count} of {max} characters",
+    "logo": "Logo",
+    "type": "Type",
+    "chooseType": "Choose a type",
+    "startDay": "Start date (Dubai)",
+    "endDay": "End date (Dubai)",
+    "endHint": "Leave empty if it has no end.",
+    "isVisible": "Shown on the site",
+    "isVisibleHint": "New records start hidden. A hidden record may be incomplete.",
+    "fields": {
+      "name": "Name",
+      "nameAr": "Name in Arabic",
+      "nameEn": "Name in English",
+      "logoId": "Logo",
+      "type": "Type",
+      "startDay": "Start date",
+      "endDay": "End date",
+      "website": "Website",
+      "categoryAr": "Sector in Arabic",
+      "categoryEn": "Sector in English",
+      "tier": "Tier",
+      "scopeAr": "What it sponsors, in Arabic",
+      "scopeEn": "What it sponsors, in English",
+      "ctaText": "Call to action text",
+      "ctaUrl": "Call to action link",
+      "bannerSponsorshipId": "Banner preference",
+      "sponsorshipIds": "Sponsors in the strip"
+    },
+    "errors": {
+      "missingRequiredField": "Required.",
+      "organizationNameTooLong": "Longer than {limit} characters.",
+      "scopeLabelTooLong": "Longer than {limit} characters.",
+      "sponsorshipEndsBeforeStart": "Ends before it starts.",
+      "sponsorshipEndRequired": "Needs an end date: it ends with its event.",
+      "invalidRequest": "Starts with http:// or https://.",
+      "incompleteCta": "Write the text in both languages and the link, or neither.",
+      "invalidCtaUrl": "A path on the site (/…) or an https:// address.",
+      "invalidSponsorshipTarget": "Points at the federation, or at nothing."
+    },
+    "partners": {
+      "title": "Partners",
+      "description": "Organisations with a cooperation agreement or a memorandum with the federation: logo and name on the homepage.",
+      "listLabel": "Partners",
+      "add": "Add partner",
+      "empty": "No partners yet.",
+      "isActive": "Agreement in force",
+      "types": {
+        "BilateralAgreement": "Bilateral agreement",
+        "MOU": "Memorandum of understanding",
+        "TechnicalCooperation": "Technical cooperation",
+        "Other": "Other"
+      }
+    },
+    "memberships": {
+      "title": "Memberships",
+      "description": "Bodies the federation is a member of: logo and name on the homepage. A membership shown is an official claim; keep it current.",
+      "listLabel": "Memberships",
+      "add": "Add membership",
+      "empty": "No memberships yet.",
+      "status": "Membership status",
+      "statuses": {
+        "Active": "Active",
+        "Suspended": "Suspended",
+        "Terminated": "Terminated"
+      },
+      "types": {
+        "RegionalBody": "Regional body",
+        "ContinentalBody": "Continental body",
+        "InternationalBody": "International body",
+        "OlympicCommittee": "Olympic committee"
+      }
+    },
+    "sponsors": {
+      "title": "Sponsors",
+      "description": "Each sponsor and its sponsorships, the banner and the partnership call to action.",
+      "listLabel": "Sponsors",
+      "add": "Add sponsor",
+      "empty": "No sponsors yet.",
+      "website": "Website",
+      "websiteHint": "Opens in a new tab from the banner.",
+      "categoryAr": "Sector in Arabic",
+      "categoryEn": "Sector in English",
+      "categoryHint": "A short line under the name, in both languages or neither.",
+      "sponsorships": "Sponsorships",
+      "sponsorshipNumber": "Sponsorship {number}",
+      "addSponsorship": "Add sponsorship",
+      "noSponsorships": "No sponsorship: this sponsor is not shown on the site.",
+      "tier": "Tier",
+      "tiers": {
+        "Strategic": "Strategic sponsor",
+        "Official": "Official sponsor",
+        "Supporting": "Supporting sponsor"
+      },
+      "targetType": "Sponsors",
+      "targets": {
+        "Federation": "The federation",
+        "Championship": "A championship",
+        "Event": "An event"
+      },
+      "targetHint": "A championship or event sponsorship ends with it, so it needs an end date.",
+      "status": "Contract status",
+      "statuses": {
+        "Active": "Active",
+        "Expired": "Archived as expired",
+        "Cancelled": "Cancelled"
+      },
+      "statusHint": "Ending is worked out from the dates; change this only to archive or cancel.",
+      "scopeAr": "What it sponsors, in Arabic",
+      "scopeEn": "What it sponsors, in English",
+      "scopeHint": "Shown as written. Both languages or neither.",
+      "isFeatured": "VIP mark",
+      "isFeaturedHint": "Marks the sponsor's card. The banner is chosen separately below.",
+      "state": {
+        "upcoming": "Starts later",
+        "active": "Running now",
+        "expired": "Ended",
+        "cancelled": "Cancelled"
+      },
+      "section": "Sponsors section",
+      "banner": "Banner preference",
+      "bannerHint": "The banner shows the highest tier running now. Among that tier, this sponsorship is preferred.",
+      "bannerNone": "No preference",
+      "ctaTextAr": "Call to action text in Arabic",
+      "ctaTextEn": "Call to action text in English",
+      "ctaUrl": "Call to action link",
+      "ctaHint": "Shown only when the text in both languages and the link are set.",
+      "previewBanner": "Banner",
+      "previewGrid": "Cards",
+      "removeSponsorTitle": "Remove this sponsor and its sponsorships?",
+      "removeSponsorshipTitle": "Remove this sponsorship?",
+      "sectionMissing": "This screen has no sponsors section on the homepage to save these settings to."
+    },
+    "strip": {
+      "title": "Sponsor strip",
+      "description": "The moving strip under the homepage hero: who appears, in what order, how, and how fast.",
+      "isVisible": "Show the strip",
+      "displayMode": "What each sponsor shows",
+      "modes": {
+        "logo": "Logo only",
+        "logoName": "Logo and name",
+        "logoNameScope": "Logo, name and what they sponsor"
+      },
+      "phoneFallback": "On a phone this shows logo and name: what they sponsor does not fit a phone's strip.",
+      "selection": "Who appears",
+      "selections": {
+        "allActive": "Every running sponsor",
+        "manual": "Chosen sponsors"
+      },
+      "chosen": "Sponsors in the strip, in order",
+      "order": "Order",
+      "orders": {
+        "tier": "By tier",
+        "manual": "In the sponsors list's order"
+      },
+      "pinTopTier": "Pin the banner's sponsor to the centre",
+      "speed": "Speed",
+      "speeds": {
+        "slow": "Slow",
+        "medium": "Medium",
+        "fast": "Fast"
+      },
+      "previewPinned": "Pinned",
+      "rowFrom": "Stands still from {width}px wide and moves below it; a pause button appears while it moves.",
+      "rowAlways": "Stands still at every width.",
+      "rowNever": "Moves at every width, with a pause button.",
+      "hidden": "The strip is hidden."
+    }
   }
 }

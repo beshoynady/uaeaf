@@ -62,6 +62,10 @@ import { NavigationItemsModule } from './modules/cms-page-composition/navigation
 import { PagesModule } from './modules/cms-page-composition/pages/pages.module.js';
 import { PageSectionsModule } from './modules/cms-page-composition/page-sections/page-sections.module.js';
 import { HeroSlidesModule } from './modules/cms-page-composition/hero-slides/hero-slides.module.js';
+import { SponsorsModule } from './modules/sponsorship-relations/sponsors/sponsors.module.js';
+import { SponsorshipsModule } from './modules/sponsorship-relations/sponsorships/sponsorships.module.js';
+import { PartnershipsModule } from './modules/sponsorship-relations/partnerships/partnerships.module.js';
+import { MembershipsModule } from './modules/sponsorship-relations/memberships/memberships.module.js';
 import { AthletesPageModule } from './modules/cms-page-composition/athletes-page/athletes-page.module.js';
 import { CoachesPageModule } from './modules/cms-page-composition/coaches-page/coaches-page.module.js';
 import { ResultsRankingsPageModule } from './modules/cms-page-composition/results-rankings-page/results-rankings-page.module.js';
@@ -147,6 +151,10 @@ import { AppController } from './app.controller.js';
     PagesModule,
     PageSectionsModule,
     HeroSlidesModule,
+    SponsorsModule,
+    SponsorshipsModule,
+    PartnershipsModule,
+    MembershipsModule,
     AthletesPageModule,
     CoachesPageModule,
     ResultsRankingsPageModule,

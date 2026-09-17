@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="120" viewBox="0 0 240 120">
+  <rect width="240" height="120" fill="#FFFFFF"/>
+  <path d="M16 88 Q40 40 64 88 Z" fill="#7A4E1D"/><path d="M40 88 Q62 56 84 88 Z" fill="#C58B3A"/>
+  <text x="96" y="60" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="#7A4E1D">DUNELINE</text>
+  <text x="96" y="84" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" letter-spacing="3" fill="#C58B3A">DEMO</text>
+</svg>

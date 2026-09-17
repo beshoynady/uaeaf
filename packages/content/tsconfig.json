@@ -10,5 +10,5 @@
     "skipLibCheck": true,
     "types": ["vitest/globals"]
   },
-  "include": ["hero/**/*.ts"]
+  "include": ["hero/**/*.ts", "sponsors/**/*.ts"]
 }

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#FFFFFF"/>
+  <rect x="46" y="34" width="108" height="76" rx="38" fill="none" stroke="#1D5C4A" stroke-width="10"/><rect x="72" y="56" width="56" height="32" rx="16" fill="#E07A2E"/>
+  <text x="100" y="170" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#1D5C4A">WORLD TRACK</text>
+  <text x="100" y="190" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="700" letter-spacing="3" fill="#E07A2E">DEMO</text>
+</svg>

@@ -194,5 +194,42 @@
       "minutes": "دقيقة",
       "countdown": "متبقٍ {days} يوم و{hours} ساعة و{minutes} دقيقة"
     }
+  },
+  "HomeSponsors": {
+    "strip": {
+      "label": "رعاة الاتحاد",
+      "pause": "إيقاف حركة شريط الرعاة",
+      "play": "تشغيل حركة شريط الرعاة"
+    },
+    "tiers": {
+      "Strategic": "الراعي الاستراتيجي",
+      "Official": "الراعي الرسمي",
+      "Supporting": "الراعي الداعم"
+    },
+    "tiersEnglish": {
+      "Strategic": "Strategic Sponsor",
+      "Official": "Official Sponsor",
+      "Supporting": "Supporting Sponsor"
+    },
+    "sponsors": {
+      "title": "الرعاة والشركاء",
+      "subtitle": "الشريك الاستراتيجي والرعاة الرسميون والشركاء المساندون في دعم وتطوير ألعاب القوى في دولة الإمارات وتنظيم البطولات الوطنية والدولية.",
+      "featured": "VIP",
+      "visitWebsite": "زيارة موقع {name}",
+      "opensInNewTab": "يفتح في تبويب جديد",
+      "stats": {
+        "label": "أرقام الرعاية",
+        "sponsors": "شريك وراعٍ رسمي",
+        "years": "سنوات من أطول شراكة",
+        "championships": "بطولة مدعومة سنويًا"
+      }
+    },
+    "partners": {
+      "title": "الشركاء"
+    },
+    "memberships": {
+      "title": "نحن فخورون بعضويتنا في كبرى المنظمات",
+      "subtitle": "تمثيل رسمي فاعل ومستمر لدولة الإمارات العربية المتحدة في المحافل الإقليمية والدولية لألعاب القوى"
+    }
   }
 }

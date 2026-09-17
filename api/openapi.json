@@ -5531,6 +5531,30 @@
         ]
       }
     },
+    "/api/v1/site-settings/sponsor-strip": {
+      "put": {
+        "operationId": "SiteSettingsController_upsertSponsorStrip_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SponsorStripSettingsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "site-settings"
+        ]
+      }
+    },
     "/api/v1/navigation-menus": {
       "post": {
         "operationId": "NavigationMenusController_create_v1",
@@ -6235,6 +6259,492 @@
         ]
       }
     },
+    "/api/v1/sponsors": {
+      "post": {
+        "operationId": "SponsorsController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSponsorDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "sponsors"
+        ]
+      },
+      "get": {
+        "operationId": "SponsorsController_findAll_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "sponsors"
+        ]
+      }
+    },
+    "/api/v1/sponsors/{id}": {
+      "get": {
+        "operationId": "SponsorsController_findOne_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "sponsors"
+        ]
+      },
+      "patch": {
+        "operationId": "SponsorsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSponsorDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "sponsors"
+        ]
+      },
+      "delete": {
+        "operationId": "SponsorsController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "sponsors"
+        ]
+      }
+    },
+    "/api/v1/sponsorships": {
+      "post": {
+        "operationId": "SponsorshipsController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSponsorshipDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "sponsorships"
+        ]
+      },
+      "get": {
+        "operationId": "SponsorshipsController_findAll_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "sponsorships"
+        ]
+      }
+    },
+    "/api/v1/sponsorships/public": {
+      "get": {
+        "operationId": "SponsorshipsController_findPublic_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "sponsorships"
+        ]
+      }
+    },
+    "/api/v1/sponsorships/{id}": {
+      "get": {
+        "operationId": "SponsorshipsController_findOne_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "sponsorships"
+        ]
+      },
+      "patch": {
+        "operationId": "SponsorshipsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSponsorshipDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "sponsorships"
+        ]
+      },
+      "delete": {
+        "operationId": "SponsorshipsController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "sponsorships"
+        ]
+      }
+    },
+    "/api/v1/partnerships": {
+      "post": {
+        "operationId": "PartnershipsController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePartnershipDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "partnerships"
+        ]
+      },
+      "get": {
+        "operationId": "PartnershipsController_findAll_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "partnerships"
+        ]
+      }
+    },
+    "/api/v1/partnerships/public": {
+      "get": {
+        "operationId": "PartnershipsController_findPublic_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "partnerships"
+        ]
+      }
+    },
+    "/api/v1/partnerships/{id}": {
+      "get": {
+        "operationId": "PartnershipsController_findOne_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "partnerships"
+        ]
+      },
+      "patch": {
+        "operationId": "PartnershipsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePartnershipDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "partnerships"
+        ]
+      },
+      "delete": {
+        "operationId": "PartnershipsController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "partnerships"
+        ]
+      }
+    },
+    "/api/v1/memberships": {
+      "post": {
+        "operationId": "MembershipsController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMembershipDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "memberships"
+        ]
+      },
+      "get": {
+        "operationId": "MembershipsController_findAll_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "memberships"
+        ]
+      }
+    },
+    "/api/v1/memberships/public": {
+      "get": {
+        "operationId": "MembershipsController_findPublic_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "memberships"
+        ]
+      }
+    },
+    "/api/v1/memberships/{id}": {
+      "get": {
+        "operationId": "MembershipsController_findOne_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "memberships"
+        ]
+      },
+      "patch": {
+        "operationId": "MembershipsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMembershipDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "memberships"
+        ]
+      },
+      "delete": {
+        "operationId": "MembershipsController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "memberships"
+        ]
+      }
+    },
     "/api/v1/athletes-page": {
       "get": {
         "operationId": "AthletesPageController_get_v1",
@@ -6858,6 +7368,7 @@
               "governanceDocuments",
               "heroSlides",
               "mediaAssets",
+              "memberships",
               "navigationItems",
               "navigationMenus",
               "newsPage",
@@ -6869,6 +7380,7 @@
               "organizationalStructure",
               "pageSections",
               "pages",
+              "partnerships",
               "permissions",
               "presidentMessagePage",
               "publications",
@@ -6877,6 +7389,8 @@
               "revisions",
               "roles",
               "siteSettings",
+              "sponsors",
+              "sponsorships",
               "strategicPlansPage",
               "users",
               "venues",
@@ -7063,6 +7577,7 @@
               "governanceDocuments",
               "heroSlides",
               "mediaAssets",
+              "memberships",
               "navigationItems",
               "navigationMenus",
               "newsPage",
@@ -7074,6 +7589,7 @@
               "organizationalStructure",
               "pageSections",
               "pages",
+              "partnerships",
               "permissions",
               "presidentMessagePage",
               "publications",
@@ -7082,6 +7598,8 @@
               "revisions",
               "roles",
               "siteSettings",
+              "sponsors",
+              "sponsorships",
               "strategicPlansPage",
               "users",
               "venues",
@@ -11578,6 +12096,64 @@
           }
         }
       },
+      "SponsorStripSettingsDto": {
+        "type": "object",
+        "properties": {
+          "isVisible": {
+            "type": "boolean"
+          },
+          "displayMode": {
+            "type": "string",
+            "enum": [
+              "logo",
+              "logoName",
+              "logoNameScope"
+            ]
+          },
+          "selection": {
+            "type": "string",
+            "enum": [
+              "allActive",
+              "manual"
+            ]
+          },
+          "sponsorshipIds": {
+            "description": "Read only when selection is manual, in this order.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "order": {
+            "type": "string",
+            "enum": [
+              "tier",
+              "manual"
+            ]
+          },
+          "pinTopTier": {
+            "type": "boolean",
+            "description": "Pin the highest tier present to the centre."
+          },
+          "speed": {
+            "type": "string",
+            "enum": [
+              "slow",
+              "medium",
+              "fast"
+            ]
+          }
+        },
+        "required": [
+          "isVisible",
+          "displayMode",
+          "selection",
+          "sponsorshipIds",
+          "order",
+          "pinTopTier",
+          "speed"
+        ]
+      },
       "CreateNavigationMenuDto": {
         "type": "object",
         "properties": {
@@ -11743,6 +12319,7 @@
               "EXTERNAL_MEDIA",
               "SPONSORS",
               "PARTNERS",
+              "MEMBERSHIPS",
               "NEWSLETTER_CTA"
             ]
           },
@@ -11834,6 +12411,7 @@
               "EXTERNAL_MEDIA",
               "SPONSORS",
               "PARTNERS",
+              "MEMBERSHIPS",
               "NEWSLETTER_CTA"
             ]
           },
@@ -12270,6 +12848,457 @@
           "scheduledTo": {
             "type": "object",
             "nullable": true
+          }
+        }
+      },
+      "OrganizationNameDto": {
+        "type": "object",
+        "properties": {
+          "ar": {
+            "type": "object",
+            "description": "Arabic name, as the organisation writes it.",
+            "nullable": true
+          },
+          "en": {
+            "type": "object",
+            "description": "English name, as the organisation writes it.",
+            "nullable": true
+          }
+        }
+      },
+      "SponsorRestrictedDto": {
+        "type": "object",
+        "properties": {
+          "contactEmail": {
+            "type": "object",
+            "nullable": true
+          },
+          "contactPhone": {
+            "type": "object",
+            "nullable": true
+          },
+          "contractValue": {
+            "type": "object",
+            "nullable": true
+          },
+          "contractDocId": {
+            "type": "object",
+            "nullable": true
+          }
+        }
+      },
+      "CreateSponsorDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Arabic, English or both — as the organisation writes it.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrganizationNameDto"
+              }
+            ]
+          },
+          "logoId": {
+            "type": "string",
+            "description": "A mediaAssets id; required by the specification."
+          },
+          "website": {
+            "type": "object",
+            "nullable": true,
+            "description": "http:// or https://"
+          },
+          "categoryLabel": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "restricted": {
+            "$ref": "#/components/schemas/SponsorRestrictedDto"
+          }
+        },
+        "required": [
+          "name",
+          "logoId"
+        ]
+      },
+      "UpdateSponsorDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Arabic, English or both — as the organisation writes it.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/OrganizationNameDto"
+              }
+            ]
+          },
+          "logoId": {
+            "type": "string",
+            "description": "A mediaAssets id; required by the specification."
+          },
+          "website": {
+            "type": "object",
+            "nullable": true,
+            "description": "http:// or https://"
+          },
+          "categoryLabel": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "restricted": {
+            "$ref": "#/components/schemas/SponsorRestrictedDto"
+          }
+        }
+      },
+      "CreateSponsorshipDto": {
+        "type": "object",
+        "properties": {
+          "sponsorId": {
+            "type": "string"
+          },
+          "targetType": {
+            "type": "string",
+            "enum": [
+              "Federation",
+              "Championship",
+              "Event"
+            ]
+          },
+          "targetId": {
+            "type": "object",
+            "nullable": true,
+            "description": "For Federation: the federation record, or empty. For Championship/Event: empty until those collections exist."
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "Strategic",
+              "Official",
+              "Supporting"
+            ]
+          },
+          "startDate": {
+            "type": "string"
+          },
+          "endDate": {
+            "type": "object",
+            "nullable": true,
+            "description": "Empty is open-ended. Required for Championship and Event."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Active",
+              "Expired",
+              "Cancelled"
+            ]
+          },
+          "bannerAssetId": {
+            "type": "object",
+            "nullable": true
+          },
+          "promotionalText": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "scopeLabel": {
+            "nullable": true,
+            "description": "What exactly is sponsored, at most 120 characters a side.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "isFeatured": {
+            "type": "boolean"
+          },
+          "displayOrder": {
+            "type": "number"
+          },
+          "isVisible": {
+            "type": "boolean",
+            "description": "Hidden unless true."
+          }
+        },
+        "required": [
+          "sponsorId",
+          "targetType",
+          "tier",
+          "startDate",
+          "displayOrder"
+        ]
+      },
+      "UpdateSponsorshipDto": {
+        "type": "object",
+        "properties": {
+          "sponsorId": {
+            "type": "string"
+          },
+          "targetType": {
+            "type": "string",
+            "enum": [
+              "Federation",
+              "Championship",
+              "Event"
+            ]
+          },
+          "targetId": {
+            "type": "object",
+            "nullable": true,
+            "description": "For Federation: the federation record, or empty. For Championship/Event: empty until those collections exist."
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "Strategic",
+              "Official",
+              "Supporting"
+            ]
+          },
+          "startDate": {
+            "type": "string"
+          },
+          "endDate": {
+            "type": "object",
+            "nullable": true,
+            "description": "Empty is open-ended. Required for Championship and Event."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Active",
+              "Expired",
+              "Cancelled"
+            ]
+          },
+          "bannerAssetId": {
+            "type": "object",
+            "nullable": true
+          },
+          "promotionalText": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "scopeLabel": {
+            "nullable": true,
+            "description": "What exactly is sponsored, at most 120 characters a side.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "isFeatured": {
+            "type": "boolean"
+          },
+          "displayOrder": {
+            "type": "number"
+          },
+          "isVisible": {
+            "type": "boolean",
+            "description": "Hidden unless true."
+          }
+        }
+      },
+      "CreatePartnershipDto": {
+        "type": "object",
+        "properties": {
+          "partnerName": {
+            "$ref": "#/components/schemas/OrganizationNameDto"
+          },
+          "partnerLogoId": {
+            "type": "object",
+            "nullable": true
+          },
+          "partnershipType": {
+            "type": "string",
+            "enum": [
+              "BilateralAgreement",
+              "MOU",
+              "TechnicalCooperation",
+              "Other"
+            ]
+          },
+          "startDate": {
+            "type": "string"
+          },
+          "endDate": {
+            "type": "object",
+            "nullable": true,
+            "description": "Empty is ongoing."
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "The relationship itself, not visibility."
+          },
+          "displayOrder": {
+            "type": "number"
+          },
+          "isVisible": {
+            "type": "boolean",
+            "description": "Hidden unless true."
+          }
+        },
+        "required": [
+          "partnerName",
+          "partnershipType",
+          "startDate",
+          "displayOrder"
+        ]
+      },
+      "UpdatePartnershipDto": {
+        "type": "object",
+        "properties": {
+          "partnerName": {
+            "$ref": "#/components/schemas/OrganizationNameDto"
+          },
+          "partnerLogoId": {
+            "type": "object",
+            "nullable": true
+          },
+          "partnershipType": {
+            "type": "string",
+            "enum": [
+              "BilateralAgreement",
+              "MOU",
+              "TechnicalCooperation",
+              "Other"
+            ]
+          },
+          "startDate": {
+            "type": "string"
+          },
+          "endDate": {
+            "type": "object",
+            "nullable": true,
+            "description": "Empty is ongoing."
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "The relationship itself, not visibility."
+          },
+          "displayOrder": {
+            "type": "number"
+          },
+          "isVisible": {
+            "type": "boolean",
+            "description": "Hidden unless true."
+          }
+        }
+      },
+      "CreateMembershipDto": {
+        "type": "object",
+        "properties": {
+          "organizationName": {
+            "$ref": "#/components/schemas/OrganizationNameDto"
+          },
+          "organizationLogoId": {
+            "type": "object",
+            "nullable": true
+          },
+          "membershipType": {
+            "type": "string",
+            "enum": [
+              "RegionalBody",
+              "ContinentalBody",
+              "InternationalBody",
+              "OlympicCommittee"
+            ]
+          },
+          "startDate": {
+            "type": "string"
+          },
+          "endDate": {
+            "type": "object",
+            "nullable": true,
+            "description": "Empty is ongoing."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Active",
+              "Suspended",
+              "Terminated"
+            ]
+          },
+          "displayOrder": {
+            "type": "number"
+          },
+          "isVisible": {
+            "type": "boolean",
+            "description": "Hidden unless true."
+          }
+        },
+        "required": [
+          "organizationName",
+          "membershipType",
+          "startDate",
+          "displayOrder"
+        ]
+      },
+      "UpdateMembershipDto": {
+        "type": "object",
+        "properties": {
+          "organizationName": {
+            "$ref": "#/components/schemas/OrganizationNameDto"
+          },
+          "organizationLogoId": {
+            "type": "object",
+            "nullable": true
+          },
+          "membershipType": {
+            "type": "string",
+            "enum": [
+              "RegionalBody",
+              "ContinentalBody",
+              "InternationalBody",
+              "OlympicCommittee"
+            ]
+          },
+          "startDate": {
+            "type": "string"
+          },
+          "endDate": {
+            "type": "object",
+            "nullable": true,
+            "description": "Empty is ongoing."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Active",
+              "Suspended",
+              "Terminated"
+            ]
+          },
+          "displayOrder": {
+            "type": "number"
+          },
+          "isVisible": {
+            "type": "boolean",
+            "description": "Hidden unless true."
           }
         }
       },

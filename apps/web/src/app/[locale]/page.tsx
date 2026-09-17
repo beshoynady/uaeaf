@@ -2,18 +2,26 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { HomeHero } from "@/components/pages/home/hero";
 import type { AppLocale } from "@/i18n/routing";
+import { RevealOnce } from "@/components/pages/president/reveal-once";
+import { OrganizationsSection } from "@/components/pages/home/sponsors/organizations-section";
+import { SponsorStrip } from "@/components/pages/home/sponsors/sponsor-strip";
+import { SponsorsSection } from "@/components/pages/home/sponsors/sponsors-section";
+import { STRIP_DEFAULTS, selectShowcase } from "@uaeaf/content/sponsors";
 import { loadHomepage, readNextEvent, readPlayback } from "@/lib/pages/homepage";
+import { loadSponsorRelations } from "@/lib/pages/sponsor-relations";
 import { buildMetadata } from "@/lib/seo/metadata";
 
 /**
  * The homepage.
  *
  * Composed from the CMS: a `pages` row with slug `home`, its ordered
- * `pageSections`, and the slides of its HERO section. The hero is the only
- * section built so far — the other twelve in the approved inventory need
- * sporting data the platform does not hold yet, and a section that renders
- * empty is worse than one that is absent (`docs/plans/homepage-hero-design.md`
- * §6.4).
+ * `pageSections`, and the slides of its HERO section. Built so far: the hero,
+ * the global sponsor strip under it, and the sponsors, partners and
+ * memberships sections in the page's own order (ADR-0085). The other sections
+ * in the approved inventory need sporting data the platform does not hold yet,
+ * and a section that renders empty is worse than one that is absent
+ * (`docs/plans/homepage-hero-design.md` §6.4); each of the built ones is absent
+ * when it has nothing to show.
  *
  * The hero's position is fixed: first on the page, directly below the header,
  * neither reorderable nor hideable from the dashboard (owner decision
@@ -64,7 +72,7 @@ const HomePage = async ({ params }: { params: Promise<{ locale: AppLocale }> }) 
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const { heroSlides, heroSection } = await loadHomepage();
+  const { heroSlides, heroSection, sections } = await loadHomepage();
 
   // No slides means the API is unreachable or the page has not been filled in.
   // The route still has to answer with something a person can read, and PR-010
@@ -86,13 +94,47 @@ const HomePage = async ({ params }: { params: Promise<{ locale: AppLocale }> }) 
     );
   }
 
+  const relations = await loadSponsorRelations(sections);
+  const now = new Date();
+  const sponsorsSection = relations.sections.find((section) => section.sectionType === "SPONSORS") ?? null;
+  // The strip pins the sponsorship the section's banner shows (ADR-0085 D5.1).
+  const banner = selectShowcase(
+    relations.sponsorships.map((item) => ({ ...item, sponsorId: item.sponsor.id })),
+    { bannerSponsorshipId: typeof sponsorsSection?.configuration?.bannerSponsorshipId === "string" ? sponsorsSection.configuration.bannerSponsorshipId : null },
+    now,
+  ).banner;
+
   return (
-    <HomeHero
-      slides={heroSlides}
-      locale={locale}
-      nextEvent={readNextEvent(heroSection, locale)}
-      playback={readPlayback(heroSection)}
-    />
+    <>
+      <HomeHero
+        slides={heroSlides}
+        locale={locale}
+        nextEvent={readNextEvent(heroSection, locale)}
+        playback={readPlayback(heroSection)}
+      />
+      {/* Under the hero, outside the first screen (ADR-0078 D3). */}
+      <SponsorStrip
+        sponsorships={relations.sponsorships}
+        settings={relations.strip ?? { ...STRIP_DEFAULTS, sponsorshipIds: [] }}
+        bannerId={banner?.id ?? null}
+        locale={locale}
+        now={now}
+      />
+      {relations.sections.map((section) =>
+        section.sectionType === "SPONSORS" ? (
+          <SponsorsSection key={section.id} sponsorships={relations.sponsorships} section={section} locale={locale} now={now} />
+        ) : (
+          <OrganizationsSection
+            key={section.id}
+            kind={section.sectionType === "PARTNERS" ? "partners" : "memberships"}
+            items={section.sectionType === "PARTNERS" ? relations.partners : relations.memberships}
+            section={section}
+            locale={locale}
+          />
+        ),
+      )}
+      <RevealOnce />
+    </>
   );
 };
 

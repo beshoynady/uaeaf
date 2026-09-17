@@ -2,7 +2,15 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { HOMEPAGE_HERO_GRANTS, NAV_ITEMS, visibleNavItems } from "./navigation";
+import {
+  HOMEPAGE_HERO_GRANTS,
+  HOMEPAGE_MEMBERSHIPS_GRANTS,
+  HOMEPAGE_PARTNERS_GRANTS,
+  HOMEPAGE_SPONSOR_STRIP_GRANTS,
+  HOMEPAGE_SPONSORS_GRANTS,
+  NAV_ITEMS,
+  visibleNavItems,
+} from "./navigation";
 import { UNCLASSIFIED_DOMAIN_KEY, domainKeyFor } from "./admin/resource-domains";
 import { STATIC_PAGES } from "./admin/static-pages";
 
@@ -31,7 +39,8 @@ describe("visibleNavItems", () => {
   it("shows everything to a fully privileged user, in the declared order", () => {
     // One grant per requirement, using the exact action where the item names
     // one — a link that asks for `Update` is not satisfied by `Read`.
-    const grants = NAV_ITEMS.flatMap((item) =>
+    // A group's screens carry their own requirements, so they are read too.
+    const grants = NAV_ITEMS.flatMap((item) => [item, ...(item.children ?? [])]).flatMap((item) =>
       [...(item.requires ?? []), ...(item.requiresAll ?? [])].map((rule) => ({
         resourceType: rule.resourceType,
         action: rule.action ?? "Read",
@@ -104,13 +113,19 @@ describe("the president's message link", () => {
   });
 });
 
-describe("the homepage hero screen's grants and the API catalogue", () => {
+describe("the homepage screens' grants and the API catalogue", () => {
   // Every grant the screen checks must be a catalogue row: the seed creates the
   // rows from that list, so a grant missing there is one no administrator of a
   // new environment could ever hold, and the screen would never open.
   it("asks only for grants the API seeds", () => {
     const catalogue = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..", "api", "src", "common", "constants", "permission-catalogue.ts"), "utf8");
-    const missing = HOMEPAGE_HERO_GRANTS.filter(
+    const missing = [
+      ...HOMEPAGE_HERO_GRANTS,
+      ...HOMEPAGE_SPONSOR_STRIP_GRANTS,
+      ...HOMEPAGE_SPONSORS_GRANTS,
+      ...HOMEPAGE_PARTNERS_GRANTS,
+      ...HOMEPAGE_MEMBERSHIPS_GRANTS,
+    ].filter(
       ({ resourceType, action }) => !catalogue.includes(`{ resourceType: '${resourceType}', action: '${action}' }`),
     );
     expect(missing).toEqual([]);
@@ -145,6 +160,41 @@ describe("the homepage group", () => {
   it("stays hidden from someone who can update slides but not add or delete them, which one Save may do", () => {
     const withoutCreateOrDelete = editor.filter((grant) => grant.action !== "Create" && grant.action !== "Delete");
     expect(visibleNavItems(withoutCreateOrDelete).map((entry) => entry.key)).not.toContain("homepage");
+  });
+
+  it("appears for someone who can only manage partners, with that one screen beneath it and linking to it", () => {
+    const homepage = visibleNavItems(HOMEPAGE_PARTNERS_GRANTS).find((entry) => entry.key === "homepage");
+    expect(homepage?.href).toBe("/homepage/partners");
+    expect(homepage?.children?.map((child) => child.key)).toEqual(["homepagePartners"]);
+  });
+
+  it("lists the screens in the homepage's own order for someone who holds every grant", () => {
+    const everything = [
+      ...HOMEPAGE_HERO_GRANTS,
+      ...HOMEPAGE_SPONSOR_STRIP_GRANTS,
+      ...HOMEPAGE_SPONSORS_GRANTS,
+      ...HOMEPAGE_PARTNERS_GRANTS,
+      ...HOMEPAGE_MEMBERSHIPS_GRANTS,
+    ];
+    const homepage = visibleNavItems(everything).find((entry) => entry.key === "homepage");
+    expect(homepage?.children?.map((child) => [child.key, child.href])).toEqual([
+      ["homepageHero", "/homepage/hero"],
+      ["homepageSponsorStrip", "/homepage/sponsor-strip"],
+      ["homepageSponsors", "/homepage/sponsors"],
+      ["homepagePartners", "/homepage/partners"],
+      ["homepageMemberships", "/homepage/memberships"],
+    ]);
+  });
+
+  it("keeps the sponsors screen hidden from someone who can edit sponsors but not the section's banner and call to action, which its Save writes too", () => {
+    const withoutSection = HOMEPAGE_SPONSORS_GRANTS.filter((grant) => grant.resourceType !== "pageSections");
+    const children = visibleNavItems(withoutSection).find((entry) => entry.key === "homepage")?.children ?? [];
+    expect(children.map((child) => child.key)).not.toContain("homepageSponsors");
+  });
+
+  it("keeps the memberships screen hidden from someone who can update memberships but not add or delete them", () => {
+    const partial = HOMEPAGE_MEMBERSHIPS_GRANTS.filter((grant) => grant.action === "Read" || grant.action === "Update");
+    expect(visibleNavItems(partial).map((entry) => entry.key)).not.toContain("homepage");
   });
 });
 

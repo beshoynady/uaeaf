@@ -129,10 +129,24 @@ export const HERO_ERROR_CODES = [
   "invalidPlayback",
 ] as const;
 
+/**
+ * Failures only the sponsors, partners and memberships screens can produce
+ * (ADR-0085). Four different fixes: move the end after the start; give a
+ * championship or event sponsorship the end it must have; point a Federation
+ * sponsorship at the federation or at nothing; shorten a name.
+ */
+export const SPONSOR_RELATION_ERROR_CODES = [
+  "sponsorshipEndsBeforeStart",
+  "sponsorshipEndRequired",
+  "invalidSponsorshipTarget",
+  "organizationNameTooLong",
+] as const;
+
 export type WriteErrorCode =
   | (typeof WRITE_ERROR_CODES)[number]
   | (typeof EDITORIAL_ERROR_CODES)[number]
-  | (typeof HERO_ERROR_CODES)[number];
+  | (typeof HERO_ERROR_CODES)[number]
+  | (typeof SPONSOR_RELATION_ERROR_CODES)[number];
 
 /** What a refusal says about where it happened, beside its code. */
 export interface FailureDetails {
@@ -277,6 +291,10 @@ const FROM_API_CODE: Record<string, WriteErrorCode> = {
   incompleteCta: "incompleteCta",
   ctaLabelTooLong: "ctaLabelTooLong",
   invalidCtaUrl: "invalidCtaUrl",
+  sponsorshipEndsBeforeStart: "sponsorshipEndsBeforeStart",
+  sponsorshipEndRequired: "sponsorshipEndRequired",
+  invalidSponsorshipTarget: "invalidSponsorshipTarget",
+  organizationNameTooLong: "organizationNameTooLong",
   incompleteLtrImage: "incompleteLtrImage",
   incompleteSlide: "incompleteSlide",
   heroTextTooLong: "heroTextTooLong",

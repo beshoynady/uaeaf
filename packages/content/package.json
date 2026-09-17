@@ -5,7 +5,8 @@
   "description": "Presentation logic for content shared by the public site and the dashboard: one source for what the site draws and what the dashboard previews (ADR-0083).",
   "type": "module",
   "exports": {
-    "./hero": "./hero/index.ts"
+    "./hero": "./hero/index.ts",
+    "./sponsors": "./sponsors/index.ts"
   },
   "scripts": {
     "lint": "eslint"

@@ -21,6 +21,12 @@ describe("classifyWriteFailure", () => {
     }
   });
 
+  it("keeps the sponsor, partner and membership refusals, each a different fix (ADR-0085)", () => {
+    for (const code of ["sponsorshipEndsBeforeStart", "sponsorshipEndRequired", "invalidSponsorshipTarget", "organizationNameTooLong"]) {
+      expect(classifyWriteFailure(new UpstreamError(400, { code }))).toEqual({ status: 400, code });
+    }
+  });
+
   it("is unaffected by the wording of the message", () => {
     // The whole point of the change on 2026-09-08: copy is not a contract.
     // Reword the sentence, keep the code, keep the behaviour.

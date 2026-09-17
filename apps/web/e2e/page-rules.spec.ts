@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { altLanguageProblem } from "../src/lib/a11y/alt-language";
 
 /**
  * The page rules of `docs/engineering/page-building-guide.md` §٨, measured on
@@ -100,6 +101,17 @@ const ALL_ROUTES: RoutePlan[] = [
       holds: (sections) => sections.some((section) => section.kind !== "hero" && section.photographs > 0),
     },
   },
+  // ADR-0085: the hero, then the sponsors, partners and memberships sections in
+  // the page's own order. The global strip is an `aside`, not a section.
+  {
+    route: "/",
+    numbered: false,
+    minimumSections: 1,
+    published: {
+      reason: "the homepage record serves no sponsor, partner or membership section (the CI fixture serves the hero only)",
+      holds: (sections) => sections.length >= 4,
+    },
+  },
 ];
 
 const ROUTES = ALL_ROUTES.filter((plan) => !process.env.ONLY_ROUTE || plan.route === process.env.ONLY_ROUTE);
@@ -151,6 +163,19 @@ const PENDING: Record<string, Record<string, Partial<Record<Rule, Held>>>> = {
   "/about/governance/strategic-plan": {
     "strategic-plan-pillars-title": {
       rule1: { reason: "the pillars' heading spans a phone's line below md, leaving no corner 32px clear of words for the strokes; the section has no photograph", below: 768 },
+    },
+  },
+  // ADR-0085: the sponsors and memberships sections follow a coloured band
+  // with their strokes below the seam, from lg; below it their headings span
+  // the line and IL-5 measured the strokes 0–28px from them at 768 (the
+  // President's finding). The banner's black block is inside the
+  // section, which this reader does not count as the section's register.
+  "/": {
+    "home-sponsors-title": {
+      rule1: { reason: "the sponsors' heading spans the line below lg, leaving no corner 32px clear of words for the strokes; the banner's black block is inside the section", below: 1024 },
+    },
+    "home-memberships-title": {
+      rule1: { reason: "the memberships' heading spans the line below lg, leaving no corner 32px clear of words for the strokes; the logos are marks, not photographs", below: 1024 },
     },
   },
 };
@@ -595,24 +620,22 @@ for (const plan of ROUTES) {
 
         test("rule 6: every picture offered as content carries an alternative text in the page's language", async ({ page }) => {
           await page.goto(`/${locale}${route}`, { waitUntil: "domcontentloaded" });
+          // The nearest declared language, the image's own included: an
+          // organisation's single-language name keeps its `lang` on both pages
+          // (ADR-0085 D3.4). The root's `lang` is the page's, so it changes nothing.
           const pictures = await page.locator("main img").evaluateAll((images) =>
             images
               .filter((image) => !image.closest('[aria-hidden="true"]'))
-              .map((image) => ({ src: (image as HTMLImageElement).src.split("/").pop() ?? "", alt: image.getAttribute("alt") ?? "" })),
+              .map((image) => ({
+                src: (image as HTMLImageElement).src.split("/").pop() ?? "",
+                alt: image.getAttribute("alt") ?? "",
+                lang: image.closest("[lang]")?.getAttribute("lang") ?? null,
+              })),
           );
           test.info().annotations.push({ type: "pictures", description: JSON.stringify(pictures) });
 
-          const arabic = /\p{Script=Arabic}/u;
           for (const picture of pictures) {
-            expect(picture.alt.trim(), `${picture.src}: an alternative text`).not.toBe("");
-            if (locale === "ar") {
-              expect(arabic.test(picture.alt), `${picture.src}: "${picture.alt}" is written in Arabic`).toBe(true);
-            } else {
-              expect(
-                !arabic.test(picture.alt) && /\p{Script=Latin}/u.test(picture.alt),
-                `${picture.src}: "${picture.alt}" is written in English`,
-              ).toBe(true);
-            }
+            expect(altLanguageProblem({ alt: picture.alt, lang: picture.lang, pageLocale: locale }), picture.src).toBeNull();
           }
         });
       });

@@ -6,8 +6,9 @@
  * directory under `api/src/modules/` declares it; the nine module folders
  * were then matched to the domain headings in
  * `docs/product/07-Mongoose-Schema-Specification.md` (`## Domain N — Title`).
- * All 64 entries of `PERMISSION_RESOURCES` are covered, every resource lives
- * in exactly one folder, and no resource is declared without a guarded route.
+ * All 68 entries of `PERMISSION_RESOURCES` are covered (Domain 9 joined on
+ * 2026-09-17, ADR-0085), every resource lives in exactly one folder, and no
+ * resource is declared without a guarded route.
  * (`auditLogs` joined the list on 2026-09-08, when the trail gained a read
  * endpoint — see api/src/modules/workflow/audit-logs/.)
  *
@@ -45,6 +46,11 @@ export const RESOURCE_DOMAINS: Record<string, ResourceDomain> = {
     ar: "سير العمل والاعتماد والنشر",
   },
   "platform-administration": { order: 8, en: "Platform Administration", ar: "إدارة المنصة" },
+  "sponsorship-relations": {
+    order: 9,
+    en: "Sponsorship / Institutional Relationships",
+    ar: "الرعاية والعلاقات المؤسسية",
+  },
   "public-communication": { order: 10, en: "Public Communication", ar: "التواصل العام" },
   "cms-page-composition": { order: 11, en: "CMS & Page Composition", ar: "تكوين الصفحات" },
 };
@@ -94,6 +100,7 @@ const RESOURCE_TO_DOMAIN: Record<string, string> = {
   governanceDocuments: "federation-governance",
   heroSlides: "cms-page-composition",
   mediaAssets: "media-center",
+  memberships: "sponsorship-relations",
   navigationItems: "cms-page-composition",
   navigationMenus: "cms-page-composition",
   newsPage: "cms-page-composition",
@@ -105,6 +112,7 @@ const RESOURCE_TO_DOMAIN: Record<string, string> = {
   organizationalStructure: "federation-governance",
   pageSections: "cms-page-composition",
   pages: "cms-page-composition",
+  partnerships: "sponsorship-relations",
   permissions: "platform-administration",
   presidentMessagePage: "federation-governance",
   publications: "workflow",
@@ -113,6 +121,8 @@ const RESOURCE_TO_DOMAIN: Record<string, string> = {
   revisions: "workflow",
   roles: "platform-administration",
   siteSettings: "cms-page-composition",
+  sponsors: "sponsorship-relations",
+  sponsorships: "sponsorship-relations",
   strategicPlansPage: "federation-governance",
   users: "platform-administration",
   venues: "people-organizations",
@@ -126,14 +136,11 @@ const RESOURCE_TO_DOMAIN: Record<string, string> = {
   workflowSteps: "workflow",
 };
 
-export function domainKeyFor(resourceType: string): string {
-  return RESOURCE_TO_DOMAIN[resourceType] ?? UNCLASSIFIED_DOMAIN_KEY;
-}
+export const domainKeyFor = (resourceType: string): string =>
+  RESOURCE_TO_DOMAIN[resourceType] ?? UNCLASSIFIED_DOMAIN_KEY;
 
 /** Sort key for a domain heading. Unclassified sorts last, deliberately. */
-export function domainOrder(key: string): number {
-  return RESOURCE_DOMAINS[key]?.order ?? Number.MAX_SAFE_INTEGER;
-}
+export const domainOrder = (key: string): number => RESOURCE_DOMAINS[key]?.order ?? Number.MAX_SAFE_INTEGER;
 
 /** Exported for the test that guards the derivation's completeness. */
 export const MAPPED_RESOURCE_COUNT = Object.keys(RESOURCE_TO_DOMAIN).length;

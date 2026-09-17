@@ -91,6 +91,14 @@ export const API_ERROR_CODES = [
   'incompleteNextEvent',
   'nextEventEndsBeforeStart',
   'invalidPlayback',
+  // Sponsors, partners and memberships (ADR-0085). Four different fixes: set
+  // an end no earlier than the start; give a championship or event
+  // sponsorship the end it must have; point a Federation sponsorship at the
+  // federation or at nothing; shorten a name past 150 characters.
+  'sponsorshipEndsBeforeStart',
+  'sponsorshipEndRequired',
+  'invalidSponsorshipTarget',
+  'organizationNameTooLong',
 ] as const;
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

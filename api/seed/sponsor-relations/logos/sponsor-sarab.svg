@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="120" viewBox="0 0 240 120">
+  <rect width="240" height="120" fill="#FFFFFF"/>
+  <path d="M16 50 H80 M16 62 H80 M16 74 H80" stroke="#5A3E7A" stroke-width="6" stroke-linecap="round"/><circle cx="48" cy="36" r="10" fill="#D08A3A"/>
+  <text x="96" y="60" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="#5A3E7A">SARAB</text>
+  <text x="96" y="84" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" letter-spacing="3" fill="#D08A3A">DEMO</text>
+</svg>

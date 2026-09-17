@@ -1062,3 +1062,22 @@ diagnosis of code that is not broken.
    Stop the Next processes first (procedure 1), delete the directory (it is
    generated), restart, and verify with several consecutive requests: the
    broken run also passes its first one.
+
+---
+
+# 33. GIT — READ ONLY FOR THE AGENT
+
+Owner decision 2026-09-17. It holds in every session unless a task says otherwise
+explicitly.
+
+1. **Allowed, to read state only:** `git status`, `git diff`, `git log`,
+   `git show`, `git ls-files`.
+2. **Not allowed:** any command that writes or changes state. That includes
+   `add`, `commit`, `push`, `branch`, `checkout`, `switch`, `stash`, `reset`,
+   `restore`, `merge`, `rebase`, `clean`, `rm` and `mv`.
+3. **No direct reads of `.git/`** (for example `logs/HEAD` or `index`). Use the
+   allowed commands instead.
+4. **Commits are the owner's.** When work is ready, write the exact commands as
+   text (`git add` with full paths from the repository root, then
+   `git commit -m`) for the owner to run, and say whether any commit breaks the
+   build on its own.

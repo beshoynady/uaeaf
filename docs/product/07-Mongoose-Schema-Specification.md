@@ -859,16 +859,27 @@ Populate strategy: `triggerId` — on-demand.
 
 **Workflow/Revision exemption reminder (Phase 2.2 item 5):** none of these four collections are in the 12-type workflow/revision/publication list — their accuracy is managed operationally by direct edit, not an editorial Approve→Publish pipeline (documented in FigJam as a standalone note above this domain).
 
+**Built (ADR-0077 accepted with ADR-0085 D1, 2026-09-17).** The four collections below exist in `api/src/modules/sponsorship-relations`. Rows marked **[ADR-0085]** record where the build departs from the original table, each by an owner decision; the rest are built as written. Fields shared by all four since the build:
+
+| Field | Mongoose Type | Required | Default | Why |
+|---|---|---|---|---|
+| name fields (`name`, `partnerName`, `organizationName`) | `OrganizationName { ar: String or null, en: String or null }` | at least one side | none | **[ADR-0085 D4]** some organisations have a name in one language only; the other is never invented. 150 graphemes a side (`organizationNameTooLong`); both empty is refused (`missingRequiredField`). Not `LocalizedText`, which requires both |
+| `displayOrder` | Number | `false` | `0` | **[ADR-0085 D1]** the site's order; on `sponsorships` it is global across sponsors, because the grid and the strip order across them |
+| `isVisible` | Boolean | `false` | `false` | **[ADR-0085 D1]** shown on the site; a new record starts hidden (ADR-0084's pattern). Not on `sponsors`: a sponsor is shown through its sponsorships |
+| `isDemo` | Boolean | `false` | `false` | **[ADR-0085 D2.1]** a fictional seed record. Public reads drop it when `NODE_ENV=production` (`hidesDemoRecords`); never writable through the API or the dashboard |
+
+Every date is stored as a UTC instant and read as a calendar day in `Asia/Dubai`: a window opens at Dubai midnight of its start day and closes at the end of its end day (`api/src/common/utils/sponsorship-window.util.ts`, duplicated in `packages/content/sponsors/window.ts` under a drift test).
+
 ### `sponsors`
 
 | Field | Mongoose Type | Required | Default | Validation | Index | Visibility |
 |---|---|---|---|---|---|---|
 | `_id` | ObjectId | auto | auto | — | Primary (auto) | Public |
-| `name` | `{ en: String, ar: String }` | `true` (both) | none | `maxlength: 150` each | None | Public |
+| `name` | `OrganizationName` | at least one side | none | **[ADR-0085 D4]** see the shared table above | None | Public |
 | `logoId` | ObjectId, ref `MediaAsset` | `true` | none | — | None | Public |
 | `website` | String | `false` | `null` | `match: /^https?:\/\/.+/` | None | Public |
-| `categoryLabel` | `{ en: String, ar: String }` | `false` | `''` each | `maxlength: 100` each | None | Public |
-| `restricted` | Sub-schema (embedded) | `false` | `{}` | **[SCHEMA-READY GAP FILLED]** `Object` had no shape specified — proposed: `{ contactEmail: { type: String, lowercase: true, match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ }, contactPhone: { type: String, match: /^\+?[0-9\s-]{7,20}$/ }, contractValue: Number, contractDocId: { type: ObjectId, ref: 'Document' } }` | None | Restricted |
+| `categoryLabel` | `LocalizedText` | `false` | `null` | **[ADR-0085 D1]** both languages or none (`null`), since the line sits under a name on either page | None | Public |
+| `restricted` | Sub-schema (embedded), built as proposed; never in a public response | `false` | `{}` | **[SCHEMA-READY GAP FILLED]** `Object` had no shape specified — proposed: `{ contactEmail: { type: String, lowercase: true, match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ }, contactPhone: { type: String, match: /^\+?[0-9\s-]{7,20}$/ }, contractValue: Number, contractDocId: { type: ObjectId, ref: 'Document' } }` | None | Restricted |
 
 ### `sponsorships`
 
@@ -877,20 +888,24 @@ Populate strategy: `triggerId` — on-demand.
 | `_id` | ObjectId | auto | auto | — | Primary (auto) | Public |
 | `sponsorId` | ObjectId, ref `Sponsor` | `true` | none | — | `{ sponsorId: 1 }` (baseline §11, still valid — "all targets for this sponsor") | Public |
 | `targetType` | String, enum | `true` | none | Already specified: `['Federation', 'Championship', 'Event']` — Department deliberately excluded, per the explicit instruction that this is a business decision, not an architecture call | `{ targetType: 1, targetId: 1, status: 1 }` compound (baseline §11, still valid) | Public |
-| `targetId` | ObjectId, poly → `federation \| championships \| events` | `true` | none | must resolve against `targetType` | see compound above | Public |
+| `targetId` | ObjectId, poly → `federation \| championships \| events` | `false` | `null` | **[ADR-0085 D1, decision C]** optional until championships and events exist (ADR-0081 D2). A `Federation` sponsorship points at the federation record or at nothing (`invalidSponsorshipTarget` otherwise); a `Championship` or `Event` id is stored unresolved until its collection exists | see compound above | Public |
 | `tier` | String, enum | `true` | none | **[SCHEMA-READY GAP FILLED]** enum was unlisted — derived directly from the Homepage spec's own tier language (§15: "Strategic / Official ×3 / Supporting"), not a fresh guess: `['Strategic', 'Official', 'Supporting']` | `{ tier: 1 }` — candidate, tiered grid rendering | Public |
 | `startDate` | Date | `true` | none | — | None | Public |
-| `endDate` | Date | `true` | none | must be `>= startDate` | None | Public |
-| `status` | String, enum | `true` | `'Active'` | **[SCHEMA-READY GAP FILLED]** enum was unlisted — proposed list: `['Active', 'Expired', 'Cancelled']` | see compound above | Public |
+| `endDate` | Date | `false` | `null` | **[ADR-0085 D1]** `null` = open-ended, allowed only for `targetType: 'Federation'`; a championship or event sponsorship ends with it (`sponsorshipEndRequired`). Must not end before it starts (`sponsorshipEndsBeforeStart`) | None | Public |
+| `status` | String, enum | `true` | `'Active'` | **[SCHEMA-READY GAP FILLED]** enum was unlisted — proposed list: `['Active', 'Expired', 'Cancelled']`. **[ADR-0085]** `Expired` and `Cancelled` are the editor's statements; an ended window is worked out from the dates at read time (`sponsorshipState`) | see compound above | Public |
 | `bannerAssetId` | ObjectId, ref `MediaAsset` | `false` | `null` | populated only when `tier = 'Strategic'`; null otherwise (app-layer conditional, not schema-enforced) | None | Public |
 | `promotionalText` | `{ en: String, ar: String }` | `false` | `null` each | same `tier = 'Strategic'` conditional; drives full-banner vs. logo-grid rendering — presentation concern, data storage only | None | Public |
+| `scopeLabel` | `LocalizedText` | `false` | `null` | **[ADR-0077 D2 #2]** what it sponsors: both languages or none, 120 graphemes a side (`scopeLabelTooLong`) | None | Public |
+| `isFeatured` | Boolean | `false` | `false` | **[ADR-0077 D2]** the VIP mark on the sponsor's card; not the banner choice (ADR-0085 D6) | None | Public |
+
+**The banner [ADR-0085 D5.1]** is not a field here. The SPONSORS section shows the highest tier among qualifying sponsorships, and `pageSections.configuration.bannerSponsorshipId` (an ObjectId or `null`) is a preference within that tier. **The strip [ADR-0077 D5]** is `siteSettings.sponsorStrip { isVisible, displayMode, selection, sponsorshipIds, order, pinTopTier, speed }`, written whole through `PUT /site-settings/sponsor-strip`.
 
 ### `partnerships`
 
 | Field | Mongoose Type | Required | Default | Validation | Index | Visibility |
 |---|---|---|---|---|---|---|
 | `_id` | ObjectId | auto | auto | — | Primary (auto) | Public |
-| `partnerName` | `{ en: String, ar: String }` | `true` (both) | none | `maxlength: 150` each | None | Public |
+| `partnerName` | `OrganizationName` | at least one side | none | **[ADR-0085 D4]** see the shared table above | None | Public |
 | `partnerLogoId` | ObjectId, ref `MediaAsset` | `false` | `null` | — | None | Public |
 | `partnershipType` | String, enum | `true` | none | **[SCHEMA-READY GAP FILLED]** enum was unlisted — proposed list: `['BilateralAgreement', 'MOU', 'TechnicalCooperation', 'Other']` | `{ partnershipType: 1 }` — candidate | Public |
 | `startDate` | Date | `true` | none | — | None | Public |
@@ -902,12 +917,12 @@ Populate strategy: `triggerId` — on-demand.
 | Field | Mongoose Type | Required | Default | Validation | Index | Visibility |
 |---|---|---|---|---|---|---|
 | `_id` | ObjectId | auto | auto | — | Primary (auto) | Public |
-| `organizationName` | `{ en: String, ar: String }` | `true` (both) | none | `maxlength: 150` each | None | Public |
+| `organizationName` | `OrganizationName` | at least one side | none | **[ADR-0085 D4]** see the shared table above | None | Public |
 | `organizationLogoId` | ObjectId, ref `MediaAsset` | `false` | `null` | — | None | Public |
 | `membershipType` | String, enum | `true` | none | **[SCHEMA-READY GAP FILLED]** enum was unlisted — derived from the Group C brief's own examples ("regional athletics bodies, Olympic organizations, other governing bodies"): `['RegionalBody', 'ContinentalBody', 'InternationalBody', 'OlympicCommittee']` | `{ membershipType: 1 }` — candidate | Public |
 | `startDate` | Date | `true` | none | — | None | Public |
 | `endDate` | Date | `false` | `null` | `null` = ongoing | None | Public |
-| `status` | String, enum | `true` | `'Active'` | **[SCHEMA-READY GAP FILLED]** enum was unlisted — proposed list: `['Active', 'Suspended', 'Terminated']` | Compound `{ organizationName: 1, status: 1 }` — was baseline §11's `{ organizationId: 1, status: 1 }` under the old collection name `institutionalMemberships`; **staleness flagged:** this collection has no `organizationId` ref (organization is captured inline via `organizationName`, per the "no Organization model" hard rule), so the baseline index cannot be ported as-is — corrected to key off `organizationName` instead | Public |
+| `status` | String, enum | `true` | `'Active'` | **[SCHEMA-READY GAP FILLED]** enum was unlisted — proposed list: `['Active', 'Suspended', 'Terminated']` | Compound `{ organizationName: 1, status: 1 }` — was baseline §11's `{ organizationId: 1, status: 1 }` under the old collection name `institutionalMemberships`; **staleness flagged:** this collection has no `organizationId` ref (organization is captured inline via `organizationName`, per the "no Organization model" hard rule), so the baseline index cannot be ported as-is — corrected to key off `organizationName` instead. **Built:** only `{ membershipType: 1 }`; a single-language name makes a poor index key, and the list is small enough to read whole | Public |
 
 ---
 

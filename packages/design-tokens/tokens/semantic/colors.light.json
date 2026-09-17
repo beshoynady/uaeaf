@@ -3,6 +3,9 @@
     "action": {
       "default": { "value": "{color.green.500}", "type": "color", "comment": "ADR-0072 D13 — the Action role (ADR-0065 D2): the edge a control takes under the pointer and the icon that answers it. Federation Green at the point of interaction, the same value in every theme" }
     },
+    "logo": {
+      "plate": { "value": "{color.white}", "type": "color", "comment": "ADR-0085 D6.1 — the ground behind a third-party mark. Supplied logos arrive on an opaque white ground, so the plate stays white in every list; on a neutral ground its edge is --color-border-strong" }
+    },
     "map": {
       "marker": { "value": "{color.red.500}", "type": "color", "comment": "ADR-0072 D13 — the location pin on a map card. It stands on map imagery, an unknown ground, so its value does not follow the theme (contact-map.tsx): the same red in every list, measured on the pin card's base ground" }
     },

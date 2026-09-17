@@ -627,6 +627,8 @@ This component also prepares for future AI Analytics integration (Chapter 16), w
 
 ## CMP-GLOBALSPONSORSTRIP-001 — Global Sponsors Strip
 
+> **Superseded in part (2026-09-17).** The four `DESIGN DECISION REQUIRED` items in the table below (placement, pages, content, RTL behaviour) are closed by **ADR-0077 D5**, accepted with **ADR-0085**'s amendments; read them there, not here. The sponsor entity gap this component depended on is closed too: `sponsors` and `sponsorships` exist in the API (ADR-0085 D1). As built, the strip appears on the homepage only; its placement on other public pages follows ADR-0077 D5 as those pages are built. The core ruling of this ADR — the Grid and the Strip are two distinct components — is unchanged.
+
 | Section | Details |
 | --- | --- |
 | **Purpose** | Continuous, lightweight, sitewide reminder of the Federation's sponsors/partners — brand-support visibility beyond the Homepage's dedicated section. |

@@ -310,6 +310,18 @@ Presented on the Homepage via two sections: **Results & Rankings** and **Upcomin
 
 ## 15. Sponsors Strategy
 
+> **[Built — ADR-0085, 2026-09-17]** The section is built, and this block is what governs it now; the paragraphs below stay as the record of what Figma showed. Where they differ, ADR-0085 wins.
+>
+> - **Three homepage sections and one strip**, in this order after the hero: the global sponsor strip (ADR-0077 D5, answering ADR-0043's placement question for the homepage), **Sponsors** (neutral ground; stats, the banner, the card grid, the partnership CTA), **Partners** (green register, a section of its own) and **Memberships** (neutral ground).
+> - **Stats are computed** from the sponsorships shown (sponsors, years of the longest sponsorship, championships), and a stat below 1 is not shown. The Figma counts (8, 10, 5) are not used.
+> - **The banner** shows the **highest tier present** among visible, running sponsorships (`Strategic` › `Official` › `Supporting`), with the section's `bannerSponsorshipId` as a preference within that tier. It sits on the black register with the identity lines, **no photograph**; one tier label from data; one link, the sponsor's website, in a new tab with a spoken notice. It is not repeated in the grid.
+> - **Tiers:** Strategic, Official, Supporting. The federation's real sponsor, Ultimate Power Solution, is `Official`.
+> - **Names** may exist in one language only and are shown as the organisation writes them, isolated with `<bdi lang>` on the other language's page. **Logos** are `contain`, on a plate, never cropped.
+> - **Motion:** the section is static. The strip moves only when its items do not fit the row, never without a working pause button, and never under `prefers-reduced-motion`.
+> - **Empty shelves:** each part is absent, not empty, when nothing qualifies. The CTA appears only when its text and link are set.
+> - **Responsive:** built and measured at every Chapter 5 breakpoint, in both languages and all three colour modes. The identity lines are drawn from `lg`; below it they are PENDING (ADR-0085 D8 #1).
+> - **Managed from the dashboard** (Homepage → Sponsors, Partners, Memberships, Sponsor strip). Demo records are marked and never shown in production.
+
 **[Reconciled v0.2.1 — this session, Project Owner ruling]** The section below replaces the retired "one merged animated strip" description with the approved built pattern. This is a **documentation correction, not a design change** — the current Figma implementation is the approved source of truth (§0 evidence convention **[B]**); nothing in Figma was modified to produce this reconciliation.
 
 > **[Amended v0.2.2 — Project Owner ruling, resolving a client-requested conflict]** The Homepage Sponsors Grid described in this entire section is **retained unchanged** — nothing below is reversed or reopened. A **separate, new, sitewide persistent component**, `CMP-GLOBALSPONSORSTRIP-001` (compact, continuously moving, logo + concise sponsor text, across public website pages), has been approved as a secondary, non-replacing addition — governed by **Chapter 8 L8 ADR-0043**, not by this section. Several implementation questions (exact placement, whether it also appears on this Homepage alongside the Grid, the exact sponsor-text field) remain **DESIGN DECISION REQUIRED** per ADR-0043 and are not resolved here. See `docs/product/05-Client-Requirements-Register-2026-08.md` item 7 for the originating conflict.

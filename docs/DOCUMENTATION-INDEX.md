@@ -56,7 +56,7 @@
 
 ### قرارات معمارية (ADRs)
 
-`ADR-0054` … `ADR-0084` — واحد وثلاثون ملفًا في `docs/design-system/`. كل واحد يوثّق
+`ADR-0054` … `ADR-0085` — اثنان وثلاثون ملفًا في `docs/design-system/`. كل واحد يوثّق
 قرارًا واحدًا وسببه والبديل المرفوض. **هذه أهم ما يُسلَّم**: هي الجواب على «لماذا
 بُني هكذا» بعد أن ينسى الجميع.
 
@@ -66,7 +66,11 @@
 `ADR-0070-Vision-Mission-Page-Schema-Editorial-Routes-Shared-Editor-And-Identity-Hero.md`
 — صفحة الرؤية والرسالة: الـ schema، ومسارات التحرير، وأجزاء المحرر المشتركة، وhero خطوط الهوية.
 
-**هيرو الصفحة الرئيسية** (أحدثها):
+**الرعاة والشركاء والعضويات** (أحدثها):
+- `ADR-0085-Sponsors-Partners-Memberships-Build-The-Real-Sponsor-Exception-And-Figma-Corrections.md` — بناء الكيانات الأربعة: استثناء الراعي الحقيقي من قاعدة الـseed ومنع البيانات التجريبية من الإنتاج، والأسماء أحادية اللغة، وتصحيحات Figma، والبانر بأعلى مستوى سارٍ، و`--color-logo-plate`، وحركة الشريط، وما استقر عند البناء (D8، بعض بنوده بانتظار تأكيد المالك).
+- `ADR-0077-Sponsorship-Model-Evolution-And-The-Global-Sponsor-Strip-Settings.md` — نموذج الرعاية وإعدادات الشريط العام، مقبول بتعديلات ADR-0085.
+
+**هيرو الصفحة الرئيسية**:
 - `ADR-0084-Homepage-Hero-Dashboard-Save-Is-Publish.md` — شاشة إدارة الهيرو: الحفظ نشر ودين المسودة، والشريحة الجديدة مخفية، والانحرافات عن الوصف، وما كشفه التحقق الحي وأُصلح، وفجوة تباين زر الحذف في الداكن.
 - `ADR-0083-The-Hero-Rules-Shared-By-The-Site-And-The-Dashboard.md` — الوحدة المشتركة `@uaeaf/content/hero` ومكانها: القص والقلب والارتفاع وحالات شريط الحدث والحدود، للموقع والمعاينة معًا.
 - `ADR-0082-Video-Slides-In-The-Homepage-Hero.md` — شرائح الفيديو، مقترح.
@@ -75,8 +79,6 @@
 - `ADR-0079-The-Scroll-Cue-On-First-Screen-Heroes.md` — علامة التمرير على heroes الشاشة الأولى.
 - `ADR-0078-The-First-Screen-Is-Header-Plus-Hero.md` — الهيدر + الهيرو = الشاشة.
 - `ADR-0076-Site-Motion-Library-And-The-Hero-That-Needs-No-JavaScript.md` — مكتبة الحركة والهيرو بلا JavaScript.
-
-`ADR-0077-Sponsorship-Model-Evolution-And-The-Global-Sponsor-Strip-Settings.md` — نموذج الرعاية وإعدادات شريط الرعاة.
 
 وقبلها: `ADR-0075-Strategic-Plan-Page-Domain-Seams-In-Every-Mode-And-Seam-Lines-Below-A-Band.md`
 — صفحة الخطة الاستراتيجية: إكمال domain `strategic-plans-page` بـschema الأقسام الثمانية وشاشة إدارة، وحدّ الأشرطة الملوّنة في التباين العالي (القاعدة ٣ في الأوضاع الثلاثة)، وخطوط الحدّ تحت الشريط الملوّن (`SeamLines placement="below"`)، والمجموعة B بالخيار (أ)، وتراتب الـhero، ونطاق القاعدة ٢.
@@ -101,7 +103,7 @@
 
 | المصدر | ملاحظة |
 |---|---|
-| `api/openapi.json` | مولَّد من الكود (`npm run generate:openapi`)، لا يُحرَّر يدويًا. ١٧٥ مسارًا. |
+| `api/openapi.json` | مولَّد من الكود (`npm run generate:openapi`)، لا يُحرَّر يدويًا. ٢٠١ مسارًا (قيس 2026-09-17). |
 | Swagger UI على `/api/docs` | الواجهة التفاعلية لنفس الملف |
 | `docs/design-system/ADR-0058-Machine-Readable-API-Error-Codes.md` | عقد رموز الأخطاء الذي تعتمد عليه كل الواجهات |
 
@@ -169,6 +171,7 @@
 | `content/strategic-plan-federation-questions.md` | ما نحتاجه من الاتحاد لصفحة الخطة: ربط الأهداف بالمحاور، وخطوط أساس المؤشرات وسنواتها، وفترة الخطة، وتواريخ المراحل، ووصف خطوات التنفيذ، ووثيقة الخطة، والصور الحقيقية، ومراجعة النص الإنجليزي |
 | `engineering/how-strategic-plan-page-works.md` | صفحة الخطة الاستراتيجية: الـdomain وشاشة الإدارة والصفحة العامة بالبنود التسعة — لماذا، والملفات بترتيب سلسلة العمل، وتتبّع إضافة محور سابع من الداشبورد حتى الصفحة، ومواضع الكسر، والحراس (ADR-0075) |
 | `engineering/how-hero-dashboard-works.md` | شاشة إدارة هيرو الصفحة الرئيسية بالبنود التسعة — لماذا، والملفات بترتيب سلسلة العمل، وتتبّع «الأدمن يحرك نقطة التركيز ويقلب ويحفظ، والزائر الإنجليزي على الموبايل يرى القص المقلوب»، ومواضع الكسر، والحراس (ADR-0083 وADR-0084) |
+| `engineering/how-sponsors-work.md` | الرعاة والشركاء والعضويات والشريط بالبنود التسعة — لماذا، والملفات بترتيب سلسلة العمل من الـseed إلى الداشبورد، وتتبّع «المحرر يرفع راعيًا إلى المستوى الاستراتيجي فينتقل البانر إليه»، ومواضع الكسر، والحراس، وما يُستبدل قبل الإطلاق (ADR-0085) |
 | `design-system/UAEAF-DESIGN-CRITIQUE-JURY-PROTOCOL.md` | بروتوكول تقييم المقترحات — أداة عمل داخلية لا مرجع تصميم |
 | `design-system/figma-reference/README.md` | دليل لقطات Figma المرجعية |
 

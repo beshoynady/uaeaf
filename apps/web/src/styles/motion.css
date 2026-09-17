@@ -1159,3 +1159,227 @@
     background-image: var(--hero-scrim-wide-ltr);
   }
 }
+
+/* The global sponsor strip (`sponsor-strip.tsx`, ADR-0085 D7).
+ *
+ * Two states, chosen per width by `data-row-from`, which the server computes
+ * from the item count (`stripRowFrom` in `@uaeaf/content/sponsors`):
+ *
+ * - still, from that breakpoint up: one centred row, the pinned sponsor between
+ *   the rest, no copy for a loop, no pause button;
+ * - moving, below it: the pinned sponsor above a row that loops once the
+ *   controls have hydrated (`data-enhanced`). Before that, and always under
+ *   reduced motion, the row stands still and scrolls.
+ *
+ * The loop is one `transform` keyframe, never `opacity` (page-building-guide
+ * §3). Its length is reading time per item (`stripLoopSeconds`), set on the
+ * strip as `--strip-duration`; no motion token describes a loop, and the
+ * ambient token is reserved (ADR-0069 D9). Travel follows the reading
+ * direction (ADR-0077 D5): the
+ * second copy stands on the far side of the first, so Arabic starts shifted
+ * right and English left, each returning to rest. The track's inline-end
+ * padding is one gap, so half its width is exactly one copy and its gap. */
+.sponsor-strip {
+  --strip-travel: strip-travel-ltr;
+  /* Set on each strip from its item count and speed. */
+  --strip-duration: 0s;
+}
+
+[dir="rtl"] .sponsor-strip {
+  --strip-travel: strip-travel-rtl;
+}
+
+.sponsor-strip .strip-viewport {
+  overflow-x: auto;
+}
+
+.sponsor-strip .strip-track {
+  justify-content: flex-start;
+}
+
+.sponsor-strip .strip-pinned-stacked {
+  display: flex;
+}
+
+.sponsor-strip .strip-pinned-inline,
+.sponsor-strip .strip-duplicate,
+.sponsor-strip .strip-pause {
+  display: none;
+}
+
+@keyframes strip-travel-rtl {
+  from {
+    transform: translateX(50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes strip-travel-ltr {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sponsor-strip[data-enhanced] .strip-viewport {
+    overflow: clip;
+  }
+
+  .sponsor-strip[data-enhanced] .strip-duplicate {
+    display: flex;
+  }
+
+  .sponsor-strip[data-enhanced] .strip-pause {
+    display: inline-flex;
+  }
+
+  .sponsor-strip[data-enhanced] .strip-track {
+    padding-inline-end: var(--space-8);
+    animation: var(--strip-travel) var(--strip-duration) linear infinite;
+  }
+
+  /* Held while pointed at or focused inside, and until the button resumes it. */
+  .sponsor-strip[data-paused] .strip-track,
+  .sponsor-strip:hover .strip-track,
+  .sponsor-strip:focus-within .strip-track {
+    animation-play-state: paused;
+  }
+}
+
+/* The still state, per breakpoint (Chapter 5 §5.2). Each rule names every
+ * `data-row-from` that stands still at that width, so a strip that stands still
+ * at `md` stands still at every wider width too. */
+.sponsor-strip[data-row-from="base"] .strip-pinned-stacked,
+.sponsor-strip[data-row-from="base"] .strip-duplicate,
+.sponsor-strip[data-row-from="base"] .strip-pause {
+  display: none;
+}
+
+.sponsor-strip[data-row-from="base"] .strip-pinned-inline {
+  display: flex;
+}
+
+.sponsor-strip[data-row-from="base"] .strip-track {
+  justify-content: center;
+  padding-inline-end: 0;
+  animation: none;
+}
+
+.sponsor-strip[data-row-from="base"] .strip-viewport {
+  overflow: visible;
+}
+
+@media (min-width: 640px) {
+  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"]) .strip-pinned-stacked,
+  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"]) .strip-duplicate,
+  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"]) .strip-pause {
+    display: none;
+  }
+
+  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"]) .strip-pinned-inline {
+    display: flex;
+  }
+
+  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"]) .strip-track {
+    justify-content: center;
+    padding-inline-end: 0;
+    animation: none;
+  }
+
+  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"]) .strip-viewport {
+    overflow: visible;
+  }
+}
+
+@media (min-width: 768px) {
+  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"], [data-row-from="md"]) .strip-pinned-stacked,
+  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"], [data-row-from="md"]) .strip-duplicate,
+  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"], [data-row-from="md"]) .strip-pause {
+    display: none;
+  }
+
+  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"], [data-row-from="md"]) .strip-pinned-inline {
+    display: flex;
+  }
+
+  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"], [data-row-from="md"]) .strip-track {
+    justify-content: center;
+    padding-inline-end: 0;
+    animation: none;
+  }
+
+  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"], [data-row-from="md"]) .strip-viewport {
+    overflow: visible;
+  }
+}
+
+@media (min-width: 1024px) {
+  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"], [data-row-from="md"], [data-row-from="lg"]) .strip-pinned-stacked,
+  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"], [data-row-from="md"], [data-row-from="lg"]) .strip-duplicate,
+  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"], [data-row-from="md"], [data-row-from="lg"]) .strip-pause {
+    display: none;
+  }
+
+  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"], [data-row-from="md"], [data-row-from="lg"]) .strip-pinned-inline {
+    display: flex;
+  }
+
+  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"], [data-row-from="md"], [data-row-from="lg"]) .strip-track {
+    justify-content: center;
+    padding-inline-end: 0;
+    animation: none;
+  }
+
+  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"], [data-row-from="md"], [data-row-from="lg"]) .strip-viewport {
+    overflow: visible;
+  }
+}
+
+@media (min-width: 1280px) {
+  .sponsor-strip:not([data-row-from="none"], [data-row-from="2xl"]) .strip-pinned-stacked,
+  .sponsor-strip:not([data-row-from="none"], [data-row-from="2xl"]) .strip-duplicate,
+  .sponsor-strip:not([data-row-from="none"], [data-row-from="2xl"]) .strip-pause {
+    display: none;
+  }
+
+  .sponsor-strip:not([data-row-from="none"], [data-row-from="2xl"]) .strip-pinned-inline {
+    display: flex;
+  }
+
+  .sponsor-strip:not([data-row-from="none"], [data-row-from="2xl"]) .strip-track {
+    justify-content: center;
+    padding-inline-end: 0;
+    animation: none;
+  }
+
+  .sponsor-strip:not([data-row-from="none"], [data-row-from="2xl"]) .strip-viewport {
+    overflow: visible;
+  }
+}
+
+@media (min-width: 1536px) {
+  .sponsor-strip:not([data-row-from="none"]) .strip-pinned-stacked,
+  .sponsor-strip:not([data-row-from="none"]) .strip-duplicate,
+  .sponsor-strip:not([data-row-from="none"]) .strip-pause {
+    display: none;
+  }
+
+  .sponsor-strip:not([data-row-from="none"]) .strip-pinned-inline {
+    display: flex;
+  }
+
+  .sponsor-strip:not([data-row-from="none"]) .strip-track {
+    justify-content: center;
+    padding-inline-end: 0;
+    animation: none;
+  }
+
+  .sponsor-strip:not([data-row-from="none"]) .strip-viewport {
+    overflow: visible;
+  }
+}

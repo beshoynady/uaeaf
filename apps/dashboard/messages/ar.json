@@ -95,7 +95,11 @@
     "visionMission": "الرؤية والرسالة",
     "strategicPlan": "الخطة الاستراتيجية",
     "homepage": "الصفحة الرئيسية",
-    "homepageHero": "الهيرو"
+    "homepageHero": "الهيرو",
+    "homepageSponsors": "الرعاة",
+    "homepagePartners": "الشركاء",
+    "homepageMemberships": "العضويات",
+    "homepageSponsorStrip": "شريط الرعاة"
   },
   "Overview": {
     "title": "نظرة عامة",
@@ -160,7 +164,11 @@
     "incompleteNextEvent": "شريط الحدث ظاهر وينقصه حقل: التصنيف أو الاسم أو المكان باللغتين، أو موعد البداية أو النهاية.",
     "nextEventEndsBeforeStart": "موعد نهاية الحدث قبل موعد بدايته.",
     "invalidPlayback": "مدة الشريحة يجب أن تكون من الخيارات المتاحة.",
-    "scheduleEndsBeforeStart": "موعد اختفاء الشريحة قبل موعد ظهورها."
+    "scheduleEndsBeforeStart": "موعد اختفاء الشريحة قبل موعد ظهورها.",
+    "sponsorshipEndsBeforeStart": "تاريخ النهاية قبل تاريخ البداية. اختر نهاية في يوم البداية أو بعده.",
+    "sponsorshipEndRequired": "رعاية بطولة أو حدث تحتاج تاريخ نهاية، لأنها تنتهي بانتهائه.",
+    "invalidSponsorshipTarget": "رعاية الاتحاد تشير إلى سجل الاتحاد أو لا تشير إلى شيء.",
+    "organizationNameTooLong": "الاسم أطول من 150 حرفًا."
   },
   "AccountStatus": {
     "Active": "نشط",
@@ -1070,5 +1078,206 @@
     "leaveBody": "إن غادرت الآن تضيع التغييرات التي لم تُحفظ، ولا يصل منها شيء إلى الموقع.",
     "leaveConfirm": "مغادرة دون حفظ",
     "leaveCancel": "البقاء هنا"
+  },
+  "SponsorRelations": {
+    "trailHome": "الصفحة الرئيسية",
+    "trail": "موقعك",
+    "saved": "محفوظ ومنشور",
+    "unsaved": "تغييرات غير محفوظة",
+    "saving": "جارٍ الحفظ…",
+    "save": "حفظ",
+    "noChanges": "لا شيء للحفظ",
+    "savedToast": "حُفظ ونُشر",
+    "savedToastBody": "يظهر التغيير في الموقع خلال دقيقة.",
+    "summaryTitle": "تعذّر الحفظ",
+    "summaryPartial": "حُفظ جزء، وتعذّر حفظ الباقي",
+    "leaveTitle": "المغادرة دون حفظ؟",
+    "leaveBody": "تغييراتك في هذه الشاشة لم تُحفظ وستضيع.",
+    "leaveConfirm": "مغادرة",
+    "leaveCancel": "البقاء",
+    "cancel": "إلغاء",
+    "removeConfirm": "حذف",
+    "removeBody": "يُحذف من الموقع عند الحفظ.",
+    "demoBadge": "بيانات تجريبية",
+    "shownBadge": "ظاهر",
+    "hiddenBadge": "مخفي",
+    "moveUp": "تقديم",
+    "moveDown": "تأخير",
+    "remove": "حذف",
+    "untitled": "بلا اسم بعد",
+    "entryNumber": "العنصر {number}",
+    "preview": "معاينة",
+    "previewHint": "ما يعرضه الموقع الآن، بترتيبه وبقاعدة الأسماء نفسها.",
+    "previewEmpty": "لا شيء معروض في الموقع.",
+    "nameAr": "الاسم بالعربية",
+    "nameEn": "الاسم بالإنجليزية",
+    "nameHint": "بالعربية أو الإنجليزية أو كلتيهما، كما تكتب الجهة اسمها. لا يُترجَم.",
+    "characters": "{count} من {max} حرفًا",
+    "logo": "اللوجو",
+    "type": "النوع",
+    "chooseType": "اختر النوع",
+    "startDay": "تاريخ البداية (بتوقيت دبي)",
+    "endDay": "تاريخ النهاية (بتوقيت دبي)",
+    "endHint": "اتركه فارغًا إن لم تكن له نهاية.",
+    "isVisible": "ظاهر في الموقع",
+    "isVisibleHint": "السجل الجديد يبدأ مخفيًا، والمخفي يُحفظ ناقصًا.",
+    "fields": {
+      "name": "الاسم",
+      "nameAr": "الاسم بالعربية",
+      "nameEn": "الاسم بالإنجليزية",
+      "logoId": "اللوجو",
+      "type": "النوع",
+      "startDay": "تاريخ البداية",
+      "endDay": "تاريخ النهاية",
+      "website": "الموقع الإلكتروني",
+      "categoryAr": "القطاع بالعربية",
+      "categoryEn": "القطاع بالإنجليزية",
+      "tier": "المستوى",
+      "scopeAr": "ما يرعاه بالعربية",
+      "scopeEn": "ما يرعاه بالإنجليزية",
+      "ctaText": "نص الدعوة",
+      "ctaUrl": "رابط الدعوة",
+      "bannerSponsorshipId": "تفضيل البانر",
+      "sponsorshipIds": "الرعاة في الشريط"
+    },
+    "errors": {
+      "missingRequiredField": "مطلوب.",
+      "organizationNameTooLong": "أطول من {limit} حرفًا.",
+      "scopeLabelTooLong": "أطول من {limit} حرفًا.",
+      "sponsorshipEndsBeforeStart": "ينتهي قبل أن يبدأ.",
+      "sponsorshipEndRequired": "يحتاج تاريخ نهاية، لأنه ينتهي بانتهاء الحدث.",
+      "invalidRequest": "يبدأ بـ http:// أو https://.",
+      "incompleteCta": "اكتب النص باللغتين والرابط، أو اتركها كلها.",
+      "invalidCtaUrl": "مسار داخل الموقع (/…) أو عنوان https://.",
+      "invalidSponsorshipTarget": "يشير إلى الاتحاد أو لا يشير إلى شيء."
+    },
+    "partners": {
+      "title": "الشركاء",
+      "description": "الجهات التي بينها وبين الاتحاد اتفاقية تعاون أو مذكرة تفاهم: لوجو واسم في الصفحة الرئيسية.",
+      "listLabel": "الشركاء",
+      "add": "إضافة شريك",
+      "empty": "لا يوجد شركاء بعد.",
+      "isActive": "الاتفاقية سارية",
+      "types": {
+        "BilateralAgreement": "اتفاقية ثنائية",
+        "MOU": "مذكرة تفاهم",
+        "TechnicalCooperation": "تعاون فني",
+        "Other": "أخرى"
+      }
+    },
+    "memberships": {
+      "title": "العضويات",
+      "description": "الجهات التي الاتحاد عضو فيها: لوجو واسم في الصفحة الرئيسية. العضوية المعروضة ادّعاء رسمي؛ أبقِها محدّثة.",
+      "listLabel": "العضويات",
+      "add": "إضافة عضوية",
+      "empty": "لا توجد عضويات بعد.",
+      "status": "حالة العضوية",
+      "statuses": {
+        "Active": "سارية",
+        "Suspended": "معلّقة",
+        "Terminated": "منتهية"
+      },
+      "types": {
+        "RegionalBody": "جهة إقليمية",
+        "ContinentalBody": "جهة قارية",
+        "InternationalBody": "جهة دولية",
+        "OlympicCommittee": "لجنة أولمبية"
+      }
+    },
+    "sponsors": {
+      "title": "الرعاة",
+      "description": "كل راعٍ ورعاياته، والبانر، ودعوة الشراكة.",
+      "listLabel": "الرعاة",
+      "add": "إضافة راعٍ",
+      "empty": "لا يوجد رعاة بعد.",
+      "website": "الموقع الإلكتروني",
+      "websiteHint": "يُفتح من البانر في تبويب جديد.",
+      "categoryAr": "القطاع بالعربية",
+      "categoryEn": "القطاع بالإنجليزية",
+      "categoryHint": "سطر قصير تحت الاسم، باللغتين أو بدونهما.",
+      "sponsorships": "الرعايات",
+      "sponsorshipNumber": "الرعاية {number}",
+      "addSponsorship": "إضافة رعاية",
+      "noSponsorships": "لا توجد رعاية: هذا الراعي لا يظهر في الموقع.",
+      "tier": "المستوى",
+      "tiers": {
+        "Strategic": "الراعي الاستراتيجي",
+        "Official": "الراعي الرسمي",
+        "Supporting": "الراعي الداعم"
+      },
+      "targetType": "يرعى",
+      "targets": {
+        "Federation": "الاتحاد",
+        "Championship": "بطولة",
+        "Event": "حدثًا"
+      },
+      "targetHint": "رعاية البطولة أو الحدث تنتهي بانتهائه، فتحتاج تاريخ نهاية.",
+      "status": "حالة العقد",
+      "statuses": {
+        "Active": "سارية",
+        "Expired": "مؤرشفة كمنتهية",
+        "Cancelled": "ملغاة"
+      },
+      "statusHint": "الانتهاء يُحسب من التواريخ؛ غيّر هذا للأرشفة أو الإلغاء فقط.",
+      "scopeAr": "ما يرعاه بالعربية",
+      "scopeEn": "ما يرعاه بالإنجليزية",
+      "scopeHint": "يُعرض كما يُكتب، باللغتين أو بدونهما.",
+      "isFeatured": "علامة VIP",
+      "isFeaturedHint": "تميّز بطاقة الراعي. البانر يُختار منفصلًا أدناه.",
+      "state": {
+        "upcoming": "تبدأ لاحقًا",
+        "active": "سارية الآن",
+        "expired": "انتهت",
+        "cancelled": "ملغاة"
+      },
+      "section": "قسم الرعاة",
+      "banner": "تفضيل البانر",
+      "bannerHint": "البانر يعرض أعلى مستوى ساري الآن، ومن بين رعايات ذلك المستوى تُفضَّل هذه.",
+      "bannerNone": "بلا تفضيل",
+      "ctaTextAr": "نص الدعوة بالعربية",
+      "ctaTextEn": "نص الدعوة بالإنجليزية",
+      "ctaUrl": "رابط الدعوة",
+      "ctaHint": "تظهر فقط حين يُكتب النص باللغتين والرابط.",
+      "previewBanner": "البانر",
+      "previewGrid": "البطاقات",
+      "removeSponsorTitle": "حذف هذا الراعي ورعاياته؟",
+      "removeSponsorshipTitle": "حذف هذه الرعاية؟",
+      "sectionMissing": "لا يوجد قسم رعاة في الصفحة الرئيسية لتُحفظ فيه هذه الإعدادات."
+    },
+    "strip": {
+      "title": "شريط الرعاة",
+      "description": "الشريط المتحرك تحت هيرو الصفحة الرئيسية: من يظهر، وبأي ترتيب، وكيف، وبأي سرعة.",
+      "isVisible": "إظهار الشريط",
+      "displayMode": "ما يعرضه كل راعٍ",
+      "modes": {
+        "logo": "لوجو فقط",
+        "logoName": "لوجو واسم",
+        "logoNameScope": "لوجو واسم وما يرعاه"
+      },
+      "phoneFallback": "على الهاتف يُعرض اللوجو والاسم فقط: «ما يرعاه» لا يتسع لشريط الهاتف.",
+      "selection": "من يظهر",
+      "selections": {
+        "allActive": "كل الرعاة الساريين",
+        "manual": "رعاة مختارون"
+      },
+      "chosen": "الرعاة في الشريط، بالترتيب",
+      "order": "الترتيب",
+      "orders": {
+        "tier": "بالمستوى",
+        "manual": "بترتيب قائمة الرعاة"
+      },
+      "pinTopTier": "تثبيت راعي البانر في المنتصف",
+      "speed": "السرعة",
+      "speeds": {
+        "slow": "بطيئة",
+        "medium": "متوسطة",
+        "fast": "سريعة"
+      },
+      "previewPinned": "مثبّت",
+      "rowFrom": "ثابت من عرض {width}px فأكثر، ومتحرك دونه مع زر إيقاف.",
+      "rowAlways": "ثابت في كل العروض.",
+      "rowNever": "متحرك في كل العروض، مع زر إيقاف.",
+      "hidden": "الشريط مخفي."
+    }
   }
 }

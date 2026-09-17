@@ -1,6 +1,6 @@
 # ADR-0077 — The Sponsorship Model, Minimally Evolved, and the Global Sponsor Strip's Settings
 
-**Status:** **Proposed** — nothing in this ADR is built. It records decisions taken in the owner's brainstorm session of 2026-09-16 for a later batch, so they are not re-litigated when that batch starts.
+**Status:** **Accepted** — 2026-09-17, through ADR-0085, with its amendments: single-language names, an optional `targetId`, `isDemo` and `isVisible` on the collections (ADR-0085 D1), and the banner rule replaced by "the highest tier present" (ADR-0085 D5.1). Where this ADR and ADR-0085 differ, ADR-0085 governs.
 **Date:** 2026-09-16
 **Authority:** The owner's brainstorm brief of 2026-09-16 (§٣.١–§٣.٤) and his answers during that session, each attributed below.
 

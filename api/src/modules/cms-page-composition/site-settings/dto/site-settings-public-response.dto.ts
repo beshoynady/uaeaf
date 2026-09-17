@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
 import { DefaultSeoDto } from './upsert-site-settings.dto.js';
+import { SponsorStripSettingsDto } from './sponsor-strip.dto.js';
 
 /** Public-safe `SiteSettings` shape. Structurally omits every
  *  `[RESTRICTED]` field — `isMaintenanceMode`, `googleAnalyticsId`,
@@ -26,4 +27,6 @@ export class SiteSettingsPublicResponseDto {
   cookieConsentText: LocalizedTextDto | null;
   @ApiProperty({ type: LocalizedTextDto, required: false, nullable: true })
   maintenanceMessage: LocalizedTextDto | null;
+  @ApiProperty({ type: SponsorStripSettingsDto, description: 'Defaults filled when nothing is stored.' })
+  sponsorStrip: SponsorStripSettingsDto;
 }

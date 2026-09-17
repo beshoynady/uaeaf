@@ -47,6 +47,68 @@ export const HOMEPAGE_HERO_GRANTS = [
   { resourceType: "pageSections", action: "Update" },
 ] as const satisfies readonly NavRequirement[];
 
+/**
+ * Every grant the sponsors screen uses (ADR-0085): sponsors and their
+ * sponsorships added, changed and deleted, and the SPONSORS section's banner
+ * preference and call to action, which one Save writes with them.
+ */
+export const HOMEPAGE_SPONSORS_GRANTS = [
+  { resourceType: "sponsors", action: "Read" },
+  { resourceType: "sponsors", action: "Create" },
+  { resourceType: "sponsors", action: "Update" },
+  { resourceType: "sponsors", action: "Delete" },
+  { resourceType: "sponsorships", action: "Read" },
+  { resourceType: "sponsorships", action: "Create" },
+  { resourceType: "sponsorships", action: "Update" },
+  { resourceType: "sponsorships", action: "Delete" },
+  { resourceType: "pageSections", action: "Read" },
+  { resourceType: "pageSections", action: "Update" },
+] as const satisfies readonly NavRequirement[];
+
+/** Every grant the partners screen uses: its records added, changed, ordered and deleted. */
+export const HOMEPAGE_PARTNERS_GRANTS = [
+  { resourceType: "partnerships", action: "Read" },
+  { resourceType: "partnerships", action: "Create" },
+  { resourceType: "partnerships", action: "Update" },
+  { resourceType: "partnerships", action: "Delete" },
+] as const satisfies readonly NavRequirement[];
+
+/** Every grant the memberships screen uses, for the same reasons. */
+export const HOMEPAGE_MEMBERSHIPS_GRANTS = [
+  { resourceType: "memberships", action: "Read" },
+  { resourceType: "memberships", action: "Create" },
+  { resourceType: "memberships", action: "Update" },
+  { resourceType: "memberships", action: "Delete" },
+] as const satisfies readonly NavRequirement[];
+
+/**
+ * Every grant the sponsor strip screen uses: the settings it writes, and the
+ * sponsors, sponsorships and section its preview reads to answer as the site.
+ */
+export const HOMEPAGE_SPONSOR_STRIP_GRANTS = [
+  { resourceType: "siteSettings", action: "Read" },
+  { resourceType: "siteSettings", action: "Update" },
+  { resourceType: "sponsors", action: "Read" },
+  { resourceType: "sponsorships", action: "Read" },
+  { resourceType: "pageSections", action: "Read" },
+] as const satisfies readonly NavRequirement[];
+
+/** A homepage screen's link: shown with every grant its Save can use. */
+const homepageScreen = (key: string, href: string, grants: readonly NavRequirement[]): NavItem => ({
+  key,
+  href,
+  requires: [grants.find((grant) => grant.action === "Update") ?? grants[0]],
+  requiresAll: grants,
+});
+
+const HOMEPAGE_SCREENS: readonly NavItem[] = [
+  homepageScreen("homepageHero", "/homepage/hero", HOMEPAGE_HERO_GRANTS),
+  homepageScreen("homepageSponsorStrip", "/homepage/sponsor-strip", HOMEPAGE_SPONSOR_STRIP_GRANTS),
+  homepageScreen("homepageSponsors", "/homepage/sponsors", HOMEPAGE_SPONSORS_GRANTS),
+  homepageScreen("homepagePartners", "/homepage/partners", HOMEPAGE_PARTNERS_GRANTS),
+  homepageScreen("homepageMemberships", "/homepage/memberships", HOMEPAGE_MEMBERSHIPS_GRANTS),
+];
+
 export const NAV_ITEMS: readonly NavItem[] = [
   { key: "overview", href: "/", requires: null },
   { key: "users", href: "/users", requires: [{ resourceType: "users" }] },
@@ -103,26 +165,18 @@ export const NAV_ITEMS: readonly NavItem[] = [
     ],
   },
   /**
-   * The homepage, with its hero screen beneath it (owner decision 2026-09-17).
+   * The homepage, with its screens beneath it in the page's own order (owner
+   * decision 2026-09-17, ADR-0085).
    *
-   * The hero screen asks for every grant one Save can use (`HOMEPAGE_HERO_GRANTS`):
-   * holding only some would let an editor reach a Save that fails half way. The
-   * group links to its only screen today; the homepage's other sections join it
-   * as they are built.
+   * Each screen asks for every grant one Save can use: holding only some would
+   * let an editor reach a Save that fails half way. The group is shown when any
+   * of its screens is, and links to the first one the reader can open.
    */
   {
     key: "homepage",
     href: "/homepage/hero",
-    requires: [{ resourceType: "heroSlides", action: "Update" }],
-    requiresAll: HOMEPAGE_HERO_GRANTS,
-    children: [
-      {
-        key: "homepageHero",
-        href: "/homepage/hero",
-        requires: [{ resourceType: "heroSlides", action: "Update" }],
-        requiresAll: HOMEPAGE_HERO_GRANTS,
-      },
-    ],
+    requires: HOMEPAGE_SCREENS.flatMap((screen) => screen.requires ?? []),
+    children: HOMEPAGE_SCREENS,
   },
 ];
 
@@ -145,8 +199,11 @@ const reachable = (grants: readonly PermissionGrant[], item: NavItem): boolean =
   (item.requires === null || item.requires.some((requirement) => satisfies(grants, requirement))) &&
   (item.requiresAll ?? []).every((requirement) => satisfies(grants, requirement));
 
-export const visibleNavItems = (grants: readonly PermissionGrant[]): NavItem[] => {
-  return NAV_ITEMS.filter((item) => reachable(grants, item)).map((item) =>
-    item.children ? { ...item, children: item.children.filter((child) => reachable(grants, child)) } : item,
-  );
-};
+export const visibleNavItems = (grants: readonly PermissionGrant[]): NavItem[] =>
+  NAV_ITEMS.flatMap((item) => {
+    if (!item.children) return reachable(grants, item) ? [item] : [];
+    // A group is reached through its screens: shown when one is, pointing at the
+    // first, so its link never lands on a screen that refuses the reader.
+    const children = item.children.filter((child) => reachable(grants, child));
+    return children.length > 0 ? [{ ...item, href: children[0].href, children }] : [];
+  });

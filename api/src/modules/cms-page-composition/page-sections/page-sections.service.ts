@@ -7,6 +7,7 @@ import { UpdatePageSectionDto } from './dto/update-page-sections.dto.js';
 import type { PageSectionPublicResponseDto } from './dto/page-section-public-response.dto.js';
 import { selectVisibleInWindow } from '../../../common/utils/visibility-window.util.js';
 import { assertHeroSettings } from './hero-settings.js';
+import { assertSponsorsSectionSettings } from './sponsors-settings.js';
 import { wasSent } from '../../../common/utils/partial-update.util.js';
 
 /** Implements: pageSections collection, Domain 11 — CMS & Page
@@ -27,6 +28,7 @@ export class PageSectionsService {
     // A HERO section's settings have rules of their own; every other section's
     // configuration stays free-form.
     if (dto.sectionType === 'HERO') assertHeroSettings(dto.configuration);
+    if (dto.sectionType === 'SPONSORS') assertSponsorsSectionSettings(dto);
 
     return this.repository.create({
       pageId: new Types.ObjectId(dto.pageId),
@@ -79,6 +81,15 @@ export class PageSectionsService {
     }
 
     if (has('configuration') && current.sectionType === 'HERO') assertHeroSettings(dto.configuration);
+    // Checked on the section the edit produces: clearing the link alone must
+    // not leave its text behind.
+    if (current.sectionType === 'SPONSORS') {
+      assertSponsorsSectionSettings({
+        configuration: has('configuration') ? dto.configuration : current.configuration,
+        ctaText: has('ctaText') ? dto.ctaText : current.ctaText,
+        ctaUrl: has('ctaUrl') ? dto.ctaUrl : current.ctaUrl,
+      });
+    }
 
     const update: Record<string, unknown> = {};
     if (has('sectionTitle')) update.sectionTitle = dto.sectionTitle ?? null;

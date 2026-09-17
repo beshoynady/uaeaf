@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="120" viewBox="0 0 240 120">
+  <rect width="240" height="120" fill="#FFFFFF"/>
+  <polygon points="48,24 80,92 16,92" fill="#8A5A12"/><circle cx="48" cy="70" r="10" fill="#D9A441"/>
+  <text x="96" y="60" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="#8A5A12">SAHEL</text>
+  <text x="96" y="84" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="700" letter-spacing="3" fill="#D9A441">DEMO</text>
+</svg>
