@@ -112,7 +112,7 @@
 
 ## ٦. أين ينكسر — وأخطاء شائعة
 
-- **«غير مسموح» للأدمن:** أحد صفوف `HOMEPAGE_HERO_GRANTS` غائب عن جدول `permissions` (كان `heroSlides:Update` و`pageSections:Update`). شغّل `bootstrap-admin` (يضيف صفوف الكتالوج للـSuper Admin ولا يمس الحسابات). لا تشغّل `nest build` والـ`--watch` يعمل: `node dist/bootstrap-admin.js` مع `BOOTSTRAP_ADMIN_EMAIL` و`BOOTSTRAP_ADMIN_PASSWORD`.
+- **«غير مسموح» للأدمن:** أحد صفوف `HOMEPAGE_HERO_GRANTS` غائب عن جدول `permissions` (كان `heroSlides:Update` و`pageSections:Update`). شغّل `bootstrap-admin` (يضيف صفوف الكتالوج للـSuper Admin ولا يمس الحسابات). لا تشغّل `nest build` والـ`--watch` يعمل: `node --env-file-if-exists=.env dist/bootstrap-admin.js`. الاسمان `BOOTSTRAP_ADMIN_EMAIL` و`BOOTSTRAP_ADMIN_PASSWORD` يُقرآن من `api/.env`، ولا يُكتب أيّ منهما في سطر الأوامر: قيمة تُكتب هناك تدخل تاريخ الصدفة وجدول العمليات ونصّ أيّ محادثة.
 - **تحديث جزئي يمسح حقولًا:** أي `Object.hasOwn(dto, key)` على DTO بعد `ValidationPipe({ transform: true })` صحيح لكل الحقول (مُثبت: 19 مفتاحًا لجسم فيه حقل واحد). «مُرسَل» = `!== undefined`. الاختبار `hero-slides.partial-update.spec.ts` يمر عبر `plainToInstance` لهذا السبب.
 - **المعاينة فارغة:** راجع `left-0` والصندوق `box-content` وقياس العرض داخل الحد. سيناريو `preview-fit` يقيس 18 حالة.
 - **الموقع يعرض القديم بعد الحفظ:** بيانات الموقع تُعاد تحققها (`PUBLIC_REVALIDATE_SECONDS`)؛ أول إعادة تحميل قد تكون قديمة. الـe2e ينتظر القيمة لا العنوان.

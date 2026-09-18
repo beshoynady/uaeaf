@@ -47,6 +47,7 @@ export const MediaPicker = ({
   canRead,
   disabled,
   locale,
+  minSourcePx,
   onChange,
   onUploaded,
 }: {
@@ -57,6 +58,15 @@ export const MediaPicker = ({
   canRead: boolean;
   disabled: boolean;
   locale: AppLocale;
+  /**
+   * The smallest source, in pixels on its shorter side, that the largest
+   * place this image is drawn can use without blurring it — twice that
+   * drawn size (ADR-0086 D4). Given, a chosen file under it gets a notice
+   * naming both numbers. It is never a refusal: a federation with only a
+   * small file still has to be able to publish, and a warning that stops the
+   * work gets worked around.
+   */
+  minSourcePx?: number;
   onChange: (id: string) => void;
   /** Lets the screen add the new image to its own list, so it appears in the
    *  grid without a reload. Absent where the page has no list to update. */
@@ -67,6 +77,18 @@ export const MediaPicker = ({
   const [uploading, setUploading] = useState(false);
 
   const chosen = images.find((image) => image.id === value) ?? null;
+
+  // Judged on the shorter side, because that is the one that runs out first
+
+  // when a mark is fitted into a box. A record with no measurement says
+
+  // nothing rather than guessing.
+
+  const shortest = chosen?.width && chosen?.height ? Math.min(chosen.width, chosen.height) : null;
+
+  const tooSmall =
+
+    minSourcePx && shortest !== null && shortest < minSourcePx ? { have: shortest, need: minSourcePx } : null;
 
   return (
     <fieldset className="flex flex-col gap-3">
@@ -100,6 +122,14 @@ export const MediaPicker = ({
               </button>
             ) : null}
           </div>
+
+          {/* ADR-0086 D4. `role="note"` rather than an alert: it is advice
+              about quality, not a failure, and it must not interrupt. */}
+          {tooSmall !== null ? (
+            <p role="note" className="text-caption text-[color:var(--color-text-primary)]">
+              {t("resolutionNotice", { have: tooSmall.have, need: tooSmall.need })}
+            </p>
+          ) : null}
 
           {open ? (
             <UploadPanel

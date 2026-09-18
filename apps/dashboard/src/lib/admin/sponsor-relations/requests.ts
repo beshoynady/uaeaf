@@ -32,7 +32,7 @@ const FIELDS: Record<RelationEntity, readonly string[]> = {
   memberships: ["organizationName", "organizationLogoId", "membershipType", "startDate", "endDate", "status", "displayOrder", "isVisible"],
 };
 
-const STRIP_FIELDS = ["isVisible", "displayMode", "selection", "sponsorshipIds", "order", "pinTopTier", "speed"] as const;
+const STRIP_FIELDS = ["isVisible", "displayMode", "selection", "sponsorshipIds", "order", "pinnedSponsorshipId", "speed"] as const;
 
 type Parsed<T> = { ok: true; body: T } | { ok: false };
 

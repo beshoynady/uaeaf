@@ -86,7 +86,7 @@ export class SiteSettingsService extends SingletonPageService<SiteSettingsDocume
         selection: dto.selection,
         sponsorshipIds: dto.sponsorshipIds.map((id) => new Types.ObjectId(id)),
         order: dto.order,
-        pinTopTier: dto.pinTopTier,
+        pinnedSponsorshipId: dto.pinnedSponsorshipId ? new Types.ObjectId(dto.pinnedSponsorshipId) : null,
         speed: dto.speed,
       },
     });

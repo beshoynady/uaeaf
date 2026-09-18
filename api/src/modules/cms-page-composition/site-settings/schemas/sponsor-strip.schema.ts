@@ -23,8 +23,11 @@ export type SponsorStripSpeed = (typeof SPONSOR_STRIP_SPEEDS)[number];
  * footer. A per-page override can later layer on these values without moving a
  * field (D5 #10); nothing here implements one.
  *
- * `pinTopTier` pins the highest tier present, the same tier the banner takes
- * (ADR-0085 D5.1) — not a fixed "strategic".
+ * `pinnedSponsorshipId` holds one chosen sponsorship at the head of the strip
+ * (ADR-0086 D2). It replaced `pinTopTier`, which pinned whatever the banner
+ * showed; that automatic agreement between the strip and the sponsors section
+ * (ADR-0085 D5.1) is withdrawn, and the settings screen names the banner's
+ * sponsorship instead so the editor chooses knowing it.
  */
 @Schema({ _id: false })
 export class SponsorStripSettings {
@@ -44,8 +47,18 @@ export class SponsorStripSettings {
   @Prop({ type: String, enum: SPONSOR_STRIP_ORDERS, default: 'tier' })
   order: SponsorStripOrder;
 
-  @Prop({ type: Boolean, default: true })
-  pinTopTier: boolean;
+  /**
+   * The one sponsorship held still at the head of the strip, or `null` when
+   * none is (ADR-0086 D2). Replaces `pinTopTier`: the editor chooses which
+   * sponsor is held, rather than the tier choosing for them.
+   *
+   * One nullable id, deliberately — "at most one at a time, and choosing
+   * another replaces it" is then the shape of the data rather than a rule
+   * something has to enforce. A choice that stops running is not found when
+   * the strip is built, so nothing is held and no gap is left.
+   */
+  @Prop({ type: Types.ObjectId, default: null })
+  pinnedSponsorshipId: Types.ObjectId | null;
 
   @Prop({ type: String, enum: SPONSOR_STRIP_SPEEDS, default: 'medium' })
   speed: SponsorStripSpeed;
@@ -60,7 +73,7 @@ export interface SponsorStripSettingsView {
   selection: SponsorStripSelection;
   sponsorshipIds: string[];
   order: SponsorStripOrder;
-  pinTopTier: boolean;
+  pinnedSponsorshipId: string | null;
   speed: SponsorStripSpeed;
 }
 
@@ -71,7 +84,7 @@ export const SPONSOR_STRIP_DEFAULTS: SponsorStripSettingsView = {
   selection: 'allActive',
   sponsorshipIds: [],
   order: 'tier',
-  pinTopTier: true,
+  pinnedSponsorshipId: null,
   speed: 'medium',
 };
 
@@ -83,6 +96,6 @@ export const normalizeSponsorStrip = (stored: Partial<SponsorStripSettings> | nu
   selection: stored?.selection ?? SPONSOR_STRIP_DEFAULTS.selection,
   sponsorshipIds: (stored?.sponsorshipIds ?? []).map(String),
   order: stored?.order ?? SPONSOR_STRIP_DEFAULTS.order,
-  pinTopTier: stored?.pinTopTier ?? SPONSOR_STRIP_DEFAULTS.pinTopTier,
+  pinnedSponsorshipId: stored?.pinnedSponsorshipId ? String(stored.pinnedSponsorshipId) : SPONSOR_STRIP_DEFAULTS.pinnedSponsorshipId,
   speed: stored?.speed ?? SPONSOR_STRIP_DEFAULTS.speed,
 });

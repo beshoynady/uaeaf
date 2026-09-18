@@ -379,6 +379,11 @@ export const PhotoLines = ({ side }: { side: "start" | "end" }) => (
   <div
     aria-hidden="true"
     data-identity-lines=""
+    // Marked where the set is drawn rather than at each call site, so a guard
+    // that measures IL-5 finds every one of them. `SlantedPhoto` wraps this in
+    // `data-slanted-photo`; the homepage's sponsor banner does not wrap it at
+    // all, and that set went unmeasured until this attribute existed.
+    data-photo-lines=""
     className={`pointer-events-none absolute ${PHOTO_CORNER[side]} ${ilVariables(false)}`}
     style={{ width: unit(PHOTO_WIDTH), height: unit(PHOTO_HEIGHT) }}
   >

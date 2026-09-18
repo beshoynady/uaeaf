@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsBoolean, IsIn, IsMongoId } from 'class-validator';
+import { IsArray, IsBoolean, IsIn, IsMongoId, IsOptional } from 'class-validator';
 import {
   SPONSOR_STRIP_DISPLAY_MODES,
   SPONSOR_STRIP_ORDERS,
@@ -34,7 +34,14 @@ export class SponsorStripSettingsDto {
 
   @ApiProperty({ enum: SPONSOR_STRIP_ORDERS }) @IsIn(SPONSOR_STRIP_ORDERS) order: SponsorStripOrder;
 
-  @ApiProperty({ description: 'Pin the highest tier present to the centre.' }) @IsBoolean() pinTopTier: boolean;
+  @ApiProperty({
+    type: String,
+    nullable: true,
+    description: 'The one sponsorship held still at the head of the strip; null when none is (ADR-0086 D2).',
+  })
+  @IsOptional()
+  @IsMongoId()
+  pinnedSponsorshipId: string | null;
 
   @ApiProperty({ enum: SPONSOR_STRIP_SPEEDS }) @IsIn(SPONSOR_STRIP_SPEEDS) speed: SponsorStripSpeed;
 }

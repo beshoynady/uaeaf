@@ -45,11 +45,22 @@ export interface BootstrapAdminInput {
  * `bootstrap:admin` and `seed:dev`, so the two cannot disagree about what a
  * valid administrator is. Errors name the variable and never repeat the
  * value — these scripts print to terminals and deploy logs.
+ *
+ * An error also names where the value belongs. "BOOTSTRAP_ADMIN_PASSWORD is
+ * required" named a variable and nothing else, and the shortest way to
+ * satisfy it is to prefix the command with it — which is how a password
+ * reaches the shell history, the process table and the transcript of every
+ * session that ran it. `api/.env` is read by these scripts and is
+ * gitignored; the command line is neither.
  */
-export function readBootstrapAdminInput(env: Record<string, string | undefined>): BootstrapAdminInput {
+export const readBootstrapAdminInput = (env: Record<string, string | undefined>): BootstrapAdminInput => {
   const required = (name: string): string => {
     const value = env[name];
-    if (!value) throw new Error(`${name} is required.`);
+    if (!value) {
+      throw new Error(
+        `${name} is required. Set it in api/.env (see api/.env.example) rather than on the command line.`,
+      );
+    }
     return value;
   };
 
@@ -112,7 +123,7 @@ const ACTION_LABELS_AR: Record<string, string> = {
  * in the dashboard should not have that overwritten by the next deploy's
  * bootstrap run.
  */
-export async function seedPermissions(model: Model<Permission>): Promise<Types.ObjectId[]> {
+export const seedPermissions = async (model: Model<Permission>): Promise<Types.ObjectId[]> => {
   await model.bulkWrite(
     PERMISSION_CATALOGUE.map((entry) => ({
       updateOne: {
@@ -146,10 +157,10 @@ export async function seedPermissions(model: Model<Permission>): Promise<Types.O
 /** Always rewrites `permissionIds` to the full current catalogue: a Super
  *  Admin that silently lacks the permissions added in the last release is
  *  the failure this script is re-run to prevent. */
-export async function seedSuperAdminRole(
+export const seedSuperAdminRole = async (
   model: Model<Role>,
   permissionIds: Types.ObjectId[],
-): Promise<Types.ObjectId> {
+): Promise<Types.ObjectId> => {
   const role = await model
     .findOneAndUpdate(
       { 'name.en': SUPER_ADMIN_ROLE.en, isSystemRole: true },
@@ -178,10 +189,10 @@ export async function seedSuperAdminRole(
  * automation, which is precisely what the platform's own RBAC exists to
  * make impossible.
  */
-export async function seedAdminUser(
+export const seedAdminUser = async (
   model: Model<User>,
   input: { email: string; password: string; nameEn: string; nameAr: string; roleId: Types.ObjectId },
-): Promise<boolean> {
+): Promise<boolean> => {
   const existing = await model.findOne({ email: input.email }).exec();
   if (existing) {
     return false;
@@ -203,17 +214,17 @@ export async function seedAdminUser(
 }
 
 /** `aboutFederationPage` -> `about federation page`, `HardDelete` -> `Hard delete`. */
-function splitCamelCase(value: string): string {
+const splitCamelCase = (value: string): string => {
   const spaced = value.replace(/([a-z0-9])([A-Z])/g, '$1 $2');
   return spaced.charAt(0).toUpperCase() + spaced.slice(1).toLowerCase();
 }
 
 /** Runs the three steps in dependency order: permissions must exist before
  *  the role can reference them, and the role before the user can hold it. */
-export async function runBootstrap(
+export const runBootstrap = async (
   models: BootstrapModels,
   input: { email: string; password: string; nameEn: string; nameAr: string },
-): Promise<BootstrapResult> {
+): Promise<BootstrapResult> => {
   const permissionIds = await seedPermissions(models.permissions);
   const roleId = await seedSuperAdminRole(models.roles, permissionIds);
   const userCreated = await seedAdminUser(models.users, {

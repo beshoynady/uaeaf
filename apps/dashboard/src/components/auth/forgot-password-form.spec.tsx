@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithIntl } from "@/test/render";
+import { nativeSubmission } from "@/test/native-submission";
 import { ForgotPasswordForm } from "./forgot-password-form";
 
 afterEach(() => {
@@ -21,6 +22,21 @@ async function submit(email = "admin@uaeaf.ae") {
 }
 
 describe("ForgotPasswordForm", () => {
+  it("cannot put the address in a URL, hydrated or not", async () => {
+    // Not a credential, but the same defect and the same window: an
+    // administrator's address in the address bar, the history and the
+    // access log is an account name handed to whoever reads them.
+    const user = userEvent.setup();
+    const { container } = renderWithIntl(<ForgotPasswordForm locale="ar" />);
+    await user.type(screen.getByLabelText("البريد الإلكتروني"), "admin@uaeaf.ae");
+    const { method, query, url } = nativeSubmission(container);
+
+    expect(query).toContain("email=admin%40uaeaf.ae");
+    // …and the URL the browser would go to carries none of it.
+    expect(url).not.toContain("admin%40uaeaf.ae");
+    expect(method).toBe("post");
+  });
+
   it("sends the address together with the locale, so the mail matches the reader's language", async () => {
     const fetchMock = stubFetch(new Response(null, { status: 202 }));
 

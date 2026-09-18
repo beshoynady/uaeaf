@@ -23,13 +23,13 @@ const ERROR_KEYS = new Set(["invalidEmail", "tooManyAttempts", "serviceUnavailab
  * a live "send" button under a "we sent it" message invites the double-send
  * that makes people wonder which link is the good one.
  */
-export function ForgotPasswordForm({ locale }: { locale: AppLocale }) {
+export const ForgotPasswordForm = ({ locale }: { locale: AppLocale }) => {
   const t = useTranslations("ForgotPassword");
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [errorKey, setErrorKey] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const email = String(new FormData(event.currentTarget).get("email") ?? "").trim();
     setSubmitting(true);
@@ -79,7 +79,20 @@ export function ForgotPasswordForm({ locale }: { locale: AppLocale }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex w-full flex-col gap-6" noValidate>
+    // POST, and not HTML's default GET. React attaches `onSubmit` at
+    // hydration; the server-rendered page accepts typing and submits
+    // before then, and the browser's own submission of a form with no
+    // `method` would carry the administrator's address in the query
+    // string — the address bar, the history, the access log and the next
+    // `Referer`. The browser reads the method off the attribute, so that
+    // submission does not exist rather than being guarded against. See
+    // lib/security/credential-forms.spec.ts.
+    <form
+      onSubmit={handleSubmit}
+      method="post"
+      className="flex w-full flex-col gap-6"
+      noValidate
+    >
       {errorKey ? (
         <StatusMessage tone={errorKey === "tooManyAttempts" ? "warning" : "error"} title={t("errorTitle")}>
           {t(errorKey)}

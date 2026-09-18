@@ -42,10 +42,10 @@ const SPONSORSHIPS = [
 
 const fetchMock = vi.fn();
 
-const renderEditor = () =>
+const renderEditor = (bannerSponsorshipId: string | null = null) =>
   renderWithIntl(
     <ToastProvider>
-      <StripEditor initial={fromStripRecord(null)} sponsors={SPONSORS} sponsorships={SPONSORSHIPS} bannerSponsorshipId={null} now="2027-03-01T08:00:00.000Z" />
+      <StripEditor initial={fromStripRecord(null)} sponsors={SPONSORS} sponsorships={SPONSORSHIPS} bannerSponsorshipId={bannerSponsorshipId} now="2027-03-01T08:00:00.000Z" />
     </ToastProvider>,
     "en",
   );
@@ -57,13 +57,38 @@ beforeEach(() => {
 });
 
 describe("StripEditor", () => {
-  it("previews the banner's sponsor pinned, the rest in tier order, and the width from which the row stands still", () => {
+  it("previews every sponsorship travelling when none is held, and the one motion the strip now has", () => {
     renderEditor();
 
     const preview = screen.getByRole("region", { name: /^preview$/i });
     const items = within(within(preview).getByRole("list")).getAllByRole("listitem");
-    expect(items.map((item) => item.textContent)).toEqual([expect.stringMatching(/Ultimate Power Solution.*Pinned/), "Palmstone Demo Bank", "Wahat Demo"]);
-    expect(within(preview).getByText(/stands still from 1024px wide/i)).toBeInTheDocument();
+    // ADR-0086 D2: nothing is held until the editor chooses, so nothing in
+    // the preview is marked as held either.
+    expect(items.map((item) => item.textContent)).toEqual(["Ultimate Power Solution", "Palmstone Demo Bank", "Wahat Demo"]);
+    // ADR-0085 D9.1 removed the still state, so there is no breakpoint left to
+    // name here. The editor stating one it no longer has would be a preview
+    // that lies about the page.
+    expect(within(preview).getByText(/moves at every width/i)).toBeInTheDocument();
+    expect(within(preview).queryByText(/stands still/i)).toBeNull();
+  });
+
+  it("warns, without blocking, when the held sponsor is not the one the section banners", async () => {
+    // ADR-0086 D2: the agreement is the editor's now, so a disagreement must
+    // be visible. It is a note, not a refusal — holding a different sponsor
+    // on purpose is allowed.
+    const user = userEvent.setup();
+    // With a banner in play: nothing to disagree with when there is none.
+    renderEditor(SPONSORSHIPS[0]._id);
+
+    const picker = screen.getByLabelText(/held sponsor|الراعي المثبّت/i) as HTMLSelectElement;
+    // The last choice in this select is never the banner's, which the harness
+    // makes the first sponsorship.
+    const options = within(picker).getAllByRole("option") as HTMLOptionElement[];
+    await user.selectOptions(picker, options[options.length - 1].value);
+
+    const note = await screen.findByRole("note");
+    expect(note.textContent).toMatch(/banners|البانر/i);
+    expect(screen.getByRole("button", { name: /save|حفظ/i })).toBeEnabled();
   });
 
   it("says a phone shows logo and name when the scope mode is chosen", async () => {

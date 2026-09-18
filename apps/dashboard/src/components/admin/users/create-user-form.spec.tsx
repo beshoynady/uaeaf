@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithIntl } from "@/test/render";
+import { nativeSubmission } from "@/test/native-submission";
 import { ToastProvider } from "@/components/ui/toast";
 import { CreateUserForm } from "./create-user-form";
 import type { PersonOption } from "./create-user-form";
@@ -47,6 +48,20 @@ function render(extra: Partial<React.ComponentProps<typeof CreateUserForm>> = {}
 }
 
 describe("CreateUserForm", () => {
+  it("cannot put the initial password in a URL, hydrated or not", async () => {
+    // Behind a session rather than in front of one, but it carries the one
+    // value an administrator has to hand to a new colleague in the clear.
+    const user = userEvent.setup();
+    const { container } = render();
+    await user.type(screen.getByLabelText("كلمة المرور الأولية"), "NOT-A-REAL-PASSWORD");
+    const { method, query, url } = nativeSubmission(container);
+
+    expect(query).toContain("user-password=NOT-A-REAL-PASSWORD");
+    // …and the URL the browser would go to carries none of it.
+    expect(url).not.toContain("NOT-A-REAL-PASSWORD");
+    expect(method).toBe("post");
+  });
+
   it("creates the account, its roles and its personnel link in one request", async () => {
     // One request because it is one intent. Assigning the roles separately
     // would leave an account with no access if the second call failed —

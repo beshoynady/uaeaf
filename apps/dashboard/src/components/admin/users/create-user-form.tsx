@@ -117,8 +117,17 @@ export function CreateUserForm({
   }
 
   return (
+    // POST, and not HTML's default GET. React attaches `onSubmit` at
+    // hydration; the server-rendered page accepts typing and submits
+    // before then, and the browser's own submission of a form with no
+    // `method` would carry the initial password in the query string — the
+    // address bar, the history, the access log and the next `Referer`.
+    // The browser reads the method off the attribute, so that submission
+    // does not exist rather than being guarded against. See
+    // lib/security/credential-forms.spec.ts.
     <form
       noValidate
+      method="post"
       onSubmit={(event) => {
         event.preventDefault();
         void submit();

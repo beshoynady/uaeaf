@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithIntl } from "@/test/render";
+import { nativeSubmission } from "@/test/native-submission";
 import { ResetPasswordForm } from "./reset-password-form";
 
 afterEach(() => {
@@ -30,6 +31,21 @@ async function fill(password: string, confirmation = password) {
 }
 
 describe("ResetPasswordForm", () => {
+  it("cannot put the new password in a URL, hydrated or not", async () => {
+    // The password being chosen is as much a credential as the one being
+    // replaced, and this screen is reached from a mailed link — the one
+    // journey most likely to be submitted on a slow connection, before the
+    // page has hydrated.
+    const { container } = renderWithIntl(<ResetPasswordForm token="abc" locale="ar" />);
+    await fill("NOT-A-REAL-PASSWORD");
+    const { method, query, url } = nativeSubmission(container);
+
+    expect(query).toContain("password=NOT-A-REAL-PASSWORD");
+    // …and the URL the browser would go to carries none of it.
+    expect(url).not.toContain("NOT-A-REAL-PASSWORD");
+    expect(method).toBe("post");
+  });
+
   it("keeps the button closed until the entry is long enough and both fields agree", async () => {
     renderWithIntl(<ResetPasswordForm token="abc" locale="ar" />);
     expect(saveButton()).toBeDisabled();

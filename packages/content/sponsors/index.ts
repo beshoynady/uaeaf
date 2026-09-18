@@ -18,14 +18,13 @@ export type {
   SponsorshipTier,
 } from "./showcase";
 export {
-  STRIP_BREAKPOINTS,
   STRIP_DEFAULTS,
   STRIP_GAP,
   STRIP_ITEM_MIN,
-  STRIP_SECONDS_PER_ITEM,
-  stripDisplayMode,
+  STRIP_PIXELS_PER_SECOND,
+  stripCopies,
+  stripCopyWidth,
   stripItems,
   stripLoopSeconds,
-  stripRowFrom,
 } from "./strip";
-export type { StripBreakpoint, StripDisplayMode, StripItems, StripSettingsLike, StripSpeed } from "./strip";
+export type { StripDisplayMode, StripItems, StripSettingsLike, StripSpeed } from "./strip";

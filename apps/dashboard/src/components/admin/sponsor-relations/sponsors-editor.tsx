@@ -39,6 +39,12 @@ import { EditorFrame } from "./editor-frame";
 import { DayFields, LogoPlate, NameFields, NameText, RecordList, errorAt, nameLabel, useFieldMessage } from "./relation-parts";
 import { focusElement, useRelationEditor } from "./use-relation-editor";
 
+/** The card's plate draws a logo at 120 CSS px, and nothing is ever drawn
+ *  above half its source (ADR-0086 D4) — so a mark needs 240px on its
+ *  shorter side to fill that plate without being scaled down. Below it the
+ *  picker says so; it never refuses the upload. */
+const LOGO_MIN_SOURCE_PX = 240;
+
 /**
  * The sponsors screen (ADR-0077 D1–D2, ADR-0085): each sponsor with its
  * sponsorships beneath it, the SPONSORS section's banner preference and call to
@@ -303,6 +309,7 @@ export const SponsorsEditor = ({
                 canRead={canReadMedia}
                 disabled={false}
                 locale={locale}
+                minSourcePx={LOGO_MIN_SOURCE_PX}
                 onChange={(id) => update((current) => updateSponsor(current, selected.key, { logoId: id || null }))}
                 onUploaded={onUploaded}
               />

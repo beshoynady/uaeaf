@@ -59,7 +59,7 @@ describe("sponsor-relations requests", () => {
   });
 
   it("forwards the whole strip settings and nothing else", () => {
-    const strip = { isVisible: true, displayMode: "logoName", selection: "allActive", sponsorshipIds: [], order: "tier", pinTopTier: true, speed: "medium" };
+    const strip = { isVisible: true, displayMode: "logoName", selection: "allActive", sponsorshipIds: [], order: "tier", pinnedSponsorshipId: null, speed: "medium" };
     expect(readStripBody({ ...strip, extra: 1 })).toEqual({ ok: true, body: strip });
     expect(readStripBody({ ...strip, sponsorshipIds: ["nope"] })).toEqual({ ok: false });
   });

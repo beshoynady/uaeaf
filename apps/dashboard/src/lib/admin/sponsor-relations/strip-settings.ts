@@ -2,8 +2,6 @@ import {
   STRIP_DEFAULTS,
   selectShowcase,
   stripItems,
-  stripRowFrom,
-  type StripBreakpoint,
   type StripSettingsLike,
   type SponsorshipTier,
 } from "@uaeaf/content/sponsors";
@@ -14,7 +12,7 @@ import type { SponsorRecord, SponsorshipRecord } from "./sponsors";
  * The global sponsor strip's settings screen model (ADR-0077 D5, ADR-0085 D7).
  *
  * One set of settings for the whole strip. The preview answers from the site's
- * own functions (`selectShowcase`, `stripItems`, `stripRowFrom`), so the pinned
+ * own functions (`selectShowcase`, `stripItems`), so the pinned
  * sponsor, the order and the width from which the row stands still are the ones
  * the site will draw.
  */
@@ -27,7 +25,7 @@ export const fromStripRecord = (stored: Partial<StripSettingsLike> | null | unde
   selection: stored?.selection ?? STRIP_DEFAULTS.selection,
   sponsorshipIds: [...(stored?.sponsorshipIds ?? [])],
   order: stored?.order ?? STRIP_DEFAULTS.order,
-  pinTopTier: stored?.pinTopTier ?? STRIP_DEFAULTS.pinTopTier,
+  pinnedSponsorshipId: stored?.pinnedSponsorshipId ?? STRIP_DEFAULTS.pinnedSponsorshipId,
   speed: stored?.speed ?? STRIP_DEFAULTS.speed,
 });
 
@@ -47,8 +45,6 @@ export interface StripPreviewItem {
 export interface StripPreview {
   pinned: StripPreviewItem | null;
   others: StripPreviewItem[];
-  /** The first width at which the row stands still; `null` when it moves everywhere. */
-  rowFrom: StripBreakpoint | null;
   /** "What they sponsor" shows logo and name below md (ADR-0077 D5 #7). */
   phoneFallsBack: boolean;
 }
@@ -73,13 +69,14 @@ export const previewStrip = (
       endDate: item.endDate,
       name: names.get(String(item.sponsorId))!,
     }));
-  const banner = selectShowcase(candidates, { bannerSponsorshipId }, now).banner;
-  const { pinned, others } = stripItems(candidates, draft, banner?.id ?? null, now);
+  // The preview answers with the site's own function, so what the editor sees
+  // is what the strip will draw — including a held sponsorship that has since
+  // stopped running, which simply is not found and leaves no gap (ADR-0086 D2).
+  const { pinned, others } = stripItems(candidates, draft, now);
   const toItem = (item: (typeof candidates)[number]): StripPreviewItem => ({ id: item.id, name: item.name, tier: item.tier });
   return {
     pinned: pinned ? toItem(pinned) : null,
     others: others.map(toItem),
-    rowFrom: pinned || others.length > 0 ? stripRowFrom(others.length, Boolean(pinned), draft.displayMode) : null,
     phoneFallsBack: draft.displayMode === "logoNameScope",
   };
 };

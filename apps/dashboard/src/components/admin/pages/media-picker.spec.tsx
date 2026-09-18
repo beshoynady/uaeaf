@@ -83,3 +83,56 @@ describe("MediaPicker upload panel", () => {
     expect(screen.queryByRole("button", { name: "رفع الصورة" })).toBeNull();
   });
 });
+
+/**
+ * ADR-0086 D4: a logo drawn above half its source is a blurred logo, so the
+ * editor is told when the file they chose is too small for the largest place
+ * it will be drawn. It is a notice, never a refusal — a federation that only
+ * has a small file still has to be able to publish, and a warning that stops
+ * the work gets worked around.
+ */
+describe("MediaPicker resolution notice", () => {
+  const withSize = (width: number, height: number) => [
+    { id: "a1", caption: { ar: "صورة", en: "Image" }, url: "https://cdn.example/a1.png", width, height },
+  ];
+
+  const renderChosen = (images: readonly { id: string; caption: { ar: string; en: string }; url: string; width?: number; height?: number }[]) =>
+    renderWithIntl(
+      <MediaPicker
+        label="الشعار"
+        value="a1"
+        images={images}
+        canRead
+        disabled={false}
+        locale="ar"
+        minSourcePx={240}
+        onChange={() => {}}
+      />,
+    );
+
+  it("says what the file has and what the largest place needs, when it is too small", () => {
+    renderChosen(withSize(180, 180));
+
+    const notice = screen.getByRole("note");
+    expect(notice).toHaveTextContent("180");
+    expect(notice).toHaveTextContent("240");
+  });
+
+  it("stays quiet when the file is large enough", () => {
+    renderChosen(withSize(480, 240));
+
+    expect(screen.queryByRole("note")).toBeNull();
+  });
+
+  it("stays quiet when the record carries no measurement to judge", () => {
+    renderChosen([{ id: "a1", caption: { ar: "صورة", en: "Image" }, url: "https://cdn.example/a1.png" }]);
+
+    expect(screen.queryByRole("note")).toBeNull();
+  });
+
+  it("never blocks the choice: the picker still offers to change it", () => {
+    renderChosen(withSize(180, 180));
+
+    expect(screen.getByRole("button", { name: "اختر صورة" })).toBeEnabled();
+  });
+});

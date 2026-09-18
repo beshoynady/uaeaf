@@ -13,14 +13,19 @@ import { FOCUS, TOUCH_TARGET, TRANSITION } from "@/components/ui/interactive";
  * work must never sit beside moving content, and flips `data-paused`.
  *
  * Hover and focus inside the strip hold the loop too (CSS); the button is the
- * control that stays held until it is pressed again. Under reduced motion the
- * CSS draws neither the loop nor this button.
+ * control that stays held until it is pressed again. What it is called and
+ * what it shows are separate: `aria-label` carries the full sentence a screen
+ * reader reads, and the face carries the glyph alone (ADR-0086 D1). Under
+ * reduced motion the CSS draws neither the loop nor this button.
  */
 export const SponsorStripControls = ({
   trackId,
   labels,
 }: {
   trackId: string;
+  /** What the button is *called*. It is the `aria-label` and nothing is
+   *  printed from it: the strip's subject is the sponsors, and at 390px the
+   *  full sentence was the loudest thing in the band (ADR-0086 D1). */
   labels: { pause: string; play: string };
 }) => {
   const [paused, setPaused] = useState(false);
@@ -48,11 +53,16 @@ export const SponsorStripControls = ({
       type="button"
       aria-controls={trackId}
       aria-pressed={paused}
+      // The name a screen reader speaks, unchanged and stated outright rather
+      // than inherited from whatever happens to be printed inside.
+      aria-label={paused ? labels.play : labels.pause}
       onClick={() => setPaused((value) => !value)}
-      className={`strip-pause ${TOUCH_TARGET} min-w-11 items-center justify-center gap-2 rounded-full border border-[color:var(--color-section-black-border)] px-4 text-body-sm font-semibold hover:bg-[color:var(--color-section-black-divider)] active:opacity-80 ${TRANSITION} ${FOCUS}`}
+      // Square and quiet: the register's own edge rather than a filled
+      // ground, at the interactive minimum of 44px in both directions so the
+      // target never depends on how long a word is (ADR-0086 D1).
+      className={`strip-pause ${TOUCH_TARGET} size-11 shrink-0 items-center justify-center rounded-full border border-[color:var(--color-section-black-border)] text-body-sm hover:bg-[color:var(--color-section-black-divider)] active:opacity-80 ${TRANSITION} ${FOCUS}`}
     >
       <span aria-hidden="true">{paused ? "▶" : "❚❚"}</span>
-      <span>{paused ? labels.play : labels.pause}</span>
     </button>
   );
 };

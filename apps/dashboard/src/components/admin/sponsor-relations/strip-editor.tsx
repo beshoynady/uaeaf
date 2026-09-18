@@ -2,7 +2,6 @@
 
 import { useMemo } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import type { StripBreakpoint } from "@uaeaf/content/sponsors";
 import { SwitchField } from "@/components/admin/homepage-hero/switch-field";
 import { SelectField } from "@/components/ui/select-field";
 import type { AppLocale } from "@/i18n/routing";
@@ -16,12 +15,9 @@ import { focusElement, useRelationEditor } from "./use-relation-editor";
 /**
  * The sponsor strip's settings screen (ADR-0077 D5, ADR-0085 D7): one set of
  * settings for the whole strip under the homepage hero, and a preview that
- * answers with the site's own functions which sponsor is pinned, in what order
- * the rest follow, and from which width the row stands still.
+ * answers with the site's own functions which sponsor is pinned and in what
+ * order the rest follow.
  */
-
-/** The width each breakpoint starts at (`--breakpoint-*`, Chapter 5 §5.1). */
-const BREAKPOINT_PX: Record<Exclude<StripBreakpoint, "base">, number> = { sm: 640, md: 768, lg: 1024, xl: 1280, "2xl": 1536 };
 
 const CHOICE =
   "flex min-h-11 cursor-pointer items-center gap-2 rounded-[var(--radius-md)] border px-3 py-2 transition-colors duration-[var(--motion-duration-fast)] hover:border-[color:var(--color-border-strong)] active:bg-[color:var(--color-surface-skeleton)] has-[:checked]:border-[color:var(--color-brand-primary)]";
@@ -76,8 +72,28 @@ export const StripEditor = ({
     });
 
   const preview = previewStrip(draft, sponsors, sponsorships, bannerSponsorshipId, now);
-  const rowLine =
-    preview.rowFrom === null ? t("strip.rowNever") : preview.rowFrom === "base" ? t("strip.rowAlways") : t("strip.rowFrom", { width: BREAKPOINT_PX[preview.rowFrom] });
+  const bannerSponsorship = sponsorships.find((item) => item._id === bannerSponsorshipId) ?? null;
+  const bannerRecord = bannerSponsorship ? (names.get(String(bannerSponsorship.sponsorId)) ?? null) : null;
+  const bannerName = bannerRecord ? nameLabel(bannerRecord.ar ?? "", bannerRecord.en ?? "", locale) : null;
+  // ADR-0086 D2 withdrew the automatic agreement between the strip and the
+  // sponsors section, which is a deliberate exchange: the editor may hold a
+  // different sponsor on purpose. This says so when it happens, and does not
+  // block the save — a disagreement should be a choice, not an oversight.
+  const heldName = draft.pinnedSponsorshipId
+    ? (() => {
+        const held = sponsorships.find((item) => item._id === draft.pinnedSponsorshipId);
+        const record = held ? names.get(String(held.sponsorId)) : null;
+        return record ? nameLabel(record.ar ?? "", record.en ?? "", locale) : null;
+      })()
+    : null;
+  const mismatch =
+    heldName && bannerName && draft.pinnedSponsorshipId !== bannerSponsorshipId
+      ? { pinned: heldName, banner: bannerName }
+      : null;
+  // One sentence, because there is now one behaviour: ADR-0085 D9.1 removed
+  // the still state, so the row moves at every width and the editor no longer
+  // has a breakpoint to name.
+  const rowLine = t("strip.motion");
 
   const summaryItems = errors.map((error) => ({
     id: `${error.path}:${error.code}`,
@@ -160,7 +176,40 @@ export const StripEditor = ({
             </fieldset>
           ) : null}
           {select("order", t("strip.order"), ["tier", "manual"], "orders")}
-          <SwitchField id="strip-pinTopTier" label={t("strip.pinTopTier")} checked={draft.pinTopTier} onChange={(pinTopTier) => change({ pinTopTier })} />
+          {/* ADR-0086 D2. One nullable choice, so "at most one, and choosing
+              another replaces it" needs no rule to enforce it. The banner's
+              sponsor is named underneath because the strip no longer follows
+              it automatically (ADR-0085 D5.1 withdrawn) — the editor should
+              be able to agree with it on purpose. */}
+          <div className="flex flex-col gap-2">
+            <SelectField
+              id="strip-pinnedSponsorshipId"
+              label={t("strip.pinned")}
+              options={[
+                { value: "", label: t("strip.pinnedNone") },
+                ...choices.map((item) => {
+                  const name = names.get(String(item.sponsorId))!;
+                  return { value: item._id, label: nameLabel(name.ar ?? "", name.en ?? "", locale) ?? item._id };
+                }),
+              ]}
+              value={draft.pinnedSponsorshipId ?? ""}
+              onChange={(event) => change({ pinnedSponsorshipId: event.target.value || null })}
+            />
+            <p className="text-caption text-[color:var(--color-text-secondary)]">{t("strip.pinnedHint")}</p>
+            {bannerName ? (
+              <p className="text-caption text-[color:var(--color-text-secondary)]">
+                {t("strip.pinnedBanner", { name: bannerName })}
+              </p>
+            ) : null}
+            {mismatch ? (
+              <p
+                role="note"
+                className="rounded-[var(--radius-sm)] border border-[color:var(--color-semantic-warning)] px-3 py-2 text-caption text-[color:var(--color-text-primary)]"
+              >
+                {t("strip.pinnedMismatch", mismatch)}
+              </p>
+            ) : null}
+          </div>
           {select("speed", t("strip.speed"), ["slow", "medium", "fast"], "speeds")}
         </section>
 

@@ -122,7 +122,7 @@
 
 ## ٦. أين ينكسر — وأخطاء شائعة
 
-- **`Missing permission: Update on strategicPlansPage`** بعد إضافة صفوف الكتالوج: دور السوبر أدمن يأخذ الكتالوج عبر `bootstrap-admin` لا عند إقلاع الخادم. شغّله (`BOOTSTRAP_ADMIN_EMAIL/PASSWORD` للحساب القائم؛ يُترك كما هو).
+- **`Missing permission: Update on strategicPlansPage`** بعد إضافة صفوف الكتالوج: دور السوبر أدمن يأخذ الكتالوج عبر `bootstrap-admin` لا عند إقلاع الخادم. شغّله (`npm run bootstrap:admin`، ويقرأ `BOOTSTRAP_ADMIN_EMAIL`/`_PASSWORD` من `api/.env` ولا يُمرّر أيّ منهما في سطر الأوامر؛ الحساب القائم يُترك كما هو).
 - **`publishingPolicyMissing` (409)** عند أول نشر: يلزم `POST /workflow-policies { entityType: "strategicPlansPage", operation: "Edit", workflowRequired: false, allowHardDelete: false }` كما للصفحتين الأخريين.
 - **`ECONNRESET` في سكربت يكتب عبر الـAPI** بين طلبين تفصلهما ثوانٍ: الخادم يغلق keep-alive بعد 5 ثوانٍ؛ أرسل `connection: close`.
 - **قسم بلا عنصر هوية بعد شريط ملوّن:** `SeamLines placement="centered"` يقف نصفه على الشريط تحت 3:1؛ استعمل `below`، وأبقِ الفقرة تحت العنوان على `MEASURE[locale]` وإلا لامست الخطوطُ النص (IL-5).

@@ -442,6 +442,7 @@ export interface SponsorStripSettingsPublic {
   selection: "allActive" | "manual";
   sponsorshipIds: string[];
   order: "tier" | "manual";
-  pinTopTier: boolean;
+  /** The one sponsorship held still, or `null` (ADR-0086 D2). */
+  pinnedSponsorshipId: string | null;
   speed: "slow" | "medium" | "fast";
 }

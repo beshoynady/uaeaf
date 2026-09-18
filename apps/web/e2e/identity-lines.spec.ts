@@ -73,6 +73,8 @@ interface Clearance {
   /** Text runs and images measured against in the last frame. */
   contents: number;
   overflowFrames: number;
+  /** Animations that never end, held at their start rather than scrubbed. */
+  endless: number;
 }
 
 const measureClearance = (page: Page) =>
@@ -102,15 +104,23 @@ const measureClearance = (page: Page) =>
         return rects;
       };
 
-      // Time-based animations only. A scroll-driven one (the photograph's
-      // parallax) runs on scroll position, not time: its endTime is a CSS
-      // percentage, which would make `end` NaN and skip every frame. It moves
-      // only the photograph, which is not measured here.
-      const animations = document
-        .getAnimations()
-        .filter((animation) => typeof animation.effect?.getComputedTiming().endTime === "number");
+      // Only animations that END are paused and scrubbed. Two kinds never do,
+      // and `typeof endTime === "number"` admitted one of them: a
+      // scroll-driven animation (the photograph's parallax) reports a CSS
+      // percentage, which made `end` NaN and skipped every frame; a loop that
+      // never stops (the sponsor strip, ADR-0085 D8 #2) reports Infinity,
+      // which would scrub forever rather than fail. `Number.isFinite`
+      // excludes both.
+      //
+      // Neither is touched, which is how the percentage case has always been
+      // treated and is not incidental: pausing the parallax moves the
+      // portrait, and this measurement is taken against the portrait.
+      const endsAt = (animation: Animation) => Number(animation.effect?.getComputedTiming().endTime);
+      const all = document.getAnimations();
+      const animations = all.filter((animation) => Number.isFinite(endsAt(animation)));
+      const endless = all.length - animations.length;
       animations.forEach((animation) => animation.pause());
-      const end = Math.max(0, ...animations.map((animation) => Number(animation.effect?.getComputedTiming().endTime)));
+      const end = Math.max(0, ...animations.map(endsAt));
 
       let best = { distance: Infinity, against: "", atMs: 0 };
       let frames = 0;
@@ -149,15 +159,30 @@ const measureClearance = (page: Page) =>
         strokes: paths.length,
         contents,
         overflowFrames,
+        endless,
       };
     },
     { step: FRAME_STEP_MS, points: OUTLINE_POINTS },
   );
 
-/** Every page whose hero carries the identity lines: the President's Message
+/** Every page whose hero is the portrait composition: the President's Message
  *  (ADR-0069 D10), Vision & Mission (ADR-0070) and the Strategic Plan
- *  (ADR-0075). `ONLY_ROUTE` narrows a run to one of them. */
-const ALL_ROUTES = ["/about/president", "/about/governance/vision-mission", "/about/governance/strategic-plan"];
+ *  (ADR-0075). */
+const PORTRAIT_HERO_ROUTES = ["/about/president", "/about/governance/vision-mission", "/about/governance/strategic-plan"];
+
+/**
+ * The width from which the homepage draws its identity lines — Chapter 5
+ * §5.1's `lg`. ADR-0085 D8 #1: below it the sponsors' and memberships'
+ * headings span the line and the strokes measured 0–28px from them, under
+ * IL-5's 32px, so the sets are not drawn there at all.
+ */
+const HOMEPAGE_LINES_FROM = 1024;
+
+/** Every page that carries identity strokes anywhere. The homepage has no
+ *  portrait hero, but ADR-0085 D8 #1 left its seams and its sponsor banner
+ *  measured and unguarded — this spec is where that gap is closed.
+ *  `ONLY_ROUTE` narrows a run to one page. */
+const ALL_ROUTES = ["/", ...PORTRAIT_HERO_ROUTES];
 
 const ROUTES = ALL_ROUTES.filter((route) => !process.env.ONLY_ROUTE || route === process.env.ONLY_ROUTE);
 
@@ -174,7 +199,7 @@ const measurePhotoLines = (page: Page) =>
     ({ step, points }): Clearance => {
       const content = document.querySelector("main") ?? document.body;
       const paths = [
-        ...content.querySelectorAll<SVGPathElement>("[data-slanted-photo] [data-il-stroke] path, [data-seam-lines] [data-il-stroke] path"),
+        ...content.querySelectorAll<SVGPathElement>("[data-photo-lines] [data-il-stroke] path, [data-seam-lines] [data-il-stroke] path"),
       ].filter(
         (path) => (path.closest("[data-il-stroke]") as HTMLElement).getClientRects().length > 0,
       );
@@ -194,11 +219,23 @@ const measurePhotoLines = (page: Page) =>
         return rects;
       };
 
-      const animations = document
-        .getAnimations()
-        .filter((animation) => typeof animation.effect?.getComputedTiming().endTime === "number");
+      // Only animations that END are paused and scrubbed. Two kinds never do,
+      // and `typeof endTime === "number"` admitted one of them: a
+      // scroll-driven animation (the photograph's parallax) reports a CSS
+      // percentage, which made `end` NaN and skipped every frame; a loop that
+      // never stops (the sponsor strip, ADR-0085 D8 #2) reports Infinity,
+      // which would scrub forever rather than fail. `Number.isFinite`
+      // excludes both.
+      //
+      // Neither is touched, which is how the percentage case has always been
+      // treated and is not incidental: pausing the parallax moves the
+      // portrait, and this measurement is taken against the portrait.
+      const endsAt = (animation: Animation) => Number(animation.effect?.getComputedTiming().endTime);
+      const all = document.getAnimations();
+      const animations = all.filter((animation) => Number.isFinite(endsAt(animation)));
+      const endless = all.length - animations.length;
       animations.forEach((animation) => animation.pause());
-      const end = Math.max(0, ...animations.map((animation) => Number(animation.effect?.getComputedTiming().endTime)));
+      const end = Math.max(0, ...animations.map(endsAt));
 
       let best = { distance: Infinity, against: "", atMs: 0 };
       let frames = 0;
@@ -230,7 +267,7 @@ const measurePhotoLines = (page: Page) =>
         }
       }
       animations.forEach((animation) => animation.finish());
-      return { ...best, distance: Math.round(best.distance * 10) / 10, frames, strokes: paths.length, contents, overflowFrames };
+      return { ...best, distance: Math.round(best.distance * 10) / 10, frames, strokes: paths.length, contents, overflowFrames, endless };
     },
     { step: FRAME_STEP_MS, points: OUTLINE_POINTS },
   );
@@ -251,6 +288,10 @@ for (const route of ROUTES) {
           reducedMotion: "no-preference",
         });
 
+        // The portrait composition only. The homepage's hero is a different
+        // one and carries no `data-composition`, so there only the sections'
+        // strokes below it are measured.
+        if (PORTRAIT_HERO_ROUTES.includes(route))
         test("keeps every identity stroke 32px from the hero's content, at rest and through the entrance", async ({
           page,
         }) => {
@@ -282,7 +323,13 @@ for (const route of ROUTES) {
           test.setTimeout(357_000);
           await page.goto(`/${locale}${route}`, { waitUntil: "domcontentloaded" });
           await page.evaluate(() => document.fonts.ready);
-          const photos = await page.locator("main [data-slanted-photo]").count();
+          // Counted where they are displayed, and by the mark the component
+          // itself carries: `SlantedPhoto` wraps one set in
+          // `data-slanted-photo`, and the homepage's sponsor banner draws one
+          // with no wrapper at all and hides it below `lg`.
+          const photos = await page
+            .locator("main [data-photo-lines]")
+            .evaluateAll((sets) => sets.filter((set) => (set as HTMLElement).getClientRects().length > 0).length);
           // Each seam draws one group of two: A in Arabic, B in English. A set
           // drawn only from a width (`SeamLines from="lg"`, ADR-0075) is not
           // displayed below it and draws nothing there, so only displayed sets
@@ -291,6 +338,18 @@ for (const route of ROUTES) {
             .locator("main [data-seam-lines]")
             .evaluateAll((sets) => sets.filter((set) => (set as HTMLElement).getClientRects().length > 0).length);
           test.info().annotations.push({ type: "photographs and seams", description: `${photos} and ${seams}` });
+
+          // ADR-0085 D8 #1, asserted in both directions so that neither the
+          // departure nor its undoing is silent: on the homepage the sets
+          // appear only from `lg`, and they do appear there.
+          if (route === "/") {
+            const drawn = photos + seams;
+            if (viewport.width < HOMEPAGE_LINES_FROM) {
+              expect(drawn, `no identity lines below ${HOMEPAGE_LINES_FROM}px`).toBe(0);
+            } else {
+              expect(drawn, `identity lines drawn from ${HOMEPAGE_LINES_FROM}px`).toBeGreaterThan(0);
+            }
+          }
 
           // As loaded: a block below the first screen waits to be revealed.
           const waiting = await measurePhotoLines(page);
@@ -338,10 +397,20 @@ for (const route of ROUTES) {
   }
 }
 
+/**
+ * The two guards below read a page's *animations*, not its clearance, and were
+ * written for the portrait hero. The homepage is left out of them on purpose:
+ * its one continuous animation is the sponsor strip's loop, which ADR-0085
+ * D8 #2 is still deciding the shape of. It gets its own guards with that
+ * decision — guarding it here first would fix the loop's current shape in a
+ * spec about identity lines.
+ */
+const MOTION_ROUTES = ROUTES.filter((route) => PORTRAIT_HERO_ROUTES.includes(route));
+
 test.describe("reduced motion", () => {
   test.use({ reducedMotion: "reduce", viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
 
-  for (const route of ROUTES) {
+  for (const route of MOTION_ROUTES) {
     for (const locale of ["ar", "en"] as const) {
       test(`${route} ${locale}: the hero and its lines are drawn at rest, with nothing animating`, async ({ page }) => {
         await page.goto(`/${locale}${route}`, { waitUntil: "domcontentloaded" });
@@ -353,7 +422,7 @@ test.describe("reduced motion", () => {
 });
 
 test.describe("the largest paint", () => {
-  for (const route of ROUTES) for (const locale of ["ar", "en"] as const) {
+  for (const route of MOTION_ROUTES) for (const locale of ["ar", "en"] as const) {
     // The page's own content, inside `<main>`. The site header is shared and
     // protected, and its drawer items fade in; they are not this page's paint.
     test(`${route} ${locale}: no animation in the page's content changes opacity, so the title and the portrait paint in their first frame`, async ({

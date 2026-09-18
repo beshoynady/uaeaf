@@ -34,7 +34,7 @@ describe("strip settings model", () => {
       selection: "allActive",
       sponsorshipIds: [],
       order: "tier",
-      pinTopTier: true,
+      pinnedSponsorshipId: null,
       speed: "medium",
     });
   });
@@ -50,17 +50,37 @@ describe("strip settings model", () => {
     expect(isStripDirty(saved, { ...saved, speed: "fast" })).toBe(true);
   });
 
-  it("previews the pinned sponsor as the banner's, the rest in tier order, and when the row moves", () => {
+  it("holds nobody by default, and previews every running sponsorship in tier order", () => {
+    // ADR-0086 D2: the pin is the editor's choice, not the banner's. Nothing
+    // chosen means nothing held, and everyone travels.
     const sponsors = [sponsor("a", "Ultimate Power Solution"), sponsor("b", "Palmstone Demo Bank"), sponsor("c", "Wahat Demo")];
     const sponsorships = [ship("s1", "a", "Official", 0), ship("s2", "b", "Official", 1), ship("s3", "c", "Supporting", 2), ship("s4", "c", "Supporting", 3, { isVisible: false })];
 
     const preview = previewStrip(fromStripRecord(null), sponsors, sponsorships, null, now);
 
+    expect(preview.pinned).toBeNull();
+    expect(preview.others.map((item) => item.name.en)).toEqual(["Ultimate Power Solution", "Palmstone Demo Bank", "Wahat Demo"]);
+    expect(preview.phoneFallsBack).toBe(false);
+  });
+
+  it("holds the chosen sponsorship and leaves it out of the row it previews", () => {
+    const sponsors = [sponsor("a", "Ultimate Power Solution"), sponsor("b", "Palmstone Demo Bank"), sponsor("c", "Wahat Demo")];
+    const sponsorships = [ship("s1", "a", "Official", 0), ship("s2", "b", "Official", 1), ship("s3", "c", "Supporting", 2)];
+
+    const preview = previewStrip({ ...fromStripRecord(null), pinnedSponsorshipId: "s1" }, sponsors, sponsorships, null, now);
+
     expect(preview.pinned?.name).toEqual({ ar: null, en: "Ultimate Power Solution" });
     expect(preview.others.map((item) => item.name.en)).toEqual(["Palmstone Demo Bank", "Wahat Demo"]);
-    // Two items at 224px and the pinned one at 360, gaps included: 872px, which lg holds.
-    expect(preview.rowFrom).toBe("lg");
-    expect(preview.phoneFallsBack).toBe(false);
+  });
+
+  it("holds nobody, and leaves no gap, when the chosen sponsorship is not running", () => {
+    const sponsors = [sponsor("a", "Ultimate Power Solution"), sponsor("b", "Palmstone Demo Bank")];
+    const sponsorships = [ship("s1", "a", "Official", 0), ship("s2", "b", "Official", 1, { isVisible: false })];
+
+    const preview = previewStrip({ ...fromStripRecord(null), pinnedSponsorshipId: "s2" }, sponsors, sponsorships, null, now);
+
+    expect(preview.pinned).toBeNull();
+    expect(preview.others.map((item) => item.name.en)).toEqual(["Ultimate Power Solution"]);
   });
 
   it("says the scope mode falls back to logo and name on a phone", () => {

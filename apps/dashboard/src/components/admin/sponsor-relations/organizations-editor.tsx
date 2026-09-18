@@ -31,6 +31,12 @@ import { EditorFrame } from "./editor-frame";
 import { DayFields, LogoPlate, NameFields, NameText, RecordList, errorAt, nameLabel, useFieldMessage } from "./relation-parts";
 import { focusElement, useRelationEditor } from "./use-relation-editor";
 
+/** The card's plate draws a logo at 120 CSS px, and nothing is ever drawn
+ *  above half its source (ADR-0086 D4) — so a mark needs 240px on its
+ *  shorter side to fill that plate without being scaled down. Below it the
+ *  picker says so; it never refuses the upload. */
+const LOGO_MIN_SOURCE_PX = 240;
+
 /**
  * The partners and the memberships screens (ADR-0077 D3, ADR-0085): the list in
  * the site's order, the chosen record's fields, and a preview of the homepage
@@ -175,6 +181,7 @@ export const OrganizationsEditor = ({
               canRead={canReadMedia}
               disabled={false}
               locale={locale}
+              minSourcePx={LOGO_MIN_SOURCE_PX}
               onChange={(id) => change(selected.key, { logoId: id || null })}
               onUploaded={onUploaded}
             />

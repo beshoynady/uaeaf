@@ -241,7 +241,274 @@ What the build settled that D1–D7 did not say, and where it departs from them.
 | 5 | Dashboard: five screens under "Homepage" in the page's order (hero, strip, sponsors, partners, memberships). Each opens only with every grant its Save uses; saving is publishing; demo records carry a "Demo data" badge and `isDemo` cannot be written | Settles "managed from the dashboard" | ADR-0084's save pattern and CLAUDE.md §31 | `navigation.spec.ts`; `sponsor-relations` editor specs |
 | 6 | Copy not in Figma: the strip's label, pause and play; "Visit the {name} website" and its new-tab notice; the stats' label; the Partners title; every dashboard label | New copy | Accessible names and the dashboard have no Figma frame | `apps/web/messages`, `apps/dashboard/messages` (`HomeSponsors`, `SponsorRelations`) |
 
-**Measured, not a defect:** axe reports a strip item's colour contrast as *incomplete* while the item is partly under the pause control mid-travel; paused or still, no violation. The strip's text and surface are a pairing record measured in every mode.
+### D8 — Owner's resolutions (2026-09-18)
+
+The three departures above were marked PENDING OWNER CONFIRMATION. Two are
+settled and built; the third is deferred with its reason.
+
+**#1 — The identity lines from `lg` on the homepage: CONFIRMED, and the gap
+closed.** The departure stands: below `lg` the sponsors' and memberships'
+headings span the line, and the strokes measured 0–28px from them, under
+IL-5's 32px. `lg` is Chapter 5 §5.1's breakpoint, not a new number.
+
+The row's own **Gap** — "`identity-lines.spec.ts` covers the three internal
+pages only, not `/`" — is closed. That spec now measures `/` as well:
+
+- `ALL_ROUTES` gains `/`; the portrait-hero case runs only where there is a
+  portrait hero (`PORTRAIT_HERO_ROUTES`), since the homepage's hero is a
+  different composition.
+- The departure is asserted **in both directions**, so neither it nor its
+  undoing is silent: below 1024 the page draws no identity-line set at all,
+  and from 1024 it draws at least one. That second assertion earned itself
+  immediately — it caught the run measuring an error page, where the
+  below-`lg` cases had "passed" on a page with no strokes because it had no
+  content either.
+- `PhotoLines` now marks itself `data-photo-lines`, and the spec counts and
+  measures by that mark. The banner's set was drawn with no `SlantedPhoto`
+  wrapper around it, so the previous selector
+  (`[data-slanted-photo] [data-il-stroke]`) never saw it — on any page.
+- The spec's animation filter admitted any `endTime` that was a `number`.
+  `Infinity` is one: the strip's loop would have made the scrub endless
+  rather than failed. It is `Number.isFinite` now, which excludes both that
+  and the scroll-driven parallax's CSS percentage. Animations that do not end
+  are left running, as the percentage case always was — pausing the parallax
+  moves the portrait the hero case measures against.
+
+**#3 — The plate's edge: CONFIRMED with an explicit edge in high contrast and
+forced-colors, and the green register now recorded and measured.** The
+departure's reasoning holds in light and dark, where the plate's own
+`#FFFFFF` fill is its boundary on both registers. It does not hold in the
+high-contrast list, where `--color-section-green-surface` is `#FFFFFF`: the
+plate, its card and the band become one white field and the fill measures
+1:1. Leaving the green register out of the pairing record recorded that as a
+fact rather than fixing it.
+
+Built: every plate draws `--color-border-strong` (`#000000` in that list,
+21:1 against white on either side) at `--border-width-default` (2px there),
+**in the high-contrast list and in `forced-colors: active` only**. Light and
+dark draw nothing — an edge there is a box inside the card's box (D3 #6). A
+pseudo-element at `inset: 0` with an inherited radius, for the reason
+ADR-0075 M0-A gives: a border changes the element's size in one list while
+the geometry guards measure another. The black register stays `#000000` in
+high contrast and keeps its fill boundary; the edge is drawn on its plates
+too, where it lands on a ground already its own colour.
+
+**Why the black register measures `#4A4942` in dark, and not black.** Asked
+when these numbers were read back, and it is deliberate: `colors.dark.json`
+records it against ADR-0059 — "the one register that differs by theme. Pure
+black against this theme's `#131210` page measures 1.12:1, i.e. no section
+boundary at all. `neutral-warm.700` measures 2.07 against the page while
+keeping both text tiers over AA (9.04 and 4.75)." So it is a per-theme value
+chosen so the band still reads as a band, not an elevation, an overlay or a
+drifted token. The plate's 9.04:1 measured on the rendered page is the same
+9.04 that comment records, arrived at independently.
+
+`pairings.json` now lists both registers for `--color-logo-plate`, with an
+exemption stating why one floor cannot express the boundary, and the four
+measurements that exemption stands on are made in the logo-plate part of
+`token-lists-contract.spec.ts`.
+
+**#2 — The loop's duration: DEFERRED, and not touched here.** The owner's
+decision is that the strip moves at a constant speed in pixels per second,
+with the duration computed from the track's width — which removes the idea
+of "seconds per item" that this row records, rather than adjusting it. That
+is a redesign of the strip's motion, not a correction to this value, so it is
+settled together with the rest of that redesign and this row stands until
+then. `STRIP_SECONDS_PER_ITEM` and `--strip-duration` are unchanged by this
+batch.
+
+**Verification, and what is not yet verified.** The token and component
+measurements above are green. The homepage cases of `identity-lines.spec.ts`
+are **not yet verified in a browser**: the local web dev server answers 500
+on every route (its render worker exits repeatedly, with the machine at
+0.7 GB free of 7.9 GB), and the plan for this batch puts restarting the
+servers out of scope. The three internal pages' cases pass. The homepage
+cases, the high-contrast screenshots of the plate edge, and `forced-colors`
+are listed under **PENDING FIGMA BACK-SYNC** below and are the first thing to
+run once that server is restarted.
+
+---
+
+**Measured, not a defect:** axe reports one *incomplete* on the strip and no violation. Under D7 it was a strip item passing beneath the pause control mid-travel; under D9 the control is in the anchor and never over the track, and the one remaining incomplete is the pause button's own `aria-hidden` glyph — "Element content contains only non-text characters", which is axe declining to measure a decorative glyph beside a real text label. The strip's text and surface are a pairing record measured in every mode.
+
+---
+
+## D9 — The strip's motion and its anchor, rebuilt (2026-09-18)
+
+Settles D8 #2, and replaces D7's decision A and D8 #4's "still while the row
+holds its items". Every visual decision below names the chapter it comes from;
+where a chapter says nothing, the derivation from already-approved numbers is
+shown rather than a number being chosen.
+
+### D9.1 — One continuous loop, at every count and every width
+
+**Built:** the row always moves. The `data-row-from` state — a row that stands
+still from the first breakpoint whose content width holds every item — is
+removed, together with `stripRowFrom`, `STRIP_BREAKPOINTS`, the `CONTENT_WIDTH`
+capacity table and `rowWidth`. Nothing replaces them; no code is left behind.
+
+**Why.** Two states meant two sets of rules for one component, and which one a
+visitor saw depended on how many sponsors the federation happened to have that
+month — a strip that moved with five and stood still with four, at the same
+width, on the same page. The rhythm of a page is not a function of a record
+count. One behaviour is also the only one that can be measured and guarded
+once instead of per breakpoint: the removed CSS was five media queries of
+near-identical rules.
+
+### D9.2 — A rate in pixels per second, not seconds per item
+
+**Built:** `STRIP_PIXELS_PER_SECOND = { slow: 42, medium: 57, fast: 85 }`, one
+named constant in `@uaeaf/content/sponsors`. The duration is computed, never
+authored: `duration = copyWidth / rate`.
+
+**Why a rate and not a duration.** Chapter 5 §5.6's motion tokens are all
+durations for a discrete transition — 100ms on a hover, 220ms on a modal,
+1200ms for ambient background motion. None of them describes a loop that never
+ends, which is what D8 #2 recorded and why it set `--strip-duration` itself.
+A duration cannot be the unit here: for the same duration a longer row must
+move faster, so the strip's visible speed changed with the number of sponsors
+and with the display mode. A rate is the only unit under which the thing a
+visitor actually perceives stays fixed.
+
+**Where the three numbers come from.** They are D8 #2's own approved seconds,
+re-expressed — not new values. D8 #4 fixes an item's track share at
+`STRIP_ITEM_MIN[mode] + STRIP_GAP`; for the default mode (`logoName`, the value
+in `STRIP_DEFAULTS`) that is 224 + 32 = 256 CSS px. Dividing D8 #2's
+seconds-per-item into it:
+
+| Speed | D8 #2 seconds per item | 256 px / seconds | Built |
+| --- | --- | --- | --- |
+| slow | 6 | 42.67 | **42 px/s** |
+| medium | 4.5 | 56.89 | **57 px/s** |
+| fast | 3 | 85.33 | **85 px/s** |
+
+So a strip in its default mode moves at the speed it moved at before this
+change; what changes is that the other two modes now move at that speed too.
+
+**`SCOPE_EXTRA_SECONDS` is removed, not carried over.** D8 #2 added 2s per item
+in `logoNameScope` because a scope line takes longer to read. Under a rate that
+allowance is automatic and almost exactly the same size: a scope item is
+320 + 32 = 352 px, which at 57 px/s takes 6.18s against the old model's 6.5s —
+a 5% difference, for a special case that no longer has to exist. The old
+model's real defect shows in the other direction: a `logo` item (112 + 32 =
+144 px) also got 4.5s, so it crossed at 32 px/s — the same strip moving at half
+the speed, on the same page, because the editor turned the names off.
+
+**`--motion-duration-ambient` is not touched** (ADR-0069 D9 reserves it for one
+element).
+
+### D9.3 — A seam that cannot show
+
+**Built:** the list is repeated `copies` times, and one cycle translates the
+track by exactly one copy's width, so the frame after the last is the first.
+`copies = max(2, ceil(1312 / copyWidth) + 1)`, where 1312 is the widest content
+width in Chapter 5 §5.2 (the `2xl` container).
+
+**Why that formula.** The seam shows when the track is not wider than the
+viewport plus the distance travelled. One copy is the distance travelled, so
+the track must exceed the widest viewport by one copy. Counted per breakpoint:
+
+| Sponsors (default mode) | Copy width | Copies | Cycle |
+| --- | --- | --- | --- |
+| 1 | 256 px | 7 | 4.5s |
+| 3 | 768 px | 3 | 13.5s |
+| 5 | 1280 px | 3 | 22.5s |
+| 10 | 2560 px | 2 | 44.9s |
+
+The rate is 57 px/s in every row of that table. The count is computed once on
+the server from numbers D8 #4 already fixed, so nothing is measured in the
+browser and nothing shifts (Chapter 5 §5.9, ADR-0009).
+
+### D9.4 — Direction from one variable
+
+**Built:** `--strip-direction: -1` in LTR and `1` in RTL, and a single
+`@keyframes` whose `to` is
+`translateX(calc(var(--strip-copy) * var(--strip-direction)))`. The two
+mirrored keyframe blocks are removed.
+
+**Why.** ADR-0076 already rules that RTL uses physical transforms and is never
+mirrored wholesale; one signed variable is that rule expressed once rather than
+a second copy of the animation that can drift from the first.
+
+**The documented exception.** Chapter 5 and this project's CSS use logical
+properties. `translateX` is physical and is used here, **on the motion axis
+only**: a transform has no logical form, the axis of travel is the inline axis
+in both directions, and the sign is what carries the direction. Nothing else in
+the strip uses a physical property.
+
+### D9.5 — The anchor
+
+**Built:** a fixed block at the start of the line holding the strip's title, a
+divider, and the pause button; the logos travel through the remaining track.
+
+- **The title** is `HomeSponsors.strip.label` — "رعاة الاتحاد" /
+  "Federation sponsors" — which D8 #6 already approved. It was the `aside`'s
+  `aria-label`; it is now printed, and the `aside` points at it with
+  `aria-labelledby`, so the name is announced once rather than twice.
+- **The divider** closes the anchor, at its inline end, so the order along the
+  line is title, button, rule, track — the rule separates the block that stays
+  from the row that travels, which is the distinction it is there to draw. It
+  is the anchor's own `border-inline-end` at `--border-width-default` in
+  `--color-section-black-border`, the register's edge token, and it is drawn
+  only from `md`, where the anchor is beside the track rather than above it.
+  It is deliberately **not** an identity stroke: IL-5 requires 32px between a
+  stroke and any text or image, which a 40px-tall row cannot give, and
+  ADR-0073 D2 makes the strokes a section-scale element. The strip is an
+  `aside`, not a section.
+- **The pause button** sits inside the anchor and is always visible. Its
+  accessible name, its `aria-pressed` and its `aria-hidden` glyph are unchanged.
+
+**Below `md` the anchor becomes a line above the strip.** Chapter 5 §5.2's
+content widths decide it: 704px at `md` leaves about 400px of track once the
+anchor's title, divider and button are placed, and 592px at `sm` leaves under
+300px — less than one item in the default mode (256px). `md` is the first width
+at which an inline anchor leaves a track worth moving.
+
+**"No empty shelf" holds:** the anchor is inside the strip's own `aside`, so a
+strip with nothing to show renders neither. The anchor never stands alone.
+
+**The pinned sponsor moves from the centre of the row to just after the
+anchor.** D7 put it at the centre because the row had no fixed start; with an
+anchor there is one, and the sponsor the section also banners is the first
+thing after the strip's own title — the reading order the emphasis already
+claims. It stays outside the track and still, as D7 requires; only where the
+still block sits has changed.
+
+### D9.6 — The track's edges, the items, and their states
+
+- **Fade** by `mask-image`, a symmetric `linear-gradient` with `--space-8`
+  (32px) of transparency at each end. Symmetric on purpose: an identical mask
+  in both directions cannot be wrong in RTL, which a one-sided gradient can. A
+  fixed colour gradient is also wrong on principle here — it would have to know
+  the register's colour in three themes.
+- **Logo colour is never touched.** No grayscale and no filter, in any state
+  (Chapter 8 §M.9, already D6's rule).
+- **One height for every item**, set by the plate (`h-10`, 40px) and its fixed
+  inner padding, never by the file's own frame — so a wide mark and a tall one
+  occupy the same row height.
+- **Hover and focus:** the item's ground becomes
+  `--color-section-black-divider` and the plate takes `--elevation-card-hover`.
+  **No scale**, which would change the item's width and break the row's rhythm
+  mid-travel. The ground token is the one the pause button in this same strip
+  already uses for its hover, so the strip has one hover language. There is no
+  spacing token for a 2–3px lift, and inventing one would be an arbitrary value
+  (§16); elevation is this system's own word for raising an object (ADR-0052).
+- **Every logo is a link** to `sponsor.website` where there is one, reusing the
+  banner's copy (`sponsors.visitWebsite`, `sponsors.opensInNewTab`) and its
+  `target`/`rel`. `TOUCH_TARGET` brings the 40px plate to a 44px target and
+  `FOCUS` draws the ring. A sponsor with no website is not a link.
+- **Pausing** on hover and `:focus-within` holds the loop without changing the
+  button's `aria-pressed`; the button's own state is held until it is pressed
+  again. Unchanged from D7.
+- **`prefers-reduced-motion: reduce`:** no animation, the row static and
+  scrollable, the button not rendered. Unchanged from D7.
+
+### D9.7 — What is not in this batch
+
+The dashboard's strip editor, the strip's content and its data source, the
+sponsors section, the banner, partners and memberships are untouched. The three
+speeds remain the editor's choice (ADR-0077 D5 #5); only the unit behind them
+changed, and `SponsorStripSettingsPublic` is unchanged.
 
 ---
 

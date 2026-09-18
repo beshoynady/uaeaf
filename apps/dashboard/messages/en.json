@@ -523,7 +523,8 @@
     "uploadNeedsAlt": "Alternative text is required in both languages.",
     "uploadNeedsFile": "Choose a file first.",
     "uploadPhotographer": "Photographer",
-    "uploadSubmit": "Upload image"
+    "uploadSubmit": "Upload image",
+    "resolutionNotice": "This file is {have}px; the largest place it is drawn needs at least {need}px. It will be drawn smaller rather than blurred."
   },
   "RichText": {
     "toolbarLabel": "Text formatting",
@@ -1266,7 +1267,6 @@
         "tier": "By tier",
         "manual": "In the sponsors list's order"
       },
-      "pinTopTier": "Pin the banner's sponsor to the centre",
       "speed": "Speed",
       "speeds": {
         "slow": "Slow",
@@ -1274,10 +1274,13 @@
         "fast": "Fast"
       },
       "previewPinned": "Pinned",
-      "rowFrom": "Stands still from {width}px wide and moves below it; a pause button appears while it moves.",
-      "rowAlways": "Stands still at every width.",
-      "rowNever": "Moves at every width, with a pause button.",
-      "hidden": "The strip is hidden."
+      "hidden": "The strip is hidden.",
+      "motion": "Moves at every width, with a pause button.",
+      "pinned": "Held sponsor",
+      "pinnedNone": "Nobody — everyone rotates",
+      "pinnedHint": "At most one, held at the head of the strip and left out of the rotation.",
+      "pinnedBanner": "The sponsors section currently banners: {name}",
+      "pinnedMismatch": "The strip holds {pinned} while the section banners {banner}. That is allowed, but the page will emphasise two different sponsors."
     }
   }
 }

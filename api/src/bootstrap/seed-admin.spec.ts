@@ -215,6 +215,24 @@ describe('readBootstrapAdminInput', () => {
     expect(() => readBootstrapAdminInput({ ...env, [name]: undefined })).toThrow(name);
   });
 
+  it.each(['BOOTSTRAP_ADMIN_EMAIL', 'BOOTSTRAP_ADMIN_PASSWORD'])(
+    'sends the operator to the env file for %s rather than to the command line',
+    (name) => {
+      // The message is the instruction. "BOOTSTRAP_ADMIN_PASSWORD is required"
+      // names a variable and says nothing about where to put it, and the
+      // shortest way to satisfy it is to prefix the command --- which writes
+      // the password into the shell history, the process table and the
+      // transcript of whatever session ran it. Naming `api/.env` is what
+      // makes the safe route the obvious one.
+      expect(() => readBootstrapAdminInput({ ...env, [name]: undefined })).toThrow(
+        expect.objectContaining({ message: expect.stringContaining('api/.env') }),
+      );
+      expect(() => readBootstrapAdminInput({ ...env, [name]: undefined })).toThrow(
+        expect.objectContaining({ message: expect.stringContaining('.env.example') }),
+      );
+    },
+  );
+
   it('holds the password to the same minimum the API applies, and never echoes it', () => {
     expect(() => readBootstrapAdminInput({ ...env, BOOTSTRAP_ADMIN_PASSWORD: 'short-pw' })).toThrow(
       expect.objectContaining({ message: expect.stringContaining(String(MIN_PASSWORD_LENGTH)) }),

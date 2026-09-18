@@ -4,6 +4,8 @@ import { REGISTER_CLASSES, Section } from "@/components/ui/section";
 import type { AppLocale } from "@/i18n/routing";
 import type { LocalizedText, OrganizationCardPublic } from "@/lib/api/types";
 import { OrganizationCard } from "./organization-card";
+import { ORGANISATIONS_MOTION } from "./organizations-motion";
+import { MembershipsRowCinematic, PartnersRowCinematic } from "./organizations-row-cinematic";
 import { SectionHeading } from "./section-heading";
 
 /**
@@ -26,6 +28,10 @@ export interface OrganizationsSectionSettings {
 }
 
 const GREEN = REGISTER_CLASSES.green;
+
+/** The row itself, shared by both motions so the only difference between
+ *  them is the motion. */
+const ROW = "mt-8 flex flex-wrap justify-center gap-4 md:mt-12";
 
 export const OrganizationsSection = async ({
   kind,
@@ -65,11 +71,22 @@ export const OrganizationsSection = async ({
         onRegister={partners}
         mutedClass={partners ? GREEN.muted : undefined}
       />
-      <ul data-reveal="" className="mt-8 flex flex-wrap justify-center gap-4 md:mt-12">
-        {ordered.map((item) => (
-          <OrganizationCard key={item.id} name={item.name} logo={item.logo} locale={locale} />
-        ))}
-      </ul>
+      {/* The one switch (`organizations-motion.ts`). The approved row is the
+          default and is unchanged; the cinematic one is an exploration whose
+          departures are written up rather than merged in quietly. */}
+      {ORGANISATIONS_MOTION === "cinematic" ? (
+        partners ? (
+          <PartnersRowCinematic items={ordered} locale={locale} className={ROW} />
+        ) : (
+          <MembershipsRowCinematic items={ordered} locale={locale} className={ROW} />
+        )
+      ) : (
+        <ul data-reveal="" className={ROW}>
+          {ordered.map((item) => (
+            <OrganizationCard key={item.id} name={item.name} logo={item.logo} locale={locale} />
+          ))}
+        </ul>
+      )}
     </Section>
   );
 };

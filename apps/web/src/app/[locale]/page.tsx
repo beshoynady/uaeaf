@@ -6,7 +6,7 @@ import { RevealOnce } from "@/components/pages/president/reveal-once";
 import { OrganizationsSection } from "@/components/pages/home/sponsors/organizations-section";
 import { SponsorStrip } from "@/components/pages/home/sponsors/sponsor-strip";
 import { SponsorsSection } from "@/components/pages/home/sponsors/sponsors-section";
-import { STRIP_DEFAULTS, selectShowcase } from "@uaeaf/content/sponsors";
+import { STRIP_DEFAULTS } from "@uaeaf/content/sponsors";
 import { loadHomepage, readNextEvent, readPlayback } from "@/lib/pages/homepage";
 import { loadSponsorRelations } from "@/lib/pages/sponsor-relations";
 import { buildMetadata } from "@/lib/seo/metadata";
@@ -96,13 +96,6 @@ const HomePage = async ({ params }: { params: Promise<{ locale: AppLocale }> }) 
 
   const relations = await loadSponsorRelations(sections);
   const now = new Date();
-  const sponsorsSection = relations.sections.find((section) => section.sectionType === "SPONSORS") ?? null;
-  // The strip pins the sponsorship the section's banner shows (ADR-0085 D5.1).
-  const banner = selectShowcase(
-    relations.sponsorships.map((item) => ({ ...item, sponsorId: item.sponsor.id })),
-    { bannerSponsorshipId: typeof sponsorsSection?.configuration?.bannerSponsorshipId === "string" ? sponsorsSection.configuration.bannerSponsorshipId : null },
-    now,
-  ).banner;
 
   return (
     <>
@@ -116,7 +109,6 @@ const HomePage = async ({ params }: { params: Promise<{ locale: AppLocale }> }) 
       <SponsorStrip
         sponsorships={relations.sponsorships}
         settings={relations.strip ?? { ...STRIP_DEFAULTS, sponsorshipIds: [] }}
-        bannerId={banner?.id ?? null}
         locale={locale}
         now={now}
       />

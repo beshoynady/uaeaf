@@ -1,122 +1,410 @@
 {
   "color": {
     "action": {
-      "default": { "value": "{color.green.500}", "type": "color", "comment": "ADR-0072 D13 — the Action role (ADR-0065 D2): the edge a control takes under the pointer and the icon that answers it. Federation Green at the point of interaction, the same value in every theme" }
+      "default": {
+        "value": "{color.green.500}",
+        "type": "color",
+        "comment": "ADR-0072 D13 — the Action role (ADR-0065 D2): the edge a control takes under the pointer and the icon that answers it. Federation Green at the point of interaction, the same value in every theme"
+      }
     },
     "logo": {
-      "plate": { "value": "{color.white}", "type": "color", "comment": "ADR-0085 D6.1 — the ground behind a third-party mark. Supplied logos arrive on an opaque white ground, so the plate stays white in every list; on a neutral ground its edge is --color-border-strong" }
+      "plate": {
+        "value": "{color.white}",
+        "type": "color",
+        "comment": "ADR-0085 D6.1 — the ground behind a third-party mark. Supplied logos arrive on an opaque white ground, so the plate stays white in every list; on a neutral ground its edge is --color-border-strong"
+      },
+      "pinned-edge": {
+        "value": "{color.gold.500}",
+        "type": "color",
+        "comment": "ADR-0086 D3 - the pinned sponsor's edge. #D4A017 measures 8.84:1 on the black register (#000000), well over the 3:1 a non-text mark needs. Deliberately NOT --color-semantic-medal-gold: gold is the medal reference (TDR-002) and a pinned sponsor is a commercial arrangement, not an achievement; that token also fails this register in high contrast at 2.45:1. Never colour alone - the edge is --border-width-thick where every other item's is default, and the tier line names it in words"
+      }
     },
     "map": {
-      "marker": { "value": "{color.red.500}", "type": "color", "comment": "ADR-0072 D13 — the location pin on a map card. It stands on map imagery, an unknown ground, so its value does not follow the theme (contact-map.tsx): the same red in every list, measured on the pin card's base ground" }
+      "marker": {
+        "value": "{color.red.500}",
+        "type": "color",
+        "comment": "ADR-0072 D13 — the location pin on a map card. It stands on map imagery, an unknown ground, so its value does not follow the theme (contact-map.tsx): the same red in every list, measured on the pin card's base ground"
+      }
     },
     "text": {
-      "primary": { "value": "{color.black}", "type": "color", "comment": "ADR-0051 — repointed from {color.gray.1000}" },
-      "secondary": { "value": "{color.neutral-warm.700}", "type": "color", "comment": "ADR-0059 — was .600. Shifted one step down so the whole ladder clears AA on every surface, not only on white; 9.04 / 9.04 / 8.22 on base/raised/sunken" },
-      "muted": { "value": "{color.neutral-warm.600}", "type": "color", "comment": "ADR-0059 — was .500 (#757470), which measured 4.68:1 on white but 4.48:1 on surface.sunken: an AA failure on the most-used surface in the product (15 call sites), never caught because the original check only ever ran against white. .600 measures 6.32 / 6.32 / 5.75" },
-      "disabled": { "value": "{color.neutral-warm.400}", "type": "color", "comment": "Deliberately below 4.5:1 — WCAG 1.4.3 exempts inactive UI components, and the dimming is the affordance" },
-      "inverse": { "value": "{color.white}", "type": "color" },
-      "on-brand": { "value": "{color.white}", "type": "color", "comment": "ADR-0059 — text on any filled brand or semantic ground. Was referenced by role-workbench.tsx and never defined, so the Archive-role button's label resolved by inheritance over a #D32F2F fill. White measures 4.98 on semantic.error, 4.81 on brand.primary, 5.88 on brand.secondary" },
-      "link": { "value": "{color.green.600}", "type": "color", "comment": "ADR-0063 — measures 6.38 / 6.67 / 6.07 on base/raised/sunken. Not {color.brand.primary}: the identity value is fixed at Pantone 348 C and measures 4.37:1 on surface.sunken, which is why this role is separate from it" }
+      "primary": {
+        "value": "{color.black}",
+        "type": "color",
+        "comment": "ADR-0051 — repointed from {color.gray.1000}"
+      },
+      "secondary": {
+        "value": "{color.neutral-warm.700}",
+        "type": "color",
+        "comment": "ADR-0059 — was .600. Shifted one step down so the whole ladder clears AA on every surface, not only on white; 9.04 / 9.04 / 8.22 on base/raised/sunken"
+      },
+      "muted": {
+        "value": "{color.neutral-warm.600}",
+        "type": "color",
+        "comment": "ADR-0059 — was .500 (#757470), which measured 4.68:1 on white but 4.48:1 on surface.sunken: an AA failure on the most-used surface in the product (15 call sites), never caught because the original check only ever ran against white. .600 measures 6.32 / 6.32 / 5.75"
+      },
+      "disabled": {
+        "value": "{color.neutral-warm.400}",
+        "type": "color",
+        "comment": "Deliberately below 4.5:1 — WCAG 1.4.3 exempts inactive UI components, and the dimming is the affordance"
+      },
+      "inverse": {
+        "value": "{color.white}",
+        "type": "color"
+      },
+      "on-brand": {
+        "value": "{color.white}",
+        "type": "color",
+        "comment": "ADR-0059 — text on any filled brand or semantic ground. Was referenced by role-workbench.tsx and never defined, so the Archive-role button's label resolved by inheritance over a #D32F2F fill. White measures 4.98 on semantic.error, 4.81 on brand.primary, 5.88 on brand.secondary"
+      },
+      "link": {
+        "value": "{color.green.600}",
+        "type": "color",
+        "comment": "ADR-0063 — measures 6.38 / 6.67 / 6.07 on base/raised/sunken. Not {color.brand.primary}: the identity value is fixed at Pantone 348 C and measures 4.37:1 on surface.sunken, which is why this role is separate from it"
+      }
     },
     "surface": {
-      "base": { "value": "{color.neutral-warm.50}", "type": "color", "comment": "ADR-0059 — was {color.white}, identical to `raised`, which left the light theme with no elevation ramp at all (§3.33.1 logged this as a Known Constraint). The page now sits one step below the cards it carries" },
-      "raised": { "value": "{color.white}", "type": "color", "comment": "ADR-0059 — cards/panels, now genuinely lighter than the page ground" },
-      "sunken": { "value": "{color.neutral-warm.100}", "type": "color", "comment": "ADR-0059 — was .50, which after the base change would have been indistinguishable from it" },
-      "skeleton": { "value": "{color.neutral-warm.150}", "type": "color" },
-      "overlay": { "value": "{color.black}", "type": "color" }
+      "base": {
+        "value": "{color.neutral-warm.50}",
+        "type": "color",
+        "comment": "ADR-0059 — was {color.white}, identical to `raised`, which left the light theme with no elevation ramp at all (§3.33.1 logged this as a Known Constraint). The page now sits one step below the cards it carries"
+      },
+      "raised": {
+        "value": "{color.white}",
+        "type": "color",
+        "comment": "ADR-0059 — cards/panels, now genuinely lighter than the page ground"
+      },
+      "sunken": {
+        "value": "{color.neutral-warm.100}",
+        "type": "color",
+        "comment": "ADR-0059 — was .50, which after the base change would have been indistinguishable from it"
+      },
+      "skeleton": {
+        "value": "{color.neutral-warm.150}",
+        "type": "color"
+      },
+      "overlay": {
+        "value": "{color.black}",
+        "type": "color"
+      }
     },
     "section": {
       "comment": "ADR-0059 — full-bleed identity grounds. Guide §6.1 presents white, red, green and black as the four official backgrounds; §3.34.1 previously forbade the middle two. Green and red are identical across themes because their hue carries them against either page ground; black is the one register that changes, because pure black on a near-black page measures 1.12:1 and stops being a departure at all.",
       "green": {
-        "surface": { "value": "{color.green.700}", "type": "color", "comment": "Not green.500: the identity value stays the brand mark's reference per Chapter 1 (\"use the official values literally as the 500 reference\"), while a ground carrying two tiers of text needs the step Chapter 1 itself names for higher contrast. white measures 4.81 on .500 versus 9.40 on .700" },
-        "text": { "value": "{color.white}", "type": "color", "comment": "9.40:1" },
-        "text-muted": { "value": "{color.green.100}", "type": "color", "comment": "6.49:1" },
-        "border": { "value": "{color.green.300}", "type": "color", "comment": "3.29:1 — clears WCAG 1.4.11 for a control boundary inside the section" },
-        "divider": { "value": "{color.green.500}", "type": "color", "comment": "1.95:1 — a decorative rule, never a control boundary" }
+        "surface": {
+          "value": "{color.green.700}",
+          "type": "color",
+          "comment": "Not green.500: the identity value stays the brand mark's reference per Chapter 1 (\"use the official values literally as the 500 reference\"), while a ground carrying two tiers of text needs the step Chapter 1 itself names for higher contrast. white measures 4.81 on .500 versus 9.40 on .700"
+        },
+        "text": {
+          "value": "{color.white}",
+          "type": "color",
+          "comment": "9.40:1"
+        },
+        "text-muted": {
+          "value": "{color.green.100}",
+          "type": "color",
+          "comment": "6.49:1"
+        },
+        "border": {
+          "value": "{color.green.300}",
+          "type": "color",
+          "comment": "3.29:1 — clears WCAG 1.4.11 for a control boundary inside the section"
+        },
+        "divider": {
+          "value": "{color.green.500}",
+          "type": "color",
+          "comment": "1.95:1 — a decorative rule, never a control boundary"
+        }
       },
       "red": {
-        "surface": { "value": "{color.red.600}", "type": "color", "comment": "white measures 5.88 on red.500 versus 8.14 on .600" },
-        "text": { "value": "{color.white}", "type": "color", "comment": "8.14:1" },
-        "text-muted": { "value": "{color.red.100}", "type": "color", "comment": "4.85:1" },
-        "border": { "value": "{color.white}", "type": "color", "comment": "8.14:1. No step of the red ramp reaches 3:1 against red.600 without turning pink, so the control boundary here is white — which is also what the guide's own red materials use (white strokes on the referee kit §2.3 and every local-championship garment)" },
-        "divider": { "value": "{color.red.300}", "type": "color", "comment": "2.09:1 — decorative rule only" }
+        "surface": {
+          "value": "{color.red.600}",
+          "type": "color",
+          "comment": "white measures 5.88 on red.500 versus 8.14 on .600"
+        },
+        "text": {
+          "value": "{color.white}",
+          "type": "color",
+          "comment": "8.14:1"
+        },
+        "text-muted": {
+          "value": "{color.red.100}",
+          "type": "color",
+          "comment": "4.85:1"
+        },
+        "border": {
+          "value": "{color.white}",
+          "type": "color",
+          "comment": "8.14:1. No step of the red ramp reaches 3:1 against red.600 without turning pink, so the control boundary here is white — which is also what the guide's own red materials use (white strokes on the referee kit §2.3 and every local-championship garment)"
+        },
+        "divider": {
+          "value": "{color.red.300}",
+          "type": "color",
+          "comment": "2.09:1 — decorative rule only"
+        }
       },
       "black": {
-        "surface": { "value": "{color.black}", "type": "color", "comment": "Pantone Black C, guide §5.1 RGB 0,0,0" },
-        "text": { "value": "{color.white}", "type": "color", "comment": "21:1" },
-        "text-muted": { "value": "{color.neutral-warm.300}", "type": "color", "comment": "11.03:1" },
-        "border": { "value": "{color.neutral-warm.600}", "type": "color", "comment": "3.32:1" },
-        "divider": { "value": "{color.neutral-warm.800}", "type": "color", "comment": "1.63:1" }
+        "surface": {
+          "value": "{color.black}",
+          "type": "color",
+          "comment": "Pantone Black C, guide §5.1 RGB 0,0,0"
+        },
+        "text": {
+          "value": "{color.white}",
+          "type": "color",
+          "comment": "21:1"
+        },
+        "text-muted": {
+          "value": "{color.neutral-warm.300}",
+          "type": "color",
+          "comment": "11.03:1"
+        },
+        "border": {
+          "value": "{color.neutral-warm.600}",
+          "type": "color",
+          "comment": "3.32:1"
+        },
+        "divider": {
+          "value": "{color.neutral-warm.800}",
+          "type": "color",
+          "comment": "1.63:1"
+        }
       },
-      "adjacent-separator": { "value": "{color.white}", "type": "color", "comment": "ADR-0059 — MANDATORY between a green and a red section. Measured contrast between the two registers is 1.15:1: stacked directly they have no visible boundary whatsoever, and the pair is the classic red/green confusion besides. The guide never abuts them either — in the four-stroke motif there is always white or black between" }
+      "adjacent-separator": {
+        "value": "{color.white}",
+        "type": "color",
+        "comment": "ADR-0059 — MANDATORY between a green and a red section. Measured contrast between the two registers is 1.15:1: stacked directly they have no visible boundary whatsoever, and the pair is the classic red/green confusion besides. The guide never abuts them either — in the four-stroke motif there is always white or black between"
+      }
     },
     "border": {
-      "accent": { "value": "{color.green.500}", "type": "color", "comment": "ADR-0072 D3 — the accent rule: the short dash before a label and the pull-quote's edge. 4.61 / 4.81 / 4.38 on base / raised / sunken, a shape at 3" },
-      "default": { "value": "{color.neutral-warm.200}", "type": "color" },
-      "subtle": { "value": "{color.neutral-warm.150}", "type": "color", "comment": "ADR-0059 — row separators inside dense tables, where `default` reads as a grid of boxes. Was referenced by permission-catalogue-lens.tsx and never defined, so every one of its 170 row rules fell back to currentColor" },
-      "strong": { "value": "{color.neutral-warm.500}", "type": "color", "comment": "4.68 on white, 4.48 on base, 4.25 on sunken — clears WCAG 1.4.11 non-text 3:1 on all three" }
+      "accent": {
+        "value": "{color.green.500}",
+        "type": "color",
+        "comment": "ADR-0072 D3 — the accent rule: the short dash before a label and the pull-quote's edge. 4.61 / 4.81 / 4.38 on base / raised / sunken, a shape at 3"
+      },
+      "default": {
+        "value": "{color.neutral-warm.200}",
+        "type": "color"
+      },
+      "subtle": {
+        "value": "{color.neutral-warm.150}",
+        "type": "color",
+        "comment": "ADR-0059 — row separators inside dense tables, where `default` reads as a grid of boxes. Was referenced by permission-catalogue-lens.tsx and never defined, so every one of its 170 row rules fell back to currentColor"
+      },
+      "strong": {
+        "value": "{color.neutral-warm.500}",
+        "type": "color",
+        "comment": "4.68 on white, 4.48 on base, 4.25 on sunken — clears WCAG 1.4.11 non-text 3:1 on all three"
+      }
     },
     "focus": {
-      "default": { "value": "{color.black}", "type": "color", "comment": "ADR-0051 — new, independent of color.brand.primary per Brand Guide v1.0 §9 (must contrast against green/red/neutral element backgrounds alike)" },
-      "offset": { "value": "{color.white}", "type": "color", "comment": "ADR-0051 — halo/offset ring, ensures visibility of focus.default against any background including green.500/red.500" }
+      "default": {
+        "value": "{color.black}",
+        "type": "color",
+        "comment": "ADR-0051 — new, independent of color.brand.primary per Brand Guide v1.0 §9 (must contrast against green/red/neutral element backgrounds alike)"
+      },
+      "offset": {
+        "value": "{color.white}",
+        "type": "color",
+        "comment": "ADR-0051 — halo/offset ring, ensures visibility of focus.default against any background including green.500/red.500"
+      }
     },
     "semantic": {
-      "success": { "value": "{color.success.500}", "type": "color", "comment": "ADR-0051 — independent hue, no longer aliases color.brand.primary" },
-      "success-hover": { "value": "{color.success.600}", "type": "color" },
-      "error": { "value": "{color.error.500}", "type": "color", "comment": "ADR-0051 — renamed from `danger`, independent hue, no longer aliases color.brand.secondary" },
-      "error-hover": { "value": "{color.error.600}", "type": "color" },
-      "warning": { "value": "{color.warning.600}", "type": "color", "comment": "ADR-0071 D1 — was .500 (#D09E07), 2.34 / 2.45 / 2.23 on base/raised/sunken: under WCAG 1.4.11's 3:1 as an icon or an edge. .600 measures 3.24 / 3.39 / 3.08. A shape colour: warning text is warning-text" },
-      "info": { "value": "{color.info.500}", "type": "color", "comment": "ADR-0051" },
-      "success-text": { "value": "{color.success.600}", "type": "color", "comment": "ADR-0071 D1 — the state as text. success itself measures 3.98 on sunken, a shape colour. .600 measures 5.87 / 6.14 / 5.58 on base/raised/sunken" },
-      "error-text": { "value": "{color.error.500}", "type": "color", "comment": "ADR-0071 D1 — the state as text; closes ADR-0067's DESIGN SYSTEM GAP. 4.77 / 4.98 / 4.53 on base/raised/sunken" },
-      "warning-text": { "value": "{color.warning.700}", "type": "color", "comment": "ADR-0071 D1 — the state as text. 5.15 / 5.38 / 4.90 on base/raised/sunken" },
-      "info-text": { "value": "{color.info.600}", "type": "color", "comment": "ADR-0071 D1 — the state as text. info itself measures 3.91 on sunken, a shape colour. .600 measures 5.07 / 5.30 / 4.81 on base/raised/sunken" },
-      "neutral": { "value": "{color.neutral-warm.400}", "type": "color" },
-      "medal-gold": { "value": "{color.brand.medal.gold}", "type": "color" },
-      "medal-silver": { "value": "{color.brand.medal.silver}", "type": "color" },
-      "medal-bronze": { "value": "{color.brand.medal.bronze}", "type": "color" }
+      "success": {
+        "value": "{color.success.500}",
+        "type": "color",
+        "comment": "ADR-0051 — independent hue, no longer aliases color.brand.primary"
+      },
+      "success-hover": {
+        "value": "{color.success.600}",
+        "type": "color"
+      },
+      "error": {
+        "value": "{color.error.500}",
+        "type": "color",
+        "comment": "ADR-0051 — renamed from `danger`, independent hue, no longer aliases color.brand.secondary"
+      },
+      "error-hover": {
+        "value": "{color.error.600}",
+        "type": "color"
+      },
+      "warning": {
+        "value": "{color.warning.600}",
+        "type": "color",
+        "comment": "ADR-0071 D1 — was .500 (#D09E07), 2.34 / 2.45 / 2.23 on base/raised/sunken: under WCAG 1.4.11's 3:1 as an icon or an edge. .600 measures 3.24 / 3.39 / 3.08. A shape colour: warning text is warning-text"
+      },
+      "info": {
+        "value": "{color.info.500}",
+        "type": "color",
+        "comment": "ADR-0051"
+      },
+      "success-text": {
+        "value": "{color.success.600}",
+        "type": "color",
+        "comment": "ADR-0071 D1 — the state as text. success itself measures 3.98 on sunken, a shape colour. .600 measures 5.87 / 6.14 / 5.58 on base/raised/sunken"
+      },
+      "error-text": {
+        "value": "{color.error.500}",
+        "type": "color",
+        "comment": "ADR-0071 D1 — the state as text; closes ADR-0067's DESIGN SYSTEM GAP. 4.77 / 4.98 / 4.53 on base/raised/sunken"
+      },
+      "warning-text": {
+        "value": "{color.warning.700}",
+        "type": "color",
+        "comment": "ADR-0071 D1 — the state as text. 5.15 / 5.38 / 4.90 on base/raised/sunken"
+      },
+      "info-text": {
+        "value": "{color.info.600}",
+        "type": "color",
+        "comment": "ADR-0071 D1 — the state as text. info itself measures 3.91 on sunken, a shape colour. .600 measures 5.07 / 5.30 / 4.81 on base/raised/sunken"
+      },
+      "neutral": {
+        "value": "{color.neutral-warm.400}",
+        "type": "color"
+      },
+      "medal-gold": {
+        "value": "{color.brand.medal.gold}",
+        "type": "color"
+      },
+      "medal-silver": {
+        "value": "{color.brand.medal.silver}",
+        "type": "color"
+      },
+      "medal-bronze": {
+        "value": "{color.brand.medal.bronze}",
+        "type": "color"
+      }
     },
     "item": {
       "1": {
-        "surface": { "value": "{color.green.100}", "type": "color", "comment": "ADR-0072 D1 — item 1 of a closed set: the card's ground, under the title, the description and the ink" },
-        "ink": { "value": "{color.green.900}", "type": "color", "comment": "ADR-0072 D1 — the item's number and icon. The darkest green: every step from .300 to .700 stands under 15 from the success colours for a deuteranope or protanope, and .800 falls within 10 of desert sand's ink" },
-        "edge": { "value": "{color.green.100}", "type": "color", "comment": "ADR-0072 D1 — the card's edge: its own ground where colour carries the item, drawn in high contrast" }
+        "surface": {
+          "value": "{color.green.100}",
+          "type": "color",
+          "comment": "ADR-0072 D1 — item 1 of a closed set: the card's ground, under the title, the description and the ink"
+        },
+        "ink": {
+          "value": "{color.green.900}",
+          "type": "color",
+          "comment": "ADR-0072 D1 — the item's number and icon. The darkest green: every step from .300 to .700 stands under 15 from the success colours for a deuteranope or protanope, and .800 falls within 10 of desert sand's ink"
+        },
+        "edge": {
+          "value": "{color.green.100}",
+          "type": "color",
+          "comment": "ADR-0072 D1 — the card's edge: its own ground where colour carries the item, drawn in high contrast"
+        }
       },
       "2": {
-        "surface": { "value": "{color.teal.100}", "type": "color", "comment": "ADR-0072 D1 — item 2 of a closed set: the card's ground, under the title, the description and the ink" },
-        "ink": { "value": "{color.teal.600}", "type": "color", "comment": "ADR-0072 D1 — the item's number and icon. Not .700, which is category 2 itself" },
-        "edge": { "value": "{color.teal.100}", "type": "color", "comment": "ADR-0072 D1 — the card's edge: its own ground where colour carries the item, drawn in high contrast" }
+        "surface": {
+          "value": "{color.teal.100}",
+          "type": "color",
+          "comment": "ADR-0072 D1 — item 2 of a closed set: the card's ground, under the title, the description and the ink"
+        },
+        "ink": {
+          "value": "{color.teal.600}",
+          "type": "color",
+          "comment": "ADR-0072 D1 — the item's number and icon. Not .700, which is category 2 itself"
+        },
+        "edge": {
+          "value": "{color.teal.100}",
+          "type": "color",
+          "comment": "ADR-0072 D1 — the card's edge: its own ground where colour carries the item, drawn in high contrast"
+        }
       },
       "3": {
-        "surface": { "value": "{color.steel-blue.100}", "type": "color", "comment": "ADR-0072 D1 — item 3 of a closed set: the card's ground, under the title, the description and the ink" },
-        "ink": { "value": "{color.steel-blue.600}", "type": "color", "comment": "ADR-0072 D1 — the item's number and icon. Not .500, which stands under 15 from the info colours" },
-        "edge": { "value": "{color.steel-blue.100}", "type": "color", "comment": "ADR-0072 D1 — the card's edge: its own ground where colour carries the item, drawn in high contrast" }
+        "surface": {
+          "value": "{color.steel-blue.100}",
+          "type": "color",
+          "comment": "ADR-0072 D1 — item 3 of a closed set: the card's ground, under the title, the description and the ink"
+        },
+        "ink": {
+          "value": "{color.steel-blue.600}",
+          "type": "color",
+          "comment": "ADR-0072 D1 — the item's number and icon. Not .500, which stands under 15 from the info colours"
+        },
+        "edge": {
+          "value": "{color.steel-blue.100}",
+          "type": "color",
+          "comment": "ADR-0072 D1 — the card's edge: its own ground where colour carries the item, drawn in high contrast"
+        }
       },
       "4": {
-        "surface": { "value": "{color.desert-sand.100}", "type": "color", "comment": "ADR-0072 D1 — item 4 of a closed set: the card's ground, under the title, the description and the ink" },
-        "ink": { "value": "{color.desert-sand.800}", "type": "color", "comment": "ADR-0072 D1 — the item's number and icon. Not .500 to .700, which stand under 15 from the warning colours" },
-        "edge": { "value": "{color.desert-sand.100}", "type": "color", "comment": "ADR-0072 D1 — the card's edge: its own ground where colour carries the item, drawn in high contrast" }
+        "surface": {
+          "value": "{color.desert-sand.100}",
+          "type": "color",
+          "comment": "ADR-0072 D1 — item 4 of a closed set: the card's ground, under the title, the description and the ink"
+        },
+        "ink": {
+          "value": "{color.desert-sand.800}",
+          "type": "color",
+          "comment": "ADR-0072 D1 — the item's number and icon. Not .500 to .700, which stand under 15 from the warning colours"
+        },
+        "edge": {
+          "value": "{color.desert-sand.100}",
+          "type": "color",
+          "comment": "ADR-0072 D1 — the card's edge: its own ground where colour carries the item, drawn in high contrast"
+        }
       }
     },
     "avatar": {
-      "fallback-bg": { "value": "{color.neutral-warm.200}", "type": "color" },
-      "fallback-text": { "value": "{color.neutral-warm.700}", "type": "color" }
+      "fallback-bg": {
+        "value": "{color.neutral-warm.200}",
+        "type": "color"
+      },
+      "fallback-text": {
+        "value": "{color.neutral-warm.700}",
+        "type": "color"
+      }
     }
   },
   "elevation": {
-    "card": { "value": "{elevation.1}", "type": "boxShadow" },
-    "card-hover": { "value": "{elevation.2}", "type": "boxShadow" },
-    "panel": { "value": "{elevation.2}", "type": "boxShadow", "comment": "ADR-0066 — a large container standing IN the flow, not floating above it. It borrowed {elevation.dropdown} before this token existed: the right value under a name that described a different object, which is how a component ends up documented as a menu." },
-    "panel-hover": { "value": "{elevation.3}", "type": "boxShadow", "comment": "ADR-0066 — one rung deeper than a card's hover, because a panel is larger and the same shadow reads as less lift on more area." },
-    "dropdown": { "value": "{elevation.2}", "type": "boxShadow" },
-    "modal": { "value": "{elevation.4}", "type": "boxShadow" }
+    "card": {
+      "value": "{elevation.1}",
+      "type": "boxShadow"
+    },
+    "card-hover": {
+      "value": "{elevation.2}",
+      "type": "boxShadow"
+    },
+    "panel": {
+      "value": "{elevation.2}",
+      "type": "boxShadow",
+      "comment": "ADR-0066 — a large container standing IN the flow, not floating above it. It borrowed {elevation.dropdown} before this token existed: the right value under a name that described a different object, which is how a component ends up documented as a menu."
+    },
+    "panel-hover": {
+      "value": "{elevation.3}",
+      "type": "boxShadow",
+      "comment": "ADR-0066 — one rung deeper than a card's hover, because a panel is larger and the same shadow reads as less lift on more area."
+    },
+    "dropdown": {
+      "value": "{elevation.2}",
+      "type": "boxShadow"
+    },
+    "modal": {
+      "value": "{elevation.4}",
+      "type": "boxShadow"
+    }
   },
   "a11y": {
     "focus": {
-      "ring": { "value": "{color.focus.default}", "type": "color", "comment": "ADR-0051 — repointed from {color.brand.primary} per Brand Guide v1.0 §9" },
-      "ring-width": { "value": "2px", "type": "borderWidth" },
-      "offset": { "value": "{color.focus.offset}", "type": "color", "comment": "ADR-0051 — new" },
-      "offset-width": { "value": "2px", "type": "borderWidth", "comment": "ADR-0051 — new" }
+      "ring": {
+        "value": "{color.focus.default}",
+        "type": "color",
+        "comment": "ADR-0051 — repointed from {color.brand.primary} per Brand Guide v1.0 §9"
+      },
+      "ring-width": {
+        "value": "2px",
+        "type": "borderWidth"
+      },
+      "offset": {
+        "value": "{color.focus.offset}",
+        "type": "color",
+        "comment": "ADR-0051 — new"
+      },
+      "offset-width": {
+        "value": "2px",
+        "type": "borderWidth",
+        "comment": "ADR-0051 — new"
+      }
     }
   }
 }

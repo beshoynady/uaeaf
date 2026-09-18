@@ -29,7 +29,7 @@ describe('sponsor strip settings', () => {
       selection: 'allActive',
       sponsorshipIds: [],
       order: 'tier',
-      pinTopTier: true,
+      pinnedSponsorshipId: null,
       speed: 'medium',
     });
     expect(SPONSOR_STRIP_DEFAULTS.displayMode).toBe('logoName');
@@ -79,7 +79,7 @@ describe('sponsor strip settings', () => {
       selection: 'manual',
       sponsorshipIds: [id.toString()],
       order: 'tier',
-      pinTopTier: true,
+      pinnedSponsorshipId: null,
       speed: 'medium',
     });
   });

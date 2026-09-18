@@ -1,109 +1,399 @@
 {
   "color": {
     "action": {
-      "default": { "value": "{color.green.500}", "type": "color", "comment": "ADR-0072 D13 — the Action role (ADR-0065 D2): the edge a control takes under the pointer and the icon that answers it. Federation Green at the point of interaction, the same value in every theme" }
+      "default": {
+        "value": "{color.green.500}",
+        "type": "color",
+        "comment": "ADR-0072 D13 — the Action role (ADR-0065 D2): the edge a control takes under the pointer and the icon that answers it. Federation Green at the point of interaction, the same value in every theme"
+      }
     },
     "logo": {
-      "plate": { "value": "{color.white}", "type": "color", "comment": "ADR-0085 D6.1 — the ground behind a third-party mark. Supplied logos arrive on an opaque white ground, so the plate stays white in every list; on a neutral ground its edge is --color-border-strong" }
+      "plate": {
+        "value": "{color.white}",
+        "type": "color",
+        "comment": "ADR-0085 D6.1 — the ground behind a third-party mark. Supplied logos arrive on an opaque white ground, so the plate stays white in every list; on a neutral ground its edge is --color-border-strong"
+      },
+      "pinned-edge": {
+        "value": "{color.white}",
+        "type": "color",
+        "comment": "ADR-0086 D3 - the hue is dropped rather than darkened, as ADR-0059 does with every register and ADR-0072 with the item palette: #FFFFFF measures 21:1 on #000000, and this list asks for legibility, not brand expression"
+      }
     },
     "map": {
-      "marker": { "value": "{color.red.500}", "type": "color", "comment": "ADR-0072 D13 — the location pin on a map card. It stands on map imagery, an unknown ground, so its value does not follow the theme (contact-map.tsx): the same red in every list, measured on the pin card's base ground" }
+      "marker": {
+        "value": "{color.red.500}",
+        "type": "color",
+        "comment": "ADR-0072 D13 — the location pin on a map card. It stands on map imagery, an unknown ground, so its value does not follow the theme (contact-map.tsx): the same red in every list, measured on the pin card's base ground"
+      }
     },
     "text": {
-      "primary": { "value": "#000000", "type": "color" },
-      "secondary": { "value": "#000000", "type": "color" },
-      "muted": { "value": "{color.neutral-warm.700}", "type": "color", "comment": "ADR-0051 — new; 9.04:1 on white, gives a third tier below primary/secondary without leaving max-contrast philosophy" },
-      "disabled": { "value": "{color.neutral-warm.700}", "type": "color" },
-      "inverse": { "value": "#FFFFFF", "type": "color" },
-      "on-brand": { "value": "#FFFFFF", "type": "color", "comment": "ADR-0059" },
-      "link": { "value": "#000000", "type": "color", "comment": "Underline carries the link cue at this contrast level, not color alone" }
+      "primary": {
+        "value": "#000000",
+        "type": "color"
+      },
+      "secondary": {
+        "value": "#000000",
+        "type": "color"
+      },
+      "muted": {
+        "value": "{color.neutral-warm.700}",
+        "type": "color",
+        "comment": "ADR-0051 — new; 9.04:1 on white, gives a third tier below primary/secondary without leaving max-contrast philosophy"
+      },
+      "disabled": {
+        "value": "{color.neutral-warm.700}",
+        "type": "color"
+      },
+      "inverse": {
+        "value": "#FFFFFF",
+        "type": "color"
+      },
+      "on-brand": {
+        "value": "#FFFFFF",
+        "type": "color",
+        "comment": "ADR-0059"
+      },
+      "link": {
+        "value": "#000000",
+        "type": "color",
+        "comment": "Underline carries the link cue at this contrast level, not color alone"
+      }
     },
     "surface": {
-      "base": { "value": "#FFFFFF", "type": "color" },
-      "raised": { "value": "#FFFFFF", "type": "color" },
-      "sunken": { "value": "#FFFFFF", "type": "color" },
-      "skeleton": { "value": "{color.neutral-warm.300}", "type": "color" },
-      "overlay": { "value": "#000000", "type": "color" }
+      "base": {
+        "value": "#FFFFFF",
+        "type": "color"
+      },
+      "raised": {
+        "value": "#FFFFFF",
+        "type": "color"
+      },
+      "sunken": {
+        "value": "#FFFFFF",
+        "type": "color"
+      },
+      "skeleton": {
+        "value": "{color.neutral-warm.300}",
+        "type": "color"
+      },
+      "overlay": {
+        "value": "#000000",
+        "type": "color"
+      }
     },
     "section": {
       "comment": "ADR-0059 — high contrast deliberately flattens all four registers to black-on-white. A user who selects this mode is asking for maximum legibility, not brand expression; rendering a green or red full-bleed ground would take contrast away from them to make a point they did not ask for.",
-      "green": { "surface": { "value": "#FFFFFF", "type": "color" }, "text": { "value": "#000000", "type": "color" }, "text-muted": { "value": "{color.neutral-warm.700}", "type": "color" }, "border": { "value": "#000000", "type": "color" }, "divider": { "value": "#000000", "type": "color" } },
-      "red": { "surface": { "value": "#FFFFFF", "type": "color" }, "text": { "value": "#000000", "type": "color" }, "text-muted": { "value": "{color.neutral-warm.700}", "type": "color" }, "border": { "value": "#000000", "type": "color" }, "divider": { "value": "#000000", "type": "color" } },
-      "black": { "surface": { "value": "#000000", "type": "color" }, "text": { "value": "#FFFFFF", "type": "color" }, "text-muted": { "value": "#FFFFFF", "type": "color" }, "border": { "value": "#FFFFFF", "type": "color" }, "divider": { "value": "#FFFFFF", "type": "color" } },
-      "adjacent-separator": { "value": "#000000", "type": "color", "comment": "ADR-0059 — a solid black rule, since the registers themselves no longer differ" }
+      "green": {
+        "surface": {
+          "value": "#FFFFFF",
+          "type": "color"
+        },
+        "text": {
+          "value": "#000000",
+          "type": "color"
+        },
+        "text-muted": {
+          "value": "{color.neutral-warm.700}",
+          "type": "color"
+        },
+        "border": {
+          "value": "#000000",
+          "type": "color"
+        },
+        "divider": {
+          "value": "#000000",
+          "type": "color"
+        }
+      },
+      "red": {
+        "surface": {
+          "value": "#FFFFFF",
+          "type": "color"
+        },
+        "text": {
+          "value": "#000000",
+          "type": "color"
+        },
+        "text-muted": {
+          "value": "{color.neutral-warm.700}",
+          "type": "color"
+        },
+        "border": {
+          "value": "#000000",
+          "type": "color"
+        },
+        "divider": {
+          "value": "#000000",
+          "type": "color"
+        }
+      },
+      "black": {
+        "surface": {
+          "value": "#000000",
+          "type": "color"
+        },
+        "text": {
+          "value": "#FFFFFF",
+          "type": "color"
+        },
+        "text-muted": {
+          "value": "#FFFFFF",
+          "type": "color"
+        },
+        "border": {
+          "value": "#FFFFFF",
+          "type": "color"
+        },
+        "divider": {
+          "value": "#FFFFFF",
+          "type": "color"
+        }
+      },
+      "adjacent-separator": {
+        "value": "#000000",
+        "type": "color",
+        "comment": "ADR-0059 — a solid black rule, since the registers themselves no longer differ"
+      }
     },
     "border": {
-      "accent": { "value": "#000000", "type": "color", "comment": "ADR-0072 D3 — the accent rule, black in high contrast" },
-      "subtle": { "value": "#000000", "type": "color", "comment": "ADR-0059 — high contrast collapses subtle into default by design; a weaker rule would defeat the mode" },
-      "default": { "value": "#000000", "type": "color" },
-      "strong": { "value": "#000000", "type": "color" }
+      "accent": {
+        "value": "#000000",
+        "type": "color",
+        "comment": "ADR-0072 D3 — the accent rule, black in high contrast"
+      },
+      "subtle": {
+        "value": "#000000",
+        "type": "color",
+        "comment": "ADR-0059 — high contrast collapses subtle into default by design; a weaker rule would defeat the mode"
+      },
+      "default": {
+        "value": "#000000",
+        "type": "color"
+      },
+      "strong": {
+        "value": "#000000",
+        "type": "color"
+      }
     },
     "focus": {
-      "default": { "value": "#000000", "type": "color" },
-      "offset": { "value": "#FFFFFF", "type": "color" }
+      "default": {
+        "value": "#000000",
+        "type": "color"
+      },
+      "offset": {
+        "value": "#FFFFFF",
+        "type": "color"
+      }
     },
     "semantic": {
-      "success": { "value": "{color.success.800}", "type": "color", "comment": "ADR-0051 — repointed from {color.green.700}" },
-      "success-hover": { "value": "{color.success.900}", "type": "color" },
-      "error": { "value": "{color.error.800}", "type": "color", "comment": "ADR-0051 — renamed from `danger`, repointed from {color.red.700}" },
-      "error-hover": { "value": "{color.error.900}", "type": "color" },
-      "warning": { "value": "{color.warning.800}", "type": "color", "comment": "ADR-0051 — repointed from {color.gold.800}" },
-      "info": { "value": "{color.info.800}", "type": "color", "comment": "ADR-0051 — was hardcoded #000000" },
-      "success-text": { "value": "{color.success.800}", "type": "color", "comment": "ADR-0071 D1 — the state's own high-contrast step already carries text: 9.97 on #FFFFFF" },
-      "error-text": { "value": "{color.error.800}", "type": "color", "comment": "ADR-0071 D1 — 10.39 on #FFFFFF" },
-      "warning-text": { "value": "{color.warning.800}", "type": "color", "comment": "ADR-0071 D1 — 8.30 on #FFFFFF" },
-      "info-text": { "value": "{color.info.800}", "type": "color", "comment": "ADR-0071 D1 — 10.92 on #FFFFFF" },
-      "neutral": { "value": "#000000", "type": "color" },
-      "medal-gold": { "value": "{color.gold.800}", "type": "color" },
-      "medal-silver": { "value": "{color.silver.800}", "type": "color" },
-      "medal-bronze": { "value": "{color.bronze.800}", "type": "color" }
+      "success": {
+        "value": "{color.success.800}",
+        "type": "color",
+        "comment": "ADR-0051 — repointed from {color.green.700}"
+      },
+      "success-hover": {
+        "value": "{color.success.900}",
+        "type": "color"
+      },
+      "error": {
+        "value": "{color.error.800}",
+        "type": "color",
+        "comment": "ADR-0051 — renamed from `danger`, repointed from {color.red.700}"
+      },
+      "error-hover": {
+        "value": "{color.error.900}",
+        "type": "color"
+      },
+      "warning": {
+        "value": "{color.warning.800}",
+        "type": "color",
+        "comment": "ADR-0051 — repointed from {color.gold.800}"
+      },
+      "info": {
+        "value": "{color.info.800}",
+        "type": "color",
+        "comment": "ADR-0051 — was hardcoded #000000"
+      },
+      "success-text": {
+        "value": "{color.success.800}",
+        "type": "color",
+        "comment": "ADR-0071 D1 — the state's own high-contrast step already carries text: 9.97 on #FFFFFF"
+      },
+      "error-text": {
+        "value": "{color.error.800}",
+        "type": "color",
+        "comment": "ADR-0071 D1 — 10.39 on #FFFFFF"
+      },
+      "warning-text": {
+        "value": "{color.warning.800}",
+        "type": "color",
+        "comment": "ADR-0071 D1 — 8.30 on #FFFFFF"
+      },
+      "info-text": {
+        "value": "{color.info.800}",
+        "type": "color",
+        "comment": "ADR-0071 D1 — 10.92 on #FFFFFF"
+      },
+      "neutral": {
+        "value": "#000000",
+        "type": "color"
+      },
+      "medal-gold": {
+        "value": "{color.gold.800}",
+        "type": "color"
+      },
+      "medal-silver": {
+        "value": "{color.silver.800}",
+        "type": "color"
+      },
+      "medal-bronze": {
+        "value": "{color.bronze.800}",
+        "type": "color"
+      }
     },
     "item": {
       "1": {
-        "surface": { "value": "#FFFFFF", "type": "color", "comment": "ADR-0072 D1 — item 1 of a closed set: the card's ground, under the title, the description and the ink" },
-        "ink": { "value": "#000000", "type": "color", "comment": "ADR-0072 D1 — the item's number and icon. Without hue in this theme: the number and the title tell the cards apart" },
-        "edge": { "value": "#000000", "type": "color", "comment": "ADR-0072 D1 — the card's edge: its own ground where colour carries the item, drawn in high contrast" }
+        "surface": {
+          "value": "#FFFFFF",
+          "type": "color",
+          "comment": "ADR-0072 D1 — item 1 of a closed set: the card's ground, under the title, the description and the ink"
+        },
+        "ink": {
+          "value": "#000000",
+          "type": "color",
+          "comment": "ADR-0072 D1 — the item's number and icon. Without hue in this theme: the number and the title tell the cards apart"
+        },
+        "edge": {
+          "value": "#000000",
+          "type": "color",
+          "comment": "ADR-0072 D1 — the card's edge: its own ground where colour carries the item, drawn in high contrast"
+        }
       },
       "2": {
-        "surface": { "value": "#FFFFFF", "type": "color", "comment": "ADR-0072 D1 — item 2 of a closed set: the card's ground, under the title, the description and the ink" },
-        "ink": { "value": "#000000", "type": "color", "comment": "ADR-0072 D1 — the item's number and icon. Without hue in this theme: the number and the title tell the cards apart" },
-        "edge": { "value": "#000000", "type": "color", "comment": "ADR-0072 D1 — the card's edge: its own ground where colour carries the item, drawn in high contrast" }
+        "surface": {
+          "value": "#FFFFFF",
+          "type": "color",
+          "comment": "ADR-0072 D1 — item 2 of a closed set: the card's ground, under the title, the description and the ink"
+        },
+        "ink": {
+          "value": "#000000",
+          "type": "color",
+          "comment": "ADR-0072 D1 — the item's number and icon. Without hue in this theme: the number and the title tell the cards apart"
+        },
+        "edge": {
+          "value": "#000000",
+          "type": "color",
+          "comment": "ADR-0072 D1 — the card's edge: its own ground where colour carries the item, drawn in high contrast"
+        }
       },
       "3": {
-        "surface": { "value": "#FFFFFF", "type": "color", "comment": "ADR-0072 D1 — item 3 of a closed set: the card's ground, under the title, the description and the ink" },
-        "ink": { "value": "#000000", "type": "color", "comment": "ADR-0072 D1 — the item's number and icon. Without hue in this theme: the number and the title tell the cards apart" },
-        "edge": { "value": "#000000", "type": "color", "comment": "ADR-0072 D1 — the card's edge: its own ground where colour carries the item, drawn in high contrast" }
+        "surface": {
+          "value": "#FFFFFF",
+          "type": "color",
+          "comment": "ADR-0072 D1 — item 3 of a closed set: the card's ground, under the title, the description and the ink"
+        },
+        "ink": {
+          "value": "#000000",
+          "type": "color",
+          "comment": "ADR-0072 D1 — the item's number and icon. Without hue in this theme: the number and the title tell the cards apart"
+        },
+        "edge": {
+          "value": "#000000",
+          "type": "color",
+          "comment": "ADR-0072 D1 — the card's edge: its own ground where colour carries the item, drawn in high contrast"
+        }
       },
       "4": {
-        "surface": { "value": "#FFFFFF", "type": "color", "comment": "ADR-0072 D1 — item 4 of a closed set: the card's ground, under the title, the description and the ink" },
-        "ink": { "value": "#000000", "type": "color", "comment": "ADR-0072 D1 — the item's number and icon. Without hue in this theme: the number and the title tell the cards apart" },
-        "edge": { "value": "#000000", "type": "color", "comment": "ADR-0072 D1 — the card's edge: its own ground where colour carries the item, drawn in high contrast" }
+        "surface": {
+          "value": "#FFFFFF",
+          "type": "color",
+          "comment": "ADR-0072 D1 — item 4 of a closed set: the card's ground, under the title, the description and the ink"
+        },
+        "ink": {
+          "value": "#000000",
+          "type": "color",
+          "comment": "ADR-0072 D1 — the item's number and icon. Without hue in this theme: the number and the title tell the cards apart"
+        },
+        "edge": {
+          "value": "#000000",
+          "type": "color",
+          "comment": "ADR-0072 D1 — the card's edge: its own ground where colour carries the item, drawn in high contrast"
+        }
       }
     },
     "avatar": {
-      "fallback-bg": { "value": "#FFFFFF", "type": "color" },
-      "fallback-text": { "value": "#000000", "type": "color" }
+      "fallback-bg": {
+        "value": "#FFFFFF",
+        "type": "color"
+      },
+      "fallback-text": {
+        "value": "#000000",
+        "type": "color"
+      }
     }
   },
   "elevation": {
-    "card": { "value": "none", "type": "boxShadow", "comment": "ADR-0052 — High Contrast carries elevation via solid borders only (already Chapter 7 §7.3 philosophy), never soft shadows" },
-    "card-hover": { "value": "none", "type": "boxShadow", "comment": "ADR-0052" },
-    "panel": { "value": "none", "type": "boxShadow", "comment": "ADR-0066 — High Contrast carries elevation on solid borders only (Chapter 7 §7.3); a panel is no exception." },
-    "panel-hover": { "value": "none", "type": "boxShadow", "comment": "ADR-0066" },
-    "dropdown": { "value": "none", "type": "boxShadow", "comment": "ADR-0052" },
-    "modal": { "value": "none", "type": "boxShadow", "comment": "ADR-0052" }
+    "card": {
+      "value": "none",
+      "type": "boxShadow",
+      "comment": "ADR-0052 — High Contrast carries elevation via solid borders only (already Chapter 7 §7.3 philosophy), never soft shadows"
+    },
+    "card-hover": {
+      "value": "none",
+      "type": "boxShadow",
+      "comment": "ADR-0052"
+    },
+    "panel": {
+      "value": "none",
+      "type": "boxShadow",
+      "comment": "ADR-0066 — High Contrast carries elevation on solid borders only (Chapter 7 §7.3); a panel is no exception."
+    },
+    "panel-hover": {
+      "value": "none",
+      "type": "boxShadow",
+      "comment": "ADR-0066"
+    },
+    "dropdown": {
+      "value": "none",
+      "type": "boxShadow",
+      "comment": "ADR-0052"
+    },
+    "modal": {
+      "value": "none",
+      "type": "boxShadow",
+      "comment": "ADR-0052"
+    }
   },
   "a11y": {
     "focus": {
-      "ring": { "value": "{color.focus.default}", "type": "color" },
-      "ring-width": { "value": "3px", "type": "borderWidth", "comment": "Chapter 7 §7.3 — wider than default 2px" },
-      "offset": { "value": "{color.focus.offset}", "type": "color", "comment": "ADR-0051 — new" },
-      "offset-width": { "value": "2px", "type": "borderWidth", "comment": "ADR-0051 — new" }
+      "ring": {
+        "value": "{color.focus.default}",
+        "type": "color"
+      },
+      "ring-width": {
+        "value": "3px",
+        "type": "borderWidth",
+        "comment": "Chapter 7 §7.3 — wider than default 2px"
+      },
+      "offset": {
+        "value": "{color.focus.offset}",
+        "type": "color",
+        "comment": "ADR-0051 — new"
+      },
+      "offset-width": {
+        "value": "2px",
+        "type": "borderWidth",
+        "comment": "ADR-0051 — new"
+      }
     }
   },
   "border": {
     "width": {
-      "default": { "value": "{border.width.thick}", "type": "borderWidth", "comment": "2px override in High Contrast per Chapter 7 §7.3" }
+      "default": {
+        "value": "{border.width.thick}",
+        "type": "borderWidth",
+        "comment": "2px override in High Contrast per Chapter 7 §7.3"
+      }
     }
   }
 }

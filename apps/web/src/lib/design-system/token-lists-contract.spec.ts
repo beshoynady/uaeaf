@@ -351,3 +351,79 @@ describe("the four item colours stay apart (ADR-0072 D1)", () => {
     expect(drift).toEqual([]);
   });
 });
+
+/**
+ * 5. The logo plate (ADR-0085 D6.1, D8 #3): the white ground a sponsor's,
+ *    partner's or membership's mark is set on, so a supplied file's own white
+ *    does not show as a box.
+ *
+ * `--color-logo-plate` is `#FFFFFF` in all three lists, because that is what
+ * the marks arrive on. What changes underneath it is the register:
+ *
+ * - The black register (the strip and the banner) is `#000000` in light and
+ *   high contrast and `#4A4942` in dark. The plate's own fill bounds it in
+ *   every list.
+ * - The green register (partners) is `#005226` in light and dark, where the
+ *   fill bounds it too — and `#FFFFFF` in high contrast, where the plate, the
+ *   card holding it and the band behind them become one white field. Measured
+ *   1:1, which is what D8 #3 recorded and what left the green register out of
+ *   the pairing record rather than fixed.
+ *
+ * So the plate draws its own edge in the high-contrast list and in
+ * forced-colors and nowhere else (`apps/web/src/styles/motion.css`), and the
+ * green register is now recorded. The record carries an exemption because a
+ * single floor cannot express "the fill bounds it here and the edge bounds it
+ * there"; these are the measurements that exemption stands on.
+ */
+describe("the logo plate is a bounded object on every register (ADR-0085 D8 #3)", () => {
+  const PLATE = "--color-logo-plate";
+  const REGISTERS = ["--color-section-black-surface", "--color-section-green-surface"];
+
+  it.each(["light", "dark"] as const)("is bounded by its own fill on both registers in %s", (theme) => {
+    const values = resolved(theme);
+    const failures = REGISTERS.flatMap((register) => {
+      const ratio = contrastRatio(values[PLATE], values[register]);
+      return ratio < AA_LARGE_TEXT_OR_NON_TEXT
+        ? [`${PLATE} ${values[PLATE]} on ${register} ${values[register]}: ${ratio.toFixed(3)} < ${AA_LARGE_TEXT_OR_NON_TEXT}`]
+        : [];
+    });
+    expect(failures).toEqual([]);
+  });
+
+  it("is not bounded by its own fill on the green register in high contrast — the premise of the edge", () => {
+    // Asserted rather than assumed. If that register ever stops being white
+    // here, the edge below is answering a problem that no longer exists and
+    // D8 #3 should be read again rather than carried forward.
+    const values = resolved("high-contrast");
+    expect(values["--color-section-green-surface"]).toBe(values[PLATE]);
+  });
+
+  it("keeps the black register bounding the plate by fill in high contrast, where it stays black", () => {
+    // Only one register loses its boundary in that list. The edge below is
+    // drawn on every plate all the same, because a plate does not know which
+    // register it is standing on — on this one it simply lands on a ground
+    // that is already the same colour.
+    const values = resolved("high-contrast");
+    const ratio = contrastRatio(values[PLATE], values["--color-section-black-surface"]);
+    expect(ratio).toBeGreaterThanOrEqual(AA_LARGE_TEXT_OR_NON_TEXT);
+  });
+
+  it("draws an edge in high contrast that bounds the plate against the register that lost its fill boundary", () => {
+    const values = resolved("high-contrast");
+    const edge = values["--color-border-strong"];
+    const failures = [PLATE, "--color-section-green-surface"].flatMap((against) => {
+      const ratio = contrastRatio(edge, values[against]);
+      return ratio < AA_LARGE_TEXT_OR_NON_TEXT
+        ? [`--color-border-strong ${edge} on ${against} ${values[against]}: ${ratio.toFixed(3)} < ${AA_LARGE_TEXT_OR_NON_TEXT}`]
+        : [];
+    });
+    expect(failures).toEqual([]);
+  });
+
+  it("records the green register as a partner, with the reason the floor is not a single number", () => {
+    const record = (JSON.parse(readFileSync(PAIRINGS, "utf-8")) as { tokens: Record<string, Pairing> }).tokens[PLATE];
+    expect(record.partners).toContain("--color-section-green-surface");
+    expect(record.partners).toContain("--color-section-black-surface");
+    expect(record.exempt ?? "").toContain("D8 #3");
+  });
+});

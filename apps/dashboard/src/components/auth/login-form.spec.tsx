@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithIntl } from "@/test/render";
+import { nativeSubmission } from "@/test/native-submission";
 import { LoginForm } from "./login-form";
 
 afterEach(() => {
@@ -29,6 +30,29 @@ async function submitCredentials() {
 }
 
 describe("LoginForm", () => {
+  it("cannot put the credentials in a URL, hydrated or not", async () => {
+    // The pre-hydration window: `onSubmit` is not attached yet, so a submit
+    // here is the browser's own. With no `method` the browser's default is
+    // GET, which would navigate to `/ar/login?email=…&password=…` — the
+    // address bar, the history, the access log and the `Referer` of every
+    // later same-origin request. Answered 200 by the running dashboard, so
+    // nothing downstream refuses it either.
+    const user = userEvent.setup();
+    const { container } = renderWithIntl(<LoginForm locale="ar" />);
+    await user.type(screen.getByLabelText("البريد الإلكتروني"), "admin@uaeaf.ae");
+    await user.type(screen.getByLabelText("كلمة المرور"), "NOT-A-REAL-PASSWORD");
+    const { method, query, url } = nativeSubmission(container);
+
+    // Both fields are named and do serialise …
+    expect(query).toContain("password=NOT-A-REAL-PASSWORD");
+    // …and the URL the browser would go to carries none of it.
+    expect(url).not.toContain("NOT-A-REAL-PASSWORD");
+    // … so `method` is the only thing deciding whether that lands in the
+    // query string or the request body, and the browser reads it off the
+    // attribute rather than from React.
+    expect(method).toBe("post");
+  });
+
   it("posts the credentials together with the locale the user is looking at", async () => {
     const assign = vi.fn();
     vi.stubGlobal("location", { assign });

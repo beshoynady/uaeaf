@@ -29,7 +29,7 @@ npm run start:dev
 | `PORT` | no, defaults `3000` | |
 | `NODE_ENV` | no, defaults `development` | `development` \| `production` \| `test` |
 | `CLOUDINARY_CLOUD_NAME` / `_API_KEY` / `_API_SECRET` | no | image uploads fail without them |
-| `BOOTSTRAP_ADMIN_EMAIL` / `_PASSWORD` | for `bootstrap:admin` and `seed:dev` | the first administrator; password 12+ characters; an existing account is never changed |
+| `BOOTSTRAP_ADMIN_EMAIL` / `_PASSWORD` | for `bootstrap:admin` and `seed:dev` | the first administrator; password 12+ characters; an existing account is never changed. **Read from `api/.env`** — never passed on the command line, where the value would enter the shell history, the process table and any terminal transcript |
 | `BOOTSTRAP_ADMIN_NAME_EN` / `_AR` | no | defaults `Platform Administrator` / `مسؤول المنصة` |
 
 Startup fails fast (Zod, via `ConfigModule`'s native `validationSchema`

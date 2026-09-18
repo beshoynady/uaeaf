@@ -81,7 +81,7 @@ const strip = (overrides: Partial<SponsorStripSettingsPublic> = {}): SponsorStri
   selection: "allActive",
   sponsorshipIds: [],
   order: "tier",
-  pinTopTier: true,
+  pinnedSponsorshipId: null,
   speed: "medium",
   ...overrides,
 });
@@ -140,6 +140,29 @@ describe("OrganizationLogo", () => {
 
     expect(container.querySelector("img")).toBeNull();
     expect(container).toHaveTextContent("Elite Co");
+  });
+
+  it("marks the plate so it can draw its own edge where its fill is not a boundary", () => {
+    // ADR-0085 D8 #3. The plate is #FFFFFF in every list. In the
+    // high-contrast list every coloured register, card surface and page
+    // ground is white too, so on the green register the plate, its card and
+    // the band behind them are one white field and the mark has no object
+    // around it. The edge that fixes it is painted in that list and in
+    // forced-colors only (`styles/motion.css`), and it needs a hook that is
+    // on the plate and on nothing else.
+    const { container } = render(<OrganizationLogo logo={logo("a")} name={{ ar: null, en: "Elite Co" }} locale="ar" size="card" decorative />);
+
+    expect(container.querySelectorAll("[data-logo-plate]")).toHaveLength(1);
+    expect(container.querySelector("[data-logo-plate]")?.querySelector("img")).not.toBeNull();
+  });
+
+  it("leaves the no-logo fallback unmarked, because there is no plate to bound", () => {
+    // A plate is for a mark that arrives on white. The fallback prints the
+    // name on the ground's own ink with no plate, so an edge there would draw
+    // a box around a word.
+    const { container } = render(<OrganizationLogo logo={null} name={{ ar: null, en: "Elite Co" }} locale="ar" size="card" decorative />);
+
+    expect(container.querySelectorAll("[data-logo-plate]")).toHaveLength(0);
   });
 });
 
@@ -248,36 +271,132 @@ describe("OrganizationsSection", () => {
 
 describe("SponsorStrip", () => {
   it("renders nothing when hidden or when nothing is running", async () => {
-    expect(await SponsorStrip({ sponsorships: [ups], settings: strip({ isVisible: false }), bannerId: "ups", locale: "ar", now: NOW })).toBeNull();
-    expect(await SponsorStrip({ sponsorships: [], settings: strip(), bannerId: null, locale: "ar", now: NOW })).toBeNull();
+    expect(await SponsorStrip({ sponsorships: [ups], settings: strip({ isVisible: false }), locale: "ar", now: NOW })).toBeNull();
+    expect(await SponsorStrip({ sponsorships: [], settings: strip(), locale: "ar", now: NOW })).toBeNull();
   });
 
-  it("stands one pinned sponsor still at every width, with no copy for a loop and no pause button", async () => {
-    const { container } = render((await SponsorStrip({ sponsorships: [ups], settings: strip(), bannerId: "ups", locale: "ar", now: NOW }))!);
+  it("names the region by the title it prints, so the name is announced once", async () => {
+    // ADR-0085 D9.5: the label used to be the `aside`'s `aria-label` and
+    // nothing on the page. Printed in the anchor and pointed at, it is the
+    // region's name and the reader's heading at the same time.
+    const { container } = render((await SponsorStrip({ sponsorships: [ups], settings: strip(), locale: "ar", now: NOW }))!);
 
     const aside = container.querySelector("aside")!;
-    expect(aside).toHaveAttribute("data-row-from", "base");
-    expect(aside).toHaveAttribute("aria-label", "strip.label");
-    expect(container.querySelector("[data-strip-duplicate]")).toBeNull();
-    expect(screen.queryByRole("button")).toBeNull();
+    expect(aside).not.toHaveAttribute("aria-label");
+    const title = container.querySelector(`#${aside.getAttribute("aria-labelledby")}`)!;
+    expect(title).toHaveTextContent("strip.label");
   });
 
-  it("keeps the loop's copy out of the reading order, and offers the pause button, when the row can move", async () => {
-    const many = Array.from({ length: 12 }, (_, i) => sponsorship(`s${i}`, "Supporting", { displayOrder: i }));
+  it("gives a strip with only a held sponsor no loop and no pause button", async () => {
+    // Nothing travels, so there is nothing to stop. The anchor still carries
+    // the title: it is inside the strip, so "no empty shelf" holds for both.
     const { container } = render(
-      (await SponsorStrip({ sponsorships: [ups, ...many], settings: strip(), bannerId: "ups", locale: "ar", now: NOW }))!,
+      (await SponsorStrip({ sponsorships: [ups], settings: strip({ pinnedSponsorshipId: "ups" }), locale: "ar", now: NOW }))!,
     );
 
-    const duplicate = container.querySelector("[data-strip-duplicate]")!;
-    expect(duplicate).toHaveAttribute("aria-hidden", "true");
-    expect(duplicate).toHaveAttribute("inert");
+    expect(container.querySelector("[data-strip-pinned]")).not.toBeNull();
+    expect(container.querySelector(".strip-track")).toBeNull();
+    expect(screen.queryByRole("button")).toBeNull();
+    expect(container.querySelector(".strip-anchor")).not.toBeNull();
+  });
+
+  it("draws a single sponsor once and standing, with nothing to pause", async () => {
+    // ADR-0086 D5, and this is the launch-day count. Repeating one sponsor to
+    // fill the line said the federation had seven.
+    const { container } = render(
+      (await SponsorStrip({ sponsorships: [ups], settings: strip(), locale: "ar", now: NOW }))!,
+    );
+
+    expect(container.querySelectorAll("[data-strip-item]")).toHaveLength(1);
+    expect(container.querySelector(".strip-track")).toBeNull();
+    expect(screen.queryByRole("button")).toBeNull();
+    // The anchor still carries the title: "no empty shelf" holds for both.
+    expect(container.querySelector(".strip-anchor")).not.toBeNull();
+  });
+
+  it("starts moving at two, where there is something to move through", async () => {
+    const two = [ups, sponsorship("second", "Supporting", { displayOrder: 1 })];
+    const { container } = render(
+      (await SponsorStrip({ sponsorships: two, settings: strip(), locale: "ar", now: NOW }))!,
+    );
+
+    expect(container.querySelector(".strip-track")).not.toBeNull();
     expect(screen.getByRole("button", { name: "strip.pause" })).toBeInTheDocument();
-    expect(container.querySelector("aside")!.getAttribute("style")).toContain("--strip-duration");
+  });
+
+  it("repeats the row and keeps every copy but the first out of the reading order", async () => {
+    // D9.3. The copies exist so the track is wider than the widest frame by a
+    // whole cycle; a reader must still meet each sponsor once.
+    const many = Array.from({ length: 12 }, (_, i) => sponsorship(`s${i}`, "Supporting", { displayOrder: i }));
+    const { container } = render(
+      (await SponsorStrip({ sponsorships: [ups, ...many], settings: strip(), locale: "ar", now: NOW }))!,
+    );
+
+    const copies = [...container.querySelectorAll(".strip-copy")];
+    expect(copies.length).toBeGreaterThanOrEqual(2);
+    expect(copies[0]).not.toHaveAttribute("aria-hidden");
+    for (const copy of copies.slice(1)) {
+      expect(copy).toHaveAttribute("aria-hidden", "true");
+      expect(copy).toHaveAttribute("inert");
+    }
+    expect(screen.getByRole("button", { name: "strip.pause" })).toBeInTheDocument();
+  });
+
+  it("carries the distance and the time the loop runs, so the browser needs to measure neither", async () => {
+    const many = Array.from({ length: 4 }, (_, i) => sponsorship(`s${i}`, "Supporting", { displayOrder: i }));
+    const { container } = render(
+      (await SponsorStrip({ sponsorships: many, settings: strip(), locale: "ar", now: NOW }))!,
+    );
+
+    const style = container.querySelector("aside")!.getAttribute("style")!;
+    // Four items in the default mode: 4 × (224 + 32) = 1024px, at 57px/s.
+    expect(style).toContain("--strip-copy: 1024px");
+    expect(style).toContain(`--strip-duration: ${1024 / 57}s`);
+  });
+
+  it("moves at the same rate however many sponsors there are", async () => {
+    // The whole point of D9.2, asserted on what the component actually writes.
+    const rate = async (count: number) => {
+      const items = Array.from({ length: count }, (_, i) => sponsorship(`s${i}`, "Supporting", { displayOrder: i }));
+      const { container } = render(
+        (await SponsorStrip({ sponsorships: items, settings: strip(), locale: "ar", now: NOW }))!,
+      );
+      const style = container.querySelector("aside")!.getAttribute("style")!;
+      const copy = Number(/--strip-copy:\s*([\d.]+)px/.exec(style)![1]);
+      const seconds = Number(/--strip-duration:\s*([\d.]+)s/.exec(style)![1]);
+      return copy / seconds;
+    };
+
+    expect(await rate(3)).toBeCloseTo(await rate(11), 6);
+  });
+
+  it("links each logo to its sponsor, and links nothing when there is no website", async () => {
+    // D9.6. The accessible name carries the destination and the new-tab notice
+    // the banner already uses, so the strip says what the section says.
+    const withSite = render(
+      (await SponsorStrip({ sponsorships: [ups], settings: strip(), locale: "ar", now: NOW }))!,
+    );
+    const link = withSite.container.querySelector("[data-strip-link]") as HTMLAnchorElement | null;
+    expect(link).not.toBeNull();
+    expect(link!.getAttribute("href")).toBe("https://upsgenerator.com/");
+    expect(link!.getAttribute("target")).toBe("_blank");
+    expect(link!.getAttribute("rel")).toContain("noopener");
+    expect(link!.textContent).toContain("sponsors.opensInNewTab");
+
+    const without = render(
+      (await SponsorStrip({
+        sponsorships: [sponsorship("plain", "Supporting")],
+        settings: strip(),
+        locale: "ar",
+        now: NOW,
+      }))!,
+    );
+    expect(without.container.querySelector("[data-strip-link]")).toBeNull();
   });
 
   it("announces each logo by name in logo-only mode, and prints no name", async () => {
     const { container } = render(
-      (await SponsorStrip({ sponsorships: [ups], settings: strip({ displayMode: "logo", pinTopTier: false }), bannerId: null, locale: "ar", now: NOW }))!,
+      (await SponsorStrip({ sponsorships: [ups], settings: strip({ displayMode: "logo" }), locale: "ar", now: NOW }))!,
     );
 
     const img = container.querySelector("img")!;

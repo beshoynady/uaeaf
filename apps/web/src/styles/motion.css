@@ -1160,226 +1160,198 @@
   }
 }
 
-/* The global sponsor strip (`sponsor-strip.tsx`, ADR-0085 D7).
+/* ══════════════════════════════════════════════════════════════════════════
+ * The global sponsor strip — ADR-0085 D7, rebuilt by D9
  *
- * Two states, chosen per width by `data-row-from`, which the server computes
- * from the item count (`stripRowFrom` in `@uaeaf/content/sponsors`):
+ * One behaviour, at every count and every width: the row moves. The two-state
+ * arrangement D7 and D8 #4 built — still from the first breakpoint whose
+ * content width held every item — is gone, and with it five media queries of
+ * near-identical rules and the `data-row-from` attribute they keyed on. A
+ * strip that moved with five sponsors and stood still with four, at the same
+ * width, made the page's rhythm a function of a record count.
  *
- * - still, from that breakpoint up: one centred row, the pinned sponsor between
- *   the rest, no copy for a loop, no pause button;
- * - moving, below it: the pinned sponsor above a row that loops once the
- *   controls have hydrated (`data-enhanced`). Before that, and always under
- *   reduced motion, the row stands still and scrolls.
+ * ── The loop ──────────────────────────────────────────────────────────────
  *
- * The loop is one `transform` keyframe, never `opacity` (page-building-guide
- * §3). Its length is reading time per item (`stripLoopSeconds`), set on the
- * strip as `--strip-duration`; no motion token describes a loop, and the
- * ambient token is reserved (ADR-0069 D9). Travel follows the reading
- * direction (ADR-0077 D5): the
- * second copy stands on the far side of the first, so Arabic starts shifted
- * right and English left, each returning to rest. The track's inline-end
- * padding is one gap, so half its width is exactly one copy and its gap. */
+ * `sponsor-strip.tsx` draws the list `stripCopies` times and sets two lengths:
+ * `--strip-copy`, the width of one copy including the gap that follows each
+ * item, and `--strip-duration`, that width over the speed in pixels per second
+ * (D9.2). One cycle travels exactly `--strip-copy`, so the frame after the
+ * last is the first and the join lands on an ordinary gap. Because the
+ * distance and the time are both derived from the same widths, the visible
+ * speed is the same for one sponsor and for ten.
+ *
+ * ── Direction ─────────────────────────────────────────────────────────────
+ *
+ * One keyframe, and `--strip-direction` carries the sign: `-1` reading
+ * left-to-right, `1` right-to-left. `translateX` is physical and Chapter 5
+ * otherwise uses logical properties; the exception is documented in D9.4 and
+ * is limited to the motion axis — a transform has no logical form, the axis of
+ * travel is the inline axis in both directions, and only the sign differs.
+ * Nothing else here is physical.
+ *
+ * ── The edges ─────────────────────────────────────────────────────────────
+ *
+ * `mask-image`, not a gradient in the register's colour: a mask does not need
+ * to know which of three themes is painting the band behind it. It is
+ * symmetric, so it is the same mask in both reading directions and cannot be
+ * mirrored wrong.
+ * ══════════════════════════════════════════════════════════════════════════ */
 .sponsor-strip {
-  --strip-travel: strip-travel-ltr;
-  /* Set on each strip from its item count and speed. */
+  /* Both set per strip by the component. */
+  --strip-copy: 0px;
   --strip-duration: 0s;
+  --strip-gap: var(--space-8);
+  --strip-direction: -1;
+  --strip-fade: var(--space-8);
 }
 
 [dir="rtl"] .sponsor-strip {
-  --strip-travel: strip-travel-rtl;
+  --strip-direction: 1;
 }
 
+.sponsor-strip .strip-copy,
+.sponsor-strip .strip-track {
+  gap: var(--strip-gap);
+}
+
+/* Each item carries the gap that follows it, so copies tile end to end with
+   the same distance between them as inside them — `stripCopyWidth` counts the
+   row exactly this way. */
+.sponsor-strip .strip-copy {
+  padding-inline-end: var(--strip-gap);
+}
+
+.sponsor-strip .strip-track {
+  gap: 0;
+}
+
+/* Before the controls hydrate, and under reduced motion, the row does not move
+   and the reader scrolls it instead. */
 .sponsor-strip .strip-viewport {
   overflow-x: auto;
 }
 
-.sponsor-strip .strip-track {
-  justify-content: flex-start;
-}
-
-.sponsor-strip .strip-pinned-stacked {
-  display: flex;
-}
-
-.sponsor-strip .strip-pinned-inline,
-.sponsor-strip .strip-duplicate,
-.sponsor-strip .strip-pause {
+.sponsor-strip .strip-anchor .strip-pause {
   display: none;
 }
 
-@keyframes strip-travel-rtl {
-  from {
-    transform: translateX(50%);
-  }
-  to {
-    transform: translateX(0);
+/* The divider between the anchor and what follows it: the register's own edge
+   token at the default border width, the height of a logo plate (D9.5). Not an
+   identity stroke — IL-5 asks 32px of clearance around one, which a 40px row
+   cannot give, and ADR-0073 D2 makes the strokes a section-scale element. */
+@media (min-width: 768px) {
+  .sponsor-strip .strip-anchor {
+    border-inline-end: var(--border-width-default) solid var(--color-section-black-border);
+    padding-inline-end: var(--space-6);
   }
 }
 
-@keyframes strip-travel-ltr {
+@keyframes strip-travel {
   from {
-    transform: translateX(-50%);
+    transform: translateX(0);
   }
   to {
-    transform: translateX(0);
+    transform: translateX(calc(var(--strip-copy) * var(--strip-direction)));
   }
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .sponsor-strip[data-enhanced] .strip-viewport {
     overflow: clip;
+    /* Symmetric, so RTL and LTR mask the same way. */
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      black var(--strip-fade),
+      black calc(100% - var(--strip-fade)),
+      transparent 100%
+    );
   }
 
-  .sponsor-strip[data-enhanced] .strip-duplicate {
-    display: flex;
-  }
-
-  .sponsor-strip[data-enhanced] .strip-pause {
+  .sponsor-strip[data-enhanced] .strip-anchor .strip-pause {
     display: inline-flex;
   }
 
   .sponsor-strip[data-enhanced] .strip-track {
-    padding-inline-end: var(--space-8);
-    animation: var(--strip-travel) var(--strip-duration) linear infinite;
+    animation: strip-travel var(--strip-duration) linear infinite;
   }
 
-  /* Held while pointed at or focused inside, and until the button resumes it. */
+  /* Held while pointed at or focused inside, and until the button resumes it.
+     None of these touch the button's own `aria-pressed`. */
   .sponsor-strip[data-paused] .strip-track,
   .sponsor-strip:hover .strip-track,
   .sponsor-strip:focus-within .strip-track {
     animation-play-state: paused;
   }
-}
 
-/* The still state, per breakpoint (Chapter 5 §5.2). Each rule names every
- * `data-row-from` that stands still at that width, so a strip that stands still
- * at `md` stands still at every wider width too. */
-.sponsor-strip[data-row-from="base"] .strip-pinned-stacked,
-.sponsor-strip[data-row-from="base"] .strip-duplicate,
-.sponsor-strip[data-row-from="base"] .strip-pause {
-  display: none;
-}
-
-.sponsor-strip[data-row-from="base"] .strip-pinned-inline {
-  display: flex;
-}
-
-.sponsor-strip[data-row-from="base"] .strip-track {
-  justify-content: center;
-  padding-inline-end: 0;
-  animation: none;
-}
-
-.sponsor-strip[data-row-from="base"] .strip-viewport {
-  overflow: visible;
-}
-
-@media (min-width: 640px) {
-  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"]) .strip-pinned-stacked,
-  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"]) .strip-duplicate,
-  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"]) .strip-pause {
-    display: none;
+  /* The hover ground is the one the pause button in this strip already uses,
+     and the plate rises by elevation rather than by a translate for which no
+     spacing token exists (D9.6). Never a scale: it would change the item's
+     width and break the row's rhythm mid-travel. */
+  .sponsor-strip .strip-item-link:hover,
+  .sponsor-strip .strip-item-link:focus-visible {
+    background-color: var(--color-section-black-divider);
   }
 
-  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"]) .strip-pinned-inline {
-    display: flex;
-  }
-
-  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"]) .strip-track {
-    justify-content: center;
-    padding-inline-end: 0;
-    animation: none;
-  }
-
-  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"]) .strip-viewport {
-    overflow: visible;
+  .sponsor-strip .strip-item-link:hover [data-logo-plate],
+  .sponsor-strip .strip-item-link:focus-visible [data-logo-plate] {
+    box-shadow: var(--elevation-card-hover);
   }
 }
 
-@media (min-width: 768px) {
-  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"], [data-row-from="md"]) .strip-pinned-stacked,
-  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"], [data-row-from="md"]) .strip-duplicate,
-  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"], [data-row-from="md"]) .strip-pause {
-    display: none;
-  }
-
-  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"], [data-row-from="md"]) .strip-pinned-inline {
-    display: flex;
-  }
-
-  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"], [data-row-from="md"]) .strip-track {
-    justify-content: center;
-    padding-inline-end: 0;
-    animation: none;
-  }
-
-  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"], [data-row-from="md"]) .strip-viewport {
-    overflow: visible;
-  }
+/* ══════════════════════════════════════════════════════════════════════════
+ * The logo plate's edge in high contrast — ADR-0085 D8 #3
+ *
+ * `--color-logo-plate` is `#FFFFFF` in all three lists, because a supplied
+ * sponsor, partner or membership mark arrives on an opaque white ground. What
+ * bounds that plate is normally its own fill: `#000000` or `#4A4942` on the
+ * black register, `#005226` on the green one.
+ *
+ * In the high-contrast list the green register is `#FFFFFF`, as the card
+ * surfaces and the page grounds are — the same reason the seam edge above
+ * exists. The plate, its card and the band behind them become one white
+ * field, the fill measures 1:1, and the mark floats with no object around it.
+ *
+ * So the plate draws its own edge in that list, and in forced-colors, and
+ * nowhere else: `--border-width-default` (2px there) in
+ * `--color-border-strong` (`#000000`), 21:1 against the white on either side.
+ * Light and dark draw nothing — the fill is the boundary, and an edge there
+ * would be a box inside the card's box (D3 #6). It is drawn on every plate
+ * rather than only on the green register: a plate does not know the register
+ * it stands on, and on the black one the edge simply lands on a ground that
+ * is already its own colour.
+ *
+ * A pseudo-element, not a border on the plate, for the reason the seam edge
+ * gives: a border changes the element's size in one list while the geometry
+ * guards measure another. `inset: 0` keeps it inside the plate's own clip and
+ * the inherited radius keeps it on its corner.
+ * ══════════════════════════════════════════════════════════════════════════ */
+[data-theme="high-contrast"] [data-logo-plate] {
+  position: relative;
 }
 
-@media (min-width: 1024px) {
-  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"], [data-row-from="md"], [data-row-from="lg"]) .strip-pinned-stacked,
-  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"], [data-row-from="md"], [data-row-from="lg"]) .strip-duplicate,
-  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"], [data-row-from="md"], [data-row-from="lg"]) .strip-pause {
-    display: none;
-  }
-
-  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"], [data-row-from="md"], [data-row-from="lg"]) .strip-pinned-inline {
-    display: flex;
-  }
-
-  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"], [data-row-from="md"], [data-row-from="lg"]) .strip-track {
-    justify-content: center;
-    padding-inline-end: 0;
-    animation: none;
-  }
-
-  .sponsor-strip:is([data-row-from="base"], [data-row-from="sm"], [data-row-from="md"], [data-row-from="lg"]) .strip-viewport {
-    overflow: visible;
-  }
+[data-theme="high-contrast"] [data-logo-plate]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: var(--border-width-default) solid var(--color-border-strong);
+  border-radius: inherit;
 }
 
-@media (min-width: 1280px) {
-  .sponsor-strip:not([data-row-from="none"], [data-row-from="2xl"]) .strip-pinned-stacked,
-  .sponsor-strip:not([data-row-from="none"], [data-row-from="2xl"]) .strip-duplicate,
-  .sponsor-strip:not([data-row-from="none"], [data-row-from="2xl"]) .strip-pause {
-    display: none;
+@media (forced-colors: active) {
+  [data-logo-plate] {
+    position: relative;
   }
 
-  .sponsor-strip:not([data-row-from="none"], [data-row-from="2xl"]) .strip-pinned-inline {
-    display: flex;
-  }
-
-  .sponsor-strip:not([data-row-from="none"], [data-row-from="2xl"]) .strip-track {
-    justify-content: center;
-    padding-inline-end: 0;
-    animation: none;
-  }
-
-  .sponsor-strip:not([data-row-from="none"], [data-row-from="2xl"]) .strip-viewport {
-    overflow: visible;
-  }
-}
-
-@media (min-width: 1536px) {
-  .sponsor-strip:not([data-row-from="none"]) .strip-pinned-stacked,
-  .sponsor-strip:not([data-row-from="none"]) .strip-duplicate,
-  .sponsor-strip:not([data-row-from="none"]) .strip-pause {
-    display: none;
-  }
-
-  .sponsor-strip:not([data-row-from="none"]) .strip-pinned-inline {
-    display: flex;
-  }
-
-  .sponsor-strip:not([data-row-from="none"]) .strip-track {
-    justify-content: center;
-    padding-inline-end: 0;
-    animation: none;
-  }
-
-  .sponsor-strip:not([data-row-from="none"]) .strip-viewport {
-    overflow: visible;
+  [data-logo-plate]::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    /* The user's own scheme replaces author colours here, and `CanvasText`
+       is the one it guarantees against `Canvas`. */
+    border: var(--border-width-default) solid CanvasText;
+    border-radius: inherit;
   }
 }

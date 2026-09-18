@@ -98,7 +98,7 @@ describe("PATCH /api/admin/sponsors-section/[id]", () => {
 
 describe("PUT /api/admin/site-settings/sponsor-strip", () => {
   it("forwards the whole strip settings", async () => {
-    const settings = { isVisible: true, displayMode: "logo", selection: "allActive", sponsorshipIds: [], order: "tier", pinTopTier: false, speed: "slow" };
+    const settings = { isVisible: true, displayMode: "logo", selection: "allActive", sponsorshipIds: [], order: "tier", pinnedSponsorshipId: null, speed: "slow" };
     await strip.PUT(request(settings));
     expect(forwardWrite).toHaveBeenCalledWith("/site-settings/sponsor-strip", { method: "PUT", body: settings });
   });

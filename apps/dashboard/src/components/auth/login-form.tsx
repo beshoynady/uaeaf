@@ -29,7 +29,7 @@ interface Failure {
   retryAfterSeconds: number | null;
 }
 
-export function LoginForm({ locale }: { locale: AppLocale }) {
+export const LoginForm = ({ locale }: { locale: AppLocale }) => {
   const t = useTranslations("Login");
   const [failure, setFailure] = useState<Failure | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -39,7 +39,7 @@ export function LoginForm({ locale }: { locale: AppLocale }) {
 
   const clearFailure = useCallback(() => setFailure(null), []);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     setSubmitting(true);
@@ -90,7 +90,20 @@ export function LoginForm({ locale }: { locale: AppLocale }) {
   const waiting = timedOut && failure.retryAfterSeconds !== null && failure.retryAfterSeconds > 0;
 
   return (
-    <form onSubmit={handleSubmit} className="flex w-full flex-col gap-6" noValidate>
+    // POST, and not HTML's default GET. React attaches `onSubmit` at
+    // hydration; the server-rendered page accepts typing and submits
+    // before then, and the browser's own submission of a form with no
+    // `method` would carry the password in the query string — the address
+    // bar, the history, the access log and the next `Referer`. The
+    // browser reads the method off the attribute, so that submission does
+    // not exist rather than being guarded against. See
+    // lib/security/credential-forms.spec.ts.
+    <form
+      onSubmit={handleSubmit}
+      method="post"
+      className="flex w-full flex-col gap-6"
+      noValidate
+    >
       {timedOut ? (
         <LockoutNotice
           key={attempt}

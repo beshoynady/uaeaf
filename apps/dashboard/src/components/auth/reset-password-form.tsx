@@ -29,7 +29,7 @@ const ERROR_KEYS = new Set([
  * the only truthful next step is signing in again with what they just
  * chose — which also proves to them that it worked.
  */
-export function ResetPasswordForm({ token, locale }: { token: string; locale: AppLocale }) {
+export const ResetPasswordForm = ({ token, locale }: { token: string; locale: AppLocale }) => {
   const t = useTranslations("ResetPassword");
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
@@ -43,7 +43,7 @@ export function ResetPasswordForm({ token, locale }: { token: string; locale: Ap
   const mismatch = confirmation.length > 0 && confirmation !== password;
   const submittable = assessment.meetsMinimum && confirmation === password;
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSubmitting(true);
     setErrorKey(null);
@@ -86,7 +86,20 @@ export function ResetPasswordForm({ token, locale }: { token: string; locale: Ap
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex w-full flex-col gap-6" noValidate>
+    // POST, and not HTML's default GET. React attaches `onSubmit` at
+    // hydration; the server-rendered page accepts typing and submits
+    // before then, and the browser's own submission of a form with no
+    // `method` would carry the new password in the query string — the
+    // address bar, the history, the access log and the next `Referer`.
+    // The browser reads the method off the attribute, so that submission
+    // does not exist rather than being guarded against. See
+    // lib/security/credential-forms.spec.ts.
+    <form
+      onSubmit={handleSubmit}
+      method="post"
+      className="flex w-full flex-col gap-6"
+      noValidate
+    >
       {errorKey ? (
         <StatusMessage
           tone={errorKey === "tooManyAttempts" ? "warning" : "error"}
