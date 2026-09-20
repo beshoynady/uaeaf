@@ -100,20 +100,23 @@ Modal Component Enter/Exit Animation (Chapter 8)
 
 | Token                         | Value                            | Usage                                    |
 | ----------------------------- | -------------------------------- | ---------------------------------------- |
-| `DT-MOTION-DURATION-INSTANT`  | 100ms                            | Simple Hover                             |
+| `DT-MOTION-DURATION-INSTANT`  | 100ms                            | Simple Hover · Press (ADR-0087 D6)       |
 | `DT-MOTION-DURATION-FAST`     | 150ms                            | Focus, Toggle                            |
 | `DT-MOTION-DURATION-BASE`     | 220ms                            | Modal, Drawer open/close                 |
 | `DT-MOTION-DURATION-SLOW`     | 320ms                            | Full-page transition                     |
 | `DT-MOTION-DURATION-SLOWER`   | 480ms                            | Hero celebratory animations only         |
+| `DT-MOTION-DURATION-ENTRANCE` | 720ms                            | Arrival of a row of content below the fold only — ADR-0087 D1. Never above the fold, an interaction or a change of state |
 | `DT-MOTION-DURATION-AMBIENT`  | 1200ms                           | Ambient background motion only — ADR-0069 D9, restricted by §3.14 |
 | `DT-MOTION-EASING-STANDARD`   | `cubic-bezier(0.4,0,0.2,1)`      | Default state for all motion             |
 | `DT-MOTION-EASING-DECELERATE` | `cubic-bezier(0,0,0.2,1)`        | Entering elements                        |
 | `DT-MOTION-EASING-ACCELERATE` | `cubic-bezier(0.4,0,1,1)`        | Exiting elements                         |
-| `DT-MOTION-EASING-SPRING`     | `cubic-bezier(0.34,1.56,0.64,1)` | Celebratory moments only (medal, record) |
+| `DT-MOTION-EASING-SPRING`     | `cubic-bezier(0.34,1.56,0.64,1)` | Celebratory moments (medal, record); and, as the curve alone, the settle of athletic content entering under ADR-0087 D2's four conditions. `motion.transition.celebratory` stays for the medal and the record only |
 
 ## 5.7 Motion Choreography
 
 When multiple elements animate together (e.g., statistics cards appearing on scroll), a small sequential delay (**Stagger**) of 40–80ms between each element **SHOULD** be used — creating an organized rather than chaotic feel. **MUST NOT** exceed 600ms in total stagger duration (as this slows the user's perception of content — PR-002).
+
+Below the fold the ceiling bounds the stagger and not the entrance after it (ADR-0087 D4): at most eight elements, 40–80ms a step, 600ms of stagger, with `DT-MOTION-DURATION-ENTRANCE` counted separately. Above the fold and on load nothing changes.
 
 ## 5.8 Reduced Motion Strategy
 
@@ -236,6 +239,17 @@ DT-GRID-001 · Grid columns/gutter/margin per breakpoint · Status: Active · v1
 DT-ELEVATION-002 · Theme-aware elevation (Light/Dark/HC) · Status: Active · v1.0 · Owner: Design System · References: [ADR-0052] · Fix: Dark no longer reuses Light's shadow opacity
 DT-MOTION-005 · prefers-reduced-motion build implementation · Status: Active · v1.0 · Owner: Design System · References: [ADR-0052] · Implements §5.8 for the first time
 ```
+
+## 5.15 Scroll-Linked Motion (ADR-0087 D3)
+
+Until ADR-0087 this chapter said nothing about motion tied to scroll position, so every use of it was a deviation by omission. It is permitted within these limits, and each is a **MUST**:
+
+- `transform` and `opacity` only (ADR-0009), and no measured layout shift (§5.9).
+- Progress comes from the library's `useScroll` where every supported browser must see it; scroll-driven CSS (`animation-timeline`) is not Baseline and Firefox has none. `view()` is acceptable where its absence leaves complete, still content.
+- **Never as an entrance above the fold.** A scroll-linked layer at progress 0 is at its designed resting position.
+- The static alternative under §5.8 is the end state, complete.
+- **Content is never hidden by it.** Content moves by translation; opacity is for something the server did not send hidden (ADR-0076 D4). An entrance is an enhancement of content that is already visible, never what makes it visible.
+- A surface that does nothing when clicked may take an *entrance* and may not take a *response* — hover, focus or press (ADR-0087 D5).
 
 ## Accessibility Considerations
 

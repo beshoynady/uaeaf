@@ -502,6 +502,40 @@
   .lift[aria-disabled="true"] {
     transform: translateY(0) scale(1);
   }
+
+  /*
+   * The press (ADR-0087 D6): a control goes down under the finger.
+   *
+   * One edge width below where it rests, because that is the only honest
+   * distance there is. A scale grows with the control, so the 600px panel
+   * would move 6px where ADR-0067 holds a card's edge under 4px, and a 44px
+   * icon button would not move at all; a distance does not care how wide the
+   * thing is. `--border-width-default` is the control's own edge, and 2px in
+   * high contrast, where everything is drawn heavier.
+   *
+   * It matters most where there is no pointer. `.lift:active` above brings a
+   * raised card back to rest, which is a real movement under a mouse and
+   * nothing at all under a finger, where the card never rose. This goes past
+   * rest, so a touch gets an answer too.
+   *
+   * A button-shaped link is named by the token that draws it, not by a class
+   * added for this: anything with `--button-radius` is a button to the eye,
+   * whatever the element is.
+   *
+   * The transition is declared here, on the pressed state only, because a
+   * control's own list (`transition-colors`) cannot be added to from outside.
+   * So it goes down over `instant` and comes back at once, which for a
+   * distance this small is what a key does. `transform` is named twice so a
+   * raised card keeps its own settle.
+   *
+   * `UAEAF_MOTION_OFF=press` removes all of it (`lib/motion/switches.ts`), and
+   * `.lift:active` above is then exactly what it was.
+   */
+  :root:not([data-motion-off~="press"])
+    :is(button, [role="button"], a[class~="rounded-[var(--button-radius)]"], .lift):not(:disabled, [aria-disabled="true"]):active {
+    transform: translateY(var(--border-width-default));
+    transition: transform var(--motion-duration-instant) var(--motion-easing-standard);
+  }
 }
 
 .lift:disabled::after,
@@ -514,6 +548,80 @@
   background-color: var(--color-surface-sunken);
   border-color: var(--color-border-strong);
   color: var(--color-action-default);
+}
+
+/*
+ * The handover at a seam (ADR-0087 D8; `ui/seam-handover.tsx`).
+ *
+ * The cover has no resting transform here, and that absence is the point: it
+ * is laid out beside the strip, off its end (`start-full`), so rest is out of
+ * the strip and drawing nothing whatever the stylesheet says. The component
+ * pulls it back over the strip by an inline `transform`, only once it is
+ * mounted and motion is allowed, so everything that goes wrong leaves the band
+ * as it was.
+ *
+ * The two polygons are physical on purpose, as the sponsor strip's axis is:
+ * the cut leans the way the identity's ascent leans, lower-left to
+ * upper-right, in either language (ADR-0059 D7.1), so each direction names its
+ * own. The run of the cut is `--seam-h`, the strip's own height, which is what
+ * makes it 45 degrees.
+ *
+ * `--seam-h` is the band's own top padding, breakpoint for breakpoint: 48px,
+ * 64px from `md` and 96px from `lg`, the steps of the `py-12 md:py-16 lg:py-24`
+ * every coloured band here is drawn with. Declared here, once, rather than as
+ * utilities on the element, so there is one place to read what the strip is.
+ *
+ * Not drawn in high contrast or under forced colours. Every coloured band is
+ * white there and draws its own top edge as a line (ADR-0075 M0-A); a cover
+ * would paint over that line, and would uncover nothing.
+ */
+.seam-handover {
+  --seam-h: var(--space-12);
+}
+
+@media (min-width: 768px) {
+  .seam-handover {
+    --seam-h: var(--space-16);
+  }
+}
+
+@media (min-width: 1024px) {
+  .seam-handover {
+    --seam-h: var(--space-24);
+  }
+}
+
+.seam-cover {
+  clip-path: polygon(var(--seam-h) 0, 100% 0, 100% 100%, 0 100%);
+}
+
+[dir="rtl"] .seam-cover {
+  clip-path: polygon(0 0, 100% 0, calc(100% - var(--seam-h)) 100%, 0 100%);
+}
+
+[data-theme="high-contrast"] .seam-handover {
+  display: none;
+}
+
+@media (forced-colors: active) {
+  .seam-handover {
+    display: none;
+  }
+}
+
+/*
+ * A change of theme is not a transition.
+ *
+ * `theme-toggle.tsx` marks the root for the two frames in which the colours
+ * change. Without this, every control faded to its new colour over 150ms
+ * while every ground cut to it at once. `!important` because a control's own
+ * `transition-colors` is a utility and this has to beat it from outside.
+ */
+[data-theme-switching],
+[data-theme-switching] *,
+[data-theme-switching] *::before,
+[data-theme-switching] *::after {
+  transition: none !important;
 }
 
 /*
@@ -556,6 +664,31 @@
   .pm-settle {
     animation: pm-settle var(--motion-duration-base) var(--motion-easing-decelerate) both;
     animation-delay: calc(var(--pm-step) * var(--motion-ascent-stagger));
+  }
+
+  /*
+   * The homepage hero's opening (ADR-0087 D13): the first slide's words settle
+   * in `HERO_STAGE`'s order, by the keyframe the portrait heroes play.
+   *
+   * It fills `both`, exactly as `.pm-settle` does on those heroes, so there
+   * is one way a settle behaves on this site and it is the one already
+   * proven here. The distance is the ascent's own, as `.rise-in` travels.
+   *
+   * It shifts nothing. Six loads with it and six without, 2026-09-18: a shift
+   * appeared in one load with it (0.040) and in two without it (0.078, 0.009),
+   * each at or before first contentful paint and each moving the whole page,
+   * header included. That reflow is the page's own and was there before this.
+   *
+   * `UAEAF_MOTION_OFF=hero` removes it (`lib/motion/switches.ts`).
+   */
+  :root:not([data-motion-off~="hero"]) .hero-open {
+    /* The step each block carries inline (`hero.tsx`). Declared here so a
+       block without one opens first rather than not at all: an undefined
+       value would make the whole delay invalid. */
+    --hero-step: 0;
+    --pm-rise: var(--motion-ascent-offset);
+    animation: pm-settle var(--motion-duration-base) var(--motion-easing-decelerate) both;
+    animation-delay: calc(var(--hero-step) * var(--motion-ascent-stagger));
   }
 
   /* The portrait rises out of the hero's bottom edge by the text's distance. */

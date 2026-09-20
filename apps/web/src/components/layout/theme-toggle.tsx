@@ -20,25 +20,21 @@ const STORAGE_KEY = "uaeaf-theme";
  * high-contrast control — instead of only being right because it happens to
  * be the only writer today.
  */
-function subscribe(onChange: () => void) {
+const subscribe = (onChange: () => void) => {
   const observer = new MutationObserver(onChange);
   observer.observe(document.documentElement, {
     attributes: true,
     attributeFilter: ["data-theme"],
   });
   return () => observer.disconnect();
-}
+};
 
-function readTheme(): Theme {
-  return document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light";
-}
+const readTheme = (): Theme => (document.documentElement.getAttribute("data-theme") === "dark" ? "dark" : "light");
 
 /** The server cannot know the client's stored theme — that is the whole
  *  reason the bootstrap script is inline and synchronous. Light is the
  *  default the token build declares on bare `:root`. */
-function serverTheme(): Theme {
-  return "light";
-}
+const serverTheme = (): Theme => "light";
 
 /**
  * Real light/dark toggle (frontend build-out, 2026-09-07). Replaces the
@@ -62,15 +58,24 @@ function serverTheme(): Theme {
  * separate, still-open Chapter 6 accessibility-compliance question, not
  * bundled in here.
  */
-export function ThemeToggle() {
+export const ThemeToggle = () => {
   const t = useTranslations("Header");
   const theme = useSyncExternalStore(subscribe, readTheme, serverTheme);
 
-  function toggle() {
+  const toggle = () => {
     const next: Theme = theme === "dark" ? "light" : "dark";
+    const root = document.documentElement;
+    // Every control here fades its colours over 150ms and no ground does, so
+    // a change of theme left half the page fading while the other half had
+    // already cut (measured: 39 to 59 transitions, about 400ms). A theme is
+    // not a state change to explain, so nothing transitions across it: the
+    // mark stops them (`motion.css`) and comes off two frames later, once the
+    // new colours have been painted without one.
+    root.setAttribute("data-theme-switching", "");
+    requestAnimationFrame(() => requestAnimationFrame(() => root.removeAttribute("data-theme-switching")));
     // Writing the attribute is the state change; the observer above turns it
     // back into a render. There is no second copy to keep in step.
-    document.documentElement.setAttribute("data-theme", next);
+    root.setAttribute("data-theme", next);
     try {
       localStorage.setItem(STORAGE_KEY, next);
     } catch {
@@ -78,7 +83,7 @@ export function ThemeToggle() {
       // as the bootstrap script's own try/catch. The toggle still works for
       // the current page load, it just won't persist across a reload.
     }
-  }
+  };
 
   return (
     <button
@@ -93,4 +98,4 @@ export function ThemeToggle() {
       <span aria-hidden="true">{theme === "dark" ? "☀" : "☾"}</span>
     </button>
   );
-}
+};

@@ -228,6 +228,8 @@ Reserved for functional feedback only (button hover/press states, tab switches, 
 
 ## 34. Transition Language
 
+> **Adopted within limits — ADR-0087 D8 (2026-09-18).** The device below is approved as a masked layer moved by translation only (never an animated `clip-path`), tied to scroll over `--space-32`, at seams and never above the fold. The rest of this chapter remains a draft. §20 stands as written by the same owner decision.
+
 **The signature device.** Section-to-section scroll transitions use a directional wipe derived from the four-diagonal-line motif — imagine the "moment of ascent" lines physically sweeping across the viewport, briefly revealing the next section through the gaps between the lines, like a photo-finish camera strip advancing frame by frame. This is the single technical/creative recommendation with the highest "instantly recognizable even without the logo" payoff in this entire chapter (§40).
 
 ## 35. Overlay Rules

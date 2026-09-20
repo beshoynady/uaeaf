@@ -7,6 +7,18 @@
         "comment": "ADR-0072 D13 — the Action role (ADR-0065 D2): the edge a control takes under the pointer and the icon that answers it. Federation Green at the point of interaction, the same value in every theme"
       }
     },
+    "accent": {
+      "live": {
+        "value": "{color.night-blue.500}",
+        "type": "color",
+        "comment": "ADR-0088 D1 — the live accent: what is happening now or next (a live mark, a countdown, a results feed). Never an action, a state, an achievement, a link or a category. Declared and measured, and used by nothing until the results pages exist (owner decision 2026-09-18)"
+      },
+      "track": {
+        "value": "{color.white}",
+        "type": "color",
+        "comment": "ADR-0088 D2 — the track mark: a line, a fill or a figure on a ground that is dark in all three lists (the black register, a photograph under the hero's wash). Never text on a light ground, never a state. No hue here: no step of it clears 7:1 on white and 15 from this list's states together, so it is drawn as the register's own ink, as the item colours are (ADR-0072 D1)"
+      }
+    },
     "logo": {
       "plate": {
         "value": "{color.white}",

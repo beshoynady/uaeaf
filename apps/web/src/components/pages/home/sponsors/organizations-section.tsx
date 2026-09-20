@@ -1,8 +1,10 @@
 import { getTranslations } from "next-intl/server";
 import { SeamLines } from "@/components/ui/identity-hero";
+import { SeamHandover } from "@/components/ui/seam-handover";
 import { REGISTER_CLASSES, Section } from "@/components/ui/section";
-import type { AppLocale } from "@/i18n/routing";
+import { localeDirection, type AppLocale } from "@/i18n/routing";
 import type { LocalizedText, OrganizationCardPublic } from "@/lib/api/types";
+import { motionIsOff } from "@/lib/motion/switches";
 import { OrganizationCard } from "./organization-card";
 import { ORGANISATIONS_MOTION } from "./organizations-motion";
 import { MembershipsRowCinematic, PartnersRowCinematic } from "./organizations-row-cinematic";
@@ -61,6 +63,11 @@ export const OrganizationsSection = async ({
       ground="base"
       className="relative py-12 md:py-16 lg:py-24"
     >
+      {/* The band's colour is carried across its own top padding as the seam
+          enters the view (ADR-0087 D8). First, so it lies under everything
+          else here; on this one seam only until it has been measured; and not
+          in the page at all when `UAEAF_MOTION_OFF` names `seam`. */}
+      {partners && !motionIsOff("seam") ? <SeamHandover direction={localeDirection[locale]} /> : null}
       {/* From lg: at md the heading spans the line and the strokes came 0–28px
           from it (IL-5, measured 2026-09-17), the President's finding. */}
       {partners ? null : <SeamLines placement="below" from="lg" />}

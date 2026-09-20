@@ -13,6 +13,7 @@ describe.each<AppLocale>(["ar", "en"])("ThemeToggle (%s)", (locale) => {
 
   beforeEach(() => {
     document.documentElement.removeAttribute("data-theme");
+    document.documentElement.removeAttribute("data-theme-switching");
     localStorage.clear();
   });
 
@@ -64,5 +65,19 @@ describe.each<AppLocale>(["ar", "en"])("ThemeToggle (%s)", (locale) => {
     const button = screen.getByRole("button", { name: messages.Header.switchToDarkMode });
     expect(button.tagName).toBe("BUTTON");
     expect(button).toHaveAttribute("type", "button");
+  });
+  // Measured 2026-09-18: a toggle started 39 to 59 colour transitions that ran
+  // for about 400ms while every ground changed at once, so half the page
+  // faded and half of it cut. The mark is what the stylesheet keys on to stop
+  // them, and it has to be gone again or no control would ever transition.
+  it("marks the document while the theme changes, and takes the mark away once it has", async () => {
+    renderWithIntl(<ThemeToggle />, locale);
+
+    fireEvent.click(screen.getByRole("button", { name: messages.Header.switchToDarkMode }));
+
+    expect(document.documentElement.hasAttribute("data-theme-switching")).toBe(true);
+    expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+    await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+    expect(document.documentElement.hasAttribute("data-theme-switching")).toBe(false);
   });
 });

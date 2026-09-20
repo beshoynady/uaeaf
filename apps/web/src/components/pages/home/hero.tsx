@@ -8,7 +8,7 @@ import { HeroPicture } from "./hero-picture";
 import { HeroWords } from "./hero-words";
 import { ScrollCue } from "@/components/ui/scroll-cue";
 import { CONTAINER } from "@/components/ui/section";
-import { HERO_MEASURE, HERO_TEXT } from "@/components/ui/surface";
+import { HERO_MEASURE, HERO_STAGE, HERO_TEXT } from "@/components/ui/surface";
 import type { AppLocale } from "@/i18n/routing";
 import type { HeroSlidePublic } from "@/lib/api/types";
 import type { NextEvent, Playback } from "@/lib/pages/homepage";
@@ -76,6 +76,26 @@ const SCRIM_LAYERS = {
   "--hero-scrim-wide-rtl": heroScrim("wide", "rtl"),
   "--hero-scrim-wide-ltr": heroScrim("wide", "ltr"),
 } as CSSProperties;
+
+/**
+ * The opening (ADR-0087 D13): on the first slide only, the words arrive in the
+ * order every other hero on the site arrives in (`HERO_STAGE`), by the settle
+ * those heroes play. A class and a number on elements that were already here:
+ * no element is added and the server sends nothing hidden (`.hero-open`,
+ * `motion.css`).
+ *
+ * The blocks open and never the words. The lanes move the words, and two
+ * animations on one `transform` leave only the last one running. A later slide
+ * opens nothing: its words arrive on the lanes, and an opening there would run
+ * again each time the slide became current.
+ *
+ * The picture has no step of its own. Its opening is the camera's slow move,
+ * which starts as the page arrives (`hero-controls.tsx`).
+ */
+const opening = (index: number, stage: number, className: string) =>
+  index === 0
+    ? { className: `hero-open ${className}`, style: { "--hero-step": stage } as CSSProperties }
+    : { className };
 
 export interface HomeHeroProps {
   slides: readonly HeroSlidePublic[];
@@ -160,20 +180,20 @@ export const HomeHero = async ({
                 <div className={CONTAINER}>
                   <div className={`${HERO_TEXT} ${HERO_MEASURE} flex flex-col gap-4`}>
                     {slide.eyebrow ? (
-                      <p className="text-overline text-[color:var(--color-text-on-brand)]">
+                      <p {...opening(index, HERO_STAGE.title, "text-overline text-[color:var(--color-text-on-brand)]")}>
                         <HeroWords text={slide.eyebrow[locale]} />
                       </p>
                     ) : null}
-                    <h2 className="text-h1 text-balance text-[color:var(--color-text-on-brand)]">
+                    <h2 {...opening(index, HERO_STAGE.title, "text-h1 text-balance text-[color:var(--color-text-on-brand)]")}>
                       <HeroWords text={slide.title[locale]} />
                     </h2>
-                    <p className="text-body text-[color:var(--color-text-on-brand)]">
+                    <p {...opening(index, HERO_STAGE.subtitle, "text-body text-[color:var(--color-text-on-brand)]")}>
                       <HeroWords text={slide.subtitle[locale]} />
                     </p>
                     {slide.primaryCta || slide.secondaryCta ? (
                       // The buttons move as one unit, in a window tall enough to
                       // keep their focus ring whole at rest.
-                      <div className="hero-word-mask hero-word-mask-roomy">
+                      <div {...opening(index, HERO_STAGE.card, "hero-word-mask hero-word-mask-roomy")}>
                         <div data-hero-word="" className="hero-word">
                           <HeroCtaRow
                             primary={slide.primaryCta}

@@ -240,7 +240,7 @@ Pending Route → Visual Loading State → Completed
 
 The visual state displayed while navigation is pending **MUST** be explicitly defined for each context. It **MUST NOT** be left to default behavior.
 
-* A full page transition **SHOULD** use a Skeleton (Chapter 8 L1) for the main content.
+* A full page transition **SHOULD** use a Skeleton (Chapter 8 L1) for the main content. On the public site a `loading` boundary at the locale level is **not** used: measured 2026-09-18, it made every unknown URL answer `200` instead of `404`, because the boundary streams and the status is sent before `notFound()` runs (ADR-0087 D12). The defined pending state there is the page being left, held complete and in place until the next is ready.
 * A fast secondary navigation action **MAY** use a lightweight Progress indicator on the navigation bar itself without freezing the entire page.
 
 ### Cancellation Rule

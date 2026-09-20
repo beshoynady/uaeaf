@@ -113,6 +113,15 @@
       "800": { "value": "#422C14", "type": "color", "comment": "ADR-0051" },
       "900": { "value": "#2A1C0D", "type": "color", "comment": "ADR-0051" }
     },
+    "night-blue": {
+      "400": { "value": "#6783FE", "type": "color", "comment": "ADR-0088 D1 — the same hue lifted for the dark grounds: 4.86:1 on surface.raised, the lowest of the three" },
+      "500": { "value": "#333CE0", "type": "color", "comment": "ADR-0088 D1 — hue 271 in OKLCH: Federation Green plus 120 degrees, the leg of the triad that green and red (22 degrees, green plus 232) leave open and no ramp here occupied. 6.67:1 on the lowest light ground, 7.33:1 on white" },
+      "comment": "ADR-0088 D1 — two steps only. A step is added when a role needs it and is measured then, never interpolated ahead of a use"
+    },
+    "track-lime": {
+      "200": { "value": "#D3FA08", "type": "color", "comment": "ADR-0088 D2 — hue 121 in OKLCH: Federation Green minus 30 degrees, its warm neighbour, at the most chroma sRGB holds there. A mark on dark grounds only: 1.09 to 1.20:1 on the light page grounds" },
+      "comment": "ADR-0088 D2 — one step. Darker steps of this hue turn olive and stop being this colour"
+    },
     "success": {
       "50": { "value": "#E6F9ED", "type": "color", "comment": "ADR-0051 — independent of brand.primary (Brand Guide v1.0 §1/§5)" },
       "100": { "value": "#B0EBBF", "type": "color", "comment": "ADR-0051" },

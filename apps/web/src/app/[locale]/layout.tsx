@@ -8,6 +8,7 @@ import { routing, localeDirection, type AppLocale } from "@/i18n/routing";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { MotionProvider } from "@/components/ui/motion-provider";
+import { motionOffAttribute } from "@/lib/motion/switches";
 import "./globals.css";
 
 // Chapter 4 §ADR-0007 official typeface decision. Chapter 4 §4.8: Variable Fonts preferred
@@ -57,25 +58,34 @@ const themeBootstrapScript = `
 })();
 `;
 
-export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
-}
+export const generateStaticParams = () =>
+  routing.locales.map((locale) => ({ locale }));
+
+// Every page under this layout is rendered again at most once a minute. Eleven
+// of them read nothing from the API and were rendered once, at build time, so
+// whatever `UAEAF_MOTION_OFF` said on that day was in their HTML for good.
+// With this the off switches (`lib/motion/switches.ts`) reach every page after
+// the server restarts, with no build. The pages that do read the API already
+// revalidate at this interval, so nothing renders more often than it did.
+export const revalidate = 60;
 
 type LayoutProps = {
   children: ReactNode;
   params: Promise<{ locale: string }>;
 };
 
-export async function generateMetadata({ params }: Pick<LayoutProps, "params">): Promise<Metadata> {
+export const generateMetadata = async ({
+  params,
+}: Pick<LayoutProps, "params">): Promise<Metadata> => {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Metadata" });
   return {
     title: t("title"),
     description: t("description"),
   };
-}
+};
 
-export default async function RootLayout({ children, params }: LayoutProps) {
+const RootLayout = async ({ children, params }: LayoutProps) => {
   const { locale: requested } = await params;
   if (!hasLocale(routing.locales, requested)) {
     notFound();
@@ -91,13 +101,29 @@ export default async function RootLayout({ children, params }: LayoutProps) {
     <html
       lang={locale}
       dir={localeDirection[locale]}
+      // Which kinds of motion are switched off, as words the stylesheet and
+      // the client components both read. Absent when none is.
+      data-motion-off={motionOffAttribute()}
       className={`${alexandria.variable} ${ibmPlexSans.variable} ${ibmPlexMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
+        {/* A plain inline script, and deliberately not `next/script`. Its
+            `beforeInteractive` inline form is delivered through Next's
+            `__next_s` queue and runs after the runtime has loaded, not while
+            the parser reaches it: measured 2026-09-20, the theme was still
+            unstamped at DOMContentLoaded in 2 to 4 of every 12 loads of the
+            static pages, which for a reader with dark stored is a flash of the
+            light theme, and is what failed the theme checks in
+            `page-rules.spec.ts` and `color-scheme.spec.ts`. React 19 logs a
+            warning in development for a script it renders on the client; it is
+            about the client render only, and the server's HTML carries the real
+            script. */}
         <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
       </head>
-      <body className={`min-h-full flex flex-col ${bodyFontClass[locale]} text-body`}>
+      <body
+        className={`min-h-full flex flex-col ${bodyFontClass[locale]} text-body`}
+      >
         <NextIntlClientProvider>
           <MotionProvider>
             <SiteHeader />
@@ -112,4 +138,6 @@ export default async function RootLayout({ children, params }: LayoutProps) {
       </body>
     </html>
   );
-}
+};
+
+export default RootLayout;

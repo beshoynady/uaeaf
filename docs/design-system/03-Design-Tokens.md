@@ -295,7 +295,7 @@ Any Commit that violates §3.10 (Hardcoded value) **MUST** be automatically reje
 | Spacing Scale                  | Values defined within the 8pt scale only — no arbitrary value such as `13px` |
 | Radius Scale                   | 6 values only (`none/xs/sm/md/lg/xl/full`)                                   |
 | Color Shades per Primary Color | Maximum 10 shades (`50→900`)                                                 |
-| Motion Durations               | 6 values only (`instant/fast/base/slow/slower/ambient`)                      |
+| Motion Durations               | 7 values only (`instant/fast/base/slow/slower/entrance/ambient`) — ADR-0087 D1 |
 
 **Documented Exception (ADR-0069 D9) — the sixth duration.** `ambient` (1200ms) was added for a single, narrowly bounded purpose and is the only duration on the scale that is restricted by rule rather than by convention:
 

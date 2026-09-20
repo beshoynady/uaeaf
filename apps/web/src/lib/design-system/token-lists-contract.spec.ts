@@ -221,51 +221,57 @@ describe("the application uses roles, not ramp steps (Chapter 7 §7.7)", () => {
  * Simulation: Viénot, Brettel and Mollon (1999) as one linear-RGB matrix per
  * deficiency; ΔE is CIE76 on CIELAB (D65), compared unrounded.
  */
+/**
+ * How far apart two colours are for the reader who tells them apart worst:
+ * CIE76 on CIELAB (D65) under normal vision, deuteranopia and protanopia
+ * (Viénot, Brettel and Mollon 1999), the smallest of the three. ADR-0072 D1
+ * set the method for the item colours; ADR-0088 holds the two accents to it.
+ */
+const channels = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+const linear = (c: number) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+const multiply = (a: number[][], b: number[][]) =>
+  a.map((row) => b[0].map((_, j) => row.reduce((sum, value, k) => sum + value * b[k][j], 0)));
+const apply = (m: number[][], v: number[]) => m.map((row) => row.reduce((sum, value, k) => sum + value * v[k], 0));
+
+const RGB_TO_LMS = [
+  [17.8824, 43.5161, 4.11935],
+  [3.45565, 27.1554, 3.86714],
+  [0.0299566, 0.184309, 1.46709],
+];
+const LMS_TO_RGB = [
+  [0.0809444479, -0.130504409, 0.116721066],
+  [-0.0102485335, 0.0540193266, -0.113614708],
+  [-0.000365296938, -0.00412161469, 0.693511405],
+];
+const SIMULATION = {
+  protan: multiply(LMS_TO_RGB, multiply([[0, 2.02344, -2.52581], [0, 1, 0], [0, 0, 1]], RGB_TO_LMS)),
+  deutan: multiply(LMS_TO_RGB, multiply([[1, 0, 0], [0.494207, 0, 1.24827], [0, 0, 1]], RGB_TO_LMS)),
+};
+const VISIONS = ["normal", "deutan", "protan"] as const;
+
+const lab = (hex: string, vision: (typeof VISIONS)[number]) => {
+  const rgb = channels(hex).map(linear);
+  const [r, g, b] = (vision === "normal" ? rgb : apply(SIMULATION[vision], rgb)).map((c) => Math.min(1, Math.max(0, c)));
+  const f = (t: number) => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
+  const fx = f((0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.95047);
+  const fy = f(0.2126 * r + 0.7152 * g + 0.0722 * b);
+  const fz = f((0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.08883);
+  return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
+};
+const worst = (a: string, b: string) =>
+  Math.min(
+    ...VISIONS.map((vision) => {
+      const [p, q] = [lab(a, vision), lab(b, vision)];
+      return Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]);
+    }),
+  );
+
 describe("the four item colours stay apart (ADR-0072 D1)", () => {
   const ITEMS = [1, 2, 3, 4] as const;
   const ROLES = ["surface", "ink", "edge"] as const;
   const AMONG = 10;
   const FROM_STATES = 15;
   const HUED = ["light", "dark"] as const;
-
-  const channels = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
-  const linear = (c: number) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
-  const multiply = (a: number[][], b: number[][]) =>
-    a.map((row) => b[0].map((_, j) => row.reduce((sum, value, k) => sum + value * b[k][j], 0)));
-  const apply = (m: number[][], v: number[]) => m.map((row) => row.reduce((sum, value, k) => sum + value * v[k], 0));
-
-  const RGB_TO_LMS = [
-    [17.8824, 43.5161, 4.11935],
-    [3.45565, 27.1554, 3.86714],
-    [0.0299566, 0.184309, 1.46709],
-  ];
-  const LMS_TO_RGB = [
-    [0.0809444479, -0.130504409, 0.116721066],
-    [-0.0102485335, 0.0540193266, -0.113614708],
-    [-0.000365296938, -0.00412161469, 0.693511405],
-  ];
-  const SIMULATION = {
-    protan: multiply(LMS_TO_RGB, multiply([[0, 2.02344, -2.52581], [0, 1, 0], [0, 0, 1]], RGB_TO_LMS)),
-    deutan: multiply(LMS_TO_RGB, multiply([[1, 0, 0], [0.494207, 0, 1.24827], [0, 0, 1]], RGB_TO_LMS)),
-  };
-  const VISIONS = ["normal", "deutan", "protan"] as const;
-
-  const lab = (hex: string, vision: (typeof VISIONS)[number]) => {
-    const rgb = channels(hex).map(linear);
-    const [r, g, b] = (vision === "normal" ? rgb : apply(SIMULATION[vision], rgb)).map((c) => Math.min(1, Math.max(0, c)));
-    const f = (t: number) => (t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116);
-    const fx = f((0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.95047);
-    const fy = f(0.2126 * r + 0.7152 * g + 0.0722 * b);
-    const fz = f((0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.08883);
-    return [116 * fy - 16, 500 * (fx - fy), 200 * (fy - fz)];
-  };
-  const worst = (a: string, b: string) =>
-    Math.min(
-      ...VISIONS.map((vision) => {
-        const [p, q] = [lab(a, vision), lab(b, vision)];
-        return Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]);
-      }),
-    );
 
   it.each(THEMES)("declares a surface, an ink and an edge for every item in the %s list", (theme) => {
     const values = resolved(theme);
@@ -425,5 +431,67 @@ describe("the logo plate is a bounded object on every register (ADR-0085 D8 #3)"
     expect(record.partners).toContain("--color-section-green-surface");
     expect(record.partners).toContain("--color-section-black-surface");
     expect(record.exempt ?? "").toContain("D8 #3");
+  });
+});
+
+describe("the two accents mean one thing each, and nothing that is already meant (ADR-0088)", () => {
+  const ACCENTS = ["--color-accent-live", "--color-accent-track"] as const;
+  const FROM_MEANING = 15;
+  const FROM_ROLES = 10;
+  const HUED = ["light", "dark"] as const;
+
+  /** What a colour already says on this site. A new one that could be taken
+   *  for any of these says it too, whatever its token is called. */
+  const MEANING = /^--color-semantic-(success|error|warning|info)(-text)?$|^--color-semantic-medal-(gold|silver|bronze)$|^--color-logo-pinned-edge$/;
+  const ROLES = /^--color-item-[1-4]-ink$|^--color-category-[1-5]$|^--color-accent-(information|classification|featured)$|^--color-border-accent$|^--color-text-link$|^--color-brand-(primary|secondary)$/;
+
+  it.each(THEMES)("declares both in the %s list", (theme) => {
+    const values = resolved(theme);
+    expect(ACCENTS.filter((name) => !HEX.test(values[name] ?? ""))).toEqual([]);
+  });
+
+  it.each(HUED)("keeps both at least 15 from every state, every medal and the held sponsor's edge in %s", (theme) => {
+    const values = resolved(theme);
+    const taken = Object.entries(values).filter(([name, value]) => MEANING.test(name) && HEX.test(value));
+    expect(taken.length, "colours with a meaning, found").toBeGreaterThanOrEqual(12);
+    const failures = ACCENTS.flatMap((accent) =>
+      taken
+        .map(([name, value]) => ({ name, value, d: worst(values[accent], value) }))
+        .filter(({ d }) => d < FROM_MEANING)
+        .map(({ name, value, d }) => `${accent} ${values[accent]} ↔ ${name} ${value}: ${d.toFixed(2)} < ${FROM_MEANING}`),
+    );
+    expect(failures).toEqual([]);
+  });
+
+  it.each(HUED)("keeps both at least 10 from every role colour, and from each other, in %s", (theme) => {
+    const values = resolved(theme);
+    const roles = Object.entries(values).filter(([name, value]) => ROLES.test(name) && HEX.test(value));
+    expect(roles.length, "role colours found").toBeGreaterThanOrEqual(14);
+    const failures = ACCENTS.flatMap((accent) =>
+      roles
+        .map(([name, value]) => ({ name, value, d: worst(values[accent], value) }))
+        .filter(({ d }) => d < FROM_ROLES)
+        .map(({ name, value, d }) => `${accent} ${values[accent]} ↔ ${name} ${value}: ${d.toFixed(2)} < ${FROM_ROLES}`),
+    );
+    expect(failures).toEqual([]);
+    expect(worst(values[ACCENTS[0]], values[ACCENTS[1]])).toBeGreaterThanOrEqual(FROM_ROLES);
+  });
+
+  it("keeps the live accent's hue in high contrast, where it clears the states of that list too", () => {
+    const values = resolved("high-contrast");
+    const states = Object.entries(values).filter(([name, value]) => /^--color-semantic-(success|error|warning|info)(-text)?$/.test(name) && HEX.test(value));
+    expect(states.length).toBeGreaterThanOrEqual(8);
+    expect(states.filter(([, value]) => worst(values["--color-accent-live"], value) < FROM_MEANING)).toEqual([]);
+  });
+
+  it("draws the track mark without hue in high contrast: no step of it clears both bars there", () => {
+    expect(resolved("high-contrast")["--color-accent-track"].toUpperCase()).toBe("#FFFFFF");
+  });
+
+  it("uses the live accent nowhere yet: it waits for the results pages (owner decision 2026-09-18)", () => {
+    const users = [...sources(SRC), ...sources(join(ROOT, "apps", "dashboard", "src"))]
+      .filter((file) => readFileSync(file, "utf-8").includes("--color-accent-live"))
+      .map(relative);
+    expect(users).toEqual([]);
   });
 });
