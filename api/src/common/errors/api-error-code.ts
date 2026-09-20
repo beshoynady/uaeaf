@@ -99,6 +99,22 @@ export const API_ERROR_CODES = [
   'sponsorshipEndRequired',
   'invalidSponsorshipTarget',
   'organizationNameTooLong',
+  // Publishing an approved revision, now that approving no longer publishes
+  // by itself (owner decision 2026-09-20). `notApproved` is not
+  // `activeWorkflowExists` and not `workflowRequired`: nothing is running and
+  // nothing is wrong with the policy — the record simply has no standing
+  // approval, and the fix is to send it for review.
+  'notApproved',
+  // Two articles cannot share an address. Its own code because the fix is a
+  // single field the editor is looking at, and as a bare `conflict` it reads
+  // as "something changed underneath you", which is a different instruction.
+  'slugTaken',
+  // Approval-policy configuration (audit findings H5/H6). A step that needs
+  // more approvals than it names approvers can never be satisfied, and a
+  // second step at one position is silently skipped by `findNext` — two
+  // different corrections, neither of which is "try again".
+  'unsatisfiableStep',
+  'duplicateStepOrder',
 ] as const;
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

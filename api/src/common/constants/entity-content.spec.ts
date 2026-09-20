@@ -92,6 +92,24 @@ describe('projectRevisionContent', () => {
   });
 
   it('returns nothing for a type with no module yet', () => {
-    expect(projectRevisionContent('articles', { body: 'secret draft' })).toEqual({});
+    // `articles` stood here until its module was built on 2026-09-20. Three
+    // types still have no allowlist, and the point of the case is unchanged:
+    // an empty row returns no content rather than all of it, so a type whose
+    // module has not been written is a visible gap and not a silent leak.
+    expect(projectRevisionContent('staticPages', { body: 'secret draft' })).toEqual({});
+  });
+
+  it('gives an article only what a reader may see of a past version', () => {
+    const projected = projectRevisionContent('articles', {
+      title: { ar: 'عنوان', en: 'Headline' },
+      body: { ar: {}, en: {} },
+      // Where the article stands now, not what a past version said. Restoring
+      // a version must not move the record's state by reading its history.
+      publicationState: 'Live',
+      archived: true,
+      publishDate: new Date(),
+    });
+
+    expect(Object.keys(projected).sort()).toEqual(['body', 'title']);
   });
 });

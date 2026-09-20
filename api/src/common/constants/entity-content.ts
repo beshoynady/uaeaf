@@ -32,6 +32,9 @@ import type { PublicationEntityType } from './workflow-entity-types.js';
  * are meaningful; `entity-content.spec.ts` enforces that.
  */
 export const PUBLISH_REQUIREMENTS: Record<PublicationEntityType, readonly string[]> = {
+  // Nothing beyond what the schema already requires. A headline, a body and a
+  // byline cannot be absent, and an article with no cover picture is an
+  // ordinary article rather than an incomplete one.
   articles: [],
   staticPages: [],
   externalMediaCoverage: [],
@@ -65,7 +68,11 @@ export const PUBLISH_REQUIREMENTS: Record<PublicationEntityType, readonly string
  * gap rather than a silent leak.
  */
 export const REVISION_READ_FIELDS: Record<PublicationEntityType, readonly string[]> = {
-  articles: [],
+  // `publicationState`, `archived` and `publishDate` are deliberately absent:
+  // they describe where the article stands now, not what a past version said,
+  // and a restore that wrote them back would move the record's state by
+  // reading its history.
+  articles: ['title', 'slug', 'coverMediaId', 'body', 'authorDisplayName', 'seo'],
   staticPages: [],
   externalMediaCoverage: [],
   governanceDocuments: ['title', 'description', 'type', 'fileId', 'documentVersion'],

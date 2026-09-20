@@ -19,6 +19,7 @@ export const PERMISSION_RESOURCES = [
   'ageCategories',
   'albums',
   'albumsPage',
+  'articles',
   'auditLogs',
   'athleteClubHistory',
   'athleteCoachHistory',

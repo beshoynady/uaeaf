@@ -4618,6 +4618,29 @@
         ]
       }
     },
+    "/api/v1/vision-mission-page/{id}/publish-approved": {
+      "post": {
+        "operationId": "VisionMissionPagesController_publishApproved_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "vision-mission-page"
+        ]
+      }
+    },
     "/api/v1/vision-mission-page/{id}/restore": {
       "post": {
         "operationId": "VisionMissionPagesController_restore_v1",
@@ -4920,6 +4943,29 @@
     "/api/v1/strategic-plans-page/{id}/submit": {
       "post": {
         "operationId": "StrategicPlansPagesController_submit_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "strategic-plans-page"
+        ]
+      }
+    },
+    "/api/v1/strategic-plans-page/{id}/publish-approved": {
+      "post": {
+        "operationId": "StrategicPlansPagesController_publishApproved_v1",
         "parameters": [
           {
             "name": "id",
@@ -5297,6 +5343,29 @@
     "/api/v1/president-message-page/{id}/submit": {
       "post": {
         "operationId": "PresidentMessagePagesController_submit_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "president-message-page"
+        ]
+      }
+    },
+    "/api/v1/president-message-page/{id}/publish-approved": {
+      "post": {
+        "operationId": "PresidentMessagePagesController_publishApproved_v1",
         "parameters": [
           {
             "name": "id",
@@ -7195,6 +7264,413 @@
           "contact-messages"
         ]
       }
+    },
+    "/api/v1/articles/public": {
+      "get": {
+        "operationId": "ArticlesController_findPublic_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "1-indexed page number.",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Items per page (max 200).",
+            "schema": {
+              "default": 50,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "articles"
+        ]
+      }
+    },
+    "/api/v1/articles/public/{slug}": {
+      "get": {
+        "operationId": "ArticlesController_findPublicBySlug_v1",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArticlePublicDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "articles"
+        ]
+      }
+    },
+    "/api/v1/articles/public-sitemap": {
+      "get": {
+        "operationId": "ArticlesController_sitemap_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "articles"
+        ]
+      }
+    },
+    "/api/v1/articles": {
+      "post": {
+        "operationId": "ArticlesController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateArticleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "articles"
+        ]
+      },
+      "get": {
+        "operationId": "ArticlesController_findAll_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "1-indexed page number.",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Items per page (max 200).",
+            "schema": {
+              "default": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "publicationState",
+            "required": false,
+            "in": "query",
+            "description": "Narrow to drafts or to published items.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Draft",
+                "Live"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Matches either language of the headline.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "includeArchived",
+            "required": false,
+            "in": "query",
+            "description": "Include articles hidden from the public feed. Defaults to false.",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "articles"
+        ]
+      }
+    },
+    "/api/v1/articles/{id}": {
+      "get": {
+        "operationId": "ArticlesController_findOne_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "articles"
+        ]
+      },
+      "patch": {
+        "operationId": "ArticlesController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateArticleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "articles"
+        ]
+      },
+      "delete": {
+        "operationId": "ArticlesController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "articles"
+        ]
+      }
+    },
+    "/api/v1/articles/{id}/editorial-state": {
+      "get": {
+        "operationId": "ArticlesController_editorialState_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditorialStateDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "articles"
+        ]
+      }
+    },
+    "/api/v1/articles/{id}/submit": {
+      "post": {
+        "operationId": "ArticlesController_submit_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "articles"
+        ]
+      }
+    },
+    "/api/v1/articles/{id}/publish": {
+      "post": {
+        "operationId": "ArticlesController_publish_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishArticleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "articles"
+        ]
+      }
+    },
+    "/api/v1/articles/{id}/publish-approved": {
+      "post": {
+        "operationId": "ArticlesController_publishApproved_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "articles"
+        ]
+      }
+    },
+    "/api/v1/articles/{id}/restore": {
+      "post": {
+        "operationId": "ArticlesController_restore_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "articles"
+        ]
+      }
+    },
+    "/api/v1/articles/{id}/archived": {
+      "patch": {
+        "operationId": "ArticlesController_setArchived_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetArchivedDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "articles"
+        ]
+      }
     }
   },
   "info": {
@@ -7338,6 +7814,7 @@
               "ageCategories",
               "albums",
               "albumsPage",
+              "articles",
               "auditLogs",
               "athleteClubHistory",
               "athleteCoachHistory",
@@ -7547,6 +8024,7 @@
               "ageCategories",
               "albums",
               "albumsPage",
+              "articles",
               "auditLogs",
               "athleteClubHistory",
               "athleteCoachHistory",
@@ -8477,6 +8955,11 @@
           "reason": {
             "type": "string",
             "description": "Why this submission was rejected."
+          },
+          "revisionRequested": {
+            "type": "boolean",
+            "default": false,
+            "description": "True when the reviewer is asking for changes rather than refusing the item outright. The engine treats the two identically — the record returns to draft, and resubmitting restarts the review from its first step — so this records which of them the reviewer meant."
           }
         },
         "required": [
@@ -10545,6 +11028,10 @@
             "type": "object",
             "nullable": true,
             "description": "Populated only when the action is `Returned`."
+          },
+          "revisionRequested": {
+            "type": "boolean",
+            "description": "Meaningful only when the action is `Rejected`: true where the reviewer asked for changes, false where they refused the item. The engine behaves identically either way."
           }
         },
         "required": [
@@ -10554,7 +11041,8 @@
           "reason",
           "actionDate",
           "workflowStepId",
-          "returnedToStepId"
+          "returnedToStepId",
+          "revisionRequested"
         ]
       },
       "EditorialStateDto": {
@@ -12131,9 +12619,10 @@
               "manual"
             ]
           },
-          "pinTopTier": {
-            "type": "boolean",
-            "description": "Pin the highest tier present to the centre."
+          "pinnedSponsorshipId": {
+            "type": "string",
+            "nullable": true,
+            "description": "The one sponsorship held still at the head of the strip; null when none is (ADR-0086 D2)."
           },
           "speed": {
             "type": "string",
@@ -12150,7 +12639,7 @@
           "selection",
           "sponsorshipIds",
           "order",
-          "pinTopTier",
+          "pinnedSponsorshipId",
           "speed"
         ]
       },
@@ -13527,6 +14016,177 @@
         "required": [
           "replyBody",
           "replyChannel"
+        ]
+      },
+      "ArticlePublicDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "authorDisplayName": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "publishDate": {
+            "type": "object",
+            "nullable": true,
+            "description": "ISO date this article went live; null while it never has."
+          },
+          "coverMediaId": {
+            "type": "object",
+            "nullable": true,
+            "description": "ref → mediaAssets; the reader resolves it through the media route."
+          },
+          "body": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "One ProseMirror document per language."
+          },
+          "excerpt": {
+            "description": "The opening of each language, plain. Derived rather than stored: a second field for the summary is a second thing to keep true, and the card and the meta description both want this.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "seo": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PageSeoDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "title",
+          "authorDisplayName",
+          "publishDate",
+          "coverMediaId",
+          "body",
+          "excerpt",
+          "seo"
+        ]
+      },
+      "CreateArticleDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "description": "The headline, in both languages.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "slug": {
+            "type": "string",
+            "description": "URL segment, shared by both language editions of the story.",
+            "example": "national-championship-results-2026"
+          },
+          "coverMediaId": {
+            "type": "object",
+            "nullable": true,
+            "description": "ref → mediaAssets, must be an image."
+          },
+          "body": {
+            "description": "The article body, one document per language.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedRichTextDto"
+              }
+            ]
+          },
+          "authorDisplayName": {
+            "description": "The byline readers see. May differ from the account that wrote the article.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "seo": {
+            "nullable": true,
+            "description": "Overrides for the page title, description and share image. Absent means fall back to the headline.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PageSeoDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "title",
+          "slug",
+          "body",
+          "authorDisplayName"
+        ]
+      },
+      "UpdateArticleDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "slug": {
+            "type": "string",
+            "example": "national-championship-results-2026"
+          },
+          "coverMediaId": {
+            "type": "object",
+            "nullable": true,
+            "description": "Null clears the cover image."
+          },
+          "body": {
+            "$ref": "#/components/schemas/LocalizedRichTextDto"
+          },
+          "authorDisplayName": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "seo": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PageSeoDto"
+              }
+            ]
+          }
+        }
+      },
+      "PublishArticleDto": {
+        "type": "object",
+        "properties": {
+          "expectedUpdatedAt": {
+            "type": "string",
+            "description": "The `updatedAt` the editor was looking at. Publishing a record someone else edited in the meantime publishes an edit nobody chose to publish, so the server compares before freezing."
+          }
+        },
+        "required": [
+          "expectedUpdatedAt"
+        ]
+      },
+      "SetArchivedDto": {
+        "type": "object",
+        "properties": {
+          "archived": {
+            "type": "boolean",
+            "description": "True hides a published article from the feed; false returns it. The article stays published either way and keeps its URL — this is visibility, not retraction."
+          }
+        },
+        "required": [
+          "archived"
         ]
       }
     }

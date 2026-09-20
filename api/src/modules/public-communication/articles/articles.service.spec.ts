@@ -1,0 +1,268 @@
+import { jest } from '@jest/globals';
+import { ConflictException, NotFoundException } from '@nestjs/common';
+import { Types } from 'mongoose';
+import { ArticlesService } from './articles.service.js';
+import { ArticlesRepository } from './articles.repository.js';
+import { MediaAssetsService } from '../../media-center/media-assets/media-assets.service.js';
+import { PublicationsService } from '../../workflow/publications/publications.service.js';
+import { AuditLogsService } from '../../workflow/audit-logs/audit-logs.service.js';
+import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
+
+/**
+ * The rules that belong to a news item rather than to the workflow engine.
+ *
+ * Two of them are the batch's hard constraints and are asserted here rather
+ * than anywhere else: the audit trail records the decision and never a word of
+ * the article, and archiving hides a published item without retracting it.
+ */
+describe('ArticlesService', () => {
+  const articleId = new Types.ObjectId();
+  const actor = { userId: new Types.ObjectId().toString(), permissions: [] } as unknown as AuthenticatedUser;
+  const context = { ipAddress: '10.0.0.1', userAgent: 'jest' };
+
+  const paragraph = (text: string) => ({
+    type: 'doc',
+    content: [{ type: 'paragraph', content: [{ type: 'text', text }] }],
+  });
+
+  const stored = (overrides: Record<string, unknown> = {}) =>
+    ({
+      _id: articleId,
+      title: { ar: 'عنوان', en: 'Headline' },
+      slug: 'headline',
+      body: { ar: paragraph('نص'), en: paragraph('body') },
+      authorDisplayName: { ar: 'الإعلام', en: 'Media' },
+      publicationState: 'Draft',
+      archived: false,
+      publishDate: null,
+      coverMediaId: null,
+      seo: null,
+      ...overrides,
+    }) as never;
+
+  const makeDeps = () => {
+    const repository = {
+      create: jest.fn(async (data: unknown) => ({ ...(data as object), _id: articleId })),
+      findById: jest.fn(async () => stored()),
+      findBySlug: jest.fn(async () => null),
+      findPage: jest.fn(async () => ({ items: [], total: 0 })),
+      updateById: jest.fn(async () => stored()),
+      softDelete: jest.fn(async () => stored()),
+    } as unknown as jest.Mocked<ArticlesRepository>;
+    const mediaAssetsService = { assertUsableImage: jest.fn() } as unknown as jest.Mocked<MediaAssetsService>;
+    const publicationsService = {
+      getPublicSnapshot: jest.fn(async () => null),
+    } as unknown as jest.Mocked<PublicationsService>;
+    const auditLogsService = { write: jest.fn() } as unknown as jest.Mocked<AuditLogsService>;
+
+    return { repository, mediaAssetsService, publicationsService, auditLogsService };
+  };
+
+  const makeService = (deps: ReturnType<typeof makeDeps>) =>
+    new ArticlesService(deps.repository, deps.mediaAssetsService, deps.publicationsService, deps.auditLogsService);
+
+  describe('the audit trail', () => {
+    it('records who changed an article and to what state, and never the text', async () => {
+      const deps = makeDeps();
+      const service = makeService(deps);
+
+      await service.update(
+        articleId.toString(),
+        { title: { ar: 'عنوان جديد', en: 'New headline' }, body: { ar: paragraph('نص جديد'), en: paragraph('new') } },
+        actor,
+        context,
+      );
+
+      const [entry] = deps.auditLogsService.write.mock.calls[0];
+      // The batch's hard rule: `auditLogs` is consumed, never a second copy of
+      // the newsroom. A snapshot here would put every draft of every article
+      // into the one collection administrators can read over HTTP.
+      expect(entry).toMatchObject({
+        action: 'Update',
+        entityType: 'articles',
+        entityId: articleId,
+        previousValue: { publicationState: 'Draft', archived: false },
+        newValue: { publicationState: 'Draft', archived: false },
+      });
+      const serialised = JSON.stringify(entry);
+      expect(serialised).not.toContain('paragraph');
+      expect(serialised).not.toContain('New headline');
+      expect(serialised).not.toContain('عنوان جديد');
+    });
+
+    it('carries the request context so the trail says where the change came from', async () => {
+      const deps = makeDeps();
+      const service = makeService(deps);
+
+      await service.update(articleId.toString(), { slug: 'renamed' }, actor, context);
+
+      expect(deps.auditLogsService.write).toHaveBeenCalledWith(
+        expect.objectContaining({ ipAddress: '10.0.0.1', userAgent: 'jest' }),
+      );
+    });
+
+    it('writes one row per creation, naming the article that was created', async () => {
+      const deps = makeDeps();
+      const service = makeService(deps);
+
+      await service.create(
+        {
+          title: { ar: 'عنوان', en: 'Headline' },
+          slug: 'headline',
+          body: { ar: paragraph('نص'), en: paragraph('body') },
+          authorDisplayName: { ar: 'الإعلام', en: 'Media' },
+        },
+        actor,
+        context,
+      );
+
+      expect(deps.auditLogsService.write).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: 'Create',
+          entityType: 'articles',
+          entityId: articleId,
+          previousValue: null,
+          newValue: { publicationState: 'Draft', archived: false },
+        }),
+      );
+    });
+  });
+
+  describe('archiving', () => {
+    it('hides a published article from the feed without retracting it', async () => {
+      const deps = makeDeps();
+      deps.repository.findById.mockResolvedValue(stored({ publicationState: 'Live', publishDate: new Date() }));
+      const service = makeService(deps);
+
+      await service.setArchived(articleId.toString(), true, actor, context);
+
+      const [, update] = deps.repository.updateById.mock.calls[0] as [string, { $set: Record<string, unknown> }];
+      expect(update.$set.archived).toBe(true);
+      // Still Live. Archiving is a visibility flag over a published item, not
+      // a fifth state and not an unpublish.
+      expect(update.$set).not.toHaveProperty('publicationState');
+      expect(update.$set).not.toHaveProperty('publishDate');
+    });
+
+    it('records the change of visibility in the trail', async () => {
+      const deps = makeDeps();
+      deps.repository.findById.mockResolvedValue(stored({ publicationState: 'Live' }));
+      const service = makeService(deps);
+
+      await service.setArchived(articleId.toString(), true, actor, context);
+
+      expect(deps.auditLogsService.write).toHaveBeenCalledWith(
+        expect.objectContaining({
+          previousValue: { publicationState: 'Live', archived: false },
+          newValue: { publicationState: 'Live', archived: true },
+        }),
+      );
+    });
+  });
+
+  describe('the slug', () => {
+    it('refuses a slug another live article already holds', async () => {
+      const deps = makeDeps();
+      deps.repository.findBySlug.mockResolvedValue(stored({ _id: new Types.ObjectId() }));
+      const service = makeService(deps);
+
+      await expect(
+        service.create(
+          {
+            title: { ar: 'عنوان', en: 'Headline' },
+            slug: 'headline',
+            body: { ar: paragraph('نص'), en: paragraph('body') },
+            authorDisplayName: { ar: 'الإعلام', en: 'Media' },
+          },
+          actor,
+          context,
+        ),
+      ).rejects.toThrow(ConflictException);
+      expect(deps.repository.create).not.toHaveBeenCalled();
+    });
+
+    it('lets an article keep its own slug while being edited', async () => {
+      const deps = makeDeps();
+      // The slug is taken — by this very article. Refusing here would make a
+      // headline unable to be edited without also renaming its URL.
+      deps.repository.findBySlug.mockResolvedValue(stored());
+      const service = makeService(deps);
+
+      await expect(service.update(articleId.toString(), { slug: 'headline' }, actor, context)).resolves.toBeDefined();
+    });
+  });
+
+  it('refuses a cover image that is not a usable image', async () => {
+    const deps = makeDeps();
+    deps.mediaAssetsService.assertUsableImage.mockRejectedValue(new NotFoundException('gone'));
+    const service = makeService(deps);
+
+    await expect(
+      service.update(articleId.toString(), { coverMediaId: new Types.ObjectId().toString() }, actor, context),
+    ).rejects.toThrow(NotFoundException);
+    expect(deps.repository.updateById).not.toHaveBeenCalled();
+  });
+
+  describe('the public feed', () => {
+    it('shows each live article through its published revision, not its draft row', async () => {
+      const deps = makeDeps();
+      deps.repository.findPage.mockResolvedValue({ items: [stored()], total: 1 });
+      deps.publicationsService.getPublicSnapshot.mockResolvedValue({
+        slug: 'headline',
+        title: { ar: 'العنوان المنشور', en: 'Published headline' },
+        authorDisplayName: { ar: 'الإعلام', en: 'Media' },
+        body: { ar: paragraph('النص المنشور'), en: paragraph('Published body') },
+        coverMediaId: null,
+        seo: null,
+      });
+      const service = makeService(deps);
+
+      const page = await service.findPublicPage(1, 12);
+
+      expect(page.items).toHaveLength(1);
+      expect(page.items[0].title.en).toBe('Published headline');
+      expect(deps.repository.findPage).toHaveBeenCalledWith(
+        { publicationState: 'Live', archived: false },
+        0,
+        12,
+      );
+    });
+
+    it('drops a live row whose publication cannot be read rather than half-drawing it', async () => {
+      const deps = makeDeps();
+      deps.repository.findPage.mockResolvedValue({ items: [stored()], total: 1 });
+      deps.publicationsService.getPublicSnapshot.mockResolvedValue(null);
+      const service = makeService(deps);
+
+      const page = await service.findPublicPage(1, 12);
+
+      expect(page.items).toHaveLength(0);
+    });
+
+    it('answers nothing for a slug that is not live', async () => {
+      const deps = makeDeps();
+      deps.repository.findBySlug.mockResolvedValue(stored({ publicationState: 'Draft' }));
+      const service = makeService(deps);
+
+      // A draft has a slug from the moment it is written. Serving it would put
+      // unapproved text on a public URL.
+      expect(await service.findPublicBySlug('headline')).toBeNull();
+    });
+
+    it('still answers for an archived article, because its URL keeps working', async () => {
+      const deps = makeDeps();
+      deps.repository.findBySlug.mockResolvedValue(stored({ publicationState: 'Live', archived: true }));
+      deps.publicationsService.getPublicSnapshot.mockResolvedValue({
+        slug: 'headline',
+        title: { ar: 'عنوان', en: 'Headline' },
+        authorDisplayName: { ar: 'الإعلام', en: 'Media' },
+        body: { ar: paragraph('نص'), en: paragraph('body') },
+      });
+      const service = makeService(deps);
+
+      // Hidden from the feed, not withdrawn: a link already shared, printed or
+      // indexed must not start answering 404.
+      expect(await service.findPublicBySlug('headline')).not.toBeNull();
+    });
+  });
+});

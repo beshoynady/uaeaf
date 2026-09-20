@@ -191,11 +191,13 @@ describe('Workflow engine (e2e)', () => {
       .send({ entityType: 'visionMissionPage', entityId: archivedEntityId })
       .expect(404);
 
-    // A type with no collection yet has nothing to freeze.
+    // A type with no collection yet has nothing to freeze. `articles` stood
+    // here until its module was built on 2026-09-20; three types still have
+    // no collection, and the rule being checked is unchanged.
     await request(app.getHttpServer())
       .post(apiPath('/revisions'))
       .set(auth())
-      .send({ entityType: 'articles', entityId: new Types.ObjectId().toString() })
+      .send({ entityType: 'staticPages', entityId: new Types.ObjectId().toString() })
       .expect(400);
 
     // ============================================================

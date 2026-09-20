@@ -76,6 +76,7 @@ import { DisciplinesPageModule } from './modules/cms-page-composition/discipline
 import { AlbumsPageModule } from './modules/media-center/albums-page/albums-page.module.js';
 import { VideosPageModule } from './modules/media-center/videos-page/videos-page.module.js';
 import { ContactMessagesModule } from './modules/public-communication/contact-messages/contact-messages.module.js';
+import { ArticlesModule } from './modules/public-communication/articles/articles.module.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from './common/guards/permissions.guard.js';
 import { RateLimitGuard } from './common/guards/rate-limit.guard.js';
@@ -166,6 +167,7 @@ import { AppController } from './app.controller.js';
     VideosPageModule,
     // Week 4 — Domain 10 Public Communication
     ContactMessagesModule,
+    ArticlesModule,
   ],
   controllers: [AppController],
   providers: [
