@@ -75,7 +75,7 @@ export class WorkflowInstancesController {
     @CurrentUser() user: AuthenticatedUser,
     @Req() req: Request,
   ) {
-    return this.service.reject(id, user.userId, dto.reason, extractRequestContext(req));
+    return this.service.reject(id, user.userId, dto.reason, extractRequestContext(req), dto.revisionRequested ?? false);
   }
 
   @Post(':id/return')

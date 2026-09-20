@@ -156,6 +156,8 @@ export class PublishingService {
       publishedBy: actorId,
     });
 
+    await this.markLive(entityType, entityId, actorId, publication.publishedAt);
+
     await this.auditLogsService.write({
       actorId,
       action: 'StatusChange',
@@ -173,6 +175,126 @@ export class PublishingService {
       publicationId: (publication._id as Types.ObjectId).toString(),
       publishedAt: publication.publishedAt.toISOString(),
     };
+  }
+
+  /**
+   * Publishes what a completed review approved.
+   *
+   * The counterpart to `publishDirect`, and a separate method rather than a
+   * branch inside it because the two take their content from different places:
+   * a direct publish freezes the draft as it stands now, an approved publish
+   * republishes the revision the approvers read. One `if` between "the text
+   * three people signed off" and "the text currently in the box" is one `if`
+   * too few.
+   *
+   * It exists at all because approving used to publish by itself (owner
+   * decision 2026-09-20). Separating them means a federation can require a
+   * review without also surrendering the moment of publication to whoever
+   * happens to approve last.
+   *
+   * @throws ForbiddenException without `<entityType>:Publish`.
+   * @throws ConflictException when the policy requires no approvals (that is
+   *   `publishDirect`'s case), when nothing has been approved, or when
+   *   publishing is not configured for this type at all.
+   */
+  async publishApproved(input: {
+    entityType: PublicationEntityType;
+    entityId: Types.ObjectId;
+    actor: AuthenticatedUser;
+    context?: RequestContext;
+  }): Promise<{ revisionId: string; publicationId: string; publishedAt: string }> {
+    const { entityType, entityId, actor } = input;
+
+    // Before the policy is read: whether this person may publish does not
+    // depend on how the federation configured its reviews.
+    this.assertPermission(actor, entityType, 'Publish');
+
+    const resolved = await this.policiesService.resolve(entityType, 'Edit');
+
+    if (resolved.mode === 'blocked') {
+      throw new ConflictException({
+        code: 'publishingPolicyMissing',
+        message: this.blockedMessage(entityType, resolved.reason),
+      });
+    }
+
+    if (resolved.mode === 'direct') {
+      throw new ConflictException({
+        code: 'conflict',
+        message: `${entityType} needs no approval. Publish it directly instead.`,
+      });
+    }
+
+    const approved = await this.instancesService.findLatestApproved(entityType, entityId);
+    if (!approved) {
+      throw new ConflictException({
+        code: 'notApproved',
+        message: 'Nothing has been approved for this record yet. Submit it for review first.',
+      });
+    }
+
+    const actorId = new Types.ObjectId(actor.userId);
+    const revisionId = approved.revisionId as Types.ObjectId;
+
+    const publication = await this.publicationsService.publish({
+      entityType,
+      entityId,
+      revisionId,
+      workflowInstanceId: approved._id as Types.ObjectId,
+      publishedBy: actorId,
+    });
+
+    await this.markLive(entityType, entityId, actorId, publication.publishedAt);
+
+    await this.auditLogsService.write({
+      actorId,
+      action: 'StatusChange',
+      entityType,
+      entityId,
+      previousValue: { publicationState: 'Draft' },
+      newValue: { publicationState: 'Live', revisionId: revisionId.toString() },
+      reason: 'Published an approved revision',
+      ipAddress: input.context?.ipAddress ?? '',
+      userAgent: input.context?.userAgent ?? '',
+    });
+
+    return {
+      revisionId: revisionId.toString(),
+      publicationId: (publication._id as Types.ObjectId).toString(),
+      publishedAt: publication.publishedAt.toISOString(),
+    };
+  }
+
+  /**
+   * Brings the record's own columns in line with the publication just created
+   * (ADR-0020's denormalisation).
+   *
+   * That denormalisation was never actually maintained: `publications` held
+   * the truth and each entity's own column stayed at whatever it was seeded
+   * with, so the status panel could read `Draft` on a record that had been
+   * live for a week. Written after the publication, never before, so a failed
+   * publish cannot leave a record claiming to be live.
+   *
+   * A type that carries its own publish date gets it from the publication
+   * rather than from an author-chosen field, so the date a reader sees and the
+   * date the publication records cannot disagree. Types without the path are
+   * untouched — the check is the schema's own, so no list of which types have
+   * one has to be kept in step with reality.
+   */
+  private async markLive(
+    entityType: PublicationEntityType,
+    entityId: Types.ObjectId,
+    actorId: Types.ObjectId,
+    publishedAt: Date,
+  ): Promise<void> {
+    const model = this.modelFor(entityType);
+    const update: Record<string, unknown> = { publicationState: 'Live', updatedBy: actorId };
+
+    if (model.schema.path('publishDate')) {
+      update.publishDate = publishedAt;
+    }
+
+    await model.updateOne({ _id: entityId, archivedAt: null }, { $set: update }).exec();
   }
 
   /**
@@ -475,22 +597,32 @@ export class PublishingService {
     // index: what may happen next, and what has already happened. A record
     // published through an approval has no active instance and still has a
     // history worth showing.
-    const [record, resolved, active, live, instances] = await Promise.all([
+    const [record, resolved, active, live, instances, approvedWaiting] = await Promise.all([
       this.loadRecord(entityType, entityId),
       this.policiesService.resolve(entityType, 'Edit'),
       this.instancesService.findActive(entityType, entityId),
       this.publicationsService.findLive(entityType, entityId),
       this.instancesService.findByEntity(entityType, entityId),
+      this.instancesService.findLatestApproved(entityType, entityId),
     ]);
 
     const canEdit = await this.canEdit(entityType, entityId, actor);
     const publishBlockers = findPublishBlockers(entityType, record);
     const canPublish = this.hasPermission(actor, entityType, 'Publish');
     const canUpdate = this.hasPermission(actor, entityType, 'Update');
-    const canApprove = this.hasPermission(actor, entityType, 'Approve');
+    // `workflowInstances:Approve`, because that is the grant the three review
+    // routes actually enforce. This asked for `<entityType>:Approve`, which is
+    // a pair no route guards — and `permission-catalogue.spec.ts` refuses to
+    // seed a pair no route guards, so it was ungrantable rather than merely
+    // unheld. The effect was silent and total: `canApprove` was false for
+    // every reader of every type, so `availableActions` never contained a
+    // review decision and the panel, which renders that list verbatim, never
+    // drew one.
+    const canApprove = this.hasPermission(actor, 'workflowInstances', 'Approve');
 
     const permits = { canEdit, canUpdate, canPublish, canApprove };
-    const actions = this.allowedActions(resolved.mode, active, permits, publishBlockers.length === 0);
+    const hasApproval = approvedWaiting !== null;
+    const actions = this.allowedActions(resolved.mode, active, permits, publishBlockers.length === 0, hasApproval);
 
     // What the same reader could do if the draft were ready, minus what they
     // can already do — so the dashboard can draw those disabled, described by
@@ -499,7 +631,7 @@ export class PublishingService {
     // Computed by running the same rule with readiness satisfied rather than
     // by a second rule written alongside it: two rules that must agree are
     // two rules that will not.
-    const ifReady = this.allowedActions(resolved.mode, active, permits, true);
+    const ifReady = this.allowedActions(resolved.mode, active, permits, true, hasApproval);
     const blockedByReadiness = EDITORIAL_ACTIONS.filter(
       (action) => ifReady.has(action) && !actions.has(action),
     );
@@ -583,6 +715,8 @@ export class PublishingService {
     active: WorkflowInstanceDocument | null,
     permits: { canEdit: boolean; canUpdate: boolean; canPublish: boolean; canApprove: boolean },
     publishable: boolean,
+    /** A review finished in approval and nobody has put it on the site yet. */
+    approvedWaiting: boolean,
   ): Set<EditorialAction> {
     const actions = new Set<EditorialAction>();
 
@@ -600,7 +734,17 @@ export class PublishingService {
       if (mode === 'direct' && permits.canPublish) {
         actions.add('publish');
       }
-      if (mode === 'workflow' && permits.canUpdate) {
+      // A finished approval is the other way a publish becomes available, and
+      // the only one under a policy that requires review. `findActive` hides
+      // Approved instances, so this state reads as "no review running" — which
+      // is why the approval has to be looked up separately to see it at all.
+      if (mode === 'workflow' && approvedWaiting && permits.canPublish) {
+        actions.add('publish');
+      }
+      // Not while an approval is standing: resubmitting would throw away the
+      // decision the record is holding, and nobody reaches for "submit for
+      // review" meaning that.
+      if (mode === 'workflow' && !approvedWaiting && permits.canUpdate) {
         actions.add('submit');
       }
       return actions;
@@ -636,6 +780,9 @@ export class PublishingService {
       actionDate: entry.actionDate.toISOString(),
       workflowStepId: entry.workflowStepId.toString(),
       returnedToStepId: entry.returnedToStepId ? entry.returnedToStepId.toString() : null,
+      // Rows written before the flag existed carry no value, and a rejection
+      // from back then was a refusal — which is what the default says.
+      revisionRequested: entry.revisionRequested ?? false,
     };
   }
 

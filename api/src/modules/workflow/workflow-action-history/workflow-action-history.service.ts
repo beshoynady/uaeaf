@@ -20,8 +20,12 @@ export class WorkflowActionHistoryService {
     reason?: string | null;
     delegatedToUserId?: Types.ObjectId | null;
     returnedToStepId?: Types.ObjectId | null;
+    revisionRequested?: boolean;
   }): Promise<WorkflowActionHistoryDocument> {
-    return this.repository.create(input);
+    // Defaulted here rather than left to the schema so the stored row says
+    // "a final refusal" explicitly, instead of saying nothing and being read
+    // as one.
+    return this.repository.create({ ...input, revisionRequested: input.revisionRequested ?? false });
   }
 
   async findByInstance(workflowInstanceId: string): Promise<WorkflowActionHistoryDocument[]> {

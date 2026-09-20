@@ -136,6 +136,22 @@ export class StrategicPlansPagesController {
     });
   }
 
+  /** Publishes what a completed review approved — a separate act from
+   *  approving it, and a separate grant from editing it. Approval used to
+   *  publish by itself; separating them lets the federation require a review
+   *  without also surrendering the moment of publication (owner decision
+   *  2026-09-20). */
+  @Post(':id/publish-approved')
+  @RequirePermission('strategicPlansPage', 'Publish')
+  publishApproved(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser, @Req() req: Request) {
+    return this.publishingService.publishApproved({
+      entityType: ENTITY_TYPE,
+      entityId: new Types.ObjectId(id),
+      actor: user,
+      context: extractRequestContext(req),
+    });
+  }
+
   /** Copies a past revision back over the draft. Publishes nothing. */
   @Post(':id/restore')
   @RequirePermission('strategicPlansPage', 'Update')

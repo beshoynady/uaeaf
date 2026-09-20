@@ -71,6 +71,12 @@ describe('Workflow engine (e2e)', () => {
       ['workflowInstances', 'Approve'],
       ['workflowInstances', 'Update'],
       ['publications', 'Read'],
+      // Publishing an approved revision became its own act and its own grant
+      // on 2026-09-20. Before that, approving published implicitly and this
+      // flow never needed a publish permission at all.
+      ['visionMissionPage', 'Publish'],
+      ['workflowPolicies', 'Create'],
+      ['workflowPolicies', 'Update'],
     ];
     const permissionIds = await Promise.all(
       resourceActions.map(async ([resourceType, action]) => {
@@ -127,6 +133,16 @@ describe('Workflow engine (e2e)', () => {
       .send({ name: { en: 'Vision and Mission Approval', ar: 'اعتماد الرؤية والرسالة' }, entityType: 'visionMissionPage' })
       .expect(201);
     const workflowDefinitionId = definitionResponse.body._id as string;
+
+    // Publishing an approved revision reads the policy to learn that this type
+    // requires approval at all. This flow never needed one while approval
+    // published by itself, which is how `workflowPolicies` came to be a
+    // collection nothing read.
+    await request(app.getHttpServer())
+      .put(apiPath('/workflow-policies/visionMissionPage/Edit'))
+      .set(auth())
+      .send({ workflowRequired: true, workflowDefinitionId })
+      .expect(200);
 
     await request(app.getHttpServer())
       .post(apiPath('/workflow-steps'))
@@ -211,6 +227,21 @@ describe('Workflow engine (e2e)', () => {
       .expect(201);
     expect(approveAResponse.body.status).toBe('Approved');
     expect(approveAResponse.body.currentStepId).toBeNull();
+
+    // Approved is not published. Nothing reaches `publications` until someone
+    // holding Publish acts on the approval.
+    expect(
+      await publicationModel.countDocuments({
+        entityType: 'visionMissionPage',
+        entityId: new Types.ObjectId(entityIdA),
+      }),
+    ).toBe(0);
+
+    await request(app.getHttpServer())
+      .post(apiPath(`/vision-mission-page/${entityIdA}/publish-approved`))
+      .set(auth())
+      .send({})
+      .expect(201);
 
     const publicationsForA = await publicationModel.find({
       entityType: 'visionMissionPage',
@@ -331,6 +362,12 @@ describe('Workflow engine (e2e)', () => {
 
     await request(app.getHttpServer())
       .post(apiPath(`/workflow-instances/${instanceBId}/approve`))
+      .set(auth())
+      .send({})
+      .expect(201);
+
+    await request(app.getHttpServer())
+      .post(apiPath(`/vision-mission-page/${entityIdB}/publish-approved`))
       .set(auth())
       .send({})
       .expect(201);

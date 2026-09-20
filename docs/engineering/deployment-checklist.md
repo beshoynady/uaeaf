@@ -64,6 +64,38 @@ db.workflowPolicies.getIndexes().filter((i) => i.key.entityType === 1 && i.key.o
 - **لو ظهر صفّان:** الفهرس القديم لم يُحذف. عد إلى الخطوة ٢.
 - **لو أعاد `[]` أو `unique: false`:** لم يُبنَ الفهرس. السبب المرجّح مكرر ظهر بين الفحص والنشر، أو `autoIndex` معطّل في الإنتاج (البند B9). الفشل صامت كما في حالة `revisions`.
 
+## قبل نشر ADR-0086: الفهرس الفريد على `workflowSteps`
+
+يغلق هذا الفهرس الثغرة H5. قبله كانت خطوتان بنفس `sequenceOrder` تُقبلان، و`findNext` يطلب ترتيبًا أكبر تمامًا — فتُتخطّى إحداهما بصمت ولا يراجع أصحابها المحتوى أبدًا.
+
+`{ workflowDefinitionId: 1, sequenceOrder: 1 }`، فريد، وجزئي على `archivedAt: null`.
+
+### ١. فحص المكررات قبل النشر
+
+```js
+db.workflowSteps.aggregate([
+  { $match: { archivedAt: null } },
+  { $group: { _id: { d: '$workflowDefinitionId', o: '$sequenceOrder' }, n: { $sum: 1 }, ids: { $push: '$_id' } } },
+  { $match: { n: { $gt: 1 } } },
+])
+```
+
+- **الناتج المطلوب:** لا شيء. محليًا في 2026-09-20: المجموعة فارغة أصلًا (صفر خطوات).
+- **لو ظهرت مكررات:** لا تنشر. بناء الفهرس سيفشل، **ويبدأ التطبيق مع ذلك** — الخطأ يصل كحدث `index` على الـ model ولا يستمع له أحد، تمامًا كما في حالة `revisions` أعلى هذا الملف. النتيجة قيد يبدو مطبَّقًا ولا يطبّق شيئًا. احسم كل مكرر يدويًا بحذف الزائد أو بإعادة ترقيمه.
+
+### ٢. لا يوجد فهرس قديم يُحذف
+
+`workflowSteps` لم يكن عليها أي فهرس معلَن قبل هذا، فلا خطوة إسقاط هنا — بخلاف `workflowPolicies`.
+
+### ٣. التحقق بعد النشر
+
+```js
+db.workflowSteps.getIndexes().filter((i) => i.key.workflowDefinitionId === 1 && i.key.sequenceOrder === 1).map((i) => ({ name: i.name, unique: i.unique === true, partial: i.partialFilterExpression !== undefined }))
+```
+
+- **الناتج المطلوب:** صف واحد، `unique: true` و`partial: true`.
+- **لو أعاد `[]`:** لم يُبنَ. السبب المرجّح مكرر ظهر بين الفحص والنشر، أو `autoIndex` معطّل في الإنتاج (البند B9).
+
 ## قرار مفتوح: الفهرس القديم الزائد على `revisions`
 
 - **ما هو:** `entityType_1_entityId_1`.

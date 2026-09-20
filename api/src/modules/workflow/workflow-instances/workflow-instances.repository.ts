@@ -38,4 +38,26 @@ export class WorkflowInstancesRepository extends BaseRepository<WorkflowInstance
   ): Promise<WorkflowInstanceDocument[]> {
     return this.find({ entityType, entityId });
   }
+
+  /**
+   * The most recent finished review of this record, if it ended in approval.
+   *
+   * `findActive` deliberately excludes `Approved`, so it cannot answer this —
+   * and publishing needs exactly the instance `findActive` hides: the one
+   * whose approvers are done and whose revision is waiting for somebody to
+   * put it on the site.
+   *
+   * Newest first, because a record can be approved, edited, and approved
+   * again: the standing approval is the last one, and publishing an earlier
+   * one would put superseded text on the page.
+   */
+  async findLatestApproved(
+    entityType: WorkflowEntityType,
+    entityId: Types.ObjectId,
+  ): Promise<WorkflowInstanceDocument | null> {
+    return this.model
+      .findOne({ entityType, entityId, status: 'Approved', archivedAt: null })
+      .sort({ updatedAt: -1 })
+      .exec();
+  }
 }

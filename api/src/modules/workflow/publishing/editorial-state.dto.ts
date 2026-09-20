@@ -110,6 +110,13 @@ export class EditorialHistoryEntryDto {
 
   @ApiProperty({ nullable: true, description: 'Populated only when the action is `Returned`.' })
   returnedToStepId: string | null;
+
+  @ApiProperty({
+    description:
+      'Meaningful only when the action is `Rejected`: true where the reviewer asked for changes, ' +
+      'false where they refused the item. The engine behaves identically either way.',
+  })
+  revisionRequested: boolean;
 }
 
 /**

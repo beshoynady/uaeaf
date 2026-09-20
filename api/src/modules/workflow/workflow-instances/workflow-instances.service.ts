@@ -5,7 +5,6 @@ import type { WorkflowInstanceDocument } from './schemas/workflow-instance.schem
 import { WorkflowStepsService } from '../workflow-steps/workflow-steps.service.js';
 import type { WorkflowStepDocument } from '../workflow-steps/schemas/workflow-step.schema.js';
 import { WorkflowActionHistoryService } from '../workflow-action-history/workflow-action-history.service.js';
-import { PublicationsService } from '../publications/publications.service.js';
 import { AuditLogsService } from '../audit-logs/audit-logs.service.js';
 import { RevisionsService } from '../revisions/revisions.service.js';
 import { WorkflowDefinitionsService } from '../workflow-definitions/workflow-definitions.service.js';
@@ -48,18 +47,21 @@ export interface CreateWorkflowInstanceInput {
 
 /**
  * Implements: workflowInstances collection, Domain 7 (FigJam node
- * `100:7512`) — the core of the Week 2 workflow engine. Owns: concurrency
- * control (§4), self-approval via `assigneeIds` (§9), Rejected-vs-Returned
- * semantics (§2), auto-publish on final-step approval (§5), and dual
- * `workflowActionHistory` + `auditLogs` logging on every action (§11).
+ * `100:7512`) — the core of the workflow engine. Owns: concurrency control
+ * (§4), self-approval via `assigneeIds` (§9), Rejected-vs-Returned semantics
+ * (§2), and dual `workflowActionHistory` + `auditLogs` logging on every
+ * action (§11).
+ *
+ * It does NOT publish. A review that ends in approval leaves the instance at
+ * `Approved` and stops; putting that revision on the site is a separate act,
+ * held behind a separate permission, in `PublishingService.publishApproved`
+ * (owner decision 2026-09-20). This class therefore has no dependency on
+ * `PublicationsService` at all — the absence is the guarantee.
  *
  * `previousValue`/`newValue` on the `auditLogs` `StatusChange` entries this
  * service writes describe the *workflow's own* conceptual state
- * (`workflowStatus`, and `publicationState` specifically on final
- * approval) rather than a real `{entity}.publicationState` field — no
- * target-entity Mongoose model (articles, committees, documents, ...)
- * exists in this codebase yet (Week 3/4 scope). See the Week 2 completion
- * report for this flagged scope boundary.
+ * (`workflowStatus`) rather than any entity's `publicationState`, which
+ * nothing here changes.
  */
 @Injectable()
 export class WorkflowInstancesService {
@@ -67,7 +69,6 @@ export class WorkflowInstancesService {
     private readonly repository: WorkflowInstancesRepository,
     private readonly stepsService: WorkflowStepsService,
     private readonly actionHistoryService: WorkflowActionHistoryService,
-    private readonly publicationsService: PublicationsService,
     private readonly auditLogsService: AuditLogsService,
     private readonly revisionsService: RevisionsService,
     private readonly definitionsService: WorkflowDefinitionsService,
@@ -187,36 +188,24 @@ export class WorkflowInstancesService {
       return updated;
     }
 
-    // Final step approved: the instance is Approved, and — per BE-PLAN-010
-    // Week 2 §5 — this directly and automatically creates the
-    // publications row. There is no separate "publish" step.
+    // Final step approved. The instance reaches `Approved` and stops there.
     //
-    // `contactMessages` is the one List-A entity type structurally
-    // excluded from `publications`/`revisions` (it has no
-    // `publicationState` — "publishing" an inbound citizen message is
-    // product-nonsensical, per the live board's own domain note). Its
-    // workflow instances still resolve to `Approved`; they simply never
-    // produce a `publications` row.
+    // Until the owner's 2026-09-20 decision this call published, which made
+    // approving and publishing one event: nobody could approve a text and then
+    // choose the hour it went live, and a policy could not require approval
+    // without also handing the publish decision to whoever happened to approve
+    // last. Publishing now reads this Approved instance back —
+    // `PublishingService.publishApproved` — so the two are separately
+    // permissioned, separately audited, and separately refusable.
     const updated = await this.repository.updateById(id, { status: 'Approved', currentStepId: null });
-    const entityType = instance.entityType;
-    let published = false;
-    if (isPublicationEligible(entityType)) {
-      published = true;
-      await this.publicationsService.publish({
-        entityType,
-        entityId: instance.entityId,
-        revisionId: instance.revisionId as Types.ObjectId,
-        workflowInstanceId: new Types.ObjectId(id),
-        publishedBy: actorObjectId,
-      });
-    }
+
     await this.writeStatusChangeAudit({
-      entityType,
+      entityType: instance.entityType,
       entityId: instance.entityId,
       actorId: actorObjectId,
-      previousValue: { workflowStatus: 'InProgress', ...(published ? { publicationState: 'Draft' } : {}) },
-      newValue: { workflowStatus: 'Approved', ...(published ? { publicationState: 'Live' } : {}) },
-      reason: reason ?? (published ? 'Final step approved and published' : 'Final step approved'),
+      previousValue: { workflowStatus: 'InProgress' },
+      newValue: { workflowStatus: 'Approved' },
+      reason: reason ?? 'Final step approved',
       context,
     });
     return updated;
@@ -224,7 +213,15 @@ export class WorkflowInstancesService {
 
   /** Rejected keeps the same instance — it does not spawn a new one; the
    *  author may resubmit into it (BE-PLAN-010 Week 2 §2). */
-  async reject(id: string, actorId: string, reason: string, context: RequestContext = {}): Promise<WorkflowInstanceDocument | null> {
+  async reject(
+    id: string,
+    actorId: string,
+    reason: string,
+    context: RequestContext = {},
+    /** The reviewer is asking for changes, not refusing the item. Recorded,
+     *  not acted on: the engine's behaviour is identical either way. */
+    revisionRequested = false,
+  ): Promise<WorkflowInstanceDocument | null> {
     const instance = await this.loadInProgress(id);
     await this.assertStillGoverned(instance);
     const currentStep = await this.loadAssignedStep(instance, actorId);
@@ -237,6 +234,7 @@ export class WorkflowInstancesService {
       action: 'Rejected',
       revisionId: instance.revisionId as Types.ObjectId,
       reason,
+      revisionRequested,
     });
 
     const updated = await this.repository.updateById(id, { status: 'Rejected' });
@@ -246,7 +244,7 @@ export class WorkflowInstancesService {
       entityId: instance.entityId,
       actorId: actorObjectId,
       previousValue: { workflowStatus: 'InProgress' },
-      newValue: { workflowStatus: 'Rejected' },
+      newValue: { workflowStatus: 'Rejected', revisionRequested },
       reason,
       context,
     });
@@ -489,6 +487,16 @@ export class WorkflowInstancesService {
     entityId: Types.ObjectId,
   ): Promise<WorkflowInstanceDocument[]> {
     return this.repository.findByEntity(entityType, entityId);
+  }
+
+  /** The approval standing on a record and waiting to be published, if there
+   *  is one. Exposed for `PublishingService`, which is the only thing allowed
+   *  to act on it — this class approves and stops. */
+  async findLatestApproved(
+    entityType: WorkflowEntityType,
+    entityId: Types.ObjectId,
+  ): Promise<WorkflowInstanceDocument | null> {
+    return this.repository.findLatestApproved(entityType, entityId);
   }
 
   /**

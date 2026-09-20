@@ -37,3 +37,16 @@ export class WorkflowStep extends BaseSchema {
 }
 
 export const WorkflowStepSchema = SchemaFactory.createForClass(WorkflowStep);
+// A position in the chain names one step. Two steps sharing it is a state
+// where `findNext` — which asks for a strictly greater `sequenceOrder` —
+// silently skips whichever it did not return first, so that step's assignees
+// never review anything (audit finding H5). Partial on `archivedAt: null` so
+// an archived step does not permanently block a corrected replacement: the
+// `pages.slug` precedent.
+//
+// Mongoose does not drop a superseded index on its own, and there was no index
+// on this collection at all before, so nothing has to be dropped first.
+WorkflowStepSchema.index(
+  { workflowDefinitionId: 1, sequenceOrder: 1 },
+  { unique: true, partialFilterExpression: { archivedAt: null } },
+);

@@ -48,6 +48,8 @@ const post = (who: Who, path: string, body: object) =>
   request(server()).post(apiPath(path)).set({ Authorization: `Bearer ${tokens[who]}` }).send(body);
 const get = (who: Who, path: string) =>
   request(server()).get(apiPath(path)).set({ Authorization: `Bearer ${tokens[who]}` });
+const put = (who: Who, path: string, body: object) =>
+  request(server()).put(apiPath(path)).set({ Authorization: `Bearer ${tokens[who]}` }).send(body);
 
 beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create();
@@ -112,6 +114,7 @@ beforeAll(async () => {
       ['workflowSteps', 'Create'],
       ['workflowSteps', 'Read'],
       ['workflowPolicies', 'Create'],
+      ['workflowPolicies', 'Update'],
       ['workflowPolicies', 'Read'],
       ['revisions', 'Create'],
       ['revisions', 'Read'],
@@ -120,6 +123,9 @@ beforeAll(async () => {
       ['workflowInstances', 'Approve'],
       ['workflowInstances', 'Update'],
       ['publications', 'Read'],
+      // Publishing an approved revision is its own act and its own grant
+      // since 2026-09-20; before that, approving did it implicitly.
+      ['visionMissionPage', 'Publish'],
     ]),
     isSystemRole: false,
   });
@@ -184,7 +190,7 @@ async function editPage(entityId: string, visionEn: string): Promise<void> {
 
 async function defineWorkflow(
   steps: StepSpec[],
-  options: { entityType?: string; isActive?: boolean } = {},
+  options: { entityType?: string; isActive?: boolean; withPolicy?: boolean } = {},
 ): Promise<{ definitionId: string; stepIds: string[] }> {
   const definition = await post('author', '/workflow-definitions', {
     name: { en: 'Integrity review', ar: 'مراجعة السلامة' },
@@ -201,6 +207,19 @@ async function defineWorkflow(
       requiredApprovals: step.requiredApprovals,
     }).expect(201);
     stepIds.push(created.body._id as string);
+  }
+  // Publishing an approved revision reads the policy to learn that this type
+  // requires approval at all, so a scenario that publishes needs one. These
+  // tests predate that: approval published by itself and never consulted a
+  // policy, which is how `workflowPolicies` came to be read by nothing.
+  // An inactive definition cannot back a policy — `assertDefinitionUsable`
+  // refuses to store one, which is the behaviour two scenarios below exist
+  // to prove. So the helper does not try, rather than each of them opting out.
+  if (options.withPolicy !== false && options.isActive !== false) {
+    await put('author', `/workflow-policies/${options.entityType ?? 'visionMissionPage'}/Edit`, {
+      workflowRequired: true,
+      workflowDefinitionId: definition.body._id,
+    }).expect(200);
   }
   return { definitionId: definition.body._id as string, stepIds };
 }
@@ -224,6 +243,10 @@ async function submit(definitionId: string, entityId: string, revisionId: string
 }
 
 const approve = (who: Who, instanceId: string) => post(who, `/workflow-instances/${instanceId}/approve`, {});
+/** Puts an approved revision on the site. Approval stops at `Approved`; this
+ *  is the separate act that follows it (owner decision 2026-09-20). */
+const publishApproved = (who: Who, entityId: string) =>
+  post(who, `/vision-mission-page/${entityId}/publish-approved`, {});
 const reject = (who: Who, instanceId: string, reason: string) =>
   post(who, `/workflow-instances/${instanceId}/reject`, { reason });
 const returnTo = (who: Who, instanceId: string, stepId: string, reason: string) =>
@@ -306,6 +329,10 @@ describe('Workflow integrity (e2e)', () => {
     await approve('c', instanceId).expect(201);
 
     expect((await stateOf(instanceId)).status).toBe('Approved');
+    // Approved is not published: the page is still empty until somebody acts.
+    expect(await publicVision(entityId)).toBeNull();
+
+    await publishApproved('a', entityId).expect(201);
     expect(await publicVision(entityId)).toBe('Chain text');
   }, 30000);
 
@@ -322,6 +349,9 @@ describe('Workflow integrity (e2e)', () => {
 
     await approve('c', instanceId).expect(201);
     expect((await stateOf(instanceId)).status).toBe('Approved');
+    expect(await publicVision(entityId)).toBeNull();
+
+    await publishApproved('a', entityId).expect(201);
     expect(await publicVision(entityId)).toBe('Parallel text');
   }, 30000);
 
@@ -385,6 +415,7 @@ describe('Workflow integrity (e2e)', () => {
     const { definitionId } = await defineWorkflow([{ stepType: 'Sequential', assignees: ['a'], requiredApprovals: 1 }]);
     const first = await submit(definitionId, entityId, await revise(entityId));
     await approve('a', first).expect(201);
+    await publishApproved('a', entityId).expect(201);
     expect(await publicVision(entityId)).toBe('Published version');
 
     await editPage(entityId, 'Rejected version');
@@ -513,10 +544,12 @@ describe('Workflow integrity (e2e)', () => {
     expect([400, 409]).toContain(duplicate.status);
   }, 30000);
 
-  // H5 — CONFIRMED DEFECT (P1). Two steps sharing an order: `findNext` asks
-  // for the first step with a strictly greater order, so whichever of the two
-  // runs second is skipped and its assignees never review the content.
-  it.failing('[H5] refuses a second step with the same order in one definition', async () => {
+  // H5 — CLOSED 2026-09-20 by a partial-unique index on
+  // (workflowDefinitionId, sequenceOrder). Two steps sharing an order used to
+  // be accepted, and `findNext` asks for the first step with a strictly
+  // greater order — so whichever ran second was skipped and its assignees
+  // never reviewed the content.
+  it('[H5] refuses a second step with the same order in one definition', async () => {
     const { definitionId } = await defineWorkflow([{ stepType: 'Sequential', assignees: ['a'], requiredApprovals: 1 }]);
 
     const duplicate = await post('author', '/workflow-steps', {
@@ -530,9 +563,10 @@ describe('Workflow integrity (e2e)', () => {
     expect([400, 409]).toContain(duplicate.status);
   }, 30000);
 
-  // H6 — CONFIRMED DEFECT (P1). A step that needs more approvals than it has
-  // people can never be satisfied; every instance that reaches it is stuck.
-  it.failing('[H6] refuses a step that needs more approvals than it has assignees', async () => {
+  // H6 — CLOSED 2026-09-20. A step that needs more approvals than it has
+  // people can never be satisfied; every instance that reached it stopped
+  // there permanently.
+  it('[H6] refuses a step that needs more approvals than it has assignees', async () => {
     const { definitionId } = await defineWorkflow([]);
 
     const step = await post('author', '/workflow-steps', {
@@ -546,9 +580,10 @@ describe('Workflow integrity (e2e)', () => {
     expect(step.status).toBe(400);
   }, 30000);
 
-  // H6 — CONFIRMED DEFECT (P1). The same person listed twice is one
-  // approver, so "2 of [A, A]" is as unsatisfiable as "3 of 2".
-  it.failing('[H6] refuses a step that lists the same assignee twice to reach its threshold', async () => {
+  // H6 — CLOSED 2026-09-20. The same person listed twice is one approver, so
+  // "2 of [A, A]" is as unsatisfiable as "3 of 2" — which is why the check
+  // counts the set of assignees rather than the array.
+  it('[H6] refuses a step that lists the same assignee twice to reach its threshold', async () => {
     const { definitionId } = await defineWorkflow([]);
 
     const step = await post('author', '/workflow-steps', {

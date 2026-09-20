@@ -1,11 +1,11 @@
 import { jest } from '@jest/globals';
+import { readFileSync } from 'node:fs';
 import { BadRequestException, ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { WorkflowInstancesService } from './workflow-instances.service.js';
 import { WorkflowInstancesRepository } from './workflow-instances.repository.js';
 import { WorkflowStepsService } from '../workflow-steps/workflow-steps.service.js';
 import { WorkflowActionHistoryService } from '../workflow-action-history/workflow-action-history.service.js';
-import { PublicationsService } from '../publications/publications.service.js';
 import { AuditLogsService } from '../audit-logs/audit-logs.service.js';
 import { RevisionsService } from '../revisions/revisions.service.js';
 import { WorkflowDefinitionsService } from '../workflow-definitions/workflow-definitions.service.js';
@@ -59,9 +59,6 @@ describe('WorkflowInstancesService', () => {
       record: jest.fn(),
       countDistinctApprovers: jest.fn(),
     } as unknown as jest.Mocked<WorkflowActionHistoryService>;
-    const publicationsService = {
-      publish: jest.fn(),
-    } as unknown as jest.Mocked<PublicationsService>;
     const auditLogsService = {
       write: jest.fn(),
     } as unknown as jest.Mocked<AuditLogsService>;
@@ -82,7 +79,6 @@ describe('WorkflowInstancesService', () => {
       repository,
       stepsService,
       actionHistoryService,
-      publicationsService,
       auditLogsService,
       revisionsService,
       revisions,
@@ -96,7 +92,6 @@ describe('WorkflowInstancesService', () => {
       deps.repository,
       deps.stepsService,
       deps.actionHistoryService,
-      deps.publicationsService,
       deps.auditLogsService,
       deps.revisionsService,
       deps.definitionsService,
@@ -144,9 +139,9 @@ describe('WorkflowInstancesService', () => {
     });
 
     /**
-     * Approval publishes the instance's revision as the record's public
-     * content, so a revision of any other record would put that record's
-     * text on this one's page.
+     * The instance's revision is what an approval signs off, and what
+     * publishing later puts on the site — so a revision of any other record
+     * would put that record's text on this one's page.
      */
     it.each([
       { owner: 'another record of the same type', ofType: entityType as string, ofId: new Types.ObjectId() },
@@ -460,7 +455,6 @@ describe('WorkflowInstancesService', () => {
         instanceId,
         expect.objectContaining({ currentStepId: stepBId, status: 'InProgress' }),
       );
-      expect(deps.publicationsService.publish).not.toHaveBeenCalled();
     });
 
     it('does not advance a Parallel step until requiredApprovals is met', async () => {
@@ -487,7 +481,7 @@ describe('WorkflowInstancesService', () => {
       );
     });
 
-    it('finishes the instance and publishes when the final step reaches its approval threshold', async () => {
+    it('finishes the instance at Approved and publishes nothing', async () => {
       const deps = makeDeps();
       deps.repository.findById.mockResolvedValue({ ...inProgressInstance(), currentStepId: stepBId } as never);
       deps.stepsService.findById.mockResolvedValue({
@@ -504,16 +498,72 @@ describe('WorkflowInstancesService', () => {
 
       await service.approve(instanceId, actorId);
 
+      // Approving is not publishing (owner decision 2026-09-20). Until this
+      // split, the two were one event: nobody could approve a text and then
+      // choose the hour it went live, and a policy could not require approval
+      // without also surrendering the publish decision to whoever approved
+      // last. `PublishingService.publishApproved` reads this Approved instance
+      // back when someone holding Publish decides to act on it.
       expect(deps.repository.updateById).toHaveBeenCalledWith(
         instanceId,
         expect.objectContaining({ status: 'Approved', currentStepId: null }),
       );
-      expect(deps.publicationsService.publish).toHaveBeenCalledWith(
-        expect.objectContaining({ entityType, entityId, revisionId, workflowInstanceId: new Types.ObjectId(instanceId) }),
+      // The instance stops here. Nothing downstream of the approval runs.
+      expect(deps.stepsService.findNext).toHaveBeenCalledTimes(1);
+    });
+
+    /**
+     * The structural half of the guarantee above.
+     *
+     * A test that asserts a collaborator was not called only holds while that
+     * collaborator is still injected — delete the assertion and the class is
+     * free to publish again with nothing failing. This asserts the class has no
+     * way to reach `publications` at all, which is the property that actually
+     * keeps approval and publication apart.
+     */
+    it('has no collaborator it could publish through', () => {
+      const source = readFileSync(
+        new URL('./workflow-instances.service.ts', import.meta.url),
+        'utf8',
+      );
+      // Code, not prose: the file's own header explains the separation and so
+      // names the service it does not use. Matching the bare word would fail on
+      // the documentation of the very property being asserted.
+      const code = source.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
+
+      expect(code).not.toMatch(/from '\.\.\/publications\//);
+      expect(code).not.toMatch(/this\.publicationsService/);
+    });
+
+    it('records the approval as a status change without naming a publication', async () => {
+      const deps = makeDeps();
+      deps.repository.findById.mockResolvedValue({ ...inProgressInstance(), currentStepId: stepBId } as never);
+      deps.stepsService.findById.mockResolvedValue({
+        _id: stepBId,
+        workflowDefinitionId,
+        sequenceOrder: 1,
+        assigneeIds: [assignedActorObjectId],
+        requiredApprovals: 1,
+      } as never);
+      deps.actionHistoryService.countDistinctApprovers.mockResolvedValue(1);
+      deps.stepsService.findNext.mockResolvedValue(null);
+      deps.repository.updateById.mockResolvedValue({ status: 'Approved', currentStepId: null } as never);
+      const service = makeService(deps);
+
+      await service.approve(instanceId, actorId);
+
+      // The audit row described a publicationState transition this action no
+      // longer causes. Claiming one would put "went live" in the trail at a
+      // moment when nothing did.
+      expect(deps.auditLogsService.write).toHaveBeenCalledWith(
+        expect.objectContaining({
+          previousValue: { workflowStatus: 'InProgress' },
+          newValue: { workflowStatus: 'Approved' },
+        }),
       );
     });
 
-    it('finishes a contactMessages instance as Approved WITHOUT publishing — contactMessages has no publications lifecycle', async () => {
+    it('finishes a contactMessages instance the same way — it has no publications lifecycle either', async () => {
       const deps = makeDeps();
       deps.definitions.set(workflowDefinitionId.toString(), definitionOf(workflowDefinitionId, 'contactMessages'));
       deps.repository.findById.mockResolvedValue({
@@ -539,7 +589,6 @@ describe('WorkflowInstancesService', () => {
         instanceId,
         expect.objectContaining({ status: 'Approved', currentStepId: null }),
       );
-      expect(deps.publicationsService.publish).not.toHaveBeenCalled();
     });
   });
 
@@ -569,6 +618,66 @@ describe('WorkflowInstancesService', () => {
       expect(deps.actionHistoryService.record).toHaveBeenCalledWith(
         expect.objectContaining({ action: 'Rejected', reason: 'Needs more detail' }),
       );
+    });
+
+    /**
+     * Two intentions, one behaviour.
+     *
+     * A reviewer refusing an item and a reviewer asking for changes both leave
+     * the record in draft, and a resubmission of either restarts the review
+     * from its first step. The engine cannot tell them apart and does not need
+     * to — but the newsroom does, so the intent is recorded beside the action
+     * rather than inferred from the wording of the reason.
+     */
+    const rejectingWith = async (revisionRequested?: boolean) => {
+      const deps = makeDeps();
+      deps.repository.findById.mockResolvedValue({
+        _id: instanceId,
+        workflowDefinitionId,
+        entityType,
+        entityId,
+        revisionId,
+        currentStepId: stepAId,
+        status: 'InProgress',
+      } as never);
+      deps.stepsService.findById.mockResolvedValue({
+        _id: stepAId,
+        workflowDefinitionId,
+        assigneeIds: [assignedActorObjectId],
+      } as never);
+      deps.repository.updateById.mockResolvedValue({ status: 'Rejected' } as never);
+      const service = makeService(deps);
+
+      await service.reject(instanceId, actorId, 'The figures need a source', {}, revisionRequested);
+      return deps;
+    };
+
+    it('records a rejection that asks for changes as such', async () => {
+      const deps = await rejectingWith(true);
+
+      expect(deps.actionHistoryService.record).toHaveBeenCalledWith(
+        expect.objectContaining({ action: 'Rejected', revisionRequested: true }),
+      );
+      expect(deps.auditLogsService.write).toHaveBeenCalledWith(
+        expect.objectContaining({ newValue: { workflowStatus: 'Rejected', revisionRequested: true } }),
+      );
+    });
+
+    it('treats a rejection with no stated intent as a refusal', async () => {
+      const deps = await rejectingWith();
+
+      expect(deps.actionHistoryService.record).toHaveBeenCalledWith(
+        expect.objectContaining({ action: 'Rejected', revisionRequested: false }),
+      );
+    });
+
+    it('leaves the record in draft either way — the difference is not behavioural', async () => {
+      const asked = await rejectingWith(true);
+      const refused = await rejectingWith(false);
+
+      for (const deps of [asked, refused]) {
+        expect(deps.repository.updateById).toHaveBeenCalledWith(instanceId, { status: 'Rejected' });
+      }
     });
   });
 

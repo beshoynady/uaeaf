@@ -6,7 +6,6 @@ import { WorkflowInstancesService } from './workflow-instances.service.js';
 import { WorkflowInstancesController } from './workflow-instances.controller.js';
 import { WorkflowStepsModule } from '../workflow-steps/workflow-steps.module.js';
 import { WorkflowActionHistoryModule } from '../workflow-action-history/workflow-action-history.module.js';
-import { PublicationsModule } from '../publications/publications.module.js';
 import { AuditLogsModule } from '../audit-logs/audit-logs.module.js';
 import { RevisionsModule } from '../revisions/revisions.module.js';
 import { WorkflowDefinitionsModule } from '../workflow-definitions/workflow-definitions.module.js';
@@ -16,7 +15,6 @@ import { WorkflowDefinitionsModule } from '../workflow-definitions/workflow-defi
     MongooseModule.forFeature([{ name: WorkflowInstance.name, schema: WorkflowInstanceSchema }]),
     WorkflowStepsModule,
     WorkflowActionHistoryModule,
-    PublicationsModule,
     AuditLogsModule,
     RevisionsModule,
     WorkflowDefinitionsModule,
