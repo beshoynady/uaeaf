@@ -2,9 +2,14 @@ import { describe, expect, it } from "vitest";
 import {
   changesArrangement,
   hasApprovalErrors,
+  matchesFilter,
+  needsAttention,
+  policyStats,
   requiredApprovals,
+  savedChoice,
   validateApprovalChoice,
   type ApprovalChoice,
+  type ApproverOption,
   type GovernableEntity,
 } from "./approval-policies";
 
@@ -141,5 +146,93 @@ describe("changesArrangement", () => {
 
   it("counts a repeated approver once, as the engine does", () => {
     expect(changesArrangement(stored(), choice({ approverIds: ["a", "a", "b", "c"] }))).toBe(false);
+  });
+});
+
+const accounts: ApproverOption[] = [
+  { id: "a", name: { ar: "أ", en: "A" }, email: "a@uaeaf.ae" },
+  { id: "b", name: { ar: "ب", en: "B" }, email: "b@uaeaf.ae" },
+  { id: "c", name: { ar: "ج", en: "C" }, email: "c@uaeaf.ae" },
+];
+
+describe("needsAttention", () => {
+  it("leaves alone a type that publishes directly, whoever it names", () => {
+    // Off, the approvers are not consulted at all, so an empty or stale list
+    // stops nothing.
+    expect(needsAttention(stored({ enabled: false, approverIds: [] }), accounts)).toBe(false);
+  });
+
+  it("flags a type that requires approval and names nobody", () => {
+    expect(needsAttention(stored({ approverIds: [] }), accounts)).toBe(true);
+  });
+
+  it("flags a type that names somebody whose account is gone", () => {
+    // Their step can never be decided by them, and nothing else on the
+    // screen would say so.
+    expect(needsAttention(stored({ approverIds: ["a", "gone"] }), accounts)).toBe(true);
+  });
+
+  it("leaves alone a type whose approvers all exist", () => {
+    expect(needsAttention(stored(), accounts)).toBe(false);
+  });
+});
+
+describe("matchesFilter", () => {
+  const direct = stored({ enabled: false });
+  const required = stored();
+  const broken = stored({ approverIds: [] });
+
+  it("keeps everything under all", () => {
+    expect([direct, required, broken].every((entity) => matchesFilter(entity, "all", accounts))).toBe(true);
+  });
+
+  it("splits the two states the server stores", () => {
+    expect(matchesFilter(required, "required", accounts)).toBe(true);
+    expect(matchesFilter(direct, "required", accounts)).toBe(false);
+    expect(matchesFilter(direct, "direct", accounts)).toBe(true);
+    expect(matchesFilter(required, "direct", accounts)).toBe(false);
+  });
+
+  it("keeps only what needs attention under attention", () => {
+    expect(matchesFilter(broken, "attention", accounts)).toBe(true);
+    expect(matchesFilter(required, "attention", accounts)).toBe(false);
+  });
+});
+
+describe("policyStats", () => {
+  it("counts from every type, not from the page a filter shows", () => {
+    const stats = policyStats(
+      [
+        stored({ inFlightReviews: 2 }),
+        stored({ entityType: "committees", enabled: false, inFlightReviews: 1 }),
+        stored({ entityType: "documents", approverIds: [] }),
+      ],
+      accounts,
+    );
+
+    expect(stats).toEqual({ required: 2, total: 3, inReview: 3, attention: 1 });
+  });
+});
+
+describe("savedChoice", () => {
+  it("is the stored arrangement as a draft", () => {
+    expect(savedChoice(stored({ mode: "SEQUENTIAL", approverIds: ["b", "a"] }))).toEqual({
+      enabled: true,
+      mode: "SEQUENTIAL",
+      approverIds: ["b", "a"],
+      threshold: 2,
+    });
+  });
+
+  it("offers a count when nothing is stored yet", () => {
+    // A type never configured has no mode; the draft opens on the one the
+    // screen has always opened on.
+    expect(savedChoice(stored({ enabled: false, mode: null, approverIds: [] })).mode).toBe("THRESHOLD");
+  });
+
+  it("is a copy, so editing the draft never edits what is stored", () => {
+    const entity = stored();
+    savedChoice(entity).approverIds?.push("x");
+    expect(entity.approverIds).toEqual(["a", "b", "c"]);
   });
 });

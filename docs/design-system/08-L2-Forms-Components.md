@@ -383,6 +383,8 @@ This behavioral distinction is important for developers.
 
 **Related Governance:** G.9, G.12, Chapter 5 (Motion).
 
+> **Amended by ADR-0091 (Accepted, 2026-09-21).** Immediate effect stays the rule. A Switch may also sit in a form that is saved later when all three hold: (1) it turns a whole feature or section on or off — never selecting items, never recording a fact; (2) the form shows a visible unsaved state as soon as it moves; (3) the save names what it saves, or the form warns before the reader leaves with the change unsaved. Anything else is a Checkbox. The audit of the eleven switches that existed at the time is in the ADR.
+
 ---
 
 # Choice

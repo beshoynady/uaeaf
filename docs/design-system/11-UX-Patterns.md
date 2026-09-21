@@ -143,6 +143,12 @@ Select (L5 §DD.9 Multiple) → Action Bar appears (L7 §CMP-ACTIONBAR-001) → 
 
 ---
 
+## PT-LISTDETAIL-001 — List–Detail Workspace
+
+**Defined by ADR-0089 D2 (2026-09-21)**, standalone: a closed, server-defined set of configurable items, a compact list beside the chosen item's settings, a draft per item, a save named after the item, and any action on the whole group kept separate and applied through PT-CONFIRMATION-001 and PT-BULKACTION-001. Read its layout and behaviour there.
+
+---
+
 ## Do & Don't
 
 **Do:** Start any new recurring task by first reviewing whether an existing Pattern here matches it · Apply the same Pattern consistently across all entities (athlete/club/referee).

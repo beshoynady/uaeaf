@@ -9,10 +9,98 @@ import {
   HOMEPAGE_SPONSOR_STRIP_GRANTS,
   HOMEPAGE_SPONSORS_GRANTS,
   NAV_ITEMS,
+  currentScreenHref,
+  navScreens,
   visibleNavItems,
 } from "./navigation";
 import { UNCLASSIFIED_DOMAIN_KEY, domainKeyFor } from "./admin/resource-domains";
 import { STATIC_PAGES } from "./admin/static-pages";
+
+describe("navScreens", () => {
+  it("lists each screen once, with the group it sits under", () => {
+    const screens = navScreens(NAV_ITEMS);
+    const policies = screens.find((screen) => screen.key === "approvalPolicies");
+
+    expect(policies).toEqual({ key: "approvalPolicies", href: "/approval-policies", groupKey: "usersAccess" });
+    expect(screens.find((screen) => screen.key === "pages")).toEqual({
+      key: "pages",
+      href: "/pages",
+      groupKey: null,
+    });
+  });
+
+  it("offers no group as a destination of its own", () => {
+    // A group's link is its first screen. Listed as well, the search would
+    // offer "News" and "News list" as two results that open the same page.
+    const keys = navScreens(NAV_ITEMS).map((screen) => screen.key);
+    expect(keys).not.toContain("news");
+    expect(keys).not.toContain("homepage");
+    expect(keys).not.toContain("usersAccess");
+  });
+
+  it("keeps the menu's own order", () => {
+    const keys = navScreens(NAV_ITEMS).map((screen) => screen.key);
+    expect(keys.indexOf("overview")).toBe(0);
+    expect(keys.indexOf("newsList")).toBeLessThan(keys.indexOf("newsReview"));
+    expect(keys.slice(-3)).toEqual(["users", "roles", "approvalPolicies"]);
+  });
+});
+
+describe("currentScreenHref", () => {
+  const hrefs = ["/", "/users", "/news", "/news/review", "/approval-policies"];
+
+  it("marks one screen when one screen's address sits inside another's", () => {
+    // "/news/review" starts with "/news". Matched by prefix alone, "All
+    // articles" and "Review" were both the current page.
+    expect(currentScreenHref("/news/review", hrefs)).toBe("/news/review");
+  });
+
+  it("keeps a screen current on the records beneath it", () => {
+    // An article's own editor is part of the list it was opened from.
+    expect(currentScreenHref("/news/65f1c2", hrefs)).toBe("/news");
+    expect(currentScreenHref("/users/42", hrefs)).toBe("/users");
+  });
+
+  it("matches the overview only on itself", () => {
+    expect(currentScreenHref("/", hrefs)).toBe("/");
+    expect(currentScreenHref("/roles", hrefs)).toBeNull();
+  });
+
+  it("matches whole segments, not the start of a word", () => {
+    expect(currentScreenHref("/newsletter", hrefs)).toBeNull();
+  });
+});
+
+describe("the Users & Access group (IA §4.8, amended 2026-09-21)", () => {
+  it("holds users, roles and approval policies, last in the sidebar as the IA orders it", () => {
+    const last = NAV_ITEMS[NAV_ITEMS.length - 1];
+    expect(last.key).toBe("usersAccess");
+    expect(last.children?.map((child) => [child.key, child.href])).toEqual([
+      ["users", "/users"],
+      ["roles", "/roles"],
+      ["approvalPolicies", "/approval-policies"],
+    ]);
+  });
+
+  it("leaves the news group its two newsroom screens", () => {
+    const news = NAV_ITEMS.find((item) => item.key === "news");
+    expect(news?.children?.map((child) => child.key)).toEqual(["newsList", "newsReview"]);
+  });
+
+  it("keeps no top-level link to a screen the group now holds", () => {
+    const topLevel = NAV_ITEMS.filter((item) => !item.children).map((item) => item.key);
+    expect(topLevel).not.toContain("users");
+    expect(topLevel).not.toContain("roles");
+  });
+
+  it("shows an administrator who governs approvals only the group, opening on the policies", () => {
+    // Before the move the policy grant also revealed the News group, whose
+    // first screen that administrator could not open.
+    const items = visibleNavItems([{ resourceType: "workflowPolicies", action: "Update" }]);
+    expect(items.map((item) => item.key)).toEqual(["overview", "usersAccess"]);
+    expect(items[1].href).toBe("/approval-policies");
+  });
+});
 
 describe("visibleNavItems", () => {
   it("offers no separate permissions destination", () => {
@@ -33,7 +121,10 @@ describe("visibleNavItems", () => {
   it("reveals a section as soon as the user holds any action on its resource", () => {
     const grants = [{ resourceType: "roles", action: "Read" }];
 
-    expect(visibleNavItems(grants).map((item) => item.key)).toEqual(["overview", "roles"]);
+    const items = visibleNavItems(grants);
+    expect(items.map((item) => item.key)).toEqual(["overview", "usersAccess"]);
+    expect(items[1].children?.map((child) => child.key)).toEqual(["roles"]);
+    expect(items[1].href).toBe("/roles");
   });
 
   it("shows everything to a fully privileged user, in the declared order", () => {

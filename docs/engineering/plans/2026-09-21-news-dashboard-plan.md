@@ -43,7 +43,7 @@
 `articles/schemas/article.schema.ts` (الحقل + الفهرس) · `articles/dto/*.dto.ts` · `articles/articles.service.ts` (الفلترة) · `articles/articles.controller.ts` · `workflow-policies/workflow-policies.controller.ts` (endpoint التعميم) · `workflow-instances/workflow-instances.{repository,service,controller}.ts` (pending-mine) · `common/constants/entity-content.ts` (`category` في الإسقاط)
 
 ### Dashboard — جديد
-`app/[locale]/(app)/news/page.tsx` · `news/[id]/page.tsx` · `news/review/page.tsx` · `news/policies/page.tsx` · `components/admin/news/{list,editor,review-queue,policy-manager}.tsx` · `lib/admin/{articles,approval-policies}.ts` · `app/api/admin/articles/**` · `app/api/admin/approval-policies/route.ts`
+`app/[locale]/(app)/news/page.tsx` · `news/[id]/page.tsx` · `news/review/page.tsx` · `news/policies/page.tsx` (نُقلت إلى `approval-policies/page.tsx` في 2026-09-21، G3؛ المسار القديم يحوّل) · `components/admin/news/{list,editor,review-queue,policy-manager}.tsx` · `lib/admin/{articles,approval-policies}.ts` · `app/api/admin/articles/**` · `app/api/admin/approval-policies/route.ts`
 
 ### Dashboard — تعديل
 `lib/admin/editorial-entities.ts` · `lib/navigation.ts` · `messages/{ar,en}.json`

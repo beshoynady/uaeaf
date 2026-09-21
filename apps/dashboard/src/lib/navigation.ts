@@ -102,12 +102,11 @@ const homepageScreen = (key: string, href: string, grants: readonly NavRequireme
 });
 
 /**
- * The newsroom's three screens.
+ * The newsroom's two screens.
  *
  * Three jobs open this section, not two: writing, deciding, and publishing
  * what a decision approved — the third became a permission of its own when
- * publishing stopped being a side effect of approval. The policy screen is
- * the administrator's, and asks for the grant that actually guards it.
+ * publishing stopped being a side effect of approval.
  */
 const NEWS_SCREENS: readonly NavItem[] = [
   {
@@ -125,9 +124,29 @@ const NEWS_SCREENS: readonly NavItem[] = [
     href: "/news/review",
     requires: [{ resourceType: "workflowInstances", action: "Approve" }],
   },
+];
+
+/**
+ * Users & Access (IA §4.8, amended 2026-09-21): who can sign in, what they may
+ * do, and who must approve what before it is published.
+ *
+ * The approval policies sat under News until then. They govern every content
+ * type, not the news alone, and they are the administrator's screen rather
+ * than the newsroom's — so they live with the other two screens that decide
+ * who may do what.
+ */
+const USERS_ACCESS_SCREENS: readonly NavItem[] = [
+  { key: "users", href: "/users", requires: [{ resourceType: "users" }] },
+  // Roles AND permissions. The approved IA (§4.8) defines one screen for
+  // both, and the catalogue is a lens on it rather than a second link —
+  // "which permissions exist" is not a question anyone opens the platform
+  // to answer on its own. `roles:Read` gates the link; a user holding only
+  // `permissions:Read` still reaches the screen and sees the catalogue.
+  { key: "roles", href: "/roles", requires: [{ resourceType: "roles" }] },
+  // The administrator's screen, gated on the grant that actually guards it.
   {
-    key: "newsPolicies",
-    href: "/news/policies",
+    key: "approvalPolicies",
+    href: "/approval-policies",
     requires: [{ resourceType: "workflowPolicies", action: "Update" }],
   },
 ];
@@ -142,13 +161,6 @@ const HOMEPAGE_SCREENS: readonly NavItem[] = [
 
 export const NAV_ITEMS: readonly NavItem[] = [
   { key: "overview", href: "/", requires: null },
-  { key: "users", href: "/users", requires: [{ resourceType: "users" }] },
-  // Roles AND permissions. The approved IA (§4.8) defines one screen for
-  // both, and the catalogue is a lens on it rather than a second link —
-  // "which permissions exist" is not a question anyone opens the platform
-  // to answer on its own. `roles:Read` gates the link; a user holding only
-  // `permissions:Read` still reaches the screen and sees the catalogue.
-  { key: "roles", href: "/roles", requires: [{ resourceType: "roles" }] },
   // The singleton content pages. `newsPage` stands for all twelve: they are
   // twelve separate grants upstream, and someone who holds none of them has
   // nothing to do on that screen — but holding any one of them is enough to
@@ -215,6 +227,14 @@ export const NAV_ITEMS: readonly NavItem[] = [
     requires: HOMEPAGE_SCREENS.flatMap((screen) => screen.requires ?? []),
     children: HOMEPAGE_SCREENS,
   },
+  // Last, as the approved IA orders the sections: the content first, then who
+  // may work on it (§4.8 and the tree in §6, amended 2026-09-21).
+  {
+    key: "usersAccess",
+    href: "/users",
+    requires: USERS_ACCESS_SCREENS.flatMap((screen) => screen.requires ?? []),
+    children: USERS_ACCESS_SCREENS,
+  },
 ];
 
 /** Whether these grants satisfy one requirement. */
@@ -226,6 +246,43 @@ export const satisfies = (
     ? canAccessResource(grants, requirement.resourceType)
     : hasPermission(grants, requirement.resourceType, requirement.action);
 };
+
+/** One screen a link can open, and the group it is listed under. */
+export interface NavScreen {
+  key: string;
+  href: string;
+  groupKey: string | null;
+}
+
+/**
+ * The screens in these items, flattened, in the menu's own order.
+ *
+ * A group is not one of them: its link is its first screen, so listing it as
+ * well would offer two results that open the same page. Callers pass the items
+ * already filtered by `visibleNavItems`, which is what keeps a search from
+ * offering a screen the menu hides.
+ */
+export const navScreens = (items: readonly NavItem[]): NavScreen[] =>
+  items.flatMap((item): NavScreen[] =>
+    item.children
+      ? item.children.map((child) => ({ key: child.key, href: child.href, groupKey: item.key }))
+      : [{ key: item.key, href: item.href, groupKey: null }],
+  );
+
+/**
+ * The one screen the reader is on, of these addresses.
+ *
+ * Chapter 8 L3 §N.3: a screen is current on its own address and on the records
+ * beneath it, and exactly one item carries `aria-current="page"`. Where one
+ * screen's address sits inside another's ("/news" and "/news/review"), the
+ * longer one is the match — matched by prefix alone, both were current at
+ * once. Segments are whole, so "/news" is not current on "/newsletter", and
+ * the overview ("/") only on itself.
+ */
+export const currentScreenHref = (pathname: string, hrefs: readonly string[]): string | null =>
+  hrefs
+    .filter((href) => (href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`)))
+    .reduce<string | null>((best, href) => (best === null || href.length > best.length ? href : best), null);
 
 /** Hides what the user cannot open. This is presentation, not enforcement:
  *  typing the URL directly still reaches the screen, and the screen's own

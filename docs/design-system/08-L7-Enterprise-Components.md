@@ -267,6 +267,10 @@ These directly reflect §EC.7.
 
 **Related Governance:** EC.4 (data source), Chapter 8 L5 §DD.10 (Live-Updating is common here for active items).
 
+## CMP-APPROVALPATH-001 — Approval Path
+
+**Defined by ADR-0089 D1 (2026-09-21)**, standalone: the configured path content takes to publication — start, who must decide, end — built on Chapter 8 L5 §CMP-TIMELINE-001 as the Audit Timeline is, read-only, and not a Stepper. Read its anatomy, arrangements, tokens and accessibility there.
+
 ---
 
 # Do & Don't (L7 General)

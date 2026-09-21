@@ -479,6 +479,7 @@ Home                                              [B]
 | Media Ops | Accreditation Management | Approve press access | Media Team | ● | ○ | ○ | P2 |
 | Users | User Management | Accounts and status | Admin | ● | ○ | ○ | **P0** |
 | Users | Roles & Permissions | Define authority | Super Admin | ● | ○ | ○ | **P0** |
+| Users | Approval Policies | Who must approve each content type before it is published | Admin (`workflowPolicies:Update`) | ● | ○ | ○ | built — added 2026-09-21 |
 | Users | Invitations | Onboard staff | Admin | ● | ○ | ○ | P2 |
 | Users | Audit Log | Traceability of every action | Super Admin | ● | ○ | ○ | P1 |
 | Reports | Participation Reports | Registration & entry analytics | Admin | ● | ○ | ○ | P2 |
@@ -492,7 +493,15 @@ Home                                              [B]
 | Settings | Integrations & API Keys | External systems | Super Admin | ● | ○ | ○ | P3 |
 | Settings | Feature Flags | Controlled rollout, AI enablement | Super Admin | ● | ○ | ○ | P2 |
 
-**Inventory totals:** Public 56 · Account/Self-service 15 · CMS 15 · Dashboard 33 → **≈119 screens**, of which **21 are P0**.
+**Inventory totals:** Public 56 · Account/Self-service 15 · CMS 15 · Dashboard 34 → **≈120 screens**, of which **21 are P0**.
+
+> **Amended 2026-09-21 (owner decisions G1–G3).** Approval Policies joins the Users section. It is the tree's **Users & Access** (§6), next to Users and Roles & Permissions, and no longer under News. In the dashboard sidebar that section is one group:
+> - **Name:** «المستخدمون والوصول» / "Users & Access". The Arabic is provisional until the domain labels get one agreed wording.
+> - **Position:** after the content groups, in this document's order.
+> - **Screens:** Users `/users`, Roles & Permissions `/roles` and Approval Policies `/approval-policies`.
+> - **The former address** `/news/policies` redirects permanently to the new one.
+>
+> The sidebar's folding behaviour for this group is ADR-0090's.
 
 ---
 
@@ -616,6 +625,7 @@ Dashboard
 ├── Users & Access
 │   ├── Users
 │   ├── Roles & Permissions
+│   ├── Approval Policies            (added 2026-09-21 · §4.8)
 │   ├── Invitations
 │   └── Audit Log
 │

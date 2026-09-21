@@ -260,3 +260,74 @@ export const describeArrangement = (
 /** Message key for an entity type's readable name, so the label lives in the
  *  catalogues rather than being derived from an identifier. */
 export const entityMessageKey = (entityType: string): string => `entity_${entityType}`;
+
+/**
+ * The stored arrangement, as a draft the screen can edit.
+ *
+ * One definition for three uses that must agree: the draft a type opens with,
+ * what "discard changes" returns to, and what "apply to the group" copies —
+ * the saved arrangement, never an unsaved edit. A fresh array, so editing the
+ * draft can never reach the props it came from.
+ */
+export const savedChoice = (entity: GovernableEntity): ApprovalChoice => ({
+  enabled: entity.enabled,
+  mode: entity.mode ?? "THRESHOLD",
+  approverIds: [...entity.approverIds],
+  threshold: entity.threshold,
+});
+
+/**
+ * Whether a type's stored arrangement cannot work as it stands.
+ *
+ * Two shapes, both only while approval is required: nobody is named (the
+ * deadlock `isDeadlocked` describes), or somebody is named whose account no
+ * longer exists, so their decision can never arrive. A type that publishes
+ * directly consults nobody, so what it names stops nothing.
+ */
+export const needsAttention = (entity: GovernableEntity, approvers: readonly ApproverOption[]): boolean => {
+  if (!entity.enabled) return false;
+  const distinct = new Set(entity.approverIds);
+  if (distinct.size === 0) return true;
+  const known = new Set(approvers.map((approver) => approver.id));
+  return [...distinct].some((id) => !known.has(id));
+};
+
+/**
+ * The four views of the list.
+ *
+ * Only two states are stored — approval required, or published directly — so
+ * those are two of the filters, and the third is the derived one an
+ * administrator acts on.
+ */
+export const POLICY_FILTERS = ["all", "required", "direct", "attention"] as const;
+export type PolicyFilter = (typeof POLICY_FILTERS)[number];
+
+export const matchesFilter = (
+  entity: GovernableEntity,
+  filter: PolicyFilter,
+  approvers: readonly ApproverOption[],
+): boolean => {
+  if (filter === "required") return entity.enabled;
+  if (filter === "direct") return !entity.enabled;
+  if (filter === "attention") return needsAttention(entity, approvers);
+  return true;
+};
+
+/** The screen's three figures, counted over every type rather than over the
+ *  rows a filter happens to show. */
+export interface PolicyStats {
+  required: number;
+  total: number;
+  inReview: number;
+  attention: number;
+}
+
+export const policyStats = (
+  entities: readonly GovernableEntity[],
+  approvers: readonly ApproverOption[],
+): PolicyStats => ({
+  required: entities.filter((entity) => entity.enabled).length,
+  total: entities.length,
+  inReview: entities.reduce((sum, entity) => sum + entity.inFlightReviews, 0),
+  attention: entities.filter((entity) => needsAttention(entity, approvers)).length,
+});

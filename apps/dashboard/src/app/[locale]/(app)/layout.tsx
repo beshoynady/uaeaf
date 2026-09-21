@@ -1,17 +1,22 @@
 import type { ReactNode } from "react";
 import { cookies } from "next/headers";
-import { getTranslations, setRequestLocale } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 import { readCurrentUser, requireSession } from "@/lib/auth/session";
 import { localized } from "@/lib/api/types";
 import { visibleNavItems } from "@/lib/navigation";
 import { THEME_COOKIE } from "@/lib/auth/cookies";
-import { SidebarNav } from "@/components/shell/sidebar-nav";
+import {
+  NAV_GROUPS_COOKIE,
+  SIDEBAR_COOKIE,
+  isSidebarCollapsed,
+  parseNavGroups,
+} from "@/lib/shell/sidebar-preference";
+import { AppShell } from "@/components/shell/app-shell";
 import { BrandMark } from "@/components/brand/brand-mark";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
 import { LanguageToggle } from "@/components/shell/language-toggle";
 import { SignOutButton } from "@/components/shell/sign-out-button";
 import { ToastProvider } from "@/components/ui/toast";
-import type { AppLocale } from "@/i18n/routing";
 import { resolveLocale } from "@/i18n/params";
 
 /**
@@ -21,20 +26,25 @@ import { resolveLocale } from "@/i18n/params";
  * `requireSession` is the second gate, behind the proxy's redirect. Next's
  * own documentation warns that a matcher change can silently remove proxy
  * coverage, so the layout does not assume it ran.
+ *
+ * What is decided here is what only the server knows — the session, the
+ * reader's permissions, and the two presentation cookies. How the frame
+ * behaves is `AppShell`'s.
  */
-export default async function AppLayout({
+const AppLayout = async ({
   children,
   params,
 }: {
   children: ReactNode;
   params: Promise<{ locale: string }>;
-}) {
+}) => {
   const locale = await resolveLocale(params);
   setRequestLocale(locale);
 
   await requireSession(locale);
-  const t = await getTranslations("Shell");
-  const storedTheme = (await cookies()).get(THEME_COOKIE)?.value;
+  const cookieStore = await cookies();
+  const storedTheme = cookieStore.get(THEME_COOKIE)?.value;
+  const theme = storedTheme === "dark" ? "dark" : "light";
 
   // One call, two jobs: the header identity and the navigation.
   //
@@ -58,58 +68,37 @@ export default async function AppLayout({
     // cap each screen applied only to itself would stack three regions the
     // moment one of them navigated.
     <ToastProvider>
-      <div className="flex min-h-screen flex-col bg-[color:var(--color-surface-sunken)] lg:flex-row">
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-4 focus:rounded-[var(--radius-md)] focus:bg-[color:var(--color-surface-raised)] focus:px-4 focus:py-2"
-        >
-          {t("skipLink")}
-        </a>
-
-        <aside className="shrink-0 border-b border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)] p-4 lg:min-h-screen lg:w-[264px] lg:border-b-0 lg:border-e lg:p-6">
-          {/* The federation's mark where the shell used to say "Dashboard":
-              nothing else on the signed-in screens said whose they were. */}
-          <div className="mb-6 px-4">
-            <BrandMark initialTheme={storedTheme === "dark" ? "dark" : "light"} />
+      <AppShell
+        items={items}
+        // Read here so the first paint is already the chosen width (§N.9).
+        initialCollapsed={isSidebarCollapsed(cookieStore.get(SIDEBAR_COOKIE)?.value)}
+        initialGroups={parseNavGroups(cookieStore.get(NAV_GROUPS_COOKIE)?.value)}
+        brand={<BrandMark initialTheme={theme} />}
+        identity={
+          // Below sm the header holds the menu, the search and three
+          // controls; the name and address give way rather than push them
+          // off the screen.
+          <div className="hidden min-w-0 flex-col sm:flex">
+            <p className="truncate text-label font-medium text-[color:var(--color-text-primary)]">
+              {me ? localized(me.name, locale) : ""}
+            </p>
+            <p dir="ltr" className="truncate text-start text-caption text-[color:var(--color-text-muted)]">
+              {me?.email ?? ""}
+            </p>
           </div>
-          <SidebarNav items={items} />
-        </aside>
-
-        <div className="flex min-w-0 flex-1 flex-col">
-          <header className="flex items-center justify-between gap-4 border-b border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)] px-6 py-4">
-            <div className="flex min-w-0 flex-col">
-              <p className="truncate text-label font-medium text-[color:var(--color-text-primary)]">
-                {me ? localized(me.name, locale) : ""}
-              </p>
-              <p dir="ltr" className="truncate text-start text-caption text-[color:var(--color-text-muted)]">
-                {me?.email ?? ""}
-              </p>
-            </div>
-            <div className="flex shrink-0 items-center gap-2">
-              <LanguageToggle locale={locale} />
-              <ThemeToggle initialTheme={storedTheme === "dark" ? "dark" : "light"} />
-              <SignOutButton locale={locale} />
-            </div>
-          </header>
-
-          <main id="main-content" className="flex-1 px-6 py-8">
-            {/*
-              Fluid, not capped. Chapter 5 §Maximum Container is explicit and
-              applies to exactly this surface: "1440px for the Public
-              Experience … Fluid (100%) for the Dashboard with a fixed Sidebar
-              (Operational Experience) — uses the full available space for
-              dense data presentation (PR-006).
-
-              This read `max-w-[1100px]` until 2026-09-08, which is the public
-              site's rule applied to the operational one. The cost was visible
-              on the roles screen: a 63-row permission matrix eight columns
-              wide had to scroll sideways inside a container with several
-              hundred unused pixels beside it.
-            */}
-            <div className="flex flex-col gap-8">{children}</div>
-          </main>
-        </div>
-      </div>
+        }
+        controls={
+          <>
+            <LanguageToggle locale={locale} />
+            <ThemeToggle initialTheme={theme} />
+            <SignOutButton locale={locale} />
+          </>
+        }
+      >
+        {children}
+      </AppShell>
     </ToastProvider>
   );
-}
+};
+
+export default AppLayout;

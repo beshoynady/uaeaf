@@ -417,6 +417,8 @@ This ensures consistent **visibility/hiding** behavior across the entire platfor
 **Behavior:**
 The collapsed state **MUST** be persisted according to N.9.
 
+**Extended by ADR-0090 (2026-09-21):** in `Expanded` at `lg`+, each group folds as a disclosure (ADR-0062 D3), open by default when it holds the current screen, its state persisted per group like the collapsed state. `Collapsed`, the Navigation Rail and the Navigation Drawer keep groups flat. Read the rules there.
+
 **Related Governance:**
 Complete Navigation Foundation (N.1-N.10) + Chapter 8 Governance G.9/G.12.
 

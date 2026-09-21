@@ -1,27 +1,27 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { SelectField } from "@/components/ui/select-field";
-import { TextField } from "@/components/auth/text-field";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { TOGGLE_SEGMENT } from "@/components/ui/interactive";
+import { StatTiles, type StatTile } from "@/components/admin/stat-tiles";
 import { RESOURCE_DOMAINS, UNCLASSIFIED_DOMAIN_KEY, domainKeyFor, domainOrder } from "@/lib/admin/resource-domains";
 import {
-  APPROVAL_MODES,
+  POLICY_FILTERS,
   changesArrangement,
-  describeArrangement,
   differsFromSaved,
-  isDeadlocked,
-  moveApprover,
-  hasApprovalErrors,
-  requiredApprovals,
-  validateApprovalChoice,
+  matchesFilter,
+  policyStats,
+  savedChoice,
   type ApprovalChoice,
-  type ApprovalMode,
   type ApprovalSaveRefusal,
   type ApproverOption,
   type GovernableEntity,
+  type PolicyFilter,
 } from "@/lib/admin/approval-policies";
+import { PolicyList, type PolicyGroup } from "./policy-list";
+import { PolicyDetail } from "./policy-detail";
 
 /**
  * Turning review on or off for any content type, from one screen.
@@ -32,69 +32,33 @@ import {
  * no screen for any of them. That is why eleven of the twelve governed types
  * had no policy at all and publishing them failed closed with a message about
  * configuration nobody could perform. Everything here is driven by the list
- * the server sends, so a thirteenth governed type appears on this screen
- * without a line of code being written for it.
+ * the server sends, so a new governed type appears on this screen without a
+ * line of code being written for it.
  *
- * ── Why the consequence is printed ─────────────────────────────────────────
+ * ── Why a list beside a detail ─────────────────────────────────────────────
  *
- * "3 of 5" and "each in turn" are what the administrator is actually choosing
- * between, and neither is legible from a mode name. The summary is computed
- * from the same function the validator uses, so the number shown is the number
- * that would be saved.
+ * Every type's controls stacked one under another put the settings of the
+ * type an administrator came for a long scroll away, among twelve others they
+ * did not. So the types are a compact list, grouped by product domain, and the
+ * chosen one's settings sit beside it — both on screen together, nothing to
+ * scroll past to reach a control. The grouping reuses the permission matrix's
+ * own map, so the two screens group the same vocabulary the same way.
  *
- * ── Why a running review locks the arrangement ─────────────────────────────
+ * Each type keeps its own draft, so moving through the list loses nothing: a
+ * change made to one type is still there when the administrator comes back to
+ * it, and the list marks it unsaved until then.
  *
- * Changing who approves replaces this type's steps, and a replaced step is
- * archived — which is the step every running review is waiting at. They would
- * match nobody's queue and could never be decided: a newsroom's work stranded
- * by a settings change that reported success. The server refuses it outright
- * (owner decision 2026-09-21); this screen states the count up front so the
- * administrator reads a locked control rather than composing an edit and
- * having it rejected.
+ * ── Why saving and applying to the group are two actions ───────────────────
  *
- * The lock is narrow on purpose. Switching approval off strands nothing, and
- * neither does re-saving the same people — both stay available, because a
- * policy most needs correcting exactly while work is moving through it.
+ * Saving writes the one policy on show. Applying copies that policy's SAVED
+ * arrangement to the other types in its group — other people's policies,
+ * overwritten at once. They are separate buttons with separate names, and the
+ * second waits until the first has nothing pending, so there is never a doubt
+ * about which version is being copied.
  *
- * ── Why it is grouped, and why each row leads with a sentence ──────────────
- *
- * The first build of this screen was a flat list of twelve rows, each one an
- * entity-type identifier over a set of controls. That is the shape of the
- * table behind it, not the shape of the question an administrator arrives
- * with — which is "who signs off on the news", not "what is the value of
- * `workflowRequired` for `articles`".
- *
- * So two things changed and nothing else did. The types are grouped by the
- * product domain they belong to, reusing the map the permission matrix already
- * groups by, so the news sits with public communication and the page types sit
- * together. And every row opens with the arrangement in words — who approves,
- * how many of them, whether in turn — before it offers a single control. The
- * controls are unchanged and still behind the switch; what is new is that the
- * screen can be read without operating it.
- *
- * There is no Figma frame for this screen: it is an internal operating tool,
- * not a page. Its patterns come from the dashboard's own components and from
- * the permission matrix beside it, which answers a question of the same shape
- * over the same vocabulary.
- *
- * -- Why the sequential order is a numbered list, not checkboxes ------------
- *
- * Under SEQUENTIAL the order IS the policy: the same three people in two
- * orders are two arrangements, because a different person holds every article
- * up first. A checkbox grid cannot express that, having no order to read and
- * none to set. So the chosen approvers become a numbered list with each
- * position printed, and two buttons move a person through it.
- *
- * Buttons rather than dragging: no drag-and-drop library is installed and
- * adding one needs approval (owner constraint 2026-09-21). Two buttons are
- * also the only form of this that works from a keyboard without a custom key
- * handler, which for an administration tool is the better trade regardless.
- *
- * -- Why the deadlock is refused before the save ---------------------------
- *
- * "Requires approval, names nobody" stops every publication of that type. The
- * API refuses it as `unsatisfiablePolicy`; this says so at the control, so the
- * administrator who caused it reads it rather than an editor weeks later.
+ * There is no Figma frame for this screen: it is an internal operating tool.
+ * Its patterns come from the dashboard's own components (PENDING FIGMA
+ * BACK-SYNC).
  */
 export const PolicyManager = ({
   entities,
@@ -108,349 +72,305 @@ export const PolicyManager = ({
   onSave: (entityType: string, choice: ApprovalChoice) => Promise<ApprovalSaveRefusal | null | void>;
 }) => {
   const t = useTranslations("Newsroom");
-  const fieldId = useId();
 
-  // Keyed by entity type: the screen edits several arrangements before saving
-  // any of them, and a single shared draft would make the second row overwrite
-  // the first.
+  const labelOf = (key: string) =>
+    key === UNCLASSIFIED_DOMAIN_KEY ? t("domainOther") : RESOURCE_DOMAINS[key][locale];
+  const groups = groupByDomain(entities).map((group) => ({ ...group, label: labelOf(group.key) }));
+
+  // Keyed by entity type: several arrangements are edited before any of them
+  // is saved, and a single shared draft would make one overwrite another.
   const [drafts, setDrafts] = useState<Record<string, ApprovalChoice>>(() =>
-    Object.fromEntries(
-      entities.map((entity) => [
-        entity.entityType,
-        {
-          enabled: entity.enabled,
-          mode: entity.mode ?? "THRESHOLD",
-          approverIds: entity.approverIds,
-          threshold: entity.threshold,
-        },
-      ]),
-    ),
+    Object.fromEntries(entities.map((entity) => [entity.entityType, savedChoice(entity)])),
   );
+  const [selected, setSelected] = useState(() => groups[0]?.entities[0]?.entityType ?? "");
+  const [filter, setFilter] = useState<PolicyFilter>("all");
   const [saving, setSaving] = useState<string | null>(null);
-  // Keyed by type for the same reason the drafts are: one row's refusal must
-  // not appear under another row's button.
+  // Keyed by type for the same reason the drafts are: one policy's refusal
+  // must not appear under another's button.
   const [refusals, setRefusals] = useState<Record<string, ApprovalSaveRefusal>>({});
+  const [confirming, setConfirming] = useState(false);
+  const [applying, setApplying] = useState(false);
+  const [applied, setApplied] = useState<{ groupKey: string; results: ApplyResult[] } | null>(null);
 
-  const update = (entityType: string, patch: Partial<ApprovalChoice>) =>
-    setDrafts((current) => ({ ...current, [entityType]: { ...current[entityType], ...patch } }));
+  // A type the server added after this screen mounted has no draft yet.
+  const draftOf = (entity: GovernableEntity) => drafts[entity.entityType] ?? savedChoice(entity);
+  const dirty = new Set(
+    entities.filter((entity) => differsFromSaved(entity, draftOf(entity))).map((entity) => entity.entityType),
+  );
 
-  const toggleApprover = (entityType: string, approverId: string) =>
-    setDrafts((current) => {
-      const held = current[entityType].approverIds ?? [];
-      return {
-        ...current,
-        [entityType]: {
-          ...current[entityType],
-          approverIds: held.includes(approverId)
-            ? held.filter((id) => id !== approverId)
-            : [...held, approverId],
-        },
-      };
+  const clearRefusal = (entityType: string) =>
+    setRefusals((current) => {
+      const { [entityType]: cleared, ...rest } = current;
+      void cleared;
+      return rest;
     });
 
-  /**
-   * The arrangement in words, from what is stored.
-   *
-   * Deliberately not from the draft: this line answers "what is the rule
-   * today", and a line that changed as the administrator ticked boxes would
-   * leave them with no way to see what they are changing away from.
-   */
-  const policyOf = (entity: GovernableEntity) => {
-    if (!entity.enabled) {
-      return t("policySummaryOff");
-    }
+  const current = entities.find((entity) => entity.entityType === selected);
+  const currentGroup = groups.find((group) => group.entities.some((entity) => entity.entityType === selected));
+  const name = (entityType: string) => t(`entity_${entityType}`);
 
-    const { required, total, inTurn, names } = describeArrangement(entity, approvers, locale);
-    if (total === 0) {
-      // A type that requires review and names nobody stops every publication
-      // of that type. Said plainly, because it is the one arrangement that is
-      // broken rather than merely strict.
-      return t("policySummaryNobody");
+  const save = async (entity: GovernableEntity) => {
+    setSaving(entity.entityType);
+    clearRefusal(entity.entityType);
+    try {
+      const outcome = await onSave(entity.entityType, draftOf(entity));
+      if (outcome) {
+        setRefusals((held) => ({ ...held, [entity.entityType]: outcome }));
+      }
+    } finally {
+      setSaving(null);
     }
-
-    return t(inTurn ? "policySummaryInTurn" : "policySummaryOf", {
-      required,
-      total,
-      names: names.join(t("nameSeparator")),
-    });
   };
 
-  const groups = groupByDomain(entities);
+  /**
+   * What applying the chosen policy to its group would do to each sibling.
+   *
+   * Computed from the props as they are at the moment it is asked — when the
+   * button is drawn, and again when the confirmation is pressed (CLAUDE.md
+   * §31), never from a copy taken when the dialog opened.
+   */
+  const planFor = (source: GovernableEntity, group: PolicyGroup) => {
+    const copy = savedChoice(source);
+    return group.entities
+      .filter((sibling) => sibling.entityType !== source.entityType)
+      .map((sibling) => ({
+        sibling,
+        step: !differsFromSaved(sibling, copy)
+          ? ("unchanged" as const)
+          : sibling.inFlightReviews > 0 && changesArrangement(sibling, copy)
+            ? ("skipped" as const)
+            : ("change" as const),
+      }));
+  };
+
+  const applyToGroup = async () => {
+    if (!current || !currentGroup) return;
+    const copy = savedChoice(current);
+    const plan = planFor(current, currentGroup);
+    const results: ApplyResult[] = [];
+    setApplying(true);
+    try {
+      // One at a time: there is no endpoint that writes several policies, so
+      // this is not atomic, and each outcome is reported on its own.
+      for (const { sibling, step } of plan) {
+        if (step === "unchanged") continue;
+        if (step === "skipped") {
+          results.push({ entityType: sibling.entityType, outcome: "skipped" });
+          continue;
+        }
+        try {
+          const refusal = await onSave(sibling.entityType, copy);
+          if (refusal) {
+            results.push({
+              entityType: sibling.entityType,
+              outcome: refusal.code === "reviewsInFlight" ? "refused" : "failed",
+            });
+          } else {
+            results.push({ entityType: sibling.entityType, outcome: "applied" });
+            // Its draft becomes what was just stored, so it does not read as
+            // an unsaved change against the arrangement it now has.
+            setDrafts((held) => ({ ...held, [sibling.entityType]: { ...copy, approverIds: [...(copy.approverIds ?? [])] } }));
+            clearRefusal(sibling.entityType);
+          }
+        } catch {
+          results.push({ entityType: sibling.entityType, outcome: "failed" });
+        }
+      }
+    } finally {
+      setApplying(false);
+      setConfirming(false);
+      setApplied({ groupKey: currentGroup.key, results });
+    }
+  };
+
+  const stats = policyStats(entities, approvers);
+  const tiles: StatTile[] = [
+    {
+      key: "required",
+      label: t("statRequired"),
+      value: stats.required,
+      note: t("statRequiredNote", { total: stats.total }),
+    },
+    {
+      key: "inReview",
+      label: t("statInReview"),
+      value: stats.inReview,
+      note: t("statInReviewNote"),
+      tone: stats.inReview > 0 ? "attention" : "neutral",
+    },
+    {
+      key: "attention",
+      label: t("statAttention"),
+      value: stats.attention,
+      note: t("statAttentionNote"),
+      tone: stats.attention > 0 ? "critical" : "neutral",
+    },
+  ];
+
+  const filtered = groups.map((group) => ({
+    ...group,
+    entities: group.entities.filter((entity) => matchesFilter(entity, filter, approvers)),
+  }));
+
+  const groupAction = () => {
+    if (!current || !currentGroup) return null;
+    const plan = planFor(current, currentGroup);
+    const alone = plan.length === 0;
+    const pending = dirty.has(current.entityType);
+    const nothing = !alone && plan.every(({ step }) => step !== "change");
+    const hint = alone
+      ? t("groupApplyAlone")
+      : pending
+        ? t("groupApplyNeedsSave", { name: name(current.entityType) })
+        : nothing
+          ? t("groupApplyNothing")
+          : t("groupApplyHint", { name: name(current.entityType), group: currentGroup.label });
+    const results = applied?.groupKey === currentGroup.key ? applied.results : [];
+
+    return (
+      <div className="flex flex-col rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-sunken)] p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-caption text-[color:var(--color-text-secondary)]">{hint}</p>
+          <Button
+            variant="secondary"
+            disabled={alone || pending || nothing || applying}
+            onClick={() => setConfirming(true)}
+            className="shrink-0"
+          >
+            {t("groupApplyButton")}
+          </Button>
+        </div>
+        {/* Present and displayed before it has anything to say: a live region
+            that appears together with its text is often not announced. Empty,
+            it has no height. */}
+        <div role="status">
+          {results.length > 0 ? (
+            <div className="mt-3 flex flex-col gap-1">
+              <p className="text-caption font-medium text-[color:var(--color-text-primary)]">{t("groupApplyResults")}</p>
+              <ul className="m-0 flex list-none flex-col gap-1 p-0">
+                {results.map((result) => (
+                  <li key={result.entityType} className="text-caption text-[color:var(--color-text-secondary)]">
+                    {t(`groupApplyResult_${result.outcome}`, { name: name(result.entityType) })}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </div>
+      </div>
+    );
+  };
+
+  const confirmBody = () => {
+    if (!current || !currentGroup) return null;
+    const plan = planFor(current, currentGroup);
+    const names = (step: string) =>
+      plan
+        .filter((entry) => entry.step === step)
+        .map((entry) => name(entry.sibling.entityType))
+        .join(t("nameSeparator"));
+    const overwritten = plan
+      .filter((entry) => entry.step === "change" && dirty.has(entry.sibling.entityType))
+      .map((entry) => name(entry.sibling.entityType))
+      .join(t("nameSeparator"));
+    return (
+      <ul className="m-0 flex list-none flex-col gap-2 p-0">
+        {names("change") ? <li>{t("groupApplyWillChange", { names: names("change") })}</li> : null}
+        {names("skipped") ? <li>{t("groupApplySkipped", { names: names("skipped") })}</li> : null}
+        {names("unchanged") ? <li>{t("groupApplyUnchanged", { names: names("unchanged") })}</li> : null}
+        {overwritten ? <li>{t("groupApplyDiscardsDrafts", { names: overwritten })}</li> : null}
+      </ul>
+    );
+  };
 
   return (
-    <div className="flex flex-col gap-8">
-      {groups.map((group) => (
-        <section key={group.key} aria-labelledby={`${fieldId}-${group.key}`} className="flex flex-col gap-4">
-          <h2
-            id={`${fieldId}-${group.key}`}
-            className="text-label font-bold text-[color:var(--color-text-secondary)]"
+    <div className="flex flex-col gap-6">
+      <StatTiles tiles={tiles} caption={t("statsCaption")} />
+
+      <div
+        role="group"
+        aria-label={t("filtersLabel")}
+        className="inline-flex flex-wrap gap-1 self-start rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-sunken)] p-1"
+      >
+        {POLICY_FILTERS.map((option) => (
+          <button
+            key={option}
+            type="button"
+            aria-pressed={filter === option}
+            onClick={() => setFilter(option)}
+            className={TOGGLE_SEGMENT}
           >
-            {group.key === UNCLASSIFIED_DOMAIN_KEY ? t("domainOther") : RESOURCE_DOMAINS[group.key][locale]}
-          </h2>
+            {t(`filter_${option}`, {
+              count: entities.filter((entity) => matchesFilter(entity, option, approvers)).length,
+            })}
+          </button>
+        ))}
+      </div>
 
-          <ul className="flex list-none flex-col gap-4 p-0">
-      {group.entities.map((entity) => {
-        const draft = drafts[entity.entityType];
-        const errors = validateApprovalChoice(draft);
-        const total = new Set(draft.approverIds ?? []).size;
-        const running = entity.inFlightReviews;
-        // Re-read from the CURRENT draft on every render, so the lock reflects
-        // the edit as it stands. Computed once when the row mounted, it would
-        // describe an arrangement the administrator has since changed.
-        const lockedOut = running > 0 && changesArrangement(entity, draft);
-        const deadlocked = isDeadlocked(draft);
-        const blocked = hasApprovalErrors(errors) || lockedOut || deadlocked;
-        const refusal = refusals[entity.entityType];
-        // The chosen approvers in the draft's own order, which under
-        // SEQUENTIAL is the arrangement itself. Mapped through the accounts so
-        // a name is drawn rather than an id -- and an id whose account is gone
-        // keeps its place, because that is a thing the administrator must see.
-        const chosen = (draft.approverIds ?? []).map(
-          (id) =>
-            approvers.find((candidate) => candidate.id === id) ?? {
-              id,
-              name: { ar: id, en: id },
-              email: id,
-            },
-        );
-        
-        // Nothing to save on a row nobody has touched, and a row that offers
-        // to save nothing is a primary button spent on nothing.
-        const dirty = differsFromSaved(entity, draft);
+      {/* Chapter 5 §5.2: twelve columns from lg, gutter 24px, 32px from xl. */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 xl:gap-8">
+        <div className="lg:col-span-4 xl:col-span-3">
+          <PolicyList
+            groups={filtered}
+            pickerGroups={groups}
+            approvers={approvers}
+            locale={locale}
+            selected={selected}
+            dirty={dirty}
+            onSelect={setSelected}
+          />
+        </div>
 
-        return (
-          <li
-            key={entity.entityType}
-            className="flex flex-col gap-4 rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)] p-5"
-          >
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="flex min-w-0 flex-col gap-1">
-                <h3 className="text-h4 text-[color:var(--color-text-primary)]">
-                  {t(`entity_${entity.entityType}`)}
-                </h3>
+        <div className="min-w-0 lg:col-span-8 xl:col-span-9">
+          {current && currentGroup ? (
+            <PolicyDetail
+              // Remounted per type, so the ids inside it and anything the
+              // browser holds for its fields belong to one policy only.
+              key={current.entityType}
+              entity={current}
+              draft={draftOf(current)}
+              approvers={approvers}
+              locale={locale}
+              groupLabel={currentGroup.label}
+              dirty={dirty.has(current.entityType)}
+              saving={saving === current.entityType}
+              refusal={refusals[current.entityType]}
+              onChange={(patch) =>
+                setDrafts((held) => ({ ...held, [current.entityType]: { ...draftOf(current), ...patch } }))
+              }
+              onSave={() => void save(current)}
+              onDiscard={() => {
+                setDrafts((held) => ({ ...held, [current.entityType]: savedChoice(current) }));
+                clearRefusal(current.entityType);
+              }}
+              footer={groupAction()}
+            />
+          ) : null}
+        </div>
+      </div>
 
-                {/* The answer before the controls. Built from what is SAVED,
-                    not from the draft: this line is what the arrangement is,
-                    and the controls below are what it is being changed to. */}
-                <p className="text-body-sm text-[color:var(--color-text-secondary)]">
-                  {policyOf(entity)}
-                </p>
-              </div>
-
-              <label className="flex items-center gap-2 text-body-sm">
-                <input
-                  type="checkbox"
-                  className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--a11y-focus-ring)]"
-                  checked={draft.enabled}
-                  onChange={(event) => update(entity.entityType, { enabled: event.target.checked })}
-                />
-                {t("policyEnabled")}
-              </label>
-            </div>
-
-            {deadlocked ? (
-              // Said before the save, not after it. The API refuses this with
-              // `unsatisfiablePolicy`; read only there, the administrator who
-              // caused it would have seen a success and an editor would have
-              // found it weeks later.
-              <p
-                role="alert"
-                className="rounded-[var(--radius-sm)] border border-[color:var(--color-semantic-error)] p-3 text-caption text-[color:var(--color-text-primary)]"
-              >
-                {t("policyDeadlocked")}
-              </p>
-            ) : null}
-
-            {running > 0 ? (
-              <div
-                className="flex flex-col gap-1 rounded-[var(--radius-sm)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-sunken)] p-3"
-                // Announced only once it is actually stopping a save. Present
-                // as a live region from the first render, it would interrupt a
-                // screen-reader user reading a row they had not yet touched.
-                role={lockedOut ? "alert" : undefined}
-              >
-                <p className="text-label font-medium text-[color:var(--color-text-primary)]">
-                  {running === 1 ? t("policyLocked") : t("policyLockedPlural", { count: running })}
-                </p>
-                <p className="text-caption text-[color:var(--color-text-secondary)]">{t("policyLockedWhy")}</p>
-                <p className="text-caption text-[color:var(--color-text-secondary)]">
-                  {t("policyLockedStillAllowed")}
-                </p>
-              </div>
-            ) : null}
-
-            {draft.enabled ? (
-              <>
-                <SelectField
-                  id={`${fieldId}-${entity.entityType}-mode`}
-                  label={t("policyMode")}
-                  value={draft.mode}
-                  onChange={(event) =>
-                    update(entity.entityType, { mode: event.target.value as ApprovalMode })
-                  }
-                  options={APPROVAL_MODES.map((mode) => ({ value: mode, label: t(`mode_${mode}`) }))}
-                />
-
-                <fieldset className="flex flex-col gap-2 border-0 p-0">
-                  <legend className="text-label font-medium text-[color:var(--color-text-secondary)]">
-                    {t("policyApprovers")}
-                  </legend>
-                  <div className="flex flex-wrap gap-3">
-                    {approvers.map((approver) => (
-                      <label key={approver.id} className="flex items-center gap-2 text-body-sm">
-                        <input
-                          type="checkbox"
-                          className="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--a11y-focus-ring)]"
-                          checked={(draft.approverIds ?? []).includes(approver.id)}
-                          onChange={() => toggleApprover(entity.entityType, approver.id)}
-                        />
-                        {approver.name[locale] || approver.email}
-                      </label>
-                    ))}
-                  </div>
-                  {/* No message here. "Choose at least one approver" and the
-                      deadlock notice above fire on exactly the same condition,
-                      and two alerts saying one thing make a reader look for a
-                      second problem. The notice is the one kept, because it
-                      says what happens if nobody is named. */}
-                </fieldset>
-
-                {draft.mode === "SEQUENTIAL" && chosen.length > 0 ? (
-                  <fieldset className="flex flex-col gap-2 border-0 p-0">
-                    <legend className="text-label font-medium text-[color:var(--color-text-secondary)]">
-                      {t("policyOrder")}
-                    </legend>
-                    <p className="text-caption text-[color:var(--color-text-secondary)]">
-                      {t("policyOrderHint")}
-                    </p>
-
-                    {/* An ordered list, so a screen reader says the position
-                        before the name rather than leaving it to be inferred
-                        from a number drawn beside it. */}
-                    <ol className="flex list-none flex-col gap-2 p-0">
-                      {chosen.map((approver, index) => (
-                        <li
-                          key={approver.id}
-                          className="flex items-center gap-3 rounded-[var(--radius-sm)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-sunken)] p-2"
-                        >
-                          <span
-                            aria-hidden
-                            className="inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-[color:var(--color-brand-primary)] text-label font-bold text-[color:var(--color-text-on-brand)]"
-                          >
-                            {index + 1}
-                          </span>
-                          <span className="flex-1 text-body-sm text-[color:var(--color-text-primary)]">
-                            {t("policyOrderPosition", {
-                              position: index + 1,
-                              total: chosen.length,
-                              name: approver.name[locale] || approver.email,
-                            })}
-                          </span>
-
-                          {/* Each button names the person it moves: a column
-                              of six identical "up" buttons tells a
-                              screen-reader user which of the six they are on,
-                              which is none of them. */}
-                          <Button
-                            variant="secondary"
-                            disabled={index === 0}
-                            aria-label={t("policyMoveUp", { name: approver.name[locale] || approver.email })}
-                            onClick={() =>
-                              update(entity.entityType, {
-                                approverIds: moveApprover(draft.approverIds ?? [], index, -1),
-                              })
-                            }
-                          >
-                            <span aria-hidden>&#8593;</span>
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            disabled={index === chosen.length - 1}
-                            aria-label={t("policyMoveDown", { name: approver.name[locale] || approver.email })}
-                            onClick={() =>
-                              update(entity.entityType, {
-                                approverIds: moveApprover(draft.approverIds ?? [], index, 1),
-                              })
-                            }
-                          >
-                            <span aria-hidden>&#8595;</span>
-                          </Button>
-                        </li>
-                      ))}
-                    </ol>
-                  </fieldset>
-                ) : null}
-
-                {draft.mode === "THRESHOLD" ? (
-                  <TextField
-                    id={`${fieldId}-${entity.entityType}-threshold`}
-                    label={t("policyThreshold")}
-                    type="number"
-                    min={1}
-                    value={draft.threshold ?? 1}
-                    onChange={(event) =>
-                      update(entity.entityType, { threshold: Number(event.target.value) })
-                    }
-                    // The field owns the message and the `aria-describedby`
-                    // that points at it — passing `error` rather than drawing
-                    // a span keeps the association the shared field makes.
-                    error={errors.threshold ? t("errorThreshold") : null}
-                  />
-                ) : null}
-
-                <p className="text-caption text-[color:var(--color-text-secondary)]">
-                  {t("policySummary", { required: requiredApprovals(draft), total })}
-                </p>
-              </>
-            ) : null}
-
-            {dirty || refusal ? (
-            <div className="flex flex-col gap-2">
-              <div>
-                <Button
-                  disabled={blocked}
-                  loading={saving === entity.entityType}
-                  onClick={async () => {
-                    setSaving(entity.entityType);
-                    setRefusals((current) => {
-                      const { [entity.entityType]: cleared, ...rest } = current;
-                      void cleared;
-                      return rest;
-                    });
-                    try {
-                      const outcome = await onSave(entity.entityType, draft);
-                      if (outcome) {
-                        setRefusals((current) => ({ ...current, [entity.entityType]: outcome }));
-                      }
-                    } finally {
-                      setSaving(null);
-                    }
-                  }}
-                >
-                  {t("save")}
-                </Button>
-              </div>
-
-              {refusal ? (
-                <p role="alert" className="text-caption text-[color:var(--color-semantic-error-text)]">
-                  {refusal.code === "reviewsInFlight" ? t("policySaveRefused") : t("policySaveFailed")}
-                </p>
-              ) : null}
-            </div>
-            ) : null}
-          </li>
-        );
-      })}
-          </ul>
-        </section>
-      ))}
+      {current && currentGroup ? (
+        <ConfirmDialog
+          open={confirming}
+          title={t("groupApplyConfirmTitle", { name: name(current.entityType), group: currentGroup.label })}
+          confirmLabel={t("groupApplyConfirm")}
+          cancelLabel={t("groupApplyCancel")}
+          // It overwrites other policies' approvers (PT-CONFIRMATION-001).
+          tone="destructive"
+          busy={applying}
+          onConfirm={() => void applyToGroup()}
+          onCancel={() => setConfirming(false)}
+        >
+          {confirmBody()}
+        </ConfirmDialog>
+      ) : null}
     </div>
   );
 };
 
-interface DomainGroup {
-  key: string;
-  entities: GovernableEntity[];
+interface ApplyResult {
+  entityType: string;
+  outcome: "applied" | "skipped" | "refused" | "failed";
 }
 
 /**
@@ -478,11 +398,11 @@ const WORKFLOW_ONLY_DOMAIN: Record<string, string> = {
  *
  * `domainKeyFor` is the permission matrix's own map. Reusing it means this
  * screen and the permission screen group the same vocabulary the same way — an
- * administrator who has learned one has learned the other — and a thirteenth
- * governed type that IS a permission resource lands under a heading without a
- * line of code here.
+ * administrator who has learned one has learned the other — and a new governed
+ * type that IS a permission resource lands under a heading without a line of
+ * code here.
  */
-const groupByDomain = (entities: readonly GovernableEntity[]): DomainGroup[] => {
+const groupByDomain = (entities: readonly GovernableEntity[]): { key: string; entities: GovernableEntity[] }[] => {
   const byKey = new Map<string, GovernableEntity[]>();
 
   for (const entity of entities) {

@@ -1,6 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import createNextIntlPlugin from "next-intl/plugin";
+import { LEGACY_REDIRECTS } from "./legacy-redirects.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -16,6 +17,8 @@ const nextConfig = {
   turbopack: {
     root: join(__dirname, "..", ".."),
   },
+  // Screens that moved keep their old addresses working (legacy-redirects.mjs).
+  redirects: async () => LEGACY_REDIRECTS,
 };
 
 export default withNextIntl(nextConfig);

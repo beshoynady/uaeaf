@@ -11,8 +11,12 @@ import { resolveLocale } from "@/i18n/params";
  * Driven by the list the server sends rather than by a list written here, so a
  * thirteenth governed type appears on this screen without a line of code being
  * written for it — which is the whole reason the screen exists.
+ *
+ * Under Users & Access (IA §4.8): it decides who may approve what, for every
+ * content type. Its former address, `/news/policies`, redirects here
+ * (`legacy-redirects.mjs`).
  */
-export default async function PoliciesPage({ params }: { params: Promise<{ locale: string }> }) {
+const PoliciesPage = async ({ params }: { params: Promise<{ locale: string }> }) => {
   const locale = await resolveLocale(params);
   setRequestLocale(locale);
 
@@ -37,4 +41,6 @@ export default async function PoliciesPage({ params }: { params: Promise<{ local
       <PolicyBoard entities={screen.data.entities} approvers={screen.data.approvers} locale={locale} />
     </>
   );
-}
+};
+
+export default PoliciesPage;
