@@ -51,6 +51,34 @@ export class WorkflowInstancesRepository extends BaseRepository<WorkflowInstance
   }
 
   /**
+   * How many reviews would be stranded if this definition's steps changed.
+   *
+   * Replacing the steps archives the old ones, and `WorkflowStepsService.findById`
+   * is soft-delete aware. Which statuses that strands is not uniform, so this
+   * counts exactly the two it does:
+   *
+   * - `InProgress` resumes at its stored `currentStepId`, which would no longer
+   *   be found — the review could never be decided again, and matches nobody's
+   *   queue.
+   * - `Returned` also resumes at its stored `currentStepId` (`resubmit`), so a
+   *   record sent back for changes could never be sent in again.
+   *
+   * `Rejected` is deliberately absent: `resubmit` restarts a rejected review at
+   * `findFirst` of the definition, which reads whatever the steps are then. It
+   * survives the change, so counting it would block an administrator over a
+   * record that is in no danger.
+   */
+  async countOpenForDefinition(definitionId: Types.ObjectId): Promise<number> {
+    return this.model
+      .countDocuments({
+        workflowDefinitionId: definitionId,
+        status: { $in: ['InProgress', 'Returned'] },
+        archivedAt: null,
+      })
+      .exec();
+  }
+
+  /**
    * The most recent finished review of this record, if it ended in approval.
    *
    * `findActive` deliberately excludes `Approved`, so it cannot answer this —

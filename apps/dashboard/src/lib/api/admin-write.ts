@@ -98,6 +98,11 @@ export const EDITORIAL_ERROR_CODES = [
   "unknownList",
   /** A list drawn as one row was sent longer than the row holds. */
   "listTooLong",
+  /** Publishing an approval was asked for and no approval is standing —
+   *  the review was rejected, returned, or the draft has been resubmitted
+   *  since. Reachable from the status panel's "publish the approved
+   *  version", which is the only thing that sends it. */
+  "notApproved",
 ] as const;
 
 /**
@@ -135,6 +140,29 @@ export const HERO_ERROR_CODES = [
  * championship or event sponsorship the end it must have; point a Federation
  * sponsorship at the federation or at nothing; shorten a name.
  */
+/**
+ * Failures only the newsroom screens can produce — the article editor and the
+ * approval-policy screen (owner decisions 2026-09-20 and 2026-09-21).
+ *
+ * Apart from the lists above for the reason this file gives throughout: a
+ * permission matrix has no address to collide over and no running review to
+ * be blocked by, and copy written for a case that cannot happen is copy
+ * nobody will ever correct.
+ */
+export const NEWSROOM_ERROR_CODES = [
+  /** Another article already holds this address. The editor checks it as the
+   *  author types; this is the same refusal arriving from the index, which is
+   *  what actually enforces it. */
+  "slugTaken",
+  /** Approvers or approval mode were changed while reviews are running under
+   *  that arrangement. Refused outright rather than migrated: a running review
+   *  points at a step the change would archive. */
+  "reviewsInFlight",
+  /** More approvals required than there are distinct approvers — a step no
+   *  set of people could ever satisfy. */
+  "unsatisfiableStep",
+] as const;
+
 export const SPONSOR_RELATION_ERROR_CODES = [
   "sponsorshipEndsBeforeStart",
   "sponsorshipEndRequired",
@@ -146,7 +174,8 @@ export type WriteErrorCode =
   | (typeof WRITE_ERROR_CODES)[number]
   | (typeof EDITORIAL_ERROR_CODES)[number]
   | (typeof HERO_ERROR_CODES)[number]
-  | (typeof SPONSOR_RELATION_ERROR_CODES)[number];
+  | (typeof SPONSOR_RELATION_ERROR_CODES)[number]
+  | (typeof NEWSROOM_ERROR_CODES)[number];
 
 /** What a refusal says about where it happened, beside its code. */
 export interface FailureDetails {
@@ -288,6 +317,13 @@ const FROM_API_CODE: Record<string, WriteErrorCode> = {
   invalidListOrder: "invalidListOrder",
   unknownList: "unknownList",
   listTooLong: "listTooLong",
+  notApproved: "notApproved",
+  // The newsroom's own (owner decisions 2026-09-20 and 2026-09-21). Three
+  // different things to do: change the address, wait for the reviews to
+  // finish, lower the number of approvals asked for.
+  slugTaken: "slugTaken",
+  reviewsInFlight: "reviewsInFlight",
+  unsatisfiableStep: "unsatisfiableStep",
   incompleteCta: "incompleteCta",
   ctaLabelTooLong: "ctaLabelTooLong",
   invalidCtaUrl: "invalidCtaUrl",

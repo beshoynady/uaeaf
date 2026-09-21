@@ -23,14 +23,14 @@ const DELEGATION_ENABLED = false;
 /** `contactMessages` is the one workflow-participation (List A) entity
  *  type excluded from the revision/publication list (List B) — see
  *  `common/constants/workflow-entity-types.ts`. */
-function isPublicationEligible(entityType: WorkflowEntityType): entityType is PublicationEntityType {
+const isPublicationEligible = (entityType: WorkflowEntityType): entityType is PublicationEntityType => {
   return (PUBLICATION_ENTITY_TYPES as readonly string[]).includes(entityType);
-}
+};
 
 /** Whether `step` is one of the steps of the definition `instance` runs on. */
-function isStepOf(step: WorkflowStepDocument, instance: WorkflowInstanceDocument): boolean {
+const isStepOf = (step: WorkflowStepDocument, instance: WorkflowInstanceDocument): boolean => {
   return step.workflowDefinitionId.equals(instance.workflowDefinitionId as Types.ObjectId);
-}
+};
 
 export interface RequestContext {
   ipAddress?: string;
@@ -530,6 +530,18 @@ export class WorkflowInstancesService {
     }
 
     return pending;
+  }
+
+  /**
+   * How many reviews are running under a definition, for the one caller that
+   * must not change its steps while any are.
+   *
+   * Exposed on the service rather than read from the repository directly so
+   * that the rule about *which* statuses are stranded by a step change lives
+   * in one place, beside the `resubmit` logic that determines it.
+   */
+  async countOpenForDefinition(definitionId: Types.ObjectId): Promise<number> {
+    return this.repository.countOpenForDefinition(definitionId);
   }
 
   /** The approval standing on a record and waiting to be published, if there

@@ -2,7 +2,12 @@
 
 import { useRouter } from "@/i18n/navigation";
 import { PolicyManager } from "./policy-manager";
-import type { ApprovalChoice, ApproverOption, GovernableEntity } from "@/lib/admin/approval-policies";
+import type {
+  ApprovalChoice,
+  ApprovalSaveRefusal,
+  ApproverOption,
+  GovernableEntity,
+} from "@/lib/admin/approval-policies";
 
 /**
  * The policy screen, wired to the API.
@@ -26,7 +31,7 @@ export const PolicyBoard = ({
 }) => {
   const router = useRouter();
 
-  const save = async (entityType: string, choice: ApprovalChoice) => {
+  const save = async (entityType: string, choice: ApprovalChoice): Promise<ApprovalSaveRefusal | null> => {
     const response = await fetch("/api/admin/approval-policies", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -39,7 +44,16 @@ export const PolicyBoard = ({
       // the label sent. Re-reading is how the screen shows what was saved
       // rather than what was asked for.
       router.refresh();
+      return null;
     }
+
+    // The screen's own lock is computed from counts read when the page
+    // loaded. A review submitted between that load and this click is invisible
+    // to it, and the server refuses on what is true at the moment of the write
+    // (CLAUDE.md §31). Discarding that refusal would leave the administrator
+    // looking at a button they pressed and an arrangement that never changed.
+    const refusal = (await response.json().catch(() => null)) as ApprovalSaveRefusal | null;
+    return { code: refusal?.code ?? "unknown", inFlightReviews: refusal?.inFlightReviews };
   };
 
   return <PolicyManager entities={entities} approvers={approvers} locale={locale} onSave={save} />;

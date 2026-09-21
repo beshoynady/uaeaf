@@ -52,3 +52,8 @@ export class WorkflowInstance extends BaseSchema {
 
 export const WorkflowInstanceSchema = SchemaFactory.createForClass(WorkflowInstance);
 WorkflowInstanceSchema.index({ entityType: 1, entityId: 1 });
+// Every load of the approval-policy screen asks, once per governed type,
+// whether reviews are running under that type's definition. Unindexed that is
+// a collection scan per row, on the collection that grows with every review
+// the federation has ever run.
+WorkflowInstanceSchema.index({ workflowDefinitionId: 1, status: 1 });

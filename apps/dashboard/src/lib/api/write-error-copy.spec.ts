@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 import ar from "../../../messages/ar.json";
 import en from "../../../messages/en.json";
-import { EDITORIAL_ERROR_CODES, HERO_ERROR_CODES, SPONSOR_RELATION_ERROR_CODES, WRITE_ERROR_CODES } from "./admin-write";
+import {
+  EDITORIAL_ERROR_CODES,
+  HERO_ERROR_CODES,
+  NEWSROOM_ERROR_CODES,
+  SPONSOR_RELATION_ERROR_CODES,
+  WRITE_ERROR_CODES,
+} from "./admin-write";
 import { PANEL_ACTIONS } from "@/lib/admin/editorial-state";
 import { REVISION_STATE_KEYS } from "@/lib/admin/revisions";
 
@@ -29,7 +35,7 @@ const SURFACES = [
   // no publishing policy to be missing. Demanding copy for them there would
   // mean writing sentences for cases that cannot occur, which is how a
   // catalogue fills with text nobody ever reads or corrects.
-  { namespace: "WriteErrors", prefix: "", codes: [...WRITE_ERROR_CODES, ...EDITORIAL_ERROR_CODES, ...HERO_ERROR_CODES, ...SPONSOR_RELATION_ERROR_CODES] },
+  { namespace: "WriteErrors", prefix: "", codes: [...WRITE_ERROR_CODES, ...EDITORIAL_ERROR_CODES, ...HERO_ERROR_CODES, ...SPONSOR_RELATION_ERROR_CODES, ...NEWSROOM_ERROR_CODES] },
   { namespace: "UsersDirectory", prefix: "assign_", codes: WRITE_ERROR_CODES },
   { namespace: "UsersDirectory", prefix: "status_", codes: WRITE_ERROR_CODES },
   { namespace: "RolesWorkbench", prefix: "save_", codes: WRITE_ERROR_CODES },

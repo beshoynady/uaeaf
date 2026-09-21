@@ -54,6 +54,25 @@ export const NEWS_WORKFLOW_NAME = { ar: 'اعتماد الأخبار', en: 'News
  *   refuses the same thing; refusing it here too means the caller is told at
  *   the choice rather than by a rejected write.
  */
+/**
+ * What an approval arrangement MEANS, as one comparable string.
+ *
+ * The approvers, the threshold, and the order — and nothing else. Step ids are
+ * deliberately absent: replacing a step gives it a new id while leaving the
+ * arrangement identical, and comparing ids would report a change that nobody
+ * made.
+ *
+ * Exported because two callers must agree on when an arrangement changed: the
+ * seed, which replaces the steps only then, and the policy screen's service,
+ * which refuses the change only then. Two implementations of one rule
+ * eventually disagree, and the disagreement shows up as reviews that cannot be
+ * decided.
+ */
+export const arrangementShape = (
+  rows: readonly { assigneeIds: readonly Types.ObjectId[]; requiredApprovals: number }[],
+): string =>
+  rows.map((row) => `${row.assigneeIds.map(String).sort().join(',')}:${row.requiredApprovals}`).join('|');
+
 export const buildSteps = (
   mode: ApprovalMode,
   approverIds: readonly Types.ObjectId[],
@@ -139,17 +158,14 @@ export const seedNewsApproval = async (
   // those reviews then matched nobody's queue and could never be decided —
   // a newsroom's work quietly stranded by a seed that reported success.
   //
-  // Compared by what a step MEANS rather than by its id: the same approvers,
-  // the same threshold, in the same order.
+  // Compared by `arrangementShape` — by what a step MEANS rather than by its
+  // id: the same approvers, the same threshold, in the same order.
   const existingSteps = await models.workflowSteps
     .find({ workflowDefinitionId: definitionId, archivedAt: null })
     .sort({ sequenceOrder: 1 })
     .lean<{ sequenceOrder: number; assigneeIds: Types.ObjectId[]; requiredApprovals: number }[]>();
 
-  const shape = (rows: readonly { assigneeIds: readonly Types.ObjectId[]; requiredApprovals: number }[]) =>
-    rows.map((row) => `${row.assigneeIds.map(String).sort().join(',')}:${row.requiredApprovals}`).join('|');
-
-  if (shape(existingSteps) !== shape(steps)) {
+  if (arrangementShape(existingSteps) !== arrangementShape(steps)) {
     // Archived rather than deleted, so the partial-unique index on
     // (definition, order) does not refuse the replacements, and so a finished
     // review's history still points at the step that decided it.

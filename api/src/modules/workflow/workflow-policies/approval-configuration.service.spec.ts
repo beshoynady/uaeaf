@@ -5,6 +5,7 @@ import { ApprovalConfigurationService } from './approval-configuration.service.j
 import { WorkflowPoliciesService } from './workflow-policies.service.js';
 import { WorkflowDefinitionsService } from '../workflow-definitions/workflow-definitions.service.js';
 import { WorkflowStepsService } from '../workflow-steps/workflow-steps.service.js';
+import { WorkflowInstancesService } from '../workflow-instances/workflow-instances.service.js';
 
 /**
  * Turning approvals on for any entity type, from one screen.
@@ -21,7 +22,10 @@ describe('ApprovalConfigurationService', () => {
   const [a, b, c] = [new Types.ObjectId(), new Types.ObjectId(), new Types.ObjectId()];
   const ids = [a, b, c].map(String);
 
-  const makeDeps = (existingDefinition: unknown = null) => {
+  const makeDeps = (existingDefinition: unknown = null, openReviews = 0) => {
+    const instancesService = {
+      countOpenForDefinition: jest.fn(async () => openReviews),
+    } as unknown as jest.Mocked<WorkflowInstancesService>;
     const definitionsService = {
       findByEntityType: jest.fn(async () => existingDefinition),
       create: jest.fn(async () => ({ _id: definitionId })),
@@ -36,11 +40,16 @@ describe('ApprovalConfigurationService', () => {
       findByEntityTypeAndOperation: jest.fn(async () => null),
     } as unknown as jest.Mocked<WorkflowPoliciesService>;
 
-    return { definitionsService, stepsService, policiesService };
+    return { definitionsService, stepsService, policiesService, instancesService };
   };
 
   const makeService = (deps: ReturnType<typeof makeDeps>) =>
-    new ApprovalConfigurationService(deps.policiesService, deps.definitionsService, deps.stepsService);
+    new ApprovalConfigurationService(
+      deps.policiesService,
+      deps.definitionsService,
+      deps.stepsService,
+      deps.instancesService,
+    );
 
   it('refuses an entity type the platform does not guard', async () => {
     const deps = makeDeps();
@@ -104,6 +113,75 @@ describe('ApprovalConfigurationService', () => {
     // approver nobody chose still able to hold up every publication.
     const [, steps] = deps.stepsService.replaceForDefinition.mock.calls[0] as [Types.ObjectId, unknown[]];
     expect(steps).toHaveLength(3);
+  });
+
+
+  describe('while reviews are running under this policy', () => {
+    it('refuses to change who decides', async () => {
+      const deps = makeDeps({ _id: definitionId, entityType, isActive: true }, 2);
+
+      // Changing the approvers replaces the steps, and a replaced step is
+      // archived — which is the step every running review points at. They
+      // would match nobody's queue and could never be decided again: work
+      // stranded by a settings change that reported success.
+      await expect(
+        makeService(deps).configure(entityType, { enabled: true, mode: 'ALL', approverIds: [String(a), String(b)] }),
+      ).rejects.toMatchObject({ response: { code: 'reviewsInFlight' } });
+    });
+
+    it('leaves the running reviews completely untouched when it refuses', async () => {
+      const deps = makeDeps({ _id: definitionId, entityType, isActive: true }, 2);
+
+      await expect(
+        makeService(deps).configure(entityType, { enabled: true, mode: 'ALL', approverIds: [String(a), String(b)] }),
+      ).rejects.toThrow(ConflictException);
+
+      // Nothing was archived, nothing was created, and the policy still names
+      // the same definition. A refusal that half-applied would be worse than
+      // the defect it prevents.
+      expect(deps.stepsService.replaceForDefinition).not.toHaveBeenCalled();
+      expect(deps.policiesService.upsert).not.toHaveBeenCalled();
+    });
+
+    it('says how many reviews are in the way', async () => {
+      const deps = makeDeps({ _id: definitionId, entityType, isActive: true }, 3);
+
+      await expect(
+        makeService(deps).configure(entityType, { enabled: true, mode: 'ALL', approverIds: [String(a), String(b)] }),
+      ).rejects.toMatchObject({ response: { message: expect.stringContaining('3') } });
+    });
+
+    it('still allows switching approvals off', async () => {
+      const deps = makeDeps({ _id: definitionId, entityType, isActive: true }, 2);
+
+      // Disabling touches no step, so no running review is orphaned by it —
+      // and refusing it would make a misconfigured policy impossible to turn
+      // off while anything is in flight, which is exactly when an
+      // administrator most needs to.
+      await expect(makeService(deps).configure(entityType, { enabled: false })).resolves.toBeDefined();
+    });
+
+    it('allows a save that changes nothing about the arrangement', async () => {
+      const deps = makeDeps({ _id: definitionId, entityType, isActive: true }, 2);
+      deps.stepsService.findByDefinition = jest.fn(async () => [
+        { _id: new Types.ObjectId(), assigneeIds: [new Types.ObjectId(a)], requiredApprovals: 1 },
+      ]) as never;
+
+      // Re-saving the same people is a no-op. Refusing it would tell an
+      // administrator their own unchanged settings are now illegal.
+      await expect(
+        makeService(deps).configure(entityType, { enabled: true, mode: 'ALL', approverIds: [String(a)] }),
+      ).resolves.toBeDefined();
+      expect(deps.stepsService.replaceForDefinition).not.toHaveBeenCalled();
+    });
+  });
+
+  it('changes the arrangement freely when nothing is running', async () => {
+    const deps = makeDeps({ _id: definitionId, entityType, isActive: true }, 0);
+
+    await makeService(deps).configure(entityType, { enabled: true, mode: 'ALL', approverIds: [String(a), String(b)] });
+
+    expect(deps.stepsService.replaceForDefinition).toHaveBeenCalled();
   });
 
   it('refuses a threshold no set of approvers could ever meet', async () => {

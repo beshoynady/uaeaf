@@ -3,7 +3,8 @@ import { Types } from 'mongoose';
 import { WorkflowPoliciesService } from './workflow-policies.service.js';
 import { WorkflowDefinitionsService } from '../workflow-definitions/workflow-definitions.service.js';
 import { WorkflowStepsService } from '../workflow-steps/workflow-steps.service.js';
-import { buildSteps } from '../../../bootstrap/seed-news-approval.js';
+import { WorkflowInstancesService } from '../workflow-instances/workflow-instances.service.js';
+import { arrangementShape, buildSteps } from '../../../bootstrap/seed-news-approval.js';
 import type { ApprovalMode } from '../../../bootstrap/seed-news-approval.js';
 import { PERMISSION_RESOURCES } from '../../../common/constants/permission-resources.js';
 import { WORKFLOW_ENTITY_TYPES } from '../../../common/constants/workflow-entity-types.js';
@@ -24,6 +25,14 @@ export interface GovernableEntity {
   mode: ApprovalMode | null;
   approverIds: string[];
   threshold: number;
+  /**
+   * Reviews currently running under this type's definition.
+   *
+   * On the screen it is the reason the arrangement is locked, shown before the
+   * administrator edits rather than after they save. Above zero, changing who
+   * decides is refused — see `configure`.
+   */
+  inFlightReviews: number;
 }
 
 /**
@@ -56,6 +65,7 @@ export class ApprovalConfigurationService {
     private readonly policiesService: WorkflowPoliciesService,
     private readonly definitionsService: WorkflowDefinitionsService,
     private readonly stepsService: WorkflowStepsService,
+    private readonly instancesService: WorkflowInstancesService,
   ) {}
 
   /** The types an administrator may govern, with each one's current state. */
@@ -69,7 +79,8 @@ export class ApprovalConfigurationService {
    * @throws BadRequestException when the type is not one this platform guards,
    *   or is not one the workflow engine governs.
    * @throws ConflictException when the choice could never be satisfied — more
-   *   approvals required than there are distinct approvers.
+   *   approvals required than there are distinct approvers — or when reviews
+   *   are running that changing the arrangement would strand.
    */
   async configure(entityType: string, choice: ApprovalConfiguration): Promise<GovernableEntity> {
     const governed = this.assertGovernable(entityType);
@@ -95,7 +106,12 @@ export class ApprovalConfigurationService {
         } as never)
       )._id as Types.ObjectId);
 
-    await this.stepsService.replaceForDefinition(definitionId, steps);
+    if (existing && (await this.arrangementChanged(definitionId, steps))) {
+      await this.assertNothingRunning(definitionId);
+      await this.stepsService.replaceForDefinition(definitionId, steps);
+    } else if (!existing) {
+      await this.stepsService.replaceForDefinition(definitionId, steps);
+    }
 
     await this.policiesService.upsert(governed, 'Edit', {
       workflowRequired: true,
@@ -124,6 +140,53 @@ export class ApprovalConfigurationService {
 
     void existing;
     return this.describe(entityType);
+  }
+
+  /**
+   * Whether these steps would actually change who decides, and how.
+   *
+   * Replacing unconditionally looked idempotent and was not: it archived the
+   * step every running review points at and made a new one, so `findById` —
+   * which is soft-delete aware — stopped finding it. Comparing by
+   * `arrangementShape` rather than by id means re-saving an unchanged policy
+   * writes nothing, and so needs no permission to write nothing.
+   */
+  private async arrangementChanged(
+    definitionId: Types.ObjectId,
+    steps: readonly { assigneeIds: readonly Types.ObjectId[]; requiredApprovals: number }[],
+  ): Promise<boolean> {
+    const current = await this.stepsService.findByDefinition(definitionId.toString());
+    return arrangementShape(current) !== arrangementShape(steps);
+  }
+
+  /**
+   * Refuses the change outright while reviews are running under it.
+   *
+   * Not a migration, deliberately (owner decision 2026-09-21). Re-pointing a
+   * running review at a step chosen by different people would mean an article
+   * approved by approvers nobody in that review ever consented to, and a
+   * sequential review half-decided under one arrangement and half under
+   * another. There is no reading of a half-migrated approval that is safe to
+   * publish from, so the arrangement waits for the reviews instead.
+   *
+   * The count travels in the payload: the screen states it, and a refusal that
+   * says only "there are reviews" leaves the administrator no way to judge
+   * whether to wait ten minutes or chase somebody.
+   *
+   * @throws ConflictException when any review is running.
+   */
+  private async assertNothingRunning(definitionId: Types.ObjectId): Promise<void> {
+    const inFlightReviews = await this.instancesService.countOpenForDefinition(definitionId);
+    if (inFlightReviews === 0) return;
+
+    throw new ConflictException({
+      code: 'reviewsInFlight',
+      inFlightReviews,
+      message:
+        `${inFlightReviews} review(s) are running under this arrangement. ` +
+        'Changing who approves would leave each of them pointing at a step that no longer exists, ' +
+        'so they could never be decided. Finish or cancel them first.',
+    });
   }
 
   /** @throws ConflictException when the arrangement is unsatisfiable. */
@@ -183,6 +246,12 @@ export class ApprovalConfigurationService {
       mode: this.modeOf(steps),
       approverIds: steps.flatMap((step) => step.assigneeIds.map(String)),
       threshold: steps[0]?.requiredApprovals ?? 1,
+      // Read for every row of the screen, including the types with no policy:
+      // a type whose definition exists but whose reviews are running is
+      // exactly the row that must be drawn locked before it is touched.
+      inFlightReviews: definition
+        ? await this.instancesService.countOpenForDefinition(definition._id as Types.ObjectId)
+        : 0,
     };
   }
 

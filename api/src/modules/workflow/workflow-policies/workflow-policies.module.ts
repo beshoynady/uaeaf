@@ -7,6 +7,7 @@ import { ApprovalConfigurationService } from './approval-configuration.service.j
 import { WorkflowStepsModule } from '../workflow-steps/workflow-steps.module.js';
 import { WorkflowPoliciesController } from './workflow-policies.controller.js';
 import { WorkflowDefinitionsModule } from '../workflow-definitions/workflow-definitions.module.js';
+import { WorkflowInstancesModule } from '../workflow-instances/workflow-instances.module.js';
 
 @Module({
   imports: [
@@ -16,6 +17,10 @@ import { WorkflowDefinitionsModule } from '../workflow-definitions/workflow-defi
     WorkflowDefinitionsModule,
     // The configuration service writes the steps an arrangement translates to.
     WorkflowStepsModule,
+    // ...and must not write them while reviews point at the ones it would
+    // archive. The dependency runs one way only: the engine never reads a
+    // policy back, which is what keeps this from being a cycle.
+    WorkflowInstancesModule,
   ],
   controllers: [WorkflowPoliciesController],
   providers: [WorkflowPoliciesRepository, WorkflowPoliciesService, ApprovalConfigurationService],

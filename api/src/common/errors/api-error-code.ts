@@ -115,6 +115,11 @@ export const API_ERROR_CODES = [
   // different corrections, neither of which is "try again".
   'unsatisfiableStep',
   'duplicateStepOrder',
+  // Changing who approves replaces the steps, and a replaced step is archived
+  // — which is the step reviews already running point at. Its own code because
+  // the fix is neither "fix a field" nor "try again": it is to wait for those
+  // reviews to finish, or finish them, and the dashboard says how many.
+  'reviewsInFlight',
 ] as const;
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
