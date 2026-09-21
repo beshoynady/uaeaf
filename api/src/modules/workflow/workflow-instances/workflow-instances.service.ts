@@ -489,6 +489,49 @@ export class WorkflowInstancesService {
     return this.repository.findByEntity(entityType, entityId);
   }
 
+  /**
+   * The reviews waiting on THIS person, and nothing else.
+   *
+   * Two rules make the list theirs. The first is obvious: the current step has
+   * to name them. The second is the one that is easy to miss — an approval
+   * already given does not remove a parallel step that still needs others, so
+   * without it the reviewer is invited back to press a button that does
+   * nothing and changes nothing.
+   *
+   * Sequential rather than parallel over the instances: a federation has a
+   * handful of reviews open at a time, and a burst of concurrent step reads
+   * against a single-node database buys nothing worth the contention.
+   */
+  async findPendingFor(actorId: string): Promise<WorkflowInstanceDocument[]> {
+    const running = await this.repository.findInProgress();
+    const actorObjectId = new Types.ObjectId(actorId);
+    const pending: WorkflowInstanceDocument[] = [];
+
+    for (const instance of running) {
+      const currentStepId = instance.currentStepId as Types.ObjectId | null;
+      // No current step means no decision can land anywhere.
+      if (!currentStepId) {
+        continue;
+      }
+
+      const step = await this.stepsService.findById(currentStepId.toString());
+      if (!step?.assigneeIds.some((assignee) => assignee.equals(actorObjectId))) {
+        continue;
+      }
+
+      const decided = await this.actionHistoryService.hasApprovedInCurrentCycle(
+        instance._id as Types.ObjectId,
+        currentStepId,
+        actorObjectId,
+      );
+      if (!decided) {
+        pending.push(instance);
+      }
+    }
+
+    return pending;
+  }
+
   /** The approval standing on a record and waiting to be published, if there
    *  is one. Exposed for `PublishingService`, which is the only thing allowed
    *  to act on it — this class approves and stops. */

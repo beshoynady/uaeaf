@@ -1,9 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsMongoId, IsOptional, IsString, Matches, MaxLength, ValidateNested } from 'class-validator';
+import { IsIn, IsMongoId, IsOptional, IsString, Matches, MaxLength, ValidateNested } from 'class-validator';
 import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
 import { LocalizedRichTextDto } from '../../../../common/dto/localized-rich-text.dto.js';
 import { PageSeoDto } from '../../../../common/dto/page-seo.dto.js';
+import { ARTICLE_CATEGORIES } from '../schemas/article.schema.js';
+import type { ArticleCategory } from '../schemas/article.schema.js';
 
 /**
  * Lowercase letters, digits, and single hyphens between them.
@@ -23,6 +25,19 @@ export class CreateArticleDto {
   @ValidateNested()
   @Type(() => LocalizedTextDto)
   title: LocalizedTextDto;
+
+  @ApiProperty({
+    enum: ARTICLE_CATEGORIES,
+    required: false,
+    default: 'General',
+    description:
+      "Which shelf of the newsroom this belongs on. Not `externalMediaCoverage`, which is a " +
+      'separate collection of links to coverage published elsewhere — this labels an article the ' +
+      'federation wrote itself. Omitted means General.',
+  })
+  @IsOptional()
+  @IsIn(ARTICLE_CATEGORIES)
+  category?: ArticleCategory;
 
   @ApiProperty({
     description: 'URL segment, shared by both language editions of the story.',

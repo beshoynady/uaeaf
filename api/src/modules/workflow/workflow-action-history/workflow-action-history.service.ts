@@ -40,6 +40,16 @@ export class WorkflowActionHistoryService {
     return this.repository.findByInstances(workflowInstanceIds);
   }
 
+  /** Whether this actor already decided this step in the current cycle — what
+   *  keeps a parallel step that still needs others out of their own queue. */
+  async hasApprovedInCurrentCycle(
+    workflowInstanceId: Types.ObjectId,
+    workflowStepId: Types.ObjectId,
+    actorId: Types.ObjectId,
+  ): Promise<boolean> {
+    return this.repository.hasApprovedInCurrentCycle(workflowInstanceId, workflowStepId, actorId);
+  }
+
   /** Distinct actors who approved `workflowStepId` in the instance's current
    *  submission cycle — WorkflowInstancesService uses this to decide whether
    *  a step's `requiredApprovals` threshold is met. See the repository for

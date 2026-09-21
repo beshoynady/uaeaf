@@ -92,9 +92,11 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
     register: "neutral",
     registerBasis: "§3.34.2 News/Media — 'Neutral background, Green typography accents'.",
     schemaType: "CollectionPage",
-    // No public read exists for articles: `CT-ARTICLE-001` has no @Public()
-    // controller upstream at all.
-    listEndpoint: null,
+    // Live since the articles module was built (2026-09-20). Chapter 14 §11's
+    // noindex hold lifts by itself: `isIndexable` asks this same endpoint, so
+    // a newsroom that has published nothing is still held, and one that has
+    // published something is not.
+    listEndpoint: "/articles/public",
   },
   {
     key: "athletes",

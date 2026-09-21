@@ -19,8 +19,13 @@ import { Types, type Model } from 'mongoose';
  * only when they differ, and a policy already pointing at it is left alone.
  */
 
-/** How the administrator's choice of approvers becomes workflow steps. */
-export type ApprovalMode = 'ALL' | 'THRESHOLD' | 'SEQUENTIAL';
+/** How the administrator's choice of approvers becomes workflow steps.
+ *
+ *  Exported as a runtime list as well as a type because the HTTP layer
+ *  validates against it (`ConfigureApprovalDto`) and a type alone cannot be
+ *  checked at a request boundary. */
+export const APPROVAL_MODES = ['ALL', 'THRESHOLD', 'SEQUENTIAL'] as const;
+export type ApprovalMode = (typeof APPROVAL_MODES)[number];
 
 /** One step as `workflowSteps` holds it, minus the definition it belongs to —
  *  the caller adds that once the definition exists, so this stays a pure
@@ -126,17 +131,36 @@ export const seedNewsApproval = async (
       })
     )._id as Types.ObjectId);
 
-  // Replaced rather than merged: the steps ARE the administrator's choice, and
-  // leaving an old step behind would add an approver nobody chose. Archived
-  // rather than deleted, so the partial-unique index on (definition, order)
-  // does not refuse the replacements.
-  await models.workflowSteps.updateMany(
-    { workflowDefinitionId: definitionId, archivedAt: null },
-    { $set: { archivedAt: new Date() } },
-  );
+  // Only when they differ.
+  //
+  // Replacing unconditionally looked idempotent and was not: every run
+  // archived the step that in-flight reviews pointed at and created a new one
+  // in its place, orphaning each of them. `findById` is soft-delete aware, so
+  // those reviews then matched nobody's queue and could never be decided —
+  // a newsroom's work quietly stranded by a seed that reported success.
+  //
+  // Compared by what a step MEANS rather than by its id: the same approvers,
+  // the same threshold, in the same order.
+  const existingSteps = await models.workflowSteps
+    .find({ workflowDefinitionId: definitionId, archivedAt: null })
+    .sort({ sequenceOrder: 1 })
+    .lean<{ sequenceOrder: number; assigneeIds: Types.ObjectId[]; requiredApprovals: number }[]>();
 
-  for (const step of steps) {
-    await models.workflowSteps.create({ ...step, workflowDefinitionId: definitionId, assigneeType: 'User' });
+  const shape = (rows: readonly { assigneeIds: readonly Types.ObjectId[]; requiredApprovals: number }[]) =>
+    rows.map((row) => `${row.assigneeIds.map(String).sort().join(',')}:${row.requiredApprovals}`).join('|');
+
+  if (shape(existingSteps) !== shape(steps)) {
+    // Archived rather than deleted, so the partial-unique index on
+    // (definition, order) does not refuse the replacements, and so a finished
+    // review's history still points at the step that decided it.
+    await models.workflowSteps.updateMany(
+      { workflowDefinitionId: definitionId, archivedAt: null },
+      { $set: { archivedAt: new Date() } },
+    );
+
+    for (const step of steps) {
+      await models.workflowSteps.create({ ...step, workflowDefinitionId: definitionId, assigneeType: 'User' });
+    }
   }
 
   const existingPolicy = await models.workflowPolicies

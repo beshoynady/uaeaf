@@ -1222,6 +1222,20 @@
         ]
       }
     },
+    "/api/v1/workflow-policies/governable": {
+      "get": {
+        "operationId": "WorkflowPoliciesController_governable_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "workflow-policies"
+        ]
+      }
+    },
     "/api/v1/workflow-policies": {
       "post": {
         "operationId": "WorkflowPoliciesController_create_v1",
@@ -1351,6 +1365,39 @@
         ]
       }
     },
+    "/api/v1/workflow-policies/{entityType}/approval": {
+      "put": {
+        "operationId": "WorkflowPoliciesController_configureApproval_v1",
+        "parameters": [
+          {
+            "name": "entityType",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfigureApprovalDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "workflow-policies"
+        ]
+      }
+    },
     "/api/v1/workflow-instances": {
       "post": {
         "operationId": "WorkflowInstancesController_create_v1",
@@ -1367,6 +1414,20 @@
         },
         "responses": {
           "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "workflow-instances"
+        ]
+      }
+    },
+    "/api/v1/workflow-instances/pending-mine": {
+      "get": {
+        "operationId": "WorkflowInstancesController_pendingMine_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
             "description": ""
           }
         },
@@ -7288,6 +7349,48 @@
               "default": 50,
               "type": "number"
             }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "description": "Narrow to one shelf of the newsroom. Omitted means every category.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "General",
+                "FederationInMedia"
+              ]
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Published on or after this date (inclusive).",
+            "schema": {
+              "example": "2026-01-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "Published on or before this date, to the end of that day (inclusive).",
+            "schema": {
+              "example": "2026-06-30",
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Matches either language of the headline.",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -7400,6 +7503,19 @@
               "enum": [
                 "Draft",
                 "Live"
+              ]
+            }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "description": "Narrow to one shelf of the newsroom.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "General",
+                "FederationInMedia"
               ]
             }
           },
@@ -8875,6 +8991,39 @@
           "operation",
           "workflowRequired",
           "allowHardDelete"
+        ]
+      },
+      "ConfigureApprovalDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "description": "Whether this entity type needs a review before publication. False leaves the definition and its steps in place — turning approvals back on later restores the same approvers."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "ALL",
+              "THRESHOLD",
+              "SEQUENTIAL"
+            ],
+            "description": "ALL — every approver must approve. THRESHOLD — the chosen number of them. SEQUENTIAL — each in the order listed. Required when enabling."
+          },
+          "approverIds": {
+            "description": "The users who decide, in order — the order matters for SEQUENTIAL. Required when enabling.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "threshold": {
+            "type": "number",
+            "description": "How many approvals are needed, for THRESHOLD only. Defaults to 1.",
+            "default": 1
+          }
+        },
+        "required": [
+          "enabled"
         ]
       },
       "SetWorkflowPolicyDto": {
@@ -14027,6 +14176,13 @@
           "slug": {
             "type": "string"
           },
+          "category": {
+            "type": "string",
+            "enum": [
+              "General",
+              "FederationInMedia"
+            ]
+          },
           "title": {
             "$ref": "#/components/schemas/LocalizedTextDto"
           },
@@ -14069,6 +14225,7 @@
         "required": [
           "id",
           "slug",
+          "category",
           "title",
           "authorDisplayName",
           "publishDate",
@@ -14088,6 +14245,15 @@
                 "$ref": "#/components/schemas/LocalizedTextDto"
               }
             ]
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "General",
+              "FederationInMedia"
+            ],
+            "default": "General",
+            "description": "Which shelf of the newsroom this belongs on. Not `externalMediaCoverage`, which is a separate collection of links to coverage published elsewhere — this labels an article the federation wrote itself. Omitted means General."
           },
           "slug": {
             "type": "string",
@@ -14138,6 +14304,13 @@
         "properties": {
           "title": {
             "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "General",
+              "FederationInMedia"
+            ]
           },
           "slug": {
             "type": "string",

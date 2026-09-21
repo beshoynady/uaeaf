@@ -12,6 +12,7 @@ import { PublicationsService } from '../../workflow/publications/publications.se
 import { AuditLogsService } from '../../workflow/audit-logs/audit-logs.service.js';
 import { toPageSeo } from '../../../common/dto/page-seo.dto.js';
 import { isDuplicateKeyError } from '../../../common/utils/mongo-errors.util.js';
+import type { ArticleCategory } from './schemas/article.schema.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 import type { RequestContext } from '../../workflow/workflow-instances/workflow-instances.service.js';
 
@@ -30,6 +31,46 @@ interface ArticleState extends Record<string, unknown> {
 
 /** Everything a Mongo regular expression treats as syntax. */
 const REGEX_SPECIALS = /[.*+?^${}()|[\]\\]/g;
+
+/** A literal search term, safe to hand to Mongo. Unescaped, a `.*` typed into
+ *  a public search box is a collection scan any visitor can trigger at will. */
+const literalPattern = (term: string): RegExp => new RegExp(term.replace(REGEX_SPECIALS, '\\$&'), 'i');
+
+/** What a visitor may narrow the public feed by. */
+export interface PublicFeedFilter {
+  category?: ArticleCategory;
+  /** Inclusive, an ISO date or date-time. */
+  from?: string;
+  /** Inclusive to the end of that day — see `endOfDay`. */
+  to?: string;
+  search?: string;
+}
+
+/**
+ * A date the caller supplied, or null where they supplied nonsense.
+ *
+ * `new Date('not-a-date')` is an Invalid Date, and every comparison against one
+ * is false — so passing it through would answer an empty feed with nothing to
+ * explain it. Null instead, and the bound is simply not applied.
+ */
+const parsedDate = (value: string | undefined): Date | null => {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+/**
+ * The last instant of the day a reader named.
+ *
+ * "Up to 30 June" means the whole of the 30th. Taking the bare date would mean
+ * midnight, which silently drops everything published that day — the kind of
+ * off-by-one nobody reports, because the result still looks like a list.
+ */
+const endOfDay = (date: Date): Date => {
+  const end = new Date(date);
+  end.setUTCHours(23, 59, 59, 999);
+  return end;
+};
 
 /** Implements: articles collection, Domain 4 — News & Editorial.
  *
@@ -62,6 +103,10 @@ export class ArticlesService {
     const actorId = new Types.ObjectId(actor.userId);
     const created = await this.createOrConflict({
       title: dto.title,
+      // The schema defaults this too; stating it here means the created
+      // document says which shelf it is on rather than relying on a default
+      // two layers away.
+      category: dto.category ?? 'General',
       slug: dto.slug,
       coverMediaId: dto.coverMediaId ? new Types.ObjectId(dto.coverMediaId) : null,
       body: dto.body,
@@ -116,6 +161,7 @@ export class ArticlesService {
     // `undefined` over fields nobody touched, which Mongoose stores as a
     // clearing rather than ignoring.
     if (dto.title !== undefined) $set.title = dto.title;
+    if (dto.category !== undefined) $set.category = dto.category;
     if (dto.slug !== undefined) $set.slug = dto.slug;
     if (dto.body !== undefined) $set.body = dto.body;
     if (dto.authorDisplayName !== undefined) $set.authorDisplayName = dto.authorDisplayName;
@@ -209,6 +255,9 @@ export class ArticlesService {
     if (query.publicationState) {
       filter.publicationState = query.publicationState;
     }
+    if (query.category) {
+      filter.category = query.category;
+    }
     if (!query.includeArchived) {
       filter.archived = false;
     }
@@ -227,15 +276,50 @@ export class ArticlesService {
   findById = async (id: string): Promise<ArticleDocument | null> => this.repository.findById(id);
 
   /**
+   * The public feed's filter: always live and unhidden, plus whatever the
+   * reader narrowed it by.
+   *
+   * Only supplied fields become keys. Sending `{ category: undefined }` to
+   * Mongoose matches documents that HAVE no category, which is the opposite of
+   * "every category" — the same trap `AuditLogsService.buildFilter` documents.
+   */
+  private publicFilter = (narrow: PublicFeedFilter): QueryFilter<ArticleDocument> => {
+    const filter: Record<string, unknown> = { publicationState: 'Live', archived: false };
+
+    if (narrow.category) {
+      filter.category = narrow.category;
+    }
+
+    const from = parsedDate(narrow.from);
+    const to = parsedDate(narrow.to);
+    if (from || to) {
+      filter.publishDate = {
+        ...(from ? { $gte: from } : {}),
+        ...(to ? { $lte: endOfDay(to) } : {}),
+      };
+    }
+
+    if (narrow.search) {
+      filter.$or = [{ 'title.ar': literalPattern(narrow.search) }, { 'title.en': literalPattern(narrow.search) }];
+    }
+
+    return filter as QueryFilter<ArticleDocument>;
+  };
+
+  /**
    * The public feed: live, not hidden, newest first.
    *
    * Each row's content comes from its Live publication's revision, never from
    * the article row — the "Approved ≠ Published" rule. The row is read only to
    * learn which articles are live and in what order.
    */
-  findPublicPage = async (page: number, limit: number): Promise<{ items: ArticlePublicDto[]; total: number }> => {
+  findPublicPage = async (
+    page: number,
+    limit: number,
+    narrow: PublicFeedFilter = {},
+  ): Promise<{ items: ArticlePublicDto[]; total: number }> => {
     const { items, total } = await this.repository.findPage(
-      { publicationState: 'Live', archived: false } as QueryFilter<ArticleDocument>,
+      this.publicFilter(narrow),
       (page - 1) * limit,
       limit,
     );

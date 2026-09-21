@@ -3,7 +3,8 @@ import { Types } from 'mongoose';
 import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
 import { PageSeoDto } from '../../../../common/dto/page-seo.dto.js';
 import { richTextParagraphs } from '../../../../common/rich-text/rich-text-plain-text.js';
-import type { ArticleDocument } from '../schemas/article.schema.js';
+import { ARTICLE_CATEGORIES } from '../schemas/article.schema.js';
+import type { ArticleCategory, ArticleDocument } from '../schemas/article.schema.js';
 
 /**
  * One article as a visitor receives it.
@@ -20,6 +21,9 @@ export class ArticlePublicDto {
 
   @ApiProperty()
   slug: string;
+
+  @ApiProperty({ enum: ARTICLE_CATEGORIES })
+  category: ArticleCategory;
 
   @ApiProperty({ type: LocalizedTextDto })
   title: LocalizedTextDto;
@@ -90,6 +94,10 @@ export const toPublicDto = (article: ArticleDocument, snapshot: Record<string, u
     // From the snapshot, so a slug edited after publication does not change
     // the address of the version that is actually on the site.
     slug: String(snapshot.slug ?? article.slug),
+    // From the row, not the snapshot: which shelf an item sits on is a
+    // filing decision the newsroom may correct after publication without
+    // republishing the words.
+    category: article.category,
     title: asLocalized(snapshot.title),
     authorDisplayName: asLocalized(snapshot.authorDisplayName),
     // The record's, not the snapshot's: the date is stamped at publication,

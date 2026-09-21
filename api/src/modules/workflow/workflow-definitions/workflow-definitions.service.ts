@@ -19,6 +19,19 @@ export class WorkflowDefinitionsService {
     });
   }
 
+  /**
+   * The live definition governing an entity type, if it has one.
+   *
+   * The live board allows several definitions per type and selects between
+   * them through `workflowPolicies.workflowDefinitionId`. The policy screen
+   * does not expose that choice — one arrangement per type is what an
+   * administrator is configuring — so this answers the one that is active,
+   * and the configuration service reuses it rather than adding a second.
+   */
+  async findByEntityType(entityType: string): Promise<WorkflowDefinitionDocument | null> {
+    return this.repository.findOne({ entityType, isActive: true } as never);
+  }
+
   async findAll(): Promise<WorkflowDefinitionDocument[]> {
     return this.repository.find();
   }

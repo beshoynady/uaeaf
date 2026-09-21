@@ -72,7 +72,7 @@ export const REVISION_READ_FIELDS: Record<PublicationEntityType, readonly string
   // they describe where the article stands now, not what a past version said,
   // and a restore that wrote them back would move the record's state by
   // reading its history.
-  articles: ['title', 'slug', 'coverMediaId', 'body', 'authorDisplayName', 'seo'],
+  articles: ['title', 'slug', 'category', 'coverMediaId', 'body', 'authorDisplayName', 'seo'],
   staticPages: [],
   externalMediaCoverage: [],
   governanceDocuments: ['title', 'description', 'type', 'fileId', 'documentVersion'],

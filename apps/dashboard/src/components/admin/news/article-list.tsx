@@ -1,0 +1,156 @@
+"use client";
+
+import { useId, useMemo, useState } from "react";
+import { useFormatter, useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
+import { SearchField } from "@/components/ui/search-field";
+import { SelectField } from "@/components/ui/select-field";
+import {
+  ARTICLE_CATEGORIES,
+  newsroomStateOf,
+  type Article,
+  type ArticleCategory,
+  type NewsroomState,
+  type ReviewSummary,
+} from "@/lib/admin/articles";
+
+/**
+ * Every article the newsroom has, in every state.
+ *
+ * ── Where the state comes from ─────────────────────────────────────────────
+ *
+ * The stored state has two values by decision; everything between draft and
+ * published is a fact about the review. `newsroomStateOf` derives the label
+ * from both, in one place, so this list and the editor cannot disagree about
+ * what a row is — and so "changes requested" is distinguishable from
+ * "rejected", which the engine itself cannot tell apart.
+ *
+ * ── Why the filtering is local ─────────────────────────────────────────────
+ *
+ * The API filters by state and category too, and the listing route uses it for
+ * paging. These controls narrow what is already on screen: a newsroom's page
+ * of rows is small, and a round trip per keystroke would make the search feel
+ * broken on the connection this is most likely used over.
+ */
+const ALL = "__all__";
+
+const STATES: NewsroomState[] = [
+  "draft",
+  "inReview",
+  "changesRequested",
+  "rejected",
+  "approved",
+  "published",
+  "hidden",
+];
+
+export const ArticleList = ({
+  articles,
+  reviews,
+  locale,
+}: {
+  articles: readonly Article[];
+  /** The latest review per article id, for the derived state. */
+  reviews: ReadonlyMap<string, ReviewSummary>;
+  locale: "ar" | "en";
+}) => {
+  const t = useTranslations("Newsroom");
+  const format = useFormatter();
+  const fieldId = useId();
+
+  const [search, setSearch] = useState("");
+  const [state, setState] = useState<NewsroomState | typeof ALL>(ALL);
+  const [category, setCategory] = useState<ArticleCategory | typeof ALL>(ALL);
+
+  const rows = useMemo(
+    () =>
+      articles.map((article) => ({ article, state: newsroomStateOf(article, reviews.get(article._id)) })),
+    [articles, reviews],
+  );
+
+  const visible = rows.filter(
+    (row) =>
+      (state === ALL || row.state === state) &&
+      (category === ALL || row.article.category === category) &&
+      (search.trim() === "" ||
+        row.article.title.ar.includes(search.trim()) ||
+        row.article.title.en.toLowerCase().includes(search.trim().toLowerCase())),
+  );
+
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-wrap items-end gap-4">
+        <SearchField
+          label={t("search")}
+          value={search}
+          onValueChange={setSearch}
+          className="min-w-60 flex-1"
+        />
+
+        <SelectField
+          id={`${fieldId}-state`}
+          label={t("filterState")}
+          value={state}
+          onChange={(event) => setState(event.target.value as NewsroomState | typeof ALL)}
+          options={[
+            { value: ALL, label: t("all") },
+            ...STATES.map((value) => ({ value, label: t(`state_${value}`) })),
+          ]}
+        />
+
+        <SelectField
+          id={`${fieldId}-category`}
+          label={t("filterCategory")}
+          value={category}
+          onChange={(event) => setCategory(event.target.value as ArticleCategory | typeof ALL)}
+          options={[
+            { value: ALL, label: t("all") },
+            ...ARTICLE_CATEGORIES.map((value) => ({ value, label: t(`category_${value}`) })),
+          ]}
+        />
+      </div>
+
+      {visible.length === 0 ? (
+        // Two different absences, two different sentences: an empty newsroom
+        // and a filter that matched nothing need different next actions.
+        <p className="text-body text-[color:var(--color-text-secondary)]">
+          {articles.length === 0 ? t("empty") : t("emptyFiltered")}
+        </p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-body-sm">
+            <thead>
+              <tr className="border-b border-[color:var(--color-border-strong)]">
+                <th scope="col" className="p-3 text-start font-medium">{t("columnTitle")}</th>
+                <th scope="col" className="p-3 text-start font-medium">{t("columnState")}</th>
+                <th scope="col" className="p-3 text-start font-medium">{t("columnCategory")}</th>
+                <th scope="col" className="p-3 text-start font-medium">{t("columnUpdated")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {visible.map(({ article, state: rowState }) => (
+                <tr key={article._id} className="border-b border-[color:var(--color-border-default)]">
+                  <td className="p-3">
+                    <Link
+                      href={`/news/${article._id}`}
+                      className="rounded-xs underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--a11y-focus-ring)]"
+                    >
+                      {article.title[locale]}
+                    </Link>
+                  </td>
+                  <td className="p-3">{t(`state_${rowState}`)}</td>
+                  <td className="p-3">{t(`category_${article.category}`)}</td>
+                  <td className="p-3 text-[color:var(--color-text-secondary)]">
+                    {article.updatedAt
+                      ? format.dateTime(new Date(article.updatedAt), { dateStyle: "medium" })
+                      : "—"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+};

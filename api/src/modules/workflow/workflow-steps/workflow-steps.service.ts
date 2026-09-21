@@ -55,6 +55,36 @@ export class WorkflowStepsService {
     }
   }
 
+  /**
+   * Makes these the definition's steps, and only these.
+   *
+   * Replaced rather than merged: the steps ARE the administrator's choice, and
+   * leaving an old one behind would keep an approver nobody chose able to hold
+   * up every publication of that type.
+   *
+   * Archived rather than deleted, for two reasons: the partial-unique index on
+   * (definition, order) is scoped to `archivedAt: null`, so archiving frees
+   * the positions the replacements need; and a finished review's history
+   * points at the step that decided it, which must not vanish underneath it.
+   */
+  async replaceForDefinition(
+    workflowDefinitionId: Types.ObjectId,
+    steps: readonly { sequenceOrder: number; stepType: string; assigneeIds: Types.ObjectId[]; requiredApprovals: number }[],
+  ): Promise<void> {
+    await this.repository.archiveForDefinition(workflowDefinitionId);
+
+    for (const step of steps) {
+      await this.repository.create({
+        workflowDefinitionId,
+        sequenceOrder: step.sequenceOrder,
+        stepType: step.stepType,
+        assigneeType: 'User',
+        assigneeIds: step.assigneeIds,
+        requiredApprovals: step.requiredApprovals,
+      } as never);
+    }
+  }
+
   async findByDefinition(workflowDefinitionId: string): Promise<WorkflowStepDocument[]> {
     return this.repository.findByDefinition(new Types.ObjectId(workflowDefinitionId));
   }

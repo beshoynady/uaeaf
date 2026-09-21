@@ -1,0 +1,40 @@
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { PageHeader } from "@/components/ui/page-header";
+import { AccessDenied } from "@/components/ui/access-denied";
+import { PolicyBoard } from "@/components/admin/news/policy-board";
+import { loadApprovalPolicies } from "@/lib/admin/newsroom-screen";
+import { resolveLocale } from "@/i18n/params";
+
+/**
+ * Turning review on or off for any content type.
+ *
+ * Driven by the list the server sends rather than by a list written here, so a
+ * thirteenth governed type appears on this screen without a line of code being
+ * written for it — which is the whole reason the screen exists.
+ */
+export default async function PoliciesPage({ params }: { params: Promise<{ locale: string }> }) {
+  const locale = await resolveLocale(params);
+  setRequestLocale(locale);
+
+  const t = await getTranslations("Newsroom");
+  const common = await getTranslations("Common");
+  const screen = await loadApprovalPolicies(locale);
+
+  const header = <PageHeader title={t("policiesTitle")} description={t("policiesDescription")} />;
+
+  if (screen.status !== "ready") {
+    return (
+      <>
+        {header}
+        <AccessDenied title={common("accessDeniedTitle")} message={common("accessDenied")} />
+      </>
+    );
+  }
+
+  return (
+    <>
+      {header}
+      <PolicyBoard entities={screen.data.entities} approvers={screen.data.approvers} locale={locale} />
+    </>
+  );
+}

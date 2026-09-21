@@ -1,10 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsMongoId, IsOptional, IsString, Matches, MaxLength, ValidateNested } from 'class-validator';
+import { IsIn, IsMongoId, IsOptional, IsString, Matches, MaxLength, ValidateNested } from 'class-validator';
 import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
 import { LocalizedRichTextDto } from '../../../../common/dto/localized-rich-text.dto.js';
 import { PageSeoDto } from '../../../../common/dto/page-seo.dto.js';
 import { ARTICLE_SLUG_PATTERN } from './create-article.dto.js';
+import { ARTICLE_CATEGORIES } from '../schemas/article.schema.js';
+import type { ArticleCategory } from '../schemas/article.schema.js';
 
 const SLUG_MESSAGE =
   'slug must be lowercase letters and digits joined by single hyphens, e.g. "national-championship-2026"';
@@ -27,6 +29,11 @@ export class UpdateArticleDto {
   @ValidateNested()
   @Type(() => LocalizedTextDto)
   title?: LocalizedTextDto;
+
+  @ApiProperty({ enum: ARTICLE_CATEGORIES, required: false })
+  @IsOptional()
+  @IsIn(ARTICLE_CATEGORIES)
+  category?: ArticleCategory;
 
   @ApiProperty({ required: false, example: 'national-championship-results-2026' })
   @IsOptional()

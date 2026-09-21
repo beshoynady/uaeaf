@@ -1,4 +1,5 @@
 import type { AppLocale } from "@/i18n/routing";
+import type { ArticlePublic } from "@/lib/api/types";
 import { absoluteUrl, SITE_ORIGIN } from "./metadata";
 
 /**
@@ -226,6 +227,46 @@ export function BreadcrumbJsonLd({
           name: crumb.name,
           item: absoluteUrl(locale, crumb.route),
         })),
+      }}
+    />
+  );
+}
+
+/**
+ * One news story — Chapter 14 §4 maps Article to `NewsArticle`, and §5 of the
+ * SEO guidelines makes it the condition for Google News eligibility.
+ *
+ * Every value below is on the page: the headline is the h1, the byline and the
+ * date sit under it, the picture is above the body. `datePublished` is the
+ * publication's own timestamp rather than an author-chosen field — two stored
+ * dates could disagree, and the published one is the true one.
+ *
+ * `coverUrl` is resolved by the page, because the article carries a media id
+ * and §4 forbids describing an image the page does not show — an id that
+ * resolves to nothing is exactly that case.
+ */
+export function NewsArticleJsonLd({
+  locale,
+  article,
+  coverUrl,
+}: {
+  locale: AppLocale;
+  article: ArticlePublic;
+  coverUrl?: string;
+}) {
+  return (
+    <JsonLd
+      data={{
+        "@context": "https://schema.org",
+        "@type": "NewsArticle",
+        headline: article.title[locale],
+        description: article.excerpt[locale],
+        inLanguage: locale,
+        ...(article.publishDate ? { datePublished: article.publishDate } : {}),
+        author: { "@type": "Person", name: article.authorDisplayName[locale] },
+        publisher: { "@id": `${SITE_ORIGIN}/#organization` },
+        mainEntityOfPage: absoluteUrl(locale, `/news/${article.slug}`),
+        ...(coverUrl ? { image: coverUrl } : {}),
       }}
     />
   );

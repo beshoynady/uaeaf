@@ -2,6 +2,16 @@
   "detector": {
     "ignoreRules": [],
     "ignoreFiles": [],
-    "ignoreValues": []
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "apps/web/src/components/pages/news/article-screen.tsx"
+        ],
+        "createdAt": "2026-09-20T21:57:53.253Z",
+        "reason": "Approved Figma composition, not an invented accent: node 1739:2361 (Quote Block) specifies bg #f8f9fa with border-r-4 #00843d and 8px corners on the non-bordered side. It is the pulled-quote treatment of the article detail frame, scoped here to the article body only via [&_blockquote] so the shared RichText renderer and the President's Message page are untouched. CLAUDE.md §1 makes the approved Figma composition governing. Verified rendered in light mode at 1440."
+      }
+    ]
   }
 }

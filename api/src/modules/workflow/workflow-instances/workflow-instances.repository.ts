@@ -40,6 +40,17 @@ export class WorkflowInstancesRepository extends BaseRepository<WorkflowInstance
   }
 
   /**
+   * Every review currently running, across every record.
+   *
+   * The starting set for "what is waiting for me". Filtering `InProgress` in
+   * memory instead would read every instance the federation has ever run to
+   * answer a question about the open ones.
+   */
+  async findInProgress(): Promise<WorkflowInstanceDocument[]> {
+    return this.find({ status: 'InProgress' });
+  }
+
+  /**
    * The most recent finished review of this record, if it ended in approval.
    *
    * `findActive` deliberately excludes `Approved`, so it cannot answer this —

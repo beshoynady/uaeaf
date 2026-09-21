@@ -64,13 +64,18 @@ describe('seedNewsApproval', () => {
   const approver = new Types.ObjectId();
   const definitionId = new Types.ObjectId();
 
-  const makeModels = (existing: { definition?: unknown; policy?: unknown } = {}) => {
+  const makeModels = (
+    existing: { definition?: unknown; policy?: unknown; steps?: unknown[] } = {},
+  ) => {
     const lean = (value: unknown) => ({ lean: async () => value });
     const workflowDefinitions = {
       findOne: jest.fn(() => lean(existing.definition ?? null)),
       create: jest.fn(async () => ({ _id: definitionId })),
     };
     const workflowSteps = {
+      // `find(...).sort(...).lean()` — the shape the seed reads the existing
+      // arrangement through before deciding whether to replace it.
+      find: jest.fn(() => ({ sort: () => ({ lean: async () => existing.steps ?? [] }) })),
       updateMany: jest.fn(async () => undefined),
       create: jest.fn(async () => ({ _id: new Types.ObjectId() })),
     };
@@ -109,6 +114,36 @@ describe('seedNewsApproval', () => {
       { $set: { archivedAt: expect.any(Date) } },
     );
     expect(models.workflowSteps.create).toHaveBeenCalledTimes(2);
+  });
+
+
+  it('leaves the steps alone when the arrangement is already the one asked for', async () => {
+    const approverTwo = new Types.ObjectId();
+    const models = makeModels({
+      definition: { _id: definitionId },
+      steps: [{ sequenceOrder: 1, assigneeIds: [approver, approverTwo], requiredApprovals: 2 }],
+    });
+
+    await seedNewsApproval(models, [approver, approverTwo], 'ALL');
+
+    // Replacing unconditionally looked idempotent and was not: every run
+    // archived the step in-flight reviews pointed at and made a new one, so
+    // `findById` — which is soft-delete aware — stopped finding it and those
+    // reviews matched nobody's queue. Work stranded by a seed reporting
+    // success.
+    expect(models.workflowSteps.updateMany).not.toHaveBeenCalled();
+    expect(models.workflowSteps.create).not.toHaveBeenCalled();
+  });
+
+  it('replaces the steps when the arrangement genuinely changed', async () => {
+    const models = makeModels({
+      definition: { _id: definitionId },
+      steps: [{ sequenceOrder: 1, assigneeIds: [approver], requiredApprovals: 1 }],
+    });
+
+    await seedNewsApproval(models, [approver, new Types.ObjectId()], 'ALL');
+
+    expect(models.workflowSteps.updateMany).toHaveBeenCalled();
   });
 
   it('leaves a policy that already points at the definition alone', async () => {

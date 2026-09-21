@@ -231,5 +231,21 @@
       "title": "نحن فخورون بعضويتنا في كبرى المنظمات",
       "subtitle": "تمثيل رسمي فاعل ومستمر لدولة الإمارات العربية المتحدة في المحافل الإقليمية والدولية لألعاب القوى"
     }
+  },
+  "News": {
+    "more": "المزيد ←",
+    "readMore": "اقرأ المزيد ←",
+    "featuredLabel": "الخبر الرئيسي",
+    "latestHeading": "أحدث الأخبار",
+    "relatedHeading": "المزيد من أخبار الاتحاد",
+    "publishedOn": "نُشر في",
+    "byline": "بقلم",
+    "backToList": "العودة إلى الأخبار",
+    "breadcrumbNews": "الأخبار",
+    "breadcrumbArticle": "تفاصيل الخبر",
+    "generalHeading": "أحدث الأخبار",
+    "inMediaHeading": "الاتحاد في الإعلام",
+    "categoryGeneral": "أخبار الاتحاد",
+    "categoryFederationInMedia": "الاتحاد في الإعلام"
   }
 }

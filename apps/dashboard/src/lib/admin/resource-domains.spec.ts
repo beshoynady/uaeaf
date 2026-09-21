@@ -12,10 +12,12 @@ describe("resource domains", () => {
     // PERMISSION_RESOURCES had 63 entries when this map was derived, and 64
     // once `auditLogs` was added later the same day with the trail's read
     // endpoint, and 68 once Domain 9 (sponsors, sponsorships, partnerships,
-    // memberships) was built on 2026-09-17 (ADR-0085). If the API grows
+    // memberships) was built on 2026-09-17 (ADR-0085), and 69 once `articles`
+    // was built on 2026-09-20 — classified under `public-communication`,
+    // which is the domain its module lives in upstream. If the API grows
     // another, this figure moves and the failure is the reminder to re-derive
     // rather than let a resource fall silently into the unclassified bucket.
-    expect(MAPPED_RESOURCE_COUNT).toBe(68);
+    expect(MAPPED_RESOURCE_COUNT).toBe(69);
   });
 
   it("names a domain for every module the API actually has", () => {

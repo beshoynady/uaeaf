@@ -2,8 +2,8 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
 import { PaginationQueryDto } from '../../../../common/dto/pagination-query.dto.js';
-import { ARTICLE_PUBLICATION_STATES } from '../schemas/article.schema.js';
-import type { ArticlePublicationState } from '../schemas/article.schema.js';
+import { ARTICLE_CATEGORIES, ARTICLE_PUBLICATION_STATES } from '../schemas/article.schema.js';
+import type { ArticleCategory, ArticlePublicationState } from '../schemas/article.schema.js';
 
 /** Query shape for the newsroom's own listing, `GET /articles`. */
 export class QueryArticlesDto extends PaginationQueryDto {
@@ -11,6 +11,11 @@ export class QueryArticlesDto extends PaginationQueryDto {
   @IsOptional()
   @IsIn(ARTICLE_PUBLICATION_STATES)
   publicationState?: ArticlePublicationState;
+
+  @ApiPropertyOptional({ enum: ARTICLE_CATEGORIES, description: 'Narrow to one shelf of the newsroom.' })
+  @IsOptional()
+  @IsIn(ARTICLE_CATEGORIES)
+  category?: ArticleCategory;
 
   /**
    * Free text matched against both headlines.

@@ -87,6 +87,7 @@ const RESOURCE_TO_DOMAIN: Record<string, string> = {
   coachesPage: "cms-page-composition",
   committees: "federation-governance",
   committeesPage: "federation-governance",
+  articles: "public-communication",
   contactMessages: "public-communication",
   contactUsPage: "federation-governance",
   countries: "people-organizations",

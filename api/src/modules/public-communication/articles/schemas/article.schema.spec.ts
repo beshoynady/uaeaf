@@ -1,4 +1,4 @@
-import { ArticleSchema, ARTICLE_PUBLICATION_STATES } from './article.schema.js';
+import { ArticleSchema, ARTICLE_CATEGORIES, ARTICLE_PUBLICATION_STATES } from './article.schema.js';
 
 /**
  * The shape of a news item, pinned where it differs from the eleven other
@@ -54,6 +54,35 @@ describe('ArticleSchema', () => {
       publicationState: 1,
       archived: 1,
       publishDate: -1,
+    });
+  });
+
+
+  describe("the newsroom's own taxonomy", () => {
+    it('admits only the categories the newsroom has declared', () => {
+      const path = ArticleSchema.path('category') as unknown as { enumValues: string[] };
+
+      expect(path.enumValues).toEqual(['General', 'FederationInMedia']);
+      expect(ARTICLE_CATEGORIES).toEqual(['General', 'FederationInMedia']);
+    });
+
+    it('files an article on the general shelf unless it is told otherwise', () => {
+      // A required field with no default would make every existing article
+      // unsaveable, and an optional one would leave "no category" as a state
+      // nobody chose. A default is the only shape with neither problem.
+      expect(ArticleSchema.path('category').options.required).toBe(true);
+      expect(ArticleSchema.path('category').options.default).toBe('General');
+    });
+
+    it('serves a category-filtered feed without a collection scan', () => {
+      const keys = (ArticleSchema.indexes() as [Record<string, number>, unknown][]).map(([k]) => k);
+
+      expect(keys).toContainEqual({
+        category: 1,
+        publicationState: 1,
+        archived: 1,
+        publishDate: -1,
+      });
     });
   });
 

@@ -26,6 +26,26 @@ export const ARTICLE_PUBLICATION_STATES = ['Draft', 'Live'] as const satisfies r
 export type ArticlePublicationState = (typeof ARTICLE_PUBLICATION_STATES)[number];
 
 /**
+ * Which shelf of the newsroom this item belongs on.
+ *
+ * Deliberately NOT `externalMediaCoverage`, and the distinction is the whole
+ * reason this field is named rather than reused: `externalMediaCoverage` is a
+ * separate collection of pointers at coverage a newspaper published elsewhere.
+ * This is a label on an article the federation itself wrote, saying which part
+ * of its own newsroom the piece belongs to. Conflating them would put someone
+ * else's headline in the federation's voice.
+ *
+ * `FederationInMedia` is the federation writing about its own presence in the
+ * press — a round-up, a statement responding to coverage — not the coverage.
+ *
+ * Two values to start and the list is open to grow, following
+ * `GOVERNANCE_DOCUMENT_TYPES`: the identifiers are English and closed, and the
+ * reader's label comes from the message catalogues in each app.
+ */
+export const ARTICLE_CATEGORIES = ['General', 'FederationInMedia'] as const;
+export type ArticleCategory = (typeof ARTICLE_CATEGORIES)[number];
+
+/**
  * Implements: articles collection, Domain 4 — News & Editorial
  * (`docs/product/07-Mongoose-Schema-Specification.md` §articles, content type
  * `CT-ARTICLE-001` in `03-Content-Data-Structuring-Document.md` §8.16).
@@ -46,6 +66,18 @@ export type ArticlePublicationState = (typeof ARTICLE_PUBLICATION_STATES)[number
 export class Article extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   title: LocalizedText;
+
+  /**
+   * Required, with a default.
+   *
+   * Required alone would make every article written before this field existed
+   * unsaveable; optional alone would leave "no category" as a state nobody
+   * chose and every reader of the feed would have to handle. A default is the
+   * only shape with neither problem, and `General` is the honest one: an
+   * article nobody filed anywhere is a general article.
+   */
+  @Prop({ type: String, enum: ARTICLE_CATEGORIES, required: true, default: 'General' })
+  category: ArticleCategory;
 
   /**
    * The URL segment, one per article across both languages.
@@ -114,3 +146,7 @@ ArticleSchema.index({ slug: 1 }, { unique: true, partialFilterExpression: { arch
 // The public feed's exact filter and ordering, in one index: live, not
 // hidden, newest first.
 ArticleSchema.index({ publicationState: 1, archived: 1, publishDate: -1 });
+
+// The same feed narrowed to one shelf — the homepage draws two such sections
+// side by side, so this is the read the public site makes most often.
+ArticleSchema.index({ category: 1, publicationState: 1, archived: 1, publishDate: -1 });

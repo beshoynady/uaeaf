@@ -231,5 +231,21 @@
       "title": "We Are Proud of Our Membership in Leading Organizations",
       "subtitle": "Active and ongoing official representation of the United Arab Emirates in regional and international athletics forums"
     }
+  },
+  "News": {
+    "more": "More →",
+    "readMore": "Read more →",
+    "featuredLabel": "Lead story",
+    "latestHeading": "Latest news",
+    "relatedHeading": "More federation news",
+    "publishedOn": "Published on",
+    "byline": "By",
+    "backToList": "Back to news",
+    "breadcrumbNews": "News",
+    "breadcrumbArticle": "Article",
+    "generalHeading": "Latest news",
+    "inMediaHeading": "The federation in the media",
+    "categoryGeneral": "Federation news",
+    "categoryFederationInMedia": "In the media"
   }
 }

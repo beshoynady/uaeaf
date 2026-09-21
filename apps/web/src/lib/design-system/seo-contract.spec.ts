@@ -95,6 +95,13 @@ describe("every public page implements Chapter 14", () => {
     const registered = new Set(pages.map((page) => page.route));
     const unregistered = ROUTES.map(({ file }) => file)
       .map((file) => file.replace("src/app/[locale]", "").replace("/page.tsx", ""))
+      // A dynamic route is not a page in the registry's sense: it is one file
+      // serving every article, and its register, its structured-data type and
+      // its indexability come from the record it renders rather than from a
+      // fixed row. Its PARENT is registered, which is what the sitemap and the
+      // navigation need — and the entity's own addresses are enumerated by
+      // `sitemap-news.ts` from the API, not from this list.
+      .filter((route) => !route.includes("["))
       .filter((route) => route !== "" && !registered.has(route));
     expect(unregistered).toEqual([]);
   });
@@ -137,6 +144,11 @@ describe("document structure", () => {
       // name and one sentence instead, and stays `noindex` while it does.
       "src/app/[locale]/page.tsx",
       "src/app/[locale]/not-found.tsx",
+      // An article's headline is its `<h1>`, and it belongs to the article's
+      // own composition rather than to a shared hero: the story opens with its
+      // headline, its standfirst and its byline as one block, which is not the
+      // shape `page-hero` draws.
+      "src/components/pages/news/article-screen.tsx",
     ];
     const offenders = SOURCES.filter(
       ({ file, source }) => /<h1[\s>]/.test(source) && !ALLOWED.includes(file),

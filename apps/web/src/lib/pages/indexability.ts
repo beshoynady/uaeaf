@@ -1,5 +1,6 @@
 import { fetchPublic } from "@/lib/api/public-client";
 import type {
+  ArticlePublic,
   AthletePublic,
   CommitteesPage,
   ContactUsPage,
@@ -65,8 +66,15 @@ export async function isIndexable(page: PublicPage): Promise<boolean> {
       const response = await fetchPublic<Paginated<AthletePublic>>("/athletes/public");
       return Array.isArray(response?.items) && response.items.length > 0;
     }
+    case "news": {
+      // The listing's threshold is met the moment one article is live. A
+      // newsroom with nothing published is still §11's case, and the page
+      // stays out of the index and the sitemap together until it is not.
+      const response = await fetchPublic<Paginated<ArticlePublic>>("/articles/public?page=1&limit=1");
+      return Array.isArray(response?.items) && response.items.length > 0;
+    }
     default:
-      // The remaining eight have no content source at all yet. This is not a
+      // The remaining seven have no content source at all yet. This is not a
       // pessimistic default — it is the accurate one, and it flips per page
       // in the same change that gives that page a list to render.
       return false;

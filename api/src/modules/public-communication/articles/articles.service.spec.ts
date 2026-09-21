@@ -239,6 +239,83 @@ describe('ArticlesService', () => {
       expect(page.items).toHaveLength(0);
     });
 
+
+  describe('the public feed, narrowed', () => {
+    const filterOf = (deps: ReturnType<typeof makeDeps>) =>
+      (deps.repository.findPage.mock.calls[0] as [Record<string, unknown>, number, number])[0];
+
+    it('narrows to one shelf when a category is asked for', async () => {
+      const deps = makeDeps();
+      const service = makeService(deps);
+
+      await service.findPublicPage(1, 12, { category: 'FederationInMedia' });
+
+      expect(filterOf(deps)).toMatchObject({
+        publicationState: 'Live',
+        archived: false,
+        category: 'FederationInMedia',
+      });
+    });
+
+    it('adds no category key at all when none is asked for', async () => {
+      const deps = makeDeps();
+      const service = makeService(deps);
+
+      await service.findPublicPage(1, 12);
+
+      // `{ category: undefined }` matches documents that HAVE no category,
+      // which is the opposite of "every category".
+      expect('category' in filterOf(deps)).toBe(false);
+    });
+
+    it('reads a date range as a window on the publication date', async () => {
+      const deps = makeDeps();
+      const service = makeService(deps);
+
+      await service.findPublicPage(1, 12, { from: '2026-01-01', to: '2026-06-30' });
+
+      const { publishDate } = filterOf(deps) as { publishDate: { $gte?: Date; $lte?: Date } };
+      expect(publishDate.$gte).toEqual(new Date('2026-01-01'));
+      // The end of the day, not its start: a reader asking for "up to 30 June"
+      // means the whole of it, and midnight would silently drop that day.
+      expect(publishDate.$lte?.toISOString()).toBe('2026-06-30T23:59:59.999Z');
+    });
+
+    it('accepts an open-ended range', async () => {
+      const deps = makeDeps();
+      const service = makeService(deps);
+
+      await service.findPublicPage(1, 12, { from: '2026-01-01' });
+
+      const { publishDate } = filterOf(deps) as { publishDate: Record<string, unknown> };
+      expect(Object.keys(publishDate)).toEqual(['$gte']);
+    });
+
+    it('ignores a malformed date rather than matching nothing', async () => {
+      const deps = makeDeps();
+      const service = makeService(deps);
+
+      await service.findPublicPage(1, 12, { from: 'not-a-date' });
+
+      // `new Date('not-a-date')` is Invalid Date, and every comparison against
+      // it is false — an empty feed with no explanation.
+      expect('publishDate' in filterOf(deps)).toBe(false);
+    });
+
+    it('escapes a search term before it reaches the database', async () => {
+      const deps = makeDeps();
+      const service = makeService(deps);
+
+      await service.findPublicPage(1, 12, { search: 'a.*b' });
+
+      const { $or } = filterOf(deps) as { $or: { [k: string]: RegExp }[] };
+      // Unescaped, `.*` typed into a public search box is a collection scan
+      // any visitor can trigger at will.
+      expect($or[0]['title.ar'].source).toBe(String.raw`a\.\*b`);
+      expect($or.map((clause) => Object.keys(clause)[0])).toEqual(['title.ar', 'title.en']);
+    });
+  });
+
     it('answers nothing for a slug that is not live', async () => {
       const deps = makeDeps();
       deps.repository.findBySlug.mockResolvedValue(stored({ publicationState: 'Draft' }));

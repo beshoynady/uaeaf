@@ -12,6 +12,14 @@ export class WorkflowStepsRepository extends BaseRepository<WorkflowStepDocument
     super(model);
   }
 
+  /** Retires every live step of a definition, freeing their positions for the
+   *  replacements — see `WorkflowStepsService.replaceForDefinition`. */
+  async archiveForDefinition(workflowDefinitionId: Types.ObjectId): Promise<void> {
+    await this.model
+      .updateMany({ workflowDefinitionId, archivedAt: null }, { $set: { archivedAt: new Date() } })
+      .exec();
+  }
+
   async findByDefinition(workflowDefinitionId: Types.ObjectId): Promise<WorkflowStepDocument[]> {
     return this.model
       .find({ workflowDefinitionId, archivedAt: null })

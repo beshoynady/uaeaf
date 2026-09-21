@@ -41,6 +41,37 @@ export class WorkflowActionHistoryRepository extends BaseRepository<WorkflowActi
   }
 
   /**
+   * Whether this actor has already approved this step in the current cycle.
+   *
+   * Shares its cycle boundary with `countDistinctApprovers` by delegating to
+   * it — two definitions of "the current cycle" would eventually disagree, and
+   * the disagreement would show as a reviewer being asked twice for the same
+   * decision, or never being asked at all.
+   */
+  async hasApprovedInCurrentCycle(
+    workflowInstanceId: Types.ObjectId,
+    workflowStepId: Types.ObjectId,
+    actorId: Types.ObjectId,
+  ): Promise<boolean> {
+    const cycleStart = await this.model
+      .findOne({ workflowInstanceId, action: { $in: ['Submitted', 'Resubmitted'] } })
+      .sort({ actionDate: -1 })
+      .exec();
+
+    const approval = await this.model
+      .findOne({
+        workflowInstanceId,
+        workflowStepId,
+        actorId,
+        action: 'Approved',
+        ...(cycleStart ? { actionDate: { $gt: cycleStart.actionDate } } : {}),
+      })
+      .exec();
+
+    return approval !== null;
+  }
+
+  /**
    * Distinct actors who approved `workflowStepId` in the instance's current
    * cycle — what a step's `requiredApprovals` threshold is measured against.
    *

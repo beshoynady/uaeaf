@@ -48,6 +48,22 @@ export class WorkflowInstancesController {
     );
   }
 
+  /**
+   * The reviews waiting on the caller, and nothing else.
+   *
+   * Declared ahead of `GET :id` so `pending-mine` is never read as an id — the
+   * route-ordering convention `pages.controller.ts` set.
+   *
+   * It takes no user parameter, deliberately: "whose queue" is the caller's
+   * own identity, read from the token. A route that accepted a user id would
+   * let any reviewer read any other reviewer's worklist.
+   */
+  @Get('pending-mine')
+  @RequirePermission('workflowInstances', 'Read')
+  pendingMine(@CurrentUser() user: AuthenticatedUser) {
+    return this.service.findPendingFor(user.userId);
+  }
+
   @Get(':id')
   @RequirePermission('workflowInstances', 'Read')
   findOne(@Param('id') id: string) {

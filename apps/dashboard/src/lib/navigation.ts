@@ -101,6 +101,37 @@ const homepageScreen = (key: string, href: string, grants: readonly NavRequireme
   requiresAll: grants,
 });
 
+/**
+ * The newsroom's three screens.
+ *
+ * Three jobs open this section, not two: writing, deciding, and publishing
+ * what a decision approved — the third became a permission of its own when
+ * publishing stopped being a side effect of approval. The policy screen is
+ * the administrator's, and asks for the grant that actually guards it.
+ */
+const NEWS_SCREENS: readonly NavItem[] = [
+  {
+    key: "newsList",
+    href: "/news",
+    requires: [
+      { resourceType: "articles", action: "Update" },
+      { resourceType: "articles", action: "Publish" },
+      { resourceType: "workflowInstances", action: "Approve" },
+    ],
+  },
+  {
+    // Only a reviewer opens this, and for them it is the screen they live on.
+    key: "newsReview",
+    href: "/news/review",
+    requires: [{ resourceType: "workflowInstances", action: "Approve" }],
+  },
+  {
+    key: "newsPolicies",
+    href: "/news/policies",
+    requires: [{ resourceType: "workflowPolicies", action: "Update" }],
+  },
+];
+
 const HOMEPAGE_SCREENS: readonly NavItem[] = [
   homepageScreen("homepageHero", "/homepage/hero", HOMEPAGE_HERO_GRANTS),
   homepageScreen("homepageSponsorStrip", "/homepage/sponsor-strip", HOMEPAGE_SPONSOR_STRIP_GRANTS),
@@ -172,6 +203,12 @@ export const NAV_ITEMS: readonly NavItem[] = [
    * let an editor reach a Save that fails half way. The group is shown when any
    * of its screens is, and links to the first one the reader can open.
    */
+  {
+    key: "news",
+    href: "/news",
+    requires: NEWS_SCREENS.flatMap((screen) => screen.requires ?? []),
+    children: NEWS_SCREENS,
+  },
   {
     key: "homepage",
     href: "/homepage/hero",

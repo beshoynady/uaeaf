@@ -7,7 +7,7 @@ import { CurrentUser } from '../../../common/decorators/current-user.decorator.j
 import { Public } from '../../../common/decorators/public.decorator.js';
 import { SkipAuditLog } from '../../../common/decorators/skip-audit-log.decorator.js';
 import { extractRequestContext } from '../../../common/utils/request-context.util.js';
-import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto.js';
+import { PublicFeedQueryDto } from './dto/public-feed-query.dto.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 import { ArticlesService } from './articles.service.js';
 import { CreateArticleDto } from './dto/create-article.dto.js';
@@ -42,8 +42,13 @@ export class ArticlesController {
    *  an id — the route-ordering convention `pages.controller.ts` set. */
   @Get('public')
   @Public()
-  findPublic(@Query() query: PaginationQueryDto) {
-    return this.service.findPublicPage(query.page ?? 1, query.limit ?? 12);
+  findPublic(@Query() query: PublicFeedQueryDto) {
+    return this.service.findPublicPage(query.page ?? 1, query.limit ?? 12, {
+      category: query.category,
+      from: query.from,
+      to: query.to,
+      search: query.search,
+    });
   }
 
   /** One article by its URL segment — what `/news/<slug>` renders. */

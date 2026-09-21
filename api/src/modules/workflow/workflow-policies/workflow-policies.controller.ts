@@ -2,6 +2,8 @@ import { BadRequestException, Body, Controller, Get, Param, Post, Put } from '@n
 import { ApiTags } from '@nestjs/swagger';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
 import { WorkflowPoliciesService } from './workflow-policies.service.js';
+import { ApprovalConfigurationService } from './approval-configuration.service.js';
+import { ConfigureApprovalDto } from './dto/configure-approval.dto.js';
 import { CreateWorkflowPolicyDto } from './dto/create-workflow-policy.dto.js';
 import { SetWorkflowPolicyDto } from './dto/set-workflow-policy.dto.js';
 import { WORKFLOW_ENTITY_TYPES } from '../../../common/constants/workflow-entity-types.js';
@@ -13,7 +15,19 @@ import type { WorkflowPolicyOperation } from './schemas/workflow-policy.schema.j
 @ApiTags('workflow-policies')
 @Controller('workflow-policies')
 export class WorkflowPoliciesController {
-  constructor(private readonly service: WorkflowPoliciesService) {}
+  constructor(
+    private readonly service: WorkflowPoliciesService,
+    private readonly configuration: ApprovalConfigurationService,
+  ) {}
+
+  /** Every entity type an administrator may put behind a review, with what is
+   *  configured for each. Declared ahead of `GET :id` so `governable` is never
+   *  read as an id. */
+  @Get('governable')
+  @RequirePermission('workflowPolicies', 'Read')
+  governable() {
+    return this.configuration.listGovernable();
+  }
 
   @Post()
   @RequirePermission('workflowPolicies', 'Create')
@@ -40,6 +54,25 @@ export class WorkflowPoliciesController {
   @RequirePermission('workflowPolicies', 'Read')
   findOne(@Param('id') id: string) {
     return this.service.findById(id);
+  }
+
+  /**
+   * Turns approvals on or off for one entity type, in one call.
+   *
+   * Whether a review is required, who decides and how their decisions combine
+   * are applied together — separately, a half-finished change leaves a policy
+   * demanding approval from a definition with nobody on it, which stops every
+   * publication of that type with nothing on any screen to say why.
+   */
+  @Put(':entityType/approval')
+  @RequirePermission('workflowPolicies', 'Update')
+  configureApproval(@Param('entityType') entityType: string, @Body() dto: ConfigureApprovalDto) {
+    return this.configuration.configure(entityType, {
+      enabled: dto.enabled,
+      mode: dto.mode,
+      approverIds: dto.approverIds,
+      threshold: dto.threshold,
+    });
   }
 
   /** Sets the single policy for this pair (ADR-0069 D6). `PUT` rather than

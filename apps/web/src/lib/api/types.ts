@@ -290,6 +290,47 @@ export interface AthletePublic {
 }
 
 /** `AthletePublicListResponseDto`. */
+/**
+ * `ArticlePublicDto` — `GET /articles/public` and `/articles/public/:slug`.
+ *
+ * Served from the publication's frozen revision rather than from the article
+ * row, so what a visitor receives is the text that was approved. `excerpt` is
+ * derived upstream from the first paragraph of each language: a stored summary
+ * would be a second thing to keep true, and the card and the meta description
+ * both want exactly this.
+ */
+/** `ARTICLE_CATEGORIES`. Not `externalMediaCoverage`, which is a separate
+ *  collection of links to coverage published elsewhere — this labels an
+ *  article the federation wrote itself. */
+export type ArticleCategory = "General" | "FederationInMedia";
+
+export interface ArticlePublic {
+  id: string;
+  /** The URL segment, shared by both language editions of the story. */
+  slug: string;
+  category: ArticleCategory;
+  title: LocalizedText;
+  authorDisplayName: LocalizedText;
+  /** ISO date this article went live; null while it never has. */
+  publishDate: string | null;
+  /** A raw `mediaAssets` reference. Resolve it through `fetchPublicMedia()`. */
+  coverMediaId: string | null;
+  body: { ar: RichTextNode; en: RichTextNode };
+  excerpt: LocalizedText;
+  seo: {
+    metaTitle: LocalizedText | null;
+    metaDescription: LocalizedText | null;
+    ogImageId: string | null;
+  } | null;
+}
+
+/** One row of `GET /articles/public-sitemap` — addresses and dates, no content. */
+export interface ArticleSitemapEntry {
+  slug: string;
+  publishDate: string | null;
+  updatedAt: string | null;
+}
+
 export interface Paginated<T> {
   items: T[];
   total: number;

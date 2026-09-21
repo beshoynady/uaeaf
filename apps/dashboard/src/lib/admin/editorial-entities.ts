@@ -66,10 +66,15 @@ export interface EditorialEntity {
 /**
  * The types with an editorial screen today.
  *
- * Two so far. The other ten are registered here as each is built — one
- * line, no new route, no new handler. A type absent from this list is
- * refused by the route rather than forwarded, which is what makes the
- * absence safe rather than merely incomplete.
+ * Four so far. The rest are registered here as each is built — one line, no
+ * new route, no new handler. A type absent from this list is refused by the
+ * route rather than forwarded, which is what makes the absence safe rather
+ * than merely incomplete.
+ *
+ * `articles` is the first COLLECTION on the list; the other three are
+ * singleton pages. Nothing here had to change for that: every path this
+ * registry builds already takes a record id, because a singleton page is a
+ * collection the product happens to keep one row in.
  */
 export const EDITORIAL_ENTITIES: readonly EditorialEntity[] = [
   {
@@ -92,6 +97,13 @@ export const EDITORIAL_ENTITIES: readonly EditorialEntity[] = [
     readPermission: "strategicPlansPage:Read",
     updatePermission: "strategicPlansPage:Update",
     publishPermission: "strategicPlansPage:Publish",
+  },
+  {
+    entityType: "articles",
+    apiPath: "/articles",
+    readPermission: "articles:Read",
+    updatePermission: "articles:Update",
+    publishPermission: "articles:Publish",
   },
 ];
 
