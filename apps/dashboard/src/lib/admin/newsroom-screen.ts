@@ -1,7 +1,12 @@
 import { fetchAsUser, readGrants } from "@/lib/auth/session";
 import { hasPermission } from "@/lib/auth/permissions";
+import { toMediaOptions } from "@/lib/admin/media-options";
+import { editorialStatePath, findEditorialEntity } from "@/lib/admin/editorial-entities";
 import type { Article, ArticlePage, ReviewSummary } from "@/lib/admin/articles";
+import type { ArticleEditorResponse } from "@/lib/admin/article-editor";
 import type { ApproverOption, GovernableEntity } from "@/lib/admin/approval-policies";
+import type { EditorialState } from "@/lib/admin/editorial-state";
+import type { MediaAssetOption } from "@/components/admin/pages/media-picker";
 import type { AppLocale } from "@/i18n/routing";
 
 /**
@@ -28,7 +33,7 @@ const denied = { status: "denied" } as const;
  */
 export const loadArticleList = async (
   locale: AppLocale,
-): Promise<NewsroomScreen<{ articles: Article[]; reviews: Map<string, ReviewSummary> }>> => {
+): Promise<NewsroomScreen<{ articles: Article[]; reviews: Map<string, ReviewSummary>; canCreate: boolean }>> => {
   const grants = await readGrants(locale);
 
   // Three jobs open this screen. Reading alone does not: the list exists to be
@@ -67,7 +72,13 @@ export const loadArticleList = async (
     }),
   );
 
-  return { status: "ready", data: { articles: page.items, reviews } };
+  // Writing and starting are separate grants upstream, and the list is opened
+  // by three jobs. Offering a control the API would refuse is the failure this
+  // answers: the link is drawn from the same grant the route checks.
+  return {
+    status: "ready",
+    data: { articles: page.items, reviews, canCreate: hasPermission(grants, "articles", "Create") },
+  };
 };
 
 /** One review waiting on the caller, joined to the article it concerns. */
@@ -120,6 +131,95 @@ export const loadReviewQueue = async (
         startedAt: instance.startedAt,
       })),
       articles,
+    },
+  };
+};
+
+
+/** What the article editor draws, for a new article or an existing one. */
+export interface ArticleEditorScreen {
+  /** Null while creating: there is no record yet. */
+  record: ArticleEditorResponse | null;
+  takenSlugs: string[];
+  images: MediaAssetOption[];
+  canEdit: boolean;
+  canReadMedia: boolean;
+  editorial: EditorialState | null;
+}
+
+/**
+ * Everything the article editor reads before it draws.
+ *
+ * Its own loader rather than `loadEditorialScreen`, for one reason that
+ * matters: that loader reads a type's whole collection and picks a row out of
+ * it, which is right for a singleton page and wrong for a newsroom. An article
+ * is fetched by its own id.
+ *
+ * The rest follows the same rules as every editorial screen:
+ *
+ * - The permission check is decided on the server before any of the record
+ *   reaches the browser. Hiding a link is presentation; anyone can type a URL.
+ * - Two grants, two jobs: the editor writes, and the approver must read what
+ *   they are approving, so the screen opens for either and goes read-only for
+ *   the one who cannot write.
+ * - Refused is not absent. `null` from the API is a refusal; a missing article
+ *   is a `notFound`.
+ * - The image library and the editorial state are independent reads. Either
+ *   refused costs a panel, not the screen.
+ *
+ * `takenSlugs` is read for the address field's live check. It is a page of the
+ * listing, not every article ever written: past that page an unavailable
+ * address reads as free here and is refused by the server's unique index at
+ * the save, which is where the guarantee actually lives.
+ */
+const SLUG_SCAN_LIMIT = 200;
+
+export const loadArticleEditor = async (
+  locale: AppLocale,
+  id: string | null,
+): Promise<NewsroomScreen<ArticleEditorScreen> | { status: "notFound" }> => {
+  const grants = await readGrants(locale);
+  const canEdit = hasPermission(grants, "articles", id === null ? "Create" : "Update");
+  const canReview = id !== null && hasPermission(grants, "workflowInstances", "Approve");
+
+  if (!canEdit && !canReview) {
+    return denied;
+  }
+
+  const [record, media, page] = await Promise.all([
+    id === null ? Promise.resolve(null) : fetchAsUser<ArticleEditorResponse>(`/articles/${id}`, locale),
+    fetchAsUser<unknown[]>("/media-assets", locale),
+    fetchAsUser<ArticlePage>(`/articles?limit=${SLUG_SCAN_LIMIT}`, locale),
+  ]);
+
+  if (id !== null && record === null) {
+    // The read is permitted — the grant was checked above — so an absent
+    // record is an address that names nothing, not a refusal. Reporting it as
+    // denied would send an editor looking for a permission they already hold.
+    return { status: "notFound" };
+  }
+
+  // The article's own address is not taken by anybody else, so a headline
+  // correction never reports the page's own URL as a collision.
+  const takenSlugs = (page?.items ?? [])
+    .filter((article) => article._id !== id)
+    .map((article) => article.slug);
+
+  const entity = findEditorialEntity("articles");
+  const editorial =
+    record && entity ? await fetchAsUser<EditorialState>(editorialStatePath(entity, record._id), locale) : null;
+
+  return {
+    status: "ready",
+    data: {
+      record,
+      takenSlugs,
+      // Mapped, not forwarded: the API's id is `_id`, and the picker matches
+      // the stored image by `id`.
+      images: toMediaOptions(media),
+      canEdit,
+      canReadMedia: media !== null,
+      editorial,
     },
   };
 };

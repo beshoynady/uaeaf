@@ -63,8 +63,12 @@ export const seoLength = (value: LocalizedText | null, locale: "ar" | "en"): num
  * - `blocks`: an ordered list, drawn in the order it declares and sent whole,
  *   because order is part of its meaning.
  * - `document`: bilingual rich text, sent whole.
+ * - `plain`: a single-language string that is not a media id — a URL segment,
+ *   a category name. Sent as typed, including empty, because "" is a value a
+ *   required string field can hold and having it silently become `null` would
+ *   turn a missing-field error into a type error.
  */
-export type FieldKind = "text" | "optionalText" | "image" | "seo" | "blocks" | "document";
+export type FieldKind = "text" | "optionalText" | "image" | "seo" | "blocks" | "document" | "plain";
 
 /** A kind for every field of the draft, and only a kind that fits the
  *  field's type, so a map that forgets a field or misnames one fails to
@@ -73,7 +77,7 @@ export type DraftFields<D> = {
   readonly [K in keyof D]: D[K] extends LocalizedText
     ? "text" | "optionalText"
     : D[K] extends string
-      ? "image"
+      ? "image" | "plain"
       : D[K] extends SeoDraft
         ? "seo"
         : D[K] extends readonly BlockDraft[]
@@ -94,6 +98,7 @@ const toInput = (kind: FieldKind, stored: unknown): unknown => {
     case "optionalText":
       return textOr(stored as LocalizedText | null | undefined);
     case "image":
+    case "plain":
       return (stored as string | null | undefined) ?? "";
     case "seo": {
       const seo = stored as PageSeo | null | undefined;
@@ -135,6 +140,7 @@ const toStored = (kind: FieldKind, input: unknown): unknown => {
     case "text":
     case "blocks":
     case "document":
+    case "plain":
       return input;
   }
 };

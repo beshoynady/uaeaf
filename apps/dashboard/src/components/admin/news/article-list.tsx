@@ -3,6 +3,7 @@
 import { useId, useMemo, useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import { BUTTON_PRIMARY } from "@/components/ui/interactive";
 import { SearchField } from "@/components/ui/search-field";
 import { SelectField } from "@/components/ui/select-field";
 import {
@@ -48,11 +49,15 @@ export const ArticleList = ({
   articles,
   reviews,
   locale,
+  canCreate,
 }: {
   articles: readonly Article[];
   /** The latest review per article id, for the derived state. */
   reviews: ReadonlyMap<string, ReviewSummary>;
   locale: "ar" | "en";
+  /** Whether this reader holds `articles:Create`. The route checks the same
+   *  grant; drawing the link without it would offer a screen that refuses. */
+  canCreate: boolean;
 }) => {
   const t = useTranslations("Newsroom");
   const format = useFormatter();
@@ -108,6 +113,19 @@ export const ArticleList = ({
             ...ARTICLE_CATEGORIES.map((value) => ({ value, label: t(`category_${value}`) })),
           ]}
         />
+
+        {canCreate ? (
+          // A link, not a button: starting an article is a navigation, and a
+          // button would lose the middle-click, the new tab and the address
+          // an editor copies to a colleague.
+          //
+          // `BUTTON_PRIMARY` rather than a hand-written approximation of it,
+          // so this carries the same rest, hover, pressed and focus states as
+          // every other primary action and cannot drift from them.
+          <Link href="/news/new" className={BUTTON_PRIMARY}>
+            {t("newArticle")}
+          </Link>
+        ) : null}
       </div>
 
       {visible.length === 0 ? (

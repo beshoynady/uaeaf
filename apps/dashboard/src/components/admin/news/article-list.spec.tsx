@@ -32,10 +32,10 @@ const rows = () => screen.queryAllByRole("row").slice(1); // minus the header
 
 describe("ArticleList", () => {
   it("says the newsroom is empty differently from a filter that matched nothing", async () => {
-    const { rerender } = render(<ArticleList articles={[]} reviews={new Map()} locale="ar" />);
+    const { rerender } = render(<ArticleList canCreate={false} articles={[]} reviews={new Map()} locale="ar" />);
     expect(screen.getByText("empty")).toBeInTheDocument();
 
-    rerender(<ArticleList articles={[article()]} reviews={new Map()} locale="ar" />);
+    rerender(<ArticleList canCreate={false} articles={[article()]} reviews={new Map()} locale="ar" />);
     await userEvent.selectOptions(screen.getByLabelText("filterState"), "published");
 
     // Two different absences need two different next actions.
@@ -49,7 +49,7 @@ describe("ArticleList", () => {
       ["a4", { workflowStatus: "Rejected" }],
     ]);
     render(
-      <ArticleList
+      <ArticleList canCreate={false}
         articles={[
           article(),
           article({ _id: "a2" }),
@@ -82,7 +82,7 @@ describe("ArticleList", () => {
 
   it("narrows by state", async () => {
     render(
-      <ArticleList
+      <ArticleList canCreate={false}
         articles={[article(), article({ _id: "a2", publicationState: "Live" })]}
         reviews={new Map()}
         locale="ar"
@@ -96,7 +96,7 @@ describe("ArticleList", () => {
 
   it("narrows by category", async () => {
     render(
-      <ArticleList
+      <ArticleList canCreate={false}
         articles={[article(), article({ _id: "a2", category: "FederationInMedia" })]}
         reviews={new Map()}
         locale="ar"
@@ -109,7 +109,7 @@ describe("ArticleList", () => {
 
   it("searches both languages of the headline", async () => {
     render(
-      <ArticleList
+      <ArticleList canCreate={false}
         articles={[
           article({ title: { ar: "نتائج البطولة", en: "Championship results" } }),
           article({ _id: "a2", title: { ar: "دورة الحكام", en: "Officials course" } }),
@@ -130,16 +130,33 @@ describe("ArticleList", () => {
   });
 
   it("links each row to its own editor", () => {
-    render(<ArticleList articles={[article()]} reviews={new Map()} locale="ar" />);
+    render(<ArticleList canCreate={false} articles={[article()]} reviews={new Map()} locale="ar" />);
 
     expect(screen.getByRole("link", { name: "عنوان" })).toHaveAttribute("href", "/news/a1");
   });
 
   it("reads the locale's own headline", () => {
-    const { rerender } = render(<ArticleList articles={[article()]} reviews={new Map()} locale="ar" />);
+    const { rerender } = render(<ArticleList canCreate={false} articles={[article()]} reviews={new Map()} locale="ar" />);
     expect(screen.getByText("عنوان")).toBeInTheDocument();
 
-    rerender(<ArticleList articles={[article()]} reviews={new Map()} locale="en" />);
+    rerender(<ArticleList canCreate={false} articles={[article()]} reviews={new Map()} locale="en" />);
     expect(screen.getByText("Headline")).toBeInTheDocument();
+  });
+
+  it("offers a way to start an article to whoever may start one", () => {
+    render(<ArticleList canCreate articles={[article()]} reviews={new Map()} locale="ar" />);
+
+    // A link, not a button: starting an article is a navigation, and an
+    // editor opening it in a new tab keeps the list they were working from.
+    expect(screen.getByRole("link", { name: "newArticle" })).toHaveAttribute("href", "/news/new");
+  });
+
+  it("offers nothing to start to whoever may not", () => {
+    render(<ArticleList canCreate={false} articles={[article()]} reviews={new Map()} locale="ar" />);
+
+    // The route checks the same grant. Drawing the link without it offers a
+    // screen that refuses, which reads as a broken dashboard rather than as a
+    // permission somebody does not hold.
+    expect(screen.queryByRole("link", { name: "newArticle" })).not.toBeInTheDocument();
   });
 });

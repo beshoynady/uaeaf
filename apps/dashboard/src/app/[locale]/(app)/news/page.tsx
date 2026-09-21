@@ -35,7 +35,12 @@ export default async function NewsroomPage({ params }: { params: Promise<{ local
   return (
     <>
       {header}
-      <ArticleList articles={screen.data.articles} reviews={screen.data.reviews} locale={locale} />
+      <ArticleList
+        articles={screen.data.articles}
+        reviews={screen.data.reviews}
+        locale={locale}
+        canCreate={screen.data.canCreate}
+      />
     </>
   );
 }
