@@ -265,10 +265,40 @@ describe('PublishingService.publishApproved', () => {
 
       const state = await service.editorialState(entityType, entityId, reviewer);
 
-      expect(state.availableActions).toContain('publish');
+      // `publishApproved`, NOT `publish`. They were one name until
+      // 2026-09-21, and the dashboard sent that name to `POST :id/publish` —
+      // which is `publishDirect` and refuses with 409 under any policy that
+      // requires review. So the only route to the site for an approved
+      // article was a button that published nothing at all.
+      expect(state.availableActions).toContain('publishApproved');
+      expect(state.availableActions).not.toContain('publish');
       // And not submit: resubmitting a record that is already approved would
       // throw away the approval it is holding.
       expect(state.availableActions).not.toContain('submit');
+    });
+
+    it('stops offering it once that approval is on the site', async () => {
+      const deps = makeDeps();
+      underWorkflow(deps);
+      deps.instancesService.findActive.mockResolvedValue(null);
+      approvalWaiting(deps);
+      // The live publication names the very revision that approval approved.
+      deps.publicationsService.findLive.mockResolvedValue({
+        _id: new Types.ObjectId(),
+        revisionId,
+        publishedAt: new Date(),
+        publishedBy: new Types.ObjectId(),
+        status: 'Live',
+      } as never);
+      const service = makeService(deps);
+
+      const state = await service.editorialState(entityType, entityId, reviewer);
+
+      // An `Approved` instance stays approved forever, so "is there an
+      // approval" is not "is one waiting". Read as the former, the panel
+      // offered a publish on a record that was already live — republishing
+      // the same revision and contradicting the state printed beside it.
+      expect(state.availableActions).not.toContain('publishApproved');
     });
 
     it('offers submitting, not publishing, while nothing is approved', async () => {
@@ -381,6 +411,7 @@ describe('PublishingService.publishApproved', () => {
       );
 
       expect(state.availableActions).not.toContain('publish');
+      expect(state.availableActions).not.toContain('publishApproved');
     });
   });
 });

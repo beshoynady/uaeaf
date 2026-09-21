@@ -44,9 +44,13 @@ describe("isEditorialAction", () => {
     expect(EDITORIAL_ACTIONS).not.toContain("delegate");
   });
 
-  it("recognises exactly the seven decisions the panel offers", () => {
+  it("recognises exactly the eight decisions the panel offers", () => {
+    // Eight since 2026-09-21: `publishApproved` was split out of `publish`.
+    // One name meant one upstream route, and that route is `publishDirect`,
+    // which refuses with 409 under any policy requiring review — so an
+    // approved article's only way onto the site published nothing at all.
     expect([...EDITORIAL_ACTIONS].sort()).toEqual(
-      ["approve", "publish", "reject", "restore", "resubmit", "return", "submit"].sort(),
+      ["approve", "publish", "publishApproved", "reject", "restore", "resubmit", "return", "submit"].sort(),
     );
   });
 
@@ -62,6 +66,14 @@ describe("editorialActionPath", () => {
     expect(editorialActionPath(president, "publish", "abc")).toBe("/president-message-page/abc/publish");
     expect(editorialActionPath(president, "restore", "abc")).toBe("/president-message-page/abc/restore");
     expect(editorialActionPath(president, "submit", "abc")).toBe("/president-message-page/abc/submit");
+  });
+
+  it("spells an action whose upstream segment is not its name", () => {
+    // The API mounts it at `publish-approved`. Assembled from the action name
+    // at each call site, this reads `/…/publishApproved` and 404s.
+    expect(editorialActionPath(president, "publishApproved", "abc")).toBe(
+      "/president-message-page/abc/publish-approved",
+    );
   });
 
   // A review decision belongs to the workflow instance, which is a different

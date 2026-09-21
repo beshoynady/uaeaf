@@ -27,6 +27,11 @@ export const EDITORIAL_ACTIONS = [
   "submit",
   "resubmit",
   "publish",
+  // Putting a finished approval on the site. Separate from `publish`, which
+  // is the no-review path and is refused with 409 by any type whose policy
+  // requires review — so under such a policy this is the ONLY route to the
+  // site, and sending `publish` for it published nothing at all.
+  "publishApproved",
   "restore",
   "approve",
   "reject",
@@ -44,6 +49,7 @@ const ACTION_TARGETS: Record<EditorialAction, ActionTarget> = {
   submit: "entity",
   resubmit: "workflowInstance",
   publish: "entity",
+  publishApproved: "entity",
   restore: "entity",
   approve: "workflowInstance",
   reject: "workflowInstance",
@@ -119,17 +125,17 @@ export const EDITORIAL_ENTITIES: readonly EditorialEntity[] = [
  * This module stays importable from a client component because it imports
  * nothing itself. Keep it that way.
  */
-export function isInstanceAction(action: EditorialAction): boolean {
+export const isInstanceAction = (action: EditorialAction): boolean => {
   return ACTION_TARGETS[action] === "workflowInstance";
-}
+};
 
-export function findEditorialEntity(entityType: string): EditorialEntity | undefined {
+export const findEditorialEntity = (entityType: string): EditorialEntity | undefined => {
   return EDITORIAL_ENTITIES.find((entity) => entity.entityType === entityType);
-}
+};
 
-export function isEditorialAction(action: string): action is EditorialAction {
+export const isEditorialAction = (action: string): action is EditorialAction => {
   return (EDITORIAL_ACTIONS as readonly string[]).includes(action);
-}
+};
 
 /**
  * The upstream path for one action on one record.
@@ -139,17 +145,25 @@ export function isEditorialAction(action: string): action is EditorialAction {
  * one this action needs, which is why the target is declared here rather
  * than guessed from the action's name at the call site.
  */
-export function editorialActionPath(entity: EditorialEntity, action: EditorialAction, id: string): string {
+/** Upstream path segments where the action name is not the segment. */
+const ACTION_SEGMENTS: Partial<Record<EditorialAction, string>> = {
+  // The API mounts it at `publish-approved`. Spelled once, here, rather than
+  // assembled at each call site from a name that only mostly matches.
+  publishApproved: "publish-approved",
+};
+
+export const editorialActionPath = (entity: EditorialEntity, action: EditorialAction, id: string): string => {
+  const segment = ACTION_SEGMENTS[action] ?? action;
   return ACTION_TARGETS[action] === "workflowInstance"
-    ? `/workflow-instances/${id}/${action}`
-    : `${entity.apiPath}/${id}/${action}`;
-}
+    ? `/workflow-instances/${id}/${segment}`
+    : `${entity.apiPath}/${id}/${segment}`;
+};
 
 /** Where a draft is saved. Not an action: it is a `PATCH` on the record
  *  itself, with a body of content rather than a decision. */
-export function editorialSavePath(entity: EditorialEntity, id: string): string {
+export const editorialSavePath = (entity: EditorialEntity, id: string): string => {
   return `${entity.apiPath}/${id}`;
-}
+};
 
 /**
  * Where the status panel reads from.
@@ -158,9 +172,9 @@ export function editorialSavePath(entity: EditorialEntity, id: string): string {
  * reason the writes do: without it `/api/admin/editorial/users/<id>/state`
  * would let the URL choose which upstream record is disclosed.
  */
-export function editorialStatePath(entity: EditorialEntity, id: string): string {
+export const editorialStatePath = (entity: EditorialEntity, id: string): string => {
   return `${entity.apiPath}/${id}/editorial-state`;
-}
+};
 
 /**
  * One page of a record's version history.
@@ -171,12 +185,12 @@ export function editorialStatePath(entity: EditorialEntity, id: string): string 
  * asks for a record by a path segment this application resolves, and only the
  * resolved `entityType` is ever put into the query.
  */
-export function editorialRevisionsPath(
+export const editorialRevisionsPath = (
   entity: EditorialEntity,
   id: string,
   page: number,
   limit: number,
-): string {
+): string => {
   const query = new URLSearchParams({
     entityType: entity.entityType,
     entityId: id,
@@ -184,10 +198,10 @@ export function editorialRevisionsPath(
     limit: String(limit),
   });
   return `/revisions?${query.toString()}`;
-}
+};
 
 /** One version's content. The record is not in the path upstream, so the
  *  service checks the revision belongs to the caller's entity type itself. */
-export function editorialRevisionPath(revisionId: string): string {
+export const editorialRevisionPath = (revisionId: string): string => {
   return `/revisions/${revisionId}`;
-}
+};

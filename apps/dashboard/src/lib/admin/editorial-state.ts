@@ -100,6 +100,11 @@ export const EDITORIAL_STATE_ACTIONS = [
   "submit",
   "resubmit",
   "publish",
+  // Putting a finished approval on the site — served by `publish-approved`,
+  // not by `publish`, which is the no-review path and refuses with 409 under
+  // any policy that requires review. One name for both meant the only route
+  // to the site for an approved article published nothing at all.
+  "publishApproved",
   "approve",
   "reject",
   "return",
@@ -148,6 +153,10 @@ export interface EditorialState {
  */
 export const PANEL_ACTIONS = [
   "publish",
+  // Beside `publish` because it is the same move for the reader — the record
+  // goes on the site — and never offered at the same time: the server reports
+  // one or the other depending on whether an approval is standing.
+  "publishApproved",
   "submit",
   "resubmit",
   "approve",
@@ -165,9 +174,9 @@ export type PanelAction = (typeof PANEL_ACTIONS)[number];
  * this panel has no button, no confirmation and no copy for is ignored rather
  * than rendered as a bare key.
  */
-export function panelActions(state: EditorialState): PanelAction[] {
+export const panelActions = (state: EditorialState): PanelAction[] => {
   return drawable(state.availableActions);
-}
+};
 
 /**
  * The intersection itself, so the cast lives in one place.
@@ -176,9 +185,9 @@ export function panelActions(state: EditorialState): PanelAction[] {
  * the cast was two casts, and a correction to one of them would have been a
  * correction to half the panel.
  */
-function drawable(list: readonly string[]): PanelAction[] {
+const drawable = (list: readonly string[]): PanelAction[] => {
   return PANEL_ACTIONS.filter((action) => list.includes(action));
-}
+};
 
 /**
  * Buttons to draw disabled, with the readiness list as their description.
@@ -187,17 +196,17 @@ function drawable(list: readonly string[]): PanelAction[] {
  * server's answer filtered by what this panel can draw, so an action it has
  * no button for is ignored rather than rendered as a bare key.
  */
-export function readinessHeldActions(state: EditorialState): PanelAction[] {
+export const readinessHeldActions = (state: EditorialState): PanelAction[] => {
   return drawable(state.blockedByReadiness);
-}
+};
 
 /** Actions the API refuses without an explanation (`@MinLength(1)` on both),
  *  so the panel must refuse to send one without it too. */
 export const ACTIONS_NEEDING_REASON: readonly PanelAction[] = ["reject", "return"];
 
-export function needsReason(action: PanelAction): boolean {
+export const needsReason = (action: PanelAction): boolean => {
   return ACTIONS_NEEDING_REASON.includes(action);
-}
+};
 
 /**
  * Which id this action is sent against.
@@ -208,9 +217,9 @@ export function needsReason(action: PanelAction): boolean {
  * second list here, which is what this was, one edit away from disagreeing
  * with the route that has to act on it.
  */
-export function actionTargetId(action: PanelAction, entityId: string, state: EditorialState): string | null {
+export const actionTargetId = (action: PanelAction, entityId: string, state: EditorialState): string | null => {
   return isInstanceAction(action) ? state.workflowInstanceId : entityId;
-}
+};
 
 /**
  * Steps a returned review may be sent back to: every step before the current
@@ -221,12 +230,12 @@ export function actionTargetId(action: PanelAction, entityId: string, state: Edi
  * skip ahead. An empty list means there is nowhere to return to, and the
  * panel offers no return at all rather than an empty picker.
  */
-export function returnableSteps(state: EditorialState): WorkflowStepSummary[] {
+export const returnableSteps = (state: EditorialState): WorkflowStepSummary[] => {
   const steps = state.workflow?.steps ?? [];
   const current = steps.find((step) => step.isCurrent);
   if (!current) {
     return [];
   }
   return steps.filter((step) => step.sequenceOrder < current.sequenceOrder);
-}
+};
 

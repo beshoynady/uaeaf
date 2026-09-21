@@ -54,7 +54,7 @@ import { EditorialTimeline } from "./timeline";
  * spend the afternoon asking a question whose answer only this reader's own
  * actions change.
  */
-export function EditorialStatusPanel({
+export const EditorialStatusPanel = ({
   entityType,
   entityId,
   state,
@@ -71,7 +71,7 @@ export function EditorialStatusPanel({
   /** Field names in the reader's words, keyed by the first segment of a
    *  blocker's path. See `ReadinessList` for why it is data, not a function. */
   fieldLabels?: Readonly<Record<string, string>>;
-}) {
+}) => {
   const t = useTranslations("Editorial");
   const errors = useTranslations("WriteErrors");
   const locale = useLocale() as AppLocale;
@@ -114,7 +114,7 @@ export function EditorialStatusPanel({
   const steps = current.workflow?.steps ?? [];
   const returnable = returnableSteps(current);
 
-  async function refresh(): Promise<void> {
+  const refresh = async (): Promise<void> => {
     setRefreshing(true);
     try {
       const response = await fetch(`/api/admin/editorial/${entityType}/${entityId}/state`);
@@ -131,9 +131,9 @@ export function EditorialStatusPanel({
     } finally {
       setRefreshing(false);
     }
-  }
+  };
 
-  async function run(action: PanelAction, body: Record<string, unknown>): Promise<void> {
+  const run = async (action: PanelAction, body: Record<string, unknown>): Promise<void> => {
     const targetId = actionTargetId(action, entityId, current);
     if (targetId === null) {
       // A review decision with no instance to send it to. The state changed
@@ -183,29 +183,29 @@ export function EditorialStatusPanel({
     } finally {
       setRunning(null);
     }
-  }
+  };
 
   /** Closes whatever was being asked for, and empties it — the last
    *  rejection's words must not be offered as the next one's default. */
-  function dismissPrompt(): void {
+  const dismissPrompt = (): void => {
     setPrompting(null);
     setReason("");
     setReturnTo("");
-  }
+  };
 
-  function press(action: PanelAction): void {
+  const press = (action: PanelAction): void => {
     setFailure(null);
     // Publish and approve are confirmed; reject and return ask for the reason
     // the API requires. Submit and resubmit move a draft one step and are
     // reversible by the reviewer, so they run on the press.
-    if (action === "publish" || action === "approve" || needsReason(action)) {
+    if (action === "publish" || action === "publishApproved" || action === "approve" || needsReason(action)) {
       setReason("");
       setReturnTo("");
       setPrompting(action);
       return;
     }
     void run(action, {});
-  }
+  };
 
   const actorName = (actor: EditorialActor | null) =>
     actor?.name ? localized(actor.name, locale) : t("unknownActor");
@@ -413,6 +413,22 @@ export function EditorialStatusPanel({
         {t("confirmPublishBody")}
       </ConfirmDialog>
 
+      {/* Its own dialog, because what it puts on the site is different: the
+          revision the approvers read, not whatever the draft holds now. It
+          also carries no `expectedUpdatedAt` — the approval names the revision,
+          so there is no "the draft moved under you" to guard against. */}
+      <ConfirmDialog
+        open={prompting === "publishApproved"}
+        title={t("confirmPublishApprovedTitle")}
+        confirmLabel={t("confirmPublishAction")}
+        cancelLabel={t("cancel")}
+        busy={running === "publishApproved"}
+        onConfirm={() => void run("publishApproved", {})}
+        onCancel={dismissPrompt}
+      >
+        {t("confirmPublishApprovedBody")}
+      </ConfirmDialog>
+
       <ConfirmDialog
         open={prompting === "approve"}
         title={t("confirmApproveTitle")}
@@ -490,10 +506,10 @@ export function EditorialStatusPanel({
       ) : null}
     </aside>
   );
-}
+};
 
 /** One step, with who decides it and how far it has got. */
-function StepRow({
+const StepRow = ({
   step,
   index,
   total,
@@ -503,7 +519,7 @@ function StepRow({
   index: number;
   total: number;
   locale: AppLocale;
-}) {
+}) => {
   const t = useTranslations("Editorial");
   // The separator is copy, not punctuation this component may choose: the
   // same list is drawn for an Arabic and an English reader.
@@ -548,7 +564,7 @@ function StepRow({
       </p>
     </li>
   );
-}
+};
 
 type Translate = ReturnType<typeof useTranslations<"Editorial">>;
 
@@ -559,7 +575,7 @@ type Translate = ReturnType<typeof useTranslations<"Editorial">>;
  * record under review is still a `Draft` upstream, and telling an author
  * "draft" while three people are deciding on it is true and useless.
  */
-function publicationStateLabel(state: EditorialState, t: Translate): string {
+const publicationStateLabel = (state: EditorialState, t: Translate): string => {
   if (state.workflowStatus === "InProgress") {
     return t("stateInReview");
   }
@@ -573,11 +589,11 @@ function publicationStateLabel(state: EditorialState, t: Translate): string {
     default:
       return t("stateDraft");
   }
-}
+};
 
 /** Why nothing can be published. A reason this build does not know still
  *  reads as a sentence rather than as its own key. */
-function blockedReasonLabel(reason: string | null, t: Translate): string {
+const blockedReasonLabel = (reason: string | null, t: Translate): string => {
   switch (reason) {
     case "noPolicy":
       return t("blockedNoPolicy");
@@ -590,9 +606,9 @@ function blockedReasonLabel(reason: string | null, t: Translate): string {
     default:
       return t("blockedUnknown");
   }
-}
+};
 
-function workflowStatusLabel(status: string, t: Translate): string {
+const workflowStatusLabel = (status: string, t: Translate): string => {
   switch (status) {
     case "Approved":
       return t("workflowStatusApproved");
@@ -603,15 +619,15 @@ function workflowStatusLabel(status: string, t: Translate): string {
     default:
       return t("workflowStatusInProgress");
   }
-}
+};
 
 /** Publishing leads; rejecting ends the cycle and carries the destructive
  *  variant (ADR-0004). Everything between is secondary. */
-function variantFor(action: PanelAction): "primary" | "secondary" | "destructive" {
+const variantFor = (action: PanelAction): "primary" | "secondary" | "destructive" => {
   if (action === "reject") {
     return "destructive";
   }
-  return action === "publish" || action === "approve" || action === "submit"
+  return action === "publish" || action === "publishApproved" || action === "approve" || action === "submit"
     ? "primary"
     : "secondary";
-}
+};

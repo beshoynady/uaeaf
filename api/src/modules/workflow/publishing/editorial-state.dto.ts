@@ -32,6 +32,14 @@ export const EDITORIAL_ACTIONS = [
   'submit',
   'resubmit',
   'publish',
+  // Putting a finished approval on the site, which is NOT `publish`.
+  //
+  // They were one name until 2026-09-21, and the ambiguity was a defect:
+  // `publish` is `publishDirect`, which refuses with 409 whenever the type's
+  // policy requires review — so an approved article under such a policy
+  // offered a button that could not work, and no other route to the site.
+  // Two acts, two revision sources, two audit entries: two names.
+  'publishApproved',
   'approve',
   'reject',
   'return',

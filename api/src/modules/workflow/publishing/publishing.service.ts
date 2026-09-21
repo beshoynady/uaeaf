@@ -621,7 +621,17 @@ export class PublishingService {
     const canApprove = this.hasPermission(actor, 'workflowInstances', 'Approve');
 
     const permits = { canEdit, canUpdate, canPublish, canApprove };
-    const hasApproval = approvedWaiting !== null;
+    // An approval is WAITING only while nobody has put it on the site. An
+    // `Approved` instance stays approved forever, so reading "is there an
+    // approval" as "is one waiting" left the publish action offered on a
+    // record that was already live — a button that republished the same
+    // revision and contradicted the state printed beside it.
+    //
+    // Compared by revision, not by date: the approval names the revision it
+    // approved, and that is the thing publishing puts on the site.
+    const hasApproval =
+      approvedWaiting !== null &&
+      !(live && (live.revisionId as Types.ObjectId).equals(approvedWaiting.revisionId as Types.ObjectId));
     const actions = this.allowedActions(resolved.mode, active, permits, publishBlockers.length === 0, hasApproval);
 
     // What the same reader could do if the draft were ready, minus what they
@@ -738,8 +748,13 @@ export class PublishingService {
       // the only one under a policy that requires review. `findActive` hides
       // Approved instances, so this state reads as "no review running" — which
       // is why the approval has to be looked up separately to see it at all.
+      //
+      // Reported as its own action: it is served by `publish-approved`, which
+      // publishes the revision the approvers actually saw, while `publish` is
+      // `publishDirect` and refuses outright under a policy that requires
+      // review.
       if (mode === 'workflow' && approvedWaiting && permits.canPublish) {
-        actions.add('publish');
+        actions.add('publishApproved');
       }
       // Not while an approval is standing: resubmitting would throw away the
       // decision the record is holding, and nobody reaches for "submit for
