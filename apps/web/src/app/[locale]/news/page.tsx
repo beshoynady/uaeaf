@@ -3,6 +3,8 @@ import { setRequestLocale } from "next-intl/server";
 import { StaticPageScreen, buildStaticPageMetadata, loadStaticPage } from "@/components/pages/static-page-screen";
 import { NewsList } from "@/components/pages/news/news-list";
 import { TagFilterNotice } from "@/components/pages/news/tag-filter-notice";
+import { NewsTimeFilter } from "@/components/pages/news/time-filter";
+import { rangeIsPossible } from "@uaeaf/content/time-range";
 import { Section } from "@/components/ui/section";
 import { fetchArticles } from "@/lib/api/articles";
 import { fetchPublicMedia } from "@/lib/api/media";
@@ -26,6 +28,15 @@ const KEY = "news";
  * index and the sitemap until there is something to show. That is one
  * function's decision, so the robots directive and the sitemap cannot
  * disagree about it.
+ *
+ * ── `?from=` and `?to=` ───────────────────────────────────────────────────
+ *
+ * The same shape as the tag: a window is a view of this listing, so it keeps
+ * the page's address and a reader can bookmark it, send it, and undo it with
+ * the browser's own back button. A range the API would refuse is dropped here
+ * rather than forwarded — the reader gets the unfiltered list and the control
+ * shows nothing pressed, which is the truth about a window that cannot hold
+ * anything.
  *
  * ── `?tag=` ────────────────────────────────────────────────────────────────
  *
@@ -58,12 +69,19 @@ export default async function NewsPage({
 
   // `?tag=a&tag=b` arrives as an array. One tag is the whole feature, and
   // taking the first is what the badge that built the link meant.
-  const asked = (await searchParams).tag;
-  const tag = (Array.isArray(asked) ? asked[0] : asked)?.trim() || undefined;
+  const query = await searchParams;
+  const one = (value: string | string[] | undefined) =>
+    (Array.isArray(value) ? value[0] : value)?.trim() || undefined;
+
+  const tag = one(query.tag);
+  const asked = { from: one(query.from), to: one(query.to) };
+  // A window that closes before it opens is refused upstream with a 400. Sent
+  // anyway, the page would render an error where a reader expects a list.
+  const range = rangeIsPossible(asked.from, asked.to) ? asked : {};
 
   const [{ title, subtitle, heroImage }, page] = await Promise.all([
     loadStaticPage(KEY, locale),
-    fetchArticles(1, undefined, tag),
+    fetchArticles(1, undefined, tag, undefined, range),
   ]);
 
   const articles = page?.items ?? [];
@@ -81,8 +99,12 @@ export default async function NewsPage({
       // rendered below — never from what the newsroom might publish next.
       itemNames={articles.map((article) => article.title[locale])}
     >
+      <Section className="pt-12 md:pt-16">
+        <NewsTimeFilter range={range} tag={tag} />
+      </Section>
+
       {tag ? (
-        <Section className="pt-12 md:pt-16">
+        <Section className="pt-8">
           <TagFilterNotice tag={tag} empty={articles.length === 0} />
         </Section>
       ) : null}

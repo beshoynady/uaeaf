@@ -587,6 +587,17 @@ export class PublishingService {
     };
   }
 
+  /**
+   * How many records of a type sit at each review status.
+   *
+   * Passed through from the engine rather than recomputed: the newsroom's card
+   * row and the status panel must agree about what "under review" counts, and
+   * two implementations of that eventually do not.
+   */
+  async countRecordsByStatus(entityType: PublicationEntityType): Promise<Record<string, number>> {
+    return this.instancesService.countRecordsByStatus(entityType);
+  }
+
   /** Everything the dashboard's status panel needs, in one read. */
   async editorialState(
     entityType: PublicationEntityType,

@@ -33,7 +33,14 @@ const denied = { status: "denied" } as const;
  */
 export const loadArticleList = async (
   locale: AppLocale,
-): Promise<NewsroomScreen<{ articles: Article[]; reviews: Map<string, ReviewSummary>; canCreate: boolean }>> => {
+): Promise<
+  NewsroomScreen<{
+    articles: Article[];
+    reviews: Map<string, ReviewSummary>;
+    canCreate: boolean;
+    summary: NewsroomSummary | null;
+  }>
+> => {
   const grants = await readGrants(locale);
 
   // Three jobs open this screen. Reading alone does not: the list exists to be
@@ -47,7 +54,14 @@ export const loadArticleList = async (
     return denied;
   }
 
-  const page = await fetchAsUser<ArticlePage>("/articles?limit=200", locale);
+  // The listing and the numbers together: the cards sit above the rows and
+  // one read for both means they describe the same moment. `summary` refused
+  // or unavailable costs the cards and not the list — a newsroom can be worked
+  // without its own statistics.
+  const [page, summary] = await Promise.all([
+    fetchAsUser<ArticlePage>("/articles?limit=200", locale),
+    fetchAsUser<NewsroomSummary>("/articles/summary", locale),
+  ]);
   if (page === null) {
     return denied;
   }
@@ -77,9 +91,32 @@ export const loadArticleList = async (
   // answers: the link is drawn from the same grant the route checks.
   return {
     status: "ready",
-    data: { articles: page.items, reviews, canCreate: hasPermission(grants, "articles", "Create") },
+    data: {
+      articles: page.items,
+      reviews,
+      canCreate: hasPermission(grants, "articles", "Create"),
+      summary,
+    },
   };
 };
+
+/**
+ * The newsroom's own numbers, exactly as `GET /articles/summary` reports them.
+ *
+ * Counted by the database in one pass, not assembled here from the rows a page
+ * happens to hold: the listing is paginated, so a count taken from it would
+ * describe that page while being labelled as the newsroom, and would change as
+ * somebody paged.
+ */
+export interface NewsroomSummary {
+  byState: Record<string, number>;
+  byCategory: Record<string, number>;
+  /** Published and hidden from the feed — inside `byState.Live` too. */
+  archived: number;
+  inReview: number;
+  awaitingPublication: number;
+  changesRequested: number;
+}
 
 /** One review waiting on the caller, joined to the article it concerns. */
 export interface PendingReview {

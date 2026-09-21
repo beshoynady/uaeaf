@@ -11,6 +11,8 @@ import {
   changesArrangement,
   describeArrangement,
   differsFromSaved,
+  isDeadlocked,
+  moveApprover,
   hasApprovalErrors,
   requiredApprovals,
   validateApprovalChoice,
@@ -74,6 +76,25 @@ import {
  * not a page. Its patterns come from the dashboard's own components and from
  * the permission matrix beside it, which answers a question of the same shape
  * over the same vocabulary.
+ *
+ * -- Why the sequential order is a numbered list, not checkboxes ------------
+ *
+ * Under SEQUENTIAL the order IS the policy: the same three people in two
+ * orders are two arrangements, because a different person holds every article
+ * up first. A checkbox grid cannot express that, having no order to read and
+ * none to set. So the chosen approvers become a numbered list with each
+ * position printed, and two buttons move a person through it.
+ *
+ * Buttons rather than dragging: no drag-and-drop library is installed and
+ * adding one needs approval (owner constraint 2026-09-21). Two buttons are
+ * also the only form of this that works from a keyboard without a custom key
+ * handler, which for an administration tool is the better trade regardless.
+ *
+ * -- Why the deadlock is refused before the save ---------------------------
+ *
+ * "Requires approval, names nobody" stops every publication of that type. The
+ * API refuses it as `unsatisfiablePolicy`; this says so at the control, so the
+ * administrator who caused it reads it rather than an editor weeks later.
  */
 export const PolicyManager = ({
   entities,
@@ -177,8 +198,22 @@ export const PolicyManager = ({
         // the edit as it stands. Computed once when the row mounted, it would
         // describe an arrangement the administrator has since changed.
         const lockedOut = running > 0 && changesArrangement(entity, draft);
-        const blocked = hasApprovalErrors(errors) || lockedOut;
+        const deadlocked = isDeadlocked(draft);
+        const blocked = hasApprovalErrors(errors) || lockedOut || deadlocked;
         const refusal = refusals[entity.entityType];
+        // The chosen approvers in the draft's own order, which under
+        // SEQUENTIAL is the arrangement itself. Mapped through the accounts so
+        // a name is drawn rather than an id -- and an id whose account is gone
+        // keeps its place, because that is a thing the administrator must see.
+        const chosen = (draft.approverIds ?? []).map(
+          (id) =>
+            approvers.find((candidate) => candidate.id === id) ?? {
+              id,
+              name: { ar: id, en: id },
+              email: id,
+            },
+        );
+        
         // Nothing to save on a row nobody has touched, and a row that offers
         // to save nothing is a primary button spent on nothing.
         const dirty = differsFromSaved(entity, draft);
@@ -212,6 +247,19 @@ export const PolicyManager = ({
                 {t("policyEnabled")}
               </label>
             </div>
+
+            {deadlocked ? (
+              // Said before the save, not after it. The API refuses this with
+              // `unsatisfiablePolicy`; read only there, the administrator who
+              // caused it would have seen a success and an editor would have
+              // found it weeks later.
+              <p
+                role="alert"
+                className="rounded-[var(--radius-sm)] border border-[color:var(--color-semantic-error)] p-3 text-caption text-[color:var(--color-text-primary)]"
+              >
+                {t("policyDeadlocked")}
+              </p>
+            ) : null}
 
             {running > 0 ? (
               <div
@@ -260,12 +308,78 @@ export const PolicyManager = ({
                       </label>
                     ))}
                   </div>
-                  {errors.approvers ? (
-                    <span role="alert" className="text-caption text-[color:var(--color-semantic-error-text)]">
-                      {t("errorApprovers")}
-                    </span>
-                  ) : null}
+                  {/* No message here. "Choose at least one approver" and the
+                      deadlock notice above fire on exactly the same condition,
+                      and two alerts saying one thing make a reader look for a
+                      second problem. The notice is the one kept, because it
+                      says what happens if nobody is named. */}
                 </fieldset>
+
+                {draft.mode === "SEQUENTIAL" && chosen.length > 0 ? (
+                  <fieldset className="flex flex-col gap-2 border-0 p-0">
+                    <legend className="text-label font-medium text-[color:var(--color-text-secondary)]">
+                      {t("policyOrder")}
+                    </legend>
+                    <p className="text-caption text-[color:var(--color-text-secondary)]">
+                      {t("policyOrderHint")}
+                    </p>
+
+                    {/* An ordered list, so a screen reader says the position
+                        before the name rather than leaving it to be inferred
+                        from a number drawn beside it. */}
+                    <ol className="flex list-none flex-col gap-2 p-0">
+                      {chosen.map((approver, index) => (
+                        <li
+                          key={approver.id}
+                          className="flex items-center gap-3 rounded-[var(--radius-sm)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-sunken)] p-2"
+                        >
+                          <span
+                            aria-hidden
+                            className="inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-[color:var(--color-brand-primary)] text-label font-bold text-[color:var(--color-text-on-brand)]"
+                          >
+                            {index + 1}
+                          </span>
+                          <span className="flex-1 text-body-sm text-[color:var(--color-text-primary)]">
+                            {t("policyOrderPosition", {
+                              position: index + 1,
+                              total: chosen.length,
+                              name: approver.name[locale] || approver.email,
+                            })}
+                          </span>
+
+                          {/* Each button names the person it moves: a column
+                              of six identical "up" buttons tells a
+                              screen-reader user which of the six they are on,
+                              which is none of them. */}
+                          <Button
+                            variant="secondary"
+                            disabled={index === 0}
+                            aria-label={t("policyMoveUp", { name: approver.name[locale] || approver.email })}
+                            onClick={() =>
+                              update(entity.entityType, {
+                                approverIds: moveApprover(draft.approverIds ?? [], index, -1),
+                              })
+                            }
+                          >
+                            <span aria-hidden>&#8593;</span>
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            disabled={index === chosen.length - 1}
+                            aria-label={t("policyMoveDown", { name: approver.name[locale] || approver.email })}
+                            onClick={() =>
+                              update(entity.entityType, {
+                                approverIds: moveApprover(draft.approverIds ?? [], index, 1),
+                              })
+                            }
+                          >
+                            <span aria-hidden>&#8595;</span>
+                          </Button>
+                        </li>
+                      ))}
+                    </ol>
+                  </fieldset>
+                ) : null}
 
                 {draft.mode === "THRESHOLD" ? (
                   <TextField

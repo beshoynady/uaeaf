@@ -4,6 +4,7 @@ import { WorkflowPoliciesRepository } from './workflow-policies.repository.js';
 import type { WorkflowPolicyDocument } from './schemas/workflow-policy.schema.js';
 import { CreateWorkflowPolicyDto } from './dto/create-workflow-policy.dto.js';
 import { WorkflowDefinitionsService } from '../workflow-definitions/workflow-definitions.service.js';
+import { WorkflowStepsService } from '../workflow-steps/workflow-steps.service.js';
 import { isDuplicateKeyError } from '../../../common/utils/mongo-errors.util.js';
 import type { WorkflowEntityType } from '../../../common/constants/workflow-entity-types.js';
 import type { WorkflowPolicyOperation } from './schemas/workflow-policy.schema.js';
@@ -33,6 +34,10 @@ export class WorkflowPoliciesService {
   constructor(
     private readonly repository: WorkflowPoliciesRepository,
     private readonly definitionsService: WorkflowDefinitionsService,
+    // Read only to answer "does this definition have anybody on it". A policy
+    // requiring review whose definition has no live step is a publication
+    // path that stops at nobody.
+    private readonly stepsService: WorkflowStepsService,
   ) {}
 
   /**
@@ -116,8 +121,24 @@ export class WorkflowPoliciesService {
     workflowRequired: boolean,
     workflowDefinitionId: string | null,
   ): Promise<void> {
-    if (!workflowRequired || !workflowDefinitionId) {
+    if (!workflowRequired) {
+      // Nothing to satisfy, so nothing to check. This is the ordinary shape of
+      // every type that publishes directly, and checking it would make
+      // "turn approvals off" impossible.
       return;
+    }
+
+    if (!workflowDefinitionId) {
+      // The deadlock this guard used to return early on (reviewer of Phase 5,
+      // 2026-09-21). `resolve()` answers `definitionMissing` for it, which
+      // refuses to act but says so at publish time — to an editor, weeks
+      // after the administrator who stored it saw a success.
+      throw new ConflictException({
+        code: 'unsatisfiablePolicy',
+        message:
+          'This policy requires approval and names no workflow to route it through, so nothing of ' +
+          'this type could ever be published. Name a workflow, or turn approval off.',
+      });
     }
 
     const definition = await this.definitionsService.findById(workflowDefinitionId);
@@ -138,6 +159,20 @@ export class WorkflowPoliciesService {
       throw new ConflictException({
         code: 'conflict',
         message: `That workflow definition governs ${definition.entityType}, not ${entityType}.`,
+      });
+    }
+
+    // The second deadlock shape. A definition with no live step has no
+    // assignee, so a submission reaches nobody and `WorkflowInstancesService
+    // .create` throws "this workflow definition has no steps" — at an editor
+    // who did nothing wrong, about configuration they cannot change.
+    const steps = await this.stepsService.findByDefinition(workflowDefinitionId);
+    if (steps.length === 0) {
+      throw new ConflictException({
+        code: 'unsatisfiablePolicy',
+        message:
+          'That workflow has nobody on it, so a submission would reach no approver. Name at least ' +
+          'one approver on it, or turn approval off for this type.',
       });
     }
   }

@@ -544,6 +544,17 @@ export class WorkflowInstancesService {
     return this.repository.countOpenForDefinition(definitionId);
   }
 
+  /**
+   * How many records of a type sit at each review status.
+   *
+   * For the newsroom's own card row. Exposed here rather than read from the
+   * repository by a screen's loader, so "one review per record however many
+   * times it was resubmitted" is defined in one place.
+   */
+  async countRecordsByStatus(entityType: WorkflowEntityType): Promise<Record<string, number>> {
+    return this.repository.countRecordsByStatus(entityType);
+  }
+
   /** The approval standing on a record and waiting to be published, if there
    *  is one. Exposed for `PublishingService`, which is the only thing allowed
    *  to act on it — this class approves and stops. */

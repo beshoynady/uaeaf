@@ -107,7 +107,10 @@ describe("PolicyManager", () => {
 
     await userEvent.click(screen.getByLabelText("policyEnabled"));
 
-    expect(screen.getByRole("alert")).toHaveTextContent("errorApprovers");
+    // One alert, not two: "choose an approver" and the deadlock notice fired
+    // on the same condition, and the notice is the one that says what happens
+    // if nobody is named.
+    expect(screen.getByRole("alert")).toHaveTextContent("policyDeadlocked");
     expect(screen.getByRole("button", { name: "save" })).toBeDisabled();
   });
 
@@ -441,5 +444,130 @@ describe("PolicyManager", () => {
     await userEvent.click(screen.getByLabelText("policyEnabled"));
 
     expect(screen.getByRole("button", { name: "save" })).toBeInTheDocument();
+  });
+
+  describe("a sequential arrangement", () => {
+    const sequential = () =>
+      entity({ enabled: true, mode: "SEQUENTIAL", approverIds: ["u1", "u2"] });
+
+    it("numbers the approvers, because the order is the policy", () => {
+      render(<PolicyManager entities={[sequential()]} approvers={approvers} locale="ar" onSave={vi.fn()} />);
+
+      // The same two people in two orders are two arrangements: a different
+      // person holds every article up first. A checkbox grid cannot say which.
+      const positions = screen.getAllByRole("listitem").map((item) => item.textContent ?? "");
+      expect(positions.some((text) => text.includes('"position":1') && text.includes("أحمد"))).toBe(true);
+      expect(positions.some((text) => text.includes('"position":2') && text.includes("سارة"))).toBe(true);
+    });
+
+    it("moves an approver down, and says whose button that is", async () => {
+      render(<PolicyManager entities={[sequential()]} approvers={approvers} locale="ar" onSave={vi.fn()} />);
+
+      // Each button names the person it moves. A column of identical "down"
+      // buttons tells a screen-reader user which of them they are on: none.
+      await userEvent.click(screen.getByRole("button", { name: /policyMoveDown.*أحمد/ }));
+
+      const positions = screen.getAllByRole("listitem").map((item) => item.textContent ?? "");
+      expect(positions.some((text) => text.includes('"position":1') && text.includes("سارة"))).toBe(true);
+    });
+
+    it("cannot move the first approver up, or the last one down", () => {
+      render(<PolicyManager entities={[sequential()]} approvers={approvers} locale="ar" onSave={vi.fn()} />);
+
+      // Disabled rather than wrapping: pressing "up" on the first person means
+      // nothing happens, not "send them to the back".
+      expect(screen.getByRole("button", { name: /policyMoveUp.*أحمد/ })).toBeDisabled();
+      expect(screen.getByRole("button", { name: /policyMoveDown.*سارة/ })).toBeDisabled();
+    });
+
+    it("sends the order the administrator arranged", async () => {
+      const onSave = vi.fn().mockResolvedValue(undefined);
+      render(<PolicyManager entities={[sequential()]} approvers={approvers} locale="ar" onSave={onSave} />);
+
+      await userEvent.click(screen.getByRole("button", { name: /policyMoveDown.*أحمد/ }));
+      await userEvent.click(screen.getByRole("button", { name: "save" }));
+
+      // `buildSteps` numbers the steps from this array's own order, so a list
+      // sorted or de-duplicated on the way out would silently reassign who
+      // decides first.
+      expect(onSave).toHaveBeenCalledWith("articles", expect.objectContaining({ approverIds: ["u2", "u1"] }));
+    });
+
+    it("offers no order to arrange under the other two modes", () => {
+      render(
+        <PolicyManager
+          entities={[entity({ enabled: true, mode: "ALL", approverIds: ["u1", "u2"] })]}
+          approvers={approvers}
+          locale="ar"
+          onSave={vi.fn()}
+        />,
+      );
+
+      // Under ALL and THRESHOLD every approver decides on the same step, so
+      // there is no order — and a numbered list would invent one.
+      expect(screen.queryByText("policyOrder")).not.toBeInTheDocument();
+    });
+
+    it("keeps an approver whose account is gone in its place", () => {
+      render(
+        <PolicyManager
+          entities={[entity({ enabled: true, mode: "SEQUENTIAL", approverIds: ["u1", "deleted-account"] })]}
+          approvers={approvers}
+          locale="ar"
+          onSave={vi.fn()}
+        />,
+      );
+
+      // Dropping it would renumber the arrangement and hide the fact that a
+      // policy names somebody who no longer exists.
+      const positions = screen.getAllByRole("listitem").map((item) => item.textContent ?? "");
+      expect(positions.some((text) => text.includes("deleted-account"))).toBe(true);
+    });
+  });
+
+  describe("a policy that would deadlock", () => {
+    const nobody = () => entity({ enabled: true, mode: "ALL", approverIds: [] });
+
+    it("says so on a type that already carries the deadlock", () => {
+      render(<PolicyManager entities={[nobody()]} approvers={approvers} locale="ar" onSave={vi.fn()} />);
+
+      // A stored arrangement that stops every publication of that type — the
+      // shape the API now answers `unsatisfiablePolicy` for. Nothing is dirty,
+      // so there is no save to disable; what matters is that the row says what
+      // is wrong with it rather than looking like any other strict policy.
+      expect(screen.getByText("policyDeadlocked")).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "save" })).not.toBeInTheDocument();
+    });
+
+    it("says it before the save, not after", async () => {
+      const onSave = vi.fn();
+      render(<PolicyManager entities={[entity()]} approvers={approvers} locale="ar" onSave={onSave} />);
+
+      await userEvent.click(screen.getByLabelText("policyEnabled"));
+
+      expect(screen.getByRole("alert")).toHaveTextContent("policyDeadlocked");
+      expect(onSave).not.toHaveBeenCalled();
+    });
+
+    it("lifts the refusal as soon as somebody is named", async () => {
+      render(<PolicyManager entities={[nobody()]} approvers={approvers} locale="ar" onSave={vi.fn()} />);
+
+      await userEvent.click(screen.getByLabelText("أحمد"));
+
+      expect(screen.queryByText("policyDeadlocked")).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "save" })).toBeEnabled();
+    });
+
+    it("still allows turning approval off on a deadlocked type", async () => {
+      const onSave = vi.fn().mockResolvedValue(undefined);
+      render(<PolicyManager entities={[nobody()]} approvers={approvers} locale="ar" onSave={onSave} />);
+
+      await userEvent.click(screen.getByLabelText("policyEnabled"));
+      await userEvent.click(screen.getByRole("button", { name: "save" }));
+
+      // The way out of the deadlock. Refusing this too would leave a broken
+      // policy with no way to correct it from the screen that stored it.
+      expect(onSave).toHaveBeenCalledWith("articles", expect.objectContaining({ enabled: false }));
+    });
   });
 });

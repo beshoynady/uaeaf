@@ -81,6 +81,37 @@ export class ArticlesController {
     return this.service.findPage(query);
   }
 
+  /**
+   * The newsroom's own numbers, for the cards above its list.
+   *
+   * Declared ahead of `GET :id` so `summary` is never read as an id — the
+   * route-ordering convention `public` already follows here.
+   *
+   * Two reads joined, because two collections hold the answer: the articles
+   * collection knows how many are drafts, live, hidden and on which shelf, and
+   * the workflow engine knows how many are under review or carrying a standing
+   * approval. Computing either from the other would be a second opinion about
+   * a fact it does not hold.
+   */
+  @Get('summary')
+  @RequirePermission('articles', 'Read')
+  async summary() {
+    const [articles, reviews] = await Promise.all([
+      this.service.summarise(),
+      this.publishingService.countRecordsByStatus(ENTITY_TYPE),
+    ]);
+
+    return {
+      ...articles,
+      // Named for what a reader of the card row is asking, not for the engine's
+      // enum: "waiting on a reviewer" and "approved, waiting for a publisher"
+      // are the two questions a newsroom has about its own queue.
+      inReview: reviews.InProgress ?? 0,
+      awaitingPublication: reviews.Approved ?? 0,
+      changesRequested: (reviews.Returned ?? 0) + (reviews.Rejected ?? 0),
+    };
+  }
+
   @Get(':id')
   @RequirePermission('articles', 'Read')
   findOne(@Param('id') id: string) {

@@ -82,6 +82,15 @@ export interface EditorialHistoryEntry {
   actionDate: string;
   workflowStepId: string;
   returnedToStepId: string | null;
+  /**
+   * True where a `Rejected` entry was a request for changes, not a refusal.
+   *
+   * The engine records both as one action and separates them only by this
+   * flag. `EditorialHistoryEntryDto` has carried it since the two were
+   * separated; this mirror did not declare it, so no screen could read it and
+   * the timeline drew "rejected" for a reviewer asking for one correction.
+   */
+  revisionRequested: boolean;
 }
 
 /**

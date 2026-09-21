@@ -184,6 +184,103 @@ describe('ApprovalConfigurationService', () => {
     expect(deps.stepsService.replaceForDefinition).toHaveBeenCalled();
   });
 
+  /**
+   * The order an administrator put the approvers in, kept.
+   *
+   * `buildSteps` already numbers a SEQUENTIAL arrangement from the array's own
+   * order, and `findByDefinition` already reads steps back sorted by
+   * `sequenceOrder`. What was missing was any test saying so — so the order was
+   * a property of two implementations that happened to agree, which is exactly
+   * the kind of agreement that stops holding.
+   */
+  describe('the order of a sequential arrangement', () => {
+    const stepsSentTo = (deps: ReturnType<typeof makeDeps>) =>
+      (deps.stepsService.replaceForDefinition.mock.calls[0] as unknown as [
+        Types.ObjectId,
+        { sequenceOrder: number; assigneeIds: Types.ObjectId[] }[],
+      ])[1];
+
+    it('numbers the steps in the order the approvers were listed', async () => {
+      const deps = makeDeps();
+
+      await makeService(deps).configure(entityType, {
+        enabled: true,
+        mode: 'SEQUENTIAL',
+        approverIds: [String(c), String(a), String(b)],
+      });
+
+      // Not sorted, not de-ordered by a Set: C decides first because the
+      // administrator put C first. Anything else silently reassigns who holds
+      // the record up.
+      expect(stepsSentTo(deps).map((step) => [step.sequenceOrder, String(step.assigneeIds[0])])).toEqual([
+        [1, String(c)],
+        [2, String(a)],
+        [3, String(b)],
+      ]);
+    });
+
+    it('treats a reordering as a real change to who decides', async () => {
+      const deps = makeDeps({ _id: definitionId, entityType, isActive: true });
+      deps.stepsService.findByDefinition = jest.fn(async () => [
+        { _id: new Types.ObjectId(), assigneeIds: [a], requiredApprovals: 1 },
+        { _id: new Types.ObjectId(), assigneeIds: [b], requiredApprovals: 1 },
+      ]) as never;
+
+      await makeService(deps).configure(entityType, {
+        enabled: true,
+        mode: 'SEQUENTIAL',
+        approverIds: [String(b), String(a)],
+      });
+
+      // A→B and B→A name the same two people and are not the same
+      // arrangement: one of them decides first, and which one is the whole
+      // point of the mode. Read as unchanged, a reorder would write nothing.
+      expect(deps.stepsService.replaceForDefinition).toHaveBeenCalled();
+    });
+
+    it('refuses a reordering while reviews are running under it', async () => {
+      const deps = makeDeps({ _id: definitionId, entityType, isActive: true }, 2);
+      deps.stepsService.findByDefinition = jest.fn(async () => [
+        { _id: new Types.ObjectId(), assigneeIds: [a], requiredApprovals: 1 },
+        { _id: new Types.ObjectId(), assigneeIds: [b], requiredApprovals: 1 },
+      ]) as never;
+
+      // The guard built on 2026-09-21 covers this without a line added: a
+      // reorder replaces the steps, and a replaced step is the one a running
+      // review is waiting at. This test exists because "it also covers the
+      // order" was an assumption until it was asserted.
+      await expect(
+        makeService(deps).configure(entityType, {
+          enabled: true,
+          mode: 'SEQUENTIAL',
+          approverIds: [String(b), String(a)],
+        }),
+      ).rejects.toMatchObject({ response: { code: 'reviewsInFlight' } });
+      expect(deps.stepsService.replaceForDefinition).not.toHaveBeenCalled();
+    });
+
+    it('reads the arrangement back in the order it was stored', async () => {
+      const deps = makeDeps({ _id: definitionId, entityType, isActive: true });
+      // As `findByDefinition` returns them: sorted by `sequenceOrder`.
+      deps.stepsService.findByDefinition = jest.fn(async () => [
+        { _id: new Types.ObjectId(), assigneeIds: [c], requiredApprovals: 1 },
+        { _id: new Types.ObjectId(), assigneeIds: [a], requiredApprovals: 1 },
+        { _id: new Types.ObjectId(), assigneeIds: [b], requiredApprovals: 1 },
+      ]) as never;
+
+      const described = await makeService(deps).configure(entityType, {
+        enabled: true,
+        mode: 'SEQUENTIAL',
+        approverIds: [String(c), String(a), String(b)],
+      });
+
+      // The screen draws "1 → 2 → 3" from this list, so an unordered read
+      // would show an order nobody chose over an engine that uses another.
+      expect(described.approverIds).toEqual([String(c), String(a), String(b)]);
+      expect(described.mode).toBe('SEQUENTIAL');
+    });
+  });
+
   it('refuses a threshold no set of approvers could ever meet', async () => {
     const deps = makeDeps();
 

@@ -356,6 +356,7 @@ describe("the action history", () => {
             actionDate: "2026-09-11T10:00:00.000Z",
             workflowStepId: "step-a",
             returnedToStepId: null,
+      revisionRequested: false,
           },
           {
             id: "h1",
@@ -365,6 +366,7 @@ describe("the action history", () => {
             actionDate: "2026-09-10T09:00:00.000Z",
             workflowStepId: "step-a",
             returnedToStepId: null,
+      revisionRequested: false,
           },
         ],
       }),

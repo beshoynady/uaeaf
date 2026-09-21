@@ -79,6 +79,28 @@ export class WorkflowInstancesRepository extends BaseRepository<WorkflowInstance
   }
 
   /**
+   * How many records of a type sit at each review status, in one pass.
+   *
+   * One aggregation rather than a count per status: the newsroom's card row
+   * draws them side by side, and separate reads describe different moments — a
+   * review approved between two of them is counted twice or not at all.
+   *
+   * Distinct RECORDS, not instances: a record resubmitted three times has one
+   * review, and counting rows would report three articles waiting.
+   */
+  async countRecordsByStatus(entityType: WorkflowEntityType): Promise<Record<string, number>> {
+    const rows = await this.model
+      .aggregate<{ _id: string; n: number }>([
+        { $match: { entityType, archivedAt: null } },
+        { $group: { _id: { status: '$status', entityId: '$entityId' } } },
+        { $group: { _id: '$_id.status', n: { $sum: 1 } } },
+      ])
+      .exec();
+
+    return Object.fromEntries(rows.map((row) => [row._id, row.n]));
+  }
+
+  /**
    * The most recent finished review of this record, if it ended in approval.
    *
    * `findActive` deliberately excludes `Approved`, so it cannot answer this —

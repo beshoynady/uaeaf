@@ -264,6 +264,15 @@
     "tagClear": "إزالة الوسم",
     "homeLatestHeading": "أحدث الأخبار",
     "homeInMediaHeading": "الاتحاد في الإعلام",
-    "viewAll": "كل الأخبار"
+    "viewAll": "كل الأخبار",
+    "timeFilterLabel": "تصفية بالوقت",
+    "timeAll": "كل الفترات",
+    "time_today": "اليوم",
+    "time_thisWeek": "هذا الأسبوع",
+    "time_thisMonth": "هذا الشهر",
+    "time_thisYear": "هذا العام",
+    "time_from": "من",
+    "time_to": "إلى",
+    "timeApply": "تطبيق"
   }
 }

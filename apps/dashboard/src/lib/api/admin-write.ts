@@ -161,6 +161,10 @@ export const NEWSROOM_ERROR_CODES = [
   /** More approvals required than there are distinct approvers — a step no
    *  set of people could ever satisfy. */
   "unsatisfiableStep",
+  /** The policy requires approval and could never be satisfied: it names no
+   *  workflow, or one with nobody on it. The screen refuses it first; this is
+   *  the same refusal arriving from the server. */
+  "unsatisfiablePolicy",
 ] as const;
 
 export const SPONSOR_RELATION_ERROR_CODES = [
@@ -324,6 +328,7 @@ const FROM_API_CODE: Record<string, WriteErrorCode> = {
   slugTaken: "slugTaken",
   reviewsInFlight: "reviewsInFlight",
   unsatisfiableStep: "unsatisfiableStep",
+  unsatisfiablePolicy: "unsatisfiablePolicy",
   incompleteCta: "incompleteCta",
   ctaLabelTooLong: "ctaLabelTooLong",
   invalidCtaUrl: "invalidCtaUrl",

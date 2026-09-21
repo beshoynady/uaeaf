@@ -12,7 +12,8 @@ import { PublicationsService } from '../../workflow/publications/publications.se
 import { AuditLogsService } from '../../workflow/audit-logs/audit-logs.service.js';
 import { toPageSeo } from '../../../common/dto/page-seo.dto.js';
 import { isDuplicateKeyError } from '../../../common/utils/mongo-errors.util.js';
-import type { ArticleCategory } from './schemas/article.schema.js';
+import { ARTICLE_CATEGORIES, ARTICLE_PUBLICATION_STATES } from './schemas/article.schema.js';
+import type { ArticleCategory, ArticlePublicationState } from './schemas/article.schema.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 import type { RequestContext } from '../../workflow/workflow-instances/workflow-instances.service.js';
 
@@ -89,6 +90,23 @@ export const normaliseTags = (tags: readonly string[]): string[] => {
 
   return kept;
 };
+
+/**
+ * What the articles collection alone can say about itself.
+ *
+ * Deliberately without the review numbers. Whether a draft is under review or
+ * carrying a standing approval is the workflow engine's answer, not this
+ * collection's — the row records only which articles are live and which shelf
+ * they are on. The controller joins the two, so neither service has to know
+ * the other's rules.
+ */
+export interface ArticleSummary {
+  byState: Record<ArticlePublicationState, number>;
+  byCategory: Record<ArticleCategory, number>;
+  /** Published and hidden from the feed. Not a state — a flag over `Live`, so
+   *  an archived article is inside the `Live` figure too. */
+  archived: number;
+}
 
 /** What a visitor may narrow the public feed by. */
 export interface PublicFeedFilter {
@@ -319,6 +337,22 @@ export class ArticlesService {
     if (!query.includeArchived) {
       filter.archived = false;
     }
+
+    // The same range rule the public feed applies, from the same helpers: a
+    // window that closes before it opens is refused rather than answered with
+    // an empty list, a malformed bound is ignored rather than compared, and
+    // `to` runs to the end of its day. Two copies of that would drift, and the
+    // newsroom's own filter is the one an editor trusts most.
+    this.assertRangeIsPossible(query);
+    const from = parsedDate(query.from);
+    const to = parsedDate(query.to);
+    if (from || to) {
+      filter.publishDate = {
+        ...(from ? { $gte: from } : {}),
+        ...(to ? { $lte: endOfDay(to) } : {}),
+      } as never;
+    }
+
     if (query.search) {
       // Escaped, because an unescaped `.*` typed into a search box is a
       // collection scan any caller can trigger at will.
@@ -341,7 +375,32 @@ export class ArticlesService {
    * Mongoose matches documents that HAVE no category, which is the opposite of
    * "every category" — the same trap `AuditLogsService.buildFilter` documents.
    */
+  /**
+   * Refuses a window that closes before it opens.
+   *
+   * Passed through, Mongo answers an empty feed and nothing says why: the
+   * reader sees a newsroom that published nothing in the range they asked for,
+   * and the range is the bug. A malformed bound is still ignored rather than
+   * compared — an Invalid Date compares false against everything, so treating
+   * it as a bound would turn every typo into a refusal.
+   *
+   * @throws BadRequestException when both bounds parse and the end precedes
+   *   the start.
+   */
+  private assertRangeIsPossible = (narrow: { from?: string; to?: string }): void => {
+    const from = parsedDate(narrow.from);
+    const to = parsedDate(narrow.to);
+
+    if (from && to && endOfDay(to) < from) {
+      throw new BadRequestException({
+        code: 'badRequest',
+        message: `The range ends before it starts: "${narrow.from}" to "${narrow.to}".`,
+      });
+    }
+  };
+
   private publicFilter = (narrow: PublicFeedFilter): QueryFilter<ArticleDocument> => {
+    this.assertRangeIsPossible(narrow);
     const filter: Record<string, unknown> = { publicationState: 'Live', archived: false };
 
     if (narrow.category) {
@@ -421,6 +480,31 @@ export class ArticlesService {
 
     const snapshot = await this.publicationsService.getPublicSnapshot('articles', article._id as Types.ObjectId);
     return snapshot ? toPublicDto(article, snapshot) : null;
+  };
+
+  /**
+   * The newsroom's own numbers, in one read.
+   *
+   * Counted by the database, not by the screen. The list is paginated, so a
+   * count assembled from the rows a page happens to hold would describe that
+   * page while being labelled as the newsroom — and would change as somebody
+   * paged.
+   *
+   * Every state and every category is named even at zero: a card row that
+   * omits "Draft: 0" reads as a screen that failed to load, and a reader
+   * cannot tell that from one still loading.
+   */
+  summarise = async (): Promise<ArticleSummary> => {
+    const counts = await this.repository.summarise();
+
+    const zeroed = <K extends string>(keys: readonly K[], found: Record<string, number>) =>
+      Object.fromEntries(keys.map((key) => [key, found[key] ?? 0])) as Record<K, number>;
+
+    return {
+      byState: zeroed(ARTICLE_PUBLICATION_STATES, counts.byState),
+      byCategory: zeroed(ARTICLE_CATEGORIES, counts.byCategory),
+      archived: counts.archived,
+    };
   };
 
   /** Every live, visible article, for the news sitemap. Identity and dates

@@ -1,5 +1,6 @@
 import { fetchPublic } from "./public-client";
 import type { ArticleCategory, ArticlePublic, ArticleSitemapEntry, Paginated } from "./types";
+import type { TimeRange } from "@uaeaf/content/time-range";
 
 /**
  * The news reads, in one place.
@@ -35,12 +36,17 @@ export const fetchArticles = async (
   /** One shelf of the newsroom. Independent of the tag: a story has exactly
    *  one category and any number of labels. */
   category?: ArticleCategory,
+  /** A window on the publication date. Both bounds inclusive; `to` runs to the
+   *  end of its day upstream. */
+  range: TimeRange = {},
 ): Promise<Paginated<ArticlePublic> | null> => {
   const query = new URLSearchParams({ page: String(page), limit: String(limit) });
   // Only when asked for: an empty `tag=` would narrow the feed to articles
   // carrying a tag that is the empty string, which is every article's none.
   if (tag) query.set("tag", tag);
   if (category) query.set("category", category);
+  if (range.from) query.set("from", range.from);
+  if (range.to) query.set("to", range.to);
 
   return fetchPublic<Paginated<ArticlePublic>>(`/articles/public?${query.toString()}`);
 };

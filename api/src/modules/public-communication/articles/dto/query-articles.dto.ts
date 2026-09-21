@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsDateString, IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
 import { PaginationQueryDto } from '../../../../common/dto/pagination-query.dto.js';
 import { ARTICLE_CATEGORIES, ARTICLE_PUBLICATION_STATES } from '../schemas/article.schema.js';
 import type { ArticleCategory, ArticlePublicationState } from '../schemas/article.schema.js';
@@ -37,6 +37,23 @@ export class QueryArticlesDto extends PaginationQueryDto {
    * parameter arrives as `"false"` — which is truthy, and would have made the
    * off position of this switch turn the filter on.
    */
+  @ApiPropertyOptional({
+    description: 'Published on or after this date (inclusive). A draft has no publication date, so a ' +
+      'range narrows the listing to items that have been published.',
+    example: '2026-01-01',
+  })
+  @IsOptional()
+  @IsDateString()
+  from?: string;
+
+  @ApiPropertyOptional({
+    description: 'Published on or before this date, to the end of that day (inclusive).',
+    example: '2026-06-30',
+  })
+  @IsOptional()
+  @IsDateString()
+  to?: string;
+
   @ApiPropertyOptional({ description: 'Include articles hidden from the public feed. Defaults to false.' })
   @IsOptional()
   @Transform(({ value }) => value === true || value === 'true')

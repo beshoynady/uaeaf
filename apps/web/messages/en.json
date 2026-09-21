@@ -264,6 +264,15 @@
     "tagClear": "Clear the tag",
     "homeLatestHeading": "Latest news",
     "homeInMediaHeading": "UAEAF in the media",
-    "viewAll": "All news"
+    "viewAll": "All news",
+    "timeFilterLabel": "Filter by time",
+    "timeAll": "All time",
+    "time_today": "Today",
+    "time_thisWeek": "This week",
+    "time_thisMonth": "This month",
+    "time_thisYear": "This year",
+    "time_from": "From",
+    "time_to": "To",
+    "timeApply": "Apply"
   }
 }

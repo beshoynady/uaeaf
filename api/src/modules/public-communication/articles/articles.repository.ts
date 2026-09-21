@@ -41,4 +41,51 @@ export class ArticlesRepository extends BaseRepository<ArticleDocument> {
     ]);
     return { items, total };
   }
+
+  /**
+   * The newsroom counted, in one pass over the collection.
+   *
+   * One `$facet` rather than six `countDocuments` calls: the screen draws the
+   * numbers side by side, and six round trips would let them disagree — a
+   * state count taken before a publish and a category count taken after it
+   * describe two different newsrooms.
+   *
+   * Soft-deleted rows are excluded, so the numbers match what the list shows.
+   * `archived` is counted separately because it is a flag over `Live`, not a
+   * state beside it: an archived article is inside the `Live` figure too, and
+   * a reader needs both to make sense of either.
+   */
+  async summarise(): Promise<{
+    byState: Record<string, number>;
+    byCategory: Record<string, number>;
+    archived: number;
+  }> {
+    const [result] = await this.model
+      .aggregate<{
+        byState: { _id: string; n: number }[];
+        byCategory: { _id: string; n: number }[];
+        archived: { n: number }[];
+      }>([
+        { $match: { archivedAt: null } },
+        {
+          $facet: {
+            byState: [{ $group: { _id: '$publicationState', n: { $sum: 1 } } }],
+            byCategory: [{ $group: { _id: '$category', n: { $sum: 1 } } }],
+            archived: [{ $match: { archived: true } }, { $count: 'n' }],
+          },
+        },
+      ])
+      .exec();
+
+    const tally = (rows: { _id: string; n: number }[] = []) =>
+      Object.fromEntries(rows.map((row) => [row._id, row.n]));
+
+    return {
+      byState: tally(result?.byState),
+      byCategory: tally(result?.byCategory),
+      // `$count` emits no document at all for an empty match, which reads as
+      // `undefined` rather than zero.
+      archived: result?.archived?.[0]?.n ?? 0,
+    };
+  }
 }

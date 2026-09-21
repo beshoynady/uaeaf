@@ -6,7 +6,8 @@
   "type": "module",
   "exports": {
     "./hero": "./hero/index.ts",
-    "./sponsors": "./sponsors/index.ts"
+    "./sponsors": "./sponsors/index.ts",
+    "./time-range": "./time-range/index.ts"
   },
   "scripts": {
     "lint": "eslint"

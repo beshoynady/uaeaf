@@ -279,6 +279,101 @@ describe('ArticlesService', () => {
     });
   });
 
+  /**
+   * A window that closes before it opens.
+   *
+   * Passed through, Mongo answers an empty feed and nothing says why — the
+   * reader sees a newsroom that has published nothing in the range they asked
+   * for, and the range is the bug. Refused instead, at the request that made
+   * it.
+   */
+  describe('a date range that cannot hold anything', () => {
+    it('refuses a range whose end is before its start', async () => {
+      const deps = makeDeps();
+
+      await expect(
+        makeService(deps).findPublicPage(1, 12, { from: '2026-06-30', to: '2026-01-01' }),
+      ).rejects.toThrow(BadRequestException);
+      expect(deps.repository.findPage).not.toHaveBeenCalled();
+    });
+
+    it('accepts a range of exactly one day', async () => {
+      const deps = makeDeps();
+
+      // "Today" is the commonest filter there is, and `to` is taken to the end
+      // of its day — so from and to being equal is the normal case, not an
+      // edge one.
+      await expect(
+        makeService(deps).findPublicPage(1, 12, { from: '2026-06-30', to: '2026-06-30' }),
+      ).resolves.toBeDefined();
+    });
+
+    it('ignores a malformed bound rather than calling the range impossible', async () => {
+      const deps = makeDeps();
+
+      // The existing rule: a bound that is not a date is not applied at all.
+      // Comparing an Invalid Date would make every such request a 400 instead.
+      await expect(
+        makeService(deps).findPublicPage(1, 12, { from: 'not-a-date', to: '2026-01-01' }),
+      ).resolves.toBeDefined();
+    });
+  });
+
+  /**
+   * The newsroom's own numbers, in one read.
+   *
+   * Counted by the database rather than by the screen: the list is paginated,
+   * so a count assembled from a page of rows would describe the page and be
+   * labelled as the newsroom.
+   */
+  describe('the newsroom summary', () => {
+    it('counts by state, by category, and how many are hidden', async () => {
+      const deps = makeDeps();
+      deps.repository.summarise = jest.fn(async () => ({
+        byState: { Draft: 4, Live: 6 },
+        byCategory: { General: 7, FederationInMedia: 3 },
+        archived: 1,
+      })) as never;
+
+      const summary = await makeService(deps).summarise();
+
+      expect(summary).toEqual({
+        byState: { Draft: 4, Live: 6 },
+        byCategory: { General: 7, FederationInMedia: 3 },
+        archived: 1,
+      });
+    });
+
+    it("says nothing about reviews, which are not this collection's to count", async () => {
+      const deps = makeDeps();
+      deps.repository.summarise = jest.fn(async () => ({ byState: {}, byCategory: {}, archived: 0 })) as never;
+
+      const summary = await makeService(deps).summarise();
+
+      // Whether a draft is under review or carrying a standing approval is
+      // the workflow engine's answer. Answered here it would be a second
+      // opinion, computed from a collection that does not hold the fact.
+      expect(summary).not.toHaveProperty('awaitingApproval');
+      expect(summary).not.toHaveProperty('inReview');
+    });
+
+    it('names every state and category, including the ones at zero', async () => {
+      const deps = makeDeps();
+      deps.repository.summarise = jest.fn(async () => ({
+        byState: { Live: 3 },
+        byCategory: { General: 3 },
+        archived: 0,
+      })) as never;
+
+      const summary = await makeService(deps).summarise();
+
+      // A card row that omits "Draft: 0" reads as a screen that forgot to
+      // load, and a reader cannot tell it from one that is still loading.
+      expect(Object.keys(summary.byState).sort()).toEqual(['Draft', 'Live']);
+      expect(Object.keys(summary.byCategory).sort()).toEqual(['FederationInMedia', 'General']);
+    });
+  });
+
   describe('the public feed', () => {
     it('shows each live article through its published revision, not its draft row', async () => {
       const deps = makeDeps();

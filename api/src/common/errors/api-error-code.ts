@@ -120,6 +120,13 @@ export const API_ERROR_CODES = [
   // the fix is neither "fix a field" nor "try again": it is to wait for those
   // reviews to finish, or finish them, and the dashboard says how many.
   'reviewsInFlight',
+  // A stored policy that demands a review nobody can ever give: it requires
+  // approval and names no definition, or names one with nobody on it. The
+  // sibling of `unsatisfiableStep` — that one is a step no set of people could
+  // satisfy, this is a policy no step could. Its own code because the fix is
+  // "name approvers or turn review off", which is neither a retry nor a field
+  // correction.
+  'unsatisfiablePolicy',
 ] as const;
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

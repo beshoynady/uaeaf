@@ -6,6 +6,9 @@ import { Link } from "@/i18n/navigation";
 import { BUTTON_PRIMARY } from "@/components/ui/interactive";
 import { SearchField } from "@/components/ui/search-field";
 import { SelectField } from "@/components/ui/select-field";
+import { NewsTimeFilter } from "./time-filter";
+import { rangeIsPossible } from "@uaeaf/content/time-range";
+import type { TimeRange } from "@uaeaf/content/time-range";
 import {
   ARTICLE_CATEGORIES,
   newsroomStateOf,
@@ -66,6 +69,7 @@ export const ArticleList = ({
   const [search, setSearch] = useState("");
   const [state, setState] = useState<NewsroomState | typeof ALL>(ALL);
   const [category, setCategory] = useState<ArticleCategory | typeof ALL>(ALL);
+  const [range, setRange] = useState<TimeRange>({});
 
   const rows = useMemo(
     () =>
@@ -73,10 +77,33 @@ export const ArticleList = ({
     [articles, reviews],
   );
 
+  /**
+   * Whether a row's publication date falls inside the window.
+   *
+   * An unpublished draft has no publication date, so a window excludes it —
+   * which is the honest answer: "published this week" cannot include something
+   * that has not been published. `to` runs to the end of its day, as it does
+   * upstream, or a filter ending today would drop everything published today.
+   *
+   * A window that closes before it opens narrows nothing rather than emptying
+   * the list, so an editor mid-correction still sees their rows.
+   */
+  const inRange = (published: string | null | undefined) => {
+    if (!range.from && !range.to) return true;
+    if (!rangeIsPossible(range.from, range.to)) return true;
+    if (!published) return false;
+
+    const at = new Date(published).getTime();
+    if (range.from && at < new Date(`${range.from}T00:00:00.000Z`).getTime()) return false;
+    if (range.to && at > new Date(`${range.to}T23:59:59.999Z`).getTime()) return false;
+    return true;
+  };
+
   const visible = rows.filter(
     (row) =>
       (state === ALL || row.state === state) &&
       (category === ALL || row.article.category === category) &&
+      inRange(row.article.publishDate) &&
       (search.trim() === "" ||
         row.article.title.ar.includes(search.trim()) ||
         row.article.title.en.toLowerCase().includes(search.trim().toLowerCase())),
@@ -127,6 +154,8 @@ export const ArticleList = ({
           </Link>
         ) : null}
       </div>
+
+      <NewsTimeFilter range={range} onChange={setRange} />
 
       {visible.length === 0 ? (
         // Two different absences, two different sentences: an empty newsroom

@@ -396,7 +396,12 @@ export const EditorialStatusPanel = ({
           </div>
         )}
 
-        <EditorialTimeline entries={current.history} locale={locale} />
+        <EditorialTimeline
+          entries={current.history}
+          locale={locale}
+          published={current.publishedAt}
+          publishedBy={current.publishedBy}
+        />
       </div>
 
       <ConfirmDialog

@@ -178,6 +178,41 @@ export const differsFromSaved = (entity: GovernableEntity, draft: ApprovalChoice
   draft.enabled !== entity.enabled || changesArrangement(entity, draft);
 
 /**
+ * Moving one approver up or down a sequential arrangement.
+ *
+ * Returned as a new list rather than mutated, because the caller holds it in
+ * React state. A move off either end is a no-op rather than a wrap: an
+ * administrator pressing "up" on the first approver means "nothing happens",
+ * not "send them to the back".
+ */
+export const moveApprover = (
+  approverIds: readonly string[],
+  from: number,
+  direction: -1 | 1,
+): string[] => {
+  const to = from + direction;
+  if (from < 0 || from >= approverIds.length || to < 0 || to >= approverIds.length) {
+    return [...approverIds];
+  }
+
+  const next = [...approverIds];
+  [next[from], next[to]] = [next[to], next[from]];
+  return next;
+};
+
+/**
+ * Whether this arrangement is one nobody could ever satisfy.
+ *
+ * Two shapes, and the second is the deadlock the API refuses with
+ * `unsatisfiablePolicy`: review is required and no approver is named, so
+ * nothing of that type could ever be published. Said here so the control
+ * refuses before the save does, which is the pairing every other refusal on
+ * this screen already uses.
+ */
+export const isDeadlocked = (choice: ApprovalChoice): boolean =>
+  choice.enabled && new Set(choice.approverIds ?? []).size === 0;
+
+/**
  * The one sentence a row leads with: who decides, and how many of them.
  *
  * The screen's whole reframing rests on this. An `enum` value, a mode name and

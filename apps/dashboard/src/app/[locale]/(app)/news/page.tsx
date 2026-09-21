@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { PageHeader } from "@/components/ui/page-header";
 import { AccessDenied } from "@/components/ui/access-denied";
 import { ArticleList } from "@/components/admin/news/article-list";
+import { NewsroomSummaryCards } from "@/components/admin/news/newsroom-summary";
 import { loadArticleList } from "@/lib/admin/newsroom-screen";
 import { resolveLocale } from "@/i18n/params";
 
@@ -35,6 +36,11 @@ export default async function NewsroomPage({ params }: { params: Promise<{ local
   return (
     <>
       {header}
+
+      {/* Absent rather than zeroed when the read was refused: a row of noughts
+          it does not know would be a claim about a newsroom it cannot see. */}
+      {screen.data.summary ? <NewsroomSummaryCards summary={screen.data.summary} /> : null}
+
       <ArticleList
         articles={screen.data.articles}
         reviews={screen.data.reviews}
