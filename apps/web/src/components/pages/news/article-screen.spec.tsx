@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { ArticleScreen } from "./article-screen";
 import type { ArticlePublic } from "@/lib/api/types";
@@ -24,6 +24,7 @@ const paragraph = (text: string) => ({
 const article = (overrides: Partial<ArticlePublic> = {}): ArticlePublic =>
   ({
     id: "1",
+    tags: [],
     slug: "championship-results",
     title: { ar: "نتائج البطولة", en: "Championship results" },
     authorDisplayName: { ar: "القسم الإعلامي", en: "Media office" },
@@ -37,7 +38,9 @@ const article = (overrides: Partial<ArticlePublic> = {}): ArticlePublic =>
 
 describe("ArticleScreen", () => {
   it("gives the page exactly one h1, and it is the headline", () => {
-    render(<ArticleScreen article={article()} locale="ar" related={[]} covers={new Map()} />);
+    render(<ArticleScreen article={article()} locale="ar" related={[]} covers={new Map()}
+        shareUrl="https://uaeaf.ae/ar/news/championship-results"
+        shareImage={null} />);
 
     const headings = screen.getAllByRole("heading", { level: 1 });
     expect(headings).toHaveLength(1);
@@ -55,6 +58,8 @@ describe("ArticleScreen", () => {
         locale="ar"
         related={[]}
         covers={new Map()}
+        shareUrl="https://uaeaf.ae/ar/news/championship-results"
+        shareImage={null}
       />,
     );
 
@@ -67,17 +72,23 @@ describe("ArticleScreen", () => {
 
   it("reads the locale's own body, not the other language's", () => {
     const { rerender } = render(
-      <ArticleScreen article={article()} locale="ar" related={[]} covers={new Map()} />,
+      <ArticleScreen article={article()} locale="ar" related={[]} covers={new Map()}
+        shareUrl="https://uaeaf.ae/ar/news/championship-results"
+        shareImage={null} />,
     );
     expect(screen.getByText("فاز المنتخب بالمركز الأول.")).toBeInTheDocument();
     expect(screen.queryByText("The team took first place.")).not.toBeInTheDocument();
 
-    rerender(<ArticleScreen article={article()} locale="en" related={[]} covers={new Map()} />);
+    rerender(<ArticleScreen article={article()} locale="en" related={[]} covers={new Map()}
+        shareUrl="https://uaeaf.ae/ar/news/championship-results"
+        shareImage={null} />);
     expect(screen.getByText("The team took first place.")).toBeInTheDocument();
   });
 
   it("gives the publication date a machine-readable value", () => {
-    render(<ArticleScreen article={article()} locale="ar" related={[]} covers={new Map()} />);
+    render(<ArticleScreen article={article()} locale="ar" related={[]} covers={new Map()}
+        shareUrl="https://uaeaf.ae/ar/news/championship-results"
+        shareImage={null} />);
 
     const time = screen.getByText("2026-08-06");
     expect(time.tagName).toBe("TIME");
@@ -85,13 +96,17 @@ describe("ArticleScreen", () => {
   });
 
   it("names the byline the newsroom chose, not the account that typed it", () => {
-    render(<ArticleScreen article={article()} locale="ar" related={[]} covers={new Map()} />);
+    render(<ArticleScreen article={article()} locale="ar" related={[]} covers={new Map()}
+        shareUrl="https://uaeaf.ae/ar/news/championship-results"
+        shareImage={null} />);
 
     expect(screen.getByText(/القسم الإعلامي/)).toBeInTheDocument();
   });
 
   it("omits the related section entirely when there is nothing to relate", () => {
-    render(<ArticleScreen article={article()} locale="ar" related={[]} covers={new Map()} />);
+    render(<ArticleScreen article={article()} locale="ar" related={[]} covers={new Map()}
+        shareUrl="https://uaeaf.ae/ar/news/championship-results"
+        shareImage={null} />);
 
     expect(screen.queryByRole("heading", { name: /relatedHeading/ })).not.toBeInTheDocument();
   });
@@ -101,14 +116,22 @@ describe("ArticleScreen", () => {
       article({ id: "2", slug: "second", title: { ar: "خبر ثان", en: "Second" } }),
       article({ id: "3", slug: "third", title: { ar: "خبر ثالث", en: "Third" } }),
     ];
-    render(<ArticleScreen article={article()} locale="ar" related={related} covers={new Map()} />);
+    render(<ArticleScreen article={article()} locale="ar" related={related} covers={new Map()}
+        shareUrl="https://uaeaf.ae/ar/news/championship-results"
+        shareImage={null} />);
 
-    expect(screen.getAllByRole("listitem")).toHaveLength(2);
+    // Scoped to the related row: the share buttons and the tags are lists of
+    // their own further up the page, and an unscoped count would pass or fail
+    // for reasons that have nothing to do with related stories.
+    const relatedRow = screen.getByRole("region", { name: /relatedHeading|الأخبار/ });
+    expect(within(relatedRow).getAllByRole("listitem")).toHaveLength(2);
     expect(screen.getByRole("link", { name: /خبر ثان/ })).toHaveAttribute("href", "/news/second");
   });
 
   it("offers a way back to the listing", () => {
-    render(<ArticleScreen article={article()} locale="ar" related={[]} covers={new Map()} />);
+    render(<ArticleScreen article={article()} locale="ar" related={[]} covers={new Map()}
+        shareUrl="https://uaeaf.ae/ar/news/championship-results"
+        shareImage={null} />);
 
     expect(screen.getByRole("link", { name: /backToList/ })).toHaveAttribute("href", "/news");
   });

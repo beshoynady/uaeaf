@@ -15,11 +15,23 @@ import { SLUG_PATTERN, type ArticleCategory, type LocalizedText } from "@/lib/ad
  * draft is mutated.
  */
 
+/**
+ * What the API accepts: at most this many labels, each at most this long.
+ *
+ * Mirrored from `ARTICLE_TAG_MAX` / `ARTICLE_TAG_LENGTH` in
+ * `api/src/modules/public-communication/articles/articles.service.ts`. Held
+ * here so the control can stop before the save does; the server stays the
+ * authority, as it does for the address.
+ */
+export const ARTICLE_TAG_MAX = 10;
+export const ARTICLE_TAG_LENGTH = 40;
+
 export interface ArticleEditorResponse {
   _id: string;
   title: LocalizedText;
   slug: string;
   category: ArticleCategory;
+  tags: string[];
   coverMediaId: string | null;
   body: { ar: unknown; en: unknown };
   authorDisplayName: LocalizedText;
@@ -34,6 +46,7 @@ export interface ArticleDraft {
   title: LocalizedText;
   slug: string;
   category: string;
+  tags: string[];
   coverMediaId: string;
   body: { ar: unknown; en: unknown };
   authorDisplayName: LocalizedText;
@@ -44,6 +57,9 @@ export const { toDraft, changedFrom, toPatchBody } = editorialDraft<ArticleEdito
   title: "text",
   slug: "plain",
   category: "plain",
+  // Sent whole: a list's meaning is the list, and "the third one changed" is
+  // not a patch the API accepts.
+  tags: "list",
   coverMediaId: "image",
   body: "document",
   authorDisplayName: "text",
@@ -57,6 +73,7 @@ export const emptyArticleDraft = (): ArticleDraft => ({
   title: { ar: "", en: "" },
   slug: "",
   category: "General",
+  tags: [],
   coverMediaId: "",
   body: { ar: null, en: null },
   authorDisplayName: { ar: "", en: "" },
@@ -162,6 +179,7 @@ export const toCreateBody = (draft: ArticleDraft): Record<string, unknown> => {
     title: draft.title,
     slug: draft.slug,
     category: draft.category,
+    tags: draft.tags,
     coverMediaId: draft.coverMediaId === "" ? null : draft.coverMediaId,
     body: {
       ar: draft.body.ar ?? EMPTY_DOCUMENT,

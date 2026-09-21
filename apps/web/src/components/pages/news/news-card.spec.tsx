@@ -21,6 +21,7 @@ vi.mock("@/i18n/navigation", () => ({
 const article = (overrides: Partial<ArticlePublic> = {}): ArticlePublic => ({
   id: "1",
   category: "General",
+  tags: [],
   slug: "championship-results",
   title: { ar: "نتائج البطولة", en: "Championship results" },
   authorDisplayName: { ar: "القسم الإعلامي", en: "Media office" },

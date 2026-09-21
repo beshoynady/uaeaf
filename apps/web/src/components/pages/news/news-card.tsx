@@ -1,9 +1,9 @@
-import Image from "next/image";
 import { useFormatter, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { CARD_INTERACTIVE } from "@/components/ui/surface";
 import { FOCUS } from "@/components/ui/interactive";
-import { altOf, isExternalMedia } from "@/lib/api/media";
+import { ArticleCover } from "./cover";
+import { CategoryBadge } from "./category-badge";
 import type { ArticlePublic, MediaAssetPublic } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
 
@@ -21,13 +21,19 @@ import type { AppLocale } from "@/i18n/routing";
  * arrow sit inside it, and the arrow is hidden from assistive technology
  * because it repeats what the link already says (WCAG 2.4.4).
  *
- * ── What is drawn and what is not ──────────────────────────────────────────
+ * ── The badge, and the picture that is always there ────────────────────────
  *
- * The design puts a category badge above the headline. `articles` has no
- * category — categories and tags are out of scope for this batch by the
- * owner's own instruction — so there is no field to draw it from and no badge
- * is invented. Recorded as a scope conflict rather than filled with a
- * placeholder.
+ * The design puts a category badge above the headline. That was recorded here
+ * as a scope conflict while `articles` had no category to draw it from; the
+ * field shipped on 2026-09-20 and the badge is now real data.
+ *
+ * The cover is drawn through `ArticleCover`, which never renders nothing: a
+ * card with no uploaded picture used to collapse to text beside cards that had
+ * one, which is the hole this batch was told to close.
+ *
+ * Tags are deliberately NOT here. The design carries them on the article page
+ * and one category badge on the card, and four chips under a headline in a
+ * grid of twelve would bury the headline they are meant to label.
  */
 export const NewsCard = ({
   article,
@@ -47,22 +53,20 @@ export const NewsCard = ({
 
   return (
     <article className={`${CARD_INTERACTIVE} flex flex-col overflow-hidden p-0 ${className}`}>
-      {cover ? (
-        // A fixed ratio rather than a fixed height: the card is fluid below
-        // the grid's breakpoints, and a fixed height would letterbox it there.
-        <div className="relative aspect-[16/10] w-full overflow-hidden">
-          <Image
-            src={cover.file.url}
-            alt={altOf(cover, locale)}
-            fill
-            sizes="(min-width: 1024px) 282px, (min-width: 640px) 45vw, 100vw"
-            className="object-cover"
-            unoptimized={isExternalMedia(cover.file.url)}
-          />
-        </div>
-      ) : null}
+      {/* A fixed ratio rather than a fixed height: the card is fluid below
+          the grid's breakpoints, and a fixed height would letterbox it there. */}
+      <div className="relative aspect-[16/10] w-full overflow-hidden">
+        <ArticleCover
+          article={article}
+          cover={cover}
+          locale={locale}
+          sizes="(min-width: 1024px) 282px, (min-width: 640px) 45vw, 100vw"
+        />
+      </div>
 
-      <div className="flex flex-1 flex-col gap-3 p-5">
+      <div className="flex flex-1 flex-col items-start gap-3 p-5">
+        <CategoryBadge category={article.category} />
+
         <h3 className="text-body font-bold text-balance text-[color:var(--color-text-primary)]">
           <Link
             href={`/news/${article.slug}`}

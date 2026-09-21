@@ -246,6 +246,24 @@
     "generalHeading": "Latest news",
     "inMediaHeading": "The federation in the media",
     "categoryGeneral": "Federation news",
-    "categoryFederationInMedia": "In the media"
+    "categoryFederationInMedia": "In the media",
+    "tagsLabel": "Article tags",
+    "shareLabel": "Share Article:",
+    "share_copy": "Copy link",
+    "share_whatsapp": "WhatsApp",
+    "share_x": "X",
+    "share_facebook": "Facebook",
+    "share_linkedin": "LinkedIn",
+    "sharePreviewHeading": "How this will look on {platform}",
+    "shareCancel": "Cancel",
+    "shareOpenAction": "Continue to share",
+    "shareCopyAction": "Copy the link",
+    "shareCopied": "Link copied.",
+    "tagHeading": "News tagged “{tag}”",
+    "tagEmpty": "No news carries this tag.",
+    "tagClear": "Clear the tag",
+    "homeLatestHeading": "Latest news",
+    "homeInMediaHeading": "UAEAF in the media",
+    "viewAll": "All news"
   }
 }

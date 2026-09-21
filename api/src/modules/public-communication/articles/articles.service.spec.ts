@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { ArticlesService } from './articles.service.js';
 import { ArticlesRepository } from './articles.repository.js';
@@ -203,6 +203,82 @@ describe('ArticlesService', () => {
     expect(deps.repository.updateById).not.toHaveBeenCalled();
   });
 
+  /**
+   * What the newsroom typed, made storable without being made unreadable.
+   *
+   * The badge a visitor sees is this text, so it keeps the newsroom's own
+   * capitalisation. Everything else about it is tidied, because a tag is also
+   * a filter key and "  Athletics " and "Athletics" must not be two.
+   */
+  describe('tags', () => {
+    const tagsOf = (deps: ReturnType<typeof makeDeps>) =>
+      (deps.repository.create.mock.calls[0] as [{ tags?: string[] }])[0].tags;
+
+    /** The three required fields, so each case below shows only its tags. */
+    const draft = () => ({
+      title: { ar: 'عنوان', en: 'Headline' },
+      slug: 'headline',
+      body: { ar: paragraph('نص'), en: paragraph('body') },
+      authorDisplayName: { ar: 'الإعلام', en: 'Media' },
+    });
+
+    it('keeps the capitalisation the newsroom typed', async () => {
+      const deps = makeDeps();
+
+      await makeService(deps).create({ ...draft(), tags: ['UAE', 'ألعاب القوى'] } as never, actor, context);
+
+      // Lower-casing would print "uae" on the badge a reader sees.
+      expect(tagsOf(deps)).toEqual(['UAE', 'ألعاب القوى']);
+    });
+
+    it('trims a tag and drops one that was only spaces', async () => {
+      const deps = makeDeps();
+
+      await makeService(deps).create({ ...draft(), tags: ['  Athletics  ', '   ', 'Relay'] } as never, actor, context);
+
+      expect(tagsOf(deps)).toEqual(['Athletics', 'Relay']);
+    });
+
+    it('counts two spellings of one word as one tag', async () => {
+      const deps = makeDeps();
+
+      await makeService(deps).create({ ...draft(), tags: ['Athletics', 'athletics', 'ATHLETICS'] } as never, actor, context);
+
+      // The filter matches case-insensitively, so keeping all three would put
+      // three badges on the card that all lead to the same list.
+      expect(tagsOf(deps)).toEqual(['Athletics']);
+    });
+
+    it('refuses more tags than an article can carry', async () => {
+      const deps = makeDeps();
+      const many = Array.from({ length: 11 }, (_, i) => `tag-${i}`);
+
+      // An unbounded list turns one article into an index of its own, and the
+      // card that draws them into an unbounded row.
+      await expect(
+        makeService(deps).create({ ...draft(), tags: many } as never, actor, context),
+      ).rejects.toThrow(BadRequestException);
+      expect(deps.repository.create).not.toHaveBeenCalled();
+    });
+
+    it('refuses a tag longer than a label', async () => {
+      const deps = makeDeps();
+
+      await expect(
+        makeService(deps).create({ ...draft(), tags: ['x'.repeat(41)] } as never, actor, context),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('normalises on an edit too, not only on creation', async () => {
+      const deps = makeDeps();
+
+      await makeService(deps).update(articleId.toString(), { tags: ['  Relay  ', 'relay'] } as never, actor, context);
+
+      const [, patch] = deps.repository.updateById.mock.calls[0] as [string, { $set: { tags?: string[] } }];
+      expect(patch.$set.tags).toEqual(['Relay']);
+    });
+  });
+
   describe('the public feed', () => {
     it('shows each live article through its published revision, not its draft row', async () => {
       const deps = makeDeps();
@@ -300,6 +376,41 @@ describe('ArticlesService', () => {
       // `new Date('not-a-date')` is Invalid Date, and every comparison against
       // it is false — an empty feed with no explanation.
       expect('publishDate' in filterOf(deps)).toBe(false);
+    });
+
+    it('narrows to one tag, whatever case the visitor typed', async () => {
+      const deps = makeDeps();
+      const service = makeService(deps);
+
+      await service.findPublicPage(1, 12, { tag: 'athletics' });
+
+      // Stored as the newsroom typed it, matched however the visitor did: the
+      // tag in a pasted link is whatever was on the badge, and a visitor
+      // editing the address by hand should still land on the list.
+      const { tags } = filterOf(deps) as { tags: RegExp };
+      expect(tags.source).toBe('^athletics$');
+      expect(tags.flags).toContain('i');
+    });
+
+    it('escapes a tag before it reaches the database', async () => {
+      const deps = makeDeps();
+      const service = makeService(deps);
+
+      await service.findPublicPage(1, 12, { tag: 'a.*b' });
+
+      // A tag arrives from the query string, so it is as much a visitor's
+      // text as the search box is.
+      const { tags } = filterOf(deps) as { tags: RegExp };
+      expect(tags.source).toBe(String.raw`^a\.\*b$`);
+    });
+
+    it('adds no tag key at all when none is asked for', async () => {
+      const deps = makeDeps();
+      const service = makeService(deps);
+
+      await service.findPublicPage(1, 12);
+
+      expect('tags' in filterOf(deps)).toBe(false);
     });
 
     it('escapes a search term before it reaches the database', async () => {

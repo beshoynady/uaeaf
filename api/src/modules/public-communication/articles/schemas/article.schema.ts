@@ -55,7 +55,9 @@ export type ArticleCategory = (typeof ARTICLE_CATEGORIES)[number];
  * only which articles are live and in what order.
  *
  * Deliberately absent, each for a stated reason rather than an oversight:
- *  - `contentCategoryId` and tags — out of scope for this batch.
+ *  - `contentCategoryId` — the newsroom files by `category` and labels by
+ *    `tags`; a third taxonomy with no screen behind it is a column nobody
+ *    fills.
  *  - `references` to athletes, clubs or championships — those collections have
  *    no public surface, and a link to nothing is worse than no link.
  *  - any link to a results table — the tournament result is published as an
@@ -96,6 +98,25 @@ export class Article extends BaseSchema {
 
   @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
   coverMediaId: Types.ObjectId | null;
+
+  /**
+   * Free labels the newsroom invents, for display and for filtering.
+   *
+   * Emphatically not a second `category`, and the two must never be merged
+   * (owner rule 2026-09-21). `category` is a closed list, exactly one per
+   * article, and it decides which homepage section the article appears in —
+   * closing the tag list would mean shipping a release before the newsroom
+   * could file a story about a new discipline, and opening the category list
+   * would let an article land in a homepage section that does not exist.
+   *
+   * Stored as typed, matched case-insensitively. Lower-casing on the way in
+   * would turn "UAE" into "uae" on the badge a reader sees; matching
+   * case-sensitively would make "Athletics" and "athletics" two tags nobody
+   * meant to separate. `ARTICLE_TAG_MAX` and `ARTICLE_TAG_LENGTH` bound the
+   * field so a paste cannot turn one article into an index of its own.
+   */
+  @Prop({ type: [String], default: [] })
+  tags: string[];
 
   /** One ProseMirror document per language, checked against the per-language
    *  allowlist on every write (ADR-0069 D1) — including a write that never
@@ -150,3 +171,9 @@ ArticleSchema.index({ publicationState: 1, archived: 1, publishDate: -1 });
 // The same feed narrowed to one shelf — the homepage draws two such sections
 // side by side, so this is the read the public site makes most often.
 ArticleSchema.index({ category: 1, publicationState: 1, archived: 1, publishDate: -1 });
+
+// A visitor following a tag runs the same live-and-not-hidden filter the feed
+// itself runs, so the index carries all of it — otherwise the database reads
+// every article the federation has ever published to answer one badge click.
+// Multikey over the array, which is what Mongo builds for an indexed [String].
+ArticleSchema.index({ tags: 1, publicationState: 1, archived: 1, publishDate: -1 });

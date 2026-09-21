@@ -1,6 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsIn, IsMongoId, IsOptional, IsString, Matches, MaxLength, ValidateNested } from 'class-validator';
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsIn,
+  IsMongoId,
+  IsOptional,
+  IsString,
+  Matches,
+  MaxLength,
+  ValidateNested,
+} from 'class-validator';
 import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
 import { LocalizedRichTextDto } from '../../../../common/dto/localized-rich-text.dto.js';
 import { PageSeoDto } from '../../../../common/dto/page-seo.dto.js';
@@ -34,6 +44,14 @@ export class UpdateArticleDto {
   @IsOptional()
   @IsIn(ARTICLE_CATEGORIES)
   category?: ArticleCategory;
+
+  @ApiProperty({ type: [String], required: false, description: 'Free labels for display and filtering. NOT a second category: `category` is a closed list of one, and it decides which homepage section the article appears in.' })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(10)
+  @IsString({ each: true })
+  @MaxLength(40, { each: true })
+  tags?: string[];
 
   @ApiProperty({ required: false, example: 'national-championship-results-2026' })
   @IsOptional()

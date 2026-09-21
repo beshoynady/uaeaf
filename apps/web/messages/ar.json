@@ -246,6 +246,24 @@
     "generalHeading": "أحدث الأخبار",
     "inMediaHeading": "الاتحاد في الإعلام",
     "categoryGeneral": "أخبار الاتحاد",
-    "categoryFederationInMedia": "الاتحاد في الإعلام"
+    "categoryFederationInMedia": "الاتحاد في الإعلام",
+    "tagsLabel": "وسوم الخبر",
+    "shareLabel": "مشاركة الخبر:",
+    "share_copy": "نسخ الرابط",
+    "share_whatsapp": "واتساب",
+    "share_x": "إكس",
+    "share_facebook": "فيسبوك",
+    "share_linkedin": "لينكد إن",
+    "sharePreviewHeading": "هكذا سيظهر الخبر على {platform}",
+    "shareCancel": "إلغاء",
+    "shareOpenAction": "متابعة المشاركة",
+    "shareCopyAction": "انسخ الرابط",
+    "shareCopied": "نُسخ الرابط.",
+    "tagHeading": "أخبار موسومة بـ «{tag}»",
+    "tagEmpty": "لا توجد أخبار بهذا الوسم.",
+    "tagClear": "إزالة الوسم",
+    "homeLatestHeading": "أحدث الأخبار",
+    "homeInMediaHeading": "الاتحاد في الإعلام",
+    "viewAll": "كل الأخبار"
   }
 }

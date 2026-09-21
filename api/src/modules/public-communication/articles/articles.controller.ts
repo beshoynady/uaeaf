@@ -45,6 +45,7 @@ export class ArticlesController {
   findPublic(@Query() query: PublicFeedQueryDto) {
     return this.service.findPublicPage(query.page ?? 1, query.limit ?? 12, {
       category: query.category,
+      tag: query.tag,
       from: query.from,
       to: query.to,
       search: query.search,

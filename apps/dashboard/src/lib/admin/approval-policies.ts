@@ -163,6 +163,65 @@ export const changesArrangement = (entity: GovernableEntity, draft: ApprovalChoi
   );
 };
 
+/**
+ * Whether this draft differs from what is stored at all.
+ *
+ * Wider than `changesArrangement`, which answers only about who decides:
+ * switching review on or off is a change too, and it is the one an
+ * administrator makes most often.
+ *
+ * What it is for: the row offers to save only once there is something to save.
+ * Twelve rows each carrying a primary button spends the screen's loudest
+ * control on eleven rows nobody has touched, and buries the one that matters.
+ */
+export const differsFromSaved = (entity: GovernableEntity, draft: ApprovalChoice): boolean =>
+  draft.enabled !== entity.enabled || changesArrangement(entity, draft);
+
+/**
+ * The one sentence a row leads with: who decides, and how many of them.
+ *
+ * The screen's whole reframing rests on this. An `enum` value, a mode name and
+ * a count of checked boxes are three facts an administrator has to assemble in
+ * their head before they know whether the arrangement is the one they meant.
+ * Assembled here instead, so the row answers "who approves this" before it
+ * offers to change it.
+ *
+ * Returns the parts rather than a string: the sentence is built in the
+ * catalogues, where the two languages order it differently.
+ */
+export interface ArrangementSummary {
+  /** How many approvals a submission needs to clear. */
+  required: number;
+  /** How many people could give one. */
+  total: number;
+  /** True where they decide one after another rather than together. */
+  inTurn: boolean;
+  /** The approvers' own names, in the order the policy holds them. */
+  names: string[];
+}
+
+export const describeArrangement = (
+  entity: GovernableEntity,
+  approvers: readonly ApproverOption[],
+  locale: "ar" | "en",
+): ArrangementSummary => {
+  const distinct = [...new Set(entity.approverIds)];
+  const byId = new Map(approvers.map((approver) => [approver.id, approver]));
+
+  return {
+    required: entity.mode === "THRESHOLD" ? Math.min(entity.threshold, distinct.length) : distinct.length,
+    total: distinct.length,
+    inTurn: entity.mode === "SEQUENTIAL",
+    // An id with no account behind it keeps its place rather than vanishing:
+    // a policy naming somebody who has since been deleted is a thing the
+    // administrator needs to see, not a silently shorter list.
+    names: distinct.map((id) => {
+      const approver = byId.get(id);
+      return approver ? approver.name[locale] || approver.email : id;
+    }),
+  };
+};
+
 /** Message key for an entity type's readable name, so the label lives in the
  *  catalogues rather than being derived from an identifier. */
 export const entityMessageKey = (entityType: string): string => `entity_${entityType}`;

@@ -11,6 +11,7 @@ import { EditorShell } from "@/components/admin/editorial-editor/editor-shell";
 import { SeoFields } from "@/components/admin/editorial-editor/seo-fields";
 import { EditorSection } from "@/components/admin/president-message/section";
 import { LazyBilingualRichText } from "@/components/admin/rich-text/lazy-rich-text";
+import { TagsField } from "./tags-field";
 import { MediaPicker, type MediaAssetOption } from "@/components/admin/pages/media-picker";
 import { ARTICLE_CATEGORIES, categoryMessageKey, suggestSlug } from "@/lib/admin/articles";
 import {
@@ -251,6 +252,13 @@ export const ArticleEditor = ({
               label: t(categoryMessageKey(category)),
             }))}
             hint={t("hintCategory")}
+          />
+
+          <TagsField
+            id="article-tags"
+            tags={draft.tags}
+            onChange={(tags) => change({ tags })}
+            disabled={disabled}
           />
 
           <TextField

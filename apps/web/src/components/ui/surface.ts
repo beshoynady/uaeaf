@@ -120,6 +120,23 @@ export const LIFT = "lift";
 export const CARD_INTERACTIVE = `${LIFT} ${CARD} transition-colors duration-[var(--motion-duration-instant)] ease-[var(--motion-easing-standard)] hover:border-[color:var(--color-action-default)] focus-within:border-[color:var(--color-action-default)] active:border-[color:var(--color-action-default)]`;
 
 /**
+ * A small word-label: a sponsor tier, a news tag, the VIP mark.
+ *
+ * The shell only — border radius, padding, weight and the 13px floor. What
+ * goes inside it, and whether it is a span or a link, belongs to the caller.
+ *
+ * Shared rather than written at each site because there are now two of them,
+ * on pages nobody edits together: a sponsor tier on the homepage and a tag on
+ * a news card. Two copies of a chip drift into two chips, and a reader sees
+ * the second one as a different kind of thing.
+ *
+ * `text-body-sm` is 13px, the documented minimum — a chip is exactly where a
+ * smaller size gets reached for (Chapter 4 §4.15b names the only two
+ * exceptions, and neither is this).
+ */
+export const BADGE = "inline-flex items-center rounded-full border px-3 py-1 text-body-sm font-semibold";
+
+/**
  * The icon inside a card: a considered colour at rest, an inversion on hover.
  *
  * `--color-action-default` is the Action role (ADR-0065 D2, ADR-0072 D13):

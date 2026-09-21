@@ -35,6 +35,17 @@ export class PublicFeedQueryDto extends PaginationQueryDto {
   @IsDateString()
   to?: string;
 
+  @ApiPropertyOptional({
+    description:
+      'Narrow to one free label, matched case-insensitively and whole. Independent of `category`: ' +
+      'an article carries one category and any number of tags.',
+    example: 'ألعاب القوى',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  tag?: string;
+
   @ApiPropertyOptional({ description: 'Matches either language of the headline.' })
   @IsOptional()
   @IsString()

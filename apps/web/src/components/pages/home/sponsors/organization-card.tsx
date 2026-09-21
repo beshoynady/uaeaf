@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { CARD } from "@/components/ui/surface";
+import { BADGE, CARD } from "@/components/ui/surface";
 import type { AppLocale } from "@/i18n/routing";
 import type { OrganizationNamePublic, PublicImage } from "@/lib/api/types";
 import { OrganizationLogo } from "./organization-logo";
@@ -65,7 +65,7 @@ export const OrganizationCard = ({
 /** A small label in words: a tier, or the VIP mark. Never below 13px. */
 export const CardBadge = ({ children, strong = false }: { children: ReactNode; strong?: boolean }) => (
   <span
-    className={`inline-flex items-center rounded-full border px-3 py-1 text-body-sm font-semibold ${
+    className={`${BADGE} ${
       strong
         ? "border-[color:var(--color-border-accent)] text-[color:var(--color-text-primary)]"
         : "border-[color:var(--color-border-strong)] text-[color:var(--color-text-secondary)]"

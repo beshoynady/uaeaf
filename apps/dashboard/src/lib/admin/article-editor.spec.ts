@@ -23,6 +23,7 @@ const record = (overrides: Partial<ArticleEditorResponse> = {}): ArticleEditorRe
   title: { ar: "بطولة", en: "Championship" },
   slug: "championship-2026",
   category: "General",
+  tags: [],
   coverMediaId: "m1",
   body: { ar: paragraph("نص"), en: paragraph("Text") },
   authorDisplayName: { ar: "المحرر", en: "The desk" },

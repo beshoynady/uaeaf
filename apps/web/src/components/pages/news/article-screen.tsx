@@ -1,10 +1,12 @@
-import Image from "next/image";
 import { useFormatter, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { RichText } from "@/components/rich-text/rich-text";
 import { NewsCard } from "./news-card";
+import { ArticleCover } from "./cover";
+import { CategoryBadge } from "./category-badge";
+import { TagList } from "./tag-list";
+import { ShareArticle } from "./share-article";
 import { FOCUS, TRANSITION } from "@/components/ui/interactive";
-import { altOf, isExternalMedia } from "@/lib/api/media";
 import type { ArticlePublic, MediaAssetPublic } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
 
@@ -29,24 +31,38 @@ import type { AppLocale } from "@/i18n/routing";
  * the pattern the dashboard's own editor already uses. Nothing about the other
  * page changes.
  *
- * ── What the design draws that there is no data for ────────────────────────
+ * ── The foot of the article ────────────────────────────────────────────────
  *
- * A category badge, a reading time, a dateline location, a photo strip and six
- * share buttons. `articles` carries none of those: categories, tags and
- * advanced social sharing are out of scope for this batch by the owner's own
- * instruction, and there is no link between an article and an album. Each is
- * reported as a scope conflict rather than filled with invented content.
+ * Tags, then a rule, then the share row — the order and the placement the
+ * design draws (`1739:2380`, `1739:2389`, `1739:2390`), at the foot and not
+ * beside the title. The share row opens a preview before it opens anything
+ * else; see `share-article.tsx` for why.
+ *
+ * ── What the design still draws that there is no data for ──────────────────
+ *
+ * A reading time, a dateline location and a photo strip. `articles` carries
+ * none of the three and there is no link between an article and an album, so
+ * each stays a reported scope conflict rather than invented content. The
+ * category badge and the share buttons left this list on 2026-09-21, when the
+ * fields behind them shipped.
  */
 export const ArticleScreen = ({
   article,
   locale,
   related,
   covers,
+  shareUrl,
+  shareImage,
 }: {
   article: ArticlePublic;
   locale: AppLocale;
   related: readonly ArticlePublic[];
   covers: ReadonlyMap<string, MediaAssetPublic>;
+  /** Absolute: every share target is another origin, and a relative path
+   *  posted to one of them points at that platform's own domain. */
+  shareUrl: string;
+  /** What the platforms will show — the cover, or the generated placeholder. */
+  shareImage: string | null;
 }) => {
   const format = useFormatter();
   const t = useTranslations("News");
@@ -55,7 +71,9 @@ export const ArticleScreen = ({
   return (
     <div className="flex flex-col gap-10 md:gap-14">
       <article className="mx-auto flex w-full max-w-[72ch] flex-col gap-6">
-        <header className="flex flex-col gap-4">
+        <header className="flex flex-col items-start gap-4">
+          <CategoryBadge category={article.category} tone="solid" />
+
           <h1 className="text-h1 text-balance text-[color:var(--color-text-primary)]">
             {article.title[locale]}
           </h1>
@@ -79,27 +97,23 @@ export const ArticleScreen = ({
           </div>
         </header>
 
-        {cover ? (
-          <figure className="m-0 flex flex-col gap-2">
-            <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[var(--radius-md)]">
-              <Image
-                src={cover.file.url}
-                alt={altOf(cover, locale)}
-                fill
-                sizes="(min-width: 768px) 72ch, 100vw"
-                // The article's own picture is its Largest Contentful Paint.
-                priority
-                className="object-cover"
-                unoptimized={isExternalMedia(cover.file.url)}
-              />
-            </div>
-            {cover.altText?.[locale] ? (
-              <figcaption className="text-caption text-[color:var(--color-text-secondary)]">
-                {cover.altText[locale]}
-              </figcaption>
-            ) : null}
-          </figure>
-        ) : null}
+        <figure className="m-0 flex flex-col gap-2">
+          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[var(--radius-md)]">
+            <ArticleCover
+              article={article}
+              cover={cover}
+              locale={locale}
+              sizes="(min-width: 768px) 72ch, 100vw"
+              // The article's own picture is its Largest Contentful Paint.
+              priority
+            />
+          </div>
+          {cover?.altText?.[locale] ? (
+            <figcaption className="text-caption text-[color:var(--color-text-secondary)]">
+              {cover.altText[locale]}
+            </figcaption>
+          ) : null}
+        </figure>
 
         {/* The measure, the rhythm between blocks and the quote's treatment
             belong to the page that places the text, not to the text. */}
@@ -108,6 +122,19 @@ export const ArticleScreen = ({
         >
           <RichText doc={article.body[locale]} locale={locale} />
         </div>
+
+        <TagList tags={article.tags} className="mt-2" />
+
+        {/* The rule the design draws between the labels and the share row:
+            two different things to do with the story, told apart. */}
+        <hr className="my-2 border-0 border-t border-[color:var(--color-border-default)]" />
+
+        <ShareArticle
+          url={shareUrl}
+          title={article.title[locale]}
+          excerpt={article.excerpt[locale]}
+          image={shareImage}
+        />
 
         <p className="mt-2">
           <Link

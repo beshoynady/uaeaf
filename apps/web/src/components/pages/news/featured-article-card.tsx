@@ -1,9 +1,9 @@
-import Image from "next/image";
 import { useFormatter, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { CARD_INTERACTIVE } from "@/components/ui/surface";
 import { FOCUS } from "@/components/ui/interactive";
-import { altOf, isExternalMedia } from "@/lib/api/media";
+import { ArticleCover } from "./cover";
+import { CategoryBadge } from "./category-badge";
 import type { ArticlePublic, MediaAssetPublic } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
 
@@ -40,23 +40,21 @@ export const FeaturedArticleCard = ({
 
   return (
     <article className={`${CARD_INTERACTIVE} grid gap-0 overflow-hidden p-0 md:grid-cols-[minmax(0,484fr)_minmax(0,396fr)]`}>
-      {cover ? (
-        <div className="relative aspect-[16/10] w-full md:aspect-auto md:min-h-[320px]">
-          <Image
-            src={cover.file.url}
-            alt={altOf(cover, locale)}
-            fill
-            sizes="(min-width: 768px) 484px, 100vw"
-            className="object-cover"
-            // The lead story is the first picture on the page and the likely
-            // Largest Contentful Paint (Chapter 14 §7).
-            priority
-            unoptimized={isExternalMedia(cover.file.url)}
-          />
-        </div>
-      ) : null}
+      <div className="relative aspect-[16/10] w-full md:aspect-auto md:min-h-[320px]">
+        <ArticleCover
+          article={article}
+          cover={cover}
+          locale={locale}
+          sizes="(min-width: 768px) 484px, 100vw"
+          // The lead story is the first picture on the page and the likely
+          // Largest Contentful Paint (Chapter 14 §7).
+          priority
+        />
+      </div>
 
-      <div className="flex flex-col gap-3.5 p-6 md:p-8">
+      <div className="flex flex-col items-start gap-3.5 p-6 md:p-8">
+        <CategoryBadge category={article.category} tone="solid" />
+
         {article.publishDate ? (
           <time
             dateTime={article.publishDate}

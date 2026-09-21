@@ -25,6 +25,14 @@ export class ArticlePublicDto {
   @ApiProperty({ enum: ARTICLE_CATEGORIES })
   category: ArticleCategory;
 
+  @ApiProperty({
+    type: [String],
+    description:
+      'Free labels, as the newsroom typed them. The badge a reader sees and the value a tag link ' +
+      'carries are the same string.',
+  })
+  tags: string[];
+
   @ApiProperty({ type: LocalizedTextDto })
   title: LocalizedTextDto;
 
@@ -98,6 +106,10 @@ export const toPublicDto = (article: ArticleDocument, snapshot: Record<string, u
     // filing decision the newsroom may correct after publication without
     // republishing the words.
     category: article.category,
+    // From the row, like the category beside it: a label is a filing decision
+    // the newsroom may correct without republishing the words, and the filter
+    // queries the row rather than every snapshot.
+    tags: article.tags ?? [],
     title: asLocalized(snapshot.title),
     authorDisplayName: asLocalized(snapshot.authorDisplayName),
     // The record's, not the snapshot's: the date is stamped at publication,

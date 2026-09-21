@@ -86,6 +86,44 @@ describe('ArticleSchema', () => {
     });
   });
 
+  /**
+   * Free labels, deliberately NOT a second category.
+   *
+   * `category` files an article on exactly one shelf and decides which
+   * homepage section it appears in; a tag is an open word the newsroom
+   * invents, several per article, for display and filtering only. Merging the
+   * two would either close the open list or open the closed one, and the
+   * homepage composition depends on the closed one.
+   */
+  describe('tags', () => {
+    it('holds several free labels, and none by default', () => {
+      const path = ArticleSchema.path('tags');
+
+      expect(path.instance).toBe('Array');
+      // An absent list reads as an empty one, so every consumer can map over
+      // it without asking whether it is there.
+      expect(path.options.default).toEqual([]);
+    });
+
+    it('is not an enum, unlike the category beside it', () => {
+      // The whole point of the field. A closed list here would mean the
+      // newsroom filing a story about a new discipline had to ship a release
+      // first.
+      expect((ArticleSchema.path('tags') as unknown as { enumValues?: string[] }).enumValues).toBeUndefined();
+      expect(ARTICLE_CATEGORIES).toEqual(['General', 'FederationInMedia']);
+    });
+
+    it('serves a tag-filtered feed without a collection scan', () => {
+      const tagIndex = indexes().find(([keys]) => 'tags' in keys);
+
+      // A visitor following a tag runs the same live-and-not-hidden filter as
+      // the feed itself, so the index has to carry all of it or the database
+      // reads every article the federation has ever published.
+      expect(tagIndex).toBeDefined();
+      expect(tagIndex?.[0]).toMatchObject({ tags: 1, publicationState: 1, archived: 1 });
+    });
+  });
+
   it('requires both languages of everything a reader sees', () => {
     for (const field of ['title', 'body', 'authorDisplayName']) {
       expect(ArticleSchema.path(field).options.required).toBe(true);

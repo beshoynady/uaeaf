@@ -5,10 +5,12 @@ import type { AppLocale } from "@/i18n/routing";
 import { RevealOnce } from "@/components/pages/president/reveal-once";
 import { OrganizationsSection } from "@/components/pages/home/sponsors/organizations-section";
 import { SponsorStrip } from "@/components/pages/home/sponsors/sponsor-strip";
+import { HomeNewsSection } from "@/components/pages/home/news-section";
 import { SponsorsSection } from "@/components/pages/home/sponsors/sponsors-section";
 import { STRIP_DEFAULTS } from "@uaeaf/content/sponsors";
 import { loadHomepage, readNextEvent, readPlayback } from "@/lib/pages/homepage";
 import { loadSponsorRelations } from "@/lib/pages/sponsor-relations";
+import { loadHomepageNews } from "@/lib/pages/homepage-news";
 import { buildMetadata } from "@/lib/seo/metadata";
 
 /**
@@ -94,7 +96,13 @@ const HomePage = async ({ params }: { params: Promise<{ locale: AppLocale }> }) 
     );
   }
 
-  const relations = await loadSponsorRelations(sections);
+  // Both loaders take the same composed sections and each fetches only for
+  // the shelves actually on the page, so a homepage without one of them makes
+  // none of its requests.
+  const [relations, news] = await Promise.all([
+    loadSponsorRelations(sections),
+    loadHomepageNews(sections),
+  ]);
   const now = new Date();
 
   return (
@@ -112,6 +120,20 @@ const HomePage = async ({ params }: { params: Promise<{ locale: AppLocale }> }) 
         locale={locale}
         now={now}
       />
+      {/* News is §32 #7 of the approved thirteen, above the sponsor
+          relations. Its shelves draw in the CMS order they were composed in,
+          which is what lets "latest" and "in the media" be two rows without a
+          second component or a second section type. */}
+      {news.shelves.map((shelf) => (
+        <HomeNewsSection
+          key={shelf.section.id}
+          section={shelf.section}
+          articles={shelf.articles}
+          covers={news.covers}
+          locale={locale}
+        />
+      ))}
+
       {relations.sections.map((section) =>
         section.sectionType === "SPONSORS" ? (
           <SponsorsSection key={section.id} sponsorships={relations.sponsorships} section={section} locale={locale} now={now} />

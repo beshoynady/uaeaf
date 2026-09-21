@@ -5,7 +5,7 @@ import { ArticleScreen } from "@/components/pages/news/article-screen";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { Section } from "@/components/ui/section";
 import { BreadcrumbJsonLd, NewsArticleJsonLd } from "@/lib/seo/json-ld";
-import { buildMetadata } from "@/lib/seo/metadata";
+import { buildMetadata, SITE_ORIGIN } from "@/lib/seo/metadata";
 import { fetchArticle, fetchArticles } from "@/lib/api/articles";
 import { fetchPublicMedia } from "@/lib/api/media";
 import type { ArticlePublic } from "@/lib/api/types";
@@ -24,9 +24,17 @@ import type { AppLocale } from "@/i18n/routing";
  * ── Related stories ────────────────────────────────────────────────────────
  *
  * The four most recent live articles other than this one. Recency, not
- * relevance: relevance would need categories or tags, which are out of scope
- * for this batch, and a "related" row assembled from nothing in common would
- * be a claim the page cannot support.
+ * relevance: the fields relevance would read — the category and the tags —
+ * shipped on 2026-09-20 and 2026-09-21, so this is now a deliberate interim
+ * rather than a missing field, and is recorded as such.
+ *
+ * ── The share row's two inputs ─────────────────────────────────────────────
+ *
+ * An absolute address, because every share target is another origin and a
+ * relative path posted to one of them points at that platform's own domain.
+ * And the share picture, which is this route's own `opengraph-image` — the
+ * same address the platforms read, so the preview a reader confirms is the
+ * card they actually publish rather than an approximation of it.
  */
 
 const RELATED_COUNT = 4;
@@ -114,7 +122,14 @@ export default async function ArticlePage({
       </Section>
 
       <Section className="pb-16 md:pb-20">
-        <ArticleScreen article={article} locale={locale} related={related} covers={covers} />
+        <ArticleScreen
+          article={article}
+          locale={locale}
+          related={related}
+          covers={covers}
+          shareUrl={`${SITE_ORIGIN}/${locale}/news/${article.slug}`}
+          shareImage={`${SITE_ORIGIN}/${locale}/news/${article.slug}/opengraph-image`}
+        />
       </Section>
     </>
   );

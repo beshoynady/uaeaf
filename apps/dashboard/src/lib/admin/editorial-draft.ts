@@ -67,8 +67,19 @@ export const seoLength = (value: LocalizedText | null, locale: "ar" | "en"): num
  *   a category name. Sent as typed, including empty, because "" is a value a
  *   required string field can hold and having it silently become `null` would
  *   turn a missing-field error into a type error.
+ * - `list`: plain strings with no structure of their own — an article's tags.
+ *   Sent whole, because a list's meaning is the list; `blocks` is the richer
+ *   sibling for entries that carry their own fields and display order.
  */
-export type FieldKind = "text" | "optionalText" | "image" | "seo" | "blocks" | "document" | "plain";
+export type FieldKind =
+  | "text"
+  | "optionalText"
+  | "image"
+  | "seo"
+  | "blocks"
+  | "document"
+  | "plain"
+  | "list";
 
 /** A kind for every field of the draft, and only a kind that fits the
  *  field's type, so a map that forgets a field or misnames one fails to
@@ -82,7 +93,9 @@ export type DraftFields<D> = {
         ? "seo"
         : D[K] extends readonly BlockDraft[]
           ? "blocks"
-          : "document";
+          : D[K] extends readonly string[]
+            ? "list"
+            : "document";
 };
 
 const EMPTY_TEXT: LocalizedText = { ar: "", en: "" };
@@ -100,6 +113,10 @@ const toInput = (kind: FieldKind, stored: unknown): unknown => {
     case "image":
     case "plain":
       return (stored as string | null | undefined) ?? "";
+    case "list":
+      // An absent list reads as an empty one, so a record written before the
+      // field existed is not dirty the moment it is opened.
+      return (stored as string[] | null | undefined) ?? [];
     case "seo": {
       const seo = stored as PageSeo | null | undefined;
       return {
@@ -141,6 +158,7 @@ const toStored = (kind: FieldKind, input: unknown): unknown => {
     case "blocks":
     case "document":
     case "plain":
+    case "list":
       return input;
   }
 };

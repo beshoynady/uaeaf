@@ -59,6 +59,7 @@ const RECORD: ArticleEditorResponse = {
   title: { ar: "بطولة", en: "Championship" },
   slug: "championship-2026",
   category: "General",
+  tags: [],
   coverMediaId: null,
   body: { ar: paragraph("نص"), en: paragraph("Text") },
   authorDisplayName: { ar: "المحرر", en: "The desk" },

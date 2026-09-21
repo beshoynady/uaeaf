@@ -123,8 +123,10 @@ describe("PolicyManager", () => {
 
     // "2 of 2" is what the administrator is actually choosing; a mode name
     // alone does not say it.
-    expect(screen.getByText(/policySummary/)).toHaveTextContent('"required":2');
-    expect(screen.getByText(/policySummary/)).toHaveTextContent('"total":2');
+    // Anchored: the row also carries `policySummaryOf`, which is what the
+    // arrangement IS, and this case is about what the draft WOULD be.
+    expect(screen.getByText(/^policySummary:/)).toHaveTextContent('"required":2');
+    expect(screen.getByText(/^policySummary:/)).toHaveTextContent('"total":2');
   });
 
   it("keeps each row's choices to itself", async () => {
@@ -224,15 +226,13 @@ describe("PolicyManager", () => {
       expect(screen.getByRole("alert")).toHaveTextContent("policyLockedPlural");
     });
 
-    it("still saves the same arrangement unchanged", async () => {
-      const onSave = vi.fn().mockResolvedValue(undefined);
-      render(<PolicyManager entities={[underReview()]} approvers={approvers} locale="ar" onSave={onSave} />);
+    it("never reaches the lock over an arrangement nobody changed", () => {
+      render(<PolicyManager entities={[underReview()]} approvers={approvers} locale="ar" onSave={vi.fn()} />);
 
-      await userEvent.click(screen.getByRole("button", { name: "save" }));
-
-      // Re-saving writes nothing upstream, so refusing it would tell an
-      // administrator their own untouched settings are now illegal.
-      expect(onSave).toHaveBeenCalledWith("articles", expect.objectContaining({ enabled: true }));
+      // Re-saving an unchanged arrangement writes nothing upstream, and the
+      // row now offers no save until something differs — so the one operation
+      // the lock must never block is one the screen cannot even attempt.
+      expect(screen.queryByRole("button", { name: "save" })).not.toBeInTheDocument();
     });
 
     it("still lets approval be switched off", async () => {
@@ -247,7 +247,7 @@ describe("PolicyManager", () => {
       expect(onSave).toHaveBeenCalledWith("articles", expect.objectContaining({ enabled: false }));
     });
 
-    it("lifts the block when the change is undone", async () => {
+    it("takes the block away when the change is undone", async () => {
       render(<PolicyManager entities={[underReview()]} approvers={approvers} locale="ar" onSave={vi.fn()} />);
 
       await userEvent.click(screen.getByLabelText("سارة"));
@@ -255,8 +255,10 @@ describe("PolicyManager", () => {
 
       await userEvent.click(screen.getByLabelText("سارة"));
 
-      // Read from the draft as it stands, not from what it was on mount.
-      expect(screen.getByRole("button", { name: "save" })).toBeEnabled();
+      // Read from the draft as it stands, not from what it was on mount. With
+      // nothing left to save the row offers nothing, which is the same answer
+      // as a disabled button and one less control to read.
+      expect(screen.queryByRole("button", { name: "save" })).not.toBeInTheDocument();
     });
 
     it("says nothing about a lock on a type with no reviews running", () => {
@@ -276,6 +278,8 @@ describe("PolicyManager", () => {
       const onSave = vi.fn().mockResolvedValue({ code: "reviewsInFlight", inFlightReviews: 1 });
       render(<PolicyManager entities={[raced()]} approvers={approvers} locale="ar" onSave={onSave} />);
 
+      // Something has to change for the row to offer a save at all.
+      await userEvent.click(screen.getByLabelText("سارة"));
       await userEvent.click(screen.getByRole("button", { name: "save" }));
 
       // Swallowed, this leaves an administrator looking at a button they
@@ -287,6 +291,7 @@ describe("PolicyManager", () => {
       const onSave = vi.fn().mockResolvedValue({ code: "internalError" });
       render(<PolicyManager entities={[raced()]} approvers={approvers} locale="ar" onSave={onSave} />);
 
+      await userEvent.click(screen.getByLabelText("سارة"));
       await userEvent.click(screen.getByRole("button", { name: "save" }));
 
       // "A review started, reload" and "try again" are different instructions.
@@ -300,6 +305,7 @@ describe("PolicyManager", () => {
         .mockResolvedValueOnce(null);
       render(<PolicyManager entities={[raced()]} approvers={approvers} locale="ar" onSave={onSave} />);
 
+      await userEvent.click(screen.getByLabelText("سارة"));
       await userEvent.click(screen.getByRole("button", { name: "save" }));
       expect(await screen.findByRole("alert")).toBeInTheDocument();
 
@@ -320,10 +326,120 @@ describe("PolicyManager", () => {
         />,
       );
 
+      await userEvent.click(within(rowFor("articles")).getByLabelText("سارة"));
       await userEvent.click(within(rowFor("articles")).getByRole("button", { name: "save" }));
 
       expect(await within(rowFor("articles")).findByRole("alert")).toBeInTheDocument();
       expect(within(rowFor("committees")).queryByRole("alert")).not.toBeInTheDocument();
     });
+  });
+
+  describe("as a working tool rather than a table", () => {
+    it("groups the types under the domain each belongs to", () => {
+      render(
+        <PolicyManager
+          entities={[entity(), entity({ entityType: "committees" })]}
+          approvers={approvers}
+          locale="ar"
+          onSave={vi.fn()}
+        />,
+      );
+
+      // `articles` is public communication and `committees` is federation
+      // governance. An administrator arrives asking "who signs off on the
+      // news", not "what is `workflowRequired` for `articles`" — and twelve
+      // identifiers in one flat column answer the second question only.
+      const headings = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
+      expect(headings).toHaveLength(2);
+      expect(headings).not.toContain("");
+    });
+
+    it("says who approves before it offers to change it", () => {
+      render(
+        <PolicyManager
+          entities={[entity({ enabled: true, mode: "THRESHOLD", approverIds: ["u1", "u2"], threshold: 1 })]}
+          approvers={approvers}
+          locale="ar"
+          onSave={vi.fn()}
+        />,
+      );
+
+      const summary = screen.getByText(/^policySummaryOf:/);
+      expect(summary).toHaveTextContent('"required":1');
+      expect(summary).toHaveTextContent('"total":2');
+      // The people by name, not by identifier: an administrator confirms an
+      // arrangement by recognising who is in it.
+      expect(summary).toHaveTextContent("أحمد");
+    });
+
+    it("says plainly when a type publishes without review", () => {
+      render(<PolicyManager entities={[entity()]} approvers={approvers} locale="ar" onSave={vi.fn()} />);
+
+      expect(screen.getByText("policySummaryOff")).toBeInTheDocument();
+    });
+
+    it("calls out a policy that requires approval and names nobody", () => {
+      render(
+        <PolicyManager
+          entities={[entity({ enabled: true, mode: "ALL", approverIds: [] })]}
+          approvers={approvers}
+          locale="ar"
+          onSave={vi.fn()}
+        />,
+      );
+
+      // This one arrangement is not strict, it is broken: nothing of that type
+      // can ever be published, and nothing else on the screen would say so.
+      expect(screen.getByText("policySummaryNobody")).toBeInTheDocument();
+    });
+
+    it("keeps naming an approver whose account is gone", () => {
+      render(
+        <PolicyManager
+          entities={[entity({ enabled: true, mode: "ALL", approverIds: ["u1", "deleted-account"] })]}
+          approvers={approvers}
+          locale="ar"
+          onSave={vi.fn()}
+        />,
+      );
+
+      // A shorter list would hide the fact that a policy names somebody who no
+      // longer exists — which is exactly what an administrator needs to see.
+      expect(screen.getByText(/^policySummaryOf:/)).toHaveTextContent("deleted-account");
+    });
+
+    it("describes what is saved, not what is being typed", async () => {
+      render(
+        <PolicyManager
+          entities={[entity({ enabled: true, mode: "ALL", approverIds: ["u1"] })]}
+          approvers={approvers}
+          locale="ar"
+          onSave={vi.fn()}
+        />,
+      );
+
+      await userEvent.click(screen.getByLabelText("سارة"));
+
+      // A sentence that moved with the checkboxes would leave the
+      // administrator no way to see what they are changing away from.
+      expect(screen.getByText(/^policySummaryOf:/)).toHaveTextContent('"total":1');
+    });
+  });
+
+  it("offers no save on a row nobody has touched", () => {
+    render(<PolicyManager entities={[entity()]} approvers={approvers} locale="ar" onSave={vi.fn()} />);
+
+    // Twelve rows each carrying a primary button spends the screen's loudest
+    // control on eleven rows with nothing to save, and buries the one that
+    // matters.
+    expect(screen.queryByRole("button", { name: "save" })).not.toBeInTheDocument();
+  });
+
+  it("offers a save as soon as something changes", async () => {
+    render(<PolicyManager entities={[entity()]} approvers={approvers} locale="ar" onSave={vi.fn()} />);
+
+    await userEvent.click(screen.getByLabelText("policyEnabled"));
+
+    expect(screen.getByRole("button", { name: "save" })).toBeInTheDocument();
   });
 });

@@ -309,6 +309,16 @@ export interface ArticlePublic {
   /** The URL segment, shared by both language editions of the story. */
   slug: string;
   category: ArticleCategory;
+  /**
+   * Free labels, as the newsroom typed them.
+   *
+   * Not a second category. `category` is a closed list of exactly one and
+   * decides which homepage shelf the story appears on; these are open, several
+   * per article, and exist to be followed into a filtered list. The API stores
+   * them verbatim and matches them case-insensitively, so the badge's text and
+   * the value in the address are one string.
+   */
+  tags: string[];
   title: LocalizedText;
   authorDisplayName: LocalizedText;
   /** ISO date this article went live; null while it never has. */

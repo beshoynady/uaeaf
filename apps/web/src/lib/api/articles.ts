@@ -1,5 +1,5 @@
 import { fetchPublic } from "./public-client";
-import type { ArticlePublic, ArticleSitemapEntry, Paginated } from "./types";
+import type { ArticleCategory, ArticlePublic, ArticleSitemapEntry, Paginated } from "./types";
 
 /**
  * The news reads, in one place.
@@ -30,8 +30,20 @@ export const NEWS_PAGE_SIZE = 12;
 export const fetchArticles = async (
   page = 1,
   limit: number = NEWS_PAGE_SIZE,
-): Promise<Paginated<ArticlePublic> | null> =>
-  fetchPublic<Paginated<ArticlePublic>>(`/articles/public?page=${page}&limit=${limit}`);
+  /** One free label. Matched case-insensitively and whole, upstream. */
+  tag?: string,
+  /** One shelf of the newsroom. Independent of the tag: a story has exactly
+   *  one category and any number of labels. */
+  category?: ArticleCategory,
+): Promise<Paginated<ArticlePublic> | null> => {
+  const query = new URLSearchParams({ page: String(page), limit: String(limit) });
+  // Only when asked for: an empty `tag=` would narrow the feed to articles
+  // carrying a tag that is the empty string, which is every article's none.
+  if (tag) query.set("tag", tag);
+  if (category) query.set("category", category);
+
+  return fetchPublic<Paginated<ArticlePublic>>(`/articles/public?${query.toString()}`);
+};
 
 /**
  * One article by its address.

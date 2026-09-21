@@ -5,9 +5,12 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { SelectField } from "@/components/ui/select-field";
 import { TextField } from "@/components/auth/text-field";
+import { RESOURCE_DOMAINS, UNCLASSIFIED_DOMAIN_KEY, domainKeyFor, domainOrder } from "@/lib/admin/resource-domains";
 import {
   APPROVAL_MODES,
   changesArrangement,
+  describeArrangement,
+  differsFromSaved,
   hasApprovalErrors,
   requiredApprovals,
   validateApprovalChoice,
@@ -50,6 +53,27 @@ import {
  * The lock is narrow on purpose. Switching approval off strands nothing, and
  * neither does re-saving the same people — both stay available, because a
  * policy most needs correcting exactly while work is moving through it.
+ *
+ * ── Why it is grouped, and why each row leads with a sentence ──────────────
+ *
+ * The first build of this screen was a flat list of twelve rows, each one an
+ * entity-type identifier over a set of controls. That is the shape of the
+ * table behind it, not the shape of the question an administrator arrives
+ * with — which is "who signs off on the news", not "what is the value of
+ * `workflowRequired` for `articles`".
+ *
+ * So two things changed and nothing else did. The types are grouped by the
+ * product domain they belong to, reusing the map the permission matrix already
+ * groups by, so the news sits with public communication and the page types sit
+ * together. And every row opens with the arrangement in words — who approves,
+ * how many of them, whether in turn — before it offers a single control. The
+ * controls are unchanged and still behind the switch; what is new is that the
+ * screen can be read without operating it.
+ *
+ * There is no Figma frame for this screen: it is an internal operating tool,
+ * not a page. Its patterns come from the dashboard's own components and from
+ * the permission matrix beside it, which answers a question of the same shape
+ * over the same vocabulary.
  */
 export const PolicyManager = ({
   entities,
@@ -103,9 +127,48 @@ export const PolicyManager = ({
       };
     });
 
+  /**
+   * The arrangement in words, from what is stored.
+   *
+   * Deliberately not from the draft: this line answers "what is the rule
+   * today", and a line that changed as the administrator ticked boxes would
+   * leave them with no way to see what they are changing away from.
+   */
+  const policyOf = (entity: GovernableEntity) => {
+    if (!entity.enabled) {
+      return t("policySummaryOff");
+    }
+
+    const { required, total, inTurn, names } = describeArrangement(entity, approvers, locale);
+    if (total === 0) {
+      // A type that requires review and names nobody stops every publication
+      // of that type. Said plainly, because it is the one arrangement that is
+      // broken rather than merely strict.
+      return t("policySummaryNobody");
+    }
+
+    return t(inTurn ? "policySummaryInTurn" : "policySummaryOf", {
+      required,
+      total,
+      names: names.join(t("nameSeparator")),
+    });
+  };
+
+  const groups = groupByDomain(entities);
+
   return (
-    <ul className="flex list-none flex-col gap-4 p-0">
-      {entities.map((entity) => {
+    <div className="flex flex-col gap-8">
+      {groups.map((group) => (
+        <section key={group.key} aria-labelledby={`${fieldId}-${group.key}`} className="flex flex-col gap-4">
+          <h2
+            id={`${fieldId}-${group.key}`}
+            className="text-label font-bold text-[color:var(--color-text-secondary)]"
+          >
+            {group.key === UNCLASSIFIED_DOMAIN_KEY ? t("domainOther") : RESOURCE_DOMAINS[group.key][locale]}
+          </h2>
+
+          <ul className="flex list-none flex-col gap-4 p-0">
+      {group.entities.map((entity) => {
         const draft = drafts[entity.entityType];
         const errors = validateApprovalChoice(draft);
         const total = new Set(draft.approverIds ?? []).size;
@@ -116,16 +179,29 @@ export const PolicyManager = ({
         const lockedOut = running > 0 && changesArrangement(entity, draft);
         const blocked = hasApprovalErrors(errors) || lockedOut;
         const refusal = refusals[entity.entityType];
+        // Nothing to save on a row nobody has touched, and a row that offers
+        // to save nothing is a primary button spent on nothing.
+        const dirty = differsFromSaved(entity, draft);
 
         return (
           <li
             key={entity.entityType}
             className="flex flex-col gap-4 rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)] p-5"
           >
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h3 className="text-h4 text-[color:var(--color-text-primary)]">
-                {t(`entity_${entity.entityType}`)}
-              </h3>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex min-w-0 flex-col gap-1">
+                <h3 className="text-h4 text-[color:var(--color-text-primary)]">
+                  {t(`entity_${entity.entityType}`)}
+                </h3>
+
+                {/* The answer before the controls. Built from what is SAVED,
+                    not from the draft: this line is what the arrangement is,
+                    and the controls below are what it is being changed to. */}
+                <p className="text-body-sm text-[color:var(--color-text-secondary)]">
+                  {policyOf(entity)}
+                </p>
+              </div>
+
               <label className="flex items-center gap-2 text-body-sm">
                 <input
                   type="checkbox"
@@ -214,6 +290,7 @@ export const PolicyManager = ({
               </>
             ) : null}
 
+            {dirty || refusal ? (
             <div className="flex flex-col gap-2">
               <div>
                 <Button
@@ -246,9 +323,66 @@ export const PolicyManager = ({
                 </p>
               ) : null}
             </div>
+            ) : null}
           </li>
         );
       })}
-    </ul>
+          </ul>
+        </section>
+      ))}
+    </div>
   );
+};
+
+interface DomainGroup {
+  key: string;
+  entities: GovernableEntity[];
+}
+
+/**
+ * Three governed types the RBAC map cannot place, and where they belong.
+ *
+ * `resource-domains.ts` maps the resources this platform has PERMISSIONS for,
+ * derived from which module declares each `@RequirePermission`. These three are
+ * workflow entity types with no permission resource of their own, so that map
+ * has nothing to say about them and answers "unclassified" — correctly, by its
+ * own rule.
+ *
+ * Supplied here rather than added there, because adding them would make that
+ * file's own description false. Each one is placed by the same mechanical rule
+ * that built the map: the API module whose source names it, which for all
+ * three is `cms-page-composition`.
+ */
+const WORKFLOW_ONLY_DOMAIN: Record<string, string> = {
+  staticPages: "cms-page-composition",
+  externalMediaCoverage: "cms-page-composition",
+  publicEvents: "cms-page-composition",
+};
+
+/**
+ * The governed types, under the product domain each belongs to.
+ *
+ * `domainKeyFor` is the permission matrix's own map. Reusing it means this
+ * screen and the permission screen group the same vocabulary the same way — an
+ * administrator who has learned one has learned the other — and a thirteenth
+ * governed type that IS a permission resource lands under a heading without a
+ * line of code here.
+ */
+const groupByDomain = (entities: readonly GovernableEntity[]): DomainGroup[] => {
+  const byKey = new Map<string, GovernableEntity[]>();
+
+  for (const entity of entities) {
+    const mapped = domainKeyFor(entity.entityType);
+    const key =
+      mapped === UNCLASSIFIED_DOMAIN_KEY
+        ? (WORKFLOW_ONLY_DOMAIN[entity.entityType] ?? UNCLASSIFIED_DOMAIN_KEY)
+        : mapped;
+    const bucket = byKey.get(key);
+    if (bucket) bucket.push(entity);
+    else byKey.set(key, [entity]);
+  }
+
+  return [...byKey.entries()]
+    .map(([key, grouped]) => ({ key, entities: grouped }))
+    .sort((a, b) => domainOrder(a.key) - domainOrder(b.key));
 };

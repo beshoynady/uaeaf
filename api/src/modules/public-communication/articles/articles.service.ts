@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import type { QueryFilter } from 'mongoose';
 import { ArticlesRepository } from './articles.repository.js';
@@ -36,6 +36,60 @@ const REGEX_SPECIALS = /[.*+?^${}()|[\]\\]/g;
  *  a public search box is a collection scan any visitor can trigger at will. */
 const literalPattern = (term: string): RegExp => new RegExp(term.replace(REGEX_SPECIALS, '\\$&'), 'i');
 
+/**
+ * How many labels one article may carry, and how long each may be.
+ *
+ * An unbounded list turns a single article into an index of its own and the
+ * card that draws them into an unbounded row. Ten is what a card holds at
+ * 390px without wrapping past two lines; forty characters is a label rather
+ * than a sentence.
+ */
+export const ARTICLE_TAG_MAX = 10;
+export const ARTICLE_TAG_LENGTH = 40;
+
+/**
+ * What the newsroom typed, made storable without being made unreadable.
+ *
+ * Kept as typed, because the badge a visitor reads is this text and
+ * lower-casing would print "uae". Trimmed, emptied and de-duplicated, because
+ * it is also a filter key: "  Athletics " and "Athletics" must not be two
+ * badges leading to the same list. De-duplication is case-insensitive for the
+ * same reason the filter is — the first spelling wins, so the newsroom's
+ * order survives.
+ *
+ * @throws BadRequestException when the list or one of its labels is too long.
+ */
+export const normaliseTags = (tags: readonly string[]): string[] => {
+  const seen = new Set<string>();
+  const kept: string[] = [];
+
+  for (const raw of tags) {
+    const tag = raw.trim();
+    if (tag === '') continue;
+
+    if (tag.length > ARTICLE_TAG_LENGTH) {
+      throw new BadRequestException({
+        code: 'badRequest',
+        message: `A tag may be at most ${ARTICLE_TAG_LENGTH} characters; "${tag}" is ${tag.length}.`,
+      });
+    }
+
+    const key = tag.toLocaleLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    kept.push(tag);
+  }
+
+  if (kept.length > ARTICLE_TAG_MAX) {
+    throw new BadRequestException({
+      code: 'badRequest',
+      message: `An article may carry at most ${ARTICLE_TAG_MAX} tags; ${kept.length} were sent.`,
+    });
+  }
+
+  return kept;
+};
+
 /** What a visitor may narrow the public feed by. */
 export interface PublicFeedFilter {
   category?: ArticleCategory;
@@ -44,6 +98,8 @@ export interface PublicFeedFilter {
   /** Inclusive to the end of that day — see `endOfDay`. */
   to?: string;
   search?: string;
+  /** One label, matched case-insensitively against the article's own. */
+  tag?: string;
 }
 
 /**
@@ -107,6 +163,7 @@ export class ArticlesService {
       // document says which shelf it is on rather than relying on a default
       // two layers away.
       category: dto.category ?? 'General',
+      tags: normaliseTags(dto.tags ?? []),
       slug: dto.slug,
       coverMediaId: dto.coverMediaId ? new Types.ObjectId(dto.coverMediaId) : null,
       body: dto.body,
@@ -162,6 +219,7 @@ export class ArticlesService {
     // clearing rather than ignoring.
     if (dto.title !== undefined) $set.title = dto.title;
     if (dto.category !== undefined) $set.category = dto.category;
+    if (dto.tags !== undefined) $set.tags = normaliseTags(dto.tags);
     if (dto.slug !== undefined) $set.slug = dto.slug;
     if (dto.body !== undefined) $set.body = dto.body;
     if (dto.authorDisplayName !== undefined) $set.authorDisplayName = dto.authorDisplayName;
@@ -297,6 +355,13 @@ export class ArticlesService {
         ...(from ? { $gte: from } : {}),
         ...(to ? { $lte: endOfDay(to) } : {}),
       };
+    }
+
+    if (narrow.tag) {
+      // Anchored, so "relay" does not also answer "relay-final", and escaped
+      // for the same reason the search term is: a tag arrives from the query
+      // string and is as much a visitor's text as the search box.
+      filter.tags = new RegExp(`^${narrow.tag.replace(REGEX_SPECIALS, '\\$&')}$`, 'i');
     }
 
     if (narrow.search) {
