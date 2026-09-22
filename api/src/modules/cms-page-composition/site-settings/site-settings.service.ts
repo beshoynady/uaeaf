@@ -7,6 +7,7 @@ import type { SiteSettingsDocument } from './schemas/site-settings.schema.js';
 import { UpsertSiteSettingsDto } from './dto/upsert-site-settings.dto.js';
 import { SiteSettingsPublicResponseDto } from './dto/site-settings-public-response.dto.js';
 import { SponsorStripSettingsDto } from './dto/sponsor-strip.dto.js';
+import { FooterSettingsDto } from './dto/footer-settings.dto.js';
 import { normalizeSponsorStrip } from './schemas/sponsor-strip.schema.js';
 
 /** Implements: siteSettings collection, Domain 11 — CMS & Page Composition.
@@ -24,6 +25,11 @@ export class SiteSettingsService extends SingletonPageService<SiteSettingsDocume
     super(repository);
   }
 
+  /**
+   * Writes the settings no screen of their own owns. It names none of the
+   * footer's fields and not the strip, so it can neither set nor reset them
+   * (ADR-0093); the route refuses a request that tries.
+   */
   async upsert(dto: UpsertSiteSettingsDto): Promise<SiteSettingsDocument> {
     for (const imageId of [dto.logoId, dto.logoDarkId, dto.faviconId, dto.defaultSeo?.defaultOgImageId]) {
       if (imageId) {
@@ -41,8 +47,6 @@ export class SiteSettingsService extends SingletonPageService<SiteSettingsDocume
             defaultDescription: dto.defaultSeo.defaultDescription ?? null,
           }
         : null,
-      footerAboutBlurb: dto.footerAboutBlurb ?? null,
-      copyrightText: dto.copyrightText ?? null,
       logoId: dto.logoId ? new Types.ObjectId(dto.logoId) : null,
       logoDarkId: dto.logoDarkId ? new Types.ObjectId(dto.logoDarkId) : null,
       faviconId: dto.faviconId ? new Types.ObjectId(dto.faviconId) : null,
@@ -92,6 +96,26 @@ export class SiteSettingsService extends SingletonPageService<SiteSettingsDocume
     });
   }
 
+  /**
+   * Writes the footer's own words and nothing else (ADR-0092): the description,
+   * the copyright line and the column headings. The screen sends the whole
+   * footer, so a field it leaves out is one the editor cleared and is stored
+   * as `null`, which the site reads as its built-in text.
+   */
+  async upsertFooter(dto: FooterSettingsDto): Promise<SiteSettingsDocument> {
+    return this.upsertDocument({
+      footerAboutBlurb: dto.footerAboutBlurb ?? null,
+      copyrightText: dto.copyrightText ?? null,
+      footerHeadings: dto.footerHeadings
+        ? {
+            quickLinks: dto.footerHeadings.quickLinks ?? null,
+            location: dto.footerHeadings.location ?? null,
+            contact: dto.footerHeadings.contact ?? null,
+          }
+        : null,
+    });
+  }
+
   /** Public-safe view — `null` before settings are first saved. */
   async getPublic(): Promise<SiteSettingsPublicResponseDto | null> {
     const settings = await this.get();
@@ -110,6 +134,7 @@ export class SiteSettingsService extends SingletonPageService<SiteSettingsDocume
         : null,
       footerAboutBlurb: settings.footerAboutBlurb,
       copyrightText: settings.copyrightText,
+      footerHeadings: settings.footerHeadings ?? null,
       logoId: settings.logoId ? settings.logoId.toString() : null,
       logoDarkId: settings.logoDarkId ? settings.logoDarkId.toString() : null,
       faviconId: settings.faviconId ? settings.faviconId.toString() : null,

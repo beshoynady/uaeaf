@@ -1,7 +1,9 @@
 import { screen, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SiteFooter } from "./site-footer";
-import { FOOTER_QUICK_LINKS, LEGAL_LINKS, SOCIAL_LINKS } from "@/lib/navigation";
+import { FOOTER_QUICK_LINKS, LEGAL_LINKS } from "@/lib/navigation";
+import type { FooterContent } from "@/lib/pages/footer-content";
+import type { MediaAssetPublic } from "@/lib/api/types";
 import { renderWithIntl } from "@/test/render-with-intl";
 import type { AppLocale } from "@/i18n/routing";
 import arMessages from "../../../messages/ar.json";
@@ -9,170 +11,338 @@ import enMessages from "../../../messages/en.json";
 
 const messagesByLocale = { ar: arMessages, en: enMessages } as const;
 
-/** The place as the contact page's record names it (`map.pinTitle`, `map.pinSubtitle`). */
-const PLACE = {
-  ar: { place: "١ شارع النهدة، النهدة الأولى", region: "دبي، الإمارات العربية المتحدة", separator: "، " },
-  en: { place: "1 Al Nahda Street, Al Nahda 1", region: "Dubai, United Arab Emirates", separator: ", " },
-} as const;
+const ICON = {
+  id: "i1",
+  file: { url: "https://cdn.test/threads.png", mimeType: "image/png", width: 128, height: 128, size: 1, photographer: null, captureDate: null },
+  caption: { ar: "", en: "" },
+  altText: { ar: "", en: "" },
+  displayOrder: 0,
+  isFeatured: false,
+} as MediaAssetPublic;
+
+/** The footer as the layout reads it: the contact page's record in the
+ *  page's language, and the footer's own words from the site settings. */
+const CONTENT: Record<AppLocale, FooterContent> = {
+  ar: {
+    place: "١ شارع النهدة، النهدة الأولى",
+    region: "دبي، الإمارات العربية المتحدة",
+    latitude: 25.286069,
+    longitude: 55.3642228,
+    directionsUrl: "https://www.google.com/maps/dir/?api=1&destination=25.286069,55.3642228",
+    email: "info@uaeaf.ae",
+    officeHours: "الأحد – الخميس، ٨:٠٠ – ١٥:٠٠",
+    channels: [
+      { platform: "Instagram", url: "https://www.instagram.com/uaeaf" },
+      { platform: "Threads", url: "https://www.threads.net/@uaeaf", iconId: "i1" },
+      { platform: "X", url: "javascript:alert(1)" },
+    ],
+    icons: new Map([["i1", ICON]]),
+    aboutBlurb: "وصف الاتحاد كما حفظه المحرر.",
+    copyright: "© ٢٠٢٦ حقوق الاتحاد.",
+    headings: { quickLinks: "روابط الموقع", location: "أين نحن", contact: "راسلنا" },
+  },
+  en: {
+    place: "1 Al Nahda Street, Al Nahda 1",
+    region: "Dubai, United Arab Emirates",
+    latitude: 25.286069,
+    longitude: 55.3642228,
+    directionsUrl: "https://www.google.com/maps/dir/?api=1&destination=25.286069,55.3642228",
+    email: "info@uaeaf.ae",
+    officeHours: "Sunday – Thursday, 08:00 – 15:00",
+    channels: [
+      { platform: "Instagram", url: "https://www.instagram.com/uaeaf" },
+      { platform: "Threads", url: "https://www.threads.net/@uaeaf", iconId: "i1" },
+      { platform: "X", url: "javascript:alert(1)" },
+    ],
+    icons: new Map([["i1", ICON]]),
+    aboutBlurb: "The federation, as the editor saved it.",
+    copyright: "© 2026 the federation's rights.",
+    headings: { quickLinks: "Site links", location: "Where we are", contact: "Write to us" },
+  },
+};
+
+/** What the layout passes when neither record can be read. */
+const NOTHING: FooterContent = {
+  place: null,
+  region: null,
+  latitude: null,
+  longitude: null,
+  directionsUrl: null,
+  email: null,
+  officeHours: null,
+  channels: [],
+  icons: new Map(),
+  aboutBlurb: null,
+  copyright: null,
+  headings: { quickLinks: null, location: null, contact: null },
+};
+
+const classes = (element: Element | null) => (element?.getAttribute("class") ?? "").split(/\s+/);
+
+// The map frame draws its map once it is on screen (`footer-map-frame.test.tsx`
+// covers the waiting). Here every frame is on screen as soon as it is observed.
+beforeEach(() => {
+  vi.stubGlobal(
+    "IntersectionObserver",
+    class {
+      constructor(private readonly callback: (entries: { isIntersecting: boolean }[]) => void) {}
+      observe = () => this.callback([{ isIntersecting: true }]);
+      disconnect = () => undefined;
+    },
+  );
+});
 
 describe.each<AppLocale>(["ar", "en"])("SiteFooter (%s)", (locale) => {
   const messages = messagesByLocale[locale];
   const localePath = (href: string) => `/${locale}${href === "/" ? "" : href}`;
-  const { place, region, separator } = PLACE[locale];
+  const content = CONTENT[locale];
+  const renderFooter = (value: FooterContent = content) => renderWithIntl(<SiteFooter content={value} />, locale);
+  const column = (name: string) => screen.getByRole("heading", { level: 2, name }).closest("[data-footer-column]");
 
-  describe("the location, read from the contact page's record (owner decision 2026-09-22, option B)", () => {
-    it("shows the place the record names, on the card and in the address line", () => {
-      renderWithIntl(<SiteFooter place={place} region={region} />, locale);
+  describe("the live map (ADR-0092 D3)", () => {
+    it("draws the contact page's map, at the record's coordinates, in the location column", () => {
+      renderFooter();
+      const frame = screen.getByTitle(messages.Contact.map.frameTitle);
+      const source = new URL(frame.getAttribute("src") ?? "");
 
-      const card = screen.getByTestId("footer-map-card");
-      expect(card).toHaveTextContent(place);
-      expect(card).toHaveTextContent(region);
-      expect(screen.getByTestId("footer-address")).toHaveTextContent(`${place}${separator}${region}`);
+      expect(frame.tagName).toBe("IFRAME");
+      expect(source.searchParams.get("q")).toBe("25.286069,55.3642228");
+      expect(source.searchParams.get("hl")).toBe(locale);
+      expect(column(content.headings.location!)).toContainElement(frame);
     });
 
-    it("keeps no address of its own in the message catalogue", () => {
-      // The constant said Abu Dhabi while the map showed Dubai: two sources
-      // for one fact, and they had already drifted apart.
-      expect(messages.Footer).not.toHaveProperty("mapCardCity");
-      expect(messages.Footer).not.toHaveProperty("mapCardRegion");
+    it("loads the map only when the reader nears it", () => {
+      // The footer is on every page; a third-party frame on every visit would
+      // cost every reader a cross-origin request, including those who never
+      // scroll to it.
+      renderFooter();
+      expect(screen.getByTitle(messages.Contact.map.frameTitle).getAttribute("loading")).toBe("lazy");
+    });
+
+    it("names the place under the map, not over it", () => {
+      renderFooter();
+      const frame = screen.getByTestId("footer-map-frame");
+      const place = screen.getByTestId("footer-place");
+
+      expect(place).toHaveTextContent(content.place!);
+      expect(place).toHaveTextContent(content.region!);
+      expect(frame.compareDocumentPosition(place) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(frame).not.toContainElement(place);
+    });
+
+    it("draws no map, and no empty frame, when the record has no coordinates", () => {
+      renderFooter({ ...content, latitude: null, longitude: null });
+
+      expect(screen.queryByTestId("footer-map-frame")).toBeNull();
+      expect(screen.queryByTitle(messages.Contact.map.frameTitle)).toBeNull();
+      expect(screen.getByTestId("footer-place")).toHaveTextContent(content.place!);
+    });
+
+    it("offers directions from the record, and no longer a link to the same map on another page", () => {
+      renderFooter();
+      const directions = screen.getByRole("link", { name: messages.Contact.map.openDirections });
+
+      expect(directions).toHaveAttribute("href", content.directionsUrl);
+      expect(directions).toHaveAttribute("target", "_blank");
+      expect(directions.getAttribute("rel")).toContain("noopener");
+      expect(document.querySelector('a[href*="contact-map-heading"]')).toBeNull();
+      expect(messages.Footer).not.toHaveProperty("locationLink");
+    });
+
+    it("offers no directions when the record has none", () => {
+      renderFooter({ ...content, directionsUrl: null });
+      expect(screen.queryByRole("link", { name: messages.Contact.map.openDirections })).toBeNull();
+    });
+  });
+
+  describe("the contact column, read from the contact page's record (ADR-0092 D6, D7)", () => {
+    it("gives the email as an actionable link and the office hours as the record states them", () => {
+      renderFooter();
+      const contact = column(content.headings.contact!)!;
+
+      expect(within(contact as HTMLElement).getByRole("link", { name: content.email! })).toHaveAttribute(
+        "href",
+        `mailto:${content.email}`,
+      );
+      expect(contact).toHaveTextContent(content.officeHours!);
+    });
+
+    it("does not repeat the address the location column already shows beside it", () => {
+      renderFooter();
+      expect(column(content.headings.contact!)).not.toHaveTextContent(content.place!);
+    });
+
+    it("keeps no contact fact of its own in the message catalogue", () => {
+      // The catalogue said "08:00-15:00" while the record said "٨:٠٠ – ١٥:٠٠",
+      // and the address constant said Abu Dhabi while the map showed Dubai:
+      // two sources for one fact drift apart.
+      expect(messages.Footer).not.toHaveProperty("hours");
       expect(messages.Footer).not.toHaveProperty("address");
+      expect(messages.Footer).not.toHaveProperty("mapCardCity");
+      expect(JSON.stringify(messages.Footer)).not.toContain("@uaeaf.ae");
     });
 
-    it("still links to the map, and invents no address, when the record is unavailable", () => {
-      renderWithIntl(<SiteFooter />, locale);
+    it("leaves out a fact it cannot read, rather than showing a remembered one", () => {
+      renderFooter(NOTHING);
 
-      expect(screen.getByTestId("footer-map-card")).toHaveTextContent(messages.Footer.locationLink);
-      expect(screen.queryByTestId("footer-address")).toBeNull();
+      expect(screen.queryByRole("link", { name: /@/ })).toBeNull();
+      expect(screen.queryByTestId("footer-place")).toBeNull();
+      // The help centre is the site's own route, so it is always there.
+      expect(screen.getByRole("link", { name: messages.Footer.helpCenter })).toHaveAttribute("href", localePath("/help"));
     });
   });
 
-  it("renders a contentinfo landmark", () => {
-    renderWithIntl(<SiteFooter />, locale);
-    expect(screen.getByRole("contentinfo")).toBeInTheDocument();
+  describe("the channels, read from the contact page's record (ADR-0092 D8)", () => {
+    it("gives every channel a name, a 44px target and a safe new tab", () => {
+      renderFooter();
+      const list = screen.getByRole("list", { name: messages.Contact.social.title });
+      const links = within(list).getAllByRole("link");
+
+      expect(links.map((link) => link.getAttribute("aria-label"))).toEqual([messages.Social.instagram, "Threads"]);
+      for (const link of links) {
+        expect(classes(link)).toContain("size-11");
+        expect(link).toHaveAttribute("target", "_blank");
+        expect(link.getAttribute("rel")).toContain("noopener");
+      }
+    });
+
+    it("draws the icon an editor uploaded, and the platform's own artwork otherwise", () => {
+      renderFooter();
+
+      expect(screen.getByRole("link", { name: "Threads" }).querySelector("img")?.getAttribute("src")).toContain("threads.png");
+      expect(screen.getByRole("link", { name: messages.Social.instagram }).querySelector("img")?.getAttribute("src")).toContain(
+        "instagram.svg",
+      );
+    });
+
+    it("drops a destination that is not a web address", () => {
+      renderFooter();
+      expect(document.querySelector('a[href^="javascript:"]')).toBeNull();
+    });
+
+    it("draws no row at all when the record has no channels", () => {
+      renderFooter({ ...content, channels: [] });
+      expect(screen.queryByRole("list", { name: messages.Contact.social.title })).toBeNull();
+    });
   });
 
-  it("renders every approved quick link, translated, inside a labelled navigation landmark", () => {
-    renderWithIntl(<SiteFooter />, locale);
-    const nav = screen.getByRole("navigation", { name: messages.Footer.quickLinksNav });
-    const links = within(nav).getAllByRole("link");
-    expect(links).toHaveLength(FOOTER_QUICK_LINKS.length);
-    for (const item of FOOTER_QUICK_LINKS) {
-      const label = messages.Nav[item.key as keyof typeof messages.Nav];
-      expect(within(nav).getByRole("link", { name: label })).toHaveAttribute("href", localePath(item.href));
-    }
+  describe("the footer's own words, from the site settings", () => {
+    it("shows what the editor saved", () => {
+      renderFooter();
+
+      expect(screen.getByTestId("footer-brand-description")).toHaveTextContent(content.aboutBlurb!);
+      expect(screen.getByText(content.copyright!)).toBeInTheDocument();
+      for (const heading of Object.values(content.headings)) {
+        expect(screen.getByRole("heading", { level: 2, name: heading! })).toBeInTheDocument();
+      }
+    });
+
+    it("shows its built-in text for whatever the editor has not saved", () => {
+      renderFooter(NOTHING);
+
+      expect(screen.getByTestId("footer-brand-description")).toHaveTextContent(messages.Footer.brandDescription);
+      expect(screen.getByText(messages.Footer.copyright)).toBeInTheDocument();
+      for (const key of ["quickLinksTitle", "locationTitle", "contactTitle"] as const) {
+        expect(screen.getByRole("heading", { level: 2, name: messages.Footer[key] })).toBeInTheDocument();
+      }
+    });
   });
 
-  it("renders the legal strip links, translated, inside their own labelled landmark", () => {
-    renderWithIntl(<SiteFooter />, locale);
-    const nav = screen.getByRole("navigation", { name: messages.Footer.legalNav });
-    expect(within(nav).getAllByRole("link")).toHaveLength(LEGAL_LINKS.length);
+  describe("the structure", () => {
+    it("renders a contentinfo landmark with the four columns in the approved order", () => {
+      renderFooter();
+      const footer = screen.getByRole("contentinfo");
+      const headings = [...footer.querySelectorAll("[data-footer-column] > h2")].map((node) => node.textContent);
+
+      expect(headings).toEqual([
+        messages.Footer.brandName,
+        content.headings.quickLinks,
+        content.headings.location,
+        content.headings.contact,
+      ]);
+    });
+
+    it("renders every approved quick link, translated, inside a labelled navigation landmark", () => {
+      renderFooter();
+      const nav = screen.getByRole("navigation", { name: messages.Footer.quickLinksNav });
+      const links = within(nav).getAllByRole("link");
+      expect(links).toHaveLength(FOOTER_QUICK_LINKS.length);
+      for (const item of FOOTER_QUICK_LINKS) {
+        const label = messages.Nav[item.key as keyof typeof messages.Nav];
+        expect(within(nav).getByRole("link", { name: label })).toHaveAttribute("href", localePath(item.href));
+      }
+    });
+
+    it("renders the legal strip links, translated, inside their own labelled landmark", () => {
+      renderFooter();
+      const nav = screen.getByRole("navigation", { name: messages.Footer.legalNav });
+      expect(within(nav).getAllByRole("link")).toHaveLength(LEGAL_LINKS.length);
+    });
+
+    it("hides purely decorative brand swooshes from assistive tech", () => {
+      const { container } = renderFooter();
+      const decorations = container.querySelectorAll('[data-decorative="true"]');
+      expect(decorations).toHaveLength(4);
+      for (const node of decorations) {
+        expect(node).toHaveAttribute("aria-hidden", "true");
+      }
+    });
   });
 
-  it("links the location card to the live map on the contact page", () => {
-    // Item 1 of the contact-page brief, as decided: a link to the map, not a
-    // second, smaller map (owner 2026-09-22).
-    renderWithIntl(<SiteFooter />, locale);
-    const card = screen.getByTestId("footer-map-card");
+  describe("the design studio's credit (owner request 2026-09-22)", () => {
+    it("credits NOTIME, linked to its site in a new tab", () => {
+      renderFooter();
+      const studio = screen.getByRole("link", { name: "NOTIME" });
 
-    expect(card.tagName).toBe("A");
-    expect(card).toHaveAttribute("href", `/${locale}/contact#contact-map-heading`);
-    expect(card).toHaveAccessibleName(expect.stringContaining(messages.Footer.locationLink));
-  });
+      expect(studio).toHaveAttribute("href", "https://notimehub.com/");
+      expect(studio).toHaveAttribute("target", "_blank");
+      expect(studio.getAttribute("rel")).toContain("noopener");
+      // A brand name is not translated, and is pronounced as English inside
+      // the Arabic sentence (Chapter 4 §4.3: family follows language).
+      expect(studio).toHaveAttribute("lang", "en");
+      expect(studio.closest("p")).toHaveTextContent(messages.Footer.designedBy.replace(/<studio><\/studio>/, "NOTIME"));
+    });
 
-  it("gives every social icon a translated accessible name and opens it safely", () => {
-    renderWithIntl(<SiteFooter />, locale);
-    for (const social of SOCIAL_LINKS) {
-      const label = messages.Social[social.key as keyof typeof messages.Social];
-      const link = screen.getByRole("link", { name: label });
-      expect(link).toHaveAttribute("href", social.href);
-      expect(link).toHaveAttribute("rel", expect.stringContaining("noopener"));
-    }
-  });
-
-  it("exposes contact details as actionable links, not plain text", () => {
-    renderWithIntl(<SiteFooter />, locale);
-    expect(screen.getByRole("link", { name: "info@uaeaf.ae" })).toHaveAttribute(
-      "href",
-      "mailto:info@uaeaf.ae",
-    );
-  });
-
-  it("hides purely decorative brand swooshes from assistive tech", () => {
-    const { container } = renderWithIntl(<SiteFooter />, locale);
-    const decorations = container.querySelectorAll('[data-decorative="true"]');
-    expect(decorations).toHaveLength(4);
-    for (const node of decorations) {
-      expect(node).toHaveAttribute("aria-hidden", "true");
-    }
-  });
-
-  it("renders the translated copyright notice", () => {
-    renderWithIntl(<SiteFooter />, locale);
-    expect(screen.getByText(messages.Footer.copyright)).toBeInTheDocument();
+    it("is the last thing in the footer, in reading order and in tab order", () => {
+      renderFooter();
+      const links = within(screen.getByRole("contentinfo")).getAllByRole("link");
+      expect(links.at(-1)).toHaveAccessibleName("NOTIME");
+    });
   });
 });
 
 /**
- * Regression net for the wrap-balloon bug (audit report Part 9.2 /
- * CLAUDE.md §1a): below `xl` (1280px, matching Design System §5.2's own `xl`
- * breakpoint start) the four-column row has no real Design-System-derived
- * layout at all, so a lone wrapped flex-grow column balloons to full row
- * width. jsdom has no layout engine, so these assertions can only check the
- * *contract* (grid classes present per §5.2-derived breakpoint, the old
- * flex-grow/wrap combination gone, previously-fixed-width children now
- * fluid) — the actual defect fix is confirmed visually in the audit report,
- * not by this suite.
+ * Layout contracts jsdom can check. The rendered geometry — the height at each
+ * width, the real column count, nothing overflowing — is measured on a live
+ * browser by `e2e/footer.spec.ts`.
  */
-describe("SiteFooter responsive layout (Chapter 5-derived breakpoints)", () => {
-  it("lays the four-column row out as a Design-System-grid, not an unconstrained wrapping flex row", () => {
-    const { container } = renderWithIntl(<SiteFooter />, "ar");
-    const row = container.querySelector('[data-testid="footer-columns"]');
-    expect(row).not.toBeNull();
-    const className = row!.className;
+describe("SiteFooter layout contracts", () => {
+  const renderFooter = () => renderWithIntl(<SiteFooter content={CONTENT.ar} />, "ar");
 
-    // §5.2 xs/sm (≤767px): single column, full stack (§5.10 Stacking).
-    expect(className).toMatch(/(?:^|\s)grid-cols-1(?:\s|$)/);
-    // §5.2 md (768-1023px, 8 cols / 24px gutter): 8÷4 sections = 2 per row.
-    expect(className).toMatch(/(?:^|\s)md:grid-cols-2(?:\s|$)/);
-    // §5.2 lg (1024-1279px, 12 cols / 24px gutter): 12÷4 = 3 tracks each, fractional not fixed-px.
-    expect(className).toMatch(/(?:^|\s)lg:grid-cols-4(?:\s|$)/);
-    // §5.2 xl/2xl (≥1280px): stays a grid (not flex) so it degrades gracefully
-    // instead of overflowing; only the gap widens to the already-approved 48px.
-    expect(className).toMatch(/(?:^|\s)xl:gap-12(?:\s|$)/);
+  it("keeps the Chapter 5 grid: one column, two from md, four from lg, the approved gap from xl", () => {
+    renderFooter();
+    const row = classes(screen.getByTestId("footer-columns"));
 
-    // The old bug-causing combination must be gone: no unconditional
-    // `flex-wrap` and no unconditional `flex-1` grow on the row/columns.
-    expect(className).not.toMatch(/(?:^|\s)flex-wrap(?:\s|$)/);
-    const columns = row!.querySelectorAll(":scope > section, :scope > nav");
-    expect(columns).toHaveLength(4);
-    for (const column of columns) {
-      expect(column.className).not.toMatch(/(?:^|\s)flex-1(?:\s|$)/);
+    expect(row).toEqual(expect.arrayContaining(["grid", "grid-cols-1", "md:grid-cols-2", "lg:grid-cols-4", "xl:gap-12"]));
+    expect(row).not.toContain("flex-wrap");
+    for (const column of screen.getByTestId("footer-columns").querySelectorAll(":scope > [data-footer-column]")) {
+      expect(classes(column)).not.toContain("flex-1");
     }
   });
 
-  it("makes previously fixed-width column children fluid so they cannot overflow a narrower Chapter-5-derived column", () => {
-    const { container } = renderWithIntl(<SiteFooter place={PLACE.ar.place} region={PLACE.ar.region} />, "ar");
+  it("is the screen minus the header from lg, and gives the map what is left over (ADR-0092 D4, D5)", () => {
+    renderFooter();
 
-    // Brand description (was a bare `w-[260px]`) — must shrink inside the
-    // ~214px column produced at the low end of `lg` (1024px, see design note).
-    const description = container.querySelector('[data-testid="footer-brand-description"]');
-    expect(description).not.toBeNull();
-    expect(description!.className).toMatch(/(?:^|\s)w-full(?:\s|$)/);
-    expect(description!.className).toMatch(/max-w-\[260px\]/);
-    expect(description!.className).not.toMatch(/(?:^|\s)w-\[260px\](?:\s|$)/);
+    // The rule itself, lg-only and a minimum, is guarded in surface-standard.spec.ts.
+    expect(classes(screen.getByRole("contentinfo"))).toContain("footer-first-screen");
+    expect(classes(screen.getByTestId("footer-columns"))).toContain("lg:flex-1");
+    expect(classes(screen.getByTestId("footer-map-frame"))).toEqual(expect.arrayContaining(["min-h-[220px]", "lg:flex-1"]));
+  });
 
-    // Location map card (was a bare `w-[250px]`).
-    const mapCard = container.querySelector('[data-testid="footer-map-card"]');
-    expect(mapCard).not.toBeNull();
-    expect(mapCard!.className).toMatch(/(?:^|\s)w-full(?:\s|$)/);
-    expect(mapCard!.className).toMatch(/max-w-\[250px\]/);
-    expect(mapCard!.className).not.toMatch(/(?:^|\s)w-\[250px\](?:\s|$)/);
-
-    // Contact address text (was a bare `w-[200px]`).
-    const address = container.querySelector('[data-testid="footer-address"]');
-    expect(address).not.toBeNull();
-    expect(address!.className).toMatch(/(?:^|\s)w-full(?:\s|$)/);
-    expect(address!.className).toMatch(/max-w-\[200px\]/);
-    expect(address!.className).not.toMatch(/(?:^|\s)w-\[200px\](?:\s|$)/);
+  it("keeps fixed-width children fluid inside a narrower column", () => {
+    renderFooter();
+    const description = classes(screen.getByTestId("footer-brand-description"));
+    expect(description).toEqual(expect.arrayContaining(["w-full", "max-w-[260px]"]));
+    expect(description).not.toContain("w-[260px]");
   });
 });

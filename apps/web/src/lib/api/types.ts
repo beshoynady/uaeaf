@@ -494,6 +494,18 @@ export interface OrganizationCardPublic {
   displayOrder: number;
 }
 
+/** The footer's own words on `GET /site-settings/public` (ADR-0092). Each is
+ *  `null` until an editor saves it, and the footer then shows its built-in text. */
+export interface SiteSettingsFooterPublic {
+  footerAboutBlurb?: LocalizedText | null;
+  copyrightText?: LocalizedText | null;
+  footerHeadings?: {
+    quickLinks?: LocalizedText | null;
+    location?: LocalizedText | null;
+    contact?: LocalizedText | null;
+  } | null;
+}
+
 /** `SponsorStripSettingsDto`, on `GET /site-settings/public` (ADR-0077 D5). */
 export interface SponsorStripSettingsPublic {
   isVisible: boolean;

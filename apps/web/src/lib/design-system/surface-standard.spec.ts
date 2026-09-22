@@ -268,8 +268,21 @@ describe("the layout standard", () => {
     const declarations = rule.split(";").map((line) => line.trim()).filter(Boolean);
     expect(declarations.at(-1), "svh is the declaration that wins").toBe("min-height: calc(100svh - var(--header-height))");
     expect(declarations.every((line) => line.startsWith("min-height")), "a minimum, never a height: content is never clipped").toBe(true);
-    const bareVh = /[^s]d+vh/.test(standard);
+    const bareVh = /\b\d+vh\b/.test(standard);
     expect(bareVh, "a bare vh unit does not survive a phone's browser bars").toBe(false);
+  });
+
+  it("gives the footer the first screen from lg only, as a minimum", () => {
+    // ADR-0092 D4: the footer is the screen minus the header from the `lg`
+    // token up — the same `--breakpoint-lg` the dashboard's sidebar folds at —
+    // and below it takes the height of its own content, with no rule at all.
+    // The rule's whole body is the variant, so nothing can apply below `lg`.
+    const globals = stripComments(readFileSync(join(SRC, "app", "[locale]", "globals.css"), "utf-8"));
+    const rule = /\.footer-first-screen\s*\{\s*@variant lg\s*\{([^{}]*)\}\s*\}/.exec(globals)?.[1] ?? "";
+    expect(rule, "the footer rule is found, and holds only an lg block").not.toBe("");
+    const declarations = rule.split(";").map((line) => line.trim()).filter(Boolean);
+    expect(declarations.at(-1), "svh is the declaration that wins").toBe("min-height: calc(100svh - var(--header-height))");
+    expect(declarations.every((line) => line.startsWith("min-height")), "a minimum, never a height: content is never clipped").toBe(true);
   });
 });
 

@@ -5697,6 +5697,30 @@
         ]
       }
     },
+    "/api/v1/site-settings/footer": {
+      "put": {
+        "operationId": "SiteSettingsController_upsertFooter_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FooterSettingsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "site-settings"
+        ]
+      }
+    },
     "/api/v1/navigation-menus": {
       "post": {
         "operationId": "NavigationMenusController_create_v1",
@@ -12805,12 +12829,6 @@
           "defaultSeo": {
             "$ref": "#/components/schemas/DefaultSeoDto"
           },
-          "footerAboutBlurb": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "copyrightText": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
           "logoId": {
             "type": "string"
           },
@@ -12925,6 +12943,71 @@
           "pinnedSponsorshipId",
           "speed"
         ]
+      },
+      "FooterHeadingsDto": {
+        "type": "object",
+        "properties": {
+          "quickLinks": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "location": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "contact": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          }
+        }
+      },
+      "FooterSettingsDto": {
+        "type": "object",
+        "properties": {
+          "footerAboutBlurb": {
+            "nullable": true,
+            "description": "The description under the federation's name.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "copyrightText": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "footerHeadings": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FooterHeadingsDto"
+              }
+            ]
+          }
+        }
       },
       "CreateNavigationMenuDto": {
         "type": "object",

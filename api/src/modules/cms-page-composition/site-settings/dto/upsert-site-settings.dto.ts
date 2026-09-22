@@ -23,25 +23,19 @@ export class DefaultSeoDto {
   defaultDescription?: LocalizedTextDto;
 }
 
-/** Request body for PUT /site-settings. Singleton: one upsert DTO. */
+/** Request body for PUT /site-settings. Singleton: one upsert DTO.
+ *
+ *  Only the settings no screen of their own writes (ADR-0093). The footer's
+ *  words (`footerAboutBlurb`, `copyrightText`, `footerHeadings`) are written
+ *  through PUT /site-settings/footer and the strip's settings through
+ *  PUT /site-settings/sponsor-strip; sent here, they are refused by name
+ *  (`RefuseFieldsWrittenElsewhereInterceptor`). */
 export class UpsertSiteSettingsDto {
   @ApiProperty({ type: DefaultSeoDto, required: false })
   @IsOptional()
   @ValidateNested()
   @Type(() => DefaultSeoDto)
   defaultSeo?: DefaultSeoDto;
-
-  @ApiProperty({ type: LocalizedTextDto, required: false })
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => LocalizedTextDto)
-  footerAboutBlurb?: LocalizedTextDto;
-
-  @ApiProperty({ type: LocalizedTextDto, required: false })
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => LocalizedTextDto)
-  copyrightText?: LocalizedTextDto;
 
   @ApiProperty({ required: false }) @IsOptional() @IsMongoId() logoId?: string;
   @ApiProperty({ required: false }) @IsOptional() @IsMongoId() logoDarkId?: string;

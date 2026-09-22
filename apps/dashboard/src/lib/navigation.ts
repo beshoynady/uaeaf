@@ -93,6 +93,16 @@ export const HOMEPAGE_SPONSOR_STRIP_GRANTS = [
   { resourceType: "pageSections", action: "Read" },
 ] as const satisfies readonly NavRequirement[];
 
+/**
+ * Every grant the footer screen uses (ADR-0092 D12): the settings it opens
+ * with and the one write its Save sends. What it shows from the contact page's
+ * record is a public read and needs no grant.
+ */
+export const HOMEPAGE_FOOTER_GRANTS = [
+  { resourceType: "siteSettings", action: "Read" },
+  { resourceType: "siteSettings", action: "Update" },
+] as const satisfies readonly NavRequirement[];
+
 /** A homepage screen's link: shown with every grant its Save can use. */
 const homepageScreen = (key: string, href: string, grants: readonly NavRequirement[]): NavItem => ({
   key,
@@ -157,6 +167,8 @@ const HOMEPAGE_SCREENS: readonly NavItem[] = [
   homepageScreen("homepageSponsors", "/homepage/sponsors", HOMEPAGE_SPONSORS_GRANTS),
   homepageScreen("homepagePartners", "/homepage/partners", HOMEPAGE_PARTNERS_GRANTS),
   homepageScreen("homepageMemberships", "/homepage/memberships", HOMEPAGE_MEMBERSHIPS_GRANTS),
+  // Last, as the footer is last on every page.
+  homepageScreen("homepageFooter", "/homepage/footer", HOMEPAGE_FOOTER_GRANTS),
 ];
 
 export const NAV_ITEMS: readonly NavItem[] = [

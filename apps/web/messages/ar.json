@@ -59,12 +59,10 @@
     "legalNav": "روابط قانونية",
     "quickLinksTitle": "روابط سريعة",
     "locationTitle": "الموقع",
-    "locationLink": "عرض الموقع على الخريطة",
-    "placeLine": "{place}، {region}",
     "contactTitle": "التواصل",
-    "hours": "الأحد-الخميس، 08:00-15:00",
     "helpCenter": "مركز المساعدة",
-    "copyright": "© 2026 اتحاد الإمارات لألعاب القوى. جميع الحقوق محفوظة."
+    "copyright": "© 2026 اتحاد الإمارات لألعاب القوى. جميع الحقوق محفوظة.",
+    "designedBy": "تصميم: <studio></studio>"
   },
   "HomePage": {
     "title": "اتحاد الإمارات لألعاب القوى",

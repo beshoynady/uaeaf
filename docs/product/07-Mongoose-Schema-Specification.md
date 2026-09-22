@@ -959,6 +959,7 @@ This domain was built during the Homepage/CMS work immediately preceding this au
 | `socialLinks` | Sub-schema (embedded) | `false` | `{}` | Already specified: `{ facebook: String, instagram: String, x: String, youtube: String, tiktok: String }`, each `match: /^https?:\/\/.+/` when present | None — singleton | Public |
 | `defaultSeo` | Sub-schema (embedded) | `false` | `{}` | Already specified: `{ titleSuffix: { en: String, ar: String }, defaultOgImageId: ObjectId ref MediaAsset, defaultDescription: { en: String, ar: String } }` | None | Public |
 | `copyrightText` | `{ en: String, ar: String }` | `false` | `''` each | `maxlength: 300` each | None | Public |
+| `footerHeadings` | Sub-schema (embedded) | `false` | `null` | `{ quickLinks, location, contact }`, each `{ en: String, ar: String }` or `null` (the site's built-in heading). Written with `footerAboutBlurb` and `copyrightText` through `PUT /site-settings/footer` alone — ADR-0092, added 2026-09-22 | None | Public |
 
 ### `navigationMenus`
 

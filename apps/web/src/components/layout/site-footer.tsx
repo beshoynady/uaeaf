@@ -1,36 +1,51 @@
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
+import type { AppLocale } from "@/i18n/routing";
 import { UaeafLogo } from "@/components/brand/uaeaf-logo";
+import { LocationMap } from "@/components/pages/contact/location-map";
+import { FooterMapFrame } from "./footer-map-frame";
 import { FOCUS, TRANSITION } from "@/components/ui/interactive";
 import { REGISTER_CLASSES } from "@/components/ui/section";
-import { FOOTER_QUICK_LINKS, LEGAL_LINKS, SOCIAL_LINKS } from "@/lib/navigation";
+import { CARD } from "@/components/ui/surface";
+import { isExternalMedia } from "@/lib/api/media";
+import { FOOTER_QUICK_LINKS, LEGAL_LINKS } from "@/lib/navigation";
 import { isBuilt } from "@/lib/pages/built-routes";
+import type { FooterContent } from "@/lib/pages/footer-content";
+import { socialChannels } from "@/lib/social-channels";
 
 /**
- * Global site footer.
+ * Global site footer (ADR-0092).
  *
  * Visual source: Figma `Section / Footer`, node 2374:2198, inside
  * `Homepage - AR / RTL (APPROVED BASELINE v1)`. That node is clipped out of its
  * parent frame and renders blank there — read its geometry directly, and use
- * `720:834` (the same footer on a static page) for visual confirmation.
+ * `720:834` (the same footer on a static page) for visual confirmation. The
+ * live map, the first-screen height and the studio credit have no frame yet:
+ * PENDING FIGMA BACK-SYNC.
  *
- * The composition — four columns, their order, the swooshes, the map card, the
- * legal strip — is protected by CLAUDE.md §3. Colour comes from the black
- * register (ADR-0059 §D2), never from literal `text-white` or
- * `--color-brand-black`: that token is `#000000` in every theme and measures
- * 1.12:1 against the dark page.
+ * Four columns in the approved order — Brand and the channels, Quick Links,
+ * Location, Contact — then the legal strip. The first child lands on the
+ * reading start in either direction, so this order reproduces the approved
+ * composition in both without `flex-row-reverse` and keeps the screen-reader
+ * order matching the visual one. Alignment is `start`, never `end`, which
+ * would put each language against its own direction (ADR-0061 D1, guarded by
+ * `direction-and-logo-contract.spec.ts`).
  *
- * Alignment is `start`, not `end`. Both are logical, but `end` means "where
- * this language stops reading" and puts each language against its own
- * direction. Chapter 4 §4.11 requires the one logical property rather than a
- * locale conditional; ADR-0061 D1. Guarded by
- * `direction-and-logo-contract.spec.ts`.
+ * Where each thing comes from (`loadFooterContent`): the place, the map, the
+ * email, the office hours and the channels from the contact page's record,
+ * which is their one source; the description, the copyright line and the
+ * headings from the site settings, with the catalogue's text when an editor
+ * has saved none. A contact fact the record cannot supply is left out rather
+ * than remembered.
  *
- * Column order is Brand → Quick Links → Location → Contact: the first child
- * lands on the reading start in either direction, so this order reproduces the
- * approved composition in both without `flex-row-reverse`, and keeps the
- * screen-reader order matching the visual one.
+ * From `lg` the footer is at least the screen minus the header
+ * (`.footer-first-screen`), and the map takes what the columns leave over.
+ * Below `lg` it is as tall as its content.
+ *
+ * Colour comes from the black register (ADR-0059 §D2), never from literal
+ * `text-white` or `--color-brand-black`: that token is `#000000` in every
+ * theme and measures 1.12:1 against the dark page.
  *
  * `useTranslations`, not `getTranslations` — keeps this a non-async Server
  * Component so tests can render it directly under `<NextIntlClientProvider>`.
@@ -38,6 +53,14 @@ import { isBuilt } from "@/lib/pages/built-routes";
 const tone = REGISTER_CLASSES.black;
 
 const FOOTER_LINK = `rounded-xs text-caption ${tone.muted} ${TRANSITION} hover:text-[color:var(--color-section-black-text)] active:text-[color:var(--color-section-black-text-muted)] ${FOCUS}`;
+
+/** The studio that designed the site (owner request 2026-09-22). A name is
+ *  not translated, so it lives here rather than in the catalogue, which holds
+ *  only the sentence around it. */
+const DESIGN_STUDIO = {
+  name: "NOTIME",
+  href: "https://notimehub.com/",
+} as const;
 
 /**
  * Decorative brand swooshes, Figma nodes 2737:38–41.
@@ -59,32 +82,52 @@ const FOOTER_LINK = `rounded-xs text-caption ${tone.muted} ${TRANSITION} hover:t
  * two words of the brand description, white on white. No Figma frame exists
  * for a small-screen treatment and §13 forbids inventing one; the art is
  * `aria-hidden`, so not drawing it costs no content. PENDING FIGMA BACK-SYNC.
- */const decorations = [
-  { src: "/brand/swoosh-red.svg", w: 202, h: 23, className: "end-[-30px] top-[134px] w-[179px]" },
-  { src: "/brand/swoosh-green.svg", w: 289, h: 38, className: "end-[-10px] top-[114px] w-[259px]" },
-  { src: "/brand/swoosh-white.svg", w: 231, h: 26, className: "start-[-5px] top-[270px] w-[204px]" },
-  { src: "/brand/swoosh-red-sm.svg", w: 145, h: 17, className: "start-[-18px] top-[308px] w-[129px]" },
+ */
+const decorations = [
+  {
+    src: "/brand/swoosh-red.svg",
+    w: 202,
+    h: 23,
+    className: "end-[-30px] top-[134px] w-[179px]",
+  },
+  {
+    src: "/brand/swoosh-green.svg",
+    w: 289,
+    h: 38,
+    className: "end-[-10px] top-[114px] w-[259px]",
+  },
+  {
+    src: "/brand/swoosh-white.svg",
+    w: 231,
+    h: 26,
+    className: "start-[-5px] top-[270px] w-[204px]",
+  },
+  {
+    src: "/brand/swoosh-red-sm.svg",
+    w: 145,
+    h: 17,
+    className: "start-[-18px] top-[308px] w-[129px]",
+  },
 ];
 
-/**
- * `place` and `region` are the contact page's own place label
- * (`map.pinTitle`, `map.pinSubtitle`), read by the layout: the footer keeps no
- * address of its own (owner decision 2026-09-22, one source). Without them,
- * when the record cannot be read, the card still links to the map and no
- * address line is drawn rather than a remembered one.
- */
-export const SiteFooter = ({ place, region }: { place?: string | null; region?: string | null } = {}) => {
+export const SiteFooter = ({ content }: { content: FooterContent }) => {
+  const locale = useLocale() as AppLocale;
   const t = useTranslations("Nav");
   const tLegal = useTranslations("Legal");
   const tSocial = useTranslations("Social");
   const tFooter = useTranslations("Footer");
-  // One line, joined by the reading language's own comma, which is the
-  // message catalogue's to say (Chapter 4 §4.11), not a locale check's.
-  const address = place && region ? tFooter("placeLine", { place, region }) : (place ?? region ?? "");
+  // The contact page's own words for the same things: one label for one
+  // action, and one name for one frame, wherever they appear.
+  const tContact = useTranslations("Contact");
+
+  const channels = socialChannels(content.channels, content.icons, (key) =>
+    tSocial(key),
+  );
+  const hasMap = content.latitude !== null && content.longitude !== null;
 
   return (
     <footer
-      className={`relative flex w-full flex-col items-center justify-center overflow-hidden px-4 pt-[72px] sm:px-6 md:px-8 lg:px-12 xl:px-16 ${tone.surface}`}
+      className={`footer-first-screen relative flex w-full flex-col items-center overflow-hidden px-4 pt-[72px] sm:px-6 md:px-8 lg:px-12 xl:px-16 ${tone.surface}`}
       data-node-id="2374:2198"
     >
       {decorations.map((d) => (
@@ -94,7 +137,13 @@ export const SiteFooter = ({ place, region }: { place?: string | null; region?: 
           data-decorative="true"
           className={`pointer-events-none absolute hidden -rotate-35 select-none xl:block ${d.className}`}
         >
-          <Image src={d.src} alt="" width={d.w} height={d.h} className="h-auto w-full" />
+          <Image
+            src={d.src}
+            alt=""
+            width={d.w}
+            height={d.h}
+            className="h-auto w-full"
+          />
         </span>
       ))}
 
@@ -113,12 +162,22 @@ export const SiteFooter = ({ place, region }: { place?: string | null; region?: 
           1240px at `lg` where only 1183px is offered, and at `xl` they overflow
           the footer's own `overflow-hidden` and clip the last column whenever a
           scrollbar shaves a few px off a ≥1280px viewport. `1fr` tracks shrink
-          instead. */}
+          instead.
+
+          From `lg` the grid takes the height the first-screen rule leaves
+          after the legal strip, and its columns stretch to it; only the map
+          grows into it, so the four columns still start on one line and the
+          slack goes to the one thing more useful for being bigger. `lg:` only:
+          `flex-1` below it would set a zero basis against a footer with no
+          height to share (`PANEL_TALL` in `surface.ts`). */}
       <div
         data-testid="footer-columns"
-        className="relative grid w-full max-w-[1312px] grid-cols-1 items-start gap-y-12 pb-12 md:grid-cols-2 md:gap-6 lg:grid-cols-4 lg:gap-x-6 xl:gap-12"
+        className="relative grid w-full max-w-[1312px] grid-cols-1 items-start gap-y-12 pb-12 md:grid-cols-2 md:gap-6 lg:flex-1 lg:grid-cols-4 lg:items-stretch lg:gap-x-6 xl:gap-12"
       >
-        <section className="flex min-w-0 flex-col items-start gap-3.5">
+        <section
+          data-footer-column
+          className="flex min-w-0 flex-col items-start gap-3.5"
+        >
           {/* `variant="mono"` per guide §6.1: the full-colour mark belongs on a
               white or clearly contrasting ground, the monochrome mark
               everywhere else. `currentColor` picks up the register's text
@@ -131,33 +190,69 @@ export const SiteFooter = ({ place, region }: { place?: string | null; region?: 
             data-testid="footer-brand-description"
             className={`w-full max-w-[260px] text-start text-caption leading-[1.6] ${tone.muted}`}
           >
-            {tFooter("brandDescription")}
+            {content.aboutBlurb ?? tFooter("brandDescription")}
           </p>
-          <ul className="flex items-center gap-2">
-            {SOCIAL_LINKS.map((social) => (
-              <li key={social.href}>
-                <a
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={tSocial(social.key)}
-                  className={`flex size-8 items-center justify-center overflow-hidden rounded-lg transition-transform duration-[var(--motion-duration-fast)] ease-[var(--motion-easing-standard)] hover:-translate-y-0.5 hover:translate-x-0.5 active:translate-x-0 active:translate-y-0 ${FOCUS} ${social.className}`}
-                >
-                  {/* X and TikTok export as complete button artwork rather than a
-                      glyph, so they fill the 32px button; the rest are 16px glyphs
-                      on a brand-gradient background. */}
-                  <Image
-                    src={social.icon}
-                    alt=""
-                    width={social.fullBleed ? 32 : 16}
-                    height={social.fullBleed ? 32 : 16}
-                    aria-hidden="true"
-                    className={social.fullBleed ? "size-8 object-cover" : "size-4 object-contain"}
-                  />
-                </a>
-              </li>
-            ))}
-          </ul>
+          {channels.length > 0 ? (
+            <ul
+              aria-label={tContact("social.title")}
+              className="flex flex-wrap items-center gap-2"
+            >
+              {channels.map((channel) => (
+                <li key={channel.href}>
+                  <a
+                    href={channel.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={channel.name}
+                    // 44px, the touch-target gate (UI protocol §14), as on the
+                    // contact page. A known channel wears its brand ground; an
+                    // uploaded icon or an unknown one stands on a card, since
+                    // the picture may be transparent and a brand colour would
+                    // be one the editor did not choose.
+                    className={`flex items-center justify-center overflow-hidden rounded-lg transition-transform duration-[var(--motion-duration-fast)] ease-[var(--motion-easing-standard)] hover:-translate-y-0.5 hover:translate-x-0.5 active:translate-x-0 active:translate-y-0 ${FOCUS} ${
+                      channel.icon
+                        ? `size-11 ${CARD}`
+                        : channel.known
+                          ? `size-11 ${channel.known.className}`
+                          : `min-h-11 min-w-11 ${CARD} px-3 text-label font-bold text-[color:var(--color-text-primary)]`
+                    }`}
+                  >
+                    {channel.icon ? (
+                      // The editor's own artwork, whole: `object-contain` so a
+                      // logo that is not square is shown entire.
+                      <Image
+                        src={channel.icon.file.url}
+                        alt=""
+                        width={44}
+                        height={44}
+                        unoptimized={isExternalMedia(channel.icon.file.url)}
+                        aria-hidden="true"
+                        className="size-11 object-contain"
+                      />
+                    ) : channel.known ? (
+                      // X and TikTok export as complete button artwork rather
+                      // than a glyph, so they fill the button; the rest are
+                      // glyphs on a brand-coloured ground.
+                      <Image
+                        src={channel.known.icon}
+                        alt=""
+                        width={channel.known.fullBleed ? 44 : 20}
+                        height={channel.known.fullBleed ? 44 : 20}
+                        aria-hidden="true"
+                        className={
+                          channel.known.fullBleed
+                            ? "size-11 object-cover"
+                            : "size-5 object-contain"
+                        }
+                      />
+                    ) : (
+                      <span aria-hidden="true">{channel.name.slice(0, 2)}</span>
+                    )}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </section>
 
         {/* Two sub-columns. Nineteen destinations in one column stand 3.5x
@@ -181,8 +276,14 @@ export const SiteFooter = ({ place, region }: { place?: string | null; region?: 
 
             PENDING FIGMA BACK-SYNC: the approved frame shows one nine-item
             column, and no frame exists for this one. */}
-        <nav aria-label={tFooter("quickLinksNav")} className="flex min-w-0 flex-col items-start gap-3">
-          <h2 className="text-caption font-bold">{tFooter("quickLinksTitle")}</h2>
+        <nav
+          data-footer-column
+          aria-label={tFooter("quickLinksNav")}
+          className="flex min-w-0 flex-col items-start gap-3"
+        >
+          <h2 className="text-caption font-bold">
+            {content.headings.quickLinks ?? tFooter("quickLinksTitle")}
+          </h2>
           <ul className="block w-full columns-2 gap-x-4 text-start">
             {FOOTER_QUICK_LINKS.map((item) => (
               <li key={item.href} className="mb-3 break-inside-avoid last:mb-0">
@@ -198,70 +299,87 @@ export const SiteFooter = ({ place, region }: { place?: string | null; region?: 
           </ul>
         </nav>
 
-        <section className="flex min-w-0 flex-col items-start gap-3">
-          <h2 className="text-caption font-bold">{tFooter("locationTitle")}</h2>
-          {/* A link to the live map on the contact page, not a second,
-              smaller map (owner decision, contact-page item 1). The border
-              brightens on hover as the footer's text links do. */}
-          <Link
-            href="/contact#contact-map-heading"
-            data-testid="footer-map-card"
-            className={`flex h-[180px] w-full max-w-[250px] flex-col items-center justify-center gap-2.5 rounded-lg border bg-white/8 px-4 ${tone.border} ${TRANSITION} hover:border-[color:var(--color-section-black-text-muted)] active:border-[color:var(--color-section-black-text)] ${FOCUS}`}
-          >
-            <span className="flex size-10 items-center justify-center rounded-full bg-white/8">
-              <Image
-                src="/icons/map-pin-lg.svg"
-                alt=""
-                width={18}
-                height={18}
-                aria-hidden="true"
-                className="size-[18px]"
+        <section
+          data-footer-column
+          className="flex min-w-0 flex-col items-start gap-3"
+        >
+          <h2 className="text-caption font-bold">
+            {content.headings.location ?? tFooter("locationTitle")}
+          </h2>
+          {/* The contact page's own live map, not a second one: the same
+              component at the same record's coordinates, drawn once its frame
+              is on screen (`FooterMapFrame`). 220px is that page's own frame
+              minimum; from `lg` the frame takes the rest of the column. With
+              no coordinates stored, no frame is drawn. */}
+          {hasMap ? (
+            <FooterMapFrame
+              className={`relative min-h-[220px] w-full overflow-hidden rounded-lg border ${tone.border} lg:flex-1`}
+            >
+              <LocationMap
+                latitude={content.latitude!}
+                longitude={content.longitude!}
+                locale={locale}
+                title={tContact("map.frameTitle")}
               />
-            </span>
-            {place ? (
-              <span className="flex flex-col items-center gap-1 text-center">
-                {/* Figma specifies Alexandria SemiBold (600); Chapter 3 defines
-                    exactly four weights (400/500/700/900), so 600 maps to `bold`
-                    rather than minting an unapproved token (CLAUDE.md §16). */}
-                <span className="text-caption font-bold">{place}</span>
-                {/* `text-caption` is the scale's smallest step. Nothing here may
-                    go below Chapter 4's 13px floor — neither ADR-0041 exception
-                    covers this label. */}
-                {region ? <span className={`text-caption ${tone.muted}`}>{region}</span> : null}
-              </span>
-            ) : null}
-            {/* Said to a screen reader beside the place; shown when there is
-                no place to show, so the card is never an unnamed box. */}
-            <span className={place ? "sr-only" : "text-caption font-bold"}>{tFooter("locationLink")}</span>
-          </Link>
-        </section>
-
-        <section className="flex min-w-0 flex-col items-start gap-3.5">
-          <h2 className="text-caption font-bold">{tFooter("contactTitle")}</h2>
-          {address ? (
-            <p className="flex items-start gap-2 text-start">
-              <Image
-                src="/icons/map-pin.svg"
-                alt=""
-                width={14}
-                height={14}
-                aria-hidden="true"
-                className="mt-1 size-3.5 shrink-0"
-              />
-              <span
-                data-testid="footer-address"
-                className={`w-full max-w-[200px] text-caption leading-[1.4] ${tone.muted}`}
-              >
-                {address}
-              </span>
+            </FooterMapFrame>
+          ) : null}
+          {/* Under the map, never over it: a card over a live map covers
+              Google's own marker and takes the pointer from the map. */}
+          {content.place ? (
+            <p
+              data-testid="footer-place"
+              className="flex flex-col gap-1 text-start"
+            >
+              {/* Figma specifies Alexandria SemiBold (600); Chapter 3 defines
+                  exactly four weights (400/500/700/900), so 600 maps to `bold`
+                  rather than minting an unapproved token (CLAUDE.md §16).
+                  `text-caption` is the scale's smallest step; neither ADR-0041
+                  exception covers this label. */}
+              <span className="text-caption font-bold">{content.place}</span>
+              {content.region ? (
+                <span className={`text-caption ${tone.muted}`}>
+                  {content.region}
+                </span>
+              ) : null}
             </p>
           ) : null}
-          {/* Figma renders these as flat text; as real contact details they are
-              actionable, so they ship as links. */}
-          <a href="mailto:info@uaeaf.ae" dir="ltr" className={FOOTER_LINK}>
-            info@uaeaf.ae
-          </a>
-          <p className={`text-caption leading-[1.4] ${tone.muted}`}>{tFooter("hours")}</p>
+          {/* The one thing the embedded map does not do well: routing
+              (owner decision 2026-09-22, ADR-0092 D9). */}
+          {content.directionsUrl ? (
+            <a
+              href={content.directionsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={FOOTER_LINK}
+            >
+              {tContact("map.openDirections")}
+            </a>
+          ) : null}
+        </section>
+
+        {/* The address is under the map in the column beside this one, in the
+            same words, so it is not repeated here. */}
+        <section
+          data-footer-column
+          className="flex min-w-0 flex-col items-start gap-3.5"
+        >
+          <h2 className="text-caption font-bold">
+            {content.headings.contact ?? tFooter("contactTitle")}
+          </h2>
+          {content.email ? (
+            <a
+              href={`mailto:${content.email}`}
+              dir="ltr"
+              className={FOOTER_LINK}
+            >
+              {content.email}
+            </a>
+          ) : null}
+          {content.officeHours ? (
+            <p className={`text-caption leading-[1.4] ${tone.muted}`}>
+              {content.officeHours}
+            </p>
+          ) : null}
           <Link href="/help" prefetch={false} className={FOOTER_LINK}>
             {tFooter("helpCenter")}
           </Link>
@@ -271,7 +389,7 @@ export const SiteFooter = ({ place, region }: { place?: string | null; region?: 
       <div
         className={`relative flex w-full max-w-[1312px] flex-wrap items-center justify-between gap-4 border-t py-6 text-caption ${tone.muted} ${tone.border}`}
       >
-        <p>{tFooter("copyright")}</p>
+        <p>{content.copyright ?? tFooter("copyright")}</p>
         <nav aria-label={tFooter("legalNav")}>
           <ul className="flex flex-wrap items-center gap-6">
             {LEGAL_LINKS.map((item) => (
@@ -287,6 +405,26 @@ export const SiteFooter = ({ place, region }: { place?: string | null; region?: 
             ))}
           </ul>
         </nav>
+        {/* Last in reading order and in tab order, and no louder than the
+            legal links: the credit is the least of what the footer says.
+            `noopener` without `noreferrer`, so the studio can see the visit
+            came from here. */}
+        <p>
+          {tFooter.rich("designedBy", {
+            studio: () => (
+              <a
+                href={DESIGN_STUDIO.href}
+                target="_blank"
+                rel="noopener"
+                lang="en"
+                dir="ltr"
+                className={FOOTER_LINK}
+              >
+                {DESIGN_STUDIO.name}
+              </a>
+            ),
+          })}
+        </p>
       </div>
     </footer>
   );

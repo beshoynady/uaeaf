@@ -59,12 +59,10 @@
     "legalNav": "Legal Links",
     "quickLinksTitle": "Quick Links",
     "locationTitle": "Location",
-    "locationLink": "View the location on the map",
-    "placeLine": "{place}, {region}",
     "contactTitle": "Contact",
-    "hours": "Sun–Thu, 08:00–15:00",
     "helpCenter": "Help Center",
-    "copyright": "© 2026 UAE Athletics Federation. All rights reserved."
+    "copyright": "© 2026 UAE Athletics Federation. All rights reserved.",
+    "designedBy": "Designed by <studio></studio>"
   },
   "HomePage": {
     "title": "UAE Athletics Federation",

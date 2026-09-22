@@ -2,8 +2,8 @@ import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { FOCUS } from "@/components/ui/interactive";
 import { CARD, LIFT } from "@/components/ui/surface";
-import { SOCIAL_LINKS } from "@/lib/navigation";
 import { isExternalMedia } from "@/lib/api/media";
+import { socialChannels } from "@/lib/social-channels";
 import type { ContactSocialLink, MediaAssetPublic } from "@/lib/api/types";
 
 /**
@@ -14,10 +14,9 @@ import type { ContactSocialLink, MediaAssetPublic } from "@/lib/api/types";
  * it, received it, and rendered nothing. An editor could fill the field and
  * watch it disappear. This is what closes that.
  *
- * The channels come from the record rather than from `SOCIAL_LINKS`, which
- * the footer uses: that constant is site chrome and the same on every page,
- * while this is content an editor controls. What is borrowed from it is only
- * the artwork and the platform colour, keyed by name.
+ * The channels come from the record, the same channels the footer draws
+ * (ADR-0092); `socialChannels` is where both read them. What is borrowed from
+ * `SOCIAL_LINKS` is only the artwork and the platform colour, keyed by name.
  *
  * Those colours are third-party brand identities, not UAEAF palette values —
  * the one place on this page where a colour outside the system is correct,
@@ -34,27 +33,6 @@ import type { ContactSocialLink, MediaAssetPublic } from "@/lib/api/types";
  * built-in artwork is drawn as before, so a channel never goes blank.
  */
 
-/** Artwork and brand treatment for the platforms the design system ships,
- *  keyed by the same lowercase name the `Social` message namespace uses. */
-const KNOWN = new Map(SOCIAL_LINKS.map((social) => [social.key, social]));
-
-/** `https:` and `http:` only. The platform and the URL are both free text in
- *  the admin panel, and `javascript:` in an href is a script the page runs on
- *  click — a stored-XSS vector through a field an editor may not realise is
- *  dangerous. */
-const safeHref = (url: string): string | null => {
-  try {
-    const parsed = new URL(url.trim());
-    return parsed.protocol === "https:" || parsed.protocol === "http:" ? parsed.href : null;
-  } catch {
-    return null;
-  }
-};
-
-/** The editor's word, reduced to the key the catalogues use. Free text means
- *  "Instagram", "instagram" and " Insta gram " all reach us for one channel. */
-const keyOf = (platform: string) => platform.trim().toLowerCase().replace(/\s+/g, "");
-
 export const ContactSocial = ({
   links,
   icons,
@@ -66,23 +44,9 @@ export const ContactSocial = ({
   const t = useTranslations("Contact.social");
   const tSocial = useTranslations("Social");
 
-  const channels = links
-    .map((link) => {
-      const href = safeHref(link.url);
-      if (!href) return null;
-      const key = keyOf(link.platform);
-      const known = KNOWN.get(key);
-      return {
-        href,
-        known,
-        icon: link.iconId ? icons?.get(link.iconId) : undefined,
-        // A platform with no artwork is still shown, named by the word the
-        // editor typed. Dropping it would repeat the very defect this
-        // component exists to fix.
-        name: known ? tSocial(key) : link.platform.trim(),
-      };
-    })
-    .filter((channel): channel is NonNullable<typeof channel> => channel !== null);
+  // Which channels are safe to link, what each is called and which picture
+  // it wears are decided once, for this page and the footer alike.
+  const channels = socialChannels(links, icons, (key) => tSocial(key));
 
   // An empty heading over an empty row is a gap in the vertical rhythm that
   // reads as a bug, so the whole section is absent rather than empty.
@@ -112,9 +76,9 @@ export const ContactSocial = ({
               target="_blank"
               rel="noopener noreferrer"
               aria-label={channel.name}
-              // 44px, not the footer's 32: that one predates the touch-target
-              // gate and is its own finding. `.lift` carries the elevation and
-              // the ascent-vector nudge, so hover is felt and not merely seen.
+              // 44px, the touch-target gate, as the footer's channels are
+              // (ADR-0092). `.lift` carries the elevation and the
+              // ascent-vector nudge, so hover is felt and not merely seen.
               //
               // A known channel is a square holding its artwork; an unknown
               // one is a pill that has to grow to fit a word, so it takes a

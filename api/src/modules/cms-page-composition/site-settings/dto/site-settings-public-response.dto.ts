@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
 import { DefaultSeoDto } from './upsert-site-settings.dto.js';
 import { SponsorStripSettingsDto } from './sponsor-strip.dto.js';
+import { FooterHeadingsDto } from './footer-settings.dto.js';
 
 /** Public-safe `SiteSettings` shape. Structurally omits every
  *  `[RESTRICTED]` field — `isMaintenanceMode`, `googleAnalyticsId`,
@@ -16,6 +17,13 @@ export class SiteSettingsPublicResponseDto {
   footerAboutBlurb: LocalizedTextDto | null;
   @ApiProperty({ type: LocalizedTextDto, required: false, nullable: true })
   copyrightText: LocalizedTextDto | null;
+  @ApiProperty({
+    type: FooterHeadingsDto,
+    required: false,
+    nullable: true,
+    description: "The footer's column headings; null reads as the site's built-in ones (ADR-0092).",
+  })
+  footerHeadings: FooterHeadingsDto | null;
   @ApiProperty({ required: false, nullable: true }) logoId: string | null;
   @ApiProperty({ required: false, nullable: true }) logoDarkId: string | null;
   @ApiProperty({ required: false, nullable: true }) faviconId: string | null;

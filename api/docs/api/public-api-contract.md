@@ -355,9 +355,33 @@ first configured.
 ```
 
 Shape once configured (`SiteSettingsPublicResponseDto`): `defaultSeo`,
-`footerAboutBlurb`, `copyrightText`, `logoId`, `logoDarkId`, `faviconId`,
+`footerAboutBlurb`, `copyrightText`, `footerHeadings`, `logoId`, `logoDarkId`, `faviconId`,
 `privacyPolicyPageId`, `termsOfUsePageId`, `accessibilityStatementPageId`,
-`cookieConsentEnabled`, `cookieConsentText`, `maintenanceMessage`.
+`cookieConsentEnabled`, `cookieConsentText`, `maintenanceMessage`, `sponsorStrip`.
+
+`footerHeadings` is `{ quickLinks, location, contact }`, each `{ en, ar }` or
+`null`, or `null` as a whole before the footer is first saved; `null` reads as
+the site's built-in heading (ADR-0092). The footer's three fields —
+`footerAboutBlurb`, `copyrightText`, `footerHeadings` — are written together
+through `PUT /api/v1/site-settings/footer` (`siteSettings:Update`), which
+writes nothing else; everything else the footer shows (place, map, email,
+office hours, social channels) is read from `GET /api/v1/contact-us-page`.
+
+Each settings field that has a screen of its own has exactly one writer
+(ADR-0093): the footer's three fields `PUT /site-settings/footer`, and
+`sponsorStrip` `PUT /site-settings/sponsor-strip`. The general
+`PUT /api/v1/site-settings` carries none of them. A request that sends one —
+even as `null` — is refused whole and nothing in it is saved:
+
+```json
+{
+  "statusCode": 400,
+  "code": "writtenElsewhere",
+  "message": "copyrightText is written through PUT /site-settings/footer, not PUT /site-settings. Nothing was saved.",
+  "fields": ["copyrightText"],
+  "routes": ["PUT /site-settings/footer"]
+}
+```
 
 ### The 7 singleton "*Page" hero wrappers
 

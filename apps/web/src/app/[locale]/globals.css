@@ -121,6 +121,26 @@ html[data-theme="dark"] {
   min-height: calc(100svh - var(--header-height));
 }
 
+/*
+ * The footer's screen (owner decision 2026-09-22, ADR-0092 D4).
+ *
+ * The same minimum as the hero, in the same units and from the same
+ * `--header-height`, but from `lg` up only: `@variant lg` is the design
+ * system's `--breakpoint-lg`, the width the dashboard's sidebar folds at.
+ * Below it the footer is as tall as its own content and no rule applies — on a
+ * phone one column of it is already taller than the screen, and a floor there
+ * would only add space.
+ *
+ * A minimum, never a height: the footer grows past the screen rather than
+ * clipping, and what is left over goes to the map (`site-footer.tsx`).
+ */
+.footer-first-screen {
+  @variant lg {
+    min-height: calc(100vh - var(--header-height));
+    min-height: calc(100svh - var(--header-height));
+  }
+}
+
 :root {
   --logo-ink: var(--color-brand-black);
   --logo-green: var(--color-brand-primary);

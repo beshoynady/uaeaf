@@ -162,6 +162,8 @@ This is a divergence from the FigJam physical model and needs back-sync.
 
 This is a divergence from the FigJam physical model and needs back-sync.
 
+**Superseded in part by ADR-0092 (2026-09-22, owner request): the footer.** The two footer bullets above and the "Not the footer yet" line of the 2026-09-21 amendment no longer describe the site. The footer now draws this record's live map itself, with `LocationMap`, in place of the card that linked here, and names the place under it. Its contact column reads `email` and `officeHours` from this record and no longer repeats the address. Its channels are this record's `socialLinks`, with their uploaded icons. Its one link out of the map is `map.directionsUrl`. Nothing on this page changed.
+
 `contactMessages` gained an optional `subject`, because the designed form has a
 Subject input and the endpoint had nowhere to put it — a citizen's text would
 have been accepted and silently dropped. **This is a divergence from the live

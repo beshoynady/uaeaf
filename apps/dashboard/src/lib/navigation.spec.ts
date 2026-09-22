@@ -3,6 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
+  HOMEPAGE_FOOTER_GRANTS,
   HOMEPAGE_HERO_GRANTS,
   HOMEPAGE_MEMBERSHIPS_GRANTS,
   HOMEPAGE_PARTNERS_GRANTS,
@@ -216,6 +217,7 @@ describe("the homepage screens' grants and the API catalogue", () => {
       ...HOMEPAGE_SPONSORS_GRANTS,
       ...HOMEPAGE_PARTNERS_GRANTS,
       ...HOMEPAGE_MEMBERSHIPS_GRANTS,
+      ...HOMEPAGE_FOOTER_GRANTS,
     ].filter(
       ({ resourceType, action }) => !catalogue.includes(`{ resourceType: '${resourceType}', action: '${action}' }`),
     );
@@ -266,6 +268,7 @@ describe("the homepage group", () => {
       ...HOMEPAGE_SPONSORS_GRANTS,
       ...HOMEPAGE_PARTNERS_GRANTS,
       ...HOMEPAGE_MEMBERSHIPS_GRANTS,
+      ...HOMEPAGE_FOOTER_GRANTS,
     ];
     const homepage = visibleNavItems(everything).find((entry) => entry.key === "homepage");
     expect(homepage?.children?.map((child) => [child.key, child.href])).toEqual([
@@ -274,7 +277,20 @@ describe("the homepage group", () => {
       ["homepageSponsors", "/homepage/sponsors"],
       ["homepagePartners", "/homepage/partners"],
       ["homepageMemberships", "/homepage/memberships"],
+      // Last, as it is last on the page (ADR-0092 D12).
+      ["homepageFooter", "/homepage/footer"],
     ]);
+  });
+
+  it("opens the footer screen to someone who can change the site settings, and links the group to it", () => {
+    const homepage = visibleNavItems(HOMEPAGE_FOOTER_GRANTS).find((entry) => entry.key === "homepage");
+    expect(homepage?.href).toBe("/homepage/footer");
+    expect(homepage?.children?.map((child) => child.key)).toEqual(["homepageFooter"]);
+  });
+
+  it("keeps the footer screen hidden from someone who can read the site settings but not change them", () => {
+    const readOnly = HOMEPAGE_FOOTER_GRANTS.filter((grant) => grant.action === "Read");
+    expect(visibleNavItems(readOnly).map((entry) => entry.key)).not.toContain("homepage");
   });
 
   it("keeps the sponsors screen hidden from someone who can edit sponsors but not the section's banner and call to action, which its Save writes too", () => {

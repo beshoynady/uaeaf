@@ -165,16 +165,35 @@ describe('Week 4 — Governance, CMS and the public surface (e2e)', () => {
     // 3. siteSettings: the public projection hides [RESTRICTED] fields
     //    that the RBAC-gated read still returns.
     // ============================================================
+    // The footer's words are written through the footer's own route
+    // (ADR-0092), and only there (ADR-0093).
+    await request(app.getHttpServer())
+      .put(apiPath('/site-settings/footer'))
+      .set(auth())
+      .send({ copyrightText: { en: '© UAEAF', ar: '© الاتحاد' } })
+      .expect(200);
     await request(app.getHttpServer())
       .put(apiPath('/site-settings'))
       .set(auth())
       .send({
-        copyrightText: { en: '© UAEAF', ar: '© الاتحاد' },
         googleAnalyticsId: 'GA-SECRET-VALUE',
         systemEmailSender: 'noreply@internal.uaeaf.ae',
         isMaintenanceMode: false,
       })
       .expect(200);
+
+    // A footer field sent to the general route is refused by name, with the
+    // route that writes it, and the refusal writes nothing at all.
+    const refused = await request(app.getHttpServer())
+      .put(apiPath('/site-settings'))
+      .set(auth())
+      .send({ copyrightText: { en: 'Overwritten', ar: 'مستبدل' }, isMaintenanceMode: true })
+      .expect(400);
+    expect(refused.body).toMatchObject({
+      code: 'writtenElsewhere',
+      fields: ['copyrightText'],
+      routes: ['PUT /site-settings/footer'],
+    });
 
     const publicSettings = await request(app.getHttpServer()).get(apiPath('/site-settings/public')).expect(200);
     expect(publicSettings.body.copyrightText.en).toBe('© UAEAF');
@@ -187,6 +206,8 @@ describe('Week 4 — Governance, CMS and the public surface (e2e)', () => {
       .set(auth())
       .expect(200);
     expect(adminSettings.body.googleAnalyticsId).toBe('GA-SECRET-VALUE');
+    // The refused request's maintenance flag was not applied either.
+    expect(adminSettings.body.isMaintenanceMode).toBe(false);
 
     // ============================================================
     // 4. A workflow-governed entity is NOT publicly readable from its own

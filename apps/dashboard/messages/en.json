@@ -111,6 +111,7 @@
     "homepagePartners": "Partners",
     "homepageMemberships": "Memberships",
     "homepageSponsorStrip": "Sponsor strip",
+    "homepageFooter": "Footer",
     "news": "News",
     "newsList": "All articles",
     "newsReview": "Review",
@@ -1181,7 +1182,8 @@
       "invalidRequest": "Starts with http:// or https://.",
       "incompleteCta": "Write the text in both languages and the link, or neither.",
       "invalidCtaUrl": "A path on the site (/…) or an https:// address.",
-      "invalidSponsorshipTarget": "Points at the federation, or at nothing."
+      "invalidSponsorshipTarget": "Points at the federation, or at nothing.",
+      "bothLanguages": "Write it in both languages, or leave both empty."
     },
     "partners": {
       "title": "Partners",
@@ -1313,6 +1315,40 @@
       "pinnedBanner": "The sponsors section currently banners: {name}",
       "pinnedMismatch": "The strip holds {pinned} while the section banners {banner}. That is allowed, but the page will emphasise two different sponsors."
     }
+  },
+  "FooterSettings": {
+    "title": "Footer",
+    "description": "What appears at the foot of every page of the site. The footer's words are edited here; its contact details come from the Contact us page.",
+    "layoutNote": "Each panel is one column of the footer, in its order on the site. The number and order of columns are fixed in the design.",
+    "columnOf": "Column {n} of {total}",
+    "columns": {
+      "brand": "Identity and channels",
+      "quickLinks": "Quick links",
+      "location": "Location",
+      "contact": "Contact",
+      "strip": "Bottom strip"
+    },
+    "fields": {
+      "aboutBlurb": "Federation description",
+      "heading": "Column heading",
+      "copyright": "Copyright line"
+    },
+    "emptyHint": "Leave both languages empty to show the site's default text.",
+    "fromContact": "From the Contact us page",
+    "editInContact": "Edit under “Pages → Contact us”",
+    "channels": "Channels",
+    "channelIcon": "Uploaded icon",
+    "noChannels": "No channels saved, so no row of channels appears.",
+    "place": "Place under the map",
+    "coordinates": "Map",
+    "noCoordinates": "No coordinates saved, so no map appears.",
+    "directions": "“Open Directions” link",
+    "email": "Email",
+    "officeHours": "Office hours",
+    "notSet": "Not saved",
+    "quickLinksNote": "The links themselves follow the site's main navigation automatically, and are not edited here.",
+    "helpCenterNote": "The Help Center link is fixed on every page.",
+    "stripNote": "The legal links and the design studio's credit (NOTIME) are fixed."
   },
   "Newsroom": {
     "title": "News & Articles",

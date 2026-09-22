@@ -56,6 +56,12 @@ describe('isApiErrorCode', () => {
     expect(isApiErrorCode('listTooLong')).toBe(true);
   });
 
+  it('carries the refusal of a settings field written by a route of its own', () => {
+    // ADR-0093. Its own code because the fix is neither a field correction nor
+    // a retry: the same request belongs on another route, which the body names.
+    expect(isApiErrorCode('writtenElsewhere')).toBe(true);
+  });
+
   it('rejects anything outside it', () => {
     // A typo in a throw site must degrade to the status default rather than
     // reach a client that has no branch for it.

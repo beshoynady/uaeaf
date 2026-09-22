@@ -130,6 +130,12 @@ const PATHS = {
       <path d="m9 12 2 2 4-4" />
     </g>
   ),
+  "panel-bottom": (
+    <g>
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <path d="M3 15h18" />
+    </g>
+  ),
 
   // ── Shell ──────────────────────────────────────────────────────────────
   search: (
@@ -240,6 +246,7 @@ export const NAV_ICON: Record<string, UiIconName> = {
   homepageSponsors: "handshake",
   homepagePartners: "building-2",
   homepageMemberships: "badge-check",
+  homepageFooter: "panel-bottom",
 };
 
 export const UiIcon = ({ name, className }: { name: UiIconName; className?: string }) => (

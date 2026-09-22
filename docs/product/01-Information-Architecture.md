@@ -837,13 +837,15 @@ A four-column grid at ≥1024px, preceded by the newsletter panel and closed by 
 
 | Column | Contents (as built) |
 |---|---|
-| Brand | Logo · federation tagline · social channels |
-| Quick Links | Mirrors the seven main-nav items — one source, two surfaces |
-| **Federation Location** | Embedded map · Zayed Sports City, Abu Dhabi · "Directions on the map" |
-| Contact | Address · office hours (Sun–Thu 08:00–15:00) · Help Centre |
+| Brand | Logo · federation description (`siteSettings.footerAboutBlurb`) · social channels (`contactUsPage.socialLinks`, with their uploaded icons, 44px targets) |
+| Quick Links | Mirrors every destination the header reaches — one source, two surfaces (ADR-0063 D2: two sub-columns) |
+| **Federation Location** | Live Google map (`LocationMap` at `contactUsPage.map` coordinates, drawn once its frame is on screen) · the place under it (`map.pinTitle` / `map.pinSubtitle`) · "Open Directions" (`map.directionsUrl`) |
+| Contact | Email · office hours (both from `contactUsPage`) · Help Centre |
 | Newsletter panel | Email capture with inline success state |
 | Affiliations strip | World Athletics · Asian Athletics Association · National Olympic Committee |
-| Legal strip | **Accessibility** · **Sitemap** · language switch · copyright |
+| Legal strip | copyright (`siteSettings.copyrightText`) · **Accessibility** · Privacy · Terms · **Sitemap** · the design studio's credit (NOTIME, last) |
+
+**Sources and editing [B] (ADR-0092, 2026-09-22):** every contact fact the footer shows is read from `contactUsPage`, its one source, and edited on the Contact us page; a fact the record cannot supply is left out, never remembered. The footer's own words — the description, the three column headings and the copyright line — live on `siteSettings` and are edited at dashboard → Homepage → Footer; unset, they read as the site's built-in text. The number and order of the columns are fixed in the design. **Height [B]:** from `lg` (≥1024px) the footer is at least `calc(100svh − header)` and the map takes the slack; below `lg` it is as tall as its content.
 
 **Change from the original proposal:** the *E-Services* column was **removed** and replaced by the location map. **[D]** The Accessibility Statement remains a required footer item (Chapter 6, PR-003) and is present. **[B]** Privacy Policy and Terms of Use are now present in the footer legal strip, confirmed against the current Homepage build — the earlier **[P]** "no footer link yet" note is retired for these two. Cookie Notice / Preferences remains **[P]** — still P0 in §11 with no footer link yet (see §15.2).
 
@@ -1018,7 +1020,7 @@ Saved/Following · Transfers (public + dashboard) · Export Centre · Integratio
 
 **Breakpoints as built [B]** — the public layer ships three: **<640px** (single column, drawer nav, seconds column and category chip hidden in event rows) · **640–1023px** (two-column footer and partner grid) · **≥1024px** (single-row header with full nav, 4-up stats, 4-column media mosaic and footer, side-by-side news). A fourth, **≥1620px**, promotes the floating social rail from a bottom capsule to a side rail once gutter exists outside the 1440px container.
 
-**Full-height sections [B]** — every public section is at least `calc(100svh - header)` and grows when its content is taller, so nothing is clipped and nothing is forced to scroll inside a section. This is a public-layer pattern only; **[D]** ADR-0001 forbids carrying it into the dashboard, where density beats spectacle.
+**Full-height sections [B]** — every public section is at least `calc(100svh - header)` and grows when its content is taller, so nothing is clipped and nothing is forced to scroll inside a section. This is a public-layer pattern only; **[D]** ADR-0001 forbids carrying it into the dashboard, where density beats spectacle. The global footer applies it from `lg` only (owner decision 2026-09-22, ADR-0092 D4): below 1024px it is as tall as its own content.
 
 **Cross-cutting requirements [D]:** ≥44px touch targets on every small screen · no horizontal scroll at 320px · RTL parity for every screen (G.12 mandates full RTL support and an Arabic RTL screenshot test per component) · `prefers-reduced-motion` respected everywhere.
 

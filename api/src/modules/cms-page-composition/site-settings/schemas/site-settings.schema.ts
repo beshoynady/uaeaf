@@ -22,6 +22,23 @@ export class DefaultSeo {
 
 export const DefaultSeoSchema = SchemaFactory.createForClass(DefaultSeo);
 
+/** The headings of the footer's three titled columns (ADR-0092). The first
+ *  column is headed by the federation's own name, which is not content. A
+ *  heading left `null` reads as the site's built-in one. */
+@Schema({ _id: false })
+export class FooterHeadings {
+  @Prop({ type: LocalizedTextSchema, default: null })
+  quickLinks: LocalizedText | null;
+
+  @Prop({ type: LocalizedTextSchema, default: null })
+  location: LocalizedText | null;
+
+  @Prop({ type: LocalizedTextSchema, default: null })
+  contact: LocalizedText | null;
+}
+
+export const FooterHeadingsSchema = SchemaFactory.createForClass(FooterHeadings);
+
 /** Implements: siteSettings collection, Domain 11 — CMS & Page Composition
  *  (live FigJam Physical Model, re-read fresh 2026-09-03).
  *
@@ -62,6 +79,11 @@ export class SiteSettings extends BaseSchema {
 
   @Prop({ type: LocalizedTextSchema, default: null })
   copyrightText: LocalizedText | null;
+
+  /** `[PUBLIC]` — the footer's column headings (ADR-0092). Written, with the
+   *  two fields above, through `PUT /site-settings/footer` alone. */
+  @Prop({ type: FooterHeadingsSchema, default: null })
+  footerHeadings: FooterHeadings | null;
 
   @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
   logoId: Types.ObjectId | null;

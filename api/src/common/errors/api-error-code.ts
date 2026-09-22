@@ -127,6 +127,11 @@ export const API_ERROR_CODES = [
   // "name approvers or turn review off", which is neither a retry nor a field
   // correction.
   'unsatisfiablePolicy',
+  // A settings field sent to the general `PUT /site-settings` when a screen of
+  // its own writes it through its own route (ADR-0093). Its own code because
+  // the fix is neither a field correction nor a retry: the same request
+  // belongs on another route, and the body names it.
+  'writtenElsewhere',
 ] as const;
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
