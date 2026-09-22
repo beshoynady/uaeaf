@@ -66,11 +66,21 @@ const FOOTER_LINK = `rounded-xs text-caption ${tone.muted} ${TRANSITION} hover:t
   { src: "/brand/swoosh-red-sm.svg", w: 145, h: 17, className: "start-[-18px] top-[308px] w-[129px]" },
 ];
 
-export function SiteFooter() {
+/**
+ * `place` and `region` are the contact page's own place label
+ * (`map.pinTitle`, `map.pinSubtitle`), read by the layout: the footer keeps no
+ * address of its own (owner decision 2026-09-22, one source). Without them,
+ * when the record cannot be read, the card still links to the map and no
+ * address line is drawn rather than a remembered one.
+ */
+export const SiteFooter = ({ place, region }: { place?: string | null; region?: string | null } = {}) => {
   const t = useTranslations("Nav");
   const tLegal = useTranslations("Legal");
   const tSocial = useTranslations("Social");
   const tFooter = useTranslations("Footer");
+  // One line, joined by the reading language's own comma, which is the
+  // message catalogue's to say (Chapter 4 §4.11), not a locale check's.
+  const address = place && region ? tFooter("placeLine", { place, region }) : (place ?? region ?? "");
 
   return (
     <footer
@@ -190,9 +200,13 @@ export function SiteFooter() {
 
         <section className="flex min-w-0 flex-col items-start gap-3">
           <h2 className="text-caption font-bold">{tFooter("locationTitle")}</h2>
-          <div
+          {/* A link to the live map on the contact page, not a second,
+              smaller map (owner decision, contact-page item 1). The border
+              brightens on hover as the footer's text links do. */}
+          <Link
+            href="/contact#contact-map-heading"
             data-testid="footer-map-card"
-            className={`flex h-[180px] w-full max-w-[250px] flex-col items-center justify-center gap-2.5 rounded-lg border bg-white/8 ${tone.border}`}
+            className={`flex h-[180px] w-full max-w-[250px] flex-col items-center justify-center gap-2.5 rounded-lg border bg-white/8 px-4 ${tone.border} ${TRANSITION} hover:border-[color:var(--color-section-black-text-muted)] active:border-[color:var(--color-section-black-text)] ${FOCUS}`}
           >
             <span className="flex size-10 items-center justify-center rounded-full bg-white/8">
               <Image
@@ -204,37 +218,44 @@ export function SiteFooter() {
                 className="size-[18px]"
               />
             </span>
-            <span className="flex flex-col items-center gap-1 text-center">
-              {/* Figma specifies Alexandria SemiBold (600); Chapter 3 defines
-                  exactly four weights (400/500/700/900), so 600 maps to `bold`
-                  rather than minting an unapproved token (CLAUDE.md §16). */}
-              <span className="text-caption font-bold">{tFooter("mapCardCity")}</span>
-              {/* `text-caption` is the scale's smallest step. Nothing here may
-                  go below Chapter 4's 13px floor — neither ADR-0041 exception
-                  covers this label. */}
-              <span className={`text-caption ${tone.muted}`}>{tFooter("mapCardRegion")}</span>
-            </span>
-          </div>
+            {place ? (
+              <span className="flex flex-col items-center gap-1 text-center">
+                {/* Figma specifies Alexandria SemiBold (600); Chapter 3 defines
+                    exactly four weights (400/500/700/900), so 600 maps to `bold`
+                    rather than minting an unapproved token (CLAUDE.md §16). */}
+                <span className="text-caption font-bold">{place}</span>
+                {/* `text-caption` is the scale's smallest step. Nothing here may
+                    go below Chapter 4's 13px floor — neither ADR-0041 exception
+                    covers this label. */}
+                {region ? <span className={`text-caption ${tone.muted}`}>{region}</span> : null}
+              </span>
+            ) : null}
+            {/* Said to a screen reader beside the place; shown when there is
+                no place to show, so the card is never an unnamed box. */}
+            <span className={place ? "sr-only" : "text-caption font-bold"}>{tFooter("locationLink")}</span>
+          </Link>
         </section>
 
         <section className="flex min-w-0 flex-col items-start gap-3.5">
           <h2 className="text-caption font-bold">{tFooter("contactTitle")}</h2>
-          <p className="flex items-start gap-2 text-start">
-            <Image
-              src="/icons/map-pin.svg"
-              alt=""
-              width={14}
-              height={14}
-              aria-hidden="true"
-              className="mt-1 size-3.5 shrink-0"
-            />
-            <span
-              data-testid="footer-address"
-              className={`w-full max-w-[200px] text-caption leading-[1.4] ${tone.muted}`}
-            >
-              {tFooter("address")}
-            </span>
-          </p>
+          {address ? (
+            <p className="flex items-start gap-2 text-start">
+              <Image
+                src="/icons/map-pin.svg"
+                alt=""
+                width={14}
+                height={14}
+                aria-hidden="true"
+                className="mt-1 size-3.5 shrink-0"
+              />
+              <span
+                data-testid="footer-address"
+                className={`w-full max-w-[200px] text-caption leading-[1.4] ${tone.muted}`}
+              >
+                {address}
+              </span>
+            </p>
+          ) : null}
           {/* Figma renders these as flat text; as real contact details they are
               actionable, so they ship as links. */}
           <a href="mailto:info@uaeaf.ae" dir="ltr" className={FOOTER_LINK}>
@@ -269,4 +290,4 @@ export function SiteFooter() {
       </div>
     </footer>
   );
-}
+};

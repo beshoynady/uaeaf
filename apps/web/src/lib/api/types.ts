@@ -58,6 +58,12 @@ export interface SocialLink {
   url: string;
 }
 
+/** A contact-page channel: the shared link, and an optional uploaded icon
+ *  drawn instead of the platform's built-in one (owner request 2026-09-21). */
+export interface ContactSocialLink extends SocialLink {
+  iconId?: string | null;
+}
+
 /** `UpsertContactUsPageDto` — the richest of the twelve by a wide margin, and
  *  the only one whose public read carries enough to build a real page. */
 export interface ContactUsPage extends HeroPage {
@@ -67,7 +73,7 @@ export interface ContactUsPage extends HeroPage {
   googleMapsUrl?: string;
   officeHours?: LocalizedText;
   website?: string;
-  socialLinks?: SocialLink[];
+  socialLinks?: ContactSocialLink[];
   /** One line for the location card. The postal `address` is the full eight
    *  parts the footer and the structured-data block need. */
   locationSummary?: LocalizedText | null;
@@ -100,7 +106,9 @@ export interface ContactFormContent {
 
 export interface ContactMapContent {
   title?: LocalizedText | null;
-  imageId?: string | null;
+  /** Where the live map is drawn; with either unset, no map is. */
+  latitude?: number | null;
+  longitude?: number | null;
   pinTitle?: LocalizedText | null;
   pinSubtitle?: LocalizedText | null;
   /** Routing target, distinct from `googleMapsUrl`, which opens the place. */

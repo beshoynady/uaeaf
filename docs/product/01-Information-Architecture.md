@@ -477,6 +477,7 @@ Home                                              [B]
 | Registry | Transfers | Athlete club changes | Registrar | ● | ○ | ○ | P3 |
 | Registry | Team & Squad Management | Select national squads | Admin | ● | ○ | ○ | P2 |
 | Media Ops | Accreditation Management | Approve press access | Media Team | ● | ○ | ○ | P2 |
+| Communication | Contact Messages | Read and move on what the public contact form sends | Staff (`contactMessages:Read`; status changes `contactMessages:Update`) | ● | ○ | ○ | built — added 2026-09-22 |
 | Users | User Management | Accounts and status | Admin | ● | ○ | ○ | **P0** |
 | Users | Roles & Permissions | Define authority | Super Admin | ● | ○ | ○ | **P0** |
 | Users | Approval Policies | Who must approve each content type before it is published | Admin (`workflowPolicies:Update`) | ● | ○ | ○ | built — added 2026-09-21 |
@@ -502,6 +503,13 @@ Home                                              [B]
 > - **The former address** `/news/policies` redirects permanently to the new one.
 >
 > The sidebar's folding behaviour for this group is ADR-0090's.
+
+> **Amended 2026-09-22 (owner request, contact messages).** Contact Messages is a dashboard screen, `/messages`. It is the **Communication** branch of the tree (§6), for what the public reaches the federation with. Until then that branch had no screen: the form's messages were stored, and nothing in the dashboard showed them.
+> - **Sidebar:** «الرسائل» / "Messages", a top-level link after the Strategic Plan. It is shown to `contactMessages:Read`.
+> - **The screen:** the messages newest first, filtered by status: New, In progress, Resolved, Archived (`Closed`). Opening a new message marks it read. Changing a status needs `contactMessages:Update`. Replying is not part of it.
+> - **The header bell** counts the messages still New and links here.
+>
+> The screen's layout is PT-LISTDETAIL-001 used as an inbox (ADR-0089 D2, amended the same day).
 
 ---
 
@@ -586,6 +594,9 @@ Dashboard
 │   ├── Scheduling
 │   ├── Translations
 │   └── Revisions & Audit
+│
+├── Communication
+│   └── Contact Messages             (added 2026-09-22 · §4.8)
 │
 ├── Structure
 │   ├── Homepage Sections

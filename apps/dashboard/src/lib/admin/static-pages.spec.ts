@@ -176,7 +176,7 @@ describe("readPageBody", () => {
         "form.consentNote",
         "form.messageTypeLabels",
         "map.title",
-        "map.imageId",
+        "map.coordinates",
         "map.pinTitle",
         "map.pinSubtitle",
         "map.directionsUrl",
@@ -184,6 +184,8 @@ describe("readPageBody", () => {
         "googleMapsUrl",
       ]),
     );
+    // The map is live (owner request 2026-09-22): its picture is not a field.
+    expect(names).not.toContain("map.imageId");
   });
 
   it("drops fields the page does not declare", () => {
@@ -231,6 +233,59 @@ describe("readPageBody — contact page", () => {
   it("keeps the parts of an address that were filled in", () => {
     const result = readPageBody(contact, { ...base, address: { city: " Abu Dhabi ", poBox: "1234", street: "" } });
     expect(result.ok && result.body.address).toEqual({ city: "Abu Dhabi", poBox: "1234" });
+  });
+
+  it("carries a social link's own icon, and sends none when the link has none", () => {
+    // Owner request 2026-09-21: an uploaded icon replaces the platform's
+    // built-in artwork. Without one the key is left out, and the API keeps
+    // the built-in icon — the behaviour every saved link has today.
+    const icon = "a".repeat(24);
+    const result = readPageBody(contact, {
+      ...base,
+      socialLinks: [
+        { platform: "Instagram", url: "https://instagram.com/uaeaf", iconId: icon },
+        { platform: "X", url: "https://x.com/uaeaf", iconId: "" },
+      ],
+    });
+    expect(result.ok && result.body.socialLinks).toEqual([
+      { platform: "Instagram", url: "https://instagram.com/uaeaf", iconId: icon },
+      { platform: "X", url: "https://x.com/uaeaf" },
+    ]);
+  });
+
+  it("rejects a malformed icon id rather than forwarding it", () => {
+    const result = readPageBody(contact, {
+      ...base,
+      socialLinks: [{ platform: "X", url: "https://x.com/uaeaf", iconId: "https://cdn.test/x.png" }],
+    });
+    expect(result.ok).toBe(false);
+  });
+
+  describe("the map's coordinates (owner request 2026-09-22)", () => {
+    const coordinates = (latitude: string, longitude: string) =>
+      readPageBody(contact, { ...base, "map.coordinates": { latitude, longitude } });
+
+    it("sends them as numbers, under the map", () => {
+      expect(coordinates(" 25.286069 ", "55.3642228")).toMatchObject({
+        ok: true,
+        body: { map: { latitude: 25.286069, longitude: 55.3642228 } },
+      });
+    });
+
+    it("sends none when both are blank", () => {
+      const result = coordinates("", " ");
+      expect(result.ok && "map" in result.body).toBe(false);
+    });
+
+    it("refuses half a pair: one number places nothing", () => {
+      expect(coordinates("25.286069", "")).toEqual({ ok: false, code: "invalidRequest" });
+    });
+
+    it("refuses a coordinate that is not one", () => {
+      expect(coordinates("91", "55.3642228").ok).toBe(false);
+      expect(coordinates("25.286069", "181").ok).toBe(false);
+      expect(coordinates("25.286069", "east").ok).toBe(false);
+    });
   });
 
   it("drops a social link missing either half", () => {

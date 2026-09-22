@@ -3,7 +3,8 @@ import { useTranslations } from "next-intl";
 import { FOCUS } from "@/components/ui/interactive";
 import { CARD, LIFT } from "@/components/ui/surface";
 import { SOCIAL_LINKS } from "@/lib/navigation";
-import type { SocialLink } from "@/lib/api/types";
+import { isExternalMedia } from "@/lib/api/media";
+import type { ContactSocialLink, MediaAssetPublic } from "@/lib/api/types";
 
 /**
  * The federation's social channels, from the page's own record.
@@ -23,6 +24,14 @@ import type { SocialLink } from "@/lib/api/types";
  * because a reader recognises Instagram by its gradient before reading its
  * name. ADR-0065 R2 forbids colour as decoration; this is colour as
  * identification, which is the opposite.
+ *
+ * A link may carry its own icon, uploaded in the admin panel (owner request
+ * 2026-09-21). When it resolves to a published image it is drawn instead of
+ * the built-in artwork, as complete button artwork the way X and TikTok are,
+ * on the neutral card ground an unknown channel already uses — the image may
+ * be transparent, and a brand gradient would be a colour the editor did not
+ * choose. When it does not resolve (hidden, deleted, or never set), the
+ * built-in artwork is drawn as before, so a channel never goes blank.
  */
 
 /** Artwork and brand treatment for the platforms the design system ships,
@@ -33,20 +42,27 @@ const KNOWN = new Map(SOCIAL_LINKS.map((social) => [social.key, social]));
  *  the admin panel, and `javascript:` in an href is a script the page runs on
  *  click — a stored-XSS vector through a field an editor may not realise is
  *  dangerous. */
-function safeHref(url: string): string | null {
+const safeHref = (url: string): string | null => {
   try {
     const parsed = new URL(url.trim());
     return parsed.protocol === "https:" || parsed.protocol === "http:" ? parsed.href : null;
   } catch {
     return null;
   }
-}
+};
 
 /** The editor's word, reduced to the key the catalogues use. Free text means
  *  "Instagram", "instagram" and " Insta gram " all reach us for one channel. */
 const keyOf = (platform: string) => platform.trim().toLowerCase().replace(/\s+/g, "");
 
-export function ContactSocial({ links }: { links: readonly SocialLink[] }) {
+export const ContactSocial = ({
+  links,
+  icons,
+}: {
+  links: readonly ContactSocialLink[];
+  /** The published images the links' `iconId`s resolved to, by id. */
+  icons?: ReadonlyMap<string, MediaAssetPublic>;
+}) => {
   const t = useTranslations("Contact.social");
   const tSocial = useTranslations("Social");
 
@@ -59,6 +75,7 @@ export function ContactSocial({ links }: { links: readonly SocialLink[] }) {
       return {
         href,
         known,
+        icon: link.iconId ? icons?.get(link.iconId) : undefined,
         // A platform with no artwork is still shown, named by the word the
         // editor typed. Dropping it would repeat the very defect this
         // component exists to fix.
@@ -103,12 +120,26 @@ export function ContactSocial({ links }: { links: readonly SocialLink[] }) {
               // one is a pill that has to grow to fit a word, so it takes a
               // minimum rather than a fixed size.
               className={`${LIFT} flex items-center justify-center overflow-hidden rounded-[var(--radius-md)] ${FOCUS} ${
-                channel.known
-                  ? `size-11 ${channel.known.className}`
-                  : `min-h-11 min-w-11 ${CARD} px-3 text-label font-bold text-[color:var(--color-text-primary)]`
+                channel.icon
+                  ? `size-11 ${CARD}`
+                  : channel.known
+                    ? `size-11 ${channel.known.className}`
+                    : `min-h-11 min-w-11 ${CARD} px-3 text-label font-bold text-[color:var(--color-text-primary)]`
               }`}
             >
-              {channel.known ? (
+              {channel.icon ? (
+                // The editor's own artwork, whole: `object-contain` so a logo
+                // that is not square is shown entire rather than cropped.
+                <Image
+                  src={channel.icon.file.url}
+                  alt=""
+                  width={44}
+                  height={44}
+                  unoptimized={isExternalMedia(channel.icon.file.url)}
+                  aria-hidden="true"
+                  className="size-11 object-contain"
+                />
+              ) : channel.known ? (
                 // X and TikTok export as complete button artwork rather than a
                 // glyph, so they fill the button; the rest are glyphs on a
                 // brand-coloured ground.
@@ -129,4 +160,4 @@ export function ContactSocial({ links }: { links: readonly SocialLink[] }) {
       </ul>
     </section>
   );
-}
+};

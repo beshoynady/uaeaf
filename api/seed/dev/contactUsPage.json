@@ -43,15 +43,15 @@
     ],
     "address": {
       "country": "الإمارات العربية المتحدة",
-      "emirate": "أبوظبي",
-      "city": "أبوظبي",
-      "area": "مدينة زايد الرياضية",
-      "street": "شارع الاختبار",
-      "building": "مبنى الاتحاد",
-      "poBox": "00000",
-      "postalCode": "00000"
+      "emirate": null,
+      "city": "دبي",
+      "area": "النهدة الأولى",
+      "street": "١ شارع النهدة",
+      "building": null,
+      "poBox": null,
+      "postalCode": null
     },
-    "googleMapsUrl": "https://maps.google.com/?q=Zayed+Sports+City",
+    "googleMapsUrl": "https://maps.app.goo.gl/yZQC6nW4EGY8iS4C9",
     "officeHours": {
       "en": "Sunday – Thursday, 08:00 – 15:00",
       "ar": "الأحد – الخميس، ٨:٠٠ – ١٥:٠٠"
@@ -127,30 +127,26 @@
       ]
     },
     "locationSummary": {
-      "en": "Zayed Sports City, Abu Dhabi",
-      "ar": "مدينة زايد الرياضية، أبوظبي"
+      "en": "Al Nahda 1, Dubai",
+      "ar": "النهدة الأولى، دبي"
     },
     "map": {
       "title": {
         "en": "Our location",
         "ar": "موقعنا"
       },
-      "imageId": {
-        "$oid": "6aa1d5c24a3f231870e29d89"
-      },
+      "latitude": 25.286069,
+      "longitude": 55.3642228,
       "pinTitle": {
-        "en": "Zayed Sports City",
-        "ar": "مدينة زايد الرياضية"
+        "en": "1 Al Nahda Street, Al Nahda 1",
+        "ar": "١ شارع النهدة، النهدة الأولى"
       },
       "pinSubtitle": {
-        "en": "Abu Dhabi, UAE",
-        "ar": "أبوظبي، الإمارات"
+        "en": "Dubai, United Arab Emirates",
+        "ar": "دبي، الإمارات العربية المتحدة"
       },
-      "directionsUrl": "https://maps.google.com/?daddr=Zayed+Sports+City",
-      "note": {
-        "en": "Sample map frame for visual verification — no official Maps address has been approved yet.",
-        "ar": "إطار خريطة تجريبي للتحقّق البصري — لم يُعتمد عنوان خرائط رسمي بعد."
-      }
+      "directionsUrl": "https://www.google.com/maps/dir/?api=1&destination=25.286069,55.3642228",
+      "note": null
     }
   }
 ]

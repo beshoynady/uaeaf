@@ -1,7 +1,7 @@
 import { BadRequestException, PayloadTooLargeException, UnsupportedMediaTypeException } from '@nestjs/common';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { MAX_PIXELS, MAX_UPLOAD_BYTES, MIN_EDGE, assertUploadable } from './upload-constraints.js';
+import { ICON_MIN_EDGE, MAX_PIXELS, MAX_UPLOAD_BYTES, MIN_EDGE, assertUploadable } from './upload-constraints.js';
 
 /**
  * The gate every upload passes before any of its bytes leave this process.
@@ -77,6 +77,57 @@ describe('assertUploadable', () => {
   it('refuses an empty upload rather than treating it as a missing optional', () => {
     expect(() => assertUploadable(file({ buffer: Buffer.alloc(0), size: 0 }))).toThrow(
       UnsupportedMediaTypeException,
+    );
+  });
+});
+
+/**
+ * An icon is not a page picture (owner request 2026-09-21/22): a social
+ * channel's own icon is drawn at 44px, so the page-image floor would refuse
+ * every icon an editor is likely to have. The icon purpose lowers that one
+ * floor and nothing else: the formats, the byte ceiling and the megapixel
+ * ceiling are the security half of this gate and stay as they are.
+ */
+describe('assertUploadable — the icon purpose', () => {
+  const sized = (width: number, height: number) => {
+    const bytes = Buffer.from(hero);
+    bytes.writeUInt32BE(width, 16); // IHDR width
+    bytes.writeUInt32BE(height, 20); // IHDR height
+    return file({ buffer: bytes });
+  };
+
+  it('accepts an icon twice the size it is drawn at', () => {
+    expect(assertUploadable(sized(128, 128), { purpose: 'icon' })).toEqual({
+      mimeType: 'image/png',
+      width: 128,
+      height: 128,
+    });
+  });
+
+  it('accepts an icon exactly at its own floor', () => {
+    expect(() => assertUploadable(sized(ICON_MIN_EDGE, ICON_MIN_EDGE), { purpose: 'icon' })).not.toThrow();
+  });
+
+  it('refuses an icon too small to stay sharp on a dense screen', () => {
+    expect(() => assertUploadable(sized(ICON_MIN_EDGE - 1, 128), { purpose: 'icon' })).toThrow(
+      BadRequestException,
+    );
+  });
+
+  it('keeps the page-image floor for everything that is not an icon', () => {
+    expect(() => assertUploadable(sized(150, 150))).toThrow(BadRequestException);
+  });
+
+  it('opens no format: an SVG is refused for an icon as for anything else', () => {
+    const svg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><script>x()</script></svg>');
+    expect(() => assertUploadable(file({ buffer: svg, size: svg.length }), { purpose: 'icon' })).toThrow(
+      UnsupportedMediaTypeException,
+    );
+  });
+
+  it('keeps the byte ceiling for an icon', () => {
+    expect(() => assertUploadable(file({ size: MAX_UPLOAD_BYTES + 1 }), { purpose: 'icon' })).toThrow(
+      PayloadTooLargeException,
     );
   });
 });

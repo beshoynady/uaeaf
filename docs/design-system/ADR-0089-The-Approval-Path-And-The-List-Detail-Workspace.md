@@ -129,6 +129,31 @@ Gutter 24px at `lg`, 32px from `xl` (Chapter 5 §5.2).
 **Tokens and components.** All existing: `SELECTABLE_ROW`, `TOGGLE_SEGMENT`, `SelectField`,
 `ConfirmDialog`, `StatTiles`, `card.radius`, the surface and border roles. No new value.
 
+**Amended 2026-09-22: the inbox (owner request, the contact messages screen).** The owner
+asked for this pattern for the contact-form messages. They are open-ended records, which "When"
+above sends to `PT-CRUD-001`. The owner's request decides it (CLAUDE.md §1, priority 1). What
+is reused unchanged:
+
+- the order on the page, the layout table and the gutters;
+- the filter, as one segmented group with each option's count taken over every message;
+- the rows, `aria-current` on the message on show, and the Select below `lg`.
+
+What differs, and why:
+
+- **Order.** Newest first, as the server sends it. The set is not closed and not grouped.
+- **No KPI area.** The filter's counts are the numbers an inbox needs.
+- **No selection on arrival.** Opening a new message marks it read, so choosing one for the
+  reader would mark a message nobody read.
+- **No draft and no Save.** A status is one choice, written at once. Its outcome is a toast
+  (Chapter 8 L4): success, or an error that leaves the status as it was. The status buttons
+  wait while a write for that message is on its way.
+- **The open message stays listed** when the filter stops matching it, as the users directory
+  keeps the row being edited.
+- **No action on the whole group.**
+
+Tokens and components: the same list, plus the toast. **PENDING FIGMA BACK-SYNC:** the screen
+has no frame (list, detail, empty inbox, read-only detail, Select below `lg`).
+
 ---
 
 ## Alternatives considered

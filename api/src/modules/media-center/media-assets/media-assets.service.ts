@@ -5,7 +5,7 @@ import { MediaAssetsRepository } from './media-assets.repository.js';
 import type { MediaAssetDocument } from './schemas/media-asset.schema.js';
 import { CreateMediaAssetDto } from './dto/create-media-asset.dto.js';
 import { UploadMediaAssetDto } from './dto/upload-media-asset.dto.js';
-import { assertUploadable, type UploadCandidate } from './upload/upload-constraints.js';
+import { assertUploadable, type UploadCandidate, type UploadPurpose } from './upload/upload-constraints.js';
 import { STORAGE_PROVIDER, type StorageFolder, type StorageProvider } from '../storage/storage-provider.js';
 import { MediaAssetPublicResponseDto } from './dto/media-asset-public-response.dto.js';
 import type { PublicImageDto } from '../../../common/dto/public-page.dto.js';
@@ -94,13 +94,17 @@ export class MediaAssetsService {
    * sources — the bytes themselves or the provider's answer. Nothing is
    * taken from the request, which is why `UploadMediaAssetDto` carries no
    * file fields to take.
+   *
+   * `purpose` changes only the shortest edge a picture may have; see
+   * `ICON_MIN_EDGE`.
    */
   async uploadAndCreate(
     file: UploadCandidate,
     dto: UploadMediaAssetDto,
     folder: StorageFolder,
+    purpose: UploadPurpose = 'page',
   ): Promise<MediaAssetDocument> {
-    assertUploadable(file);
+    assertUploadable(file, { purpose });
 
     const stored = await this.storage.upload({
       buffer: file.buffer,

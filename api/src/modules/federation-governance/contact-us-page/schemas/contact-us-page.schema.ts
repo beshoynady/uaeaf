@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { HeroPageSchema } from '../../../../common/schemas/hero-page.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
-import { SocialLink, SocialLinkSchema } from '../../../../common/schemas/social-link.schema.js';
+import { SocialLink } from '../../../../common/schemas/social-link.schema.js';
 import { CONTACT_MESSAGE_TYPES } from '../../../public-communication/contact-messages/schemas/contact-messages.schema.js';
 import type { ContactMessageType } from '../../../public-communication/contact-messages/schemas/contact-messages.schema.js';
 
@@ -103,17 +103,20 @@ export class ContactFormContent {
 
 export const ContactFormContentSchema = SchemaFactory.createForClass(ContactFormContent);
 
-/** The map panel. `imageId` is a still picture, not a live embed — the page
- *  shows a placeholder until the federation approves an official Maps address,
- *  which is what `note` tells the reader. `directionsUrl` is a second target
- *  from `googleMapsUrl`: one opens the place, the other opens routing. */
+/** The map panel. `latitude` and `longitude` place the live map the page
+ *  draws, named and typed as on `federation` and `clubs`; with either unset
+ *  the page draws no map. `directionsUrl` is a second target from
+ *  `googleMapsUrl`: one opens the place, the other opens routing. */
 @Schema({ _id: false })
 export class ContactMapContent {
   @Prop({ type: LocalizedTextSchema, default: null })
   title: LocalizedText | null;
 
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
-  imageId: Types.ObjectId | null;
+  @Prop({ type: Number, default: null })
+  latitude: number | null;
+
+  @Prop({ type: Number, default: null })
+  longitude: number | null;
 
   @Prop({ type: LocalizedTextSchema, default: null })
   pinTitle: LocalizedText | null;
@@ -129,6 +132,23 @@ export class ContactMapContent {
 }
 
 export const ContactMapContentSchema = SchemaFactory.createForClass(ContactMapContent);
+
+/**
+ * One of the federation's own channels, with an optional icon of its own
+ * (owner request 2026-09-21). The shared `SocialLink` — used by clubs,
+ * athletes and personnel — is left as it is: only this page offers an
+ * uploaded icon, so only this page's links carry the field.
+ *
+ * With no icon the public site draws the platform's built-in artwork, as it
+ * always has.
+ */
+@Schema({ _id: false })
+export class ContactSocialLink extends SocialLink {
+  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  iconId: Types.ObjectId | null;
+}
+
+export const ContactSocialLinkSchema = SchemaFactory.createForClass(ContactSocialLink);
 
 /** Implements: contactUsPage collection, Domain 1 — Federation &
  *  Governance (live FigJam Physical Model, re-read fresh 2026-09-03).
@@ -162,12 +182,13 @@ export class ContactUsPage extends HeroPageSchema {
   @Prop({ type: String, default: null })
   website: string | null;
 
-  @Prop({ type: [SocialLinkSchema], default: [] })
-  socialLinks: SocialLink[];
+  @Prop({ type: [ContactSocialLinkSchema], default: [] })
+  socialLinks: ContactSocialLink[];
 
   /** The short place name on the third contact card. Deliberately not derived
-   *  from `address`: that is the eight-part postal address the footer and the
-   *  structured-data block need in full, while the card shows one line. */
+   *  from `address`: that is the eight-part postal address the structured-data
+   *  block needs in full, while the card shows one line. The site footer names
+   *  the place from `map.pinTitle` and `map.pinSubtitle`, which are bilingual. */
   @Prop({ type: LocalizedTextSchema, default: null })
   locationSummary: LocalizedText | null;
 

@@ -295,3 +295,18 @@ const requiredResources = (): string[] => {
     (item.requires ?? []).map((rule) => rule.resourceType),
   );
 };
+
+describe("the messages link (owner request 2026-09-22)", () => {
+  it("follows the Strategic Plan at the top level", () => {
+    const keys = NAV_ITEMS.map((item) => item.key);
+    expect(keys.indexOf("messages")).toBe(keys.indexOf("strategicPlan") + 1);
+    expect(NAV_ITEMS.find((item) => item.key === "messages")?.href).toBe("/messages");
+  });
+
+  it("appears for a reader of the messages and for nobody else", () => {
+    const keys = (grants: { resourceType: string; action: string }[]) => visibleNavItems(grants).map((item) => item.key);
+
+    expect(keys([{ resourceType: "contactMessages", action: "Read" }])).toContain("messages");
+    expect(keys([{ resourceType: "contactMessages", action: "Export" }])).not.toContain("messages");
+  });
+});

@@ -13,11 +13,11 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-function stubFetch(response: Response) {
+const stubFetch = (response: Response) => {
   const mock = vi.fn(async (_url: string, _init: RequestInit) => response);
   vi.stubGlobal("fetch", mock);
   return mock;
-}
+};
 
 const ok = () => new Response("{}", { status: 200 });
 
@@ -28,15 +28,14 @@ const IMAGES: MediaAssetOption[] = [
 const news = findStaticPage("news")!;
 const contact = findStaticPage("contact-us")!;
 
-function render(over: Partial<React.ComponentProps<typeof PageEditor>> = {}) {
-  return renderWithIntl(
+const render = (over: Partial<React.ComponentProps<typeof PageEditor>> = {}) =>
+  renderWithIntl(
     // The provider comes from the `(app)` layout in production; the form is
     // rendered here on its own, so the harness supplies it.
     <ToastProvider>
       <PageEditor page={news} record={null} images={IMAGES} canEdit locale="ar" {...over} />
     </ToastProvider>,
   );
-}
 
 describe("PageEditor", () => {
   it("renders only the fields the page declares", () => {
@@ -225,5 +224,140 @@ describe("PageEditor — the contact page's repeatable rows", () => {
     const body = JSON.parse(fetchMock.mock.calls[0][1].body as string);
     expect(body.address).toEqual({ city: "أبوظبي" });
     expect(body.email).toBe("info@uaeaf.ae");
+  });
+
+  describe("a social link's own icon", () => {
+    const record = (socialLinks: unknown[]) => ({
+      heroTitle: { ar: "اتصل بنا", en: "Contact us" },
+      heroSubtitle: { ar: "نحن هنا", en: "We are here" },
+      email: "info@uaeaf.ae",
+      socialLinks,
+    });
+
+    const renderContact = (socialLinks: unknown[]) =>
+      renderWithIntl(
+        <ToastProvider>
+          <PageEditor page={contact} record={record(socialLinks)} images={IMAGES} canEdit locale="ar" />
+        </ToastProvider>,
+      );
+
+    const savedLinks = async (fetchMock: ReturnType<typeof stubFetch>) => {
+      await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+      return JSON.parse(fetchMock.mock.calls[0][1].body as string).socialLinks;
+    };
+
+    it("offers each link an icon and saves the one chosen", async () => {
+      const fetchMock = stubFetch(ok());
+      const user = userEvent.setup();
+      renderContact([{ platform: "Instagram", url: "https://instagram.com/uaeaf" }]);
+
+      const icon = screen.getByRole("group", { name: "الأيقونة" });
+      await user.click(within(icon).getByRole("button", { name: "اختر صورة" }));
+      await user.click(within(icon).getByRole("button", { name: /صورة الملعب/ }));
+      await user.click(screen.getByRole("button", { name: "حفظ الصفحة" }));
+
+      expect(await savedLinks(fetchMock)).toEqual([
+        { platform: "Instagram", url: "https://instagram.com/uaeaf", iconId: "f".repeat(24) },
+      ]);
+    });
+
+    it("keeps a stored icon through a save that changed something else", async () => {
+      const fetchMock = stubFetch(ok());
+      const user = userEvent.setup();
+      renderContact([{ platform: "Instagram", url: "https://instagram.com/uaeaf", iconId: "f".repeat(24) }]);
+
+      // Read into the form, or the next save would quietly drop it.
+      await user.type(screen.getByLabelText("المدينة"), "أبوظبي");
+      await user.click(screen.getByRole("button", { name: "حفظ الصفحة" }));
+
+      expect(await savedLinks(fetchMock)).toEqual([
+        { platform: "Instagram", url: "https://instagram.com/uaeaf", iconId: "f".repeat(24) },
+      ]);
+    });
+
+    it("goes back to the built-in icon when the chosen one is removed", async () => {
+      const fetchMock = stubFetch(ok());
+      const user = userEvent.setup();
+      renderContact([{ platform: "Instagram", url: "https://instagram.com/uaeaf", iconId: "f".repeat(24) }]);
+
+      const icon = screen.getByRole("group", { name: "الأيقونة" });
+      await user.click(within(icon).getByRole("button", { name: "بلا صورة" }));
+      await user.click(screen.getByRole("button", { name: "حفظ الصفحة" }));
+
+      // The form sends its state as it stands; the route handler's
+      // `readPageBody` drops the empty icon before the API sees it
+      // (`static-pages.spec.ts`), and the API stores it as none.
+      expect(await savedLinks(fetchMock)).toEqual([
+        { platform: "Instagram", url: "https://instagram.com/uaeaf", iconId: "" },
+      ]);
+    });
+
+    it("uploads a new icon as an icon, not as a page image", async () => {
+      // Held to the page floor (200px), a 128px icon was refused; the icon
+      // purpose is what lets the API apply its own floor (88px).
+      const fetchMock = stubFetch(
+        Response.json({ _id: "n1", caption: { ar: "", en: "" }, file: { url: "https://cdn.test/n1.png" } }, { status: 201 }),
+      );
+      const user = userEvent.setup();
+      renderContact([{ platform: "Instagram", url: "https://instagram.com/uaeaf" }]);
+
+      const icon = screen.getByRole("group", { name: "الأيقونة" });
+      await user.click(within(icon).getByRole("button", { name: "اختر صورة" }));
+      await user.upload(within(icon).getByLabelText(/الملف/), new File([new Uint8Array([1])], "icon.png", { type: "image/png" }));
+      await user.type(within(icon).getByLabelText(/النص البديل \(عربي\)/), "إنستغرام");
+      await user.type(within(icon).getByLabelText(/النص البديل \(إنجليزي\)/), "Instagram");
+      await user.click(within(icon).getByRole("button", { name: "رفع الصورة" }));
+
+      await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+      expect(fetchMock.mock.calls[0][0]).toBe("/api/admin/media-assets/upload?purpose=icon");
+    });
+  });
+});
+
+describe("PageEditor — the contact map's coordinates (owner request 2026-09-22)", () => {
+  const renderMap = (map: Record<string, unknown>) =>
+    renderWithIntl(
+      <ToastProvider>
+        <PageEditor
+          page={contact}
+          record={{
+            heroTitle: { ar: "اتصل بنا", en: "Contact us" },
+            heroSubtitle: { ar: "نحن هنا", en: "We are here" },
+            email: "info@uaeaf.ae",
+            map,
+          }}
+          images={IMAGES}
+          canEdit
+          locale="ar"
+        />
+      </ToastProvider>,
+    );
+
+  it("offers the map's coordinates, filled from the record, and no map picture", () => {
+    renderMap({ latitude: 25.286069, longitude: 55.3642228 });
+
+    const group = screen.getByRole("group", { name: "إحداثيات الخريطة" });
+    expect(within(group).getByLabelText("خط العرض")).toHaveValue("25.286069");
+    expect(within(group).getByLabelText("خط الطول")).toHaveValue("55.3642228");
+    expect(screen.queryByRole("group", { name: "صورة الخريطة" })).toBeNull();
+  });
+
+  it("sends the coordinates as the editor typed them", async () => {
+    // As typed: the route handler's `readPageBody` turns them into numbers
+    // and refuses a pair that is not one (`static-pages.spec.ts`).
+    const fetchMock = stubFetch(ok());
+    const user = userEvent.setup();
+    renderMap({});
+
+    const group = screen.getByRole("group", { name: "إحداثيات الخريطة" });
+    await user.type(within(group).getByLabelText("خط العرض"), "25.286069");
+    await user.type(within(group).getByLabelText("خط الطول"), "55.3642228");
+    await user.click(screen.getByRole("button", { name: "حفظ الصفحة" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body as string)["map.coordinates"]).toEqual({
+      latitude: "25.286069",
+      longitude: "55.3642228",
+    });
   });
 });

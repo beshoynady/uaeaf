@@ -1,8 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEmail, IsIn, IsNotEmpty, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
-import { CONTACT_MESSAGE_TYPES, CONTACT_MESSAGE_REPLY_CHANNELS } from '../schemas/contact-messages.schema.js';
-import type { ContactMessageType, ContactMessageReplyChannel } from '../schemas/contact-messages.schema.js';
+import {
+  CONTACT_MESSAGE_TYPES,
+  CONTACT_MESSAGE_REPLY_CHANNELS,
+  CONTACT_MESSAGE_STATUSES,
+} from '../schemas/contact-messages.schema.js';
+import type {
+  ContactMessageType,
+  ContactMessageReplyChannel,
+  ContactMessageStatus,
+} from '../schemas/contact-messages.schema.js';
 
 /** Request body for the PUBLIC contact form (POST /contact-messages).
  *
@@ -80,6 +88,17 @@ export class CreateContactMessageDto {
   @MinLength(1)
   @MaxLength(5000)
   messageBody: string;
+}
+
+/** Request body for PATCH /contact-messages/:id/status — staff only.
+ *
+ *  The message's own `status`, the field the approved schema keeps outside
+ *  the workflow list on purpose: handling a citizen's message is not an
+ *  approval, and `workflowInstanceId` stays for a formal escalation. */
+export class UpdateContactMessageStatusDto {
+  @ApiProperty({ enum: CONTACT_MESSAGE_STATUSES })
+  @IsIn(CONTACT_MESSAGE_STATUSES)
+  status: ContactMessageStatus;
 }
 
 /** Request body for PATCH /contact-messages/:id/reply — staff only. */

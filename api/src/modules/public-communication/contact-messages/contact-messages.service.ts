@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { ContactMessagesRepository } from './contact-messages.repository.js';
-import type { ContactMessageDocument } from './schemas/contact-messages.schema.js';
+import type { ContactMessageDocument, ContactMessageStatus } from './schemas/contact-messages.schema.js';
 import {
   CreateContactMessageDto,
   ReplyToContactMessageDto,
@@ -67,8 +67,27 @@ export class ContactMessagesService {
     });
   }
 
+  /** Newest first: the inbox is read from the top. */
   async findAll(): Promise<ContactMessageDocument[]> {
-    return this.repository.find();
+    return this.repository.findNewestFirst();
+  }
+
+  /** What the dashboard header's bell shows. `New` is the unread state;
+   *  a message leaves it when someone opens it or moves it on. */
+  async summary(): Promise<{ newCount: number }> {
+    return { newCount: await this.repository.countByStatus('New') };
+  }
+
+  /** Moves a message between the four statuses. Any status may follow any
+   *  other: `New` again is "mark as unread", and a closed message reopens.
+   *  @throws NotFoundException when the message doesn't exist. */
+  async updateStatus(id: string, status: ContactMessageStatus): Promise<ContactMessageDocument | null> {
+    const message = await this.repository.findById(id);
+    if (!message) {
+      throw new NotFoundException(`Contact message ${id} not found.`);
+    }
+
+    return this.repository.updateById(id, { status });
   }
 
   async findById(id: string): Promise<ContactMessageDocument | null> {

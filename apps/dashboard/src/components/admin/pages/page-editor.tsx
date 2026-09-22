@@ -35,6 +35,9 @@ interface MessageTypeRow {
 interface LinkRow {
   platform: string;
   url: string;
+  /** An uploaded icon drawn instead of the platform's built-in one; empty
+   *  keeps the built-in icon. */
+  iconId: string;
 }
 
 /**
@@ -51,7 +54,7 @@ interface LinkRow {
  * — it has to, since it is a public endpoint — but by then it no longer
  * knows which control on screen to point at.
  */
-export function PageEditor({
+export const PageEditor = ({
   page,
   record,
   images,
@@ -73,7 +76,7 @@ export function PageEditor({
   canEdit: boolean;
   canReadMedia?: boolean;
   locale: AppLocale;
-}) {
+}) => {
   const t = useTranslations("SitePages");
   const errors = useTranslations("WriteErrors");
   const router = useRouter();
@@ -94,12 +97,12 @@ export function PageEditor({
 
   const dirty = JSON.stringify(state) !== JSON.stringify(initial);
 
-  function patch(name: string, value: unknown) {
+  const patch = (name: string, value: unknown) => {
     setFailureKey(null);
     setState((current) => ({ ...current, [name]: value }));
-  }
+  };
 
-  async function save() {
+  const save = async () => {
     // One pass, one predicate: the two scans this replaced were never read
     // apart, and two names that close in spelling for one condition is a
     // reader's problem before it is anyone else's.
@@ -149,7 +152,7 @@ export function PageEditor({
       setFailureKey("serviceUnavailable");
       setSaving(false);
     }
-  }
+  };
 
   return (
     <form
@@ -234,9 +237,9 @@ export function PageEditor({
       )}
     </form>
   );
-}
+};
 
-function Field({
+const Field = ({
   field,
   state,
   images,
@@ -254,7 +257,7 @@ function Field({
   disabled: boolean;
   locale: AppLocale;
   onChange: (name: string, value: unknown) => void;
-}) {
+}) => {
   const t = useTranslations("SitePages");
   // next-intl reads `.` as a nesting separator, so a dotted field name has to
   // be flattened before it becomes a message key or a DOM id.
@@ -340,8 +343,38 @@ function Field({
         </fieldset>
       );
 
+    case "coordinates": {
+      const pair = (state[field.name] ?? {}) as Record<"latitude" | "longitude", string>;
+      return (
+        <fieldset className="flex flex-col gap-3">
+          <legend className="text-label font-medium text-[color:var(--color-text-secondary)]">
+            {label}
+          </legend>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {(["latitude", "longitude"] as const).map((axis) => (
+              <TextField
+                key={axis}
+                id={`field-${slug}-${axis}`}
+                label={t(`coordinate_${axis}`)}
+                inputMode="decimal"
+                value={pair[axis] ?? ""}
+                disabled={disabled}
+                onChange={(event) => onChange(field.name, { ...pair, [axis]: event.target.value })}
+              />
+            ))}
+          </div>
+          <p className="text-caption text-[color:var(--color-text-muted)]">{t("coordinatesHint")}</p>
+        </fieldset>
+      );
+    }
+
     case "phones": {
       const rows = (state[field.name] ?? []) as PhoneRow[];
+      const replaceRow = (current: PhoneRow[], index: number, next: PhoneRow) =>
+        onChange(
+          field.name,
+          current.map((row, i) => (i === index ? next : row)),
+        );
       return (
         <RepeatableRows
           legend={label}
@@ -380,12 +413,6 @@ function Field({
         />
       );
 
-      function replaceRow(current: PhoneRow[], index: number, next: PhoneRow) {
-        onChange(
-          field.name,
-          current.map((row, i) => (i === index ? next : row)),
-        );
-      }
     }
 
     case "socialLinks": {
@@ -401,10 +428,11 @@ function Field({
           rows={rows}
           disabled={disabled}
           addLabel={t("addLink")}
-          onAdd={() => onChange(field.name, [...rows, { platform: "", url: "" }])}
+          onAdd={() => onChange(field.name, [...rows, { platform: "", url: "", iconId: "" }])}
           onRemove={(index) => onChange(field.name, rows.filter((_, i) => i !== index))}
           renderRow={(row, index) => (
-            <div className="grid flex-1 gap-4 sm:grid-cols-2">
+            <div className="flex flex-1 flex-col gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <TextField
                 id={`link-${index}-platform`}
                 label={t("linkPlatform")}
@@ -421,6 +449,22 @@ function Field({
                 disabled={disabled}
                 onChange={(event) => replace(index, { ...row, url: event.target.value })}
               />
+            </div>
+            {/* Optional. Left empty, the site draws the platform's own icon as
+                it always has; chosen, this image is drawn instead. */}
+            <MediaPicker
+              label={t("linkIcon")}
+              value={row.iconId}
+              images={images}
+              onUploaded={onUploaded}
+              canRead={canReadMedia}
+              disabled={disabled}
+              locale={locale}
+              // Drawn at 44px on the site: twice that is the sharp source (ADR-0086 D4).
+              purpose="icon"
+              minSourcePx={88}
+              onChange={(iconId) => replace(index, { ...row, iconId })}
+            />
             </div>
           )}
         />
@@ -479,7 +523,7 @@ function Field({
       );
     }
   }
-}
+};
 
 
 /**
@@ -489,7 +533,7 @@ function Field({
  * the row someone wants gone is rarely the last one, and moving the wanted
  * rows around to delete an unwanted one is how the wrong row gets deleted.
  */
-function RepeatableRows<Row>({
+const RepeatableRows = <Row,>({
   legend,
   rows,
   disabled,
@@ -507,7 +551,7 @@ function RepeatableRows<Row>({
   onAdd: () => void;
   onRemove: (index: number) => void;
   renderRow: (row: Row, index: number) => React.ReactNode;
-}) {
+}) => {
   const t = useTranslations("SitePages");
   return (
     <fieldset className="flex flex-col gap-3" aria-label={legend}>
@@ -548,11 +592,11 @@ function RepeatableRows<Row>({
       </button>
     </fieldset>
   );
-}
+};
 
 /** Every declared field gets an entry, so a control is never uncontrolled and
  *  the unsaved-changes comparison has something stable to compare against. */
-function toFormState(page: StaticPage, record: PageRecord): Record<string, unknown> {
+const toFormState = (page: StaticPage, record: PageRecord): Record<string, unknown> => {
   const stored = record ?? {};
   const state: Record<string, unknown> = {};
 
@@ -569,6 +613,16 @@ function toFormState(page: StaticPage, record: PageRecord): Record<string, unkno
       case "address":
         state[field.name] = typeof value === "object" && value !== null ? { ...value } : {};
         break;
+      case "coordinates": {
+        // Read from the group the pair is stored under, not from a key of its own.
+        const group = readPath(stored, field.name.slice(0, field.name.indexOf(".")));
+        const coordinate = (axis: "latitude" | "longitude") => {
+          const degrees = typeof group === "object" && group !== null ? (group as Record<string, unknown>)[axis] : null;
+          return typeof degrees === "number" ? String(degrees) : "";
+        };
+        state[field.name] = { latitude: coordinate("latitude"), longitude: coordinate("longitude") };
+        break;
+      }
       case "phones":
         state[field.name] = Array.isArray(value)
           ? value.map((row) => ({
@@ -584,6 +638,7 @@ function toFormState(page: StaticPage, record: PageRecord): Record<string, unkno
           ? value.map((row) => ({
               platform: String((row as LinkRow).platform ?? ""),
               url: String((row as LinkRow).url ?? ""),
+              iconId: typeof (row as LinkRow).iconId === "string" ? (row as LinkRow).iconId : "",
             }))
           : [];
         break;
@@ -602,10 +657,10 @@ function toFormState(page: StaticPage, record: PageRecord): Record<string, unkno
   }
 
   return state;
-}
+};
 
 /** Reads `a.b` out of a stored record; a plain name is read as itself. */
-function readPath(stored: Record<string, unknown>, name: string): unknown {
+const readPath = (stored: Record<string, unknown>, name: string): unknown => {
   return name
     .split(".")
     .reduce<unknown>(
@@ -615,17 +670,17 @@ function readPath(stored: Record<string, unknown>, name: string): unknown {
           : undefined,
       stored,
     );
-}
+};
 
-function isLocalized(value: unknown): value is LocalizedText {
+const isLocalized = (value: unknown): value is LocalizedText => {
   return (
     typeof value === "object" &&
     value !== null &&
     typeof (value as LocalizedText).ar === "string" &&
     typeof (value as LocalizedText).en === "string"
   );
-}
+};
 
-function bothHalvesFilled(value: LocalizedText | undefined): boolean {
+const bothHalvesFilled = (value: LocalizedText | undefined): boolean => {
   return (value?.ar ?? "").trim().length > 0 && (value?.en ?? "").trim().length > 0;
-}
+};

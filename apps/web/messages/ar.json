@@ -59,10 +59,9 @@
     "legalNav": "روابط قانونية",
     "quickLinksTitle": "روابط سريعة",
     "locationTitle": "الموقع",
-    "mapCardCity": "مدينة زايد الرياضية",
-    "mapCardRegion": "أبوظبي، الإمارات",
+    "locationLink": "عرض الموقع على الخريطة",
+    "placeLine": "{place}، {region}",
     "contactTitle": "التواصل",
-    "address": "مدينة زايد الرياضية، أبوظبي، الإمارات العربية المتحدة",
     "hours": "الأحد-الخميس، 08:00-15:00",
     "helpCenter": "مركز المساعدة",
     "copyright": "© 2026 اتحاد الإمارات لألعاب القوى. جميع الحقوق محفوظة."
@@ -145,7 +144,8 @@
     "map": {
       "title": "موقعنا",
       "viewOnMaps": "عرض الموقع على خرائط Google",
-      "openDirections": "فتح الاتجاهات"
+      "openDirections": "فتح الاتجاهات",
+      "frameTitle": "خريطة Google لموقع الاتحاد"
     },
     "social": {
       "title": "تابعنا",

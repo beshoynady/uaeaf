@@ -16,6 +16,8 @@ import { BrandMark } from "@/components/brand/brand-mark";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
 import { LanguageToggle } from "@/components/shell/language-toggle";
 import { SignOutButton } from "@/components/shell/sign-out-button";
+import { MessagesBell } from "@/components/shell/messages-bell";
+import { loadNewMessageCount } from "@/lib/admin/messages-screen";
 import { ToastProvider } from "@/components/ui/toast";
 import { resolveLocale } from "@/i18n/params";
 
@@ -61,6 +63,9 @@ const AppLayout = async ({
   // layout reuses the same response.
   const me = await readCurrentUser(locale);
   const items = visibleNavItems(me?.permissions ?? []);
+  // Read on every server render of the shell, and again when the messages
+  // screen refreshes after a status change.
+  const newMessages = await loadNewMessageCount(me?.permissions ?? [], locale);
 
   return (
     // One toast queue for the whole signed-in shell, not one per screen.
@@ -89,6 +94,7 @@ const AppLayout = async ({
         }
         controls={
           <>
+            {newMessages !== null ? <MessagesBell count={newMessages} /> : null}
             <LanguageToggle locale={locale} />
             <ThemeToggle initialTheme={theme} />
             <SignOutButton locale={locale} />

@@ -5,8 +5,11 @@ import {
   IsEmail,
   IsIn,
   IsMongoId,
+  IsNumber,
   IsOptional,
   IsString,
+  Max,
+  Min,
   MinLength,
   ValidateNested,
 } from 'class-validator';
@@ -15,6 +18,19 @@ import type { ContactMessageType } from '../../../public-communication/contact-m
 import { HeroPageDto } from '../../../../common/dto/hero-page.dto.js';
 import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
 import { SocialLinkDto } from '../../../people-organizations/clubs/dto/social-link.dto.js';
+
+/** Request shape for one `socialLinks[]` entry: the shared platform and URL,
+ *  and on this page an optional icon of its own. */
+export class ContactSocialLinkDto extends SocialLinkDto {
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    description: 'A `mediaAssets` image drawn instead of the platform\'s built-in icon. Empty keeps the built-in one.',
+  })
+  @IsOptional()
+  @IsMongoId()
+  iconId?: string | null;
+}
 
 /** Request shape for one `phones[]` entry. */
 export class LabelledPhoneDto {
@@ -92,9 +108,13 @@ export class ContactMapContentDto {
   @IsOptional() @ValidateNested() @Type(() => LocalizedTextDto)
   title?: LocalizedTextDto;
 
-  @ApiProperty({ required: false, description: 'MediaAsset id of the map still.' })
-  @IsOptional() @IsMongoId()
-  imageId?: string;
+  @ApiProperty({ required: false, minimum: -90, maximum: 90, description: 'Where the live map is centred.' })
+  @IsOptional() @IsNumber() @Min(-90) @Max(90)
+  latitude?: number;
+
+  @ApiProperty({ required: false, minimum: -180, maximum: 180, description: 'Where the live map is centred.' })
+  @IsOptional() @IsNumber() @Min(-180) @Max(180)
+  longitude?: number;
 
   @ApiProperty({ type: LocalizedTextDto, required: false })
   @IsOptional() @ValidateNested() @Type(() => LocalizedTextDto)
@@ -148,12 +168,12 @@ export class UpsertContactUsPageDto extends HeroPageDto {
   @IsString()
   website?: string;
 
-  @ApiProperty({ type: [SocialLinkDto], required: false })
+  @ApiProperty({ type: [ContactSocialLinkDto], required: false })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => SocialLinkDto)
-  socialLinks?: SocialLinkDto[];
+  @Type(() => ContactSocialLinkDto)
+  socialLinks?: ContactSocialLinkDto[];
 
   @ApiProperty({
     type: LocalizedTextDto,

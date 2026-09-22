@@ -33,6 +33,9 @@ export type PageField =
   | { kind: "text"; name: string; required: boolean; inputType: "email" | "url" | "text" }
   | { kind: "phones"; name: string }
   | { kind: "address"; name: string }
+  /** A latitude and longitude pair, stored as the group's own `latitude` and
+   *  `longitude` (`map.coordinates` → `map.latitude`, `map.longitude`). */
+  | { kind: "coordinates"; name: string }
   | { kind: "socialLinks"; name: string }
   | { kind: "messageTypeLabels"; name: string };
 
@@ -58,9 +61,9 @@ const HERO: readonly PageField[] = [
   { kind: "localized", name: "heroSubtitle", required: true },
 ];
 
-function heroPage(key: string, resourceType: string): StaticPage {
+const heroPage = (key: string, resourceType: string): StaticPage => {
   return { key, apiPath: `/${key}-page`, resourceType, fields: HERO };
-}
+};
 
 export const STATIC_PAGES: readonly StaticPage[] = [
   heroPage("news", "newsPage"),
@@ -106,7 +109,9 @@ export const STATIC_PAGES: readonly StaticPage[] = [
       { kind: "localized", name: "form.consentNote", required: false, multiline: true },
       { kind: "messageTypeLabels", name: "form.messageTypeLabels" },
       { kind: "localized", name: "map.title", required: false },
-      { kind: "media", name: "map.imageId" },
+      // The live map is drawn here (owner request 2026-09-22); it replaced
+      // a still picture, which is why the page has no map image.
+      { kind: "coordinates", name: "map.coordinates" },
       { kind: "localized", name: "map.pinTitle", required: false },
       { kind: "localized", name: "map.pinSubtitle", required: false },
       { kind: "text", name: "map.directionsUrl", required: false, inputType: "url" },
@@ -115,9 +120,9 @@ export const STATIC_PAGES: readonly StaticPage[] = [
   },
 ];
 
-export function findStaticPage(key: string): StaticPage | undefined {
+export const findStaticPage = (key: string): StaticPage | undefined => {
   return STATIC_PAGES.find((page) => page.key === key);
-}
+};
 
 /** The eight optional parts of a postal address, in the order they are
  *  written on an envelope in the UAE. */
@@ -151,7 +156,7 @@ const REJECT = { ok: false, code: "invalidRequest" } as const;
  * `@IsOptional()` skips an absent field while null fails the validator for
  * the field's own type.
  */
-export function readPageBody(page: StaticPage, value: unknown): PageBodyResult {
+export const readPageBody = (page: StaticPage, value: unknown): PageBodyResult => {
   const input = (value ?? {}) as Record<string, unknown>;
   const body: PageBody = {};
 
@@ -202,6 +207,20 @@ export function readPageBody(page: StaticPage, value: unknown): PageBodyResult {
         put(field.name, field.inputType === "email" ? trimmed.toLowerCase() : trimmed);
         break;
       }
+      case "coordinates": {
+        // Both or neither: one number places nothing, and dropping it would
+        // look saved while the map stayed away.
+        const pair = (typeof raw === "object" && raw !== null ? raw : {}) as Record<string, unknown>;
+        const latitude = readCoordinate(pair.latitude, 90);
+        const longitude = readCoordinate(pair.longitude, 180);
+        if (latitude === "invalid" || longitude === "invalid") return REJECT;
+        if (latitude === null && longitude === null) break;
+        if (latitude === null || longitude === null) return REJECT;
+        const group = field.name.slice(0, field.name.indexOf("."));
+        put(`${group}.latitude`, latitude);
+        put(`${group}.longitude`, longitude);
+        break;
+      }
       case "phones": {
         if (!Array.isArray(raw)) break;
         const phones = raw
@@ -229,11 +248,20 @@ export function readPageBody(page: StaticPage, value: unknown): PageBodyResult {
       }
       case "socialLinks": {
         if (!Array.isArray(raw)) break;
-        const links = raw
-          .map((entry) => entry as { platform?: unknown; url?: unknown })
+        const entries = raw.map((entry) => entry as { platform?: unknown; url?: unknown; iconId?: unknown });
+        // An icon that is not an id is refused, as a malformed image is: it
+        // is a reference the API would reject, and forwarding it would cost
+        // the whole save there instead of here.
+        if (entries.some((entry) => entry.iconId !== undefined && entry.iconId !== null && entry.iconId !== "" && !isMongoId(entry.iconId))) {
+          return REJECT;
+        }
+        const links = entries
           .map((entry) => ({
             platform: String(entry.platform ?? "").trim(),
             url: String(entry.url ?? "").trim(),
+            // Sent only when chosen: without it the API keeps the platform's
+            // built-in icon, the behaviour every saved link already has.
+            ...(isMongoId(entry.iconId) ? { iconId: entry.iconId } : {}),
           }))
           // Both halves or neither: a platform with no link is a dead chip
           // on the public footer, and a link with no platform has no label.
@@ -259,12 +287,21 @@ export function readPageBody(page: StaticPage, value: unknown): PageBodyResult {
   }
 
   return { ok: true, body };
-}
+};
+
+/** A coordinate as a number, `null` when blank, `"invalid"` when it is not
+ *  a number or lies beyond `limit` degrees either side of zero. */
+const readCoordinate = (value: unknown, limit: number): number | null | "invalid" => {
+  const text = typeof value === "number" ? String(value) : typeof value === "string" ? value.trim() : "";
+  if (text.length === 0) return null;
+  const degrees = Number(text);
+  return Number.isFinite(degrees) && Math.abs(degrees) <= limit ? degrees : "invalid";
+};
 
 /** `null` for "not filled in at all", `"invalid"` for a half-filled pair —
  *  which upstream rejects with `@MinLength(1)` and which would otherwise
  *  store a record that renders blank in one language. */
-function readLocalized(value: unknown): LocalizedText | null | "invalid" {
+const readLocalized = (value: unknown): LocalizedText | null | "invalid" => {
   if (typeof value !== "object" || value === null) {
     return null;
   }
@@ -278,4 +315,4 @@ function readLocalized(value: unknown): LocalizedText | null | "invalid" {
     return "invalid";
   }
   return { ar: trimmedAr, en: trimmedEn };
-}
+};

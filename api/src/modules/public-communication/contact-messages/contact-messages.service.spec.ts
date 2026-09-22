@@ -10,6 +10,8 @@ describe('ContactMessagesService', () => {
       create: jest.fn(),
       findById: jest.fn(),
       updateById: jest.fn(),
+      findNewestFirst: jest.fn(),
+      countByStatus: jest.fn(),
     }) as unknown as jest.Mocked<ContactMessagesRepository>;
 
   const submission = {
@@ -57,6 +59,51 @@ describe('ContactMessagesService', () => {
       expect(repository.create).toHaveBeenCalledWith(
         expect.objectContaining({ senderEmail: null, senderPhone: '+971 50 123 4567' }),
       );
+    });
+  });
+
+  describe('the inbox (owner request 2026-09-22)', () => {
+    it('lists the messages newest first', async () => {
+      const repository = makeRepository();
+      const rows = [{ senderName: 'newest' }, { senderName: 'oldest' }];
+      repository.findNewestFirst.mockResolvedValue(rows as never);
+      const service = new ContactMessagesService(repository);
+
+      await expect(service.findAll()).resolves.toBe(rows);
+    });
+
+    it('counts the new messages for the header bell', async () => {
+      // "New" is the unread state: no second read flag exists to drift from it.
+      const repository = makeRepository();
+      repository.countByStatus.mockResolvedValue(3);
+      const service = new ContactMessagesService(repository);
+
+      await expect(service.summary()).resolves.toEqual({ newCount: 3 });
+      expect(repository.countByStatus).toHaveBeenCalledWith('New');
+    });
+  });
+
+  describe('updateStatus', () => {
+    it('moves a message to the status given and nothing else', async () => {
+      const repository = makeRepository();
+      const id = new Types.ObjectId().toString();
+      repository.findById.mockResolvedValue({ _id: id, status: 'New' } as never);
+      repository.updateById.mockResolvedValue({ _id: id, status: 'InProgress' } as never);
+      const service = new ContactMessagesService(repository);
+
+      await expect(service.updateStatus(id, 'InProgress')).resolves.toEqual({ _id: id, status: 'InProgress' });
+      expect(repository.updateById).toHaveBeenCalledWith(id, { status: 'InProgress' });
+    });
+
+    it('throws NotFoundException for an unknown or archived message', async () => {
+      const repository = makeRepository();
+      repository.findById.mockResolvedValue(null);
+      const service = new ContactMessagesService(repository);
+
+      await expect(service.updateStatus(new Types.ObjectId().toString(), 'Closed')).rejects.toThrow(
+        NotFoundException,
+      );
+      expect(repository.updateById).not.toHaveBeenCalled();
     });
   });
 

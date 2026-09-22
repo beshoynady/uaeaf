@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithIntl } from "@/test/render";
@@ -17,8 +17,8 @@ const IMAGES = [
   { id: "a1", caption: { ar: "صورة", en: "Image" }, url: "https://cdn.example/a1.png" },
 ];
 
-function renderPicker() {
-  return renderWithIntl(
+const renderPicker = (purpose?: "icon") =>
+  renderWithIntl(
     <MediaPicker
       label="صورة الترويسة"
       value=""
@@ -26,10 +26,10 @@ function renderPicker() {
       canRead
       disabled={false}
       locale="ar"
+      purpose={purpose}
       onChange={() => {}}
     />,
   );
-}
 
 const open = async () => {
   const user = userEvent.setup();
@@ -134,5 +134,43 @@ describe("MediaPicker resolution notice", () => {
     renderChosen(withSize(180, 180));
 
     expect(screen.getByRole("button", { name: "اختر صورة" })).toBeEnabled();
+  });
+});
+
+/**
+ * A social channel's icon is held to the icon floor (88px) rather than the
+ * page-image floor (200px), and only the API knows either number: the
+ * picker says what the picture is for and nothing more.
+ */
+describe("MediaPicker purpose (owner request 2026-09-22)", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const uploadedTo = async (purpose?: "icon") => {
+    const fetchSpy = vi.fn(async () =>
+      Response.json(
+        { _id: "n1", caption: { ar: "أيقونة", en: "Icon" }, file: { url: "https://cdn.example/n1.png" } },
+        { status: 201 },
+      ),
+    );
+    vi.stubGlobal("fetch", fetchSpy);
+    renderPicker(purpose);
+    const user = await open();
+
+    await user.upload(screen.getByLabelText(/الملف/), new File([new Uint8Array([1])], "icon.png", { type: "image/png" }));
+    await user.type(screen.getByLabelText(/النص البديل \(عربي\)/), "أيقونة");
+    await user.type(screen.getByLabelText(/النص البديل \(إنجليزي\)/), "Icon");
+    await user.click(screen.getByRole("button", { name: "رفع الصورة" }));
+
+    return (fetchSpy.mock.calls[0] as unknown[] | undefined)?.[0];
+  };
+
+  it("uploads an icon under the icon purpose", async () => {
+    expect(await uploadedTo("icon")).toBe("/api/admin/media-assets/upload?purpose=icon");
+  });
+
+  it("uploads anything else as a page image", async () => {
+    expect(await uploadedTo()).toBe("/api/admin/media-assets/upload");
   });
 });

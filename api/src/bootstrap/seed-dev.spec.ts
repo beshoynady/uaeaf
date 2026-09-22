@@ -100,13 +100,10 @@ const MODELS: Array<[string, Schema]> = [
 ];
 
 /** A deep, independent copy: the fixtures are EJSON, so EJSON is the copy. */
-function clone(fixtures: DevFixtures): DevFixtures {
-  return new Map([...fixtures].map(([name, docs]) => [name, EJSON.parse(EJSON.stringify(docs, { relaxed: true }), { relaxed: true })]));
-}
+const clone = (fixtures: DevFixtures): DevFixtures =>
+  new Map([...fixtures].map(([name, docs]) => [name, EJSON.parse(EJSON.stringify(docs, { relaxed: true }), { relaxed: true })]));
 
-function asText(fixtures: DevFixtures): string {
-  return EJSON.stringify(Object.fromEntries(fixtures), { relaxed: true });
-}
+const asText = (fixtures: DevFixtures): string => EJSON.stringify(Object.fromEntries(fixtures), { relaxed: true });
 
 const raw = (collection: string) => mongoose.connection.db!.collection(collection);
 
@@ -190,7 +187,10 @@ describe('dev fixtures', () => {
       }
       const contact = await raw('contactUsPage').findOne({});
       expect(await raw('mediaAssets').findOne({ _id: contact!.heroImageId })).not.toBeNull();
-      expect(await raw('mediaAssets').findOne({ _id: contact!.map.imageId })).not.toBeNull();
+      // The live map at the federation's official coordinates (owner request
+      // 2026-09-22), and no longer a picture of one.
+      expect(contact!.map).toMatchObject({ latitude: 25.286069, longitude: 55.3642228 });
+      expect(contact!.map).not.toHaveProperty('imageId');
     });
 
     it('changes nothing the second time', async () => {

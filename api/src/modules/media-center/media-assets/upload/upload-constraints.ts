@@ -29,6 +29,21 @@ export const MAX_PIXELS = 25_000_000;
  *  editor. */
 export const MIN_EDGE = 200;
 
+/**
+ * The shortest edge an icon may have (owner request 2026-09-21/22).
+ *
+ * `MIN_EDGE` is a quality floor for page images and says so: below it a
+ * picture "is an icon". A social channel's own icon is exactly that, drawn at
+ * 44px, so it gets its own floor: twice the largest size it is drawn at, the
+ * rule ADR-0086 D4 applies to logos (drawn above half its source, a mark
+ * blurs on a dense screen). Only this floor differs — the formats and both
+ * ceilings are the security half of this gate and apply to icons unchanged.
+ */
+export const ICON_MIN_EDGE = 88;
+
+/** What an upload is for. Only an icon has a rule of its own. */
+export type UploadPurpose = 'page' | 'icon';
+
 /** The three formats `probeImage` can verify from bytes. SVG is absent by
  *  decision, not omission: it is a script-bearing document, and nothing in
  *  the platform needs a vector upload. */
@@ -64,7 +79,10 @@ export interface UploadCandidate {
  * @throws BadRequestException when the dimensions are outside the usable
  * range at either end.
  */
-export function assertUploadable(file: UploadCandidate): ProbedImage {
+export const assertUploadable = (
+  file: UploadCandidate,
+  { purpose = 'page' }: { purpose?: UploadPurpose } = {},
+): ProbedImage => {
   const name = file.originalname;
 
   if (file.size > MAX_UPLOAD_BYTES) {
@@ -80,9 +98,10 @@ export function assertUploadable(file: UploadCandidate): ProbedImage {
     );
   }
 
-  if (probed.width < MIN_EDGE || probed.height < MIN_EDGE) {
+  const minEdge = purpose === 'icon' ? ICON_MIN_EDGE : MIN_EDGE;
+  if (probed.width < minEdge || probed.height < minEdge) {
     throw new BadRequestException(
-      `"${name}" is ${probed.width}×${probed.height}; the shortest edge must be at least ${MIN_EDGE}px.`,
+      `"${name}" is ${probed.width}×${probed.height}; the shortest edge must be at least ${minEdge}px.`,
     );
   }
 
@@ -93,7 +112,7 @@ export function assertUploadable(file: UploadCandidate): ProbedImage {
   }
 
   return probed;
-}
+};
 
 const mb = (bytes: number) => Math.round((bytes / (1024 * 1024)) * 10) / 10;
 

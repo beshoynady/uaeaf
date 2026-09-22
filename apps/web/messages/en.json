@@ -59,10 +59,9 @@
     "legalNav": "Legal Links",
     "quickLinksTitle": "Quick Links",
     "locationTitle": "Location",
-    "mapCardCity": "Zayed Sports City",
-    "mapCardRegion": "Abu Dhabi, UAE",
+    "locationLink": "View the location on the map",
+    "placeLine": "{place}, {region}",
     "contactTitle": "Contact",
-    "address": "Zayed Sports City, Abu Dhabi, United Arab Emirates",
     "hours": "Sun–Thu, 08:00–15:00",
     "helpCenter": "Help Center",
     "copyright": "© 2026 UAE Athletics Federation. All rights reserved."
@@ -145,7 +144,8 @@
     "map": {
       "title": "Our Location",
       "viewOnMaps": "View on Google Maps",
-      "openDirections": "Open Directions"
+      "openDirections": "Open Directions",
+      "frameTitle": "Google map of the federation's location"
     },
     "social": {
       "title": "Follow us",

@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
 import {
+  BadRequestException,
   ConflictException,
   NotFoundException,
   ServiceUnavailableException,
@@ -363,6 +364,27 @@ describe('MediaAssetsService', () => {
       const created = repository.create.mock.calls[0][0] as { file: MediaAssetDocument['file'] };
       expect(created.file.photographer).toBe('A. Al Mansoori');
       expect(created.file.captureDate).toEqual(new Date('2026-03-14'));
+    });
+
+    it('lets an icon through at its own floor and holds a page image to the page floor', async () => {
+      // The same 128px square is a social channel's icon when the editor
+      // says so and a blurred page image when nobody does.
+      const bytes = Buffer.from(hero);
+      bytes.writeUInt32BE(128, 16); // IHDR width
+      bytes.writeUInt32BE(128, 20); // IHDR height
+      const icon = { buffer: bytes, size: bytes.length, originalname: 'instagram.png' } as UploadCandidate;
+      const repository = makeRepository();
+      repository.create.mockResolvedValue({ albumId: null } as unknown as MediaAssetDocument);
+      const storage = makeStorage();
+      const service = new MediaAssetsService(repository, albumModel, storage);
+
+      await expect(service.uploadAndCreate(icon, meta, STORAGE_FOLDERS.pages)).rejects.toBeInstanceOf(
+        BadRequestException,
+      );
+      expect(storage.upload).not.toHaveBeenCalled();
+
+      await service.uploadAndCreate(icon, meta, STORAGE_FOLDERS.pages, 'icon');
+      expect(storage.upload).toHaveBeenCalledTimes(1);
     });
   });
 

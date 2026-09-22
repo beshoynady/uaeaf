@@ -7,6 +7,7 @@ import { Alexandria, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import { routing, localeDirection, type AppLocale } from "@/i18n/routing";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { loadFooterPlace } from "@/lib/pages/footer-place";
 import { MotionProvider } from "@/components/ui/motion-provider";
 import { motionOffAttribute } from "@/lib/motion/switches";
 import "./globals.css";
@@ -97,6 +98,10 @@ const RootLayout = async ({ children, params }: LayoutProps) => {
   // next-intl 4.14.2 docs, 2026-09-07).
   setRequestLocale(locale);
 
+  // The footer names the place the contact page records, not one of its own.
+  // Cached with every public read, and refreshed with this layout.
+  const footerPlace = await loadFooterPlace(locale);
+
   return (
     <html
       lang={locale}
@@ -132,7 +137,7 @@ const RootLayout = async ({ children, params }: LayoutProps) => {
             <main id="main-content" className="flex-1">
               {children}
             </main>
-            <SiteFooter />
+            <SiteFooter place={footerPlace.place} region={footerPlace.region} />
           </MotionProvider>
         </NextIntlClientProvider>
       </body>

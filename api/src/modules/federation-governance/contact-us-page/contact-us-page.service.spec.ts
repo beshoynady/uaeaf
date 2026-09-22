@@ -24,7 +24,6 @@ describe('ContactUsPagesService', () => {
     ({ assertUsableImage: jest.fn() }) as unknown as jest.Mocked<MediaAssetsService>;
 
   const heroImageId = new Types.ObjectId().toString();
-  const mapImageId = new Types.ObjectId().toString();
 
   const baseDto = (): UpsertContactUsPageDto =>
     ({
@@ -94,45 +93,118 @@ describe('ContactUsPagesService', () => {
     expect(form.messageTypeLabels).toHaveLength(2);
   });
 
-  it('persists every map element, including the placeholder image and the pin', async () => {
+  it('persists every map element, the coordinates the live map is drawn at included', async () => {
     const repository = makeRepository();
     repository.findOne.mockResolvedValue(null as never);
-    const media = makeMedia();
-    const service = new ContactUsPagesService(repository, media);
+    const service = new ContactUsPagesService(repository, makeMedia());
 
     await service.upsert({
       ...baseDto(),
       map: {
         title: { ar: 'موقعنا', en: 'Our Location' },
-        imageId: mapImageId,
+        latitude: 25.286069,
+        longitude: 55.3642228,
         pinTitle: { ar: 'المقر', en: 'Headquarters' },
-        pinSubtitle: { ar: 'أبوظبي', en: 'Abu Dhabi' },
+        pinSubtitle: { ar: 'دبي', en: 'Dubai' },
         directionsUrl: 'https://example.test/directions',
         note: { ar: 'ملاحظة', en: 'Note' },
       },
     } as UpsertContactUsPageDto);
 
     const written = repository.create.mock.calls[0][0] as Record<string, unknown>;
-    const map = written.map as { imageId: Types.ObjectId; directionsUrl: string };
-    expect(map.imageId).toBeInstanceOf(Types.ObjectId);
-    expect(map.imageId.toString()).toBe(mapImageId);
-    expect(map.directionsUrl).toBe('https://example.test/directions');
+    expect(written.map).toEqual({
+      title: { ar: 'موقعنا', en: 'Our Location' },
+      latitude: 25.286069,
+      longitude: 55.3642228,
+      pinTitle: { ar: 'المقر', en: 'Headquarters' },
+      pinSubtitle: { ar: 'دبي', en: 'Dubai' },
+      directionsUrl: 'https://example.test/directions',
+      note: { ar: 'ملاحظة', en: 'Note' },
+    });
   });
 
-  it('checks the map image is a usable image, not only the hero image', async () => {
+  it('stores no coordinates when the editor gave none', async () => {
+    const repository = makeRepository();
+    repository.findOne.mockResolvedValue(null as never);
+    const service = new ContactUsPagesService(repository, makeMedia());
+
+    await service.upsert({ ...baseDto(), map: { title: { ar: 'موقعنا', en: 'Our Location' } } } as UpsertContactUsPageDto);
+
+    const map = (repository.create.mock.calls[0][0] as unknown as { map: Record<string, unknown> }).map;
+    expect(map).toMatchObject({ latitude: null, longitude: null });
+  });
+
+  it('checks the hero image only: the map is live and has no picture of its own', async () => {
+    // The map still was replaced by the live map (owner request 2026-09-22).
+    // A save must not write the field back, or the next save's whole-document
+    // upsert would carry a reference nothing reads.
     const repository = makeRepository();
     repository.findOne.mockResolvedValue(null as never);
     const media = makeMedia();
     const service = new ContactUsPagesService(repository, media);
 
-    await service.upsert({
-      ...baseDto(),
-      heroImageId,
-      map: { imageId: mapImageId },
-    } as UpsertContactUsPageDto);
+    await service.upsert({ ...baseDto(), heroImageId, map: { title: { ar: 'موقعنا', en: 'Our Location' } } } as UpsertContactUsPageDto);
 
-    expect(media.assertUsableImage).toHaveBeenCalledWith(heroImageId);
-    expect(media.assertUsableImage).toHaveBeenCalledWith(mapImageId);
+    expect(media.assertUsableImage.mock.calls).toEqual([[heroImageId]]);
+    const map = (repository.create.mock.calls[0][0] as unknown as { map: Record<string, unknown> }).map;
+    expect(map).not.toHaveProperty('imageId');
+  });
+
+  describe('a social link with its own icon', () => {
+    const iconId = new Types.ObjectId().toString();
+
+    it('stores the icon as a reference to a usable image', async () => {
+      const repository = makeRepository();
+      repository.findOne.mockResolvedValue(null as never);
+      const media = makeMedia();
+      const service = new ContactUsPagesService(repository, media);
+
+      await service.upsert({
+        ...baseDto(),
+        socialLinks: [{ platform: 'Instagram', url: 'https://www.instagram.com/uaeaf', iconId }],
+      } as UpsertContactUsPageDto);
+
+      // Checked like the hero image: an icon that is not an image,
+      // or is gone, would leave the public site drawing a broken picture.
+      expect(media.assertUsableImage).toHaveBeenCalledWith(iconId);
+      const written = repository.create.mock.calls[0][0] as { socialLinks: { iconId: Types.ObjectId }[] };
+      expect(written.socialLinks[0].iconId).toBeInstanceOf(Types.ObjectId);
+      expect(written.socialLinks[0].iconId.toString()).toBe(iconId);
+    });
+
+    it('keeps a link without an icon as it was, with the icon explicitly empty', async () => {
+      const repository = makeRepository();
+      repository.findOne.mockResolvedValue(null as never);
+      const media = makeMedia();
+      const service = new ContactUsPagesService(repository, media);
+
+      await service.upsert({
+        ...baseDto(),
+        socialLinks: [{ platform: 'X', url: 'https://x.com/uaeaf' }],
+      } as UpsertContactUsPageDto);
+
+      // Written as null rather than left out: the singleton upsert replaces
+      // the whole document, so an icon removed in the editor must not survive.
+      const written = repository.create.mock.calls[0][0] as { socialLinks: unknown[] };
+      expect(written.socialLinks).toEqual([{ platform: 'X', url: 'https://x.com/uaeaf', iconId: null }]);
+      expect(media.assertUsableImage).not.toHaveBeenCalled();
+    });
+
+    it('saves nothing when an icon is not a usable image', async () => {
+      const repository = makeRepository();
+      repository.findOne.mockResolvedValue(null as never);
+      const media = makeMedia();
+      media.assertUsableImage.mockRejectedValue(new Error('not an image') as never);
+      const service = new ContactUsPagesService(repository, media);
+
+      await expect(
+        service.upsert({
+          ...baseDto(),
+          socialLinks: [{ platform: 'Instagram', url: 'https://www.instagram.com/uaeaf', iconId }],
+        } as UpsertContactUsPageDto),
+      ).rejects.toThrow('not an image');
+      expect(repository.create).not.toHaveBeenCalled();
+    });
   });
 
   it('writes explicit empty values when a group is absent, so a save cannot leave stale content', async () => {

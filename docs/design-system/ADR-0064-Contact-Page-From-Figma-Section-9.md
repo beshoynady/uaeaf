@@ -137,6 +137,31 @@ vocabulary `contactMessages` already validates submissions against — an editor
 may relabel and reorder the options but cannot introduce one the submission
 endpoint would reject.
 
+**Amended 2026-09-21 (owner request, custom social icons).**
+- **The field:** each `socialLinks[]` entry gained an optional `iconId`, a reference to a `mediaAssets` image. The service checks it with `assertUsableImage`, as it checks the hero image, and stores it as `null` when there is none.
+- **Where it lives:** the entry type is a contact-page `ContactSocialLink` that extends the shared `SocialLink`. The shared schema, used by clubs, athletes and personnel, is unchanged.
+- **On the site:** the contact page draws the uploaded icon instead of the platform's built-in artwork when the icon resolves to a published image. Otherwise the built-in artwork is drawn as before.
+- **Uploading one (2026-09-22):** the upload gate held every picture to a 200px shortest edge. That floor is the one for a page image, and its own comment says a smaller picture "is an icon". So a 128px channel icon was refused. The fix is an upload purpose, `purpose=icon`. It lowers only that floor, to 88px: twice the 44px the icon is drawn at, the ADR-0086 D4 rule. The accepted formats (PNG, JPEG, WebP, read from the bytes), the 10 MB ceiling and the 25-megapixel ceiling are the gate's security half, and they stay the same for icons. SVG is still refused: accepting it would widen the security half for every upload. The editor's icon picker uploads with this purpose. Every other picker uploads a page image, as before.
+- **Not the footer yet:** the footer still draws its own constant links (see the owner's open decision on one source for the footer).
+
+This is a divergence from the FigJam physical model and needs back-sync.
+
+**Amended 2026-09-22 (owner request, the official address and a live map).** The federation's official address arrived from the head of the media committee: 1 Al Nahda Street, Al Nahda 1, Dubai, at 25.286069, 55.3642228. The map link supplied with it opens a Google place named for the federation, with its pin at those exact coordinates. The Zayed Sports City address the record held was sample data.
+- **The map is live.** `map.imageId` is gone from the schema, the DTO, the editor and the site. `map.latitude` and `map.longitude` replace it, numbers named and typed as on `federation` and `clubs`. The page embeds Google Maps at them, without an API key (`output=embed`, `hl` in the page's language, `loading="lazy"`, a titled frame). With either coordinate unset, it draws no map and no empty frame.
+- **The place moved under the map.** The pin card sat over the still picture. Over a live map it would cover Google's own marker and take the pointer from the map beneath it, so `pinTitle` and `pinSubtitle` are now a caption below the frame. The red anchor icon went with it, because Google draws the marker. `--color-map-marker` (ADR-0072 D13) is no longer used by this page. The token stays in the package.
+- **In the editor:** one group, "Map coordinates", holding a latitude and a longitude. It takes both or neither, since one number places nothing.
+- **Directions** use the existing `map.directionsUrl`, set to Google's documented directions form for the coordinates. No code was needed.
+- **The note is cleared.** Its text said no official address had been approved yet.
+- **The footer's location card** is now a link to this map (`/contact#contact-map-heading`), per the owner's decision on item 1: a link, not a second, smaller map.
+- **The footer names the place from this record (owner decision, option B).** Its constant Zayed Sports City / Abu Dhabi strings were deleted: they had already drifted from the map to a different city. The card reads `map.pinTitle` and `map.pinSubtitle`. The contact column's address line joins the same two in the reading language's own comma. The eight-part `address` holds one language only, so it stays the structured-data source. When the record cannot be read, the card keeps its link and shows the link's own words, and no address line is drawn.
+- **The English wording is provisional.** The official address came in Arabic only. "1 Al Nahda Street, Al Nahda 1, Dubai, United Arab Emirates" is a translation awaiting the media committee's confirmation (owner, 2026-09-22), and it is not to be treated as final until then.
+- **PENDING FIGMA BACK-SYNC:**
+  - the live map in place of the still;
+  - the caption under the frame;
+  - the linked footer card, in its hover and focus states.
+
+This is a divergence from the FigJam physical model and needs back-sync.
+
 `contactMessages` gained an optional `subject`, because the designed form has a
 Subject input and the endpoint had nowhere to put it — a citizen's text would
 have been accepted and silently dropped. **This is a divergence from the live
@@ -145,10 +170,9 @@ FigJam physical model and needs back-sync.**
 ### Still open
 
 - **`mediaAssets` has no admin screen.** The dashboard reads the library to
-  populate the picker and cannot create an entry, so `heroImageId` and
-  `map.imageId` cannot be filled by an editor at all. The page renders without
-  either — a black hero ground and an empty map frame — which is correct
-  behaviour for an unset reference, not a substitute for the screen.
+  populate the picker and uploads from inside it, but has no screen of its own
+  for the library. (`map.imageId`, the second image this item named, was
+  removed on 2026-09-22.)
 - **PENDING FIGMA BACK-SYNC.** The English treatment decided in C3, the green
   ladder in C2, the heading placement in C1 and the 13px pin subtitle in C4 all
   differ from what the file currently shows.

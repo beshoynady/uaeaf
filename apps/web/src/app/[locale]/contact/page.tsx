@@ -64,29 +64,32 @@ const ADDRESS_PARTS: readonly (keyof PostalAddress)[] = [
   "postalCode",
 ];
 
-export async function generateMetadata({
+export const generateMetadata = async ({
   params,
 }: {
   params: Promise<{ locale: AppLocale }>;
-}): Promise<Metadata> {
+}): Promise<Metadata> => {
   const { locale } = await params;
   // The one page of the twelve whose public read carries a complete page:
   // email, telephone, postal address and opening hours are all in the
   // singleton record, so the Chapter 14 §11 threshold is met as soon as an
   // editor saves it.
   return buildStaticPageMetadata(KEY, locale, await isIndexable(findPublicPage(KEY)!));
-}
+};
 
-export default async function ContactPage({ params }: { params: Promise<{ locale: AppLocale }> }) {
+const ContactPage = async ({ params }: { params: Promise<{ locale: AppLocale }> }) => {
   const { locale } = await params;
   setRequestLocale(locale);
 
   const { page, record, title, subtitle } = await loadStaticPage<ContactUsPage>(KEY, locale);
   const t = await getTranslations({ locale, namespace: "Contact" });
 
-  // One request for both pictures: the hero and the map still are the only two
-  // `mediaAssets` references on the page.
-  const media = await fetchPublicMedia([record?.heroImageId, record?.map?.imageId]);
+  // One request for every picture the page references: the hero, and any
+  // icon an editor uploaded for a social channel.
+  const media = await fetchPublicMedia([
+    record?.heroImageId,
+    ...(record?.socialLinks ?? []).map((link) => link.iconId),
+  ]);
 
   const addressLines = record?.address
     ? ADDRESS_PARTS.map((part) => record.address?.[part]).filter(
@@ -159,12 +162,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
               />
             </div>
             <div className={`rise-scroll ${PANEL_TALL}`}>
-              <ContactMap
-                locale={locale}
-                record={record}
-                mapImage={record.map?.imageId ? media.get(record.map.imageId) : undefined}
-                headingId="contact-map-heading"
-              />
+              <ContactMap locale={locale} record={record} headingId="contact-map-heading" />
             </div>
           </div>
 
@@ -173,7 +171,7 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
               record, not from the footer's site-wide constant: this is content
               an editor controls. */}
           <div className="mx-auto w-full max-w-[1248px] px-4 pb-20 sm:px-6 md:px-8 lg:px-12 xl:px-16">
-            <ContactSocial links={record.socialLinks ?? []} />
+            <ContactSocial links={record.socialLinks ?? []} icons={media} />
           </div>
 
           {/* The postal address is part of the record but not of the designed
@@ -191,10 +189,12 @@ export default async function ContactPage({ params }: { params: Promise<{ locale
       ) : null}
     </>
   );
-}
+};
+
+export default ContactPage;
 
 /** Chapter 14 §4: every property asserted here is rendered or exposed above. */
-function schemaAddress(address: PostalAddress): Record<string, string> {
+const schemaAddress = (address: PostalAddress): Record<string, string> => {
   const mapped: Record<string, string> = {};
   const street = [address.building, address.street].filter(Boolean).join(" ");
   if (street) mapped.streetAddress = street;
@@ -204,4 +204,4 @@ function schemaAddress(address: PostalAddress): Record<string, string> {
   if (address.postalCode) mapped.postalCode = address.postalCode;
   if (address.country) mapped.addressCountry = address.country;
   return mapped;
-}
+};

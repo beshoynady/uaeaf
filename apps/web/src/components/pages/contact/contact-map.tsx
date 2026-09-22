@@ -1,22 +1,22 @@
-import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import type { AppLocale } from "@/i18n/routing";
-import type { ContactUsPage, MediaAssetPublic } from "@/lib/api/types";
-import { altOf, isExternalMedia } from "@/lib/api/media";
-import { isCloudinaryUrl } from "@/lib/api/cloudinary-loader";
-import { cloudinarySrcSet } from "@/lib/api/cloudinary-srcset";
+import type { ContactUsPage } from "@/lib/api/types";
 import { text } from "@/components/pages/static-page-screen";
 import { FOCUS, TRANSITION } from "@/components/ui/interactive";
 import { GLASS_EDGE, PANEL, PANEL_FILL, RECESS } from "@/components/ui/surface";
 import { ContactIcon } from "@/components/ui/contact-icon";
+import { LocationMap } from "./location-map";
 
 /**
- * The location panel: heading, a still map, and the two ways out to a real map.
+ * The location panel: heading, the live map, the place, and the two ways out
+ * to Google Maps.
  *
- * Figma `1192:2304` (AR) / `1475:2614` (EN). The map is a picture, not an
- * embed — the federation has not approved an official Maps address yet, which
- * is what `map.note` says on the page. Nothing here loads a third-party map
- * script, so the page ships no cross-origin request a visitor did not ask for.
+ * Figma `1192:2304` (AR) / `1475:2614` (EN) drew a still picture with the
+ * place on a card over it, while no official address existed. The address is
+ * now official (owner 2026-09-22) and the map is live, at the record's own
+ * coordinates. The place moved under the map: over a live map, the card
+ * would cover Google's own marker and take the pointer from the map beneath
+ * it. With no coordinates stored, no map is drawn, and no empty frame either.
  *
  * Both call-to-action targets are optional and independent: `googleMapsUrl`
  * opens the place, `map.directionsUrl` opens routing. A button whose target is
@@ -28,23 +28,23 @@ import { ContactIcon } from "@/components/ui/contact-icon";
  * (D2), and the panel is a peer of the form panel beside it, painted the same
  * way.
  */
-export async function ContactMap({
+export const ContactMap = async ({
   locale,
   record,
-  mapImage,
   headingId,
 }: {
   locale: AppLocale;
   record: ContactUsPage;
-  mapImage: MediaAssetPublic | undefined;
   headingId: string;
-}) {
+}) => {
   const t = await getTranslations({ locale, namespace: "Contact" });
 
   const title = text(record.map?.title, locale) ?? t("map.title");
   const pinTitle = text(record.map?.pinTitle, locale);
   const pinSubtitle = text(record.map?.pinSubtitle, locale);
   const note = text(record.map?.note, locale);
+  const latitude = record.map?.latitude;
+  const longitude = record.map?.longitude;
 
   const BUTTON = `inline-flex min-h-11 items-center justify-center rounded-[var(--button-radius)] px-4 py-3.5 text-body-sm font-semibold ${TRANSITION}`;
 
@@ -58,59 +58,29 @@ export async function ContactMap({
         {title}
       </h2>
 
-      <div className={`relative flex min-h-[220px] w-full items-center justify-center overflow-hidden ${RECESS} ${PANEL_FILL} md:min-h-[300px] xl:min-h-[380px]`}>
-        {mapImage ? (
-          isCloudinaryUrl(mapImage.file.url) ? (
-            // See the hero: the CDN does the resizing, and only a string can
-            // carry that instruction across the server/client boundary.
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={mapImage.file.url}
-              srcSet={cloudinarySrcSet(mapImage.file.url, mapImage.file.width)}
-              sizes="(min-width: 1280px) 600px, (min-width: 768px) 688px, 350px"
-              alt={altOf(mapImage, locale)}
-              loading="lazy"
-              className="absolute inset-0 size-full object-cover"
-            />
-          ) : (
-            <Image
-              src={mapImage.file.url}
-              alt={altOf(mapImage, locale)}
-              fill
-              unoptimized={isExternalMedia(mapImage.file.url)}
-              sizes="(min-width: 1280px) 600px, (min-width: 768px) 688px, 350px"
-              className="object-cover"
-            />
-          )
-        ) : null}
+      {typeof latitude === "number" && typeof longitude === "number" ? (
+        <div
+          data-testid="contact-map-frame"
+          className={`relative min-h-[220px] w-full overflow-hidden ${RECESS} ${PANEL_FILL} md:min-h-[300px] xl:min-h-[380px]`}
+        >
+          <LocationMap latitude={latitude} longitude={longitude} locale={locale} title={t("map.frameTitle")} />
+        </div>
+      ) : null}
 
-        {pinTitle ? (
-          <div className="relative flex flex-col items-center gap-2">
-            <div className="flex flex-col items-center gap-1 rounded-lg bg-[color:var(--color-surface-base)] px-3 py-2 shadow-[0_4px_6px_rgb(0_0_0/0.12)]">
-              <p className="flex items-center gap-1.5 text-label font-bold text-[color:var(--color-text-primary)]">
-                <ContactIcon name="mapPin" className="size-3.5 text-[color:var(--color-text-secondary)]" />
-                {pinTitle}
-              </p>
-              {/* `text-caption`, not the 11px the frame carries: Chapter 4's
-                  floor is 13px and neither ADR-0041 exception covers this
-                  label (ADR-0064 C4). */}
-              {pinSubtitle ? (
-                <p className="text-caption text-[color:var(--color-text-secondary)]">
-                  {pinSubtitle}
-                </p>
-              ) : null}
-            </div>
-            {/* The position marker — the one element on this page whose
-                colour is wayfinding rather than one of ADR-0065 D2's roles. It
-                has to separate from whatever map imagery sits behind it, and
-                the ground is a photograph, so the value must not follow the
-                theme: `--color-map-marker` holds one red in every theme
-                (ADR-0072 D13), under a name `token-contract.spec.ts` allows
-                in text utilities, unlike `--color-brand-secondary`. */}
-            <ContactIcon name="mapPinAnchor" className="size-3 text-[color:var(--color-map-marker)]" />
-          </div>
-        ) : null}
-      </div>
+      {pinTitle ? (
+        <p className="flex items-start gap-2 text-start">
+          <ContactIcon name="mapPin" className="mt-1 size-3.5 shrink-0 text-[color:var(--color-text-secondary)]" />
+          <span className="flex flex-col gap-1">
+            <span className="text-label font-bold text-[color:var(--color-text-primary)]">{pinTitle}</span>
+            {/* `text-caption`, not the 11px the frame carries: Chapter 4's
+                floor is 13px and neither ADR-0041 exception covers this
+                label (ADR-0064 C4). */}
+            {pinSubtitle ? (
+              <span className="text-caption text-[color:var(--color-text-secondary)]">{pinSubtitle}</span>
+            ) : null}
+          </span>
+        </p>
+      ) : null}
 
       {record.googleMapsUrl || record.map?.directionsUrl ? (
         <div className="flex flex-col gap-3 md:flex-row md:items-center">
@@ -147,4 +117,4 @@ export async function ContactMap({
       {note ? <p className="text-caption text-[color:var(--color-text-secondary)]">{note}</p> : null}
     </section>
   );
-}
+};

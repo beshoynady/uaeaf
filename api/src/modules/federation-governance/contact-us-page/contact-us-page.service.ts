@@ -21,8 +21,13 @@ export class ContactUsPagesService extends SingletonPageService<ContactUsPageDoc
     if (dto.heroImageId) {
       await this.mediaAssetsService.assertUsableImage(dto.heroImageId);
     }
-    if (dto.map?.imageId) {
-      await this.mediaAssetsService.assertUsableImage(dto.map.imageId);
+    // A channel's own icon is checked like the page's other images, before
+    // anything is written: a save that half-applied would leave the site
+    // drawing a picture that is not there.
+    for (const link of dto.socialLinks ?? []) {
+      if (link.iconId) {
+        await this.mediaAssetsService.assertUsableImage(link.iconId);
+      }
     }
     return this.upsertDocument({
       heroImageId: dto.heroImageId ? new Types.ObjectId(dto.heroImageId) : null,
@@ -45,7 +50,14 @@ export class ContactUsPagesService extends SingletonPageService<ContactUsPageDoc
       googleMapsUrl: dto.googleMapsUrl ?? null,
       officeHours: dto.officeHours ?? null,
       website: dto.website ?? null,
-      socialLinks: dto.socialLinks ?? [],
+      // Each link written field by field, the icon as null when there is none:
+      // the upsert replaces the document, so an icon the editor removed must
+      // not survive in the stored row.
+      socialLinks: (dto.socialLinks ?? []).map((link) => ({
+        platform: link.platform,
+        url: link.url,
+        iconId: link.iconId ? new Types.ObjectId(link.iconId) : null,
+      })),
       locationSummary: dto.locationSummary ?? null,
       cardLabels: dto.cardLabels
         ? {
@@ -65,7 +77,8 @@ export class ContactUsPagesService extends SingletonPageService<ContactUsPageDoc
       map: dto.map
         ? {
             title: dto.map.title ?? null,
-            imageId: dto.map.imageId ? new Types.ObjectId(dto.map.imageId) : null,
+            latitude: dto.map.latitude ?? null,
+            longitude: dto.map.longitude ?? null,
             pinTitle: dto.map.pinTitle ?? null,
             pinSubtitle: dto.map.pinSubtitle ?? null,
             directionsUrl: dto.map.directionsUrl ?? null,

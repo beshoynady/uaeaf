@@ -1,6 +1,6 @@
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
-import { CreateContactMessageDto } from './create-contact-messages.dto.js';
+import { CreateContactMessageDto, UpdateContactMessageStatusDto } from './create-contact-messages.dto.js';
 
 /**
  * Length limits added schema-audit-2026-09-04.md §3.7 (P1 finding): this is
@@ -154,5 +154,25 @@ describe('CreateContactMessageDto length limits', () => {
     const errors = await validate(dto);
 
     expect(errors.some((e) => e.property === 'senderEmail')).toBe(true);
+  });
+});
+
+describe('UpdateContactMessageStatusDto', () => {
+  it('accepts each of the four statuses', async () => {
+    for (const status of ['New', 'InProgress', 'Resolved', 'Closed']) {
+      await expect(validate(plainToInstance(UpdateContactMessageStatusDto, { status }))).resolves.toHaveLength(0);
+    }
+  });
+
+  it('refuses a status the schema does not know', async () => {
+    const errors = await validate(plainToInstance(UpdateContactMessageStatusDto, { status: 'Archived' }));
+
+    expect(errors.map((error) => error.property)).toEqual(['status']);
+  });
+
+  it('refuses a body with no status', async () => {
+    const errors = await validate(plainToInstance(UpdateContactMessageStatusDto, {}));
+
+    expect(errors.map((error) => error.property)).toEqual(['status']);
   });
 });

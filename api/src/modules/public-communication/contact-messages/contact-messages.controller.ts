@@ -10,6 +10,7 @@ import { ContactMessagesService } from './contact-messages.service.js';
 import {
   CreateContactMessageDto,
   ReplyToContactMessageDto,
+  UpdateContactMessageStatusDto,
 } from './dto/create-contact-messages.dto.js';
 
 /** Implements: contactMessages collection, Domain 10 — Public
@@ -47,6 +48,14 @@ export class ContactMessagesController {
     return this.service.findAll();
   }
 
+  /** The count behind the dashboard header's bell. Before `:id` — Nest
+   *  matches in declaration order. */
+  @Get('summary')
+  @RequirePermission('contactMessages', 'Read')
+  summary() {
+    return this.service.summary();
+  }
+
   /** Before `:id` — Nest matches in declaration order. */
   @Get('export')
   @RequirePermission('contactMessages', 'Export')
@@ -60,6 +69,12 @@ export class ContactMessagesController {
   @RequirePermission('contactMessages', 'Read')
   findOne(@Param('id') id: string) {
     return this.service.findById(id);
+  }
+
+  @Patch(':id/status')
+  @RequirePermission('contactMessages', 'Update')
+  updateStatus(@Param('id') id: string, @Body() dto: UpdateContactMessageStatusDto) {
+    return this.service.updateStatus(id, dto.status);
   }
 
   @Patch(':id/reply')

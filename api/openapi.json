@@ -724,6 +724,18 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "purpose",
+            "required": false,
+            "in": "query",
+            "description": "What the picture is for. `icon` lowers the shortest-edge floor from 200px to 88px, for a social channel icon drawn at 44px. The accepted formats, the byte ceiling and the megapixel ceiling are the same for every purpose. Absent or any other value: a page image.",
+            "schema": {
+              "enum": [
+                "icon"
+              ],
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -7235,6 +7247,20 @@
         ]
       }
     },
+    "/api/v1/contact-messages/summary": {
+      "get": {
+        "operationId": "ContactMessagesController_summary_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "contact-messages"
+        ]
+      }
+    },
     "/api/v1/contact-messages/export": {
       "get": {
         "operationId": "ContactMessagesController_exportCsv_v1",
@@ -7283,6 +7309,39 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "contact-messages"
+        ]
+      }
+    },
+    "/api/v1/contact-messages/{id}/status": {
+      "patch": {
+        "operationId": "ContactMessagesController_updateStatus_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateContactMessageStatusDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": ""
@@ -7380,6 +7439,16 @@
             "description": "Published on or before this date, to the end of that day (inclusive).",
             "schema": {
               "example": "2026-06-30",
+              "type": "string"
+            }
+          },
+          {
+            "name": "tag",
+            "required": false,
+            "in": "query",
+            "description": "Narrow to one free label, matched case-insensitively and whole. Independent of `category`: an article carries one category and any number of tags.",
+            "schema": {
+              "example": "ألعاب القوى",
               "type": "string"
             }
           },
@@ -7529,6 +7598,26 @@
             }
           },
           {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Published on or after this date (inclusive). A draft has no publication date, so a range narrows the listing to items that have been published.",
+            "schema": {
+              "example": "2026-01-01",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "Published on or before this date, to the end of that day (inclusive).",
+            "schema": {
+              "example": "2026-06-30",
+              "type": "string"
+            }
+          },
+          {
             "name": "includeArchived",
             "required": false,
             "in": "query",
@@ -7538,6 +7627,20 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "articles"
+        ]
+      }
+    },
+    "/api/v1/articles/summary": {
+      "get": {
+        "operationId": "ArticlesController_summary_v1",
+        "parameters": [],
         "responses": {
           "200": {
             "description": ""
@@ -11263,6 +11366,7 @@
                 "submit",
                 "resubmit",
                 "publish",
+                "publishApproved",
                 "approve",
                 "reject",
                 "return"
@@ -11290,6 +11394,7 @@
                 "submit",
                 "resubmit",
                 "publish",
+                "publishApproved",
                 "approve",
                 "reject",
                 "return"
@@ -12509,6 +12614,27 @@
           }
         }
       },
+      "ContactSocialLinkDto": {
+        "type": "object",
+        "properties": {
+          "platform": {
+            "type": "string",
+            "description": "e.g. \"Instagram\", \"X\"."
+          },
+          "url": {
+            "type": "string"
+          },
+          "iconId": {
+            "type": "object",
+            "nullable": true,
+            "description": "A `mediaAssets` image drawn instead of the platform's built-in icon. Empty keeps the built-in one."
+          }
+        },
+        "required": [
+          "platform",
+          "url"
+        ]
+      },
       "ContactCardLabelsDto": {
         "type": "object",
         "properties": {
@@ -12567,9 +12693,17 @@
           "title": {
             "$ref": "#/components/schemas/LocalizedTextDto"
           },
-          "imageId": {
-            "type": "string",
-            "description": "MediaAsset id of the map still."
+          "latitude": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90,
+            "description": "Where the live map is centred."
+          },
+          "longitude": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180,
+            "description": "Where the live map is centred."
           },
           "pinTitle": {
             "$ref": "#/components/schemas/LocalizedTextDto"
@@ -12624,7 +12758,7 @@
           "socialLinks": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/SocialLinkDto"
+              "$ref": "#/components/schemas/ContactSocialLinkDto"
             }
           },
           "locationSummary": {
@@ -14147,6 +14281,23 @@
           "messageBody"
         ]
       },
+      "UpdateContactMessageStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "New",
+              "InProgress",
+              "Resolved",
+              "Closed"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
       "ReplyToContactMessageDto": {
         "type": "object",
         "properties": {
@@ -14182,6 +14333,13 @@
               "General",
               "FederationInMedia"
             ]
+          },
+          "tags": {
+            "description": "Free labels, as the newsroom typed them. The badge a reader sees and the value a tag link carries are the same string.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "title": {
             "$ref": "#/components/schemas/LocalizedTextDto"
@@ -14226,6 +14384,7 @@
           "id",
           "slug",
           "category",
+          "tags",
           "title",
           "authorDisplayName",
           "publishDate",
@@ -14254,6 +14413,18 @@
             ],
             "default": "General",
             "description": "Which shelf of the newsroom this belongs on. Not `externalMediaCoverage`, which is a separate collection of links to coverage published elsewhere — this labels an article the federation wrote itself. Omitted means General."
+          },
+          "tags": {
+            "default": [],
+            "description": "Free labels for display and filtering. NOT a second category: `category` is a closed list of one, and it decides which homepage section the article appears in.",
+            "example": [
+              "ألعاب القوى",
+              "Relay"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "slug": {
             "type": "string",
@@ -14311,6 +14482,13 @@
               "General",
               "FederationInMedia"
             ]
+          },
+          "tags": {
+            "description": "Free labels for display and filtering. NOT a second category: `category` is a closed list of one, and it decides which homepage section the article appears in.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "slug": {
             "type": "string",

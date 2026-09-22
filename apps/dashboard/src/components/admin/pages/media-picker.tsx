@@ -48,6 +48,7 @@ export const MediaPicker = ({
   disabled,
   locale,
   minSourcePx,
+  purpose,
   onChange,
   onUploaded,
 }: {
@@ -67,6 +68,10 @@ export const MediaPicker = ({
    * work gets worked around.
    */
   minSourcePx?: number;
+  /** `icon` for a small picture drawn as an icon, which the API holds to a
+   *  lower floor than a page image. The picker names the purpose only; the
+   *  floor itself stays the API's. */
+  purpose?: "icon";
   onChange: (id: string) => void;
   /** Lets the screen add the new image to its own list, so it appears in the
    *  grid without a reload. Absent where the page has no list to update. */
@@ -136,6 +141,7 @@ export const MediaPicker = ({
               disabled={disabled || uploading}
               busy={uploading}
               setBusy={setUploading}
+              purpose={purpose}
               onUploaded={(image) => {
                 onUploaded?.(image);
                 onChange(image.id);
@@ -217,11 +223,13 @@ const UploadPanel = ({
   disabled,
   busy,
   setBusy,
+  purpose,
   onUploaded,
 }: {
   disabled: boolean;
   busy: boolean;
   setBusy: (busy: boolean) => void;
+  purpose?: "icon";
   onUploaded: (image: MediaAssetOption) => void;
 }) => {
   const t = useTranslations("SitePages");
@@ -269,7 +277,10 @@ const UploadPanel = ({
     setProblem(null);
     setBusy(true);
     try {
-      const response = await fetch("/api/admin/media-assets/upload", { method: "POST", body });
+      const response = await fetch(
+        purpose === "icon" ? "/api/admin/media-assets/upload?purpose=icon" : "/api/admin/media-assets/upload",
+        { method: "POST", body },
+      );
       const payload: unknown = await response.json().catch(() => null);
 
       if (!response.ok) {

@@ -75,15 +75,27 @@ export class MediaAssetsController {
       'with `ar` and `en` keys, sent as JSON text because every multipart part is a string.',
     type: UploadMediaAssetDto,
   })
+  @ApiQuery({
+    name: 'purpose',
+    required: false,
+    enum: ['icon'],
+    description:
+      'What the picture is for. `icon` lowers the shortest-edge floor from 200px to 88px, for a ' +
+      'social channel icon drawn at 44px. The accepted formats, the byte ceiling and the megapixel ' +
+      'ceiling are the same for every purpose. Absent or any other value: a page image.',
+  })
   upload(
     @UploadedFile() file: UploadCandidate,
     @Body() dto: UploadMediaAssetDto,
     @Query('scope') scope?: string,
+    @Query('purpose') purpose?: string,
   ) {
     return this.service.uploadAndCreate(
       file,
       dto,
       scope === 'library' ? STORAGE_FOLDERS.library : STORAGE_FOLDERS.pages,
+      // Anything but the one known word is a page image, held to the page floor.
+      purpose === 'icon' ? 'icon' : 'page',
     );
   }
 

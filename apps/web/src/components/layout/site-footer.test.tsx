@@ -9,9 +9,42 @@ import enMessages from "../../../messages/en.json";
 
 const messagesByLocale = { ar: arMessages, en: enMessages } as const;
 
+/** The place as the contact page's record names it (`map.pinTitle`, `map.pinSubtitle`). */
+const PLACE = {
+  ar: { place: "١ شارع النهدة، النهدة الأولى", region: "دبي، الإمارات العربية المتحدة", separator: "، " },
+  en: { place: "1 Al Nahda Street, Al Nahda 1", region: "Dubai, United Arab Emirates", separator: ", " },
+} as const;
+
 describe.each<AppLocale>(["ar", "en"])("SiteFooter (%s)", (locale) => {
   const messages = messagesByLocale[locale];
   const localePath = (href: string) => `/${locale}${href === "/" ? "" : href}`;
+  const { place, region, separator } = PLACE[locale];
+
+  describe("the location, read from the contact page's record (owner decision 2026-09-22, option B)", () => {
+    it("shows the place the record names, on the card and in the address line", () => {
+      renderWithIntl(<SiteFooter place={place} region={region} />, locale);
+
+      const card = screen.getByTestId("footer-map-card");
+      expect(card).toHaveTextContent(place);
+      expect(card).toHaveTextContent(region);
+      expect(screen.getByTestId("footer-address")).toHaveTextContent(`${place}${separator}${region}`);
+    });
+
+    it("keeps no address of its own in the message catalogue", () => {
+      // The constant said Abu Dhabi while the map showed Dubai: two sources
+      // for one fact, and they had already drifted apart.
+      expect(messages.Footer).not.toHaveProperty("mapCardCity");
+      expect(messages.Footer).not.toHaveProperty("mapCardRegion");
+      expect(messages.Footer).not.toHaveProperty("address");
+    });
+
+    it("still links to the map, and invents no address, when the record is unavailable", () => {
+      renderWithIntl(<SiteFooter />, locale);
+
+      expect(screen.getByTestId("footer-map-card")).toHaveTextContent(messages.Footer.locationLink);
+      expect(screen.queryByTestId("footer-address")).toBeNull();
+    });
+  });
 
   it("renders a contentinfo landmark", () => {
     renderWithIntl(<SiteFooter />, locale);
@@ -33,6 +66,17 @@ describe.each<AppLocale>(["ar", "en"])("SiteFooter (%s)", (locale) => {
     renderWithIntl(<SiteFooter />, locale);
     const nav = screen.getByRole("navigation", { name: messages.Footer.legalNav });
     expect(within(nav).getAllByRole("link")).toHaveLength(LEGAL_LINKS.length);
+  });
+
+  it("links the location card to the live map on the contact page", () => {
+    // Item 1 of the contact-page brief, as decided: a link to the map, not a
+    // second, smaller map (owner 2026-09-22).
+    renderWithIntl(<SiteFooter />, locale);
+    const card = screen.getByTestId("footer-map-card");
+
+    expect(card.tagName).toBe("A");
+    expect(card).toHaveAttribute("href", `/${locale}/contact#contact-map-heading`);
+    expect(card).toHaveAccessibleName(expect.stringContaining(messages.Footer.locationLink));
   });
 
   it("gives every social icon a translated accessible name and opens it safely", () => {
@@ -107,7 +151,7 @@ describe("SiteFooter responsive layout (Chapter 5-derived breakpoints)", () => {
   });
 
   it("makes previously fixed-width column children fluid so they cannot overflow a narrower Chapter-5-derived column", () => {
-    const { container } = renderWithIntl(<SiteFooter />, "ar");
+    const { container } = renderWithIntl(<SiteFooter place={PLACE.ar.place} region={PLACE.ar.region} />, "ar");
 
     // Brand description (was a bare `w-[260px]`) — must shrink inside the
     // ~214px column produced at the low end of `lg` (1024px, see design note).

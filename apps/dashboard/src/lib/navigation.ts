@@ -208,6 +208,16 @@ export const NAV_ITEMS: readonly NavItem[] = [
     ],
   },
   /**
+   * What the public contact form sends (owner request 2026-09-22, IA §4.8
+   * note). Reading is the job here: a reader without the update grant still
+   * opens the screen, and it offers them no status change.
+   */
+  {
+    key: "messages",
+    href: "/messages",
+    requires: [{ resourceType: "contactMessages", action: "Read" }],
+  },
+  /**
    * The homepage, with its screens beneath it in the page's own order (owner
    * decision 2026-09-17, ADR-0085).
    *

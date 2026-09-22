@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { screen } from "@testing-library/react";
 import { renderWithIntl } from "@/test/render-with-intl";
 import { ContactSocial } from "./contact-social";
+import type { MediaAssetPublic } from "@/lib/api/types";
 
 /**
  * The federation's social channels, read from the page's own record.
@@ -17,6 +18,64 @@ const LINKS = [
   { platform: "Instagram", url: "https://www.instagram.com/uaeaf" },
   { platform: "X", url: "https://x.com/uaeaf" },
 ];
+
+/** A published image, in the shape `fetchPublicMedia` returns. */
+const image = (id: string, url: string) =>
+  ({
+    id,
+    file: { url, mimeType: "image/png", width: 128, height: 128, size: 1, photographer: null, captureDate: null },
+    caption: { ar: "", en: "" },
+    altText: { ar: "أيقونة", en: "Icon" },
+    displayOrder: 0,
+    isFeatured: false,
+  }) as MediaAssetPublic;
+
+describe("ContactSocial — an icon the editor uploaded (owner request 2026-09-21)", () => {
+  const iconOf = (name: string) => screen.getByRole("link", { name }).querySelector("img");
+
+  it("draws the uploaded icon instead of the platform's own", () => {
+    renderWithIntl(
+      <ContactSocial
+        links={[{ platform: "Instagram", url: "https://www.instagram.com/uaeaf", iconId: "i1" }]}
+        icons={new Map([["i1", image("i1", "https://cdn.test/instagram-custom.png")]])}
+      />,
+    );
+
+    // Still named by the platform: the picture changed, the channel did not.
+    expect(iconOf("إنستغرام")?.getAttribute("src")).toContain("instagram-custom.png");
+  });
+
+  it("keeps the platform's own icon when a link has none", () => {
+    renderWithIntl(<ContactSocial links={[{ platform: "Instagram", url: "https://www.instagram.com/uaeaf" }]} icons={new Map()} />);
+
+    expect(iconOf("إنستغرام")?.getAttribute("src")).toContain("instagram.svg");
+  });
+
+  it("falls back to the platform's own icon when the uploaded one is not published", () => {
+    // A hidden or deleted asset does not resolve: the channel must still
+    // look like itself rather than go blank.
+    renderWithIntl(
+      <ContactSocial
+        links={[{ platform: "Instagram", url: "https://www.instagram.com/uaeaf", iconId: "gone" }]}
+        icons={new Map()}
+      />,
+    );
+
+    expect(iconOf("إنستغرام")?.getAttribute("src")).toContain("instagram.svg");
+  });
+
+  it("gives a platform with no built-in artwork its uploaded icon rather than two letters", () => {
+    renderWithIntl(
+      <ContactSocial
+        links={[{ platform: "Threads", url: "https://www.threads.net/@uaeaf", iconId: "t1" }]}
+        icons={new Map([["t1", image("t1", "https://cdn.test/threads.png")]])}
+      />,
+    );
+
+    expect(iconOf("Threads")?.getAttribute("src")).toContain("threads.png");
+    expect(screen.getByRole("link", { name: "Threads" }).className).toMatch(/\bsize-11\b/);
+  });
+});
 
 describe("ContactSocial", () => {
   it("renders one labelled link per stored channel", () => {
