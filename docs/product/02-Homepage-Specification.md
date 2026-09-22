@@ -226,7 +226,7 @@ Fully inherited from `01-Information-Architecture.md` §8.1 (now resolved), rest
 ## 11. News Strategy
 
 - **Content type [D]:** `CT-ARTICLE-001` (Chapter 13), Full Editorial Lifecycle (Author → Review → Publish per PR-010/Chapter 22 author≠publisher rule).
-- **Homepage presentation [B]:** lead article + list, category filter, responsive to 1.35fr/1fr split ≥1024px.
+- **Homepage presentation [B]:** lead article + list, category filter, responsive to 1.35fr/1fr split ≥1024px. ⚠️ *Amended 2026-09-22 (ADR-0095): built from the approved canvas as the lead story and the next five in two equal columns from `lg`, stacked below; there is no category filter on the section.*
 - **Freshness:** every article **MUST** carry accurate publish/modified timestamps — required both for §7 content-freshness rule and for SEO eligibility (§18, `NewsArticle` schema requires it).
 - **Editorial boundary [D]:** Chapter 13 §5.2 rule — news may **reference** results/athletes/competitions but **MUST NOT** restate their factual values independently (anti-duplication, ADR-0013 applied to content). A news card mentioning a result links to the canonical result, it does not re-type the mark.
 - **AI-assisted content [D]:** PR-007 — any AI-assisted field in a news object **MUST** pass human review before publish; never auto-published.
@@ -431,7 +431,7 @@ Applied to the Homepage:
 |---|---|
 | <640px | Single column; drawer nav; event rows hide seconds column and category chip |
 | 640–1023px | Two-column footer and partner grid |
-| ≥1024px | Single-row header with full nav; 4-up stats; 4-column media mosaic and footer; side-by-side news (1.35fr/1fr) |
+| ≥1024px | Single-row header with full nav; 4-up stats; 4-column media mosaic and footer; side-by-side news (two equal columns since ADR-0095, 2026-09-22; was 1.35fr/1fr) |
 | ≥1620px | Floating social rail promotes from bottom capsule to side rail (gutter exists outside the 1440px container) |
 
 **Section height rule [B]:** every Homepage section is at least `calc(100svh - header)` and grows with content — nothing is clipped, nothing force-scrolls inside a section. This is a **public-layer-only** pattern; ADR-0001 forbids it in the dashboard.

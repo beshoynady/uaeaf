@@ -46,6 +46,19 @@ export const ARTICLE_CATEGORIES = ['General', 'FederationInMedia'] as const;
 export type ArticleCategory = (typeof ARTICLE_CATEGORIES)[number];
 
 /**
+ * What a story is about: six topics, a closed list (owner decision 2026-09-22).
+ *
+ * Neither `category` nor `tags`, and the three must stay apart. `category` is
+ * the shelf and decides which homepage section an article appears in; `tags`
+ * are free words the newsroom invents; the topic is the one closed answer to
+ * "what is this about" that colours the chip a reader sees. The identifiers
+ * are English and fixed, and the reader's label and colour come from each
+ * app (Chapter 9, CR-TOPIC).
+ */
+export const ARTICLE_TOPICS = ['nationalTeam', 'training', 'youth', 'international', 'community', 'records'] as const;
+export type ArticleTopic = (typeof ARTICLE_TOPICS)[number];
+
+/**
  * Implements: articles collection, Domain 4 — News & Editorial
  * (`docs/product/07-Mongoose-Schema-Specification.md` §articles, content type
  * `CT-ARTICLE-001` in `03-Content-Data-Structuring-Document.md` §8.16).
@@ -55,9 +68,9 @@ export type ArticleCategory = (typeof ARTICLE_CATEGORIES)[number];
  * only which articles are live and in what order.
  *
  * Deliberately absent, each for a stated reason rather than an oversight:
- *  - `contentCategoryId` — the newsroom files by `category` and labels by
- *    `tags`; a third taxonomy with no screen behind it is a column nobody
- *    fills.
+ *  - `contentCategoryId` — the newsroom files by `category`, classifies by
+ *    `topic` and labels by `tags`; a fourth taxonomy with no screen behind it
+ *    is a column nobody fills.
  *  - `references` to athletes, clubs or championships — those collections have
  *    no public surface, and a link to nothing is worse than no link.
  *  - any link to a results table — the tournament result is published as an
@@ -80,6 +93,15 @@ export class Article extends BaseSchema {
    */
   @Prop({ type: String, enum: ARTICLE_CATEGORIES, required: true, default: 'General' })
   category: ArticleCategory;
+
+  /**
+   * Nullable with no default, unlike `category`: an article nobody classified
+   * has no topic, and a default would claim a classification nobody made. A
+   * new article cannot be created without one (`CreateArticleDto`); the ones
+   * written before the field existed stay publishable as they are.
+   */
+  @Prop({ type: String, enum: ARTICLE_TOPICS, default: null })
+  topic: ArticleTopic | null;
 
   /**
    * The URL segment, one per article across both languages.

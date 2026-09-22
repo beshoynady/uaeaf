@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { newsSections, shelfCategory } from "./homepage-news";
+import { describe, expect, it, vi } from "vitest";
+import { isCoverageSlot, loadHomepageNews, newsSections, shelfCategory } from "./homepage-news";
 import type { PageSectionPublic } from "@/lib/api/types";
 
 const section = (overrides: Partial<PageSectionPublic> = {}): PageSectionPublic =>
@@ -76,5 +76,39 @@ describe("shelfCategory", () => {
     // disappears — the hardest kind of bug to see on a front page.
     expect(shelfCategory(section({ configuration: { category: "Genral" } }))).toBeNull();
     expect(shelfCategory(section({ configuration: { category: 7 } }))).toBeNull();
+  });
+});
+
+const fetchArticles = vi.hoisted(() => vi.fn(async () => ({ items: [], total: 0 })));
+vi.mock("@/lib/api/articles", () => ({ fetchArticles }));
+vi.mock("@/lib/api/media", () => ({ fetchPublicMedia: vi.fn(async () => new Map()) }));
+
+/**
+ * The media shelf's row is the place "UAEAF in the Media" stands on the page
+ * and nothing more (owner decision 2026-09-22): its coverage is third-party
+ * (Homepage Specification §11b, CT-EXTERNALMEDIA-001), so it must never be
+ * filled with the federation's own FederationInMedia articles.
+ */
+describe("the coverage slot", () => {
+  it("is the shelf narrowed to FederationInMedia, and only that one", () => {
+    expect(isCoverageSlot(section({ configuration: { category: "FederationInMedia" } }))).toBe(true);
+    expect(isCoverageSlot(section())).toBe(false);
+    expect(isCoverageSlot(section({ configuration: { category: "General" } }))).toBe(false);
+  });
+
+  it("asks the newsroom for nothing, while the news shelf asks for its own limit", async () => {
+    fetchArticles.mockClear();
+
+    const news = await loadHomepageNews([
+      section({ id: "latest", displayOrder: 4, itemLimit: 6 }),
+      section({ id: "media", displayOrder: 5, configuration: { category: "FederationInMedia" } }),
+    ]);
+
+    expect(fetchArticles).toHaveBeenCalledTimes(1);
+    expect(fetchArticles).toHaveBeenCalledWith(1, 6, undefined, undefined);
+    expect(news.shelves.map((shelf) => [shelf.section.id, shelf.kind, shelf.articles.length])).toEqual([
+      ["latest", "news", 0],
+      ["media", "coverage", 0],
+    ]);
   });
 });

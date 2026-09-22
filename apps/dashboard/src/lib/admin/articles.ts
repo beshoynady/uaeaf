@@ -17,6 +17,12 @@ export interface LocalizedText {
 export const ARTICLE_CATEGORIES = ["General", "FederationInMedia"] as const;
 export type ArticleCategory = (typeof ARTICLE_CATEGORIES)[number];
 
+/** `ARTICLE_TOPICS` upstream: what a story is about, six and closed (owner
+ *  decision 2026-09-22). Neither the shelf (`category`) nor free words
+ *  (`tags`). Null on an article nobody has classified yet. */
+export const ARTICLE_TOPICS = ["nationalTeam", "training", "youth", "international", "community", "records"] as const;
+export type ArticleTopic = (typeof ARTICLE_TOPICS)[number];
+
 /** `ARTICLE_PUBLICATION_STATES` upstream — two values, by owner decision. */
 export const ARTICLE_STATES = ["Draft", "Live"] as const;
 export type ArticleState = (typeof ARTICLE_STATES)[number];
@@ -26,6 +32,8 @@ export interface Article {
   title: LocalizedText;
   slug: string;
   category: ArticleCategory;
+  /** Absent on a row read before the field existed; null once backfilled. */
+  topic?: ArticleTopic | null;
   coverMediaId: string | null;
   body: { ar: unknown; en: unknown };
   authorDisplayName: LocalizedText;
@@ -109,6 +117,9 @@ export const stateMessageKey = (state: NewsroomState): string => `state_${state}
 
 /** Message key for a category, for the same reason. */
 export const categoryMessageKey = (category: ArticleCategory): string => `category_${category}`;
+
+/** Message key for a topic, for the same reason. */
+export const topicMessageKey = (topic: ArticleTopic): string => `topic_${topic}`;
 
 /**
  * Whether these are the fields the API will accept for a new article.

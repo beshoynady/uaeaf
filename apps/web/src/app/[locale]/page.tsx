@@ -6,6 +6,7 @@ import { RevealOnce } from "@/components/pages/president/reveal-once";
 import { OrganizationsSection } from "@/components/pages/home/sponsors/organizations-section";
 import { SponsorStrip } from "@/components/pages/home/sponsors/sponsor-strip";
 import { HomeNewsSection } from "@/components/pages/home/news-section";
+import { MediaCoverageSection } from "@/components/pages/home/media-coverage-section";
 import { SponsorsSection } from "@/components/pages/home/sponsors/sponsors-section";
 import { STRIP_DEFAULTS } from "@uaeaf/content/sponsors";
 import { loadHomepage, readNextEvent, readPlayback } from "@/lib/pages/homepage";
@@ -120,19 +121,23 @@ const HomePage = async ({ params }: { params: Promise<{ locale: AppLocale }> }) 
         locale={locale}
         now={now}
       />
-      {/* News is §32 #7 of the approved thirteen, above the sponsor
-          relations. Its shelves draw in the CMS order they were composed in,
-          which is what lets "latest" and "in the media" be two rows without a
-          second component or a second section type. */}
-      {news.shelves.map((shelf) => (
-        <HomeNewsSection
-          key={shelf.section.id}
-          section={shelf.section}
-          articles={shelf.articles}
-          covers={news.covers}
-          locale={locale}
-        />
-      ))}
+      {/* News (§32 #7) and "UAEAF in the Media" (#8), above the sponsor
+          relations, in the CMS order they were composed in. The row narrowed
+          to FederationInMedia is where the media section stands; it draws
+          third-party coverage, never the federation's own articles (§11b). */}
+      {news.shelves.map((shelf) =>
+        shelf.kind === "coverage" ? (
+          <MediaCoverageSection key={shelf.section.id} section={shelf.section} locale={locale} />
+        ) : (
+          <HomeNewsSection
+            key={shelf.section.id}
+            section={shelf.section}
+            articles={shelf.articles}
+            covers={news.covers}
+            locale={locale}
+          />
+        ),
+      )}
 
       {relations.sections.map((section) =>
         section.sectionType === "SPONSORS" ? (

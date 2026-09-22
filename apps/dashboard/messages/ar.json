@@ -1547,7 +1547,19 @@
     "groupApplyResult_applied": "{name}: طُبِّق",
     "groupApplyResult_skipped": "{name}: تُخطّي، عليه مراجعات جارية",
     "groupApplyResult_refused": "{name}: رُفض، بدأت مراجعة منذ فتح الصفحة",
-    "groupApplyResult_failed": "{name}: تعذّر الحفظ"
+    "groupApplyResult_failed": "{name}: تعذّر الحفظ",
+    "fieldTopic": "الموضوع",
+    "hintTopic": "عمّ يتحدث الخبر. يحدّد لون شارته على الموقع، وهو غير التصنيف (القسم) وغير الوسوم.",
+    "hintTopicMissing": "هذا الخبر بلا موضوع بعد. يُحفظ ويُنشر كما هو، واختيار موضوع يمنحه شارته الملوّنة.",
+    "errorTopic": "اختر موضوع الخبر.",
+    "columnTopic": "الموضوع",
+    "topicMissing": "بلا موضوع",
+    "topic_nationalTeam": "المنتخب الوطني",
+    "topic_training": "التدريب",
+    "topic_youth": "ألعاب القوى للناشئين",
+    "topic_international": "دولي",
+    "topic_community": "مجتمع",
+    "topic_records": "الأرقام القياسية"
   },
   "Messages": {
     "title": "الرسائل",

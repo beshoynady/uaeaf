@@ -31,6 +31,25 @@ const article = (overrides: Partial<Article> = {}): Article => ({
 const rows = () => screen.queryAllByRole("row").slice(1); // minus the header
 
 describe("ArticleList", () => {
+  it("marks an article nobody has given a topic, and names the topic of one that has", () => {
+    render(
+      <ArticleList
+        canCreate={false}
+        articles={[article({ topic: null }), article({ _id: "a2", topic: "records" })]}
+        reviews={new Map()}
+        locale="ar"
+      />,
+    );
+
+    const body = screen.getByRole("table").querySelector("tbody") as HTMLElement;
+    const topics = within(body)
+      .getAllByRole("row")
+      .map((row) => (row as HTMLTableRowElement).cells[3].textContent);
+
+    // The column an editor scans to find what still needs classifying.
+    expect(topics).toEqual(["topicMissing", "topic_records"]);
+  });
+
   it("says the newsroom is empty differently from a filter that matched nothing", async () => {
     const { rerender } = render(<ArticleList canCreate={false} articles={[]} reviews={new Map()} locale="ar" />);
     expect(screen.getByText("empty")).toBeInTheDocument();

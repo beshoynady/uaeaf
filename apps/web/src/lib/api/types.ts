@@ -312,11 +312,16 @@ export interface AthletePublic {
  *  article the federation wrote itself. */
 export type ArticleCategory = "General" | "FederationInMedia";
 
+/** `ARTICLE_TOPICS`: what a story is about, six and closed (ADR-0094). */
+export type ArticleTopic = "nationalTeam" | "training" | "youth" | "international" | "community" | "records";
+
 export interface ArticlePublic {
   id: string;
   /** The URL segment, shared by both language editions of the story. */
   slug: string;
   category: ArticleCategory;
+  /** Null for an article nobody has classified yet; the chip is then neutral. */
+  topic: ArticleTopic | null;
   /**
    * Free labels, as the newsroom typed them.
    *

@@ -30,12 +30,15 @@ import type { ArticleCategory, ArticlePublic, MediaAssetPublic, PageSectionPubli
 /** Section types this loader answers for. */
 const NEWS_SECTION_TYPE = "LATEST_NEWS";
 
-/** What a shelf shows when the CMS names no limit. Three across one row of the
- *  grid below `lg`, which is the count the cards are sized for. */
-const DEFAULT_LIMIT = 3;
+/** What a shelf shows when the CMS names no limit: the lead story and the five
+ *  beside it, the count the approved canvas is drawn for. */
+const DEFAULT_LIMIT = 6;
 
 export interface HomeNewsShelf {
   section: PageSectionPublic;
+  /** `coverage` is the slot "UAEAF in the Media" stands in; see
+   *  `isCoverageSlot`. It carries no articles. */
+  kind: "news" | "coverage";
   articles: ArticlePublic[];
 }
 
@@ -55,6 +58,16 @@ export const shelfCategory = (section: PageSectionPublic): ArticleCategory | nul
   return asked === "General" || asked === "FederationInMedia" ? asked : null;
 };
 
+/**
+ * The shelf narrowed to `FederationInMedia` is where "UAEAF in the Media"
+ * stands, and nothing more (owner decision 2026-09-22): the row gives the
+ * section its place and its on/off switch, not its content. That section is
+ * third-party coverage (Homepage Specification §11b), which the federation's
+ * own `FederationInMedia` articles are not; those stay on `/news`.
+ */
+export const isCoverageSlot = (section: PageSectionPublic): boolean =>
+  shelfCategory(section) === "FederationInMedia";
+
 export const newsSections = (sections: readonly PageSectionPublic[]): PageSectionPublic[] =>
   sections
     .filter((section) => section.sectionType === NEWS_SECTION_TYPE)
@@ -70,6 +83,7 @@ export const loadHomepageNews = async (
 
   const pages = await Promise.all(
     shelves.map((section) => {
+      if (isCoverageSlot(section)) return null;
       const category = shelfCategory(section);
       const limit = section.itemLimit && section.itemLimit > 0 ? section.itemLimit : DEFAULT_LIMIT;
 
@@ -81,8 +95,9 @@ export const loadHomepageNews = async (
     }),
   );
 
-  const drawn = shelves.map((section, index) => ({
+  const drawn = shelves.map((section, index): HomeNewsShelf => ({
     section,
+    kind: isCoverageSlot(section) ? "coverage" : "news",
     articles: pages[index]?.items ?? [],
   }));
 

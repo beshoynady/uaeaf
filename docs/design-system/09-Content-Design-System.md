@@ -303,6 +303,24 @@ Relative timestamps (Chapter 8 L5 §DD.11 Data Freshness “Last Updated”) **M
 
 After 24 hours, it **MUST** automatically transition to an absolute date (Chapter 19), rather than continuing indefinitely as “3 days ago.”
 
+### CR-5.6 News Topics (ADR-0094)
+
+What a news story is about. Six topics, closed: English ids in the data, one approved name per language, and one colour token each.
+
+| Id | Arabic | English | Token |
+| --- | --- | --- | --- |
+| `nationalTeam` | المنتخب الوطني | National Team | `color.topic.national-team.*` (solid Federation Green) |
+| `training` | التدريب | Training | `color.topic.training.*` |
+| `youth` | ألعاب القوى للناشئين | Youth Athletics | `color.topic.youth.*` |
+| `international` | دولي | International | `color.topic.international.*` |
+| `community` | مجتمع | Community | `color.topic.community.*` |
+| `records` | الأرقام القياسية | Records | `color.topic.records.*` |
+
+* A topic is **not** the category, the shelf that decides the homepage section (أخبار الاتحاد / الاتحاد في الإعلام). It is also **not** a tag, the free words the newsroom writes. Do not use one term for another.
+* An article with no topic shows the neutral chip **عام / General**. It is never given a guessed topic (§CR-2.8).
+* The chip always shows the name in words; the colour never carries the topic alone.
+* A seventh topic, or a renamed one, goes through the Content Rule Proposal path and an ADR before it is used.
+
 ---
 
 # Level 6 — Notifications

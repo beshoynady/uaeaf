@@ -30,6 +30,12 @@
 export const FOCUS =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--a11y-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--a11y-focus-offset)]";
 
+/** A card's one link, stretched over the whole card by its `::after`, so the
+ *  card is one stop for a keyboard and one target for a pointer. The card
+ *  must be `relative`; anything inside it that needs its own click (a chip)
+ *  is `relative` too, to sit above the overlay. */
+export const CARD_LINK = `rounded-xs after:absolute after:inset-0 after:content-[''] ${FOCUS}`;
+
 /** Same, for a control whose indicator is drawn by its wrapper — an input
  *  filling a shell edge to edge, where a ring on the input itself would be
  *  clipped by the shell's radius. */
@@ -46,3 +52,8 @@ export const TRANSITION =
  *  PR-006 makes the public layer mobile-priority — so this is the floor for
  *  every control here, not a mobile-only variant. */
 export const TOUCH_TARGET = "min-h-11";
+
+/** The same 44px floor for a link set in a line of text, where `min-h-11`
+ *  would push the line apart: a transparent `::before` reaches 12px above and
+ *  below the text, so the target grows and the layout does not. */
+export const TEXT_TARGET = "relative before:absolute before:inset-x-0 before:-inset-y-3 before:content-['']";

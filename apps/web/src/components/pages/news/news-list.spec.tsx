@@ -19,6 +19,7 @@ vi.mock("@/i18n/navigation", () => ({
 const article = (n: number, category: ArticlePublic["category"] = "General"): ArticlePublic => ({
   id: String(n),
   category,
+  topic: null,
   tags: [],
   slug: `story-${n}`,
   title: { ar: `خبر ${n}`, en: `Story ${n}` },

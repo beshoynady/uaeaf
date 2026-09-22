@@ -1,9 +1,10 @@
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { CARD_INTERACTIVE } from "@/components/ui/surface";
-import { FOCUS } from "@/components/ui/interactive";
+import { CARD_LINK } from "@/components/ui/interactive";
 import { ArticleCover } from "./cover";
-import { CategoryBadge } from "./category-badge";
+import { PublishDate } from "./publish-date";
+import { TopicBadge } from "./topic-badge";
 import type { ArticlePublic, MediaAssetPublic } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
 
@@ -48,7 +49,6 @@ export const NewsCard = ({
   cover?: MediaAssetPublic;
   className?: string;
 }) => {
-  const format = useFormatter();
   const t = useTranslations("News");
 
   return (
@@ -65,12 +65,12 @@ export const NewsCard = ({
       </div>
 
       <div className="flex flex-1 flex-col items-start gap-3 p-5">
-        <CategoryBadge category={article.category} />
+        <TopicBadge topic={article.topic} />
 
         <h3 className="text-body font-bold text-balance text-[color:var(--color-text-primary)]">
           <Link
             href={`/news/${article.slug}`}
-            className={`rounded-xs after:absolute after:inset-0 after:content-[''] ${FOCUS}`}
+            className={CARD_LINK}
           >
             {article.title[locale]}
           </Link>
@@ -82,14 +82,10 @@ export const NewsCard = ({
           <span aria-hidden className="text-label font-medium text-[color:var(--color-text-link)]">
             {t("more")}
           </span>
-          {article.publishDate ? (
-            <time
-              dateTime={article.publishDate}
-              className="text-caption text-[color:var(--color-text-secondary)]"
-            >
-              {format.dateTime(new Date(article.publishDate), { dateStyle: "long" })}
-            </time>
-          ) : null}
+          <PublishDate
+            date={article.publishDate}
+            className="text-caption text-[color:var(--color-text-secondary)]"
+          />
         </div>
       </div>
     </article>

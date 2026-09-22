@@ -13,7 +13,13 @@ import { EditorSection } from "@/components/admin/president-message/section";
 import { LazyBilingualRichText } from "@/components/admin/rich-text/lazy-rich-text";
 import { TagsField } from "./tags-field";
 import { MediaPicker, type MediaAssetOption } from "@/components/admin/pages/media-picker";
-import { ARTICLE_CATEGORIES, categoryMessageKey, suggestSlug } from "@/lib/admin/articles";
+import {
+  ARTICLE_CATEGORIES,
+  ARTICLE_TOPICS,
+  categoryMessageKey,
+  suggestSlug,
+  topicMessageKey,
+} from "@/lib/admin/articles";
 import {
   changedFrom,
   emptyArticleDraft,
@@ -126,7 +132,7 @@ export const ArticleEditor = ({
   const taken = useMemo(() => new Set(takenSlugs), [takenSlugs]);
 
   const dirty = changedFrom(original, draft).length > 0;
-  const errors = validateArticle(draft, taken);
+  const errors = validateArticle(draft, taken, { creating: record === null });
   // A notice, never a block. The API accepts an empty body, and refusing a
   // save over one would mean an author could not keep the headline until the
   // text was finished. What it must not do is go unmentioned until a reviewer
@@ -252,6 +258,26 @@ export const ArticleEditor = ({
               label: t(categoryMessageKey(category)),
             }))}
             hint={t("hintCategory")}
+          />
+
+          {/* The empty choice only while the stored topic is empty: a new
+              article, or one written before the field existed. Once an
+              article has a topic it can be changed and never cleared, which
+              is also all the API accepts. */}
+          <SelectField
+            id="article-topic"
+            label={t("fieldTopic")}
+            value={draft.topic}
+            disabled={disabled}
+            required={record === null}
+            placeholder={original.topic === ""}
+            onChange={(event) => {
+              touch("topic");
+              change({ topic: event.target.value });
+            }}
+            options={ARTICLE_TOPICS.map((topic) => ({ value: topic, label: t(topicMessageKey(topic)) }))}
+            hint={record !== null && original.topic === "" ? t("hintTopicMissing") : t("hintTopic")}
+            error={touched.topic && errors.topic ? t("errorTopic") : undefined}
           />
 
           <TagsField

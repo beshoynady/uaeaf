@@ -3,8 +3,8 @@ import { Types } from 'mongoose';
 import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
 import { PageSeoDto } from '../../../../common/dto/page-seo.dto.js';
 import { richTextParagraphs } from '../../../../common/rich-text/rich-text-plain-text.js';
-import { ARTICLE_CATEGORIES } from '../schemas/article.schema.js';
-import type { ArticleCategory, ArticleDocument } from '../schemas/article.schema.js';
+import { ARTICLE_CATEGORIES, ARTICLE_TOPICS } from '../schemas/article.schema.js';
+import type { ArticleCategory, ArticleDocument, ArticleTopic } from '../schemas/article.schema.js';
 
 /**
  * One article as a visitor receives it.
@@ -24,6 +24,13 @@ export class ArticlePublicDto {
 
   @ApiProperty({ enum: ARTICLE_CATEGORIES })
   category: ArticleCategory;
+
+  @ApiProperty({
+    enum: ARTICLE_TOPICS,
+    nullable: true,
+    description: 'What the story is about; null for an article nobody has classified yet.',
+  })
+  topic: ArticleTopic | null;
 
   @ApiProperty({
     type: [String],
@@ -106,6 +113,8 @@ export const toPublicDto = (article: ArticleDocument, snapshot: Record<string, u
     // filing decision the newsroom may correct after publication without
     // republishing the words.
     category: article.category,
+    // From the row too, and null for a row written before the field existed.
+    topic: article.topic ?? null,
     // From the row, like the category beside it: a label is a filing decision
     // the newsroom may correct without republishing the words, and the filter
     // queries the row rather than every snapshot.

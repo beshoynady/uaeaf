@@ -14,8 +14,8 @@ import {
 import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
 import { LocalizedRichTextDto } from '../../../../common/dto/localized-rich-text.dto.js';
 import { PageSeoDto } from '../../../../common/dto/page-seo.dto.js';
-import { ARTICLE_CATEGORIES } from '../schemas/article.schema.js';
-import type { ArticleCategory } from '../schemas/article.schema.js';
+import { ARTICLE_CATEGORIES, ARTICLE_TOPICS } from '../schemas/article.schema.js';
+import type { ArticleCategory, ArticleTopic } from '../schemas/article.schema.js';
 
 /**
  * Lowercase letters, digits, and single hyphens between them.
@@ -48,6 +48,15 @@ export class CreateArticleDto {
   @IsOptional()
   @IsIn(ARTICLE_CATEGORIES)
   category?: ArticleCategory;
+
+  @ApiProperty({
+    enum: ARTICLE_TOPICS,
+    description:
+      'What the story is about. Required on a new article; articles written before the field existed ' +
+      'have none. Not `category` (the shelf) and not `tags` (free words).',
+  })
+  @IsIn(ARTICLE_TOPICS)
+  topic: ArticleTopic;
 
   @ApiProperty({
     type: [String],

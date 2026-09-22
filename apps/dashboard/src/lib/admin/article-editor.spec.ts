@@ -23,6 +23,7 @@ const record = (overrides: Partial<ArticleEditorResponse> = {}): ArticleEditorRe
   title: { ar: "بطولة", en: "Championship" },
   slug: "championship-2026",
   category: "General",
+  topic: null,
   tags: [],
   coverMediaId: "m1",
   body: { ar: paragraph("نص"), en: paragraph("Text") },
@@ -157,6 +158,32 @@ describe("validateArticle", () => {
     // author could not keep the headline until the text was finished — and
     // the headline is often the first thing that exists.
     expect(hasArticleErrors(validateArticle(filled({ body: { ar: null, en: null } }), new Set()))).toBe(false);
+  });
+});
+
+/**
+ * Required on a new article and on nothing else (owner decision 2026-09-22):
+ * the articles written before the field existed stay editable and publishable
+ * without one, exactly as the API accepts them.
+ */
+describe("the topic", () => {
+  it("is required before a new article can be created", () => {
+    expect(validateArticle(filled(), new Set(), { creating: true })).toEqual({ topic: true });
+    expect(hasArticleErrors(validateArticle(filled({ topic: "records" }), new Set(), { creating: true }))).toBe(false);
+  });
+
+  it("is not required of an article that already exists", () => {
+    expect(hasArticleErrors(validateArticle(filled(), new Set()))).toBe(false);
+  });
+
+  it("opens an unclassified article clean", () => {
+    // Null upstream, empty in the form: opening one must not offer to save it.
+    expect(changedFrom(toDraft(record({ topic: null })), toDraft(record({ topic: null })))).toEqual([]);
+    expect(toDraft(record({ topic: null })).topic).toBe("");
+  });
+
+  it("is sent when a new article is created", () => {
+    expect(toCreateBody(filled({ topic: "youth" }))).toMatchObject({ topic: "youth" });
   });
 });
 

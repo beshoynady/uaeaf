@@ -333,6 +333,110 @@
         }
       }
     },
+    "topic": {
+      "training": {
+        "surface": {
+          "value": "#FFFFFF",
+          "type": "color",
+          "comment": "ADR-0094 D2 — high contrast carries no hue; the label carries the topic"
+        },
+        "ink": {
+          "value": "#000000",
+          "type": "color",
+          "comment": "ADR-0094 D2"
+        },
+        "edge": {
+          "value": "#000000",
+          "type": "color",
+          "comment": "ADR-0094 D2 — the edge is drawn, so a white chip on a white card is still a chip"
+        }
+      },
+      "youth": {
+        "surface": {
+          "value": "#FFFFFF",
+          "type": "color",
+          "comment": "ADR-0094 D2 — high contrast carries no hue; the label carries the topic"
+        },
+        "ink": {
+          "value": "#000000",
+          "type": "color",
+          "comment": "ADR-0094 D2"
+        },
+        "edge": {
+          "value": "#000000",
+          "type": "color",
+          "comment": "ADR-0094 D2 — the edge is drawn, so a white chip on a white card is still a chip"
+        }
+      },
+      "international": {
+        "surface": {
+          "value": "#FFFFFF",
+          "type": "color",
+          "comment": "ADR-0094 D2 — high contrast carries no hue; the label carries the topic"
+        },
+        "ink": {
+          "value": "#000000",
+          "type": "color",
+          "comment": "ADR-0094 D2"
+        },
+        "edge": {
+          "value": "#000000",
+          "type": "color",
+          "comment": "ADR-0094 D2 — the edge is drawn, so a white chip on a white card is still a chip"
+        }
+      },
+      "community": {
+        "surface": {
+          "value": "#FFFFFF",
+          "type": "color",
+          "comment": "ADR-0094 D2 — high contrast carries no hue; the label carries the topic"
+        },
+        "ink": {
+          "value": "#000000",
+          "type": "color",
+          "comment": "ADR-0094 D2"
+        },
+        "edge": {
+          "value": "#000000",
+          "type": "color",
+          "comment": "ADR-0094 D2 — the edge is drawn, so a white chip on a white card is still a chip"
+        }
+      },
+      "records": {
+        "surface": {
+          "value": "#FFFFFF",
+          "type": "color",
+          "comment": "ADR-0094 D2 — high contrast carries no hue; the label carries the topic"
+        },
+        "ink": {
+          "value": "#000000",
+          "type": "color",
+          "comment": "ADR-0094 D2"
+        },
+        "edge": {
+          "value": "#000000",
+          "type": "color",
+          "comment": "ADR-0094 D2 — the edge is drawn, so a white chip on a white card is still a chip"
+        }
+      },
+      "national-team": {
+        "surface": {
+          "value": "#000000",
+          "type": "color",
+          "comment": "ADR-0094 D2 — the one solid chip stays solid: inverted rather than green"
+        },
+        "ink": {
+          "value": "#FFFFFF",
+          "type": "color",
+          "comment": "ADR-0094 D2"
+        },
+        "edge": {
+          "value": "#000000",
+          "type": "color",
+          "comment": "ADR-0094 D2"
+        }
+      }
+    },
     "avatar": {
       "fallback-bg": {
         "value": "#FFFFFF",

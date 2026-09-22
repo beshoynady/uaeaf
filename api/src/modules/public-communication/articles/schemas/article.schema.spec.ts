@@ -1,4 +1,4 @@
-import { ArticleSchema, ARTICLE_CATEGORIES, ARTICLE_PUBLICATION_STATES } from './article.schema.js';
+import { ArticleSchema, ARTICLE_CATEGORIES, ARTICLE_PUBLICATION_STATES, ARTICLE_TOPICS } from './article.schema.js';
 
 /**
  * The shape of a news item, pinned where it differs from the eleven other
@@ -121,6 +121,30 @@ describe('ArticleSchema', () => {
       // reads every article the federation has ever published.
       expect(tagIndex).toBeDefined();
       expect(tagIndex?.[0]).toMatchObject({ tags: 1, publicationState: 1, archived: 1 });
+    });
+  });
+
+  /**
+   * What a story is about, as opposed to where it is filed.
+   *
+   * A third field beside `category` and `tags`, and deliberately neither of
+   * them: `category` decides which homepage section the article appears in,
+   * `tags` are free words, and the topic is a closed list of six that colours
+   * the chip a reader sees (owner decision 2026-09-22).
+   */
+  describe('topic', () => {
+    it('admits only the six topics the federation has declared', () => {
+      const path = ArticleSchema.path('topic') as unknown as { enumValues: string[] };
+
+      expect(ARTICLE_TOPICS).toEqual(['nationalTeam', 'training', 'youth', 'international', 'community', 'records']);
+      expect(path.enumValues).toEqual([...ARTICLE_TOPICS]);
+    });
+
+    it('leaves an article nobody classified without a topic rather than inventing one', () => {
+      // Every article written before the field existed has no topic, and a
+      // default would claim a classification nobody made.
+      expect(ArticleSchema.path('topic').options.default).toBeNull();
+      expect(ArticleSchema.path('topic').options.required).toBeFalsy();
     });
   });
 

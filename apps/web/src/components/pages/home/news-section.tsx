@@ -1,43 +1,30 @@
 import { getTranslations } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
 import { Section } from "@/components/ui/section";
-import { SectionHeading } from "@/components/pages/home/sponsors/section-heading";
-import { NewsCard } from "@/components/pages/news/news-card";
-import { BADGE } from "@/components/ui/surface";
-import { FOCUS } from "@/components/ui/interactive";
+import { LeadArticleCard } from "@/components/pages/news/lead-article-card";
+import { ArticleListItem } from "@/components/pages/news/article-list-item";
+import { revealStep } from "@/lib/motion/reveal";
+import { HomeSectionHeader } from "./home-section-header";
 import type { ArticlePublic, MediaAssetPublic, PageSectionPublic } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
 
+/** The stories beside the lead, as the canvas draws them. */
+const LIST_LENGTH = 5;
+
 /**
- * A shelf of stories on the homepage (`02-Homepage-Specification.md` §32 #7).
+ * "Latest news" on the homepage (`02-Homepage-Specification.md` §32 #7), as
+ * the approved canvas draws it (2026-09-22): the newest story as the lead,
+ * the five after it in a list beside it from `lg`, one above the other below.
  *
- * ── Why one component draws both shelves ───────────────────────────────────
+ * Two equal columns, as drawn. The specification records a 1.35fr/1fr split
+ * as built; the canvas is the reference for this section and replaces it.
  *
- * "Latest news" and "UAEAF in the media" are the same shelf over the same
- * entity, narrowed differently. Two components would be two places for the
- * card count, the empty rule and the heading pattern to drift apart, and a
- * reader would see the second shelf as a different kind of thing.
+ * How many stories, and the heading, are the CMS row's: the catalogue speaks
+ * only when the row is silent. A newsroom that has published nothing draws no
+ * section, since a heading over nothing is worse than no heading (§11a).
  *
- * ── Why the composition is composed, not listed here ───────────────────────
- *
- * Which shelves the homepage carries, in what order, with what heading and how
- * many cards, is the CMS's answer — the same arrangement the sponsors sections
- * use. A shelf nobody composed onto the page costs no request and draws
- * nothing; a third shelf needs a CMS row, not a release.
- *
- * ── Why it is absent rather than empty ─────────────────────────────────────
- *
- * `02-Homepage-Specification.md` §11a states it for the video section and the
- * built sections all follow it: a heading over nothing is worse than no
- * heading. A newsroom that has published nothing in a category should not
- * advertise the gap on the front page.
- *
- * ── Why the CTA is at the foot and reads "all news" ────────────────────────
- *
- * §181-191 of the homepage specification gives News a "View all news" CTA, and
- * §179 allows exactly one primary call per section. The sponsors section
- * already places its single CTA at the section's foot, so this follows it
- * rather than inventing a second position for the same affordance.
+ * It enters once (`reveal-once.tsx`): the heading, then the lead story, then
+ * the list one story at a time, in reading order. Under reduced motion it
+ * fades in instead, with nothing moving.
  */
 export const HomeNewsSection = async ({
   section,
@@ -50,45 +37,40 @@ export const HomeNewsSection = async ({
   covers: ReadonlyMap<string, MediaAssetPublic>;
   locale: AppLocale;
 }) => {
-  if (articles.length === 0) {
+  const [lead, ...rest] = articles;
+  if (!lead) {
     return null;
   }
 
   const t = await getTranslations({ locale, namespace: "News" });
   const id = `home-news-${section.id}`;
+  const coverOf = (article: ArticlePublic) =>
+    article.coverMediaId ? covers.get(article.coverMediaId) : undefined;
 
   return (
-    <Section labelledBy={id} className="py-16 md:py-20">
-      <div className="flex flex-col gap-8">
-        <SectionHeading
+    <Section labelledBy={id} enter={false} className="py-16">
+      <div data-reveal="" data-reveal-reduced="fade" className="flex flex-col gap-10">
+        <HomeSectionHeader
           id={id}
-          // The CMS field first, the catalogue as the fallback: an editor who
-          // has not named the shelf still gets a heading rather than a blank.
           title={section.sectionTitle?.[locale] ?? t("homeLatestHeading")}
-          subtitle={section.sectionSubtitle?.[locale] ?? null}
+          subtitle={section.sectionSubtitle?.[locale] ?? t("homeLatestSubtitle")}
+          link={{ href: "/news", label: t("homeViewAll") }}
         />
 
-        <ul className="grid list-none gap-5 p-0 sm:grid-cols-2 lg:grid-cols-3">
-          {articles.map((article) => (
-            <li key={article.id} className="relative flex">
-              <NewsCard
-                article={article}
-                locale={locale}
-                cover={article.coverMediaId ? covers.get(article.coverMediaId) : undefined}
-                className="w-full"
-              />
-            </li>
-          ))}
-        </ul>
-
-        <p className="flex justify-center">
-          <Link
-            href="/news"
-            className={`${BADGE} min-h-11 border-[color:var(--color-border-strong)] px-6 text-[color:var(--color-text-primary)] transition-colors duration-[var(--motion-duration-instant)] hover:border-[color:var(--color-action-default)] active:border-[color:var(--color-action-default)] ${FOCUS}`}
-          >
-            {t("viewAll")}
-          </Link>
-        </p>
+        <div className="grid items-start gap-12 lg:grid-cols-2">
+          <div data-reveal-part="rise" style={revealStep(2)}>
+            <LeadArticleCard article={lead} cover={coverOf(lead)} locale={locale} />
+          </div>
+          {rest.length > 0 ? (
+            <ul className="flex list-none flex-col divide-y divide-[color:var(--color-border-default)] p-0">
+              {rest.slice(0, LIST_LENGTH).map((article, index) => (
+                <li key={article.id} data-reveal-part="rise" style={revealStep(3 + index)}>
+                  <ArticleListItem article={article} cover={coverOf(article)} locale={locale} />
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
       </div>
     </Section>
   );

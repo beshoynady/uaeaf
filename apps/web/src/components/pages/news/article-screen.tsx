@@ -1,9 +1,10 @@
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { RichText } from "@/components/rich-text/rich-text";
 import { NewsCard } from "./news-card";
 import { ArticleCover } from "./cover";
-import { CategoryBadge } from "./category-badge";
+import { PublishDate } from "./publish-date";
+import { TopicBadge } from "./topic-badge";
 import { TagList } from "./tag-list";
 import { ShareArticle } from "./share-article";
 import { FOCUS, TRANSITION } from "@/components/ui/interactive";
@@ -64,7 +65,6 @@ export const ArticleScreen = ({
   /** What the platforms will show — the cover, or the generated placeholder. */
   shareImage: string | null;
 }) => {
-  const format = useFormatter();
   const t = useTranslations("News");
   const cover = article.coverMediaId ? covers.get(article.coverMediaId) : undefined;
 
@@ -72,7 +72,7 @@ export const ArticleScreen = ({
     <div className="flex flex-col gap-10 md:gap-14">
       <article className="mx-auto flex w-full max-w-[72ch] flex-col gap-6">
         <header className="flex flex-col items-start gap-4">
-          <CategoryBadge category={article.category} tone="solid" />
+          <TopicBadge topic={article.topic} />
 
           <h1 className="text-h1 text-balance text-[color:var(--color-text-primary)]">
             {article.title[locale]}
@@ -89,9 +89,7 @@ export const ArticleScreen = ({
             {article.publishDate ? (
               <>
                 <span aria-hidden>•</span>
-                <time dateTime={article.publishDate}>
-                  {format.dateTime(new Date(article.publishDate), { dateStyle: "long" })}
-                </time>
+                <PublishDate date={article.publishDate} />
               </>
             ) : null}
           </div>

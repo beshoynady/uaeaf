@@ -1,5 +1,5 @@
 import { editorialDraft, type PageSeo, type SeoDraft } from "@/lib/admin/editorial-draft";
-import { SLUG_PATTERN, type ArticleCategory, type LocalizedText } from "@/lib/admin/articles";
+import { SLUG_PATTERN, type ArticleCategory, type ArticleTopic, type LocalizedText } from "@/lib/admin/articles";
 
 /**
  * One article as its editor holds it.
@@ -31,6 +31,7 @@ export interface ArticleEditorResponse {
   title: LocalizedText;
   slug: string;
   category: ArticleCategory;
+  topic: ArticleTopic | null;
   tags: string[];
   coverMediaId: string | null;
   body: { ar: unknown; en: unknown };
@@ -46,6 +47,8 @@ export interface ArticleDraft {
   title: LocalizedText;
   slug: string;
   category: string;
+  /** `""` while none is chosen: an unclassified article, or a new one. */
+  topic: string;
   tags: string[];
   coverMediaId: string;
   body: { ar: unknown; en: unknown };
@@ -57,6 +60,7 @@ export const { toDraft, changedFrom, toPatchBody } = editorialDraft<ArticleEdito
   title: "text",
   slug: "plain",
   category: "plain",
+  topic: "plain",
   // Sent whole: a list's meaning is the list, and "the third one changed" is
   // not a patch the API accepts.
   tags: "list",
@@ -73,6 +77,9 @@ export const emptyArticleDraft = (): ArticleDraft => ({
   title: { ar: "", en: "" },
   slug: "",
   category: "General",
+  // Unlike the shelf, no default: the topic is a choice the author makes, and
+  // the create button waits for it.
+  topic: "",
   tags: [],
   coverMediaId: "",
   body: { ar: null, en: null },
@@ -105,6 +112,9 @@ export interface ArticleFieldErrors {
   slug?: "invalid" | "taken";
   authorAr?: boolean;
   authorEn?: boolean;
+  /** Only on the create screen: the API requires a topic of a new article and
+   *  of nothing else. */
+  topic?: boolean;
 }
 
 /** Whether a ProseMirror document holds anything a reader would see.
@@ -123,8 +133,11 @@ export const richTextIsEmpty = (document: unknown): boolean => {
 export const validateArticle = (
   draft: ArticleDraft,
   takenSlugs: ReadonlySet<string>,
+  { creating = false }: { creating?: boolean } = {},
 ): ArticleFieldErrors => {
   const errors: ArticleFieldErrors = {};
+
+  if (creating && draft.topic === "") errors.topic = true;
 
   if (!draft.title.ar.trim()) errors.titleAr = true;
   if (!draft.title.en.trim()) errors.titleEn = true;
@@ -179,6 +192,7 @@ export const toCreateBody = (draft: ArticleDraft): Record<string, unknown> => {
     title: draft.title,
     slug: draft.slug,
     category: draft.category,
+    topic: draft.topic,
     tags: draft.tags,
     coverMediaId: draft.coverMediaId === "" ? null : draft.coverMediaId,
     body: {

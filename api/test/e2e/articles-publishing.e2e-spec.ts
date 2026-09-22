@@ -60,6 +60,7 @@ const draftFor = (slug: string, headline = 'Championship results') => ({
   slug,
   body: { ar: richText('فاز المنتخب بالمركز الأول.'), en: richText('The national team took first place.') },
   authorDisplayName: { ar: 'القسم الإعلامي', en: 'Media office' },
+  topic: 'nationalTeam',
 });
 
 beforeAll(async () => {
@@ -184,7 +185,7 @@ beforeEach(async () => {
 
 /** The approval configuration an administrator would set through the policy
  *  screen: one definition, one step, the approver on it. */
-async function requireApproval(approvers: Who[] = ['approver'], requiredApprovals = 1): Promise<void> {
+const requireApproval = async (approvers: Who[] = ['approver'], requiredApprovals = 1): Promise<void> => {
   const definition = await definitionModel.create({
     name: { ar: 'اعتماد الأخبار', en: 'News approval' },
     entityType: 'articles',
@@ -205,22 +206,22 @@ async function requireApproval(approvers: Who[] = ['approver'], requiredApproval
     workflowDefinitionId: definition._id,
     allowHardDelete: false,
   });
-}
+};
 
 /** Writes a draft and returns its id. */
-async function writeDraft(slug: string, headline?: string): Promise<string> {
+const writeDraft = async (slug: string, headline?: string): Promise<string> => {
   const created = await post('editor', '/articles', draftFor(slug, headline)).expect(201);
   return created.body._id as string;
-}
+};
 
 /** Walks a draft all the way to the public site and returns its id. */
-async function publishThroughReview(slug: string, headline?: string): Promise<string> {
+const publishThroughReview = async (slug: string, headline?: string): Promise<string> => {
   const id = await writeDraft(slug, headline);
   const submitted = await post('editor', `/articles/${id}/submit`).expect(201);
   await post('approver', `/workflow-instances/${submitted.body.workflowInstanceId}/approve`).expect(201);
   await post('publisher', `/articles/${id}/publish-approved`).expect(201);
   return id;
-}
+};
 
 // --- The path itself -------------------------------------------------------
 
@@ -264,6 +265,7 @@ describe('an article from draft to the public site', () => {
     expect(feed.body.items[0]).toMatchObject({
       slug: 'championship-results-2026',
       title: { en: 'Championship results', ar: 'نتائج البطولة' },
+      topic: 'nationalTeam',
     });
     expect(feed.body.items[0].publishDate).toEqual(expect.any(String));
     // Derived from the body rather than stored, so the card and the meta

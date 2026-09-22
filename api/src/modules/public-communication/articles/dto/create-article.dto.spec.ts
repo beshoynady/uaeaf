@@ -1,6 +1,7 @@
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { CreateArticleDto } from './create-article.dto.js';
+import { UpdateArticleDto } from './update-article.dto.js';
 
 /**
  * The sanitisation gate, tested at the only layer that can close it.
@@ -22,6 +23,7 @@ describe('CreateArticleDto', () => {
     slug: 'championship-results-2026',
     body: { ar: paragraph('نص الخبر'), en: paragraph('Article body') },
     authorDisplayName: { ar: 'القسم الإعلامي', en: 'Media office' },
+    topic: 'nationalTeam',
   };
 
   const errorsFor = async (patch: Record<string, unknown>) =>
@@ -123,5 +125,34 @@ describe('CreateArticleDto', () => {
 
   it('refuses a cover image that is not an id', async () => {
     expect(propertiesIn(await errorsFor({ coverMediaId: 'not-an-id' }))).toContain('coverMediaId');
+  });
+
+  /**
+   * Required on a new article only (owner decision 2026-09-22). The articles
+   * written before the field existed stay publishable without one, so the
+   * rule lives at creation and nowhere else.
+   */
+  describe('topic', () => {
+    it('requires one of the six topics on a new article', async () => {
+      expect(propertiesIn(await errorsFor({ topic: undefined }))).toContain('topic');
+      expect(propertiesIn(await errorsFor({ topic: null }))).toContain('topic');
+      expect(propertiesIn(await errorsFor({ topic: 'sport' }))).toContain('topic');
+      expect(await errorsFor({ topic: 'records' })).toHaveLength(0);
+    });
+
+    const updateErrors = async (body: Record<string, unknown>) =>
+      propertiesIn(await validate(plainToInstance(UpdateArticleDto, body)));
+
+    it('leaves the topic alone on an edit that does not send one', async () => {
+      // An old article is edited without anyone classifying it.
+      expect(await updateErrors({ slug: 'renamed-story' })).toHaveLength(0);
+    });
+
+    it('lets an edit change the topic but not clear it', async () => {
+      // Clearing one would undo the rule a new article was created under.
+      expect(await updateErrors({ topic: 'youth' })).toHaveLength(0);
+      expect(await updateErrors({ topic: null })).toContain('topic');
+      expect(await updateErrors({ topic: 'sport' })).toContain('topic');
+    });
   });
 });

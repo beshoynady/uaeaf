@@ -12,6 +12,7 @@ import type { TimeRange } from "@uaeaf/content/time-range";
 import {
   ARTICLE_CATEGORIES,
   newsroomStateOf,
+  topicMessageKey,
   type Article,
   type ArticleCategory,
   type NewsroomState,
@@ -171,6 +172,7 @@ export const ArticleList = ({
                 <th scope="col" className="p-3 text-start font-medium">{t("columnTitle")}</th>
                 <th scope="col" className="p-3 text-start font-medium">{t("columnState")}</th>
                 <th scope="col" className="p-3 text-start font-medium">{t("columnCategory")}</th>
+                <th scope="col" className="p-3 text-start font-medium">{t("columnTopic")}</th>
                 <th scope="col" className="p-3 text-start font-medium">{t("columnUpdated")}</th>
               </tr>
             </thead>
@@ -187,6 +189,17 @@ export const ArticleList = ({
                   </td>
                   <td className="p-3">{t(`state_${rowState}`)}</td>
                   <td className="p-3">{t(`category_${article.category}`)}</td>
+                  <td className="p-3">
+                    {article.topic ? (
+                      t(topicMessageKey(article.topic))
+                    ) : (
+                      // Dashed and secondary: a gap to fill, not an error. The
+                      // article stays publishable (owner decision 2026-09-22).
+                      <span className="inline-flex items-center rounded-full border border-dashed border-[color:var(--color-border-strong)] px-2.5 py-0.5 text-[color:var(--color-text-secondary)]">
+                        {t("topicMissing")}
+                      </span>
+                    )}
+                  </td>
                   <td className="p-3 text-[color:var(--color-text-secondary)]">
                     {article.updatedAt
                       ? format.dateTime(new Date(article.updatedAt), { dateStyle: "medium" })

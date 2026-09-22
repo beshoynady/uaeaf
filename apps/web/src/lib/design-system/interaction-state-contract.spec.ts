@@ -26,13 +26,12 @@ interface ClassAttr {
   value: string;
 }
 
-function sourceFiles(dir: string): string[] {
-  return readdirSync(dir).flatMap((entry) => {
+const sourceFiles = (dir: string): string[] =>
+  readdirSync(dir).flatMap((entry) => {
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) return sourceFiles(full);
     return /\.tsx$/.test(entry) && !/\.(spec|test)\.tsx$/.test(entry) ? [full] : [];
   });
-}
 
 /**
  * Every `className=` value in a file, brace-matched so conditional
@@ -52,25 +51,33 @@ function sourceFiles(dir: string): string[] {
  *  neither is `focus:` — an earlier version of this pattern demanded the
  *  colon immediately after the word and silently dropped the one constant
  *  carrying the whole focus treatment. */
-function stateConstants(source: string): string[] {
-  const found: string[] = [];
-  for (const [, body] of source.matchAll(
-    /^(?:export )?const [A-Z_][A-Z0-9_]*\s*(?:=|:[^=]*=)\s*([\s\S]*?);$/gm,
+const stateConstants = (source: string): { name: string; body: string }[] => {
+  const found: { name: string; body: string }[] = [];
+  for (const [, name, body] of source.matchAll(
+    /^(?:export )?const ([A-Z_][A-Z0-9_]*)\s*(?:=|:[^=]*=)\s*([\s\S]*?);$/gm,
   )) {
-    if (/(?:focus|hover|active)[a-z-]*:/.test(body)) found.push(body);
+    if (/(?:focus|hover|active)[a-z-]*:/.test(body)) found.push({ name, body });
   }
   return found;
-}
+};
 
-const SHARED_CONSTANTS = stateConstants(
-  stripComments(readFileSync(join(SRC, "components", "ui", "interactive.ts"), "utf-8")),
-);
+const INTERACTIVE = stripComments(readFileSync(join(SRC, "components", "ui", "interactive.ts"), "utf-8"));
 
-function imports(source: string): boolean {
-  return /from "@\/components\/ui\/interactive"/.test(source);
-}
+const SHARED_CONSTANTS = stateConstants(INTERACTIVE);
 
-function classAttributes(file: string): ClassAttr[] {
+/** The `ui/interactive` exports that carry a state: their own variants, or a
+ *  composed one built on `FOCUS` (`CARD_LINK`). A call site referencing one is
+ *  judged with those states, as one referencing `FOCUS` always was; one that
+ *  only sizes a target (`TOUCH_TARGET`) brings none. */
+const SHARED_NAMES = [
+  ...INTERACTIVE.matchAll(/^export const ([A-Z_][A-Z0-9_]*)\s*=\s*([\s\S]*?);$/gm),
+]
+  .filter(([, , body]) => /(?:focus|hover|active)[a-z-]*:|\bFOCUS\b/.test(body))
+  .map(([, name]) => name);
+
+const imports = (source: string): boolean => /from "@\/components\/ui\/interactive"/.test(source);
+
+const classAttributes = (file: string): ClassAttr[] => {
   const raw = readFileSync(file, "utf-8");
   const source = stripComments(raw);
   const found: ClassAttr[] = [];
@@ -80,7 +87,14 @@ function classAttributes(file: string): ClassAttr[] {
   // Without this the rules would push code *away* from `ui/interactive` and
   // toward pasting the ring inline at every call site — the duplication that
   // caused the defect these rules exist for.
-  const shared = [...constants, ...(imports(source) ? SHARED_CONSTANTS : [])].join(" ");
+  const shared = [...constants, ...(imports(source) ? SHARED_CONSTANTS : [])].map(({ body }) => body).join(" ");
+  // The names a class string may reference to bring those states with it,
+  // looked for in the string and in the body of any file constant it uses:
+  // a local `STEP` built on `FOCUS` carries the ring as surely as `FOCUS`.
+  const names = ["FOCUS", "TRANSITION", "LINK", "FOOTER_LINK", ...(imports(source) ? SHARED_NAMES : [])];
+  const references = new RegExp(`\\b(${names.join("|")})\\b`);
+  const expanded = (value: string) =>
+    [value, ...constants.filter(({ name }) => new RegExp(`\\b${name}\\b`).test(value)).map(({ body }) => body)].join(" ");
 
   for (const match of source.matchAll(/className=/g)) {
     let index = (match.index ?? 0) + match[0].length;
@@ -106,7 +120,7 @@ function classAttributes(file: string): ClassAttr[] {
     }
 
     // A reference to a shared constant brings that constant's states with it.
-    const referenced = /\b(FOCUS|TRANSITION|LINK|FOOTER_LINK)\b/.test(value) ? ` ${shared}` : "";
+    const referenced = references.test(expanded(value)) ? ` ${shared}` : "";
 
     found.push({
       file: file.replace(SRC, "src").split("\\").join("/"),
@@ -116,7 +130,7 @@ function classAttributes(file: string): ClassAttr[] {
   }
 
   return found;
-}
+};
 
 const ALL = sourceFiles(SRC).flatMap(classAttributes);
 

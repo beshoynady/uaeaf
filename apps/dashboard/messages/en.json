@@ -1547,7 +1547,19 @@
     "groupApplyResult_applied": "{name}: applied",
     "groupApplyResult_skipped": "{name}: skipped, reviews running",
     "groupApplyResult_refused": "{name}: refused, a review started since this page opened",
-    "groupApplyResult_failed": "{name}: could not be saved"
+    "groupApplyResult_failed": "{name}: could not be saved",
+    "fieldTopic": "Topic",
+    "hintTopic": "What the story is about. It sets the colour of its chip on the site, and it is neither the section (category) nor the tags.",
+    "hintTopicMissing": "This story has no topic yet. It saves and publishes as it is; choosing one gives it its coloured chip.",
+    "errorTopic": "Choose the story's topic.",
+    "columnTopic": "Topic",
+    "topicMissing": "No topic",
+    "topic_nationalTeam": "National Team",
+    "topic_training": "Training",
+    "topic_youth": "Youth Athletics",
+    "topic_international": "International",
+    "topic_community": "Community",
+    "topic_records": "Records"
   },
   "Messages": {
     "title": "Messages",

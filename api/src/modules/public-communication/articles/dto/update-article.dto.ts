@@ -9,14 +9,15 @@ import {
   IsString,
   Matches,
   MaxLength,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
 import { LocalizedRichTextDto } from '../../../../common/dto/localized-rich-text.dto.js';
 import { PageSeoDto } from '../../../../common/dto/page-seo.dto.js';
 import { ARTICLE_SLUG_PATTERN } from './create-article.dto.js';
-import { ARTICLE_CATEGORIES } from '../schemas/article.schema.js';
-import type { ArticleCategory } from '../schemas/article.schema.js';
+import { ARTICLE_CATEGORIES, ARTICLE_TOPICS } from '../schemas/article.schema.js';
+import type { ArticleCategory, ArticleTopic } from '../schemas/article.schema.js';
 
 const SLUG_MESSAGE =
   'slug must be lowercase letters and digits joined by single hyphens, e.g. "national-championship-2026"';
@@ -44,6 +45,14 @@ export class UpdateArticleDto {
   @IsOptional()
   @IsIn(ARTICLE_CATEGORIES)
   category?: ArticleCategory;
+
+  // `ValidateIf` rather than `IsOptional`, which would let `null` through: a
+  // topic can be changed on an edit but never cleared, or a new article could
+  // shed the topic it was required to have.
+  @ApiProperty({ enum: ARTICLE_TOPICS, required: false, description: 'Changes the topic. Cannot be cleared.' })
+  @ValidateIf((_dto, value) => value !== undefined)
+  @IsIn(ARTICLE_TOPICS)
+  topic?: ArticleTopic;
 
   @ApiProperty({ type: [String], required: false, description: 'Free labels for display and filtering. NOT a second category: `category` is a closed list of one, and it decides which homepage section the article appears in.' })
   @IsOptional()

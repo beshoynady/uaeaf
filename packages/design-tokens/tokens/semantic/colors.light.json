@@ -357,6 +357,110 @@
         }
       }
     },
+    "topic": {
+      "training": {
+        "surface": {
+          "value": "{color.steel-blue.50}",
+          "type": "color",
+          "comment": "ADR-0094 D2 — the training topic chip's ground"
+        },
+        "ink": {
+          "value": "{color.steel-blue.600}",
+          "type": "color",
+          "comment": "ADR-0094 D2 — the chip's label: the ramp's 600"
+        },
+        "edge": {
+          "value": "{color.steel-blue.50}",
+          "type": "color",
+          "comment": "ADR-0094 D2 — no drawn edge: the chip's own ground"
+        }
+      },
+      "youth": {
+        "surface": {
+          "value": "{color.teal.50}",
+          "type": "color",
+          "comment": "ADR-0094 D2 — the youth topic chip's ground"
+        },
+        "ink": {
+          "value": "{color.teal.600}",
+          "type": "color",
+          "comment": "ADR-0094 D2 — the chip's label: the ramp's 600"
+        },
+        "edge": {
+          "value": "{color.teal.50}",
+          "type": "color",
+          "comment": "ADR-0094 D2 — no drawn edge: the chip's own ground"
+        }
+      },
+      "international": {
+        "surface": {
+          "value": "{color.red.50}",
+          "type": "color",
+          "comment": "ADR-0094 D2 — the international topic chip's ground"
+        },
+        "ink": {
+          "value": "{color.red.600}",
+          "type": "color",
+          "comment": "ADR-0094 D2 — the chip's label: the ramp's 600"
+        },
+        "edge": {
+          "value": "{color.red.50}",
+          "type": "color",
+          "comment": "ADR-0094 D2 — no drawn edge: the chip's own ground"
+        }
+      },
+      "community": {
+        "surface": {
+          "value": "{color.desert-sand.50}",
+          "type": "color",
+          "comment": "ADR-0094 D2 — the community topic chip's ground"
+        },
+        "ink": {
+          "value": "{color.desert-sand.600}",
+          "type": "color",
+          "comment": "ADR-0094 D2 — the chip's label: the ramp's 600"
+        },
+        "edge": {
+          "value": "{color.desert-sand.50}",
+          "type": "color",
+          "comment": "ADR-0094 D2 — no drawn edge: the chip's own ground"
+        }
+      },
+      "records": {
+        "surface": {
+          "value": "{color.gold.50}",
+          "type": "color",
+          "comment": "ADR-0094 D2 — the records topic chip's ground"
+        },
+        "ink": {
+          "value": "{color.gold.700}",
+          "type": "color",
+          "comment": "ADR-0094 D2 — the chip's label: the ramp's 700: gold.600 measures 3.22:1 on gold.50 and fails"
+        },
+        "edge": {
+          "value": "{color.gold.50}",
+          "type": "color",
+          "comment": "ADR-0094 D2 — no drawn edge: the chip's own ground"
+        }
+      },
+      "national-team": {
+        "surface": {
+          "value": "{color.brand.primary}",
+          "type": "color",
+          "comment": "ADR-0094 D2 — the one solid chip, Federation Green, as the design draws it; the text on it is text.on-brand, already measured against brand.primary (ADR-0059)"
+        },
+        "ink": {
+          "value": "{color.text.on-brand}",
+          "type": "color",
+          "comment": "ADR-0094 D2"
+        },
+        "edge": {
+          "value": "{color.brand.primary}",
+          "type": "color",
+          "comment": "ADR-0094 D2 — no drawn edge: the chip's own ground"
+        }
+      }
+    },
     "avatar": {
       "fallback-bg": {
         "value": "{color.neutral-warm.200}",

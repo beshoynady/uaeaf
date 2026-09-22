@@ -683,7 +683,7 @@ The homepage is no longer a proposal. Twelve content sections ship in a **fixed 
 | 4 | **Featured Athletes** — full-bleed deck, discipline filter | Humanise the sport | **[D]** Design Goal #3 — engagement and reach | ◐ selection | ● | ● |
 | 5 | **Results & Rankings + Upcoming Events** — merged split-column section, tabbed results / countdown events + `.ics` export | Deliver the core sporting fact + forward-looking engagement | Primary utility for media/athletes + **[D]** Design Goal #2 | ○ data | ● | ● |
 | 6 | **Live Stream & Videos** — live embed + video shelf *(NEW — Chapter 8 L6 §CMP-LIVESTREAM-001, ADR-0036)* | Real-time brand/engagement proof | **[D]** Design Goal #1/#3 | ● (shelf) / platform-driven (live signal) | ● | ● |
-| 7 | **News** — category filter, lead + list | Communicate | SEO and AI discoverability — **[D]** Design Goal #3 | ● | ● | ● 1.35fr/1fr ≥1024px |
+| 7 | **News** — category filter, lead + list | Communicate | SEO and AI discoverability — **[D]** Design Goal #3 | ● | ● | ● two equal columns ≥1024px (ADR-0095, 2026-09-22; was 1.35fr/1fr) |
 | 8 | **Sponsors & Partners** — one animated strip, all tiers merged | Honour commercial commitments | Revenue obligation | ● | ● | ● pauses on hover/focus |
 | 9 | **Media Centre** — full-screen dark mosaic, lightbox, reels | Emotional proof | Brand and broadcast value | ● | ● | ● 4-col auto-rows ≥1024px |
 | 10 | **Memberships / International Affiliations** — international governing-body logos *(NEW — Chapter 8 L8 §CMP-AFFILIATIONS-001, ADR-0037)* | Credibility/affiliation proof | **[D]** Design Goal #1 | ● | ● | ● |

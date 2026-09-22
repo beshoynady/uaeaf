@@ -1,9 +1,10 @@
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { CARD_INTERACTIVE } from "@/components/ui/surface";
-import { FOCUS } from "@/components/ui/interactive";
+import { CARD_LINK } from "@/components/ui/interactive";
 import { ArticleCover } from "./cover";
-import { CategoryBadge } from "./category-badge";
+import { PublishDate } from "./publish-date";
+import { TopicBadge } from "./topic-badge";
 import type { ArticlePublic, MediaAssetPublic } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
 
@@ -35,7 +36,6 @@ export const FeaturedArticleCard = ({
   locale: AppLocale;
   cover?: MediaAssetPublic;
 }) => {
-  const format = useFormatter();
   const t = useTranslations("News");
 
   return (
@@ -53,21 +53,17 @@ export const FeaturedArticleCard = ({
       </div>
 
       <div className="flex flex-col items-start gap-3.5 p-6 md:p-8">
-        <CategoryBadge category={article.category} tone="solid" />
+        <TopicBadge topic={article.topic} />
 
-        {article.publishDate ? (
-          <time
-            dateTime={article.publishDate}
-            className="text-caption text-[color:var(--color-text-secondary)]"
-          >
-            {format.dateTime(new Date(article.publishDate), { dateStyle: "long" })}
-          </time>
-        ) : null}
+        <PublishDate
+          date={article.publishDate}
+          className="text-caption text-[color:var(--color-text-secondary)]"
+        />
 
         <h2 className="text-h3 text-balance text-[color:var(--color-text-primary)]">
           <Link
             href={`/news/${article.slug}`}
-            className={`rounded-xs after:absolute after:inset-0 after:content-[''] ${FOCUS}`}
+            className={CARD_LINK}
           >
             {article.title[locale]}
           </Link>

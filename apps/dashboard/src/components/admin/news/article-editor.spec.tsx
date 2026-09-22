@@ -59,6 +59,7 @@ const RECORD: ArticleEditorResponse = {
   title: { ar: "بطولة", en: "Championship" },
   slug: "championship-2026",
   category: "General",
+  topic: null,
   tags: [],
   coverMediaId: null,
   body: { ar: paragraph("نص"), en: paragraph("Text") },
@@ -202,7 +203,44 @@ describe("writing a new article", () => {
     const [url, init] = fetchMock.mock.calls[0] as [string, { body: string }];
     expect(url).toBe("/api/admin/articles");
     // `category` was never touched, and the API requires it.
-    expect(JSON.parse(init.body)).toMatchObject({ category: "General", slug: "a-headline" });
+    expect(JSON.parse(init.body)).toMatchObject({ category: "General", slug: "a-headline", topic: "records" });
+  });
+
+  it("will not create one until a topic is chosen", async () => {
+    renderEditor({ record: null });
+
+    await fillRequired({ topic: null });
+    expect(screen.getByRole("button", { name: /إنشاء|Create/ })).toBeDisabled();
+
+    await userEvent.selectOptions(topicField(), "nationalTeam");
+    expect(screen.getByRole("button", { name: /إنشاء|Create/ })).toBeEnabled();
+  });
+});
+
+describe("the topic of an article that exists", () => {
+  it("leaves an unclassified article editable, and says it has no topic", async () => {
+    renderEditor({ record: RECORD });
+
+    expect(topicField()).toHaveAccessibleDescription(expect.stringMatching(/بلا موضوع|no topic/));
+    await userEvent.clear(screen.getByLabelText(/الرابط|Address/));
+    await userEvent.type(screen.getByLabelText(/الرابط|Address/), "renamed");
+    // Saved without one: the API accepts an old article as it is.
+    expect(shell.body?.()).toEqual({ slug: "renamed" });
+  });
+
+  it("sends the topic once one is chosen", async () => {
+    renderEditor({ record: RECORD });
+
+    await userEvent.selectOptions(topicField(), "community");
+
+    expect(shell.body?.()).toEqual({ topic: "community" });
+  });
+
+  it("offers no empty choice once an article has a topic, so it cannot be cleared", () => {
+    renderEditor({ record: { ...RECORD, topic: "training" } });
+
+    const values = Array.from((topicField() as HTMLSelectElement).options).map((option) => option.value);
+    expect(values).toEqual(["nationalTeam", "training", "youth", "international", "community", "records"]);
   });
 });
 
@@ -251,9 +289,12 @@ describe("editing an article that exists", () => {
 });
 
 /** The three fields with no default, filled the way an author would. */
-const fillRequired = async () => {
+const topicField = () => screen.getByLabelText(/^الموضوع|^Topic/);
+
+const fillRequired = async ({ topic = "records" }: { topic?: string | null } = {}) => {
   await userEvent.type(headline(), "A headline");
   await userEvent.type(screen.getByLabelText(/العنوان.*العربية|Headline.*Arabic/i), "عنوان");
   await userEvent.type(screen.getByLabelText(/اسم الكاتب.*الإنجليزية|Byline.*English/i), "The desk");
   await userEvent.type(screen.getByLabelText(/اسم الكاتب.*العربية|Byline.*Arabic/i), "المحرر");
+  if (topic) await userEvent.selectOptions(topicField(), topic);
 };

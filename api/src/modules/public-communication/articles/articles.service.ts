@@ -181,6 +181,7 @@ export class ArticlesService {
       // document says which shelf it is on rather than relying on a default
       // two layers away.
       category: dto.category ?? 'General',
+      topic: dto.topic,
       tags: normaliseTags(dto.tags ?? []),
       slug: dto.slug,
       coverMediaId: dto.coverMediaId ? new Types.ObjectId(dto.coverMediaId) : null,
@@ -237,6 +238,7 @@ export class ArticlesService {
     // clearing rather than ignoring.
     if (dto.title !== undefined) $set.title = dto.title;
     if (dto.category !== undefined) $set.category = dto.category;
+    if (dto.topic !== undefined) $set.topic = dto.topic;
     if (dto.tags !== undefined) $set.tags = normaliseTags(dto.tags);
     if (dto.slug !== undefined) $set.slug = dto.slug;
     if (dto.body !== undefined) $set.body = dto.body;

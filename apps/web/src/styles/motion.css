@@ -805,6 +805,27 @@
     animation-name: pm-reveal-draw;
     animation-duration: var(--motion-duration-slow);
   }
+
+  /* The homepage coverage cards (owner decision 2026-09-22): each drifts in
+     along the reading direction by the rise's distance, so a row of cards
+     arrives the way the row reads. The direction is the language's; the cards
+     arrive one after another by their step, in reading order. */
+  [data-reveal] {
+    --reveal-drift: calc(-1 * var(--reveal-rise));
+  }
+
+  [dir="rtl"] [data-reveal] {
+    --reveal-drift: var(--reveal-rise);
+  }
+
+  [data-reveal-state="waiting"] [data-reveal-part="drift"] {
+    transform: translateX(var(--reveal-drift));
+  }
+
+  [data-reveal-state="revealed"] [data-reveal-part="drift"] {
+    animation-name: pm-reveal-drift;
+    animation-duration: var(--motion-duration-slow);
+  }
 }
 
 @keyframes pm-settle {
@@ -885,6 +906,46 @@
   }
   to {
     transform: scale(1);
+  }
+}
+
+@keyframes pm-reveal-drift {
+  from {
+    transform: translateX(var(--reveal-drift));
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes pm-reveal-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* The reduced form of the reveal, for a block that opts in with
+   `data-reveal-reduced="fade"` and for no other (`reveal-once.tsx`): the parts
+   fade in together, with no transform and no stagger. Every duration token is
+   0ms under this query by design, so the fade restates the base duration's
+   value, and `!important` because the reset beside it is. */
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal-reduced="fade"] {
+    --reveal-fade-duration: 220ms;
+  }
+
+  [data-reveal-reduced="fade"][data-reveal-state="waiting"] [data-reveal-part] {
+    opacity: 0;
+  }
+
+  [data-reveal-reduced="fade"][data-reveal-state="revealed"] [data-reveal-part] {
+    animation-name: pm-reveal-fade;
+    animation-duration: var(--reveal-fade-duration) !important;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
   }
 }
 

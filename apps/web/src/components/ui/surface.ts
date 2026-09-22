@@ -47,7 +47,10 @@ const GROUND = "bg-[color:var(--color-surface-raised)]";
  * readable edge, and an elevation — which is what makes it read as an object
  * rather than as a shadow someone remembered to add.
  */
-export const CARD = `rounded-[var(--radius-md)] ${EDGE} ${GROUND} shadow-[var(--elevation-card)]`;
+/** A card's edge, ground and elevation, before its radius. */
+const RAISED = `${EDGE} ${GROUND} shadow-[var(--elevation-card)]`;
+
+export const CARD = `rounded-[var(--radius-md)] ${RAISED}`;
 
 /**
  * A panel: the same object at container scale.
@@ -117,7 +120,20 @@ export const LIFT = "lift";
  * (ADR-0065); `active:` accompanies `hover:` because hover is mouse-only
  * feedback and this layer is mobile-priority (PR-006).
  */
-export const CARD_INTERACTIVE = `${LIFT} ${CARD} transition-colors duration-[var(--motion-duration-instant)] ease-[var(--motion-easing-standard)] hover:border-[color:var(--color-action-default)] focus-within:border-[color:var(--color-action-default)] active:border-[color:var(--color-action-default)]`;
+const RESPONSE =
+  "transition-colors duration-[var(--motion-duration-instant)] ease-[var(--motion-easing-standard)] hover:border-[color:var(--color-action-default)] focus-within:border-[color:var(--color-action-default)] active:border-[color:var(--color-action-default)]";
+
+export const CARD_INTERACTIVE = `${LIFT} ${CARD} ${RESPONSE}`;
+
+/**
+ * The same card at `radius.lg`, for the homepage's editorial cards: the lead
+ * story and the press coverage, which the approved canvas draws rounder than a
+ * grid card (20px and 16px). Its own recipe rather than a second radius
+ * layered on `CARD`: two radius utilities on one element resolve by stylesheet
+ * order, not by the order they are written. The lead story's 20px has no
+ * radius token, so both take 16px.
+ */
+export const CARD_INTERACTIVE_LG = `${LIFT} rounded-[var(--radius-lg)] ${RAISED} ${RESPONSE}`;
 
 /**
  * A small word-label: a sponsor tier, a news tag, the VIP mark.

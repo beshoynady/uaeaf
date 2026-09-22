@@ -14417,6 +14417,19 @@
               "FederationInMedia"
             ]
           },
+          "topic": {
+            "type": "string",
+            "enum": [
+              "nationalTeam",
+              "training",
+              "youth",
+              "international",
+              "community",
+              "records"
+            ],
+            "nullable": true,
+            "description": "What the story is about; null for an article nobody has classified yet."
+          },
           "tags": {
             "description": "Free labels, as the newsroom typed them. The badge a reader sees and the value a tag link carries are the same string.",
             "type": "array",
@@ -14467,6 +14480,7 @@
           "id",
           "slug",
           "category",
+          "topic",
           "tags",
           "title",
           "authorDisplayName",
@@ -14496,6 +14510,18 @@
             ],
             "default": "General",
             "description": "Which shelf of the newsroom this belongs on. Not `externalMediaCoverage`, which is a separate collection of links to coverage published elsewhere — this labels an article the federation wrote itself. Omitted means General."
+          },
+          "topic": {
+            "type": "string",
+            "enum": [
+              "nationalTeam",
+              "training",
+              "youth",
+              "international",
+              "community",
+              "records"
+            ],
+            "description": "What the story is about. Required on a new article; articles written before the field existed have none. Not `category` (the shelf) and not `tags` (free words)."
           },
           "tags": {
             "default": [],
@@ -14548,6 +14574,7 @@
         },
         "required": [
           "title",
+          "topic",
           "slug",
           "body",
           "authorDisplayName"
@@ -14565,6 +14592,18 @@
               "General",
               "FederationInMedia"
             ]
+          },
+          "topic": {
+            "type": "string",
+            "enum": [
+              "nationalTeam",
+              "training",
+              "youth",
+              "international",
+              "community",
+              "records"
+            ],
+            "description": "Changes the topic. Cannot be cleared."
           },
           "tags": {
             "description": "Free labels for display and filtering. NOT a second category: `category` is a closed list of one, and it decides which homepage section the article appears in.",

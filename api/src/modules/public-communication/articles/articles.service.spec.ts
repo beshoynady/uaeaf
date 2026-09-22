@@ -111,6 +111,7 @@ describe('ArticlesService', () => {
           slug: 'headline',
           body: { ar: paragraph('نص'), en: paragraph('body') },
           authorDisplayName: { ar: 'الإعلام', en: 'Media' },
+          topic: 'nationalTeam',
         },
         actor,
         context,
@@ -173,6 +174,7 @@ describe('ArticlesService', () => {
             slug: 'headline',
             body: { ar: paragraph('نص'), en: paragraph('body') },
             authorDisplayName: { ar: 'الإعلام', en: 'Media' },
+            topic: 'nationalTeam',
           },
           actor,
           context,
@@ -276,6 +278,63 @@ describe('ArticlesService', () => {
 
       const [, patch] = deps.repository.updateById.mock.calls[0] as [string, { $set: { tags?: string[] } }];
       expect(patch.$set.tags).toEqual(['Relay']);
+    });
+  });
+
+  describe('topic', () => {
+    const draft = () => ({
+      title: { ar: 'عنوان', en: 'Headline' },
+      slug: 'headline',
+      body: { ar: paragraph('نص'), en: paragraph('body') },
+      authorDisplayName: { ar: 'الإعلام', en: 'Media' },
+      topic: 'records',
+    });
+
+    it('files a new article under the topic it was created with', async () => {
+      const deps = makeDeps();
+
+      await makeService(deps).create(draft() as never, actor, context);
+
+      expect((deps.repository.create.mock.calls[0] as [{ topic?: string }])[0].topic).toBe('records');
+    });
+
+    it('writes the topic on an edit only when the edit sends one', async () => {
+      const deps = makeDeps();
+      const service = makeService(deps);
+
+      await service.update(articleId.toString(), { topic: 'youth' } as never, actor, context);
+      await service.update(articleId.toString(), { slug: 'renamed' } as never, actor, context);
+
+      const patches = deps.repository.updateById.mock.calls as unknown as [string, { $set: Record<string, unknown> }][];
+      expect(patches[0][1].$set.topic).toBe('youth');
+      // An edit that did not touch the topic must not overwrite it — an old
+      // article stays unclassified until someone classifies it.
+      expect('topic' in patches[1][1].$set).toBe(false);
+    });
+
+    it('shows a reader the topic from the row, and none where nobody chose one', async () => {
+      const deps = makeDeps();
+      deps.repository.findPage.mockResolvedValue({
+        // The second row predates the field entirely, as the twelve existing
+        // articles did before the backfill.
+        items: [stored({ topic: 'records' }), stored({ _id: new Types.ObjectId() })],
+        total: 2,
+      });
+      deps.publicationsService.getPublicSnapshot.mockResolvedValue({
+        slug: 'headline',
+        title: { ar: 'عنوان', en: 'Headline' },
+        authorDisplayName: { ar: 'الإعلام', en: 'Media' },
+        body: { ar: paragraph('نص'), en: paragraph('body') },
+        coverMediaId: null,
+        seo: null,
+        // A snapshot frozen with another topic must not win over the row: the
+        // topic is a filing decision the newsroom corrects without republishing.
+        topic: 'training',
+      });
+
+      const page = await makeService(deps).findPublicPage(1, 12);
+
+      expect(page.items.map((item) => item.topic)).toEqual(['records', null]);
     });
   });
 
