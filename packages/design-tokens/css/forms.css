@@ -44,14 +44,19 @@
 
 .field {
   position: relative;
-  /* Recessed at rest, raised on focus. The step is a surface change, not a
-     hand-drawn inner shadow: `--color-surface-sunken` is the system's own
-     answer to "below the plane". */
-  --field-surface: var(--color-surface-sunken);
+  /* The field's ground is its OWN token, not borrowed from the surface ramp
+     (ADR-0097). It was `--color-surface-sunken`, which is #000000 in dark: a
+     pure-black field inside a #21201C card, 1.29:1 against it and *darker*
+     than it, inverting the light theme's recessed step — and on focus it
+     became `--color-surface-raised`, the card's own colour, 1.00:1, so the
+     field lost its shape at the moment of interaction.
+     Each theme now states both grounds itself, and light keeps exactly the
+     values it always had. */
+  --field-surface: var(--color-field-surface);
 }
 
 .field:focus-within {
-  --field-surface: var(--color-surface-raised);
+  --field-surface: var(--color-field-surface-focus);
 }
 
 /*

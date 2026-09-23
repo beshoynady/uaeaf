@@ -93,6 +93,22 @@
         "type": "color"
       }
     },
+    "field": {
+      "comment": "ADR-0097 — high contrast draws every surface white and carries the boundary on a solid border, so the field's ground never departs from the card. The edge takes the strongest neutral available.",
+      "surface": {
+        "value": "#FFFFFF",
+        "type": "color"
+      },
+      "surface-focus": {
+        "value": "#FFFFFF",
+        "type": "color"
+      },
+      "border": {
+        "value": "{color.neutral-warm.900}",
+        "type": "color",
+        "comment": "the boundary is the border, not a change of ground"
+      }
+    },
     "section": {
       "comment": "ADR-0059 — high contrast deliberately flattens all four registers to black-on-white. A user who selects this mode is asking for maximum legibility, not brand expression; rendering a green or red full-bleed ground would take contrast away from them to make a point they did not ask for.",
       "green": {

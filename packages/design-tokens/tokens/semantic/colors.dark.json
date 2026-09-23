@@ -95,6 +95,24 @@
         "type": "color"
       }
     },
+    "field": {
+      "comment": "ADR-0097 — the form field's own ground and edge. The field was surface.sunken (#000000) inside a surface.raised (#21201C) card: 1.29:1 and DARKER than the card, inverting the light theme, and on focus it became the card's own colour at 1.00:1. All three values below are existing steps of the neutral-warm ramp; none is a new colour.",
+      "surface": {
+        "value": "{color.neutral-warm.800}",
+        "type": "color",
+        "comment": "= surface.skeleton #33322D. 1.27:1 against the card and LIGHTER than it, matching the light theme's direction. Primary text 12.29:1, muted text 4.72:1"
+      },
+      "surface-focus": {
+        "value": "{color.neutral-warm.700}",
+        "type": "color",
+        "comment": "#4A4942 — 1.80:1 against the card (was 1.00:1) and 1.42:1 against the resting field, so the field lifts on focus as it does in light. Primary text 8.65:1"
+      },
+      "border": {
+        "value": "{color.neutral-warm.400}",
+        "type": "color",
+        "comment": "#9E9D96 — 4.72:1 against the resting field and 5.99:1 against the card, both past WCAG 1.4.11's 3:1. border.strong (.500) measures only 2.75:1 on this ground, which is why the edge needed its own token"
+      }
+    },
     "section": {
       "comment": "ADR-0059 — full-bleed identity grounds. Guide §6.1 presents white, red, green and black as the four official backgrounds; §3.34.1 previously forbade the middle two. Green and red are identical across themes because their hue carries them against either page ground; black is the one register that changes, because pure black on a near-black page measures 1.12:1 and stops being a departure at all.",
       "green": {

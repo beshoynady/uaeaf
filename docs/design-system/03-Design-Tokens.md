@@ -756,6 +756,34 @@ DT-COLOR-019 · accent.category.media (→ color.desert-sand.700) · Status: Act
 
 ---
 
+## 3.37 The Form Field's Own Ground and Edge (ADR-0097)
+
+| | |
+| --- | --- |
+| **Context** | A form field took its background from `--color-surface-sunken` and its edge from `--color-border-strong` (`forms.css`). In the dark theme `surface.sunken` is `#000000`, so every field was a pure-black box inside a `#21201C` card: **1.29:1** against it and *darker* than it, inverting the light theme's recessed step. On focus it became `--color-surface-raised` — the card's own colour, **1.00:1** — so the field lost its shape at the moment of interaction. The edge measured **2.75:1** against the proposed new ground, under WCAG 1.4.11's 3:1. |
+| **Decision** | Give the field its own three semantic tokens per theme rather than borrowing from the surface ramp: `color.field.surface`, `color.field.surface-focus`, `color.field.border`. **Light keeps exactly the values it had.** Dark points at existing neutral-warm steps — `.800` at rest, `.700` on focus, `.400` for the edge. No new primitive; no new colour. |
+| **Why this and not a remap** | Remapping `--field-surface` alone fixed the fill and left the edge at 2.75:1. No *neutral* border token in the dark theme clears 3:1 on the new ground; the ten that do are coloured (`border.accent`, the section and item edges), and a green edge on a resting field would read as "active" while red would read as "error" — the substitution ADR-0065 R2 forbids. |
+| **Consequences** | Every form in **both** applications changes in dark mode; light does not. The field no longer borrows from the surface ramp, so a future change to `surface.sunken` — used for chips, hover states and panels — can no longer silently restyle every input on the platform. |
+| **Risks** | Muted hint text on a field falls from 7.72:1 to **4.72:1**. It clears AA, but with less headroom; that figure is a property of the fill and is recorded as an open question on ADR-0097 rather than silently accepted. |
+
+**Verification:** measured in Chromium on the running dashboard from
+`getComputedStyle` — not from the token files. Dark: field `#33322D`, card
+`#21201C`, border `#9E9D96` → field/card **1.27**, border/field **4.72**,
+border/card **5.99**, primary text **12.29**, muted **4.72**; focus `#4A4942`
+→ **1.80** against the card (was 1.00). Light: `#F5F4F1` / `#FFFFFF` /
+`#757470` → 1.10 / 4.25 / 19.09, **unchanged**. Public site (`apps/web` shares
+`forms.css`) measured the same in both themes. Dashboard suite 1370/1370.
+
+### 3.37.1 Registry Additions
+
+```text
+DT-COLOR-020 · field.surface (light → neutral-warm.100, dark → neutral-warm.800, HC → white) · Status: Active · v1.0 · Owner: Design System · References: [ADR-0097]
+DT-COLOR-021 · field.surface-focus (light → white, dark → neutral-warm.700, HC → white) · Status: Active · v1.0 · Owner: Design System · References: [ADR-0097]
+DT-COLOR-022 · field.border (light → neutral-warm.500, dark → neutral-warm.400, HC → neutral-warm.900) · Status: Active · v1.0 · Owner: Design System · References: [ADR-0097] · Supersedes border.strong for the field boundary only; border.strong itself is unchanged
+```
+
+---
+
 ## Do & Don't
 
 **Do:**

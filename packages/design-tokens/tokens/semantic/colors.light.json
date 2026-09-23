@@ -99,6 +99,24 @@
         "type": "color"
       }
     },
+    "field": {
+      "comment": "ADR-0097 — the form field's own ground and edge. In light the pairing already worked, so these hold the values the field had: sunken at rest, raised on focus, border.strong for the edge. Named separately so the dark theme can differ without a component knowing which theme it is in.",
+      "surface": {
+        "value": "{color.neutral-warm.100}",
+        "type": "color",
+        "comment": "= surface.sunken. 1.10:1 against the white card: recessed, as intended"
+      },
+      "surface-focus": {
+        "value": "#FFFFFF",
+        "type": "color",
+        "comment": "= surface.raised. The field lifts to the card's own ground on focus"
+      },
+      "border": {
+        "value": "{color.neutral-warm.500}",
+        "type": "color",
+        "comment": "4.25:1 against the resting field — unchanged from border.strong"
+      }
+    },
     "section": {
       "comment": "ADR-0059 — full-bleed identity grounds. Guide §6.1 presents white, red, green and black as the four official backgrounds; §3.34.1 previously forbade the middle two. Green and red are identical across themes because their hue carries them against either page ground; black is the one register that changes, because pure black on a near-black page measures 1.12:1 and stops being a departure at all.",
       "green": {
