@@ -12,7 +12,7 @@ import type { MediaAssetOption } from "@/components/admin/pages/media-picker";
 import { changedFrom, toDraft, toPatchBody } from "@/lib/admin/president-message";
 import type { PresidentMessageDraft, PresidentMessageResponse } from "@/lib/admin/president-message";
 import type { AppLocale } from "@/i18n/routing";
-import { EditorSection } from "./section";
+import { FormSection } from "@/components/ui/form-section";
 
 /** The registry key this record is addressed by, upstream and in the BFF. */
 const ENTITY_TYPE = "presidentMessagePage";
@@ -236,29 +236,29 @@ export function PresidentMessageEditor({
         </p>
       ) : null}
 
-      <EditorSection number={1} title={t("sectionHero")}>
+      <FormSection number={1} title={t("sectionHero")}>
         <HeroSection {...shared} {...imageProps} />
-      </EditorSection>
+      </FormSection>
 
-      <EditorSection number={2} title={t("sectionQuote")}>
+      <FormSection number={2} title={t("sectionQuote")}>
         <QuoteSection {...shared} />
-      </EditorSection>
+      </FormSection>
 
-      <EditorSection number={3} title={t("sectionBody")}>
+      <FormSection number={3} title={t("sectionBody")}>
         <BodySection {...shared} />
-      </EditorSection>
+      </FormSection>
 
-      <EditorSection number={4} title={t("sectionClosing")}>
+      <FormSection number={4} title={t("sectionClosing")}>
         <ClosingSection {...shared} />
-      </EditorSection>
+      </FormSection>
 
-      <EditorSection number={5} title={t("sectionValues")}>
+      <FormSection number={5} title={t("sectionValues")}>
         <ValuesSection {...shared} />
-      </EditorSection>
+      </FormSection>
 
-      <EditorSection number={6} title={t("sectionSeo")}>
+      <FormSection number={6} title={t("sectionSeo")}>
         <SeoSection {...shared} {...imageProps} />
-      </EditorSection>
+      </FormSection>
       </div>
     </div>
   );

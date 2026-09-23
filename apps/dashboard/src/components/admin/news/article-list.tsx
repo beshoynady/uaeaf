@@ -188,7 +188,21 @@ export const ArticleList = ({
                     </Link>
                   </td>
                   <td className="p-3">{t(`state_${rowState}`)}</td>
-                  <td className="p-3">{t(`category_${article.category}`)}</td>
+                  <td className="p-3">
+                    <span className="inline-flex flex-wrap items-center gap-1.5">
+                      {t(`category_${article.category}`)}
+                      {/* A round-up with no outlet recorded. Dashed and
+                          secondary like the missing topic beside it: a gap
+                          for the newsroom to fill, not an error — the article
+                          stays publishable, and only the attribution on the
+                          public page is absent until it is filled. */}
+                      {article.category === "FederationInMedia" && !article.sourceOutlet ? (
+                        <span className="inline-flex items-center rounded-full border border-dashed border-[color:var(--color-border-strong)] px-2.5 py-0.5 text-[color:var(--color-text-secondary)]">
+                          {t("sourceMissing")}
+                        </span>
+                      ) : null}
+                    </span>
+                  </td>
                   <td className="p-3">
                     {article.topic ? (
                       t(topicMessageKey(article.topic))

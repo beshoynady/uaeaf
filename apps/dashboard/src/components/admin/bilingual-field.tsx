@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { TextField } from "@/components/auth/text-field";
 import { FieldLabel } from "@/components/ui/required-field";
 import { FIELD_TEXTAREA } from "@/components/ui/interactive";
@@ -30,6 +31,8 @@ export function BilingualField({
   disabled,
   required,
   multiline,
+  footerAr,
+  footerEn,
 }: {
   id: string;
   labelAr: string;
@@ -45,12 +48,32 @@ export function BilingualField({
   /** For prose rather than a name. A description runs to a sentence or two
    *  and a single-line input hides everything past its own width. */
   multiline?: boolean;
+  /**
+   * Anything that belongs to ONE half of the pair, under that half's input —
+   * a character counter, most often.
+   *
+   * These exist because a caller could not put anything under one column
+   * before. The grid closes inside this component, so everything a caller
+   * rendered afterwards became a full-width row beneath BOTH inputs, laid out
+   * from the inline-start edge — which put both of an SEO field's counters
+   * under the Arabic column and left the English one with none.
+   *
+   * Two explicit props rather than one render-prop: the caller already knows
+   * which language each belongs to, and naming them is simpler to read at the
+   * call site than a function that has to be told.
+   */
+  footerAr?: ReactNode;
+  footerEn?: ReactNode;
 }) {
   return (
     <div className="flex flex-col gap-3">
+      {/* Each column is its own stack, so whatever belongs to one language —
+          its input and its footer — stays over that language's column. The
+          two inputs used to be direct children of this grid, which left a
+          caller no way to put anything under just one of them. */}
       <div className="grid gap-4 sm:grid-cols-2">
-        {multiline ? (
-          <>
+        <div className="flex min-w-0 flex-col gap-1.5">
+          {multiline ? (
             <TextArea
               id={`${id}-ar`}
               label={labelAr}
@@ -60,18 +83,7 @@ export function BilingualField({
               disabled={disabled}
               onChange={onChangeAr}
             />
-            <TextArea
-              id={`${id}-en`}
-              label={labelEn}
-              dir="ltr"
-              value={valueEn}
-              required={required}
-              disabled={disabled}
-              onChange={onChangeEn}
-            />
-          </>
-        ) : (
-          <>
+          ) : (
             <TextField
               id={`${id}-ar`}
               label={labelAr}
@@ -82,6 +94,22 @@ export function BilingualField({
               disabled={disabled}
               onChange={(event) => onChangeAr(event.target.value)}
             />
+          )}
+          {footerAr}
+        </div>
+
+        <div className="flex min-w-0 flex-col gap-1.5">
+          {multiline ? (
+            <TextArea
+              id={`${id}-en`}
+              label={labelEn}
+              dir="ltr"
+              value={valueEn}
+              required={required}
+              disabled={disabled}
+              onChange={onChangeEn}
+            />
+          ) : (
             <TextField
               id={`${id}-en`}
               label={labelEn}
@@ -92,8 +120,9 @@ export function BilingualField({
               disabled={disabled}
               onChange={(event) => onChangeEn(event.target.value)}
             />
-          </>
-        )}
+          )}
+          {footerEn}
+        </div>
       </div>
 
       {hint ? <p className="text-caption text-[color:var(--color-text-muted)]">{hint}</p> : null}

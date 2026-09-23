@@ -6,7 +6,7 @@ import { BilingualField } from "@/components/admin/bilingual-field";
 import { EditorShell } from "@/components/admin/editorial-editor/editor-shell";
 import { SeoFields } from "@/components/admin/editorial-editor/seo-fields";
 import { MediaPicker, type MediaAssetOption } from "@/components/admin/pages/media-picker";
-import { EditorSection } from "@/components/admin/president-message/section";
+import { FormSection } from "@/components/ui/form-section";
 import { PlanListField, type PlanListLabels } from "@/components/admin/strategic-plan/plan-list-field";
 import type { EditorialState } from "@/lib/admin/editorial-state";
 import { MAX_PLAN_ROW_ITEMS } from "@/lib/admin/plan-lists";
@@ -188,21 +188,21 @@ export const StrategicPlanEditor = ({
 
         return (
           <>
-            <EditorSection number={1} title={t("sectionHero")}>
+            <FormSection number={1} title={t("sectionHero")}>
               {picture("heroImageId", t("heroImage"))}
               <p className="text-caption text-[color:var(--color-text-muted)]">{t("altNote")}</p>
               {text("heroTitle", t("heroTitle"), { required: true })}
               {text("heroSubtitle", t("heroSubtitle"), { required: true })}
               <p className="text-caption text-[color:var(--color-text-muted)]">{t("eyebrowNote")}</p>
-            </EditorSection>
+            </FormSection>
 
-            <EditorSection number={2} title={t("sectionIntro")}>
+            <FormSection number={2} title={t("sectionIntro")}>
               {text("introHeading", t("introHeading"), { required: true })}
               {text("introText", t("introText"), { multiline: true, required: true })}
               {picture("introImageId", t("introImage"))}
-            </EditorSection>
+            </FormSection>
 
-            <EditorSection number={3} title={t("sectionPhases")}>
+            <FormSection number={3} title={t("sectionPhases")}>
               {text("phasesTitle", t("phasesTitle"))}
               <PlanListField
                 id="phase"
@@ -213,9 +213,9 @@ export const StrategicPlanEditor = ({
                 max={MAX_PLAN_ROW_ITEMS}
                 labels={listLabels("phaseLegend", "addPhase", "removePhase", "noPhases", MAX_PLAN_ROW_ITEMS)}
               />
-            </EditorSection>
+            </FormSection>
 
-            <EditorSection number={4} title={t("sectionPillars")}>
+            <FormSection number={4} title={t("sectionPillars")}>
               {text("pillarsTitle", t("pillarsTitle"), { required: true })}
               {text("pillarsText", t("pillarsText"), { multiline: true })}
               <PlanListField
@@ -226,9 +226,9 @@ export const StrategicPlanEditor = ({
                 fields={{ kind: "item" }}
                 labels={listLabels("pillarLegend", "addPillar", "removePillar", "noPillars")}
               />
-            </EditorSection>
+            </FormSection>
 
-            <EditorSection number={5} title={t("sectionObjectives")}>
+            <FormSection number={5} title={t("sectionObjectives")}>
               {text("objectivesTitle", t("objectivesTitle"), { required: true })}
               {picture("objectivesImageId", t("objectivesImage"))}
               <PlanListField
@@ -239,9 +239,9 @@ export const StrategicPlanEditor = ({
                 fields={{ kind: "item" }}
                 labels={listLabels("objectiveLegend", "addObjective", "removeObjective", "noObjectives")}
               />
-            </EditorSection>
+            </FormSection>
 
-            <EditorSection number={6} title={t("sectionMetrics")}>
+            <FormSection number={6} title={t("sectionMetrics")}>
               {text("metricsTitle", t("metricsTitle"), { required: true })}
               {picture("metricsImageId", t("metricsImage"))}
               <PlanListField
@@ -252,9 +252,9 @@ export const StrategicPlanEditor = ({
                 fields={{ kind: "metric" }}
                 labels={listLabels("metricLegend", "addMetric", "removeMetric", "noMetrics")}
               />
-            </EditorSection>
+            </FormSection>
 
-            <EditorSection number={7} title={t("sectionExecution")}>
+            <FormSection number={7} title={t("sectionExecution")}>
               {text("executionTitle", t("executionTitle"), { required: true })}
               {text("executionText", t("executionText"), { multiline: true })}
               <PlanListField
@@ -266,16 +266,16 @@ export const StrategicPlanEditor = ({
                 max={MAX_PLAN_ROW_ITEMS}
                 labels={listLabels("stepLegend", "addStep", "removeStep", "noSteps", MAX_PLAN_ROW_ITEMS)}
               />
-            </EditorSection>
+            </FormSection>
 
-            <EditorSection number={8} title={t("sectionCta")}>
+            <FormSection number={8} title={t("sectionCta")}>
               {text("ctaTitle", t("ctaTitle"), { required: true })}
               {text("ctaText", t("ctaText"), { multiline: true })}
               {picture("ctaImageId", t("ctaImage"))}
               <p className="text-caption text-[color:var(--color-text-muted)]">{t("ctaNote")}</p>
-            </EditorSection>
+            </FormSection>
 
-            <EditorSection number={9} title={t("sectionSeo")}>
+            <FormSection number={9} title={t("sectionSeo")}>
               <SeoFields
                 seo={draft.seo}
                 onChange={(seo) => change({ seo })}
@@ -285,7 +285,7 @@ export const StrategicPlanEditor = ({
                 locale={locale}
                 onUploaded={onUploaded}
               />
-            </EditorSection>
+            </FormSection>
           </>
         );
       }}

@@ -146,7 +146,9 @@ export function RichTextEditor({
   }, [editor, disabled]);
 
   return (
-    <fieldset className="flex min-w-0 flex-col gap-3">
+    // `group` so the hint below can appear only while the editor has focus:
+    // the key it names is only reachable from inside the text.
+    <fieldset className="group flex min-w-0 flex-col gap-3">
       <legend
         id={labelId}
         className="text-label font-medium text-[color:var(--color-text-secondary)]"
@@ -165,7 +167,15 @@ export function RichTextEditor({
         )}
       </div>
 
-      <p id={hintId} className="text-caption text-[color:var(--color-text-muted)]">
+      {/* Always available to assistive technology through `aria-describedby`
+          on the editor, and shown to sighted readers only while the editor
+          has focus. Standing under every editor, it was a line of advice
+          about a key nobody can press from outside the text — repeated once
+          per language, on a screen that already asks a lot of an author. */}
+      <p
+        id={hintId}
+        className="sr-only text-caption text-[color:var(--color-text-muted)] group-focus-within:not-sr-only"
+      >
         {t("keyboardExit")}
       </p>
     </fieldset>

@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { BilingualField } from "@/components/admin/bilingual-field";
+import { CharCounter } from "@/components/ui/char-counter";
 import { MediaPicker, type MediaAssetOption } from "@/components/admin/pages/media-picker";
 import { SEO_GUIDANCE, seoLength, type SeoDraft } from "@/lib/admin/editorial-draft";
 import type { LocalizedText } from "@/lib/api/types";
@@ -35,36 +36,49 @@ export const SeoFields = ({
   const t = useTranslations("EditorialEditor");
   const { metaTitle, metaDescription } = seo;
 
+  /** One language's counter, for the column that language's input sits in.
+   *  Both languages are counted — the page is published in both, and an
+   *  English description twice the Arabic one's length is a defect nobody
+   *  sees while editing in Arabic. */
+  const counter = (value: LocalizedText, limit: number, lang: "ar" | "en") => {
+    const count = seoLength(value, lang);
+    return (
+      <CharCounter
+        lang={lang}
+        over={count > limit}
+        text={t(count > limit ? "seoCounterOver" : "seoCounter", { count, limit })}
+      />
+    );
+  };
+
   return (
     <>
-      <div className="flex flex-col gap-2">
-        <BilingualField
-          id="seo-title"
-          labelAr={t("labelAr", { label: t("metaTitle") })}
-          labelEn={t("labelEn", { label: t("metaTitle") })}
-          valueAr={metaTitle.ar}
-          valueEn={metaTitle.en}
-          onChangeAr={(ar) => onChange({ ...seo, metaTitle: { ...metaTitle, ar } })}
-          onChangeEn={(en) => onChange({ ...seo, metaTitle: { ...metaTitle, en } })}
-          disabled={disabled}
-        />
-        <Counter value={metaTitle} limit={SEO_GUIDANCE.metaTitle} />
-      </div>
+      <BilingualField
+        id="seo-title"
+        labelAr={t("labelAr", { label: t("metaTitle") })}
+        labelEn={t("labelEn", { label: t("metaTitle") })}
+        valueAr={metaTitle.ar}
+        valueEn={metaTitle.en}
+        onChangeAr={(ar) => onChange({ ...seo, metaTitle: { ...metaTitle, ar } })}
+        onChangeEn={(en) => onChange({ ...seo, metaTitle: { ...metaTitle, en } })}
+        disabled={disabled}
+        footerAr={counter(metaTitle, SEO_GUIDANCE.metaTitle, "ar")}
+        footerEn={counter(metaTitle, SEO_GUIDANCE.metaTitle, "en")}
+      />
 
-      <div className="flex flex-col gap-2">
-        <BilingualField
-          id="seo-description"
-          multiline
-          labelAr={t("labelAr", { label: t("metaDescription") })}
-          labelEn={t("labelEn", { label: t("metaDescription") })}
-          valueAr={metaDescription.ar}
-          valueEn={metaDescription.en}
-          onChangeAr={(ar) => onChange({ ...seo, metaDescription: { ...metaDescription, ar } })}
-          onChangeEn={(en) => onChange({ ...seo, metaDescription: { ...metaDescription, en } })}
-          disabled={disabled}
-        />
-        <Counter value={metaDescription} limit={SEO_GUIDANCE.metaDescription} />
-      </div>
+      <BilingualField
+        id="seo-description"
+        multiline
+        labelAr={t("labelAr", { label: t("metaDescription") })}
+        labelEn={t("labelEn", { label: t("metaDescription") })}
+        valueAr={metaDescription.ar}
+        valueEn={metaDescription.en}
+        onChangeAr={(ar) => onChange({ ...seo, metaDescription: { ...metaDescription, ar } })}
+        onChangeEn={(en) => onChange({ ...seo, metaDescription: { ...metaDescription, en } })}
+        disabled={disabled}
+        footerAr={counter(metaDescription, SEO_GUIDANCE.metaDescription, "ar")}
+        footerEn={counter(metaDescription, SEO_GUIDANCE.metaDescription, "en")}
+      />
 
       <p className="text-caption text-[color:var(--color-text-muted)]">{t("seoNote")}</p>
 
@@ -84,25 +98,6 @@ export const SeoFields = ({
   );
 };
 
-/** How much of a field a search result will show, in both languages: the page
- *  is published in both. */
-const Counter = ({ value, limit }: { value: LocalizedText; limit: number }) => {
-  const t = useTranslations("EditorialEditor");
-
-  return (
-    <p className="flex flex-wrap gap-x-6 gap-y-1 text-caption text-[color:var(--color-text-muted)]">
-      {(["ar", "en"] as const).map((locale) => {
-        const count = seoLength(value, locale);
-        return (
-          <span key={locale} lang={locale} dir={locale === "ar" ? "rtl" : "ltr"}>
-            {t(count > limit ? "seoCounterOver" : "seoCounter", { count, limit })}
-          </span>
-        );
-      })}
-    </p>
-  );
-};
-
 const truncate = (value: string, limit: number): string => (value.length > limit ? `${value.slice(0, limit)}…` : value);
 
 /** The result as a search engine draws it, so an author reads their own title
@@ -113,7 +108,12 @@ const Preview = ({ title, description, locale }: { title: LocalizedText; descrip
 
   return (
     <section className="flex flex-col gap-2 rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] px-4 py-3">
-      <h4 className="text-caption font-medium text-[color:var(--color-text-secondary)]">{t("seoPreview")}</h4>
+      {/* Which language is being previewed. It draws the half matching the
+          dashboard's own language, and an unlabelled preview left an author
+          editing in Arabic believing they had seen the English result. */}
+      <h4 className="text-caption font-medium text-[color:var(--color-text-secondary)]">
+        {t("seoPreviewIn", { language: t(locale === "ar" ? "languageAr" : "languageEn") })}
+      </h4>
 
       {shown.title === "" && shown.description === "" ? (
         <p className="text-caption text-[color:var(--color-text-muted)]">{t("seoPreviewEmpty")}</p>

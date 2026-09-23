@@ -7,7 +7,7 @@ import { BlockListField } from "@/components/admin/editorial-editor/block-list-f
 import { EditorShell } from "@/components/admin/editorial-editor/editor-shell";
 import { SeoFields } from "@/components/admin/editorial-editor/seo-fields";
 import { MediaPicker, type MediaAssetOption } from "@/components/admin/pages/media-picker";
-import { EditorSection } from "@/components/admin/president-message/section";
+import { FormSection } from "@/components/ui/form-section";
 import type { EditorialState } from "@/lib/admin/editorial-state";
 import { changedFrom, toDraft, toPatchBody } from "@/lib/admin/vision-mission";
 import type { VisionMissionDraft, VisionMissionResponse } from "@/lib/admin/vision-mission";
@@ -110,26 +110,26 @@ export const VisionMissionEditor = ({
 
         return (
           <>
-            <EditorSection number={1} title={t("sectionHero")}>
+            <FormSection number={1} title={t("sectionHero")}>
               {picture("heroImageId", t("heroImage"))}
               <p className="text-caption text-[color:var(--color-text-muted)]">{t("altNote")}</p>
               {text("heroTitle", t("heroTitle"), { required: true })}
               {text("heroSubtitle", t("heroSubtitle"), { required: true })}
-            </EditorSection>
+            </FormSection>
 
-            <EditorSection number={2} title={t("sectionVision")}>
+            <FormSection number={2} title={t("sectionVision")}>
               {text("visionTitle", t("visionTitle"))}
               {text("visionText", t("visionText"), { multiline: true, required: true })}
               {picture("visionImageId", t("visionImage"))}
-            </EditorSection>
+            </FormSection>
 
-            <EditorSection number={3} title={t("sectionMission")}>
+            <FormSection number={3} title={t("sectionMission")}>
               {text("missionTitle", t("missionTitle"))}
               {text("missionText", t("missionText"), { multiline: true, required: true })}
               {picture("missionImageId", t("missionImage"))}
-            </EditorSection>
+            </FormSection>
 
-            <EditorSection number={4} title={t("sectionGoals")}>
+            <FormSection number={4} title={t("sectionGoals")}>
               {text("goalsTitle", t("goalsTitle"))}
               <BlockListField
                 id="goal"
@@ -144,9 +144,9 @@ export const VisionMissionEditor = ({
                   empty: t("noGoals"),
                 }}
               />
-            </EditorSection>
+            </FormSection>
 
-            <EditorSection number={5} title={t("sectionValues")}>
+            <FormSection number={5} title={t("sectionValues")}>
               {picture("valuesImageId", t("valuesImage"))}
               <BlockListField
                 id="value"
@@ -161,14 +161,14 @@ export const VisionMissionEditor = ({
                   empty: t("noValues"),
                 }}
               />
-            </EditorSection>
+            </FormSection>
 
-            <EditorSection number={6} title={t("sectionCta")}>
+            <FormSection number={6} title={t("sectionCta")}>
               {picture("ctaImageId", t("ctaImage"))}
               <p className="text-caption text-[color:var(--color-text-muted)]">{t("ctaNote")}</p>
-            </EditorSection>
+            </FormSection>
 
-            <EditorSection number={7} title={t("sectionSeo")}>
+            <FormSection number={7} title={t("sectionSeo")}>
               <SeoFields
                 seo={draft.seo}
                 onChange={(seo) => change({ seo })}
@@ -178,7 +178,7 @@ export const VisionMissionEditor = ({
                 locale={locale}
                 onUploaded={onUploaded}
               />
-            </EditorSection>
+            </FormSection>
           </>
         );
       }}

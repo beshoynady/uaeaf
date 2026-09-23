@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { BilingualField } from "@/components/admin/bilingual-field";
+import { CharCounter } from "@/components/ui/char-counter";
 import { MediaPicker } from "@/components/admin/pages/media-picker";
 import { SEO_GUIDANCE, seoLength } from "@/lib/admin/editorial-draft";
 import type { LocalizedText } from "@/lib/api/types";
@@ -28,40 +29,49 @@ export function SeoSection({
   const t = useTranslations("PresidentMessage");
   const { metaTitle, metaDescription } = draft.seo;
 
+  /** One language's counter, for the column that language's input sits in.
+   *  Both are counted, not just the one the dashboard is being read in: the
+   *  page is published in both, and an English description twice the length
+   *  of the Arabic one is a defect nobody sees while editing in Arabic. */
+  const counter = (value: LocalizedText, limit: number, lang: "ar" | "en") => {
+    const count = seoLength(value, lang);
+    return (
+      <CharCounter
+        lang={lang}
+        over={count > limit}
+        text={t(count > limit ? "seoCounterOver" : "seoCounter", { count, limit })}
+      />
+    );
+  };
+
   return (
     <>
-      <div className="flex flex-col gap-2">
-        <BilingualField
-          id="seo-title"
-          labelAr={t("labelAr", { label: t("metaTitle") })}
-          labelEn={t("labelEn", { label: t("metaTitle") })}
-          valueAr={metaTitle.ar}
-          valueEn={metaTitle.en}
-          onChangeAr={(ar) => onChange({ seo: { ...draft.seo, metaTitle: { ...metaTitle, ar } } })}
-          onChangeEn={(en) => onChange({ seo: { ...draft.seo, metaTitle: { ...metaTitle, en } } })}
-          disabled={disabled}
-        />
-        <Counter value={metaTitle} limit={SEO_GUIDANCE.metaTitle} />
-      </div>
+      <BilingualField
+        id="seo-title"
+        labelAr={t("labelAr", { label: t("metaTitle") })}
+        labelEn={t("labelEn", { label: t("metaTitle") })}
+        valueAr={metaTitle.ar}
+        valueEn={metaTitle.en}
+        onChangeAr={(ar) => onChange({ seo: { ...draft.seo, metaTitle: { ...metaTitle, ar } } })}
+        onChangeEn={(en) => onChange({ seo: { ...draft.seo, metaTitle: { ...metaTitle, en } } })}
+        disabled={disabled}
+        footerAr={counter(metaTitle, SEO_GUIDANCE.metaTitle, "ar")}
+        footerEn={counter(metaTitle, SEO_GUIDANCE.metaTitle, "en")}
+      />
 
-      <div className="flex flex-col gap-2">
-        <BilingualField
-          id="seo-description"
-          multiline
-          labelAr={t("labelAr", { label: t("metaDescription") })}
-          labelEn={t("labelEn", { label: t("metaDescription") })}
-          valueAr={metaDescription.ar}
-          valueEn={metaDescription.en}
-          onChangeAr={(ar) =>
-            onChange({ seo: { ...draft.seo, metaDescription: { ...metaDescription, ar } } })
-          }
-          onChangeEn={(en) =>
-            onChange({ seo: { ...draft.seo, metaDescription: { ...metaDescription, en } } })
-          }
-          disabled={disabled}
-        />
-        <Counter value={metaDescription} limit={SEO_GUIDANCE.metaDescription} />
-      </div>
+      <BilingualField
+        id="seo-description"
+        multiline
+        labelAr={t("labelAr", { label: t("metaDescription") })}
+        labelEn={t("labelEn", { label: t("metaDescription") })}
+        valueAr={metaDescription.ar}
+        valueEn={metaDescription.en}
+        onChangeAr={(ar) => onChange({ seo: { ...draft.seo, metaDescription: { ...metaDescription, ar } } })}
+        onChangeEn={(en) => onChange({ seo: { ...draft.seo, metaDescription: { ...metaDescription, en } } })}
+        disabled={disabled}
+        footerAr={counter(metaDescription, SEO_GUIDANCE.metaDescription, "ar")}
+        footerEn={counter(metaDescription, SEO_GUIDANCE.metaDescription, "en")}
+      />
 
       <p className="text-caption text-[color:var(--color-text-muted)]">{t("seoNote")}</p>
 
@@ -80,32 +90,6 @@ export function SeoSection({
     </>
   );
 }
-
-/**
- * How much of this field a search result will show, in both languages.
- *
- * Both counted, not just the one the dashboard is being read in: the page is
- * published in both, and an English description twice the length of the
- * Arabic one is a defect nobody sees while editing in Arabic.
- */
-function Counter({ value, limit }: { value: LocalizedText; limit: number }) {
-  const t = useTranslations("PresidentMessage");
-
-  return (
-    <p className="flex flex-wrap gap-x-6 gap-y-1 text-caption text-[color:var(--color-text-muted)]">
-      {(["ar", "en"] as const).map((locale) => {
-        const count = seoLength(value, locale);
-        const key = count > limit ? "seoCounterOver" : "seoCounter";
-        return (
-          <span key={locale} lang={locale} dir={locale === "ar" ? "rtl" : "ltr"}>
-            {t(key, { count, limit })}
-          </span>
-        );
-      })}
-    </p>
-  );
-}
-
 /** The result as a search engine draws it — the point being that an author
  *  reads their own title the way a visitor will, rather than as a field. */
 function Preview({

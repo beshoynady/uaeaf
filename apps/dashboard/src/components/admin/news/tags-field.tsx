@@ -4,6 +4,7 @@ import { useState, type KeyboardEvent } from "react";
 import { useTranslations } from "next-intl";
 import { TextField } from "@/components/auth/text-field";
 import { Button } from "@/components/ui/button";
+import { CharCounter } from "@/components/ui/char-counter";
 import { ARTICLE_TAG_LENGTH, ARTICLE_TAG_MAX } from "@/lib/admin/article-editor";
 
 /**
@@ -75,23 +76,28 @@ export const TagsField = ({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-end gap-3">
-        <TextField
-          id={id}
-          label={t("fieldTags")}
-          value={draft}
-          disabled={disabled || full}
-          onChange={(event) => setDraft(event.target.value)}
-          onKeyDown={onKeyDown}
-          className="flex-1"
-          hint={full ? t("hintTagsFull", { max: ARTICLE_TAG_MAX }) : t("hintTags", { max: ARTICLE_TAG_MAX })}
-          error={error}
-        />
+      {/* No "add" button beside the input. Enter and comma already commit,
+          and a button that only repeats a key the hint now names is a second
+          control for one action — it also had to be reached past the field on
+          every tag, which is the opposite of how a row of labels is typed. */}
+      <TextField
+        id={id}
+        label={t("fieldTags")}
+        value={draft}
+        disabled={disabled || full}
+        onChange={(event) => setDraft(event.target.value)}
+        onKeyDown={onKeyDown}
+        hint={full ? t("hintTagsFull", { max: ARTICLE_TAG_MAX }) : t("hintTags", { max: ARTICLE_TAG_MAX })}
+        error={error}
+      />
 
-        <Button variant="secondary" disabled={!canAdd || disabled} onClick={add} className="mb-1">
-          {t("addTag")}
-        </Button>
-      </div>
+      {/* How many of the allowance are used, so the ceiling is visible before
+          it is hit rather than announced by a field that stops accepting. */}
+      <CharCounter
+        lang="en"
+        over={full}
+        text={t("tagCount", { count: tags.length, max: ARTICLE_TAG_MAX })}
+      />
 
       {tags.length > 0 ? (
         <ul className="flex list-none flex-wrap gap-2 p-0">

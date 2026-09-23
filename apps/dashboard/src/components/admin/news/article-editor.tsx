@@ -1,15 +1,21 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { SelectField } from "@/components/ui/select-field";
 import { TextField } from "@/components/auth/text-field";
 import { BilingualField } from "@/components/admin/bilingual-field";
 import { EditorShell } from "@/components/admin/editorial-editor/editor-shell";
 import { SeoFields } from "@/components/admin/editorial-editor/seo-fields";
-import { EditorSection } from "@/components/admin/president-message/section";
+import { FormSection } from "@/components/ui/form-section";
+import { StickyFormActions } from "@/components/ui/sticky-form-actions";
+import { BUTTON_GHOST, FOCUS_RING } from "@/components/ui/interactive";
+import { useUnsavedGuard } from "@/lib/admin/use-unsaved-guard";
+import { missingFieldIds } from "@/lib/admin/article-required";
+import { focusFirstError } from "@/lib/admin/focus-first-error";
 import { LazyBilingualRichText } from "@/components/admin/rich-text/lazy-rich-text";
 import { TagsField } from "./tags-field";
 import { MediaPicker, type MediaAssetOption } from "@/components/admin/pages/media-picker";
@@ -25,6 +31,7 @@ import {
   emptyArticleDraft,
   emptyBodyLanguages,
   hasArticleErrors,
+  sourceIsMissing,
   toCreateBody,
   toDraft,
   toPatchBody,
@@ -126,13 +133,22 @@ export const ArticleEditor = ({
   const touch = (group: string) => setTouched((current) => ({ ...current, [group]: true }));
   const [creating, setCreating] = useState(false);
   const [createFailure, setCreateFailure] = useState<string | null>(null);
+  const [leaving, setLeaving] = useState(false);
 
   // A set, and rebuilt only when the list changes: this is read on every
   // keystroke in the address field.
   const taken = useMemo(() => new Set(takenSlugs), [takenSlugs]);
 
   const dirty = changedFrom(original, draft).length > 0;
-  const errors = validateArticle(draft, taken, { creating: record === null });
+  // The create screen had no guard at all: closing the tab midway through a
+  // new article lost every word, silently. The edit screen's guard lives in
+  // `EditorShell`, which a record-less screen cannot use, so the guard itself
+  // is what both share.
+  useUnsavedGuard(dirty);
+  // `categoryWas` is what tells an edit that CONVERTS an article into a
+  // round-up apart from one that merely edits an existing round-up — the same
+  // line the API draws, so the form asks for exactly what the save will.
+  const errors = validateArticle(draft, taken, { creating: record === null, categoryWas: original.category });
   // A notice, never a block. The API accepts an empty body, and refusing a
   // save over one would mean an author could not keep the headline until the
   // text was finished. What it must not do is go unmentioned until a reviewer
@@ -140,7 +156,50 @@ export const ArticleEditor = ({
   const unwritten = emptyBodyLanguages(draft);
   const onUploaded = (image: MediaAssetOption) => setLibrary((current) => [image, ...current]);
 
+  /**
+   * Leaving the form by the cancel button.
+   *
+   * The back link guards itself, because it stays a real link and cancels its
+   * own default instead; this is the button's half of the same rule.
+   * `beforeunload` does not fire on an in-app navigation, so without either
+   * guard both exits walked away from an unsaved article in silence —
+   * reintroducing beside `useUnsavedGuard` exactly the loss it was added to
+   * prevent.
+   *
+   * `dirty` is read HERE, inside the handler, at the moment the press happens
+   * — never captured when the screen rendered. Between a render and a press
+   * the author can type, and a guard that consulted the older value would
+   * report "nothing to lose" about a state that no longer exists
+   * (CLAUDE.md §31).
+   */
+  const leave = () => {
+    if (dirty) {
+      setLeaving(true);
+      return;
+    }
+    router.push("/news");
+  };
+
+  /**
+   * Pressing save with fields outstanding.
+   *
+   * Marks every group touched, so the messages that were held back on a blank
+   * form appear all at once — the author has now asked for the form to be
+   * judged — and sends them to the first one. The button is never disabled,
+   * so this is the answer to the press rather than a press that cannot happen.
+   */
+  const showWhatIsMissing = (ids: readonly string[]) => {
+    setTouched({ title: true, author: true, topic: true, source: true, slug: true });
+    focusFirstError(ids[0]);
+  };
+
   const create = async () => {
+    const missing = missingFieldIds(errors);
+    if (missing.length > 0) {
+      showWhatIsMissing(missing);
+      return;
+    }
+
     setCreating(true);
     setCreateFailure(null);
 
@@ -207,7 +266,24 @@ export const ArticleEditor = ({
 
     return (
       <>
-        <EditorSection number={1} title={t("sectionStory")}>
+        {/* Complete = nothing in this part is holding the save back. The body
+            is never required (the API accepts an empty one), so part 2 asks
+            instead whether both languages have been written — the thing a
+            reviewer would otherwise be the first to notice was missing. */}
+        <FormSection
+          number={1}
+          title={t("sectionStory")}
+          completeLabel={t("sectionComplete")}
+          complete={
+            !errors.titleAr &&
+            !errors.titleEn &&
+            !errors.authorAr &&
+            !errors.authorEn &&
+            !errors.topic &&
+            !errors.sourceOutlet &&
+            !errors.sourceUrl
+          }
+        >
           <BilingualField
             id="article-title"
             labelAr={e("labelAr", { label: t("fieldTitle") })}
@@ -280,6 +356,56 @@ export const ArticleEditor = ({
             error={touched.topic && errors.topic ? t("errorTopic") : undefined}
           />
 
+          {/*
+            * Where a round-up came from — shown only for the shelf it belongs
+            * to, so an ordinary article is never asked about an outlet that
+            * did not publish it (owner decision 2026-09-22).
+            *
+            * Required on a new round-up and on an edit that converts one; an
+            * article written before these fields existed opens with the
+            * "source missing" hint and saves without them, exactly as the API
+            * accepts it. Blocking that save would strand an editor fixing a
+            * typo behind a source they may not have.
+            */}
+          {draft.category === "FederationInMedia" ? (
+            <>
+              <TextField
+                id="article-source-outlet"
+                label={t("fieldSourceOutlet")}
+                value={draft.sourceOutlet}
+                disabled={disabled}
+                required={record === null}
+                onChange={(event) => {
+                  touch("source");
+                  change({ sourceOutlet: event.target.value });
+                }}
+                hint={sourceIsMissing(original) ? t("hintSourceMissing") : t("hintSourceOutlet")}
+                error={touched.source && errors.sourceOutlet ? t("errorSourceOutlet") : undefined}
+              />
+
+              <TextField
+                id="article-source-url"
+                label={t("fieldSourceUrl")}
+                // An address is Latin-only in both languages, so the field
+                // reads left to right whichever way the page does.
+                dir="ltr"
+                value={draft.sourceUrl}
+                disabled={disabled}
+                required={record === null}
+                onChange={(event) => {
+                  touch("source");
+                  change({ sourceUrl: event.target.value });
+                }}
+                hint={t("hintSourceUrl")}
+                error={
+                  touched.source && errors.sourceUrl
+                    ? t(errors.sourceUrl === "invalid" ? "errorSourceUrlInvalid" : "errorSourceUrlMissing")
+                    : undefined
+                }
+              />
+            </>
+          ) : null}
+
           <TagsField
             id="article-tags"
             tags={draft.tags}
@@ -287,6 +413,60 @@ export const ArticleEditor = ({
             disabled={disabled}
           />
 
+
+          {/* The largest this picture is ever drawn is the news listing's
+              cover story: 840px wide at a 7:4 frame, so 480px on its shorter
+              side. Twice that is the floor a source must clear to stay sharp
+              on a 2x screen (ADR-0086 D4). The picker warns below it and
+              never refuses — a federation holding only a small file still has
+              to be able to publish. */}
+          <MediaPicker
+            label={t("fieldCover")}
+            value={draft.coverMediaId}
+            images={library}
+            canRead={canReadMedia}
+            disabled={disabled}
+            locale={locale}
+            minSourcePx={960}
+            onChange={(coverMediaId) => change({ coverMediaId })}
+            onUploaded={onUploaded}
+          />
+        </FormSection>
+
+        <FormSection
+          number={2}
+          title={t("sectionBody")}
+          completeLabel={t("sectionComplete")}
+          complete={unwritten.length === 0}
+        >
+          <LazyBilingualRichText
+            id="article-body"
+            labelAr={e("labelAr", { label: t("fieldBody") })}
+            labelEn={e("labelEn", { label: t("fieldBody") })}
+            valueAr={(draft.body.ar ?? null) as JSONContent | null}
+            valueEn={(draft.body.en ?? null) as JSONContent | null}
+            onChangeAr={(ar) => change({ body: { ...draft.body, ar } })}
+            onChangeEn={(en) => change({ body: { ...draft.body, en } })}
+            disabled={disabled}
+          />
+
+          {unwritten.length > 0 ? (
+            <p className="text-caption text-[color:var(--color-text-secondary)]">
+              {unwritten.length === 2 ? t("bodyEmptyBoth") : t(`bodyEmpty_${unwritten[0]}`)}
+            </p>
+          ) : null}
+        </FormSection>
+
+        <FormSection
+          number={3}
+          title={t("sectionSeo")}
+          completeLabel={t("sectionComplete")}
+          complete={!errors.slug}
+        >
+          {/* The address belongs with the search fields, not with the story:
+              it is what a search result and a shared link are addressed by,
+              and it is generated from the English headline rather than typed.
+              Section 1 is what the story IS; this is how it is found. */}
           <TextField
             id="article-slug"
             label={t("fieldSlug")}
@@ -304,38 +484,6 @@ export const ArticleEditor = ({
             error={slugMessage}
           />
 
-          <MediaPicker
-            label={t("fieldCover")}
-            value={draft.coverMediaId}
-            images={library}
-            canRead={canReadMedia}
-            disabled={disabled}
-            locale={locale}
-            onChange={(coverMediaId) => change({ coverMediaId })}
-            onUploaded={onUploaded}
-          />
-        </EditorSection>
-
-        <EditorSection number={2} title={t("sectionBody")}>
-          <LazyBilingualRichText
-            id="article-body"
-            labelAr={e("labelAr", { label: t("fieldBody") })}
-            labelEn={e("labelEn", { label: t("fieldBody") })}
-            valueAr={(draft.body.ar ?? null) as JSONContent | null}
-            valueEn={(draft.body.en ?? null) as JSONContent | null}
-            onChangeAr={(ar) => change({ body: { ...draft.body, ar } })}
-            onChangeEn={(en) => change({ body: { ...draft.body, en } })}
-            disabled={disabled}
-          />
-
-          {unwritten.length > 0 ? (
-            <p className="text-caption text-[color:var(--color-text-secondary)]">
-              {unwritten.length === 2 ? t("bodyEmptyBoth") : t(`bodyEmpty_${unwritten[0]}`)}
-            </p>
-          ) : null}
-        </EditorSection>
-
-        <EditorSection number={3} title={t("sectionSeo")}>
           <SeoFields
             seo={draft.seo}
             onChange={(seo) => change({ seo })}
@@ -345,7 +493,7 @@ export const ArticleEditor = ({
             locale={locale}
             onUploaded={onUploaded}
           />
-        </EditorSection>
+        </FormSection>
       </>
     );
   };
@@ -354,14 +502,72 @@ export const ArticleEditor = ({
     // No shell: there is no record to review, no version to restore and no
     // state to report. Drawing those panels empty would promise controls that
     // appear only after the first save.
+    const missing = missingFieldIds(errors);
+
     return (
       <div className="flex min-w-0 flex-col gap-4">
-        <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)] px-4 py-3">
-          <p className="text-label text-[color:var(--color-text-secondary)]">{t("createHint")}</p>
-          <Button onClick={() => void create()} loading={creating} disabled={hasArticleErrors(errors)}>
+        {/* Out of the form without losing the way back. The create screen had
+            neither a cancel nor a way to the list, so the only exits were the
+            browser's back button and the sidebar.
+
+            A real `<Link>`, and it must stay one: this is navigation, so it
+            belongs to the reader's own vocabulary — announced as a link,
+            openable in a new tab, middle-clickable, and carrying a real
+            `href` in the status bar. Turning it into a button to gain a
+            confirmation would buy the prompt by taking all of that away.
+
+            The guard rides on top instead. `beforeunload` never fires on an
+            in-app navigation, so an unguarded link here walked away from an
+            unsaved article in silence — the very loss `useUnsavedGuard`
+            exists to prevent, reintroduced beside it. With work in progress
+            the press is cancelled and the dialog opens; the navigation then
+            happens on confirm, through the same address.
+
+            `dirty` is read inside the handler, at the moment of the press,
+            never captured when the screen rendered (CLAUDE.md §31). */}
+        <Link
+          href="/news"
+          onClick={(event) => {
+            if (dirty) {
+              event.preventDefault();
+              setLeaving(true);
+            }
+          }}
+          // Hover and active move together: hover is mouse-only feedback, and
+          // a control that lights up under a pointer and does nothing under a
+          // finger is half a control on a touch screen.
+          className={`${FOCUS_RING} inline-flex min-h-11 w-fit items-center gap-1.5 rounded-[var(--radius-sm)] text-label text-[color:var(--color-text-secondary)] underline-offset-4 hover:text-[color:var(--color-text-primary)] hover:underline active:text-[color:var(--color-text-primary)] active:underline`}
+        >
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 16 16"
+            className="size-3.5 shrink-0 ltr:-scale-x-100"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="m6 3 5 5-5 5" />
+          </svg>
+          {t("backToList")}
+        </Link>
+
+        <StickyFormActions
+          status={
+            missing.length > 0 ? t("createRemaining", { count: missing.length }) : t("createReady")
+          }
+        >
+          <button type="button" onClick={() => leave()} className={BUTTON_GHOST}>
+            {t("createCancel")}
+          </button>
+          {/* Never disabled. A disabled button states that something is wrong
+              and refuses to say what, and cannot be focused at all — so the
+              press is answered with the first outstanding field instead. */}
+          <Button onClick={() => void create()} loading={creating}>
             {t("createAction")}
           </Button>
-        </div>
+        </StickyFormActions>
 
         {createFailure ? (
           <p
@@ -373,6 +579,24 @@ export const ArticleEditor = ({
         ) : null}
 
         {fields({ disabled: creating || !canEdit, clearFailure: () => setCreateFailure(null) })}
+
+        {/* The pause before the one action on this screen that cannot be taken
+            back: there is no record yet, so leaving discards the article
+            outright rather than reverting it to a saved version. */}
+        <ConfirmDialog
+          open={leaving}
+          tone="destructive"
+          title={t("leaveTitle")}
+          confirmLabel={t("leaveConfirm")}
+          cancelLabel={t("leaveCancel")}
+          onConfirm={() => {
+            setLeaving(false);
+            router.push("/news");
+          }}
+          onCancel={() => setLeaving(false)}
+        >
+          {t("leaveBody")}
+        </ConfirmDialog>
       </div>
     );
   }

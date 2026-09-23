@@ -3,15 +3,26 @@
 import { useId } from "react";
 import { useTranslations } from "next-intl";
 import type { JSONContent } from "@tiptap/react";
+import { LanguageTabs } from "@/components/ui/language-tabs";
+import { richTextIsEmpty } from "@/lib/admin/article-editor";
 import { findParagraphMismatch } from "./paragraph-mismatch";
 import { RichTextEditor } from "./rich-text-editor";
 
 /**
  * One rich-text field, recorded in both languages.
  *
- * The two halves sit side by side for the same reason `BilingualField` puts
- * its two inputs side by side: they are one field written twice, filled
- * together and published together.
+ * ── Tabs, where the short fields have columns ──────────────────────────────
+ *
+ * The two halves were side by side, for the same reason `BilingualField` puts
+ * its two inputs side by side: they are one field written twice. A headline
+ * fits beside its translation; an article body does not. Two columns gave
+ * each language roughly a phone's width to write prose in and drew the
+ * toolbar twice in the space one needs, so long-form text is tabbed and short
+ * fields stay paired (owner decision 2026-09-23).
+ *
+ * Both panels stay mounted — `LanguageTabs` hides rather than unmounts — so
+ * the editors keep their history and the mismatch notice below can still see
+ * both halves at once.
  *
  * What this adds is the comparison. The two halves are written weeks apart,
  * often by different people, and the failure nobody catches is a translator
@@ -50,26 +61,46 @@ export function BilingualRichText({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="grid gap-4 lg:grid-cols-2">
-        <RichTextEditor
-          id={`${id}-ar`}
-          label={labelAr}
-          lang="ar"
-          value={valueAr}
-          onChange={onChangeAr}
-          disabled={disabled}
-          describedBy={mismatch ? noticeId : undefined}
-        />
-        <RichTextEditor
-          id={`${id}-en`}
-          label={labelEn}
-          lang="en"
-          value={valueEn}
-          onChange={onChangeEn}
-          disabled={disabled}
-          describedBy={mismatch ? noticeId : undefined}
-        />
-      </div>
+      <LanguageTabs
+        label={t("languageTabsLabel")}
+        tabs={[
+          {
+            value: "ar",
+            label: labelAr,
+            complete: !richTextIsEmpty(valueAr),
+            statusLabel: richTextIsEmpty(valueAr) ? t("tabEmpty") : t("tabWritten"),
+          },
+          {
+            value: "en",
+            label: labelEn,
+            complete: !richTextIsEmpty(valueEn),
+            statusLabel: richTextIsEmpty(valueEn) ? t("tabEmpty") : t("tabWritten"),
+          },
+        ]}
+        panel={(value) =>
+          value === "ar" ? (
+            <RichTextEditor
+              id={`${id}-ar`}
+              label={labelAr}
+              lang="ar"
+              value={valueAr}
+              onChange={onChangeAr}
+              disabled={disabled}
+              describedBy={mismatch ? noticeId : undefined}
+            />
+          ) : (
+            <RichTextEditor
+              id={`${id}-en`}
+              label={labelEn}
+              lang="en"
+              value={valueEn}
+              onChange={onChangeEn}
+              disabled={disabled}
+              describedBy={mismatch ? noticeId : undefined}
+            />
+          )
+        }
+      />
 
       {mismatch ? (
         <p

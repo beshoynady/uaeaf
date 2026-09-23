@@ -26,6 +26,33 @@ import { INTERACTIVE_CLASS_NAMES } from "@/components/ui/interactive";
 
 const APP_SRC = join(dirname(fileURLToPath(import.meta.url)), "../..");
 
+/**
+ * The exported `ui/interactive` constants that carry an interaction state.
+ *
+ * Read from that file's own source rather than listed here, so a constant
+ * that stops drawing a ring drops out of this map by itself and the rules go
+ * red — the list cannot rot into a permission slip.
+ *
+ * This exists because a class string that composes one of these constants HAS
+ * the states it carries. Without that, the rules push code away from the
+ * shared definitions and toward pasting the ring inline at every call site,
+ * which is precisely the duplication that produced the defect they were
+ * written to catch.
+ */
+const INTERACTIVE_SOURCE = readFileSync(join(APP_SRC, "components/ui/interactive.ts"), "utf-8");
+
+const SHARED_STATE_BODIES: Record<string, string> = Object.fromEntries(
+  [...INTERACTIVE_SOURCE.matchAll(/^export const ([A-Z_][A-Z0-9_]*)\s*=\s*([\s\S]*?);$/gm)]
+    .map(([, name, body]) => [name, body] as const)
+    .filter(([, body]) => /(?:focus|hover|active)[a-z-]*:/.test(body)),
+);
+
+/** Whether a class string composes a shared constant that draws `state`. */
+const carriesSharedState = (value: string, state: "focus" | "hover" | "active"): boolean =>
+  Object.entries(SHARED_STATE_BODIES).some(
+    ([name, body]) => new RegExp(`\\b${name}\\b`).test(value) && new RegExp(`\\b${state}[a-z-]*:`).test(body),
+  );
+
 interface ClassAttr {
   file: string;
   line: number;
@@ -222,7 +249,9 @@ describe("interaction state contract", () => {
       const interactiveCount = [...source.matchAll(interactive)].length;
       if (interactiveCount === 0) continue;
 
-      const hasIndicator = attrs.some(({ value }) => /\bfocus(-visible|-within)?:/.test(value));
+      const hasIndicator = attrs.some(
+        ({ value }) => /\bfocus(-visible|-within)?:/.test(value) || carriesSharedState(value, "focus"),
+      );
       if (!hasIndicator) {
         offenders.push(`${file} — ${interactiveCount} interactive element(s), no focus treatment anywhere in the file`);
       }

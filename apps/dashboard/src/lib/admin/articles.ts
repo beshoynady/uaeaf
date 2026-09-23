@@ -34,6 +34,11 @@ export interface Article {
   category: ArticleCategory;
   /** Absent on a row read before the field existed; null once backfilled. */
   topic?: ArticleTopic | null;
+  /** Where a `FederationInMedia` round-up came from. Absent on a row read
+   *  before the fields existed; null once backfilled, and on every article
+   *  that is not a round-up. */
+  sourceOutlet?: string | null;
+  sourceUrl?: string | null;
   coverMediaId: string | null;
   body: { ar: unknown; en: unknown };
   authorDisplayName: LocalizedText;

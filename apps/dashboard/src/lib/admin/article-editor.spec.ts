@@ -5,6 +5,7 @@ import {
   emptyBodyLanguages,
   hasArticleErrors,
   richTextIsEmpty,
+  sourceIsMissing,
   toCreateBody,
   toDraft,
   toPatchBody,
@@ -24,6 +25,8 @@ const record = (overrides: Partial<ArticleEditorResponse> = {}): ArticleEditorRe
   slug: "championship-2026",
   category: "General",
   topic: null,
+  sourceOutlet: null,
+  sourceUrl: null,
   tags: [],
   coverMediaId: "m1",
   body: { ar: paragraph("نص"), en: paragraph("Text") },
@@ -184,6 +187,116 @@ describe("the topic", () => {
 
   it("is sent when a new article is created", () => {
     expect(toCreateBody(filled({ topic: "youth" }))).toMatchObject({ topic: "youth" });
+  });
+});
+
+/**
+ * Where a media round-up came from (owner decision 2026-09-22).
+ *
+ * The same rule the API enforces, read here so an author is told at the field
+ * rather than by a 400 after they have filled the whole form: required when a
+ * `FederationInMedia` article is created, and when an edit converts an
+ * article into one. Never required of a round-up that already exists and was
+ * written before the fields did — those are marked, not blocked.
+ */
+describe("the coverage source", () => {
+  const coverage = (overrides: Partial<ArticleDraft> = {}) =>
+    filled({ category: "FederationInMedia", ...overrides });
+
+  it("is required before a new round-up can be created", () => {
+    const errors = validateArticle(coverage({ topic: "records" }), new Set(), { creating: true });
+
+    expect(errors.sourceOutlet).toBe(true);
+    expect(errors.sourceUrl).toBe("missing");
+  });
+
+  it("is satisfied by an outlet and a real address", () => {
+    const errors = validateArticle(
+      coverage({ topic: "records", sourceOutlet: "Gulf News", sourceUrl: "https://gulfnews.com/sport/x" }),
+      new Set(),
+      { creating: true },
+    );
+
+    expect(hasArticleErrors(errors)).toBe(false);
+  });
+
+  it("refuses an address that is not an http(s) one", () => {
+    // The public site prints this as a link. `javascript:` in an href is a
+    // script that runs on click, and the API refuses it too.
+    for (const url of ["gulf news", "javascript:alert(1)", "gulfnews.com/x"]) {
+      expect(
+        validateArticle(coverage({ topic: "records", sourceOutlet: "Gulf News", sourceUrl: url }), new Set(), {
+          creating: true,
+        }).sourceUrl,
+      ).toBe("invalid");
+    }
+  });
+
+  it("refuses an outlet name that is only spaces", () => {
+    expect(
+      validateArticle(
+        coverage({ topic: "records", sourceOutlet: "   ", sourceUrl: "https://gulfnews.com/x" }),
+        new Set(),
+        { creating: true },
+      ).sourceOutlet,
+    ).toBe(true);
+  });
+
+  it("asks a General article for neither", () => {
+    expect(hasArticleErrors(validateArticle(filled({ topic: "youth" }), new Set(), { creating: true }))).toBe(false);
+  });
+
+  it("does not block an existing round-up that was written without them", () => {
+    // A row the backfill left empty stays editable: the author may be fixing
+    // a typo in the headline, and holding that save hostage to a field they
+    // cannot look up is how an editor gets stuck.
+    const errors = validateArticle(coverage(), new Set(), { creating: false, categoryWas: "FederationInMedia" });
+
+    expect(hasArticleErrors(errors)).toBe(false);
+  });
+
+  it("requires both the moment an edit converts an article into a round-up", () => {
+    // This is the moment the API starts requiring them, because the patch
+    // carries the category. Without the check the save would 400 with no
+    // field marked.
+    const errors = validateArticle(coverage(), new Set(), { creating: false, categoryWas: "General" });
+
+    expect(errors.sourceOutlet).toBe(true);
+    expect(errors.sourceUrl).toBe("missing");
+  });
+
+  it("still judges an address the author typed on an existing round-up", () => {
+    const errors = validateArticle(coverage({ sourceOutlet: "Gulf News", sourceUrl: "not a url" }), new Set(), {
+      creating: false,
+      categoryWas: "FederationInMedia",
+    });
+
+    expect(errors.sourceUrl).toBe("invalid");
+  });
+
+  it("reports a round-up whose source is missing, so the form can mark it", () => {
+    expect(sourceIsMissing(coverage())).toBe(true);
+    expect(sourceIsMissing(coverage({ sourceOutlet: "Gulf News", sourceUrl: "https://gulfnews.com/x" }))).toBe(false);
+    // Not a round-up, so there is nothing missing.
+    expect(sourceIsMissing(filled())).toBe(false);
+  });
+
+  it("opens a round-up with no source clean", () => {
+    const stored = record({ category: "FederationInMedia", sourceOutlet: null, sourceUrl: null });
+
+    // Null upstream, empty in the form: opening one must not offer to save it.
+    expect(changedFrom(toDraft(stored), toDraft(stored))).toEqual([]);
+    expect(toDraft(stored).sourceOutlet).toBe("");
+  });
+
+  it("sends both when a new round-up is created, and clears them on a General one", () => {
+    expect(
+      toCreateBody(coverage({ topic: "records", sourceOutlet: " Gulf News ", sourceUrl: "https://gulfnews.com/x" })),
+    ).toMatchObject({ sourceOutlet: "Gulf News", sourceUrl: "https://gulfnews.com/x" });
+
+    // Null rather than "": the API's nullable fields read null as absent, and
+    // an empty string would fail the non-empty rule on a field nobody filled.
+    expect(toCreateBody(filled({ topic: "youth" }))).toMatchObject({ sourceOutlet: null, sourceUrl: null });
   });
 });
 

@@ -32,6 +32,10 @@ export interface ArticleEditorResponse {
   slug: string;
   category: ArticleCategory;
   topic: ArticleTopic | null;
+  /** Non-null only on a `FederationInMedia` round-up, and null on the ones
+   *  written before the fields existed. */
+  sourceOutlet: string | null;
+  sourceUrl: string | null;
   tags: string[];
   coverMediaId: string | null;
   body: { ar: unknown; en: unknown };
@@ -49,6 +53,10 @@ export interface ArticleDraft {
   category: string;
   /** `""` while none is chosen: an unclassified article, or a new one. */
   topic: string;
+  /** `""` while unrecorded — a round-up written before the fields existed, or
+   *  an article that is not a round-up at all. */
+  sourceOutlet: string;
+  sourceUrl: string;
   tags: string[];
   coverMediaId: string;
   body: { ar: unknown; en: unknown };
@@ -61,6 +69,8 @@ export const { toDraft, changedFrom, toPatchBody } = editorialDraft<ArticleEdito
   slug: "plain",
   category: "plain",
   topic: "plain",
+  sourceOutlet: "plain",
+  sourceUrl: "plain",
   // Sent whole: a list's meaning is the list, and "the third one changed" is
   // not a patch the API accepts.
   tags: "list",
@@ -80,6 +90,9 @@ export const emptyArticleDraft = (): ArticleDraft => ({
   // Unlike the shelf, no default: the topic is a choice the author makes, and
   // the create button waits for it.
   topic: "",
+  // Shown only once the shelf is `FederationInMedia`, and required then.
+  sourceOutlet: "",
+  sourceUrl: "",
   tags: [],
   coverMediaId: "",
   body: { ar: null, en: null },
@@ -115,7 +128,40 @@ export interface ArticleFieldErrors {
   /** Only on the create screen: the API requires a topic of a new article and
    *  of nothing else. */
   topic?: boolean;
+  /** Only while the article is, or is becoming, a `FederationInMedia`
+   *  round-up. `"missing"` and `"invalid"` are different corrections and the
+   *  field says which. */
+  sourceOutlet?: boolean;
+  sourceUrl?: "missing" | "invalid";
 }
+
+/**
+ * `http:`/`https:` and nothing else, the same rule `CreateArticleDto` applies.
+ *
+ * Parsed rather than pattern-matched: `new URL` is the only thing that agrees
+ * with what a browser will do with the value, and the protocol check is the
+ * point — `javascript:` in an href is a script that runs on click, and this
+ * value is printed as a link on the public site.
+ */
+const isHttpUrl = (value: string): boolean => {
+  try {
+    const { protocol } = new URL(value.trim());
+    return protocol === "http:" || protocol === "https:";
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * A round-up that does not say where it came from.
+ *
+ * Reported beside the fields and never used to block anything, the way
+ * `emptyBodyLanguages` is: an article written before these fields existed is
+ * marked so an editor can see the gap and fill it, not held hostage until
+ * they look up a source they may not have.
+ */
+export const sourceIsMissing = (draft: ArticleDraft): boolean =>
+  draft.category === "FederationInMedia" && (draft.sourceOutlet.trim() === "" || draft.sourceUrl.trim() === "");
 
 /** Whether a ProseMirror document holds anything a reader would see.
  *
@@ -133,11 +179,35 @@ export const richTextIsEmpty = (document: unknown): boolean => {
 export const validateArticle = (
   draft: ArticleDraft,
   takenSlugs: ReadonlySet<string>,
-  { creating = false }: { creating?: boolean } = {},
+  {
+    creating = false,
+    categoryWas,
+  }: {
+    creating?: boolean;
+    /** The stored shelf, so an edit that CONVERTS an article into a round-up
+     *  is told apart from one that merely edits an existing round-up. The API
+     *  draws the same line: the patch carries `category` only when it
+     *  changed, and the attribution is required only when it does. */
+    categoryWas?: string;
+  } = {},
 ): ArticleFieldErrors => {
   const errors: ArticleFieldErrors = {};
 
   if (creating && draft.topic === "") errors.topic = true;
+
+  if (draft.category === "FederationInMedia") {
+    const becoming = creating || (categoryWas !== undefined && categoryWas !== draft.category);
+
+    if (becoming && draft.sourceOutlet.trim() === "") errors.sourceOutlet = true;
+    if (draft.sourceUrl.trim() === "") {
+      if (becoming) errors.sourceUrl = "missing";
+    } else if (!isHttpUrl(draft.sourceUrl)) {
+      // Judged whenever it is filled, not only while converting: an address
+      // the author typed is one they meant, and a broken one is worth saying
+      // so about even on an article that already exists.
+      errors.sourceUrl = "invalid";
+    }
+  }
 
   if (!draft.title.ar.trim()) errors.titleAr = true;
   if (!draft.title.en.trim()) errors.titleEn = true;
@@ -193,6 +263,10 @@ export const toCreateBody = (draft: ArticleDraft): Record<string, unknown> => {
     slug: draft.slug,
     category: draft.category,
     topic: draft.topic,
+    // Null rather than "": the API's nullable fields read null as absent, and
+    // an empty string would fail the non-empty rule on a field nobody filled.
+    sourceOutlet: draft.sourceOutlet.trim() === "" ? null : draft.sourceOutlet.trim(),
+    sourceUrl: draft.sourceUrl.trim() === "" ? null : draft.sourceUrl.trim(),
     tags: draft.tags,
     coverMediaId: draft.coverMediaId === "" ? null : draft.coverMediaId,
     body: {

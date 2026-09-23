@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -9,7 +10,16 @@ import type { ArticleEditorResponse } from "@/lib/admin/article-editor";
 const replace = vi.fn();
 const refresh = vi.fn();
 
-vi.mock("@/i18n/navigation", () => ({ useRouter: () => ({ replace, push: vi.fn() }) }));
+// `Link` too, since the create screen gained a way back to the list and a
+// cancel: the real one needs the router context this test does not mount.
+vi.mock("@/i18n/navigation", () => ({
+  useRouter: () => ({ replace, push: vi.fn() }),
+  Link: ({ href, children, ...rest }: { href: string; children: ReactNode }) => (
+    <a href={href} {...rest}>
+      {children}
+    </a>
+  ),
+}));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
 
 /**
@@ -60,6 +70,8 @@ const RECORD: ArticleEditorResponse = {
   slug: "championship-2026",
   category: "General",
   topic: null,
+  sourceOutlet: null,
+  sourceUrl: null,
   tags: [],
   coverMediaId: null,
   body: { ar: paragraph("نص"), en: paragraph("Text") },
@@ -101,13 +113,44 @@ afterEach(() => vi.unstubAllGlobals());
 
 const headline = () => screen.getByLabelText(/Headline.*English|العنوان.*الإنجليزية/i);
 
+/** The save button, under either language's copy. Named "save as draft" since
+ *  2026-09-23: the API creates every article as a Draft, and the old "create"
+ *  suggested a publish. */
+const saveButton = () => screen.getByRole("button", { name: /حفظ كمسودة|Save as draft/ });
+
 describe("writing a new article", () => {
-  it("will not create one until the required fields are there", () => {
+  it("answers a press with the first missing field rather than refusing it", async () => {
     renderEditor();
 
-    // The API refuses a headline-less article with a list of property names.
-    // Refusing it here means the author is told at the field they left empty.
-    expect(screen.getByRole("button", { name: /إنشاء|Create/ })).toBeDisabled();
+    // The button stays live. A disabled one states that something is wrong
+    // and refuses to say what — and cannot be focused, so a screen-reader
+    // user tabbing to it finds nothing at all.
+    expect(saveButton()).toBeEnabled();
+
+    await userEvent.click(saveButton());
+
+    // Nothing was sent, and the author is standing on the first thing to fix.
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(screen.getByLabelText(/Headline.*Arabic|العنوان.*العربية/i));
+  });
+
+  it("rests on General, the shelf an unfiled article belongs to", () => {
+    // Checked because a screenshot of the create screen appeared to show
+    // "UAEAF in the Media" preselected. The stored default is `General`
+    // (`emptyArticleDraft`) and the select carries no placeholder option, so
+    // what a fresh form shows is the first option — this pins that they agree.
+    renderEditor({ record: null });
+
+    const category = screen.getByLabelText(/Category|التصنيف/i) as HTMLSelectElement;
+    expect(category.value).toBe("General");
+  });
+
+  it("says how many fields are still outstanding", () => {
+    renderEditor();
+
+    // The count and the jump target come from one ordered list, so the bar
+    // cannot say "3 left" and send the author to a field that is fine.
+    expect(screen.getByRole("status")).toHaveTextContent(/\d|واحد|حقل/);
   });
 
 
@@ -173,7 +216,7 @@ describe("writing a new article", () => {
     // an address between then and this click. The server decides it at the
     // moment of the write, which is the only moment the answer is true.
     await fillRequired();
-    await userEvent.click(screen.getByRole("button", { name: /إنشاء|Create/ }));
+    await userEvent.click(saveButton());
 
     expect(await screen.findByRole("alert")).toHaveTextContent(/حجز محرر آخر|claimed this address/);
     expect(replace).not.toHaveBeenCalled();
@@ -184,7 +227,7 @@ describe("writing a new article", () => {
     renderEditor({ record: null });
 
     await fillRequired();
-    await userEvent.click(screen.getByRole("button", { name: /إنشاء|Create/ }));
+    await userEvent.click(saveButton());
 
     // Straight into the editor for the article that now exists, so the author
     // continues where the review and the history are rather than being
@@ -197,7 +240,7 @@ describe("writing a new article", () => {
     renderEditor({ record: null });
 
     await fillRequired();
-    await userEvent.click(screen.getByRole("button", { name: /إنشاء|Create/ }));
+    await userEvent.click(saveButton());
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
     const [url, init] = fetchMock.mock.calls[0] as [string, { body: string }];
@@ -206,14 +249,20 @@ describe("writing a new article", () => {
     expect(JSON.parse(init.body)).toMatchObject({ category: "General", slug: "a-headline", topic: "records" });
   });
 
-  it("will not create one until a topic is chosen", async () => {
+  it("will not send one until a topic is chosen, and says so at the field", async () => {
     renderEditor({ record: null });
 
     await fillRequired({ topic: null });
-    expect(screen.getByRole("button", { name: /إنشاء|Create/ })).toBeDisabled();
+    await userEvent.click(saveButton());
+
+    // Refused, and the author is on the topic rather than looking at a
+    // button that has stopped responding.
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(topicField());
 
     await userEvent.selectOptions(topicField(), "nationalTeam");
-    expect(screen.getByRole("button", { name: /إنشاء|Create/ })).toBeEnabled();
+    await userEvent.click(saveButton());
+    expect(fetchMock).toHaveBeenCalled();
   });
 });
 

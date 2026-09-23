@@ -26,11 +26,11 @@
  * register, 8.14:1 on red and 21:1 on black, so the indicator is guaranteed
  * visible on any surface the system can produce.
  */
-const FOCUS_RING =
+export const FOCUS_RING =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--a11y-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--a11y-focus-offset)]";
 
 /** ADR-0009: transform/opacity only, timed by token — never `transition: all`. */
-const TRANSITION =
+export const TRANSITION =
   "transition-colors duration-[var(--motion-duration-fast)] ease-[var(--motion-easing-standard)]";
 
 /** Protocol §14 minimum touch target. `h-11` is exactly 44px on the 4px grid. */
@@ -97,13 +97,19 @@ export const FIELD_INPUT =
  * this surface and a field on the public site are now the same object: a
  * reader who has filled one has learned the other.
  *
- * `--color-border-strong`, not `--color-border-default`. That is not a taste
+ * `--color-field-border`, not `--color-border-default`. That is not a taste
  * upgrade: `default` (#E0DFDB) measures **1.15:1** against the raised surface,
  * and WCAG 2.1 §1.4.11 requires **3:1** for the visual boundary of a
  * user-interface component — every field on this dashboard was failing it.
- * `strong` measures 4.68:1 light and 3.48:1 dark.
+ *
+ * It was `--color-border-strong` until ADR-0097 gave the field its own ground.
+ * `strong` measured 4.68:1 light and 3.48:1 dark **against the card**, but the
+ * edge has to be read against the field it encloses, and on the new dark
+ * ground (#33322D) `strong` falls to **2.75:1** — under the same 3:1 rule it
+ * was chosen to satisfy. `--color-field-border` measures 4.25:1 light and
+ * 4.72:1 dark against the resting field.
  */
-const FIELD_EDGE = `border border-[color:var(--color-border-strong)] ${TRANSITION} hover:border-[color:var(--color-brand-primary)] active:border-[color:var(--color-brand-primary)] focus-within:border-[color:var(--color-brand-primary)] focus-within:ring-2 focus-within:ring-[color:var(--a11y-focus-ring)] focus-within:ring-offset-2 focus-within:ring-offset-[color:var(--a11y-focus-offset)]`;
+const FIELD_EDGE = `border border-[color:var(--color-field-border)] ${TRANSITION} hover:border-[color:var(--color-brand-primary)] active:border-[color:var(--color-brand-primary)] focus-within:border-[color:var(--color-brand-primary)] focus-within:ring-2 focus-within:ring-[color:var(--a11y-focus-ring)] focus-within:ring-offset-2 focus-within:ring-offset-[color:var(--a11y-focus-offset)]`;
 
 export const FIELD_CONTROL = `field-control ${FIELD_EDGE} has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-[var(--opacity-disabled)] has-[[aria-invalid=true]]:border-[color:var(--color-semantic-error)]`;
 

@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+import { StickyFormActions } from "@/components/ui/sticky-form-actions";
+import { useUnsavedGuard } from "@/lib/admin/use-unsaved-guard";
 import { EditorialStatusPanel } from "@/components/admin/editorial/status-panel";
 import { EditorialRevisionsPanel } from "@/components/admin/editorial/revisions-panel";
 import type { EditorialState } from "@/lib/admin/editorial-state";
@@ -68,20 +70,9 @@ export const EditorShell = ({
   const [saving, setSaving] = useState(false);
   const [failure, setFailure] = useState<string | null>(null);
 
-  // The browser's own leave guard, registered only while there is something
-  // to lose: the one mechanism that catches a closed tab.
-  useEffect(() => {
-    if (!dirty) {
-      return;
-    }
-    const warn = (event: BeforeUnloadEvent) => {
-      event.preventDefault();
-      // Some browsers still require the legacy return value to show the prompt.
-      event.returnValue = "";
-    };
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [dirty]);
+  // The browser's own leave guard. Shared with the create screen, which had
+  // none at all and lost a whole draft to a closed tab.
+  useUnsavedGuard(dirty);
 
   const save = async (): Promise<boolean> => {
     setSaving(true);
@@ -146,12 +137,7 @@ export const EditorShell = ({
       {panels ? <div className="lg:col-start-2 lg:row-start-1">{panels}</div> : null}
 
       <div className="flex min-w-0 flex-col gap-4 lg:col-start-1 lg:row-start-1">
-        <div className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)] px-4 py-3">
-          {/* A standing fact the reader returns to, changing without their asking. */}
-          <p role="status" className="text-label text-[color:var(--color-text-secondary)]" data-dirty={dirty}>
-            {dirty ? t("unsaved") : t("allSaved")}
-          </p>
-
+        <StickyFormActions statusProps={{ "data-dirty": dirty }} status={dirty ? t("unsaved") : t("allSaved")}>
           {canEdit ? (
             <Button onClick={() => void save()} loading={saving} disabled={!dirty}>
               {saving ? t("saving") : t("save")}
@@ -159,7 +145,7 @@ export const EditorShell = ({
           ) : (
             <p className="text-label text-[color:var(--color-text-muted)]">{t("readOnly")}</p>
           )}
-        </div>
+        </StickyFormActions>
 
         {failure ? (
           <p
