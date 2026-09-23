@@ -118,6 +118,33 @@ export class Article extends BaseSchema {
   @Prop({ type: String, required: true, trim: true })
   slug: string;
 
+  /**
+   * Who published the story first, for a `FederationInMedia` round-up.
+   *
+   * That category is the federation reporting that somebody ELSE published
+   * something. The outlet and its address are the whole difference between
+   * such a round-up and an article the newsroom wrote, so `CreateArticleDto`
+   * requires both exactly where that difference exists — on a new round-up —
+   * and asks a `General` article for neither.
+   *
+   * Nullable with no default, the shape `topic` already has: the rows written
+   * before these fields existed carry no attribution, and a default would
+   * invent one. They stay publishable, and the dashboard marks them.
+   *
+   * Not `sourcePublication`: "publication" in this schema is the workflow's
+   * own (`publicationState`, the `publications` collection), and one word for
+   * two unrelated things in one class is how the wrong one gets read (owner
+   * decision 2026-09-22).
+   */
+  @Prop({ type: String, default: null, trim: true })
+  sourceOutlet: string | null;
+
+  /** The original article's address, `http:`/`https:` only — it is printed as
+   *  an external link, and a `javascript:` value in an href is a script the
+   *  page runs on click. Validated at the DTO, where every write passes. */
+  @Prop({ type: String, default: null, trim: true })
+  sourceUrl: string | null;
+
   @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
   coverMediaId: Types.ObjectId | null;
 

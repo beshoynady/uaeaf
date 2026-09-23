@@ -1,5 +1,5 @@
 import { fetchPublic } from "./public-client";
-import type { ArticleCategory, ArticlePublic, ArticleSitemapEntry, Paginated } from "./types";
+import type { ArticleCategory, ArticlePublic, ArticleSitemapEntry, ArticleTopic, Paginated } from "./types";
 import type { TimeRange } from "@uaeaf/content/time-range";
 
 /**
@@ -14,14 +14,12 @@ import type { TimeRange } from "@uaeaf/content/time-range";
 /**
  * How many articles the listing asks for.
  *
- * Twelve, not the seven the approved design lays out. The page now draws two
- * shelves from one request — federation news and the media round-up — and
- * asking for seven would let a run of general stories push every media item
- * off the end, leaving that section empty for a reason no editor could see.
- *
- * Twelve is the smallest number that keeps both shelves populated in ordinary
- * use. Pagination is the real answer and is recorded as backlog; this is the
- * honest interim.
+ * Twelve: the cover story plus a grid that fills three columns evenly at the
+ * canvas's own measure, and two rows of two below `xl`. It was twelve before
+ * the pager existed too, for a reason that has since gone away — the page drew
+ * two shelves from one request and a run of general stories could push every
+ * media item off the end. The shelves are one grid now, and the pager is the
+ * answer to "and the rest".
  */
 export const NEWS_PAGE_SIZE = 12;
 
@@ -39,12 +37,17 @@ export const fetchArticles = async (
   /** A window on the publication date. Both bounds inclusive; `to` runs to the
    *  end of its day upstream. */
   range: TimeRange = {},
+  /** One subject from the closed list (ADR-0094). Its own axis, independent of
+   *  both the category and the tags: a story carries exactly one topic and one
+   *  category, and they answer different questions. */
+  topic?: ArticleTopic,
 ): Promise<Paginated<ArticlePublic> | null> => {
   const query = new URLSearchParams({ page: String(page), limit: String(limit) });
   // Only when asked for: an empty `tag=` would narrow the feed to articles
   // carrying a tag that is the empty string, which is every article's none.
   if (tag) query.set("tag", tag);
   if (category) query.set("category", category);
+  if (topic) query.set("topic", topic);
   if (range.from) query.set("from", range.from);
   if (range.to) query.set("to", range.to);
 

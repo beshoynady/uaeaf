@@ -155,4 +155,87 @@ describe('CreateArticleDto', () => {
       expect(await updateErrors({ topic: 'sport' })).toContain('topic');
     });
   });
+
+  /**
+   * Where a media round-up came from (owner decision 2026-09-22).
+   *
+   * `FederationInMedia` is the federation reporting that somebody else
+   * published something — the outlet and its address are what distinguish it
+   * from an article the newsroom wrote, so they are required exactly where
+   * that distinction exists and nowhere else. The same shape as `topic`
+   * above: enforced at creation, left alone on the rows written before the
+   * fields existed.
+   */
+  describe('the source of a media round-up', () => {
+    const coverage = { category: 'FederationInMedia' };
+
+    it('requires the outlet and its address on a new round-up', async () => {
+      const missing = propertiesIn(await errorsFor(coverage));
+      expect(missing).toContain('sourceOutlet');
+      expect(missing).toContain('sourceUrl');
+    });
+
+    it('accepts a round-up that names both', async () => {
+      expect(
+        await errorsFor({ ...coverage, sourceOutlet: 'Gulf News', sourceUrl: 'https://gulfnews.com/sport/x' }),
+      ).toHaveLength(0);
+    });
+
+    it('refuses an address that is not one', async () => {
+      // Free text here would print as a link and lead nowhere.
+      expect(
+        propertiesIn(await errorsFor({ ...coverage, sourceOutlet: 'Gulf News', sourceUrl: 'gulf news article' })),
+      ).toContain('sourceUrl');
+    });
+
+    it('refuses a blank outlet name as firmly as a missing one', async () => {
+      expect(
+        propertiesIn(await errorsFor({ ...coverage, sourceOutlet: '   ', sourceUrl: 'https://gulfnews.com/x' })),
+      ).toContain('sourceOutlet');
+    });
+
+    it('asks a General article for neither, and accepts neither silently', async () => {
+      // The fields do not exist for the federation's own reporting, so an
+      // ordinary article is never held up by them.
+      expect(await errorsFor({ category: 'General' })).toHaveLength(0);
+      expect(await errorsFor({})).toHaveLength(0);
+    });
+
+    const updateErrors = async (body: Record<string, unknown>) =>
+      propertiesIn(await validate(plainToInstance(UpdateArticleDto, body)));
+
+    it('leaves an existing round-up alone on an edit that touches neither', async () => {
+      // A row written before the fields existed is still editable; the rule
+      // lives at creation, exactly as the topic's does.
+      expect(await updateErrors({ slug: 'renamed-coverage' })).toHaveLength(0);
+    });
+
+    it('requires both once an edit turns an article into a round-up', async () => {
+      // Converting the category is the moment the distinction starts to
+      // apply, so it is the moment the fields become required.
+      const converting = await updateErrors({ category: 'FederationInMedia' });
+      expect(converting).toContain('sourceOutlet');
+      expect(converting).toContain('sourceUrl');
+
+      expect(
+        await updateErrors({
+          category: 'FederationInMedia',
+          sourceOutlet: 'The National',
+          sourceUrl: 'https://thenationalnews.com/sport/y',
+        }),
+      ).toHaveLength(0);
+    });
+
+    it('lets an edit correct either field on its own', async () => {
+      expect(await updateErrors({ sourceOutlet: 'Al Khaleej' })).toHaveLength(0);
+      expect(await updateErrors({ sourceUrl: 'https://alkhaleej.ae/sport/z' })).toHaveLength(0);
+      expect(await updateErrors({ sourceUrl: 'not a url' })).toContain('sourceUrl');
+    });
+
+    it('lets an edit clear both when an article stops being a round-up', async () => {
+      // Turning a round-up back into the newsroom's own story leaves an
+      // attribution that is no longer true; it must be clearable.
+      expect(await updateErrors({ category: 'General', sourceOutlet: null, sourceUrl: null })).toHaveLength(0);
+    });
+  });
 });

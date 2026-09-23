@@ -5,8 +5,21 @@ import type { ArticlePublic, MediaAssetPublic } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
 
 /**
- * The newsroom's front page (Figma `2775:102`): a lead story across the
- * measure, then a grid of six.
+ * The newsroom's front page (approved canvas `NewsListing.dc.html`,
+ * 2026-09-22): a cover story across the column, then one grid of three.
+ *
+ * ── One grid, not two shelves ──────────────────────────────────────────────
+ *
+ * This drew two shelves until 2026-09-22 — the federation's own stories, then
+ * a separate "الاتحاد في الإعلام" row of its `FederationInMedia` articles.
+ * They are one grid now (owner decision), with each card carrying its topic
+ * chip and, on a round-up, the outlet that published it first.
+ *
+ * The homepage's own decision is unaffected and still holds: its shelf is
+ * narrowed to six of one category, and `homepage-news.ts` records that the
+ * federation's own round-ups "stay on /news". This page is where they stay —
+ * which is why they are in the grid rather than excluded from it, and why the
+ * `news-in-media` anchor the homepage links to still resolves here.
  *
  * ── No empty shelf ─────────────────────────────────────────────────────────
  *
@@ -18,19 +31,18 @@ import type { AppLocale } from "@/i18n/routing";
  *
  * ── The heading outline ────────────────────────────────────────────────────
  *
- * The lead is an `h2` and the grid's cards are `h3`s, under the page's single
- * `h1` in the hero. A reader moving by headings hears one section with six
- * stories in it rather than seven peers, which is what the composition
- * actually is.
+ * The cover story is an `h2` and the grid's cards are `h3`s, under the page's
+ * single `h1` in the hero. A reader moving by headings hears one section with
+ * its stories in it rather than a flat run of peers, which is what the
+ * composition actually is.
  *
- * ── What the design draws that there is no data for ────────────────────────
+ * ── Why three columns only from `xl` ───────────────────────────────────────
  *
- * The approved frame puts category tabs above this block and a category badge
- * on every card, and a sidebar carrying "الاتحاد في الإعلام" beside it.
- * Categories and tags are out of scope for this batch by the owner's own
- * instruction, and `externalMediaCoverage` has no module and no public read —
- * so none of the three has a field to draw from. They are reported as scope
- * conflicts rather than filled with placeholder content.
+ * The grid lives in the 840px column beside the sidebar, not across the page.
+ * At `lg` that column is about 594px and three cards in it measure 185px —
+ * narrower than a two-line headline wants. Chapter 5 §5.4 puts the public
+ * experience at "2–3 content columns"; this takes two until `xl`, where the
+ * column reaches the canvas's own measure, and three from there.
  */
 export const NewsList = ({
   articles,
@@ -51,36 +63,26 @@ export const NewsList = ({
   const coverOf = (article: ArticlePublic) =>
     article.coverMediaId ? covers.get(article.coverMediaId) : undefined;
 
-  // The lead is the newest item on either shelf, not the newest General one: a
-  // reader opening the page wants what just happened, not what just happened
-  // in one category.
-  const general = rest.filter((article) => article.category === "General");
-  const inMedia = rest.filter((article) => article.category === "FederationInMedia");
-
-  const shelf = (id: string, heading: string, items: readonly ArticlePublic[]) =>
-    // No empty shelf: a heading over nothing is worse than no heading.
-    items.length === 0 ? null : (
-      <section aria-labelledby={id} className="flex flex-col gap-5">
-        <h2 id={id} className="text-h4 text-[color:var(--color-text-primary)]">
-          {heading}
-        </h2>
-        {/* A list, so a screen reader announces how many stories there are
-            before the reader starts through them. */}
-        <ul className="grid list-none gap-5 p-0 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((article) => (
-            <li key={article.id} className="relative flex">
-              <NewsCard article={article} locale={locale} cover={coverOf(article)} className="w-full" />
-            </li>
-          ))}
-        </ul>
-      </section>
-    );
-
   return (
-    <div className="flex flex-col gap-10 md:gap-14">
+    <div className="flex flex-col gap-10">
       <FeaturedArticleCard article={lead} locale={locale} cover={coverOf(lead)} />
-      {shelf("news-latest", t("generalHeading"), general)}
-      {shelf("news-in-media", t("inMediaHeading"), inMedia)}
+
+      {rest.length > 0 ? (
+        <section aria-labelledby="news-latest" className="flex flex-col gap-5">
+          <h2 id="news-latest" className="text-h4 text-[color:var(--color-text-primary)]">
+            {t("generalHeading")}
+          </h2>
+          {/* A list, so a screen reader announces how many stories there are
+              before the reader starts through them. */}
+          <ul className="grid list-none gap-5 p-0 sm:grid-cols-2 xl:grid-cols-3">
+            {rest.map((article) => (
+              <li key={article.id} className="relative flex">
+                <NewsCard article={article} locale={locale} cover={coverOf(article)} className="w-full" />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </div>
   );
 };

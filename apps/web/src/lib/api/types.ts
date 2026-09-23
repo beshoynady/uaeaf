@@ -312,8 +312,23 @@ export interface AthletePublic {
  *  article the federation wrote itself. */
 export type ArticleCategory = "General" | "FederationInMedia";
 
-/** `ARTICLE_TOPICS`: what a story is about, six and closed (ADR-0094). */
-export type ArticleTopic = "nationalTeam" | "training" | "youth" | "international" | "community" | "records";
+/**
+ * `ARTICLE_TOPICS`: what a story is about, six and closed (ADR-0094).
+ *
+ * The list and the type are one declaration because the topic filter needs to
+ * iterate the topics at runtime, and a hand-written array beside a hand-written
+ * union is two places for a seventh topic to be added to — and only one of them
+ * would fail to compile when it was added to the other.
+ */
+export const ARTICLE_TOPICS = [
+  "nationalTeam",
+  "training",
+  "youth",
+  "international",
+  "community",
+  "records",
+] as const;
+export type ArticleTopic = (typeof ARTICLE_TOPICS)[number];
 
 export interface ArticlePublic {
   id: string;
@@ -336,6 +351,17 @@ export interface ArticlePublic {
   authorDisplayName: LocalizedText;
   /** ISO date this article went live; null while it never has. */
   publishDate: string | null;
+  /**
+   * Who published the story first, and where.
+   *
+   * Non-null only on a `FederationInMedia` round-up — the API carries them for
+   * that category alone, so a `General` article cannot surface an attribution
+   * left behind by a conversion. Null on the round-ups written before the
+   * fields existed; `hasSource` requires both before anything is drawn.
+   */
+  sourceOutlet: string | null;
+  sourceUrl: string | null;
+
   /** A raw `mediaAssets` reference. Resolve it through `fetchPublicMedia()`. */
   coverMediaId: string | null;
   body: { ar: RichTextNode; en: RichTextNode };

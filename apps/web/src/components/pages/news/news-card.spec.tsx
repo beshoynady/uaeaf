@@ -27,6 +27,8 @@ const article = (overrides: Partial<ArticlePublic> = {}): ArticlePublic => ({
   title: { ar: "نتائج البطولة", en: "Championship results" },
   authorDisplayName: { ar: "القسم الإعلامي", en: "Media office" },
   publishDate: "2026-08-06T09:00:00.000Z",
+  sourceOutlet: null,
+  sourceUrl: null,
   coverMediaId: null,
   body: { ar: { type: "doc" }, en: { type: "doc" } },
   excerpt: { ar: "فاز المنتخب", en: "The team won" },

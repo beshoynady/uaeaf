@@ -1,31 +1,57 @@
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { CARD_INTERACTIVE } from "@/components/ui/surface";
+import { CARD_INTERACTIVE_LG } from "@/components/ui/surface";
 import { CARD_LINK } from "@/components/ui/interactive";
+import { coverScrim, coverScrimFade } from "@uaeaf/content/hero";
+import { readingMinutes } from "@/lib/news/reading-time";
 import { ArticleCover } from "./cover";
-import { PublishDate } from "./publish-date";
 import { TopicBadge } from "./topic-badge";
 import type { ArticlePublic, MediaAssetPublic } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
 
 /**
- * The lead story (Figma `2775:103`): a picture beside its text at the grid's
- * full measure, above the six-card grid.
+ * The cover story, in the magazine treatment (approved canvas
+ * `NewsListing.dc.html`, 2026-09-22): the words stand on the picture rather
+ * than beside it.
  *
- * Two columns from `md` and stacked below it. The picture leads in the stacked
- * order because it is what the card is composed around — Chapter 5 §5.10's
- * "most important first" is satisfied either way, since the heading is a
- * heading and a reader jumping by headings reaches it without passing the
- * image at all.
+ * This replaced the picture-beside-text composition in place rather than
+ * gaining a `variant` for it. There is exactly one call site — the newsroom's
+ * own listing — so a second branch would be a layout nothing renders, kept
+ * alive by a prop nobody passes (owner decision 2026-09-22).
  *
- * ── One deviation, recorded ────────────────────────────────────────────────
+ * ── The wash, and why it is on the text ────────────────────────────────────
  *
- * The design sets this headline at 22px. The typography scale has no 22px
- * step — 20px (`text-h4`) and 24px (`text-h3`) are its neighbours — and this is
- * the same missing step already recorded as an open design-system gap for the
- * athlete personal-best values. `text-h3` is used here, being the nearest
- * documented heading role, and the 2px difference is reported rather than
- * resolved by inventing a token.
+ * `coverScrim` hugs the text block, so every glyph stands on at least 64% of
+ * the overlay token however the headline wraps — 6.70:1 white-on-white,
+ * measured against the lightest image that can exist by `cover-scrim.spec.ts`.
+ * The canvas's own gradient covers the whole frame instead and measures
+ * 1.43:1 at the top of the text over a light photograph; that is the defect
+ * this composition exists to avoid, not a detail of it.
+ *
+ * ── Geometry: a ratio that is a floor, not a ceiling ───────────────────────
+ *
+ * One grid cell holds three layers — the picture, an empty spacer carrying the
+ * ratio, and the text. The row is as tall as the tallest of them, so the card
+ * is the canvas's frame when the words fit inside it and grows when they do
+ * not. Measured: at 390px the panel needs 276px where a 4:3 box is 257px, and
+ * an absolutely positioned panel simply ran 19px off the top of the card.
+ *
+ * `7/4` is the canvas's own 840×480 frame, so from `md` the card IS that frame
+ * at the approved width. Below `md` it is `4/3`, because the canvas has no
+ * narrow frame and a 7:4 box at that width is mostly text; reported as
+ * PENDING FIGMA BACK-SYNC, and nothing depends on the number now that it is a
+ * minimum rather than the height.
+ *
+ * The line clamps stay, for a different reason: they bound how far the panel
+ * can climb over the picture it is standing on.
+ *
+ * ── Recorded deviations from the canvas ────────────────────────────────────
+ *
+ * The canvas sets this headline at 36px and pads the text block at 36px.
+ * Neither is a step of the approved scale — the type scale's neighbours are
+ * 32px (`text-h2`) and 40px, and the spacing scale's are 32px and 40px. Both
+ * take the documented role rather than the nearest number (Chapter 4 §8): the
+ * cover story is the page's section-level heading, which is `text-h2`.
  */
 export const FeaturedArticleCard = ({
   article,
@@ -37,50 +63,65 @@ export const FeaturedArticleCard = ({
   cover?: MediaAssetPublic;
 }) => {
   const t = useTranslations("News");
+  const format = useFormatter();
 
   return (
-    <article className={`${CARD_INTERACTIVE} grid gap-0 overflow-hidden p-0 md:grid-cols-[minmax(0,484fr)_minmax(0,396fr)]`}>
-      <div className="relative aspect-[16/10] w-full md:aspect-auto md:min-h-[320px]">
-        <ArticleCover
-          article={article}
-          cover={cover}
-          locale={locale}
-          sizes="(min-width: 768px) 484px, 100vw"
-          // The lead story is the first picture on the page and the likely
-          // Largest Contentful Paint (Chapter 14 §7).
-          priority
+    <article className={`${CARD_INTERACTIVE_LG} relative grid overflow-hidden p-0`}>
+      <ArticleCover
+        article={article}
+        cover={cover}
+        locale={locale}
+        sizes="(min-width: 1280px) 840px, 100vw"
+        // The cover story is the first picture on the page and the likely
+        // Largest Contentful Paint (Chapter 14 §7).
+        priority
+      />
+
+      {/* Nothing but a height. It holds the frame open to the canvas's ratio
+          when the words are short, and is simply overtaken by the panel when
+          they are long — which is how the ratio became a floor. */}
+      <div aria-hidden="true" className="col-start-1 row-start-1 aspect-[4/3] w-full md:aspect-[7/4]" />
+
+      <div
+        className="relative col-start-1 row-start-1 flex flex-col items-start gap-3.5 self-end p-6 md:p-8"
+        style={{ backgroundImage: coverScrim() }}
+      >
+        {/* The panel's upper edge, carried out to nothing so the wash reads as
+            light falling across the picture rather than a box pasted onto it.
+            Decorative only — no text stands here, which is why it is the one
+            layer with no contrast floor. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-full h-24"
+          style={{ backgroundImage: coverScrimFade() }}
         />
-      </div>
 
-      <div className="flex flex-col items-start gap-3.5 p-6 md:p-8">
-        <TopicBadge topic={article.topic} />
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="text-overline text-[color:var(--color-text-on-brand)]">{t("featuredLabel")}</span>
+          <TopicBadge topic={article.topic} />
+        </div>
 
-        <PublishDate
-          date={article.publishDate}
-          className="text-caption text-[color:var(--color-text-secondary)]"
-        />
-
-        <h2 className="text-h3 text-balance text-[color:var(--color-text-primary)]">
-          <Link
-            href={`/news/${article.slug}`}
-            className={CARD_LINK}
-          >
+        <h2 className="line-clamp-3 text-h2 text-balance text-[color:var(--color-text-on-brand)]">
+          <Link href={`/news/${article.slug}`} className={CARD_LINK}>
             {article.title[locale]}
           </Link>
         </h2>
 
-        <p className="text-body-sm text-pretty text-[color:var(--color-text-secondary)]">
+        <p className="line-clamp-2 text-body text-pretty text-[color:var(--color-text-on-brand)]">
           {article.excerpt[locale]}
         </p>
 
-        {/* Repeats the link the headline already is, so it is hidden from
-            assistive technology rather than announced a second time. */}
-        <span
-          aria-hidden
-          className="mt-auto text-body-sm font-bold text-[color:var(--color-text-link)]"
-        >
-          {t("readMore")}
-        </span>
+        <div className="flex flex-wrap items-center gap-2 text-caption text-[color:var(--color-text-on-brand)]">
+          {article.publishDate ? (
+            <>
+              <time dateTime={article.publishDate}>
+                {format.dateTime(new Date(article.publishDate), { dateStyle: "long" })}
+              </time>
+              <span aria-hidden="true">·</span>
+            </>
+          ) : null}
+          <span>{t("readingTime", { minutes: readingMinutes(article.body[locale]) })}</span>
+        </div>
       </div>
     </article>
   );

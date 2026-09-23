@@ -5,6 +5,7 @@ import { NewsCard } from "./news-card";
 import { ArticleCover } from "./cover";
 import { PublishDate } from "./publish-date";
 import { TopicBadge } from "./topic-badge";
+import { SourceBlock } from "./source-attribution";
 import { TagList } from "./tag-list";
 import { ShareArticle } from "./share-article";
 import { FOCUS, TRANSITION } from "@/components/ui/interactive";
@@ -93,6 +94,15 @@ export const ArticleScreen = ({
               </>
             ) : null}
           </div>
+
+          {/* Where a media round-up came from, before the reader starts on the
+              words. A `FederationInMedia` article is the federation reporting
+              that somebody else published something, and shown without its
+              source it is indistinguishable from the newsroom's own writing —
+              which is a provenance claim, not a styling detail. Nothing at all
+              on an ordinary article, and nothing on a round-up written before
+              the fields existed. */}
+          <SourceBlock article={article} />
         </header>
 
         <figure className="m-0 flex flex-col gap-2">

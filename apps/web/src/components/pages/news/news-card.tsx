@@ -4,6 +4,7 @@ import { CARD_INTERACTIVE } from "@/components/ui/surface";
 import { CARD_LINK } from "@/components/ui/interactive";
 import { ArticleCover } from "./cover";
 import { PublishDate } from "./publish-date";
+import { SourceAttribution } from "./source-attribution";
 import { TopicBadge } from "./topic-badge";
 import type { ArticlePublic, MediaAssetPublic } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
@@ -32,6 +33,14 @@ import type { AppLocale } from "@/i18n/routing";
  * card with no uploaded picture used to collapse to text beside cards that had
  * one, which is the hole this batch was told to close.
  *
+ * ── The attribution, on the round-ups only ─────────────────────────────────
+ *
+ * A `FederationInMedia` card says which outlet published the story first. It
+ * is one muted line rather than a second badge, so the grid stays one grid:
+ * the round-ups now sit among the federation's own stories (owner decision
+ * 2026-09-22) and a card that announced itself with a second chip would read
+ * as a different kind of card rather than as the same card with a source.
+ *
  * Tags are deliberately NOT here. The design carries them on the article page
  * and one category badge on the card, and four chips under a headline in a
  * grid of twelve would bury the headline they are meant to label.
@@ -43,11 +52,16 @@ export const NewsCard = ({
   /** The related row draws the same card at a smaller measure; the grid's own
    *  sizing comes from its parent. */
   className = "",
+  /** What the picture is asked to be, at each width. The listing's grid and
+   *  the article page's related row are different measures, and a card that
+   *  guesses one of them downloads the wrong file on the other. */
+  sizes = "(min-width: 1280px) 266px, (min-width: 640px) 45vw, 100vw",
 }: {
   article: ArticlePublic;
   locale: AppLocale;
   cover?: MediaAssetPublic;
   className?: string;
+  sizes?: string;
 }) => {
   const t = useTranslations("News");
 
@@ -56,12 +70,7 @@ export const NewsCard = ({
       {/* A fixed ratio rather than a fixed height: the card is fluid below
           the grid's breakpoints, and a fixed height would letterbox it there. */}
       <div className="relative aspect-[16/10] w-full overflow-hidden">
-        <ArticleCover
-          article={article}
-          cover={cover}
-          locale={locale}
-          sizes="(min-width: 1024px) 282px, (min-width: 640px) 45vw, 100vw"
-        />
+        <ArticleCover article={article} cover={cover} locale={locale} sizes={sizes} />
       </div>
 
       <div className="flex flex-1 flex-col items-start gap-3 p-5">
@@ -75,6 +84,8 @@ export const NewsCard = ({
             {article.title[locale]}
           </Link>
         </h3>
+
+        <SourceAttribution article={article} />
 
         {/* Pushed to the card's foot so a two-line headline and a three-line
             one still align their dates across a row. */}

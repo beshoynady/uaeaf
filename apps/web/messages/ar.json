@@ -279,7 +279,20 @@
     "topic_records": "الأرقام القياسية",
     "homeLatestSubtitle": "البيانات الرسمية والتغطية الإخبارية الصادرة من الاتحاد",
     "homeViewAll": "عرض كل الأخبار",
-    "readingTime": "{minutes, plural, one {قراءة دقيقة واحدة} two {قراءة دقيقتين} few {قراءة # دقائق} many {قراءة # دقيقة} other {قراءة # دقيقة}}"
+    "readingTime": "{minutes, plural, one {قراءة دقيقة واحدة} two {قراءة دقيقتين} few {قراءة # دقائق} many {قراءة # دقيقة} other {قراءة # دقيقة}}",
+    "topicFilterLabel": "تصفية حسب الموضوع",
+    "topicAll": "كل المواضيع",
+    "browseByTopic": "تصفّح حسب الموضوع",
+    "followHeading": "تابعوا الاتحاد",
+    "paginationLabel": "صفحات الأخبار",
+    "previousPage": "الصفحة السابقة",
+    "nextPage": "الصفحة التالية",
+    "goToPage": "الصفحة {page}",
+    "viaOutlet": "عبر {outlet}",
+    "sourceLabel": "مصدر التغطية",
+    "publishedFirstBy": "نُشر أصلًا في",
+    "readOriginal": "قراءة المقال الأصلي",
+    "readOriginalAt": "قراءة المقال الأصلي في {outlet} (يفتح في نافذة جديدة)"
   },
   "HomeCoverage": {
     "heading": "الاتحاد في الإعلام",
@@ -297,6 +310,7 @@
     "placeholderTitle": "[عنوان التغطية — بصياغة الاتحاد]",
     "placeholderExcerpt": "[مقتطف مختصر من التغطية الإعلامية]",
     "placeholderDate": "[التاريخ]",
-    "position": "المجموعة {index} من {count}"
+    "position": "المجموعة {index} من {count}",
+    "placeholderLogoShort": "[شعار]"
   }
 }

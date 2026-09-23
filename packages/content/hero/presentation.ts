@@ -25,6 +25,45 @@ export const heroScrim = (width: "narrow" | "wide", dir: "rtl" | "ltr"): string 
     ? `linear-gradient(to bottom, ${wash(64)} 0%, ${wash(74)} 50%, ${wash(86)} 100%)`
     : `linear-gradient(to ${dir === "rtl" ? "left" : "right"}, ${wash(74)} 0%, ${wash(60)} 35%, transparent 68%), linear-gradient(to bottom, transparent 40%, ${wash(80)} 100%)`;
 
+/**
+ * The floor a wash must reach before white text may stand on an unknown
+ * picture: `COVER_SCRIM_MIN`% of the overlay token.
+ *
+ * Measured, not chosen. White on black at 64% over the lightest possible
+ * photograph — pure white — is 6.70:1, comfortably past 4.5:1; at 58% it is
+ * 4.79:1, and the margin below that is thinner than the variation between two
+ * real photographs. The hero's own narrow wash already starts here, which is
+ * why this is the number rather than a second opinion about the same problem.
+ *
+ * `cover-scrim.spec.ts` measures every stop against pure white on every build.
+ */
+export const COVER_SCRIM_MIN = 64;
+
+/**
+ * The wash behind a cover story's words (`featured-article-card`).
+ *
+ * ── Why it sits on the text and not on the picture ─────────────────────────
+ *
+ * A gradient laid over the whole frame is positional: it is dark at the foot
+ * and clear at the head, and which of those a given glyph lands on depends on
+ * how long the headline is. A three-line headline pushes the eyebrow up into
+ * the clear part, and the contrast a two-line headline was measured at no
+ * longer describes what is on screen. The canvas's own gradient fails exactly
+ * there — 1.43:1 at the top of the text block over a light photograph.
+ *
+ * Bound to the text block instead, the wash hugs whatever the words turn out
+ * to be, so every glyph stands on at least `COVER_SCRIM_MIN`% however the
+ * headline wraps. `coverScrimFade` softens the upper edge so the panel does
+ * not read as a box pasted onto the picture.
+ */
+export const coverScrim = (): string =>
+  `linear-gradient(to top, ${wash(93)} 0%, ${wash(82)} 55%, ${wash(COVER_SCRIM_MIN)} 100%)`;
+
+/** The strip above the text block, carrying the wash out to nothing so its
+ *  top edge is a gradient rather than a line. Purely decorative: no text
+ *  stands on it, so it is the one part with no contrast floor. */
+export const coverScrimFade = (): string => `linear-gradient(to top, ${wash(COVER_SCRIM_MIN)} 0%, transparent 100%)`;
+
 export interface HeroFrameLayout {
   /** The container's inline padding at this width, in px (`CONTAINER`). */
   gutter: number;

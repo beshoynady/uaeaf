@@ -33,6 +33,8 @@ const article = (n: number, overrides: Partial<ArticlePublic> = {}): ArticlePubl
   title: { ar: `خبر ${n}`, en: `Story ${n}` },
   authorDisplayName: { ar: "الإعلام", en: "Media" },
   publishDate: "2026-09-21T09:00:00.000Z",
+  sourceOutlet: null,
+  sourceUrl: null,
   coverMediaId: null,
   body: {
     ar: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: words(450) }] }] },

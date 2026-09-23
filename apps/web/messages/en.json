@@ -279,7 +279,20 @@
     "topic_records": "Records",
     "homeLatestSubtitle": "Official statements and news coverage from the federation",
     "homeViewAll": "View all news",
-    "readingTime": "{minutes, plural, one {# min read} other {# min read}}"
+    "readingTime": "{minutes, plural, one {# min read} other {# min read}}",
+    "topicFilterLabel": "Filter by topic",
+    "topicAll": "All topics",
+    "browseByTopic": "Browse by topic",
+    "followHeading": "Follow the federation",
+    "paginationLabel": "News pages",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "goToPage": "Page {page}",
+    "viaOutlet": "via {outlet}",
+    "sourceLabel": "Coverage source",
+    "publishedFirstBy": "First published by",
+    "readOriginal": "Read the original",
+    "readOriginalAt": "Read the original article at {outlet} (opens in a new window)"
   },
   "HomeCoverage": {
     "heading": "UAEAF in the Media",
@@ -297,6 +310,7 @@
     "placeholderTitle": "[Coverage title, in the federation's words]",
     "placeholderExcerpt": "[A short excerpt of the coverage]",
     "placeholderDate": "[Date]",
-    "position": "Group {index} of {count}"
+    "position": "Group {index} of {count}",
+    "placeholderLogoShort": "[Logo]"
   }
 }

@@ -321,6 +321,20 @@ What a news story is about. Six topics, closed: English ids in the data, one app
 * The chip always shows the name in words; the colour never carries the topic alone.
 * A seventh topic, or a renamed one, goes through the Content Rule Proposal path and an ADR before it is used.
 
+### CR-5.7 Media Round-Up Provenance (ADR-0096)
+
+A `FederationInMedia` article is the federation reporting that **somebody else** published something. It **MUST** name that outlet and link to the original.
+
+| Field | Meaning | Required |
+| --- | --- | --- |
+| `sourceOutlet` | The outlet that published the story first, as a reader sees it | On creation of a `FederationInMedia` article, and on an edit that converts one |
+| `sourceUrl` | The original article's `http(s)` address | Same |
+
+* Shown to a reader as **«عبر {outlet}» / "via {outlet}"** on the card, and as a source block with an external link on the article page. Both appear only when **both** fields are present: an outlet with no address is a claim nobody can check, and an address with no outlet is a bare link.
+* A `General` article is **never** asked for either, and never shows an attribution.
+* An article written before the fields existed stays publishable and editable without them. The newsroom fills them in; the article list marks it **«مصدر ناقص» / "Source missing"**, the same way §CR-5.6 marks a story with no topic. It is never given a guessed source (§CR-2.8).
+* Not to be confused with `CT-EXTERNALMEDIA-001`, the coverage-links content type behind the "الاتحاد في الإعلام" widget. Same name, different thing: that one has no module and no public read.
+
 ---
 
 # Level 6 — Notifications

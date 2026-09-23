@@ -17,5 +17,5 @@ export {
   isUsableHeroUrl,
 } from "./limits";
 export { HERO_IMAGE_MIN_WIDTH, isSmallImage, resolveLtrPicture } from "./draft";
-export { heroFrameLayout, heroScrim, heroType } from "./presentation";
+export { COVER_SCRIM_MIN, coverScrim, coverScrimFade, heroFrameLayout, heroScrim, heroType } from "./presentation";
 export type { HeroFrameLayout } from "./presentation";

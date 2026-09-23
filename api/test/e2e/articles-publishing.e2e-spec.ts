@@ -340,7 +340,15 @@ describe('who may do what', () => {
     const after = await authedGet('publisher', `/articles/${id}/editorial-state`).expect(200);
     // The dashboard renders this list verbatim, so the publish button exists
     // exactly when the API would accept the publish.
-    expect(after.body.availableActions).toContain('publish');
+    //
+    // `publishApproved`, not `publish`. Under a policy that requires review
+    // the two are different routes with different meanings: `publish` is
+    // `publishDirect` and is REFUSED outright here, while `publish-approved`
+    // publishes the revision the approvers actually saw. Offering `publish`
+    // would be a button the API then rejects. This test asserted the older,
+    // undivided action and was the last place still naming it.
+    expect(after.body.availableActions).toContain('publishApproved');
+    expect(after.body.availableActions).not.toContain('publish');
   }, 60000);
 });
 
@@ -419,6 +427,139 @@ describe('hiding and deleting', () => {
     // The unique index is partial on `archivedAt: null`, so a deleted article
     // does not hold its address hostage against a corrected replacement.
     await post('editor', '/articles', draftFor('reusable-address')).expect(201);
+  }, 60000);
+});
+
+describe('narrowing the public feed by topic', () => {
+  // The topic lives on the article row rather than in the publication's
+  // revision, so re-filing a live story is a plain edit and takes effect on
+  // the public feed at once — which is also why the filter reads the row.
+  it('answers only the articles filed under the topic asked for', async () => {
+    await requireApproval();
+
+    const records = await publishThroughReview('a-new-national-record');
+    await patch('editor', `/articles/${records}`, { topic: 'records' }).expect(200);
+    const youth = await publishThroughReview('schools-programme-opens');
+    await patch('editor', `/articles/${youth}`, { topic: 'youth' }).expect(200);
+
+    await visit('/articles/public').expect(200).expect((response) => {
+      expect(response.body.items).toHaveLength(2);
+    });
+
+    await visit('/articles/public?topic=records').expect(200).expect((response) => {
+      expect(response.body.items.map((item: { slug: string }) => item.slug)).toEqual(['a-new-national-record']);
+      // The count describes the narrowed feed, not the newsroom: a pager
+      // built from it would otherwise offer pages that answer nothing.
+      expect(response.body.total).toBe(1);
+    });
+
+    await visit('/articles/public?topic=youth').expect(200).expect((response) => {
+      expect(response.body.items.map((item: { slug: string }) => item.slug)).toEqual(['schools-programme-opens']);
+    });
+
+    // A real topic nothing is filed under answers an empty feed, not a 404 —
+    // the same shape `?tag=` already has for a label nobody used.
+    await visit('/articles/public?topic=community').expect(200).expect((response) => {
+      expect(response.body.items).toHaveLength(0);
+      expect(response.body.total).toBe(0);
+    });
+  }, 60000);
+
+  it('refuses a topic outside the closed list rather than answering nothing', async () => {
+    // Silently ignored, an invented topic would answer the whole feed and a
+    // reader would believe every story was filed under it.
+    await visit('/articles/public?topic=sport').expect(400);
+  }, 60000);
+});
+
+describe('the source of a media round-up', () => {
+  const coverage = (slug: string, extra: object = {}) => ({
+    ...draftFor(slug),
+    category: 'FederationInMedia',
+    ...extra,
+  });
+
+  it('refuses a new round-up that does not say where it came from', async () => {
+    await post('editor', '/articles', coverage('coverage-without-a-source'))
+      .expect(400)
+      .expect((response) => {
+        const message = JSON.stringify(response.body.message);
+        expect(message).toContain('sourceOutlet');
+        expect(message).toContain('sourceUrl');
+      });
+
+    // Refused at the door, so nothing half-written is left behind.
+    expect(await articleModel.findOne({ slug: 'coverage-without-a-source' })).toBeNull();
+  }, 60000);
+
+  it('refuses an address that is not an http(s) one', async () => {
+    // `javascript:` in an href is a script the page runs on click, and the
+    // public site prints this value as a link.
+    await post(
+      'editor',
+      '/articles',
+      coverage('coverage-with-a-script-link', {
+        sourceOutlet: 'Gulf News',
+        sourceUrl: 'javascript:alert(1)',
+      }),
+    ).expect(400);
+  }, 60000);
+
+  it('accepts a round-up that names its outlet, and publishes both fields', async () => {
+    await requireApproval();
+
+    const created = await post(
+      'editor',
+      '/articles',
+      coverage('federation-covered-by-gulf-news', {
+        sourceOutlet: '  Gulf News  ',
+        sourceUrl: 'https://gulfnews.com/sport/athletics/uae-team-named',
+      }),
+    ).expect(201);
+
+    const id = created.body._id as string;
+    const submitted = await post('editor', `/articles/${id}/submit`).expect(201);
+    await post('approver', `/workflow-instances/${submitted.body.workflowInstanceId}/approve`).expect(201);
+    await post('publisher', `/articles/${id}/publish-approved`).expect(201);
+
+    await visit('/articles/public/federation-covered-by-gulf-news').expect(200).expect((response) => {
+      // Trimmed on the way in, so the attribution a reader sees is the name
+      // and not the whitespace around it.
+      expect(response.body.sourceOutlet).toBe('Gulf News');
+      expect(response.body.sourceUrl).toBe('https://gulfnews.com/sport/athletics/uae-team-named');
+    });
+  }, 60000);
+
+  it('asks an ordinary article for neither, and never shows an attribution on one', async () => {
+    await requireApproval();
+    await publishThroughReview('an-ordinary-general-article');
+
+    await visit('/articles/public/an-ordinary-general-article').expect(200).expect((response) => {
+      expect(response.body.category).toBe('General');
+      expect(response.body.sourceOutlet).toBeNull();
+      expect(response.body.sourceUrl).toBeNull();
+    });
+  }, 60000);
+
+  it('keeps a round-up written before the fields existed publishable', async () => {
+    await requireApproval();
+
+    // The shape a backfill leaves behind: filed under the category, with no
+    // attribution, because none was recorded when it was written.
+    const id = await publishThroughReview('legacy-round-up');
+    await articleModel.updateOne(
+      { _id: id },
+      { $set: { category: 'FederationInMedia', sourceOutlet: null, sourceUrl: null } },
+    );
+
+    // Still editable — the rule lives at creation, so a partial edit that
+    // touches neither field is not held up by them.
+    await patch('editor', `/articles/${id}`, { slug: 'legacy-round-up-renamed' }).expect(200);
+
+    await visit('/articles/public/legacy-round-up-renamed').expect(200).expect((response) => {
+      expect(response.body.category).toBe('FederationInMedia');
+      expect(response.body.sourceOutlet).toBeNull();
+    });
   }, 60000);
 });
 

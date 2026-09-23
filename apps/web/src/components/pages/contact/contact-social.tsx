@@ -1,8 +1,6 @@
-import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { FOCUS } from "@/components/ui/interactive";
-import { CARD, LIFT } from "@/components/ui/surface";
-import { isExternalMedia } from "@/lib/api/media";
+import { SocialChannelLink } from "@/components/ui/social-channel-link";
+import { LIFT } from "@/components/ui/surface";
 import { socialChannels } from "@/lib/social-channels";
 import type { ContactSocialLink, MediaAssetPublic } from "@/lib/api/types";
 
@@ -71,54 +69,14 @@ export const ContactSocial = ({
       <ul className="flex flex-wrap items-center justify-center gap-3">
         {channels.map((channel) => (
           <li key={channel.href}>
-            <a
-              href={channel.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={channel.name}
-              // 44px, the touch-target gate, as the footer's channels are
-              // (ADR-0092). `.lift` carries the elevation and the
-              // ascent-vector nudge, so hover is felt and not merely seen.
-              //
-              // A known channel is a square holding its artwork; an unknown
-              // one is a pill that has to grow to fit a word, so it takes a
-              // minimum rather than a fixed size.
-              className={`${LIFT} flex items-center justify-center overflow-hidden rounded-[var(--radius-md)] ${FOCUS} ${
-                channel.icon
-                  ? `size-11 ${CARD}`
-                  : channel.known
-                    ? `size-11 ${channel.known.className}`
-                    : `min-h-11 min-w-11 ${CARD} px-3 text-label font-bold text-[color:var(--color-text-primary)]`
-              }`}
-            >
-              {channel.icon ? (
-                // The editor's own artwork, whole: `object-contain` so a logo
-                // that is not square is shown entire rather than cropped.
-                <Image
-                  src={channel.icon.file.url}
-                  alt=""
-                  width={44}
-                  height={44}
-                  unoptimized={isExternalMedia(channel.icon.file.url)}
-                  aria-hidden="true"
-                  className="size-11 object-contain"
-                />
-              ) : channel.known ? (
-                // X and TikTok export as complete button artwork rather than a
-                // glyph, so they fill the button; the rest are glyphs on a
-                // brand-coloured ground.
-                <Image
-                  src={channel.known.icon}
-                  alt=""
-                  width={channel.known.fullBleed ? 44 : 20}
-                  height={channel.known.fullBleed ? 44 : 20}
-                  aria-hidden="true"
-                  className={channel.known.fullBleed ? "size-11 object-cover" : "size-5 object-contain"}
-                />
-              ) : (
-                <span aria-hidden="true">{channel.name.slice(0, 2)}</span>
-              )}
-            </a>
+            {/* This page's own shell — `radius.md`, and `.lift` carrying the
+                elevation and the ascent-vector nudge so hover is felt and not
+                merely seen. The 44px target, the artwork and the
+                external-link semantics are the shared component's. */}
+            <SocialChannelLink
+              channel={channel}
+              className={`${LIFT} rounded-[var(--radius-md)]`}
+            />
           </li>
         ))}
       </ul>

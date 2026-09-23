@@ -1,8 +1,8 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsDateString, IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
 import { PaginationQueryDto } from '../../../../common/dto/pagination-query.dto.js';
-import { ARTICLE_CATEGORIES } from '../schemas/article.schema.js';
-import type { ArticleCategory } from '../schemas/article.schema.js';
+import { ARTICLE_CATEGORIES, ARTICLE_TOPICS } from '../schemas/article.schema.js';
+import type { ArticleCategory, ArticleTopic } from '../schemas/article.schema.js';
 
 /**
  * How a visitor narrows the public news feed.
@@ -21,6 +21,17 @@ export class PublicFeedQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsIn(ARTICLE_CATEGORIES)
   category?: ArticleCategory;
+
+  @ApiPropertyOptional({
+    enum: ARTICLE_TOPICS,
+    description:
+      'Narrow to one subject (ADR-0094). Independent of `category`: an article carries exactly one of ' +
+      'each, and the two answer different questions — which shelf it belongs to, and what it is about. ' +
+      'Omitted means every topic, including the articles nobody has classified.',
+  })
+  @IsOptional()
+  @IsIn(ARTICLE_TOPICS)
+  topic?: ArticleTopic;
 
   @ApiPropertyOptional({ description: 'Published on or after this date (inclusive).', example: '2026-01-01' })
   @IsOptional()

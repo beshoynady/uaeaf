@@ -1,12 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   IsArray,
   IsIn,
   IsMongoId,
+  IsNotEmpty,
   IsOptional,
   IsString,
+  IsUrl,
   Matches,
   MaxLength,
   ValidateIf,
@@ -15,7 +17,7 @@ import {
 import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
 import { LocalizedRichTextDto } from '../../../../common/dto/localized-rich-text.dto.js';
 import { PageSeoDto } from '../../../../common/dto/page-seo.dto.js';
-import { ARTICLE_SLUG_PATTERN } from './create-article.dto.js';
+import { ARTICLE_SLUG_PATTERN, SOURCE_URL_RULES, VALIDATES_SOURCE } from './create-article.dto.js';
 import { ARTICLE_CATEGORIES, ARTICLE_TOPICS } from '../schemas/article.schema.js';
 import type { ArticleCategory, ArticleTopic } from '../schemas/article.schema.js';
 
@@ -53,6 +55,42 @@ export class UpdateArticleDto {
   @ValidateIf((_dto, value) => value !== undefined)
   @IsIn(ARTICLE_TOPICS)
   topic?: ArticleTopic;
+
+  /**
+   * The same rule as creation, read against the patch rather than the row.
+   *
+   * An edit that turns an article INTO a round-up is the moment the
+   * attribution starts to apply, so that edit must carry both fields. An edit
+   * that touches neither leaves them alone — which is what keeps the rows
+   * written before these fields existed editable, exactly as `topic` does.
+   * `null` clears them, for an article that stops being a round-up.
+   */
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    description:
+      'Who published the story first. Required when this patch sets `category` to `FederationInMedia`. ' +
+      'Null clears it.',
+  })
+  @ValidateIf(VALIDATES_SOURCE)
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(120)
+  sourceOutlet?: string | null;
+
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    description:
+      "The original article's `http(s)` address. Required when this patch sets `category` to " +
+      '`FederationInMedia`. Null clears it.',
+  })
+  @ValidateIf(VALIDATES_SOURCE)
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @IsUrl(SOURCE_URL_RULES)
+  @MaxLength(2048)
+  sourceUrl?: string | null;
 
   @ApiProperty({ type: [String], required: false, description: 'Free labels for display and filtering. NOT a second category: `category` is a closed list of one, and it decides which homepage section the article appears in.' })
   @IsOptional()

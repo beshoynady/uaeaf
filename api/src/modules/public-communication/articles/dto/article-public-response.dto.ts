@@ -49,6 +49,20 @@ export class ArticlePublicDto {
   @ApiProperty({ nullable: true, description: 'ISO date this article went live; null while it never has.' })
   publishDate: string | null;
 
+  @ApiProperty({
+    nullable: true,
+    description:
+      'Who published the story first. Non-null only on a `FederationInMedia` round-up, and null on the ' +
+      'rows written before the field existed.',
+  })
+  sourceOutlet: string | null;
+
+  @ApiProperty({
+    nullable: true,
+    description: "The original article's address, for the external link beside the attribution.",
+  })
+  sourceUrl: string | null;
+
   @ApiProperty({ nullable: true, description: 'ref → mediaAssets; the reader resolves it through the media route.' })
   coverMediaId: string | null;
 
@@ -119,6 +133,12 @@ export const toPublicDto = (article: ArticleDocument, snapshot: Record<string, u
     // the newsroom may correct without republishing the words, and the filter
     // queries the row rather than every snapshot.
     tags: article.tags ?? [],
+    // From the row for the same reason the category is: where a round-up came
+    // from is a filing decision an editor may correct without republishing
+    // the words. Carried only for the category it describes, so a `General`
+    // article cannot surface an attribution left behind by a conversion.
+    sourceOutlet: article.category === 'FederationInMedia' ? (article.sourceOutlet ?? null) : null,
+    sourceUrl: article.category === 'FederationInMedia' ? (article.sourceUrl ?? null) : null,
     title: asLocalized(snapshot.title),
     authorDisplayName: asLocalized(snapshot.authorDisplayName),
     // The record's, not the snapshot's: the date is stamped at publication,

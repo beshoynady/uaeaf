@@ -7447,6 +7447,23 @@
             }
           },
           {
+            "name": "topic",
+            "required": false,
+            "in": "query",
+            "description": "Narrow to one subject (ADR-0094). Independent of `category`: an article carries exactly one of each, and the two answer different questions — which shelf it belongs to, and what it is about. Omitted means every topic, including the articles nobody has classified.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "nationalTeam",
+                "training",
+                "youth",
+                "international",
+                "community",
+                "records"
+              ]
+            }
+          },
+          {
             "name": "from",
             "required": false,
             "in": "query",
@@ -14448,6 +14465,16 @@
             "nullable": true,
             "description": "ISO date this article went live; null while it never has."
           },
+          "sourceOutlet": {
+            "type": "object",
+            "nullable": true,
+            "description": "Who published the story first. Non-null only on a `FederationInMedia` round-up, and null on the rows written before the field existed."
+          },
+          "sourceUrl": {
+            "type": "object",
+            "nullable": true,
+            "description": "The original article's address, for the external link beside the attribution."
+          },
           "coverMediaId": {
             "type": "object",
             "nullable": true,
@@ -14485,6 +14512,8 @@
           "title",
           "authorDisplayName",
           "publishDate",
+          "sourceOutlet",
+          "sourceUrl",
           "coverMediaId",
           "body",
           "excerpt",
@@ -14522,6 +14551,18 @@
               "records"
             ],
             "description": "What the story is about. Required on a new article; articles written before the field existed have none. Not `category` (the shelf) and not `tags` (free words)."
+          },
+          "sourceOutlet": {
+            "type": "object",
+            "nullable": true,
+            "description": "Who published the story first. REQUIRED when `category` is `FederationInMedia` — that category means the federation is reporting somebody else's coverage, and the outlet is what makes it one. Never asked of a `General` article.",
+            "example": "Gulf News"
+          },
+          "sourceUrl": {
+            "type": "object",
+            "nullable": true,
+            "description": "The original article's address, `http(s)` only. REQUIRED when `category` is `FederationInMedia`, alongside `sourceOutlet`. Never asked of a `General` article.",
+            "example": "https://gulfnews.com/sport/athletics/uae-team-named-1.12345"
           },
           "tags": {
             "default": [],
@@ -14604,6 +14645,16 @@
               "records"
             ],
             "description": "Changes the topic. Cannot be cleared."
+          },
+          "sourceOutlet": {
+            "type": "object",
+            "nullable": true,
+            "description": "Who published the story first. Required when this patch sets `category` to `FederationInMedia`. Null clears it."
+          },
+          "sourceUrl": {
+            "type": "object",
+            "nullable": true,
+            "description": "The original article's `http(s)` address. Required when this patch sets `category` to `FederationInMedia`. Null clears it."
           },
           "tags": {
             "description": "Free labels for display and filtering. NOT a second category: `category` is a closed list of one, and it decides which homepage section the article appears in.",

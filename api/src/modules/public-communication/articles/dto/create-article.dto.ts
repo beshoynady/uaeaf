@@ -1,14 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   IsArray,
   IsIn,
   IsMongoId,
+  IsNotEmpty,
   IsOptional,
   IsString,
+  IsUrl,
   Matches,
   MaxLength,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
@@ -25,6 +28,33 @@ import type { ArticleCategory, ArticleTopic } from '../schemas/article.schema.js
  * item travels — a pasted link, a message, a printed reference.
  */
 export const ARTICLE_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/**
+ * When the source attribution is judged at all.
+ *
+ * Required on a `FederationInMedia` round-up, because the outlet and its
+ * address are what make it one. Otherwise judged only when a value was
+ * actually sent, so an ordinary article is never held up by fields that do
+ * not apply to it and `null` stays available for clearing them.
+ */
+export const VALIDATES_SOURCE = (dto: { category?: ArticleCategory }, value: unknown): boolean =>
+  dto.category === 'FederationInMedia' || (value !== undefined && value !== null);
+
+/** `http:`/`https:` only. Anything else is printed as a link that either
+ *  leads nowhere or, in the case of `javascript:`, runs on click. */
+/** Typed off the decorator itself: `IsURLOptions` lives in a global namespace
+ *  the app's `tsconfig` does not pull in, and `as const` makes the array
+ *  readonly, which the decorator's mutable parameter refuses. */
+export const SOURCE_URL_RULES: Parameters<typeof IsUrl>[0] = {
+  protocols: ['http', 'https'],
+  require_protocol: true,
+};
+
+const SOURCE_OUTLET_MESSAGE =
+  'sourceOutlet: اسم الجهة الإعلامية مطلوب لمقالات «الاتحاد في الإعلام» — a FederationInMedia article must name the outlet that published it first.';
+
+const SOURCE_URL_MESSAGE =
+  "sourceUrl: رابط المقال الأصلي مطلوب وصحيح لمقالات «الاتحاد في الإعلام» — a FederationInMedia article must carry the original article's http(s) address.";
 
 const SLUG_MESSAGE =
   'slug must be lowercase letters and digits joined by single hyphens, e.g. "national-championship-2026"';
@@ -57,6 +87,38 @@ export class CreateArticleDto {
   })
   @IsIn(ARTICLE_TOPICS)
   topic: ArticleTopic;
+
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    description:
+      'Who published the story first. REQUIRED when `category` is `FederationInMedia` — that category ' +
+      "means the federation is reporting somebody else's coverage, and the outlet is what makes it one. " +
+      'Never asked of a `General` article.',
+    example: 'Gulf News',
+  })
+  @ValidateIf(VALIDATES_SOURCE)
+  // Trimmed before it is judged: `@IsNotEmpty()` rejects `''` and nothing
+  // else, so `"   "` would satisfy a required field with no outlet in it.
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @IsString({ message: SOURCE_OUTLET_MESSAGE })
+  @IsNotEmpty({ message: SOURCE_OUTLET_MESSAGE })
+  @MaxLength(120)
+  sourceOutlet?: string | null;
+
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    description:
+      "The original article's address, `http(s)` only. REQUIRED when `category` is `FederationInMedia`, " +
+      'alongside `sourceOutlet`. Never asked of a `General` article.',
+    example: 'https://gulfnews.com/sport/athletics/uae-team-named-1.12345',
+  })
+  @ValidateIf(VALIDATES_SOURCE)
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @IsUrl(SOURCE_URL_RULES, { message: SOURCE_URL_MESSAGE })
+  @MaxLength(2048)
+  sourceUrl?: string | null;
 
   @ApiProperty({
     type: [String],

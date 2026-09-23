@@ -13,7 +13,7 @@ import { AuditLogsService } from '../../workflow/audit-logs/audit-logs.service.j
 import { toPageSeo } from '../../../common/dto/page-seo.dto.js';
 import { isDuplicateKeyError } from '../../../common/utils/mongo-errors.util.js';
 import { ARTICLE_CATEGORIES, ARTICLE_PUBLICATION_STATES } from './schemas/article.schema.js';
-import type { ArticleCategory, ArticlePublicationState } from './schemas/article.schema.js';
+import type { ArticleCategory, ArticlePublicationState, ArticleTopic } from './schemas/article.schema.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 import type { RequestContext } from '../../workflow/workflow-instances/workflow-instances.service.js';
 
@@ -118,6 +118,12 @@ export interface PublicFeedFilter {
   search?: string;
   /** One label, matched case-insensitively against the article's own. */
   tag?: string;
+  /**
+   * One subject from the closed list (ADR-0094). Its own axis: `category`
+   * decides which shelf a story belongs to and `topic` what it is about, so a
+   * visitor may narrow by either or both.
+   */
+  topic?: ArticleTopic;
 }
 
 /**
@@ -182,6 +188,10 @@ export class ArticlesService {
       // two layers away.
       category: dto.category ?? 'General',
       topic: dto.topic,
+      // Null for a General article, which is asked for neither: the pair
+      // exists only to say where a round-up came from.
+      sourceOutlet: dto.sourceOutlet ?? null,
+      sourceUrl: dto.sourceUrl ?? null,
       tags: normaliseTags(dto.tags ?? []),
       slug: dto.slug,
       coverMediaId: dto.coverMediaId ? new Types.ObjectId(dto.coverMediaId) : null,
@@ -239,6 +249,11 @@ export class ArticlesService {
     if (dto.title !== undefined) $set.title = dto.title;
     if (dto.category !== undefined) $set.category = dto.category;
     if (dto.topic !== undefined) $set.topic = dto.topic;
+    // `null` reaches here as a value, not as "untouched": an article that
+    // stops being a round-up must be able to shed an attribution that is no
+    // longer true.
+    if (dto.sourceOutlet !== undefined) $set.sourceOutlet = dto.sourceOutlet ?? null;
+    if (dto.sourceUrl !== undefined) $set.sourceUrl = dto.sourceUrl ?? null;
     if (dto.tags !== undefined) $set.tags = normaliseTags(dto.tags);
     if (dto.slug !== undefined) $set.slug = dto.slug;
     if (dto.body !== undefined) $set.body = dto.body;
@@ -409,6 +424,10 @@ export class ArticlesService {
       filter.category = narrow.category;
     }
 
+    if (narrow.topic) {
+      filter.topic = narrow.topic;
+    }
+
     const from = parsedDate(narrow.from);
     const to = parsedDate(narrow.to);
     if (from || to) {
@@ -443,7 +462,7 @@ export class ArticlesService {
     page: number,
     limit: number,
     narrow: PublicFeedFilter = {},
-  ): Promise<{ items: ArticlePublicDto[]; total: number }> => {
+  ): Promise<{ items: ArticlePublicDto[]; total: number; page: number; limit: number }> => {
     const { items, total } = await this.repository.findPage(
       this.publicFilter(narrow),
       (page - 1) * limit,
@@ -462,6 +481,13 @@ export class ArticlesService {
         return snapshot ? [toPublicDto(article, snapshot)] : [];
       }),
       total,
+      // Echoed back, the shape every other paginated read here answers with
+      // (`publishing.service.ts`). A pager needs the window it actually got,
+      // not the one it believes it asked for: without these it has to assume
+      // the request was honoured, and a clamped or defaulted limit upstream
+      // would silently make its page count wrong.
+      page,
+      limit,
     };
   };
 

@@ -474,6 +474,50 @@ describe('ArticlesService', () => {
     const filterOf = (deps: ReturnType<typeof makeDeps>) =>
       (deps.repository.findPage.mock.calls[0] as [Record<string, unknown>, number, number])[0];
 
+    it('answers with the window it actually applied, for the pager to count with', async () => {
+      const deps = makeDeps();
+
+      const answer = await makeService(deps).findPublicPage(3, 12);
+
+      // Without these a pager has to assume its request was honoured. They are
+      // also the shape every other paginated read here answers with.
+      expect(answer).toMatchObject({ page: 3, limit: 12 });
+      expect(typeof answer.total).toBe('number');
+    });
+
+    it('narrows to one topic when a topic is asked for', async () => {
+      const deps = makeDeps();
+      const service = makeService(deps);
+
+      await service.findPublicPage(1, 12, { topic: 'records' });
+
+      expect(filterOf(deps)).toMatchObject({
+        publicationState: 'Live',
+        archived: false,
+        topic: 'records',
+      });
+    });
+
+    it('adds no topic key at all when none is asked for', async () => {
+      const deps = makeDeps();
+      const service = makeService(deps);
+
+      await service.findPublicPage(1, 12);
+
+      // `{ topic: undefined }` matches the articles nobody has classified,
+      // which is the opposite of "every topic".
+      expect('topic' in filterOf(deps)).toBe(false);
+    });
+
+    it('narrows by topic and category together, each on its own axis', async () => {
+      const deps = makeDeps();
+      const service = makeService(deps);
+
+      await service.findPublicPage(1, 12, { topic: 'youth', category: 'General' });
+
+      expect(filterOf(deps)).toMatchObject({ topic: 'youth', category: 'General' });
+    });
+
     it('narrows to one shelf when a category is asked for', async () => {
       const deps = makeDeps();
       const service = makeService(deps);

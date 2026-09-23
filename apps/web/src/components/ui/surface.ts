@@ -181,7 +181,7 @@ export const CARD_ICON =
  * card's does not.
  */
 export const FIELD_EDGE =
-  "border border-[color:var(--color-border-strong)] hover:border-[color:var(--color-action-default)] active:border-[color:var(--color-action-default)] focus:border-[color:var(--color-action-default)]";
+  "border border-[color:var(--color-field-border)] hover:border-[color:var(--color-action-default)] active:border-[color:var(--color-action-default)] focus:border-[color:var(--color-action-default)]";
 
 /**
  * The hero, sized to the first screen: the header plus the hero is the height

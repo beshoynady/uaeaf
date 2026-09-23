@@ -3,6 +3,8 @@ import { Link } from "@/i18n/navigation";
 import { BADGE } from "@/components/ui/surface";
 import { FOCUS } from "@/components/ui/interactive";
 import { TIME_RANGE_PRESETS, activePreset, presetRange } from "@uaeaf/content/time-range";
+import { feedHref } from "@/lib/news/feed-query";
+import type { FeedQuery } from "@/lib/news/feed-query";
 import type { TimeRange } from "@uaeaf/content/time-range";
 
 /**
@@ -29,21 +31,17 @@ import type { TimeRange } from "@uaeaf/content/time-range";
  * month" and a visitor narrowing this feed to "this month" must be looking at
  * the same days, or the editor cannot tell what the public sees.
  */
-export const NewsTimeFilter = ({ range, tag }: { range: TimeRange; tag?: string }) => {
+export const NewsTimeFilter = ({ query }: { query: FeedQuery }) => {
   const t = useTranslations("News");
+  const { range, tag, topic } = query;
   const active = activePreset(range);
   const filtered = Boolean(range.from || range.to);
 
-  // The tag survives a change of window and the other way round: a reader who
-  // followed a label and then narrowed the dates has asked for both.
-  const href = (next: TimeRange) => {
-    const query = new URLSearchParams();
-    if (tag) query.set("tag", tag);
-    if (next.from) query.set("from", next.from);
-    if (next.to) query.set("to", next.to);
-    const search = query.toString();
-    return search ? `/news?${search}` : "/news";
-  };
+  // Every other filter survives a change of window and the other way round: a
+  // reader who followed a label, chose a topic and then narrowed the dates has
+  // asked for all three. `feedHref` is where that rule lives for this control,
+  // the topic chips and the pager alike.
+  const href = (next: TimeRange) => feedHref(query, { range: next });
 
   const chip = (pressed: boolean) =>
     `${BADGE} min-h-11 px-4 transition-colors duration-[var(--motion-duration-instant)] ${FOCUS} ${
@@ -79,8 +77,13 @@ export const NewsTimeFilter = ({ range, tag }: { range: TimeRange; tag?: string 
         </ul>
       </nav>
 
+      {/* The custom range posts to this same listing. The filters already set
+          ride along as hidden fields, because a GET form submits ONLY its own
+          controls — without these, typing two dates would silently drop the
+          tag and the topic the reader chose a moment earlier. */}
       <form method="get" action="/news" className="flex flex-wrap items-end gap-3">
         {tag ? <input type="hidden" name="tag" value={tag} /> : null}
+        {topic ? <input type="hidden" name="topic" value={topic} /> : null}
 
         {(["from", "to"] as const).map((bound) => (
           <label key={bound} className="flex flex-col gap-1 text-caption text-[color:var(--color-text-secondary)]">

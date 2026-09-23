@@ -25,6 +25,8 @@ const article = (n: number, category: ArticlePublic["category"] = "General"): Ar
   title: { ar: `خبر ${n}`, en: `Story ${n}` },
   authorDisplayName: { ar: "الإعلام", en: "Media" },
   publishDate: "2026-08-06T09:00:00.000Z",
+  sourceOutlet: null,
+  sourceUrl: null,
   coverMediaId: null,
   body: { ar: { type: "doc" }, en: { type: "doc" } },
   excerpt: { ar: `مقتطف ${n}`, en: `Excerpt ${n}` },
@@ -66,8 +68,13 @@ describe("NewsList", () => {
   });
 
 
-  describe("the two shelves", () => {
-    it("draws the media round-up in a section of its own", () => {
+  /**
+   * One grid, since 2026-09-22 (owner decision). The page drew two shelves
+   * until then — the federation's own stories, and a separate row of its
+   * `FederationInMedia` round-ups.
+   */
+  describe("the one grid", () => {
+    it("puts a media round-up in the same grid as the federation's own stories", () => {
       render(
         <NewsList
           articles={[article(1), article(2), article(3, "FederationInMedia")]}
@@ -76,23 +83,27 @@ describe("NewsList", () => {
         />,
       );
 
-      expect(screen.getByRole("heading", { name: "inMediaHeading" })).toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: "generalHeading" })).toBeInTheDocument();
-    });
-
-    it("hides the media section entirely when nothing is filed there", () => {
-      // "No empty shelf": a heading over nothing is worse than no heading.
-      render(<NewsList articles={[article(1), article(2)]} covers={new Map()} locale="ar" />);
-
+      // One heading over one grid, and the round-up inside it rather than
+      // under a second heading of its own.
       expect(screen.queryByRole("heading", { name: "inMediaHeading" })).not.toBeInTheDocument();
+      expect(screen.getAllByRole("heading", { name: "generalHeading" })).toHaveLength(1);
+      expect(screen.getAllByRole("listitem")).toHaveLength(2);
     });
 
-    it("leads with the newest story whichever shelf it is on", () => {
+    it("keeps a round-up reachable rather than dropping it from the listing", () => {
+      // The homepage's shelf is narrowed to `General`, and `homepage-news.ts`
+      // records that the federation's own round-ups "stay on /news". Excluding
+      // them here would leave them published at an address nothing links to.
+      render(<NewsList articles={[article(1), article(2, "FederationInMedia")]} covers={new Map()} locale="en" />);
+
+      expect(screen.getByRole("link", { name: /Story 2/ })).toHaveAttribute("href", "/news/story-2");
+    });
+
+    it("leads with the newest story whichever category it is in", () => {
       render(<NewsList articles={[article(1, "FederationInMedia"), article(2)]} covers={new Map()} locale="ar" />);
 
-      // The lead is the newest item, not the newest General item: a reader
-      // opening the page wants what just happened, not what just happened in
-      // one category.
+      // A reader opening the page wants what just happened, not what just
+      // happened in one category.
       expect(screen.getByRole("heading", { level: 2, name: /خبر 1/ })).toBeInTheDocument();
     });
   });

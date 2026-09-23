@@ -7,8 +7,7 @@ import { LocationMap } from "@/components/pages/contact/location-map";
 import { FooterMapFrame } from "./footer-map-frame";
 import { FOCUS, TRANSITION } from "@/components/ui/interactive";
 import { REGISTER_CLASSES } from "@/components/ui/section";
-import { CARD } from "@/components/ui/surface";
-import { isExternalMedia } from "@/lib/api/media";
+import { SocialChannelLink } from "@/components/ui/social-channel-link";
 import { FOOTER_QUICK_LINKS, LEGAL_LINKS } from "@/lib/navigation";
 import { isBuilt } from "@/lib/pages/built-routes";
 import type { FooterContent } from "@/lib/pages/footer-content";
@@ -199,56 +198,14 @@ export const SiteFooter = ({ content }: { content: FooterContent }) => {
             >
               {channels.map((channel) => (
                 <li key={channel.href}>
-                  <a
-                    href={channel.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={channel.name}
-                    // 44px, the touch-target gate (UI protocol §14), as on the
-                    // contact page. A known channel wears its brand ground; an
-                    // uploaded icon or an unknown one stands on a card, since
-                    // the picture may be transparent and a brand colour would
-                    // be one the editor did not choose.
-                    className={`flex items-center justify-center overflow-hidden rounded-lg transition-transform duration-[var(--motion-duration-fast)] ease-[var(--motion-easing-standard)] hover:-translate-y-0.5 hover:translate-x-0.5 active:translate-x-0 active:translate-y-0 ${FOCUS} ${
-                      channel.icon
-                        ? `size-11 ${CARD}`
-                        : channel.known
-                          ? `size-11 ${channel.known.className}`
-                          : `min-h-11 min-w-11 ${CARD} px-3 text-label font-bold text-[color:var(--color-text-primary)]`
-                    }`}
-                  >
-                    {channel.icon ? (
-                      // The editor's own artwork, whole: `object-contain` so a
-                      // logo that is not square is shown entire.
-                      <Image
-                        src={channel.icon.file.url}
-                        alt=""
-                        width={44}
-                        height={44}
-                        unoptimized={isExternalMedia(channel.icon.file.url)}
-                        aria-hidden="true"
-                        className="size-11 object-contain"
-                      />
-                    ) : channel.known ? (
-                      // X and TikTok export as complete button artwork rather
-                      // than a glyph, so they fill the button; the rest are
-                      // glyphs on a brand-coloured ground.
-                      <Image
-                        src={channel.known.icon}
-                        alt=""
-                        width={channel.known.fullBleed ? 44 : 20}
-                        height={channel.known.fullBleed ? 44 : 20}
-                        aria-hidden="true"
-                        className={
-                          channel.known.fullBleed
-                            ? "size-11 object-cover"
-                            : "size-5 object-contain"
-                        }
-                      />
-                    ) : (
-                      <span aria-hidden="true">{channel.name.slice(0, 2)}</span>
-                    )}
-                  </a>
+                  {/* The footer's own shell — `radius.lg` and its nudge. The
+                      44px target, the artwork and the external-link semantics
+                      are the shared component's, identical to the contact
+                      page's and the newsroom sidebar's. */}
+                  <SocialChannelLink
+                    channel={channel}
+                    className="rounded-lg transition-transform duration-[var(--motion-duration-fast)] ease-[var(--motion-easing-standard)] hover:-translate-y-0.5 hover:translate-x-0.5 active:translate-x-0 active:translate-y-0"
+                  />
                 </li>
               ))}
             </ul>
