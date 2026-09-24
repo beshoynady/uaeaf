@@ -41,6 +41,15 @@ Read onto the twelve pages:
 | black | contact-us, plus the site footer | §3.34.2's one row naming a flat dark hero acceptable "for this category specifically" |
 | neutral | news, athletes, clubs, coaches, disciplines, albums, videos | §1.3 athletes; §3.34.2 gives News/Media a neutral background in as many words |
 
+
+> **Row added by ADR-0098 A28 (2026-09-24).**
+>
+> | Register | Page | Basis |
+> | --- | --- | --- |
+> | green + red, per category | **regulations-and-policies** | The page carries two real document categories. ADR-0065 D3 requires colour per category and fixed — green for Regulations, red for Policies, applied to the card header and never to an individual card. §3.34.2's row for this page is amended to match (ADR-0098 A9) |
+>
+> The page ground stays neutral and the hero is the black register; the two category colours appear on card headers and one red CTA band at the foot. This is the thirteenth page, and it does not change any of the twelve assignments above.
+
 **Seven of twelve staying neutral is the correct outcome, not a shortfall.** §3.34.3's
 binding rule is that the identity MUST NOT be applied "in the same way or proportion on
 all pages". What changed from the state ADR-0059 diagnosed is that green no longer wins

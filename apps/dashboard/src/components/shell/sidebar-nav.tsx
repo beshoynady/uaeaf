@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState, type FocusEvent, type MouseEvent } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
-import { currentScreenHref, navScreens, type NavItem } from "@/lib/navigation";
+import { currentScreenHref, isWithin, navScreens, type NavItem } from "@/lib/navigation";
 import { NAV_ICON, UiIcon } from "@/lib/icons/ui-icons";
 import { navGroupsCookie } from "@/lib/shell/sidebar-preference";
 
@@ -163,7 +163,10 @@ export const SidebarNav = ({
       }}
     >
       {items.map((item) => {
-        if (item.children && item.children.length > 0) {
+        // A flat entry is drawn as one link even though it carries children:
+        // the children decide whether it is shown and where it points, and the
+        // rail inside its screens is the navigation between them.
+        if (!item.flat && item.children && item.children.length > 0) {
           // A group: its name, then its screens indented beneath it. The name is
           // not a link of its own, so the page the reader is on is marked once,
           // on the screen itself.
@@ -226,7 +229,10 @@ export const SidebarNav = ({
         }
         return (
           <div key={item.key} className="flex flex-col">
-            {renderLink(item, item.href === current)}
+            {/* A flat entry owning a family of addresses stays current across
+                all of them: the homepage entry must not stop looking current
+                when the rail moves the reader to another section. */}
+            {renderLink(item, item.href === current || (item.activePrefix !== undefined && isWithin(item.activePrefix, pathname)))}
           </div>
         );
       })}

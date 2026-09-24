@@ -96,9 +96,28 @@ describe("PATCH /api/admin/hero-slides/reorder", () => {
 });
 
 describe("PATCH /api/admin/page-sections/[id]", () => {
-  it("forwards the hero's settings, and nothing else about the section", async () => {
+  it("forwards a section's own settings, including whether it is drawn", async () => {
+    // `enabled`, `sectionTitle` and `sectionSubtitle` joined this route when
+    // the homepage video section got its editor: they belong to the row rather
+    // than to `configuration`, and that screen owns all three.
     const configuration = { playback: { autoplay: true, intervalMs: 7000 } };
     await SECTION(request({ configuration, enabled: false }), params({ id: ID }));
+
+    expect(forwardWrite).toHaveBeenCalledWith(`/page-sections/${ID}`, {
+      method: "PATCH",
+      body: { configuration, enabled: false },
+    });
+  });
+
+  it("never forwards what a section IS, only how it is set up", async () => {
+    // The guard this file has always carried, restated against the wider list:
+    // a settings screen may not move a section to another page, change its
+    // type, or reorder it. Those are identity, and no editor here owns them.
+    const configuration = { playback: { autoplay: true } };
+    await SECTION(
+      request({ configuration, page: "about", sectionType: "HERO", displayOrder: 99 }),
+      params({ id: ID }),
+    );
 
     expect(forwardWrite).toHaveBeenCalledWith(`/page-sections/${ID}`, { method: "PATCH", body: { configuration } });
   });

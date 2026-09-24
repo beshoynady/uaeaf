@@ -33,9 +33,10 @@ describe("navScreens", () => {
   it("offers no group as a destination of its own", () => {
     // A group's link is its first screen. Listed as well, the search would
     // offer "News" and "News list" as two results that open the same page.
+    // `homepage` is deliberately absent from this list: it stopped being a
+    // group on 2026-09-24 and is now a screen of its own.
     const keys = navScreens(NAV_ITEMS).map((screen) => screen.key);
     expect(keys).not.toContain("news");
-    expect(keys).not.toContain("homepage");
     expect(keys).not.toContain("usersAccess");
   });
 
@@ -225,8 +226,18 @@ describe("the homepage screens' grants and the API catalogue", () => {
   });
 });
 
-describe("the homepage group", () => {
-  // Everything one Save can send, and the two reads the screen opens with.
+describe("the homepage entry", () => {
+  /**
+   * One flat entry, no nested menu (owner decision 2026-09-24).
+   *
+   * It opens the hero, and the rail inside every `/homepage/*` screen is how a
+   * reader moves between sections. The nested menu could only list the six
+   * sections that have an editor; the rail lists all eight in the order the
+   * page draws them, the two news shelves and the sponsor strip included.
+   */
+
+  // Everything one Save on the hero screen can send, and the two reads it
+  // opens with.
   const editor = [
     { resourceType: "heroSlides", action: "Read" },
     { resourceType: "heroSlides", action: "Create" },
@@ -236,72 +247,68 @@ describe("the homepage group", () => {
     { resourceType: "pageSections", action: "Update" },
   ];
 
-  it("appears with its hero screen beneath it for someone who can edit the hero", () => {
+  it("opens the hero directly, with no nested menu", () => {
     const homepage = visibleNavItems(editor).find((entry) => entry.key === "homepage");
-    expect(homepage?.children?.map((child) => [child.key, child.href])).toEqual([["homepageHero", "/homepage/hero"]]);
+
+    expect(homepage?.href).toBe("/homepage/hero");
+    // It still carries its screens — that is what decides whether the entry is
+    // shown and where it points — but `flat` is what stops them being drawn as
+    // a menu.
+    expect(homepage?.flat).toBe(true);
   });
 
-  it("stays hidden from someone who can only read slides", () => {
-    expect(visibleNavItems([{ resourceType: "heroSlides", action: "Read" }]).map((entry) => entry.key)).not.toContain("homepage");
-  });
-
-  it("stays hidden from someone who can edit slides but not the hero's settings, which the screen saves too", () => {
-    const withoutSettings = editor.filter((grant) => grant.resourceType !== "pageSections");
-    expect(visibleNavItems(withoutSettings).map((entry) => entry.key)).not.toContain("homepage");
-  });
-
-  it("stays hidden from someone who can update slides but not add or delete them, which one Save may do", () => {
-    const withoutCreateOrDelete = editor.filter((grant) => grant.action !== "Create" && grant.action !== "Delete");
-    expect(visibleNavItems(withoutCreateOrDelete).map((entry) => entry.key)).not.toContain("homepage");
-  });
-
-  it("appears for someone who can only manage partners, with that one screen beneath it and linking to it", () => {
-    const homepage = visibleNavItems(HOMEPAGE_PARTNERS_GRANTS).find((entry) => entry.key === "homepage");
-    expect(homepage?.href).toBe("/homepage/partners");
-    expect(homepage?.children?.map((child) => child.key)).toEqual(["homepagePartners"]);
-  });
-
-  it("lists the screens in the homepage's own order for someone who holds every grant", () => {
-    const everything = [
-      ...HOMEPAGE_HERO_GRANTS,
-      ...HOMEPAGE_SPONSOR_STRIP_GRANTS,
-      ...HOMEPAGE_SPONSORS_GRANTS,
-      ...HOMEPAGE_PARTNERS_GRANTS,
-      ...HOMEPAGE_MEMBERSHIPS_GRANTS,
-      ...HOMEPAGE_FOOTER_GRANTS,
+  it("points at a section the reader can actually open, not always the hero", () => {
+    // A reader who can manage partners and nothing else would be sent to a
+    // hero screen that refuses them.
+    const partnersOnly = [
+      { resourceType: "partnerships", action: "Read" },
+      { resourceType: "partnerships", action: "Create" },
+      { resourceType: "partnerships", action: "Update" },
+      { resourceType: "partnerships", action: "Delete" },
     ];
-    const homepage = visibleNavItems(everything).find((entry) => entry.key === "homepage");
-    expect(homepage?.children?.map((child) => [child.key, child.href])).toEqual([
-      ["homepageHero", "/homepage/hero"],
-      ["homepageSponsorStrip", "/homepage/sponsor-strip"],
-      ["homepageSponsors", "/homepage/sponsors"],
-      ["homepagePartners", "/homepage/partners"],
-      ["homepageMemberships", "/homepage/memberships"],
-      // Last, as it is last on the page (ADR-0092 D12).
-      ["homepageFooter", "/homepage/footer"],
-    ]);
+
+    expect(visibleNavItems(partnersOnly).find((entry) => entry.key === "homepage")?.href).toBe("/homepage/partners");
   });
 
-  it("opens the footer screen to someone who can change the site settings, and links the group to it", () => {
-    const homepage = visibleNavItems(HOMEPAGE_FOOTER_GRANTS).find((entry) => entry.key === "homepage");
-    expect(homepage?.href).toBe("/homepage/footer");
-    expect(homepage?.children?.map((child) => child.key)).toEqual(["homepageFooter"]);
+  it("is a destination in its own right, unlike a group", () => {
+    // A group is excluded from `navScreens` because its link duplicates its
+    // first child. This is not a group, so the command palette should offer
+    // it.
+    expect(navScreens(NAV_ITEMS).map((screen) => screen.key)).toContain("homepage");
   });
 
-  it("keeps the footer screen hidden from someone who can read the site settings but not change them", () => {
-    const readOnly = HOMEPAGE_FOOTER_GRANTS.filter((grant) => grant.action === "Read");
-    expect(visibleNavItems(readOnly).map((entry) => entry.key)).not.toContain("homepage");
+  it("appears for someone who can manage only one section", () => {
+    // The entry is shown when ANY section editor is reachable, so it never
+    // lands on a refusal. Partners alone is enough.
+    const partnersOnly = [
+      { resourceType: "partnerships", action: "Read" },
+      { resourceType: "partnerships", action: "Create" },
+      { resourceType: "partnerships", action: "Update" },
+      { resourceType: "partnerships", action: "Delete" },
+    ];
+
+    expect(visibleNavItems(partnersOnly).map((entry) => entry.key)).toContain("homepage");
   });
 
-  it("keeps the sponsors screen hidden from someone who can edit sponsors but not the section's banner and call to action, which its Save writes too", () => {
-    const withoutSection = HOMEPAGE_SPONSORS_GRANTS.filter((grant) => grant.resourceType !== "pageSections");
-    const children = visibleNavItems(withoutSection).find((entry) => entry.key === "homepage")?.children ?? [];
-    expect(children.map((child) => child.key)).not.toContain("homepageSponsors");
+  it("stays hidden from someone who can open no section editor at all", () => {
+    expect(visibleNavItems([{ resourceType: "heroSlides", action: "Read" }]).map((entry) => entry.key)).not.toContain(
+      "homepage",
+    );
   });
 
-  it("keeps the memberships screen hidden from someone who can update memberships but not add or delete them", () => {
-    const partial = HOMEPAGE_MEMBERSHIPS_GRANTS.filter((grant) => grant.action === "Read" || grant.action === "Update");
-    expect(visibleNavItems(partial).map((entry) => entry.key)).not.toContain("homepage");
+  it("keeps the footer out of the homepage entry and gives it its own", () => {
+    // The footer is on every page of the site, so ordering or hiding it "on
+    // the homepage" is not a thing the platform can express — the sections
+    // list excludes it for the same reason. It is a screen of its own.
+    const footerOnly = [
+      { resourceType: "siteSettings", action: "Read" },
+      { resourceType: "siteSettings", action: "Update" },
+    ];
+    const items = visibleNavItems(footerOnly);
+    const footer = items.find((entry) => entry.key === "homepageFooter");
+
+    expect(footer?.href).toBe("/homepage/footer");
+    expect(items.find((entry) => entry.key === "homepage")).toBeUndefined();
   });
 });
 

@@ -1,0 +1,355 @@
+/**
+ * The video system's dark register.
+ *
+ * -- Why these are variables and not design tokens --------------------------
+ *
+ * The owner took this section and its pages out of the design system's colour
+ * rules by decision on 2026-09-23, without an ADR. That grant is for this
+ * system only, so the values it needs live scoped to `.video-system` rather
+ * than in `packages/design-tokens`: a token is a promise to the whole site,
+ * and nothing outside this system has agreed to a #0A0C0B ground.
+ *
+ * Everything the system does share it still takes from the tokens -- the
+ * Alexandria stack, the focus ring, the motion durations -- so a reader who
+ * asks for reduced motion or a larger focus indicator gets it here too.
+ *
+ * Contrast for every pair below is computed, not assumed: see
+ * `contrast.spec.ts`, which fails rather than reports.
+ */
+
+.video-system {
+  /* Grounds. `--vs-bg` is the page behind the section; the two surfaces are
+     the card and the raised control on top of it. */
+  --vs-bg: #0a0c0b;
+  --vs-surface: #121614;
+  --vs-surface-raised: #1a1f1c;
+  --vs-hairline: rgba(255, 255, 255, 0.09);
+
+  /* Inks. */
+  --vs-text: #f3f5f2;
+  --vs-text-secondary: #a7afaa;
+  --vs-text-muted: #8a938d;
+
+  /* The one accent. Green is the federation's; on this ground it is the
+     colour of an action, never of a decoration. */
+  --vs-green: #2bd46e;
+  --vs-on-green: #06120b;
+
+  /* Live. Red appears only while a broadcast is running -- it is a state, not
+     a palette entry, which is why nothing at rest uses it. */
+  --vs-live: #d11a27;
+  --vs-live-ink: #ffffff;
+
+  /* Radii, as the approved design draws them. */
+  --vs-radius-card: 14px;
+  --vs-radius-player: 22px;
+  --vs-radius-reel: 18px;
+  --vs-radius-pill: 999px;
+
+  color-scheme: dark;
+  background-color: var(--vs-bg);
+  color: var(--vs-text);
+}
+
+/* -- Motion -----------------------------------------------------------------
+   Every animation below is `transform` and `opacity` only, so the compositor
+   does the work and no frame costs layout (ADR-0009). Each runs once, except
+   the two that are invitations rather than entrances. `prefers-reduced-motion`
+   collapses all of them to a fade of at most 150ms, which is the brief's
+   ruling and not a per-component choice. */
+
+/* The featured image's slow push in, once, on entry: 1.09 to 1 over 16s. On
+   the image itself rather than a wrapper, because a transform on the wrapper
+   would scale the rounded corners with it. */
+.vs-kenburns {
+  animation: vs-kenburns 16s cubic-bezier(0.16, 0.8, 0.24, 1) both;
+  will-change: transform;
+}
+
+@keyframes vs-kenburns {
+  from {
+    transform: scale(1.09);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* One pass of light across the backdrop, once. A pseudo-element, so the image
+   underneath is untouched. */
+.vs-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.11) 50%, transparent 62%);
+  transform: translateX(-130%);
+  animation: vs-sheen 2.6s 0.5s cubic-bezier(0.16, 0.8, 0.24, 1) both;
+}
+
+/* The start edge is reading-direction relative: in Arabic the light travels
+   the other way, as the eye does. */
+[dir="rtl"] .vs-sheen::after {
+  transform: translateX(130%);
+  animation-name: vs-sheen-rtl;
+}
+
+@keyframes vs-sheen {
+  to {
+    transform: translateX(130%);
+  }
+}
+
+@keyframes vs-sheen-rtl {
+  to {
+    transform: translateX(-130%);
+  }
+}
+
+/* Two rings leaving the play button, one after the other. */
+.vs-pulse-ring {
+  animation: vs-pulse 2.8s cubic-bezier(0.16, 0.8, 0.24, 1) infinite;
+}
+
+.vs-pulse-ring.vs-pulse-second {
+  animation-delay: 0.7s;
+}
+
+@keyframes vs-pulse {
+  from {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  to {
+    transform: scale(1.65);
+    opacity: 0;
+  }
+}
+
+/* The live dot, every 1.8s. */
+.vs-live-dot {
+  animation: vs-live-dot 1.8s ease-in-out infinite;
+}
+
+@keyframes vs-live-dot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.78);
+  }
+}
+
+/* The red frame around a running broadcast, breathing with the dot so the two
+   read as one state rather than two effects. A `box-shadow` rather than a
+   border, so the player's geometry does not move. */
+.vs-live-frame {
+  animation: vs-live-frame 1.8s ease-in-out infinite;
+}
+
+@keyframes vs-live-frame {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px var(--vs-live),
+      0 0 34px -6px color-mix(in srgb, var(--vs-live) 70%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px var(--vs-live),
+      0 0 52px -2px color-mix(in srgb, var(--vs-live) 85%, transparent);
+  }
+}
+
+/* A card's entrance: 28px up with a fade, staggered 100ms, once on entry.
+   `--vs-reveal-index` is set by the reveal script in document order, which is
+   reading order in either language. */
+.vs-rise[data-vs-reveal="waiting"] {
+  opacity: 0;
+  transform: translateY(28px);
+}
+
+.vs-rise[data-vs-reveal="in"] {
+  animation: vs-rise 1s cubic-bezier(0.16, 0.8, 0.24, 1) both;
+  animation-delay: calc(var(--vs-reveal-index, 0) * 100ms);
+}
+
+@keyframes vs-rise {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* A heading arriving one word at a time. `CinematicHeading` wraps the words
+   and sets each one's index. */
+.vs-word {
+  display: inline-block;
+  opacity: 0;
+  filter: blur(6px);
+  transform: translateY(0.5em);
+  animation: vs-word 0.9s cubic-bezier(0.16, 0.8, 0.24, 1) both;
+  animation-delay: calc(var(--vs-word-index, 0) * 100ms);
+}
+
+@keyframes vs-word {
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+/* The skeleton's shimmer. */
+.vs-skeleton {
+  background: linear-gradient(
+    100deg,
+    var(--vs-surface) 40%,
+    color-mix(in srgb, var(--vs-surface-raised) 70%, var(--vs-text) 4%) 50%,
+    var(--vs-surface) 60%
+  );
+  background-size: 300% 100%;
+  animation: vs-shimmer 1.6s linear infinite;
+}
+
+@keyframes vs-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* The carousel's rail. `scroll-snap` rather than a transform track: the rail
+   then scrolls with a finger, a trackpad, a scrollbar and the arrow keys
+   without any of those being implemented, and the scrollbar is hidden because
+   the arrows and dots are the affordance the design draws. */
+.vs-rail {
+  /* How many cards stand in the rail. The fraction is the peek: the next card
+     showing at the edge is what tells a reader the row continues -- without
+     it, four cards in a viewport look like four cards in total. Expressed as
+     the card's own width rather than as trailing padding, so the snap point
+     stays on the card's leading edge. */
+  --vs-visible: 1.12;
+
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - (var(--vs-visible) - 1) * 1rem) / var(--vs-visible));
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-inline: contain;
+}
+
+@media (min-width: 640px) {
+  .vs-rail {
+    --vs-visible: 2.15;
+  }
+}
+
+@media (min-width: 1024px) {
+  .vs-rail {
+    --vs-visible: 3.25;
+  }
+}
+
+/* Four cards and a peek -- the approved desktop composition. */
+@media (min-width: 1280px) {
+  .vs-rail {
+    --vs-visible: 4.2;
+  }
+}
+
+/*
+ * The reels shelf holds more per row than the landscape rail, because a 9:16
+ * card at a landscape card's width would be almost a metre tall on a desktop
+ * screen: at 1440 a 560px-wide reel stands 995px, taller than the viewport.
+ * Its own counts, on the same variable, so the rail mechanics are unchanged.
+ */
+.vs-rail-reels {
+  --vs-visible: 2.3;
+}
+
+@media (min-width: 640px) {
+  .vs-rail-reels {
+    --vs-visible: 3.4;
+  }
+}
+
+@media (min-width: 1024px) {
+  .vs-rail-reels {
+    --vs-visible: 5.4;
+  }
+}
+
+@media (min-width: 1280px) {
+  .vs-rail-reels {
+    --vs-visible: 6.4;
+  }
+}
+
+.vs-rail::-webkit-scrollbar {
+  display: none;
+}
+
+.vs-rail > * {
+  scroll-snap-align: start;
+}
+
+/* -- The one stop -----------------------------------------------------------
+   Chapter 5 and the brief both require motion to stop completely for a reader
+   who asks for it. Everything above becomes a fade of at most 150ms with no
+   transform, no blur and no loop. Written once, here, rather than guarded in
+   nine components: a rule each component is trusted to remember is a rule one
+   of them eventually forgets. */
+
+@keyframes vs-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .video-system .vs-kenburns,
+  .video-system .vs-sheen::after,
+  .video-system .vs-pulse-ring,
+  .video-system .vs-live-dot,
+  .video-system .vs-live-frame,
+  .video-system .vs-skeleton {
+    animation: none !important;
+  }
+
+  .video-system .vs-sheen::after {
+    display: none;
+  }
+
+  /* The rings are an invitation the reader declined. The button itself keeps
+     its shape, so nothing about the affordance is lost. */
+  .video-system .vs-pulse-ring {
+    opacity: 0;
+  }
+
+  .video-system .vs-live-frame {
+    box-shadow: 0 0 0 1px var(--vs-live);
+  }
+
+  .video-system .vs-rise[data-vs-reveal="waiting"] {
+    transform: none;
+  }
+
+  .video-system .vs-rise[data-vs-reveal="in"],
+  .video-system .vs-word {
+    animation: vs-fade 150ms linear both !important;
+    animation-delay: 0ms !important;
+    filter: none;
+    transform: none;
+  }
+}

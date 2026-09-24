@@ -127,6 +127,22 @@ function ToastItem({
         ) : null}
       </div>
 
+      {/* The one thing to do about it, beside the news of it. Pressing it
+          dismisses the toast: the offer has been taken, and leaving it up
+          invites taking it twice. */}
+      {record.action ? (
+        <button
+          type="button"
+          onClick={() => {
+            record.action?.onAction();
+            onDismiss();
+          }}
+          className="shrink-0 self-center rounded-[var(--radius-sm)] px-3 py-2 text-label font-semibold text-[color:var(--color-brand-primary)] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--a11y-focus-ring)]"
+        >
+          {record.action.label}
+        </button>
+      ) : null}
+
       <button type="button" onClick={onDismiss} aria-label={t("dismiss")} className={BUTTON_ICON}>
         <svg
           aria-hidden="true"

@@ -7,7 +7,7 @@ import { SelectField } from "@/components/ui/select-field";
 import { TextField } from "@/components/auth/text-field";
 import { BUTTON_ICON, TOGGLE_SEGMENT } from "@/components/ui/interactive";
 import { ApprovalFlow } from "@/components/admin/approval-flow";
-import { SwitchField } from "@/components/admin/homepage-hero/switch-field";
+import { SwitchField } from "@/components/ui/switch-field";
 import { UiIcon } from "@/lib/icons/ui-icons";
 import {
   APPROVAL_MODES,

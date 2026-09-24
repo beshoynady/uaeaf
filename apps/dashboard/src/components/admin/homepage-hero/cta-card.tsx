@@ -8,7 +8,7 @@ import { TextField } from "@/components/auth/text-field";
 import type { CtaDraft, FieldError } from "@/lib/admin/homepage-hero";
 import { errorAt, fieldMessage } from "./field-errors";
 import { LocalizedTextPair } from "./localized-text-pair";
-import { SwitchField } from "./switch-field";
+import { SwitchField } from "@/components/ui/switch-field";
 
 /**
  * One of a slide's two buttons.

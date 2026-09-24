@@ -85,6 +85,28 @@ export interface ToastSpec {
   eventId?: string;
   /** Milliseconds, or `null` to stay until dismissed. Defaults by tone. */
   duration?: number | null;
+  /**
+   * One thing the reader can do about what just happened, offered inside the
+   * message that reports it.
+   *
+   * Added for undo, which is the case a toast is uniquely right for: the act
+   * already happened, the reader is looking at the confirmation, and the
+   * reversal belongs in the same place as the news of it. Optional, so every
+   * existing toast is unchanged.
+   *
+   * It is NOT a general action slot. A toast is transient and can be
+   * dismissed, deduplicated or dropped from a full queue, so anything the
+   * reader MUST be able to do has to exist somewhere else as well; only an
+   * offer they can afford to miss belongs here.
+   */
+  action?: ToastAction;
+}
+
+export interface ToastAction {
+  label: string;
+  /** Run on press. The toast dismisses itself afterwards — the offer has been
+   *  taken, so leaving it on screen would invite taking it twice. */
+  onAction: () => void;
 }
 
 export interface ToastRecord extends Omit<ToastSpec, "duration"> {

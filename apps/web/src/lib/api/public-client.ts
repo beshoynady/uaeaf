@@ -42,7 +42,21 @@ export const PUBLIC_REVALIDATE_SECONDS = 60;
  *  page that never renders. */
 const TIMEOUT_MS = 4000;
 
-export async function fetchPublic<T>(path: string): Promise<T | null> {
+/**
+ * `tags` labels a read so it can be invalidated by name as well as by time.
+ *
+ * Nothing calls `revalidateTag` today, and that is deliberate rather than
+ * unfinished: the dashboard and this site are two Next applications in two
+ * processes, so a tag revalidated in one cannot reach the other's cache. A
+ * bridge between them — a webhook, a shared secret, a route on this app — is
+ * infrastructure the video work had no mandate to build, and the freshness
+ * requirement it would serve (≤60 seconds) is already met by
+ * `PUBLIC_REVALIDATE_SECONDS`.
+ *
+ * The labels are applied anyway so that the day the bridge exists, it is one
+ * call and no read has to be found and tagged first.
+ */
+export async function fetchPublic<T>(path: string, tags?: readonly string[]): Promise<T | null> {
   const url = `${API_URL}${PREFIX}${path}`;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
@@ -51,7 +65,7 @@ export async function fetchPublic<T>(path: string): Promise<T | null> {
     const response = await fetch(url, {
       signal: controller.signal,
       headers: { accept: "application/json" },
-      next: { revalidate: PUBLIC_REVALIDATE_SECONDS },
+      next: { revalidate: PUBLIC_REVALIDATE_SECONDS, ...(tags ? { tags: [...tags] } : {}) },
     });
 
     // A singleton page that has never been saved returns 404, which is a

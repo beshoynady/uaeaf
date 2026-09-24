@@ -12,7 +12,7 @@ import { CtaCard } from "./cta-card";
 import { errorAt, fieldMessage } from "./field-errors";
 import { HeroImageField } from "./hero-image-field";
 import { LocalizedTextPair } from "./localized-text-pair";
-import { SwitchField } from "./switch-field";
+import { SwitchField } from "@/components/ui/switch-field";
 
 /**
  * The editor for one slide, in four sections: text, buttons, pictures,

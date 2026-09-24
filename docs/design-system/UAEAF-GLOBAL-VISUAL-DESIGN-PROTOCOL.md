@@ -53,6 +53,14 @@ UAEAF uses a restrained three-color brand identity: **Green `#00843D`**, **Red `
 
 This is formally codified as **ADR-0050** (`03-Design-Tokens.md` §3.34) — that ADR is the binding token-level implementation of this section.
 
+> **Two corrections, 2026-09-24 (ADR-0098 A23).**
+>
+> **1. The numeric ratio above was superseded sixteen days ago and this file was never updated.** ADR-0051 (`03-Design-Tokens.md` §3.35.1) replaced the 70–80 / 15–20 / ≤5 target with a qualitative hierarchy — *neutral is the dominant foundation, brand is subordinate but significant, semantic is conditional only, and no percentage is treated as a budget* — and ADR-0059 D1 retired it again at region scale in favour of the guide's own logic: **colour marks what a region is.** Read the ratio above as historical context, not as a live rule. What is live: §3.34.2 (per-page colour personality), §3.34.3 (the binding qualitative rule), ADR-0060 D1 (register per page), and ADR-0065 D2 (role per element).
+>
+> **2. Red as a full-bleed ground is no longer exceptional, within limits.** *"Red MUST NOT become a dominant decorative background without a specifically justified art-direction reason"* stands as written — and ADR-0059 D2 supplies the justification once, structurally, on the guide's own evidence (§6.1 shows the logo on white, red, green and black grounds as four official options). The limits are: the red register is assigned per page by ADR-0060 D1, not chosen per section; at most one full red section per three to four sections on a page; and a red section may never abut a green one without `color.section.adjacent-separator` (they measure 1.15:1 from each other).
+>
+> **3. A third category of colour now exists.** Beside role colour (ADR-0065 R1) and categorical colour (D3), **identity colour** (ADR-0098 D1 R3) is colour that encodes nothing and states only that the surface belongs to this federation. It is admissible only as a bounded edge, rule, ring or full surface; never where an encoding colour is expected; and never as a single green or red mark standing alone.
+
 ## 6. Visual Composition Philosophy
 
 Consistency MUST come from: typography · color · spacing · grid · components · tokens · interaction principles · photography direction · brand behavior — **not** from forcing every page into the same layout template.
@@ -115,6 +123,13 @@ Motion is part of the design language and must match the page personality:
 
 Every motion specification must define: trigger · property · duration · easing · delay · direction · reduced-motion behavior. Respect `prefers-reduced-motion` in production. **Never claim motion is implemented if it is only documented** — Figma cannot execute live motion; disclose that limitation explicitly every time.
 
+> **Extended by ADR-0098 D5 (2026-09-24).** Two **bounded rotation** roles join the vocabulary, both on the new `motion.duration.orbit` cycle period (Chapter 3 §3.14's eighth value):
+>
+> - **Hover rotation** — starts on pointer entry or `focus-within`, stops on exit. Public site only; prohibited in the dashboard (Chapter 12 §12.15.1).
+> - **Live rotation** — runs while a broadcast is live, stops when it ends. **At most one continuously rotating element in any view**, and only where a broadcast is actually live.
+>
+> Neither uses `ambient`, whose restriction and single authorised use are untouched. Under `prefers-reduced-motion: reduce` both rotations stop and **the border stays visible, static, at full strength** — the border is the affordance and the rotation is only emphasis, so removing the motion must never remove the mark. §15 (accessibility is never traded for aesthetics) is unamended and governs this.
+
 ## 14. Interaction & Component States
 
 Interactive components should use proper variants where appropriate: Default · Hover · Focus · Pressed · Active · Disabled. Minimum touch target: **44×44px**. Use the existing accessibility focus token (`a11y/focus/ring`). Avoid arbitrary interaction colors.
@@ -138,6 +153,12 @@ When a page needs a background, graphic, texture, decorative shape, or supportin
 Avoid: generic SaaS gradients · random blobs · meaningless 3D shapes · excessive glassmorphism · excessive neon · decorative noise · overuse of red · visual clutter.
 
 The approved decorative graphic device is the four-diagonal-line motif (Chapter 1 ADR-0005, "the moment of ascent") — implemented as the reusable Figma component `Brand Pattern / Diagonal Lines`. Prefer this over inventing a second decorative pattern language.
+
+> **Amended by ADR-0098 D2/D4 (2026-09-24).**
+>
+> *"Do NOT automatically default to a generic gradient"* stands — the word doing the work is **generic**. Three non-generic grounds are now governed and available, and a page chooses among them from its register assignment rather than inventing one: the **green and red identity registers** (a short ramp within one identity colour), **ink**, and the **mesh tint** (two radial gradients at low alpha in opposite corners — not a pattern, since it has no motif, repeat or edge, per Chapter 27 §25). What the "Avoid" list above still rejects is unchanged: an unbounded mesh in arbitrary hues, random blobs, meaningless 3D shapes, excessive glass, decorative noise, visual clutter.
+>
+> **The Figma component named above never existed.** ADR-0005's Consequences row promised a Chapter 8 "Brand Pattern" component in 2026-08; no `CMP-BRANDPATTERN-*` was ever added, and the string appears in none of the eight component chapters. It is discharged in code first, as `BrandStreaks` in the shared Brand UI Kit, with the Figma frame listed under ADR-0098 §11 PENDING FIGMA BACK-SYNC (Figma is read-only for this project at present). **The ascent angle does not mirror in RTL** — §9 above is absolute, and a mirrored take-off angle is a mirrored identity mark.
 
 ## 19. Page Creation Workflow
 

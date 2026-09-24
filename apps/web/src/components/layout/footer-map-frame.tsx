@@ -18,7 +18,16 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
  * Next.js supports has `IntersectionObserver` (Chrome, Edge and Firefox 111+,
  * Safari 16.4+). Without JavaScript the server's `<noscript>` carries the map.
  */
-export const FooterMapFrame = ({ className, children }: { className: string; children: ReactNode }) => {
+export const FooterMapFrame = ({
+  className,
+  testId = "footer-map-frame",
+  children,
+}: {
+  className: string;
+  /** The contact page draws the same frame and its own tests name it. */
+  testId?: string;
+  children: ReactNode;
+}) => {
   const frame = useRef<HTMLDivElement>(null);
   const [onScreen, setOnScreen] = useState(false);
 
@@ -36,7 +45,7 @@ export const FooterMapFrame = ({ className, children }: { className: string; chi
   }, []);
 
   return (
-    <div ref={frame} data-testid="footer-map-frame" className={className}>
+    <div ref={frame} data-testid={testId} className={className}>
       {onScreen ? children : <noscript>{children}</noscript>}
     </div>
   );

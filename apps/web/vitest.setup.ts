@@ -51,3 +51,27 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: vi.fn(),
   }),
 });
+
+/**
+ * jsdom implements no layout, so it ships no `ResizeObserver` — a component
+ * that watches its own box for a size change throws on mount, before it
+ * renders anything.
+ *
+ * The stub observes nothing and never fires, which is the truthful answer
+ * here: nothing in jsdom ever changes size, so a faithful implementation would
+ * also never call back. Components that read a measurement must therefore
+ * behave correctly with the one they start with — which is the property worth
+ * having anyway, since that is also what a real browser shows on first paint.
+ */
+class NoopResizeObserver implements ResizeObserver {
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
+}
+
+Object.defineProperty(window, "ResizeObserver", {
+  writable: true,
+  configurable: true,
+  value: NoopResizeObserver,
+});
+globalThis.ResizeObserver = NoopResizeObserver;

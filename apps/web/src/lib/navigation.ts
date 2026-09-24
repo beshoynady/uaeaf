@@ -138,9 +138,27 @@ export function navDestinations(items: readonly NavItem[] = PRIMARY_NAV): NavLea
   );
 }
 
-/** True when `item` is, or contains at any depth, the given path. */
+/**
+ * True when `path` is this destination, or somewhere beneath it.
+ *
+ * Whole segments, so "/media" is current on "/media/videos" but "/news" is
+ * NOT current on "/newsletter" — a prefix match on the raw string would make
+ * every page whose address merely starts with another's light up its link.
+ * The home route matches only itself, or it would be current everywhere.
+ */
+export const isWithin = (href: string, path: string): boolean =>
+  href === "/" ? path === "/" : path === href || path.startsWith(`${href}/`);
+
+/**
+ * True when `item` is, or contains at any depth, the given path.
+ *
+ * Descendants count (owner request 2026-09-23, Brief §5.18): a reader on a
+ * page below a menu destination is still in that part of the site, and a menu
+ * that says otherwise has lost them. "المركز الإعلامي" therefore stays current
+ * across every page under `/media`.
+ */
 export function containsPath(item: NavItem, path: string): boolean {
-  if (item.href === path) return true;
+  if (item.href && isWithin(item.href, path)) return true;
   return (item.children ?? []).some((child) => containsPath(child, path));
 }
 

@@ -53,8 +53,24 @@ export const readReorder = (body: unknown): Parsed<{ pageSectionId: string; slid
     ? { ok: true, body: { pageSectionId: body.pageSectionId, slideIds: body.slideIds } }
     : { ok: false };
 
-export const readSectionSettings = (body: unknown): Parsed<{ configuration: Record<string, unknown> }> =>
-  isRecord(body) && isRecord(body.configuration) ? { ok: true, body: { configuration: body.configuration } } : { ok: false };
+/**
+ * A section's own settings, as the homepage screens save them.
+ *
+ * `configuration` is required — it is what every one of these screens exists
+ * to write. The three beside it are optional and carried only when sent: the
+ * video section's editor owns its heading, its sub-heading and whether the
+ * section is drawn at all, and those are stored on the row rather than inside
+ * `configuration`. The hero screen sends none of them and is unchanged.
+ *
+ * A section's page, type and order stay absent: those are what a section *is*,
+ * and no settings screen has business changing them.
+ */
+const SECTION_FIELDS = ["enabled", "sectionTitle", "sectionSubtitle"] as const;
+
+export const readSectionSettings = (body: unknown): Parsed<Record<string, unknown>> =>
+  isRecord(body) && isRecord(body.configuration)
+    ? { ok: true, body: { configuration: body.configuration, ...pick(body, SECTION_FIELDS) } }
+    : { ok: false };
 
 /** A request body as JSON, or `undefined` when it is not JSON at all. */
 export const readJson = async (request: Request): Promise<unknown> => {

@@ -11,6 +11,16 @@ import type { ReactNode } from "react";
  * script; `role="switch"` tells a screen reader that it turns something on or
  * off rather than ticking an item in a list. The whole row is the target
  * (44px or more).
+ *
+ * -- Why it lives in `ui/` --------------------------------------------------
+ *
+ * It was `components/admin/homepage-hero/switch-field.tsx` while one screen
+ * used it, and stayed there while seven did -- the hero's three editors, the
+ * news policy detail, and the three sponsor-relations editors. A component
+ * seven unrelated screens import from one screen's folder reads as that
+ * screen's private part, which is how the eighth consumer ends up writing a
+ * raw checkbox instead. Moved unchanged, for the same reason and by the same
+ * precedent as `FormSection`; this is the same markup it always drew.
  */
 const SwitchFieldView = ({
   id,
@@ -19,6 +29,7 @@ const SwitchFieldView = ({
   onChange,
   hint,
   disabled = false,
+  labelHidden = false,
 }: {
   id: string;
   label: string;
@@ -26,13 +37,22 @@ const SwitchFieldView = ({
   onChange: (checked: boolean) => void;
   hint?: ReactNode;
   disabled?: boolean;
+  /**
+   * Keeps the accessible name and drops the visible one.
+   *
+   * For a switch inside a row that already names what it controls — a section
+   * in a list — where a visible label would say the same word twice. The name
+   * is never dropped, only hidden: a switch announced as just "switch" tells a
+   * screen-reader user nothing about which of nine sections it turns off.
+   */
+  labelHidden?: boolean;
 }) => (
   <div className="flex flex-col gap-1">
     <label
       htmlFor={id}
       className="flex min-h-11 cursor-pointer items-center justify-between gap-4 rounded-[var(--radius-md)] px-1 text-label font-medium text-[color:var(--color-text-primary)] has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-[var(--opacity-disabled)]"
     >
-      <span>{label}</span>
+      <span className={labelHidden ? "sr-only" : undefined}>{label}</span>
       <input
         id={id}
         type="checkbox"

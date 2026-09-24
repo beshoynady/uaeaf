@@ -11,14 +11,27 @@ export interface Column<T> {
 }
 
 /**
- * The one table used across the admin screens.
+ * The admin list table.
  *
  * The wrapper scrolls horizontally rather than the page: CLAUDE.md §25
- * treats overflow as a visual regression, and a wide permissions table on a
- * narrow window is exactly where that happens. `<caption>` carries the
- * accessible name so the table is announced as what it lists.
+ * treats overflow as a visual regression, and a wide table in a narrow window
+ * is exactly where that happens. `<caption>` carries the accessible name so
+ * the table is announced as what it lists.
+ *
+ * -- The scroll container is focusable, and that is deliberate --------------
+ *
+ * A region that scrolls only by pointer cannot be reached by a keyboard at
+ * all: at phone width every column after the first is off-screen, and without
+ * a tab stop there is no key that brings them back (WCAG 2.1.1). So the
+ * wrapper takes `tabIndex={0}` and a name, which is what makes the arrow keys
+ * scroll it.
+ *
+ * Unconditionally, rather than only when it overflows. Measuring would make
+ * this a client component to add or remove one tab stop, and a stop on a
+ * table that happens to fit costs a keyboard user one Tab — while the missing
+ * stop costs them the rest of the row.
  */
-export function DataTable<T>({
+export const DataTable = <T,>({
   caption,
   columns,
   rows,
@@ -30,7 +43,7 @@ export function DataTable<T>({
   rows: readonly T[];
   rowKey: (row: T) => string;
   empty: string;
-}) {
+}) => {
   if (rows.length === 0) {
     return (
       <p className="rounded-[var(--radius-md)] border border-dashed border-[color:var(--color-border-default)] px-6 py-10 text-center text-body-sm text-[color:var(--color-text-muted)]">
@@ -40,7 +53,12 @@ export function DataTable<T>({
   }
 
   return (
-    <div className="overflow-x-auto rounded-[var(--radius-md)] border border-[color:var(--color-border-default)]">
+    <div
+      role="region"
+      aria-label={caption}
+      tabIndex={0}
+      className="overflow-x-auto rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--a11y-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--a11y-focus-offset)]"
+    >
       <table className="w-full border-collapse text-start">
         <caption className="sr-only">{caption}</caption>
         <thead>
@@ -79,4 +97,4 @@ export function DataTable<T>({
       </table>
     </div>
   );
-}
+};

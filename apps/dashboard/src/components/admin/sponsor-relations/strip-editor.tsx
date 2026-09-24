@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { SwitchField } from "@/components/admin/homepage-hero/switch-field";
+import { SwitchField } from "@/components/ui/switch-field";
 import { SelectField } from "@/components/ui/select-field";
 import type { AppLocale } from "@/i18n/routing";
 import { stripRequests } from "@/lib/admin/sponsor-relations/relations-save";

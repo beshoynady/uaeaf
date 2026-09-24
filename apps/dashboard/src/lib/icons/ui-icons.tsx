@@ -186,6 +186,29 @@ const PATHS = {
       <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" />
     </g>
   ),
+  "grip-vertical": (
+    <g>
+      <circle cx="9" cy="6" r="1" />
+      <circle cx="9" cy="12" r="1" />
+      <circle cx="9" cy="18" r="1" />
+      <circle cx="15" cy="6" r="1" />
+      <circle cx="15" cy="12" r="1" />
+      <circle cx="15" cy="18" r="1" />
+    </g>
+  ),
+  video: (
+    <g>
+      <path d="m16 13 5.2 3.1a.5.5 0 0 0 .8-.4V8.3a.5.5 0 0 0-.8-.4L16 11" />
+      <rect width="14" height="12" x="2" y="6" rx="2" />
+    </g>
+  ),
+  "more-horizontal": (
+    <g>
+      <circle cx="12" cy="12" r="1" />
+      <circle cx="19" cy="12" r="1" />
+      <circle cx="5" cy="12" r="1" />
+    </g>
+  ),
   "chevron-right": <path d="m9 18 6-6-6-6" />,
   "chevron-down": <path d="m6 9 6 6 6-6" />,
   plus: (
@@ -247,6 +270,9 @@ export const NAV_ICON: Record<string, UiIconName> = {
   homepagePartners: "building-2",
   homepageMemberships: "badge-check",
   homepageFooter: "panel-bottom",
+  homepageVideo: "video",
+  videos: "video",
+  homepage: "layout-dashboard",
 };
 
 export const UiIcon = ({ name, className }: { name: UiIconName; className?: string }) => (

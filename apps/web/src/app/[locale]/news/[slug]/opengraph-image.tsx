@@ -15,8 +15,9 @@ import { coverPlaceholder } from "@/lib/news/cover-placeholder";
  * rule for this batch is that no public surface shows a hole, and a share card
  * is a public surface.
  *
- * So one address answers for every article: the cover if there is one, the
- * generated placeholder if there is not, always at the right size.
+ * So one address answers for every article: the editor's chosen share picture
+ * (`seo.ogImageId`) if there is one, the cover if there is not, the generated
+ * placeholder if there is neither — always at the right size.
  *
  * ── Why there is no text in it ─────────────────────────────────────────────
  *
@@ -63,14 +64,25 @@ const OgImage = async ({ params }: { params: Promise<{ locale: string; slug: str
     return new ImageResponse(<div style={{ width: "100%", height: "100%", background: REGISTER_HEX.green.from }} />, size);
   }
 
-  const covers = await fetchPublicMedia([article.coverMediaId]);
-  const cover = article.coverMediaId ? covers.get(article.coverMediaId) : undefined;
+  // `seo.ogImageId` first, the cover second. The share card is the one picture
+  // chosen for an audience that has not opened the article — a cover cropped
+  // for the page can lose its subject at 1200×630, and an editor who set the
+  // field meant it to win. Until now the field was written by the editor,
+  // stored by the API and read by nobody: the cover was always used.
+  //
+  // Both ids are resolved, not just the winner: an `ogImageId` pointing at an
+  // asset that is gone or unpublished falls through to the cover rather than
+  // to the placeholder, which would be a worse card than the one this article
+  // already had.
+  const media = await fetchPublicMedia([article.seo?.ogImageId ?? null, article.coverMediaId]);
+  const resolve = (id: string | null | undefined) => (id ? media.get(id) : undefined);
+  const picture = resolve(article.seo?.ogImageId) ?? resolve(article.coverMediaId);
 
-  if (cover) {
+  if (picture) {
     return new ImageResponse(
       (
         <img
-          src={cover.file.url}
+          src={picture.file.url}
           alt=""
           width={size.width}
           height={size.height}

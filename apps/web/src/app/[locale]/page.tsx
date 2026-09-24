@@ -7,11 +7,13 @@ import { OrganizationsSection } from "@/components/pages/home/sponsors/organizat
 import { SponsorStrip } from "@/components/pages/home/sponsors/sponsor-strip";
 import { HomeNewsSection } from "@/components/pages/home/news-section";
 import { MediaCoverageSection } from "@/components/pages/home/media-coverage-section";
+import { HomeVideoSection } from "@/components/pages/home/video-section";
 import { SponsorsSection } from "@/components/pages/home/sponsors/sponsors-section";
 import { STRIP_DEFAULTS } from "@uaeaf/content/sponsors";
 import { loadHomepage, readNextEvent, readPlayback } from "@/lib/pages/homepage";
 import { loadSponsorRelations } from "@/lib/pages/sponsor-relations";
 import { loadHomepageNews } from "@/lib/pages/homepage-news";
+import { loadThumbnails, loadVideoSection } from "@/lib/video/load";
 import { buildMetadata } from "@/lib/seo/metadata";
 
 /**
@@ -100,10 +102,29 @@ const HomePage = async ({ params }: { params: Promise<{ locale: AppLocale }> }) 
   // Both loaders take the same composed sections and each fetches only for
   // the shelves actually on the page, so a homepage without one of them makes
   // none of its requests.
-  const [relations, news] = await Promise.all([
+  // Each loader fetches only for the shelves actually on the page, the video
+  // section included: a homepage composed without a VIDEO_LIBRARY row makes
+  // neither of its two reads.
+  const hasVideoSection = sections.some((section) => section.sectionType === "VIDEO_LIBRARY");
+  const [relations, news, videoSection] = await Promise.all([
     loadSponsorRelations(sections),
     loadHomepageNews(sections),
+    // One read that already knows whether a broadcast is running, which is why
+    // the section needs no second request and no client-side check.
+    hasVideoSection ? loadVideoSection() : null,
   ]);
+  // The broadcast rides along in the same read: it carries a `thumbnailId`
+  // like any video, and a second request for one picture would be a second
+  // round trip on the homepage's critical path.
+  const videoThumbnails = await loadThumbnails(
+    videoSection
+      ? [
+          ...videoSection.carousel.items,
+          ...(videoSection.featured ? [videoSection.featured] : []),
+          ...(videoSection.live ? [videoSection.live] : []),
+        ]
+      : [],
+  );
   const now = new Date();
 
   return (
@@ -138,6 +159,15 @@ const HomePage = async ({ params }: { params: Promise<{ locale: AppLocale }> }) 
           />
         ),
       )}
+
+      {/* The video section, after the newsroom shelves: both belong to the
+          Media Centre, and the approved homepage puts the video stage below
+          the stories rather than between them and the sponsor relations. It
+          draws nothing when the editor switched it off or there is nothing to
+          stage. */}
+      {videoSection ? (
+        <HomeVideoSection section={videoSection} thumbnails={videoThumbnails} locale={locale} />
+      ) : null}
 
       {relations.sections.map((section) =>
         section.sectionType === "SPONSORS" ? (

@@ -1,10 +1,11 @@
-import { useFormatter, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { CARD_INTERACTIVE_LG } from "@/components/ui/surface";
 import { CARD_LINK } from "@/components/ui/interactive";
 import { coverScrim, coverScrimFade } from "@uaeaf/content/hero";
 import { readingMinutes } from "@/lib/news/reading-time";
 import { ArticleCover } from "./cover";
+import { PublishDate } from "./publish-date";
 import { TopicBadge } from "./topic-badge";
 import type { ArticlePublic, MediaAssetPublic } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
@@ -63,7 +64,6 @@ export const FeaturedArticleCard = ({
   cover?: MediaAssetPublic;
 }) => {
   const t = useTranslations("News");
-  const format = useFormatter();
 
   return (
     <article className={`${CARD_INTERACTIVE_LG} relative grid overflow-hidden p-0`}>
@@ -114,9 +114,7 @@ export const FeaturedArticleCard = ({
         <div className="flex flex-wrap items-center gap-2 text-caption text-[color:var(--color-text-on-brand)]">
           {article.publishDate ? (
             <>
-              <time dateTime={article.publishDate}>
-                {format.dateTime(new Date(article.publishDate), { dateStyle: "long" })}
-              </time>
+              <PublishDate date={article.publishDate} />
               <span aria-hidden="true">·</span>
             </>
           ) : null}

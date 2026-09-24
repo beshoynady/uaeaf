@@ -8,7 +8,7 @@ import type { FieldError, NextEventDraft, PlaybackDraft } from "@/lib/admin/home
 import { errorAt, fieldMessage } from "./field-errors";
 import type { PreviewEventState } from "./hero-preview";
 import { LocalizedTextPair } from "./localized-text-pair";
-import { SwitchField } from "./switch-field";
+import { SwitchField } from "@/components/ui/switch-field";
 
 /**
  * The hero's two settings that are not slides: the next-event bar, typed by

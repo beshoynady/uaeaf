@@ -79,9 +79,12 @@ export const ArticleScreen = ({
             {article.title[locale]}
           </h1>
 
-          <p className="text-body-lg text-pretty text-[color:var(--color-text-secondary)]">
-            {article.excerpt[locale]}
-          </p>
+          {/* No standing excerpt here. The editor generates `excerpt` from the
+              article's opening paragraph, so on this page it read as the first
+              paragraph printed twice — once in the secondary tier and again in
+              the body a few lines below. It still carries the article
+              everywhere it summarises something the reader cannot see: the
+              listing cards, the share preview and the metadata description. */}
 
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-caption text-[color:var(--color-text-secondary)]">
             <span>

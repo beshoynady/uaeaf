@@ -109,6 +109,14 @@ A register exists to depart from the page. Pure black cannot depart from a near-
 
 **Alternative rejected:** `neutral-warm.800`. Better muted contrast (6.75) but only 1.46:1 separation from the page — legible, and not a section.
 
+> **Amended by ADR-0098 A27 (owner instruction, 2026-09-24) — the measurement is not deleted.**
+>
+> The Brand UI Kit specification fixes its ink surface at `#0B0B0B` in **every** theme, which reverses the decision above. Root `CLAUDE.md` §1 places an explicit current-task instruction above an ADR, so the owner's instruction governs — but the reason this ADR varied the register by theme does not stop being true: **pure black measures 1.12:1 against the dark page ground, which is no boundary at all.**
+>
+> The consequence is therefore recorded as a requirement rather than left to be rediscovered: wherever a fixed ink surface is used in dark theme, **its boundary MUST come from something that is not the surface value** — the tricolour accent edge, a border, or an adjacent register. A fixed ink section with no such cue is a defect under this ADR even though the surface value itself is authorised.
+>
+> Chapter 27 §20 adds a third position (a dark ground carries "the subtlest hint of green in the deep shadow tone", which `#0B0B0B` does not). The choice between the three — fix at `#0B0B0B` with the mandatory edge cue, keep this ADR's theme-variance, or fix at a near-black carrying the green whisper — is an **open owner decision** recorded in ADR-0098 §8.4 and is not settled by this note.
+
 ### The adjacency rule (new, and load-bearing)
 
 **Federation Green and Federation Red measure 1.15:1 against each other** at their register values (1.22:1 at their 500 values). Stacked as two full-bleed sections they have no visible boundary whatsoever — before considering that red/green is the classic confusion pair for roughly 8% of men.
@@ -116,6 +124,10 @@ A register exists to depart from the page. Pure black cannot depart from a near-
 The guide never abuts them either: in the four-stroke motif there is always white or black between.
 
 **Decision:** `color.section.adjacent-separator` is **mandatory** between a green and a red section. It is a token, not a sentence in a document, so the rule is discoverable where the mistake would be made.
+
+> **Reaffirmed and extended by ADR-0098 D2/D3 (2026-09-24).** This rule is inherited unchanged by every composition built from the Brand UI Kit. The kit's rhythm rule — "no two consecutive sections on the same surface" — does **not** license green beside red: the separator is not optional, and `SectionStack` (ADR-0060 D1.1) still inserts it by walking its children's registers.
+>
+> The same 1.15:1 measurement is also why **direct green→red blending is prohibited inside a gradient** (ADR-0098 D3): a two-stop green-to-red ramp puts the pair into one continuous field with no boundary anywhere in it, and passes through a brown that is in no part of the identity. The tricolour accent therefore always carries a middle stop — black on light grounds, white on dark — which is the same separation this decision made mandatory between sections, applied inside the ramp.
 
 ---
 

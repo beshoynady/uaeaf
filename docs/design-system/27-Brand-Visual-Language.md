@@ -123,6 +123,8 @@ Motion exists to **reveal**, never to decorate. Every animation must answer "wha
 - Autoplay video (Media Gallery redesign) is silent by default, always user-controllable, always respects `prefers-reduced-motion` by freezing on the single strongest frame rather than looping.
 - No decorative parallax, no gratuitous hover-bounce, no "modern web agency" micro-interaction clichés (magnetic buttons, cursor-follow blobs) — those undermine the "sovereign, precise" personality.
 
+> **Amended by ADR-0098 D5 (2026-09-24).** The two bounded rotations of `BrandBorder` are not within "gratuitous hover-bounce". The **hover** rotation starts on pointer entry or `focus-within` and stops on exit — it is interaction feedback with a boundary, not a flourish that outlives the interaction, and it is permitted on the public site only. The **live** rotation runs while a broadcast is live and stops when the broadcast ends; the interface does not choose when it stops, so **the motion ending is itself the information** — which is this section's own test ("what is this movement telling the viewer that stillness couldn't?") answered rather than evaded. At most one continuously rotating border renders in any view, and under `prefers-reduced-motion` both rotations stop while the border stays visible and static at full strength.
+
 ## 14. Hero Image Philosophy
 
 The hero is not a banner — it is **the single decisive frame that would work as a printed poster in the federation's headquarters lobby.** One subject, one moment, extreme production value, asymmetric composition with the Arabic headline treated as a co-equal graphic element overlapping the image (not floating politely above it in a safe zone). Never a carousel — a carousel signals "we couldn't decide," the opposite of creative conviction.
@@ -157,8 +159,14 @@ Federation-voice, not marketing-voice, across every caption and headline (alread
 ## 20. Background Treatment
 
 - Hero-tier: real photographic background, compressed to abstraction via shallow depth of field or extreme telephoto — never a flat color or gradient standing in for a photograph.
+
+> **Scoped by ADR-0098 A13 (2026-09-24).** The bullet above governs a hero that is *meant to be photographic*: a flat fill may not be pasted in where a photograph belongs. It does not govern an identity register used deliberately as a ground. ADR-0059 D2 restored those on the guide's own evidence — Guide §6.1 shows the logo on white, red, green and black grounds as four official options, and the guide uses coloured grounds on twelve of its own pages. A register ground is not a stand-in for a photograph; it is a different composition with a different job.
 - Utility sections (results, directories, forms): flat token-driven surface colors only (`color/surface/*`) — no photographic backgrounds where the content is data, per existing Chapter 3/7 discipline. This is already correct in the current build and should not change.
 - Dark sections (Hero, Media Gallery): near-black base, never pure `#000000` flat — always the subtlest hint of green in the deep shadow tone (already implemented in the Hero gradient; codify as the standard for all future dark-register sections).
+
+> **Bullet 2 above is deliberately left unamended by ADR-0098** — *"Utility sections (results, directories, forms): flat token-driven surface colors only … no photographic backgrounds where the content is data."* It is the strongest thing this chapter says about operational screens, and ADR-0098 D6 **promotes it into a hard prohibition** in Chapter 12 §12.15.1 rather than relaxing it: a form or a table never sits on a coloured or photographic surface, in either application. The dashboard login screen is not an exception — its coloured ground sits behind a neutral card, never under the fields.
+
+> **Open against bullet 3 — ADR-0098 §8.4, not settled here.** The `surface-ink` value approved for the Brand UI Kit is `#0B0B0B`, held fixed in every theme. It carries no green whisper, so it does not satisfy bullet 3 as written; and holding it fixed reverses ADR-0059 D2, which made the black register the only theme-varying one because pure black measures **1.12:1** against the dark page ground — *"no boundary at all."* The owner's instruction governs per root `CLAUDE.md` §1, and the consequence is recorded rather than hidden: wherever `surface-ink` is used in dark theme, **its boundary MUST come from something that is not the surface value** — the accent edge, a border, or an adjacent register. The choice between fixing the value, keeping ADR-0059 D2's theme-variance, and fixing it at a near-black that carries the green whisper is an owner decision recorded in ADR-0098 §8.4.
 
 ## 21. Color Grading
 
@@ -166,6 +174,8 @@ A specific, consistent grade — not "whatever the source photo looks like":
 - Slightly lifted blacks (true black reserved for UI chrome, not photography, so photography always feels like it has depth rather than crushing to void).
 - Warm highlights, cool-green shadows — this is the single most important grading instruction, because it's what makes UAEAF's photography feel like *one system* even when the subjects vary wildly (track, field, indoor, outdoor, day, night).
 - Desaturate everything except skin tones and the single Federation Green accent point per image (§3.1) — competitor/venue colors, sky, crowd clothing all pulled toward neutral so nothing competes with green.
+
+> **Amended by ADR-0098 (2026-09-24) — a documented deviation, with its reason. Colour photography is the default.** The heavy desaturation above, and the black-and-white treatment of §13.1, are retained as an **opt-in campaign-banner variant**, not as the standing grade. The reason is evidence rather than preference: this expressive layer was derived from fifteen published federation posts, and the federation's own published output is colour-forward. A grade that contradicts the brand's actual public voice makes the website look like a different organisation from its social channels. The rest of this section stands — lifted blacks, warm highlights and cool-green shadows remain the grade that makes the photography read as one system.
 
 ## 22. Contrast Rules
 
@@ -185,9 +195,15 @@ The **four-diagonal-line motif** (Chapter 1 ADR-0005) is promoted from decoratio
 - **Data/verification accent:** the "certified result" stamp/seal concept (from the prior creative review) is built from this same diagonal motif, not a separate graphic — one family of marks, not two competing systems.
 - **Never** used as a repeating background pattern at more than 5% opacity in any content-bearing area — its power comes from appearing at full strength in specific, rare, meaningful moments, not from being everywhere faintly.
 
+> **Scoped by ADR-0098 D4/A15 (2026-09-24).** The 5% cap governs the motif used as a **repeating field** behind content, and it is unchanged there. The kit's `BrandStreaks` is not a field: three bounded placements (`corner`, `behind-photo`, `cross-headline`), at most three per page, each a figure in a fixed position rather than a tiled texture — which is this section's own stated preference ("full strength in specific, rare, meaningful moments"), not an exception to it.
+
+> `BrandStreaks` also **discharges ADR-0005's Consequences row**, open since Chapter 1 was frozen: the Chapter 8 "Brand Pattern" component it promised was never built, and the string appears in none of the eight component chapters. **The ascent angle does not mirror in RTL** — Guide §9.1, and a mirrored take-off angle is a mirrored identity mark (`UAEAF-GLOBAL-VISUAL-DESIGN-PROTOCOL.md` §9). Placement follows reading direction through logical properties; the angle does not.
+
 ## 25. Pattern Language
 
 Beyond the diagonal motif, UAEAF has no secondary pattern system, deliberately — introducing a second decorative pattern language would dilute the one signature device. If a future section needs a "textured" feel, it should come from photography texture (§23) or the diagonal motif at a different scale, not a new pattern.
+
+> **Clarified by ADR-0098 D2/A16 (2026-09-24) — the prohibition stands and is not engaged.** The kit's **mesh** layer is not a second pattern language. A pattern has a motif, a repeat and an edge; the mesh has none of the three — it is two radial gradients at low alpha in opposite corners of a surface, a tint on a ground. It carries no figure a reader could recognise, so there is nothing in it that could compete with the diagonal for recognition. Its alpha is bounded by ADR-0098 D2 (very faint on a light ground, stronger on ink for a hero); outside those bands it is not admissible.
 
 ## 26. Image Framing System
 
@@ -202,6 +218,13 @@ Used sparingly and only for **functional legibility**, never decoratively: the e
 ## 28. Gradient Philosophy
 
 Gradients exist for exactly one purpose in this system: **scrims for text legibility over photography.** They are never used as decorative backgrounds, never as a substitute for photography, never as a "modern SaaS" colorful mesh-gradient background. The only approved gradient palette is near-black to transparent (or near-black with a whisper of green), consistent with §20/§21.
+
+> **Amended by ADR-0098 D2/D3/A17 (2026-09-24) — gradients have two purposes in this system, not one.** The second is the **identity register ground**: the green and red registers drawn as a short ramp within one identity colour (from its register step toward its own darker step), and the **tricolour accent** as a three-stop ramp confined to a 2–4px edge, a short rule, or a ring. Neither is a "colorful mesh-gradient background", and neither substitutes for a photograph. Guide §6.1 presupposes coloured grounds; this clause was the last place in the system that still read as forbidding them.
+>
+> Two constraints arrive with the amendment, and both are load-bearing:
+>
+> 1. **Direct green→red blending is prohibited.** Without a middle stop the ramp passes through a muddy brown that appears nowhere in the identity, and it puts the two colours ADR-0059 D2 measured at **1.15:1** from each other into one continuous field. The middle stop is black on light grounds and white on dark grounds; on a green or red ground every tricolour element becomes mono-white (Guide §6.1: on a coloured ground the mark is monochrome). As ADR-0059 D2 records, **the guide never abuts them either — in the four-stroke motif there is always white or black between.**
+> 2. **A gradient carrying text is measured at its lightest point.** That is §22's rule for scrims applied to surfaces, and it is why two of the three approved gradient values are listed as **open owner decisions** in ADR-0098 §8.2 and §8.3 rather than adopted: both start at a `500` step that carries white text with no room for a second text tier.
 
 ## 29. Shadow Language
 
@@ -252,6 +275,8 @@ The homepage should alternate between **big single-moment sections** (Hero, one-
 
 1. Restraint — fewer, larger, more confident gestures over many small decorations.
 2. Production value over trend-chasing — no glassmorphism-as-decoration, no neumorphism, no gratuitous gradient meshes; premium in this system means *editorial magazine*, not *2024 SaaS landing page*.
+
+> **Scoped by ADR-0098 A18 (2026-09-24).** The operative word above is **"gratuitous"**. A mesh bounded by §25's clarification and ADR-0098 D2's alpha bands, built from the identity's own two colours, and used on at most one register per page, is governed — not gratuitous. An unbounded mesh in arbitrary hues remains exactly what this clause rejects, and so does glassmorphism as decoration (§27 is unamended).
 3. Consistency of grade and light across every photograph (§21) — premium brands never look like they used five different photographers with five different styles.
 4. Confidence to leave things out — the Sponsors/Newsletter/Footer restraint identified in the prior creative review is correctly premium; resist the urge to "improve" every section equally.
 
@@ -263,6 +288,8 @@ If every other identifier were removed, these five things alone should still say
 2. **The warm-highlight/cool-green-shadow color grade** applied consistently across every photograph (§21) — a distinctive, ownable look rather than "whatever the source image happened to be."
 3. **One dominant subject per hero-tier moment**, always asymmetric, always overlapping the typography (§9, §36) — the compositional signature.
 4. **Federation Green appearing exactly once per composition**, small and precise, never as a wash (§3.1, §21) — its rarity is the signature, the opposite of "green-themed site."
+
+> **Scoped by ADR-0098 A19 (2026-09-24).** This governs green as a **role** colour — the action colour, which keeps its rarity precisely so that a reader can find the action on a page. It does not govern the green section register, which ADR-0059 D2 restored on the guide's own evidence and ADR-0060 D1 assigns to two pages out of twelve. Rarity is satisfied **across the site** (ADR-0065 D2b), not by starving every individual page: seven of the twelve public pages stay neutral, and that is recorded there as the correct outcome rather than a shortfall.
 5. **The verification-seal motif** on results/records content (§24) — no other federation makes "this number is certified" into a visual brand moment; this is a genuinely unique, ownable device specific to UAEAF's institutional-trust positioning.
 
 ---
@@ -347,6 +374,8 @@ Recommend **National Pride as the primary creative direction**, but explicitly b
 **Do:** treat every hero-tier section as one photograph/moment, not a grid · grade every photograph to the same warm-highlight/cool-green-shadow standard · use the diagonal motif as an active transition device, not passive texture · make "verified" a visual brand moment, not a footnote · tell the specifically-UAE version of every story (this stadium, this athlete, this map) rather than a generic-athletics version.
 
 **Don't:** combine multiple creative directions into one page · use green as a background wash · center-compose hero imagery · introduce a second decorative pattern language beyond the diagonal motif · touch the provided logo artwork in any way beyond technical cleanup · add a public login affordance · treat this chapter as license to abandon the token/component architecture already built.
+
+> **Two entries scoped by ADR-0098 (2026-09-24); both are retained, neither is deleted.** *"Use green as a background wash"* governs green as a role colour, per §40.4 above — not the green section register (ADR-0059 D2, ADR-0060 D1). *"Introduce a second decorative pattern language"* stands in full; the mesh tint is not a pattern (§25). Nothing else in this list is touched, and the three entries sourced from the federation's own guide — the logo artwork, the mirroring prohibition, and the public login affordance — are outside the reach of any project ADR.
 
 ## References
 

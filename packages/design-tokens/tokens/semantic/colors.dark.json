@@ -98,14 +98,14 @@
     "field": {
       "comment": "ADR-0097 — the form field's own ground and edge. The field was surface.sunken (#000000) inside a surface.raised (#21201C) card: 1.29:1 and DARKER than the card, inverting the light theme, and on focus it became the card's own colour at 1.00:1. All three values below are existing steps of the neutral-warm ramp; none is a new colour.",
       "surface": {
-        "value": "{color.neutral-warm.800}",
+        "value": "{color.neutral-warm.900}",
         "type": "color",
-        "comment": "= surface.skeleton #33322D. 1.27:1 against the card and LIGHTER than it, matching the light theme's direction. Primary text 12.29:1, muted text 4.72:1"
+        "comment": "#21201C. Corrected 2026-09-23: was neutral-warm.800 (#33322D), which left the hover/focus edge (action.default #00843D) at 2.67:1 against this ground, under the 3:1 of WCAG 1.4.11. The dark green needs a near-black ground, so this is the LIGHTEST ramp step on which every state edge clears 3 - field.border 5.99, semantic.error 3.95, action.default 3.39, focus ring 16.30; primary text 15.60, secondary 8.57. TRADE-OFF: it equals surface.raised, so on a raised card the field has no ground of its own and is read from its 5.99:1 border alone."
       },
       "surface-focus": {
-        "value": "{color.neutral-warm.700}",
+        "value": "{color.neutral-warm.950}",
         "type": "color",
-        "comment": "#4A4942 — 1.80:1 against the card (was 1.00:1) and 1.42:1 against the resting field, so the field lifts on focus as it does in light. Primary text 8.65:1"
+        "comment": "#131210. Corrected 2026-09-23: was neutral-warm.700 (#4A4942), on which the invalid edge measured 2.19:1 and the focus edge 1.88:1. The focused field now DARKENS rather than lifts (1.15:1 against the resting ground) - dark is the only direction with room, because every lighter step fails the green edge. Every state edge clears 3 - field.border 6.88, semantic.error 4.54, action.default 3.89, focus ring 18.72; primary text 17.91, secondary 9.84."
       },
       "border": {
         "value": "{color.neutral-warm.400}",

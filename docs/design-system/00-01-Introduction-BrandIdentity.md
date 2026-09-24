@@ -75,6 +75,8 @@ The UAE Athletics Federation (UAEAF) is rebuilding its entire digital platform a
 
 **Don't:** Do not design a screen without connecting it to a principle · Do not impose one layer’s decoration on the other · Do not treat the framework as merely a “website”
 
+> **Amended by ADR-0098 D6 (2026-09-24).** "Do not impose one layer's decoration on the other" is scoped to what this ADR's own Risks row names as the harm: *decoration that slows task completion*. Both layers now carry the identity in a named dose — **Expressive** on the public site, **Operational** on the dashboard — built from one shared library. The Operational dose is smaller (3px accent edge, no hover-driven motion) and carries an explicit prohibition list: no hover-rotating border anywhere, and no coloured or photographic surface beneath a table, a form or an input. What remains forbidden is unchanged in substance — the public site's motion density and full-bleed rhythm are not transplanted into an operator's workspace.
+
 ## Success Metrics
 
 * Every subsequent chapter references at least one Design Goal
@@ -233,9 +235,11 @@ These colors belong to the **Brand** layer (not the federation’s official iden
 | **Selected / active competition/tab state** | ❌ **Rejected** — remains `color.semantic.selected` = Federation Green (§7.9), matching the already-correct green "active filter" pattern in the current build | Approving red here would create two colors for one meaning (selected), directly reintroducing the ambiguity ADR-0004 was written to prevent |
 | **Secondary CTA** | ❌ **Rejected — explicit prohibition reaffirmed** | ADR-0004's "no standard CTA in red" covers Secondary as well as Primary; a Secondary CTA is still a call to action a visitor is meant to trust, not avoid |
 | **Sport-specific emphasis** (e.g. discipline-based accent color) | ❌ **Rejected** | Belongs to a potential future "discipline color" system (out of scope here) — not a Federation Red role, and would fail the repetition/fatigue test if implemented as red specifically |
-| **General accent element** (dividers, icon tinting, decorative fills) | ❌ **Rejected** | Purely decorative use is exactly what §Do & Don't below already forbids; the Decorative Pattern (ADR-0005) is the approved channel for non-semantic brand texture, not solid red fills |
+| **General accent element** (dividers, icon tinting, decorative fills) | ❌ **Rejected — for red placed alone** (scope clarified, ADR-0098 A2) | Purely decorative use is exactly what §Do & Don't below already forbids; the Decorative Pattern (ADR-0005) is the approved channel for non-semantic brand texture, not solid red fills. **This row governs red appearing *alone* as an accent, which is what a reader must interpret unaided.** The tricolour identity accent of ADR-0098 D3 — green, a surface-dependent middle step, and red, in one bounded edge — is a separate case governed by ADR-0098 D1 R3, where red never appears alone and encodes nothing |
 
 #### Repetition & Fatigue Rule (MUST)
+
+> **Scope clarified by ADR-0098 A3 (2026-09-24).** Both caps below count **semantic** red — `color.semantic.live` and `color.semantic.achievement` — because what they protect is red's *signal* value. They do not count the red section register (ADR-0059 D2) or the tricolour identity accent (ADR-0098 D3), neither of which carries a signal that repetition could dilute. A red register section and a Live badge inside it are one red signal, not two.
 
 * No more than **one** red element (`live` or `achievement`, never both) may render per component instance (e.g., one Athlete Card shows at most one red badge).
 * No more than **one visibly red state per initial viewport** on any public page, to preserve red's alarm/celebration value — if a Live indicator is already visible above the fold, an Achievement badge in the same viewport **SHOULD** be deferred to the neutral/Medal treatment instead.
@@ -268,6 +272,14 @@ The four parallel diagonal lines (the “take-off point” angle) are the approv
 | **Why This Decision**       | SVG is lightweight, recolorable, responsive to any screen size, and supports automatic RTL mirroring                                                                                                                                                                          |
 | **Risks**                   | Recreating the pattern with a different angle or proportion from the original would weaken its visual relationship to the logo. **Mitigation:** Measure the angle and proportions from the original guide files before implementation, followed by side-by-side visual review |
 | **Consequences**            | Chapter 8 includes this as a core “Brand Pattern” component                                                                                                                                                                                                                   |
+
+> **Amended by ADR-0098 D4 (2026-09-24), in two parts.**
+>
+> **1. The ascent angle is invariant under reading direction.** The *Why This Decision* row above lists "supports automatic RTL mirroring" among SVG's benefits. Read as a licence it would contradict the federation's own guide §9.1 and the absolute mirroring prohibition in `UAEAF-GLOBAL-VISUAL-DESIGN-PROTOCOL.md` §9: the motif is derived from the logo's take-off angle, so a mirrored take-off angle is a mirrored identity mark. **The angle does not mirror in RTL.** Placement follows reading direction through CSS logical properties; the angle is fixed at `--motion-ascent-angle` (`45deg`, ADR-0060 D2, from a measured mean of 44.46 degrees).
+>
+> **2. The Chapter 8 component is delivered, six weeks late.** The *Consequences* row above has been open since this chapter was frozen: no `CMP-BRANDPATTERN-*` was ever added, and the string "Brand Pattern" appears in none of the eight component chapters. It is discharged by `BrandStreaks` in the shared Brand UI Kit (ADR-0098 D4/D7) — inline SVG, `aria-hidden`, three bounded placements (`corner`, `behind-photo`, `cross-headline`), colour resolved from the surface it sits on.
+>
+> **3. Opacity.** The Decision row's 5-10% band for a general background layer and full fill for heroes is unchanged, and so is Chapter 27 §24's 5% cap in a content-bearing area. Both govern the motif used as a *repeating field*. The three placements above are bounded figures in fixed positions, at most three per page, and are governed by ADR-0098 D4 instead.
 
 ## Do & Don't
 

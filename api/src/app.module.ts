@@ -41,6 +41,8 @@ import { ClubTeamsModule } from './modules/people-organizations/club-teams/club-
 import { AthleteGuardianRelationshipsModule } from './modules/people-organizations/athlete-guardian-relationships/athlete-guardian-relationships.module.js';
 import { AlbumsModule } from './modules/media-center/albums/albums.module.js';
 import { VideosModule } from './modules/media-center/videos/videos.module.js';
+import { LiveStreamsModule } from './modules/media-center/live-streams/live-streams.module.js';
+import { VideoSectionModule } from './modules/media-center/video-section/video-section.module.js';
 import { DocumentsModule } from './modules/documents/documents/documents.module.js';
 import { FederationsModule } from './modules/federation-governance/federation/federation.module.js';
 import { ElectionCyclesModule } from './modules/federation-governance/election-cycles/election-cycles.module.js';
@@ -129,6 +131,8 @@ import { AppController } from './app.controller.js';
     AthleteGuardianRelationshipsModule,
     AlbumsModule,
     VideosModule,
+    LiveStreamsModule,
+    VideoSectionModule,
     DocumentsModule,
     // Week 4 — Domain 1 Federation & Governance
     FederationsModule,

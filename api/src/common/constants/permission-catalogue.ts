@@ -201,6 +201,10 @@ export const PERMISSION_CATALOGUE: readonly PermissionCatalogueEntry[] = [
   { resourceType: 'venues', action: 'Delete' },
   { resourceType: 'videos', action: 'Create' },
   { resourceType: 'videos', action: 'Read' },
+  // Guards PATCH /videos/:id — which is how a video is PUBLISHED, since the
+  // API creates every one as a draft — and the three live-stream routes,
+  // whose permissions ride on this subject rather than a second one.
+  { resourceType: 'videos', action: 'Update' },
   { resourceType: 'videos', action: 'Delete' },
   { resourceType: 'videosPage', action: 'Update' },
   { resourceType: 'visionMissionPage', action: 'Create' },

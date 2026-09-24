@@ -31,6 +31,33 @@ export interface NavItem {
   requiresAll?: readonly NavRequirement[];
   /** Screens grouped under this entry, each filtered by its own requirements. */
   children?: readonly NavItem[];
+  /**
+   * Draw this entry as a single link, not as a disclosure with its screens
+   * beneath it.
+   *
+   * The children are still what decides whether the entry is shown at all and
+   * which address it resolves to — a reader who can open only the partners
+   * screen gets the entry pointing there, not at a hero they would be refused.
+   * They are simply not drawn as a menu.
+   *
+   * The homepage is the one entry like this (owner decision 2026-09-24): its
+   * sections are navigated from the rail inside the screens, which lists all
+   * eight in page order, including the two news shelves and the sponsor strip
+   * that have no editor and so could never be menu entries.
+   */
+  flat?: boolean;
+  /**
+   * The address family this entry owns, when that is wider than its own
+   * `href`.
+   *
+   * The homepage entry links to `/homepage/hero` but is the menu entry for
+   * every `/homepage/*` screen — without this it would stop looking current
+   * the moment the reader used the rail to move to another section, and the
+   * menu would say they had left the homepage.
+   *
+   * Whole segments only: `/homepage` does not own `/homepages`.
+   */
+  activePrefix?: string;
 }
 
 /**
@@ -103,6 +130,18 @@ export const HOMEPAGE_FOOTER_GRANTS = [
   { resourceType: "siteSettings", action: "Update" },
 ] as const satisfies readonly NavRequirement[];
 
+/**
+ * Every grant the homepage video-section screen uses: the section row it reads
+ * and writes, and the video list its featured and manual pickers offer. A
+ * refused video read costs the pickers and not the screen, so `videos:Read`
+ * is part of the set an editor needs to use it fully.
+ */
+export const HOMEPAGE_VIDEO_GRANTS = [
+  { resourceType: "pageSections", action: "Read" },
+  { resourceType: "pageSections", action: "Update" },
+  { resourceType: "videos", action: "Read" },
+] as const satisfies readonly NavRequirement[];
+
 /** A homepage screen's link: shown with every grant its Save can use. */
 const homepageScreen = (key: string, href: string, grants: readonly NavRequirement[]): NavItem => ({
   key,
@@ -161,14 +200,26 @@ const USERS_ACCESS_SCREENS: readonly NavItem[] = [
   },
 ];
 
+/**
+ * The homepage's section editors.
+ *
+ * They are NOT children of a sidebar group any more (owner decision
+ * 2026-09-24). Moving between sections is the job of the rail inside
+ * `/homepage/*`, which lists every section in the order the page draws them —
+ * including the two news shelves and the sponsor strip, which have no editor
+ * of their own and so could never be sidebar entries.
+ *
+ * The list survives because `visibleNavItems` still needs it to decide whether
+ * the reader may open ANY homepage screen, and `navScreens` uses it for the
+ * command palette.
+ */
 const HOMEPAGE_SCREENS: readonly NavItem[] = [
   homepageScreen("homepageHero", "/homepage/hero", HOMEPAGE_HERO_GRANTS),
   homepageScreen("homepageSponsorStrip", "/homepage/sponsor-strip", HOMEPAGE_SPONSOR_STRIP_GRANTS),
   homepageScreen("homepageSponsors", "/homepage/sponsors", HOMEPAGE_SPONSORS_GRANTS),
   homepageScreen("homepagePartners", "/homepage/partners", HOMEPAGE_PARTNERS_GRANTS),
   homepageScreen("homepageMemberships", "/homepage/memberships", HOMEPAGE_MEMBERSHIPS_GRANTS),
-  // Last, as the footer is last on every page.
-  homepageScreen("homepageFooter", "/homepage/footer", HOMEPAGE_FOOTER_GRANTS),
+  homepageScreen("homepageVideo", "/homepage/video", HOMEPAGE_VIDEO_GRANTS),
 ];
 
 export const NAV_ITEMS: readonly NavItem[] = [
@@ -243,11 +294,48 @@ export const NAV_ITEMS: readonly NavItem[] = [
     requires: NEWS_SCREENS.flatMap((screen) => screen.requires ?? []),
     children: NEWS_SCREENS,
   },
+  /**
+   * The videos screen. `videos:Read` alone is reason enough to open it —
+   * unlike the president's message, an editor opens this to look up what is
+   * published as often as to add to it, and the screen offers no write
+   * affordance to a reader who holds none.
+   */
+  { key: "videos", href: "/videos", requires: [{ resourceType: "videos", action: "Read" }] },
+  /**
+   * The homepage: one entry, no nested menu (owner decision 2026-09-24).
+   *
+   * It opens the hero, and the rail inside every `/homepage/*` screen is how a
+   * reader moves between sections from there. The nested menu was a second
+   * navigation for the same thing, and a worse one: it could only list the six
+   * sections that happen to have an editor, while the rail lists all eight in
+   * the order the page actually draws them.
+   *
+   * Shown to anyone who can open at least one section editor — which is what
+   * `requires` being the union of their requirements means — so the entry
+   * never lands on a refusal.
+   */
   {
     key: "homepage",
     href: "/homepage/hero",
+    flat: true,
+    activePrefix: "/homepage",
     requires: HOMEPAGE_SCREENS.flatMap((screen) => screen.requires ?? []),
     children: HOMEPAGE_SCREENS,
+  },
+  /**
+   * The footer, on its own.
+   *
+   * It was under Homepage, which was never right: the footer is on every page
+   * of the site, so hiding or ordering it "on the homepage" is not a thing the
+   * platform can express — the sections list excludes it for that reason. It
+   * sits here, beside the other site-wide screens, because this dashboard has
+   * no site-settings group to put it in.
+   */
+  {
+    key: "homepageFooter",
+    href: "/homepage/footer",
+    requires: [HOMEPAGE_FOOTER_GRANTS.find((grant) => grant.action === "Update") ?? HOMEPAGE_FOOTER_GRANTS[0]],
+    requiresAll: HOMEPAGE_FOOTER_GRANTS,
   },
   // Last, as the approved IA orders the sections: the content first, then who
   // may work on it (§4.8 and the tree in §6, amended 2026-09-21).
@@ -258,6 +346,15 @@ export const NAV_ITEMS: readonly NavItem[] = [
     children: USERS_ACCESS_SCREENS,
   },
 ];
+
+/**
+ * Whether `path` is `href` itself or something beneath it.
+ *
+ * Whole segments, so `/homepage` does not own `/homepages`, and the root only
+ * owns itself.
+ */
+export const isWithin = (href: string, path: string): boolean =>
+  href === "/" ? path === "/" : path === href || path.startsWith(`${href}/`);
 
 /** Whether these grants satisfy one requirement. */
 export const satisfies = (
@@ -285,11 +382,15 @@ export interface NavScreen {
  * offering a screen the menu hides.
  */
 export const navScreens = (items: readonly NavItem[]): NavScreen[] =>
-  items.flatMap((item): NavScreen[] =>
-    item.children
+  items.flatMap((item): NavScreen[] => {
+    // A flat entry is one screen, whatever it carries for reachability: its
+    // children are never drawn, so offering them here would put addresses in
+    // the command palette that appear nowhere in the menu.
+    if (item.flat) return [{ key: item.key, href: item.href, groupKey: null }];
+    return item.children
       ? item.children.map((child) => ({ key: child.key, href: child.href, groupKey: item.key }))
-      : [{ key: item.key, href: item.href, groupKey: null }],
-  );
+      : [{ key: item.key, href: item.href, groupKey: null }];
+  });
 
 /**
  * The one screen the reader is on, of these addresses.

@@ -2,10 +2,25 @@ import { NestFactory } from '@nestjs/core';
 import { getModelToken } from '@nestjs/mongoose';
 import type { Model } from 'mongoose';
 import { AppModule } from './app.module.js';
+import { Page } from './modules/cms-page-composition/pages/schemas/pages.schema.js';
+import { PageSection } from './modules/cms-page-composition/page-sections/schemas/page-sections.schema.js';
 import { Permission } from './modules/platform-administration/permissions/schemas/permission.schema.js';
 import { Role } from './modules/platform-administration/roles/schemas/role.schema.js';
 import { User } from './modules/platform-administration/users/schemas/user.schema.js';
 import { readBootstrapAdminInput, runBootstrap } from './bootstrap/seed-admin.js';
+import { seedVideoSection, type VideoSectionSeedResult } from './bootstrap/seed-video-section.js';
+
+/** What the operator reads for each outcome of the video-section seed. */
+const VIDEO_SECTION_REPORT: Record<VideoSectionSeedResult, string> = {
+  created: 'homepage VIDEO_LIBRARY section created',
+  exists: 'homepage VIDEO_LIBRARY section already existed (left untouched)',
+  noHomepage: 'no homepage page row yet, so no VIDEO_LIBRARY section was created',
+};
+
+const log = (message: string): void => {
+  // eslint-disable-next-line no-console
+  console.log(`[bootstrap] ${message}`);
+};
 
 /**
  * Creates the first administrator, and the permissions and role that
@@ -28,7 +43,7 @@ import { readBootstrapAdminInput, runBootstrap } from './bootstrap/seed-admin.js
  * Requires:  MONGODB_URI, BOOTSTRAP_ADMIN_EMAIL, BOOTSTRAP_ADMIN_PASSWORD
  * Optional:  BOOTSTRAP_ADMIN_NAME_EN, BOOTSTRAP_ADMIN_NAME_AR
  */
-async function main(): Promise<void> {
+const main = async (): Promise<void> => {
   const admin = readBootstrapAdminInput(process.env);
 
   // `abortOnError: false` matters more than it looks: Nest's default is to
@@ -59,15 +74,18 @@ async function main(): Promise<void> {
         ? `administrator created: ${admin.email}`
         : `administrator already existed: ${admin.email} (left untouched)`,
     );
+
+    // The homepage's video section. Create-if-absent, so re-running a deploy
+    // never resets settings an editor has since changed.
+    const videoSection = await seedVideoSection({
+      pages: app.get<Model<Page>>(getModelToken(Page.name)),
+      pageSections: app.get<Model<PageSection>>(getModelToken(PageSection.name)),
+    });
+    log(VIDEO_SECTION_REPORT[videoSection]);
   } finally {
     await app.close();
   }
-}
-
-function log(message: string): void {
-  // eslint-disable-next-line no-console
-  console.log(`[bootstrap] ${message}`);
-}
+};
 
 /** Reports the failure explicitly rather than relying on Node's top-level
  *  rejection output -- this runs on a server, often through a deploy step

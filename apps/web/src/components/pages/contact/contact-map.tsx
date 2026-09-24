@@ -5,6 +5,7 @@ import { text } from "@/components/pages/static-page-screen";
 import { FOCUS, TRANSITION } from "@/components/ui/interactive";
 import { GLASS_EDGE, PANEL, PANEL_FILL, RECESS } from "@/components/ui/surface";
 import { ContactIcon } from "@/components/ui/contact-icon";
+import { FooterMapFrame } from "@/components/layout/footer-map-frame";
 import { LocationMap } from "./location-map";
 
 /**
@@ -59,12 +60,17 @@ export const ContactMap = async ({
       </h2>
 
       {typeof latitude === "number" && typeof longitude === "number" ? (
-        <div
-          data-testid="contact-map-frame"
+        // The footer's frame, not a second one: both draw the same third-party
+        // map, and `loading="lazy"` does not hold it back on its own — measured
+        // 2026-09-22, Chromium fetched a lazy frame 3741px below the fold at
+        // load. The map is the last thing on this page; most readers come for
+        // the form above it.
+        <FooterMapFrame
+          testId="contact-map-frame"
           className={`relative min-h-[220px] w-full overflow-hidden ${RECESS} ${PANEL_FILL} md:min-h-[300px] xl:min-h-[380px]`}
         >
           <LocationMap latitude={latitude} longitude={longitude} locale={locale} title={t("map.frameTitle")} />
-        </div>
+        </FooterMapFrame>
       ) : null}
 
       {pinTitle ? (

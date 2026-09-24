@@ -3691,6 +3691,136 @@
         ]
       }
     },
+    "/api/v1/videos/public": {
+      "get": {
+        "operationId": "VideosController_findPublic_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Clamped to 48 upstream.",
+            "schema": {
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "kind",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "video",
+                "reel"
+              ]
+            }
+          },
+          {
+            "name": "platform",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "youtube",
+                "instagram",
+                "tiktok",
+                "x",
+                "facebook"
+              ]
+            }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "championships",
+                "events",
+                "interviews",
+                "nationalTeam",
+                "training"
+              ]
+            }
+          },
+          {
+            "name": "season",
+            "required": false,
+            "in": "query",
+            "description": "e.g. \"2025–2026\". Ignored if unparseable.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "association",
+            "required": false,
+            "in": "query",
+            "description": "<ownerType>:<id>, where ownerType is one of championships, sportsEvents, publicEvents.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "ISO date. Ignored if unparseable.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "ISO date, inclusive to end of day.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VideoPublicResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "videos"
+        ]
+      }
+    },
     "/api/v1/videos": {
       "post": {
         "operationId": "VideosController_create_v1",
@@ -3727,7 +3857,62 @@
         ]
       }
     },
+    "/api/v1/videos/resolve": {
+      "post": {
+        "operationId": "VideosController_resolve_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveVideoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "videos"
+        ]
+      }
+    },
     "/api/v1/videos/{id}": {
+      "patch": {
+        "operationId": "VideosController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVideoDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "videos"
+        ]
+      },
       "get": {
         "operationId": "VideosController_findOne_v1",
         "parameters": [
@@ -3768,6 +3953,316 @@
         },
         "tags": [
           "videos"
+        ]
+      }
+    },
+    "/api/v1/live-streams/public/active": {
+      "get": {
+        "operationId": "LiveStreamsController_findActive_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "null when nothing is live.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveStreamPublicResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "live-streams"
+        ]
+      }
+    },
+    "/api/v1/live-streams/{id}": {
+      "get": {
+        "operationId": "LiveStreamsController_findOne_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LiveStreamAdminResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "live-streams"
+        ]
+      },
+      "patch": {
+        "operationId": "LiveStreamsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLiveStreamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "live-streams"
+        ]
+      }
+    },
+    "/api/v1/live-streams": {
+      "post": {
+        "operationId": "LiveStreamsController_start_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartLiveStreamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "live-streams"
+        ]
+      }
+    },
+    "/api/v1/live-streams/{id}/end": {
+      "post": {
+        "operationId": "LiveStreamsController_end_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "live-streams"
+        ]
+      }
+    },
+    "/api/v1/video-section/public": {
+      "get": {
+        "operationId": "VideoSectionController_findPublic_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "video-section"
+        ]
+      }
+    },
+    "/api/v1/page-sections": {
+      "post": {
+        "operationId": "PageSectionsController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePageSectionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "page-sections"
+        ]
+      },
+      "get": {
+        "operationId": "PageSectionsController_findAll_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "page-sections"
+        ]
+      }
+    },
+    "/api/v1/page-sections/public/by-page/{pageId}": {
+      "get": {
+        "operationId": "PageSectionsController_findPublicByPage_v1",
+        "parameters": [
+          {
+            "name": "pageId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PageSectionPublicResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "page-sections"
+        ]
+      }
+    },
+    "/api/v1/page-sections/by-page/{pageId}": {
+      "get": {
+        "operationId": "PageSectionsController_findByPage_v1",
+        "parameters": [
+          {
+            "name": "pageId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "page-sections"
+        ]
+      }
+    },
+    "/api/v1/page-sections/{id}": {
+      "get": {
+        "operationId": "PageSectionsController_findOne_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "page-sections"
+        ]
+      },
+      "patch": {
+        "operationId": "PageSectionsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePageSectionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "page-sections"
+        ]
+      },
+      "delete": {
+        "operationId": "PageSectionsController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "page-sections"
         ]
       }
     },
@@ -6074,173 +6569,6 @@
         },
         "tags": [
           "pages"
-        ]
-      }
-    },
-    "/api/v1/page-sections": {
-      "post": {
-        "operationId": "PageSectionsController_create_v1",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreatePageSectionDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "page-sections"
-        ]
-      },
-      "get": {
-        "operationId": "PageSectionsController_findAll_v1",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "page-sections"
-        ]
-      }
-    },
-    "/api/v1/page-sections/public/by-page/{pageId}": {
-      "get": {
-        "operationId": "PageSectionsController_findPublicByPage_v1",
-        "parameters": [
-          {
-            "name": "pageId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/PageSectionPublicResponseDto"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "page-sections"
-        ]
-      }
-    },
-    "/api/v1/page-sections/by-page/{pageId}": {
-      "get": {
-        "operationId": "PageSectionsController_findByPage_v1",
-        "parameters": [
-          {
-            "name": "pageId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "page-sections"
-        ]
-      }
-    },
-    "/api/v1/page-sections/{id}": {
-      "get": {
-        "operationId": "PageSectionsController_findOne_v1",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "page-sections"
-        ]
-      },
-      "patch": {
-        "operationId": "PageSectionsController_update_v1",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdatePageSectionDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "page-sections"
-        ]
-      },
-      "delete": {
-        "operationId": "PageSectionsController_remove_v1",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "page-sections"
         ]
       }
     },
@@ -10159,9 +10487,10 @@
             "type": "string",
             "enum": [
               "championships",
+              "sportsEvents",
+              "publicEvents",
               "athletes",
-              "clubs",
-              "publicEvents"
+              "clubs"
             ]
           },
           "ownerId": {
@@ -10368,6 +10697,82 @@
           "relatedAlbums"
         ]
       },
+      "VideoPublicResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "championships",
+              "events",
+              "interviews",
+              "nationalTeam",
+              "training"
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "video",
+              "reel"
+            ]
+          },
+          "platform": {
+            "type": "string",
+            "enum": [
+              "youtube",
+              "instagram",
+              "tiktok",
+              "x",
+              "facebook"
+            ]
+          },
+          "url": {
+            "type": "string",
+            "description": "The canonical link, for \"open on <platform>\"."
+          },
+          "externalId": {
+            "type": "string",
+            "description": "The video's id on its platform, which the embed URL is built from."
+          },
+          "thumbnailId": {
+            "type": "object",
+            "nullable": true,
+            "description": "A mediaAssets id; resolve it for the image."
+          },
+          "publishedAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "season": {
+            "type": "object",
+            "nullable": true,
+            "description": "Derived from publishedAt, never stored — e.g. \"2025–2026\"."
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "category",
+          "kind",
+          "platform",
+          "url",
+          "externalId",
+          "tags"
+        ]
+      },
       "CreateVideoDto": {
         "type": "object",
         "properties": {
@@ -10379,26 +10784,40 @@
               }
             ]
           },
-          "contentCategoryId": {
-            "type": "string"
+          "category": {
+            "type": "string",
+            "enum": [
+              "championships",
+              "events",
+              "interviews",
+              "nationalTeam",
+              "training"
+            ]
           },
-          "isLive": {
-            "type": "boolean",
-            "default": false
+          "kind": {
+            "type": "string",
+            "enum": [
+              "video",
+              "reel"
+            ],
+            "default": "video"
           },
           "externalPlatform": {
             "type": "string",
             "enum": [
-              "YouTube",
-              "Facebook",
-              "Instagram",
-              "TikTok",
-              "X",
-              "Other"
+              "youtube",
+              "instagram",
+              "tiktok",
+              "x",
+              "facebook"
             ]
           },
           "externalUrl": {
             "type": "string"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "The video's id on its own platform."
           },
           "thumbnailId": {
             "type": "string"
@@ -10418,10 +10837,521 @@
         },
         "required": [
           "title",
-          "contentCategoryId",
+          "category",
           "externalPlatform",
-          "externalUrl"
+          "externalUrl",
+          "externalId"
         ]
+      },
+      "ResolveVideoDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The link an editor pasted."
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "UpdateVideoDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "championships",
+              "events",
+              "interviews",
+              "nationalTeam",
+              "training"
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "video",
+              "reel"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published"
+            ]
+          },
+          "publishedAt": {
+            "type": "object",
+            "description": "Back-dated imports only; normally decided by the transition."
+          },
+          "thumbnailId": {
+            "type": "object"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "LiveStreamPublicResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "venue": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "videoId": {
+            "type": "string",
+            "description": "The YouTube id the embed is built from."
+          },
+          "url": {
+            "type": "string",
+            "description": "The canonical link, for \"open on YouTube\"."
+          },
+          "startedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "expectedEndAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "thumbnailId": {
+            "type": "object",
+            "nullable": true,
+            "description": "The stored still, or null when the platform named none."
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "videoId",
+          "url",
+          "startedAt",
+          "expectedEndAt",
+          "thumbnailId"
+        ]
+      },
+      "LiveStreamAdminResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "venue": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "videoId": {
+            "type": "string",
+            "description": "The YouTube id the embed is built from."
+          },
+          "url": {
+            "type": "string",
+            "description": "The canonical link, for \"open on YouTube\"."
+          },
+          "startedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "expectedEndAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "thumbnailId": {
+            "type": "object",
+            "nullable": true,
+            "description": "The stored still, or null when the platform named none."
+          },
+          "endedAt": {
+            "type": "object",
+            "nullable": true,
+            "description": "Set when an editor ended it, or a newer broadcast replaced it."
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "The flag the single-active index is built on. Still true past `expectedEndAt`."
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "live",
+              "expired",
+              "ended"
+            ]
+          },
+          "associations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContentAssociationDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "videoId",
+          "url",
+          "startedAt",
+          "expectedEndAt",
+          "thumbnailId",
+          "endedAt",
+          "isActive",
+          "state",
+          "associations"
+        ]
+      },
+      "StartLiveStreamDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "A YouTube link. Format-checked only."
+          },
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "venue": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "expectedEndAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "When the live state stops showing, with nobody pressing anything."
+          },
+          "associations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContentAssociationDto"
+            }
+          }
+        },
+        "required": [
+          "url",
+          "title",
+          "expectedEndAt"
+        ]
+      },
+      "UpdateLiveStreamDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "venue": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "expectedEndAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        }
+      },
+      "CreatePageSectionDto": {
+        "type": "object",
+        "properties": {
+          "pageId": {
+            "type": "string"
+          },
+          "sectionType": {
+            "type": "string",
+            "enum": [
+              "HERO",
+              "FEDERATION_STATS",
+              "FEATURED_ATHLETES",
+              "RESULTS_RANKINGS",
+              "CLUBS",
+              "UPCOMING_HIGHLIGHTS",
+              "LATEST_NEWS",
+              "PHOTO_GALLERY",
+              "VIDEO_LIBRARY",
+              "EXTERNAL_MEDIA",
+              "SPONSORS",
+              "PARTNERS",
+              "MEMBERSHIPS",
+              "NEWSLETTER_CTA"
+            ]
+          },
+          "sectionTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "sectionSubtitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "itemLimit": {
+            "type": "number",
+            "description": "AUTOMATIC mode only; ignored in MANUAL."
+          },
+          "ctaText": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "ctaUrl": {
+            "type": "string"
+          },
+          "visibleFrom": {
+            "type": "string"
+          },
+          "visibleUntil": {
+            "type": "string"
+          },
+          "displayOrder": {
+            "type": "number"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "Everyone",
+              "AuthenticatedOnly",
+              "AdminPreviewOnly"
+            ]
+          },
+          "selectionMode": {
+            "type": "string",
+            "enum": [
+              "MANUAL",
+              "AUTOMATIC"
+            ]
+          },
+          "items": {
+            "description": "Manually-selected item ids (MANUAL mode). Bare ObjectIds — the target collection is inferred from sectionType; the board defines no per-entry type discriminator.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "filters": {
+            "type": "object",
+            "description": "Free-form AUTOMATIC-mode query params."
+          },
+          "configuration": {
+            "type": "object",
+            "description": "Free-form section-specific settings. For a HERO section: `nextEvent` { isVisible, label{ar,en} (≤52), name{ar,en} (≤52), venue{ar,en} (≤35), startsAt, endsAt (ISO instants, endsAt ≥ startsAt) } and `playback` { autoplay, intervalMs: 5000 | 7000 | 9000 }. Refused with `incompleteNextEvent` (a visible bar with gaps, listed in `missing`), `nextEventEndsBeforeStart`, `heroTextTooLong` or `invalidPlayback`."
+          }
+        },
+        "required": [
+          "pageId",
+          "sectionType",
+          "displayOrder",
+          "visibility",
+          "selectionMode"
+        ]
+      },
+      "PageSectionPublicResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sectionType": {
+            "type": "string",
+            "enum": [
+              "HERO",
+              "FEDERATION_STATS",
+              "FEATURED_ATHLETES",
+              "RESULTS_RANKINGS",
+              "CLUBS",
+              "UPCOMING_HIGHLIGHTS",
+              "LATEST_NEWS",
+              "PHOTO_GALLERY",
+              "VIDEO_LIBRARY",
+              "EXTERNAL_MEDIA",
+              "SPONSORS",
+              "PARTNERS",
+              "MEMBERSHIPS",
+              "NEWSLETTER_CTA"
+            ]
+          },
+          "sectionTitle": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "sectionSubtitle": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "itemLimit": {
+            "type": "object",
+            "nullable": true
+          },
+          "ctaText": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "ctaUrl": {
+            "type": "object",
+            "nullable": true
+          },
+          "displayOrder": {
+            "type": "number"
+          },
+          "selectionMode": {
+            "type": "string",
+            "enum": [
+              "MANUAL",
+              "AUTOMATIC"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "configuration": {
+            "type": "object",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "sectionType",
+          "displayOrder",
+          "selectionMode",
+          "items"
+        ]
+      },
+      "UpdatePageSectionDto": {
+        "type": "object",
+        "properties": {
+          "sectionTitle": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "sectionSubtitle": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "itemLimit": {
+            "type": "object",
+            "nullable": true
+          },
+          "ctaText": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "ctaUrl": {
+            "type": "object",
+            "nullable": true
+          },
+          "visibleFrom": {
+            "type": "object",
+            "nullable": true
+          },
+          "visibleUntil": {
+            "type": "object",
+            "nullable": true
+          },
+          "displayOrder": {
+            "type": "number"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "Everyone",
+              "AuthenticatedOnly",
+              "AdminPreviewOnly"
+            ]
+          },
+          "selectionMode": {
+            "type": "string",
+            "enum": [
+              "MANUAL",
+              "AUTOMATIC"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "filters": {
+            "type": "object",
+            "nullable": true,
+            "description": "Free-form section-specific settings. For a HERO section: `nextEvent` { isVisible, label{ar,en} (≤52), name{ar,en} (≤52), venue{ar,en} (≤35), startsAt, endsAt (ISO instants, endsAt ≥ startsAt) } and `playback` { autoplay, intervalMs: 5000 | 7000 | 9000 }. Refused with `incompleteNextEvent` (a visible bar with gaps, listed in `missing`), `nextEventEndsBeforeStart`, `heroTextTooLong` or `invalidPlayback`."
+          },
+          "configuration": {
+            "type": "object",
+            "nullable": true
+          }
+        }
       },
       "DocumentFileVariantDto": {
         "type": "object",
@@ -13169,271 +14099,6 @@
           "title",
           "status"
         ]
-      },
-      "CreatePageSectionDto": {
-        "type": "object",
-        "properties": {
-          "pageId": {
-            "type": "string"
-          },
-          "sectionType": {
-            "type": "string",
-            "enum": [
-              "HERO",
-              "FEDERATION_STATS",
-              "FEATURED_ATHLETES",
-              "RESULTS_RANKINGS",
-              "CLUBS",
-              "UPCOMING_HIGHLIGHTS",
-              "LATEST_NEWS",
-              "PHOTO_GALLERY",
-              "VIDEO_LIBRARY",
-              "EXTERNAL_MEDIA",
-              "SPONSORS",
-              "PARTNERS",
-              "MEMBERSHIPS",
-              "NEWSLETTER_CTA"
-            ]
-          },
-          "sectionTitle": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "sectionSubtitle": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "itemLimit": {
-            "type": "number",
-            "description": "AUTOMATIC mode only; ignored in MANUAL."
-          },
-          "ctaText": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "ctaUrl": {
-            "type": "string"
-          },
-          "visibleFrom": {
-            "type": "string"
-          },
-          "visibleUntil": {
-            "type": "string"
-          },
-          "displayOrder": {
-            "type": "number"
-          },
-          "enabled": {
-            "type": "boolean"
-          },
-          "visibility": {
-            "type": "string",
-            "enum": [
-              "Everyone",
-              "AuthenticatedOnly",
-              "AdminPreviewOnly"
-            ]
-          },
-          "selectionMode": {
-            "type": "string",
-            "enum": [
-              "MANUAL",
-              "AUTOMATIC"
-            ]
-          },
-          "items": {
-            "description": "Manually-selected item ids (MANUAL mode). Bare ObjectIds — the target collection is inferred from sectionType; the board defines no per-entry type discriminator.",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "filters": {
-            "type": "object",
-            "description": "Free-form AUTOMATIC-mode query params."
-          },
-          "configuration": {
-            "type": "object",
-            "description": "Free-form section-specific settings. For a HERO section: `nextEvent` { isVisible, label{ar,en} (≤52), name{ar,en} (≤52), venue{ar,en} (≤35), startsAt, endsAt (ISO instants, endsAt ≥ startsAt) } and `playback` { autoplay, intervalMs: 5000 | 7000 | 9000 }. Refused with `incompleteNextEvent` (a visible bar with gaps, listed in `missing`), `nextEventEndsBeforeStart`, `heroTextTooLong` or `invalidPlayback`."
-          }
-        },
-        "required": [
-          "pageId",
-          "sectionType",
-          "displayOrder",
-          "visibility",
-          "selectionMode"
-        ]
-      },
-      "PageSectionPublicResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "sectionType": {
-            "type": "string",
-            "enum": [
-              "HERO",
-              "FEDERATION_STATS",
-              "FEATURED_ATHLETES",
-              "RESULTS_RANKINGS",
-              "CLUBS",
-              "UPCOMING_HIGHLIGHTS",
-              "LATEST_NEWS",
-              "PHOTO_GALLERY",
-              "VIDEO_LIBRARY",
-              "EXTERNAL_MEDIA",
-              "SPONSORS",
-              "PARTNERS",
-              "MEMBERSHIPS",
-              "NEWSLETTER_CTA"
-            ]
-          },
-          "sectionTitle": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LocalizedTextDto"
-              }
-            ]
-          },
-          "sectionSubtitle": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LocalizedTextDto"
-              }
-            ]
-          },
-          "itemLimit": {
-            "type": "object",
-            "nullable": true
-          },
-          "ctaText": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LocalizedTextDto"
-              }
-            ]
-          },
-          "ctaUrl": {
-            "type": "object",
-            "nullable": true
-          },
-          "displayOrder": {
-            "type": "number"
-          },
-          "selectionMode": {
-            "type": "string",
-            "enum": [
-              "MANUAL",
-              "AUTOMATIC"
-            ]
-          },
-          "items": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "configuration": {
-            "type": "object",
-            "nullable": true
-          }
-        },
-        "required": [
-          "id",
-          "sectionType",
-          "displayOrder",
-          "selectionMode",
-          "items"
-        ]
-      },
-      "UpdatePageSectionDto": {
-        "type": "object",
-        "properties": {
-          "sectionTitle": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LocalizedTextDto"
-              }
-            ]
-          },
-          "sectionSubtitle": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LocalizedTextDto"
-              }
-            ]
-          },
-          "itemLimit": {
-            "type": "object",
-            "nullable": true
-          },
-          "ctaText": {
-            "nullable": true,
-            "type": "object",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LocalizedTextDto"
-              }
-            ]
-          },
-          "ctaUrl": {
-            "type": "object",
-            "nullable": true
-          },
-          "visibleFrom": {
-            "type": "object",
-            "nullable": true
-          },
-          "visibleUntil": {
-            "type": "object",
-            "nullable": true
-          },
-          "displayOrder": {
-            "type": "number"
-          },
-          "enabled": {
-            "type": "boolean"
-          },
-          "visibility": {
-            "type": "string",
-            "enum": [
-              "Everyone",
-              "AuthenticatedOnly",
-              "AdminPreviewOnly"
-            ]
-          },
-          "selectionMode": {
-            "type": "string",
-            "enum": [
-              "MANUAL",
-              "AUTOMATIC"
-            ]
-          },
-          "items": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "filters": {
-            "type": "object",
-            "nullable": true,
-            "description": "Free-form section-specific settings. For a HERO section: `nextEvent` { isVisible, label{ar,en} (≤52), name{ar,en} (≤52), venue{ar,en} (≤35), startsAt, endsAt (ISO instants, endsAt ≥ startsAt) } and `playback` { autoplay, intervalMs: 5000 | 7000 | 9000 }. Refused with `incompleteNextEvent` (a visible bar with gaps, listed in `missing`), `nextEventEndsBeforeStart`, `heroTextTooLong` or `invalidPlayback`."
-          },
-          "configuration": {
-            "type": "object",
-            "nullable": true
-          }
-        }
       },
       "FocalPointDto": {
         "type": "object",

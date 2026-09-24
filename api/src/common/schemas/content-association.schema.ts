@@ -1,7 +1,21 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 
-export const CONTENT_ASSOCIATION_OWNER_TYPES = ['championships', 'athletes', 'clubs', 'publicEvents'] as const;
+/** `sportsEvents` joined this list on 2026-09-23 for the video system.
+ *
+ *  Chapter 11 of the project governance keeps Events and Tournaments as
+ *  deliberately distinct concepts, so a video about a championship and a video
+ *  about a sporting fixture do not share one owner type. None of
+ *  `championships`, `sportsEvents` or `publicEvents` is a built collection
+ *  yet — see the note on `ownerId` below, which is why they can be recorded
+ *  before they exist. */
+export const CONTENT_ASSOCIATION_OWNER_TYPES = [
+  'championships',
+  'sportsEvents',
+  'publicEvents',
+  'athletes',
+  'clubs',
+] as const;
 export type ContentAssociationOwnerType = (typeof CONTENT_ASSOCIATION_OWNER_TYPES)[number];
 
 /** `ownerType` is already the camelCase Mongoose collection name convention

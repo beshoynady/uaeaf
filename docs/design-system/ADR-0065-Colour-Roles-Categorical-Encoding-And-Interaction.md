@@ -81,6 +81,18 @@ Five of six grounds are outside the UAEAF palette. The body greys are `#E5E7EB` 
 
 R1 is ADR-0059 D1 carried down from region scale to element scale: colour is assigned by *what a thing is*, never by how much of it a page should have. R2 is what disqualifies the contact page's four-step ladder and the policies page's six positional fills in one sentence each.
 
+> **R3 added by ADR-0098 D1 (2026-09-24). R1 and R2 are unchanged.**
+>
+> R2 was derived from two cases where colour was **pretending to encode** — a four-step green ladder on a contact form where the steps meant nothing, and six positional fills on a policies page where the positions meant nothing. In both, a reader had to ask what a colour meant and there was no answer. A rule derived from pretence over-reaches when it is applied to a mark that pretends nothing, which is what a 4px tricolour edge above a header is: not a category, a state, a rank or a measure.
+>
+> **R3. Identity colour.** Colour that encodes nothing, exists to state that the surface belongs to this federation, and is admissible only where all three hold:
+>
+> 1. **It is not placed where an encoding colour is expected.** Never inside a chart, a legend, a tag, a status field, a badge, a rank, a chip, a table cell, or beside an element of the same shape that does encode.
+> 2. **It carries no colour a reader must resolve alone.** Either all three identity colours appear together (the tricolour), or the surface itself is the colour. A single green or red mark placed for identity alone reads as a role colour to any reader, and falls back under R1.
+> 3. **It is bounded.** Edges, rules, rings, and full surfaces. Never the area behind body text — that is the surface's job — and never an area a reader will mistake for a fill that means something.
+>
+> R2 is untouched for every case it was written against: colour that pretends to encode is still removed. R3 licenses **no** green card fill, coloured section heading or panel tint — those were R2's own examples, they are the shapes a reader has learned to read for meaning, and they remain prohibited by the role table below.
+
 ---
 
 ## 3. Decision D2 — the role table
@@ -110,6 +122,8 @@ Measured contrast for every role colour, on the two grounds each is actually use
 | medal gold / silver / bronze | — | 4.94 / 5.42 / 7.12 | 11.88 / 10.90 / 8.70 |
 
 Every pairing clears AA; the lowest is medal gold at 4.94. The three unused accents each carry white text **better than Federation Green does**, so adopting them is an accessibility gain, not a risk.
+
+> **Unamended by ADR-0098 A26 (2026-09-24), and deliberately so.** Every `Never` clause in the table above stands verbatim. In particular Federation Green's *"Card fills, section headings, panel tints — anywhere without an action"* is **not** relaxed: the tricolour identity accent of ADR-0098 D3 is none of those three things, green never appears alone in it, and it is governed by R3 above rather than by this table. Federation Red's *"Form errors; CTA buttons"* likewise stands — ADR-0051's structural separation of `brand.secondary` from `error.*` is untouched, and no red CTA is created anywhere in the Brand UI Kit.
 
 ### D2a — the accent scope is widened
 

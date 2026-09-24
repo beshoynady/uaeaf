@@ -295,13 +295,19 @@ Any Commit that violates §3.10 (Hardcoded value) **MUST** be automatically reje
 | Spacing Scale                  | Values defined within the 8pt scale only — no arbitrary value such as `13px` |
 | Radius Scale                   | 6 values only (`none/xs/sm/md/lg/xl/full`)                                   |
 | Color Shades per Primary Color | Maximum 10 shades (`50→900`)                                                 |
-| Motion Durations               | 7 values only (`instant/fast/base/slow/slower/entrance/ambient`) — ADR-0087 D1 |
+| Motion Durations               | 8 values only (`instant/fast/base/slow/slower/entrance/ambient/orbit`) — ADR-0087 D1, ADR-0098 D5 |
 
 **Documented Exception (ADR-0069 D9) — the sixth duration.** `ambient` (1200ms) was added for a single, narrowly bounded purpose and is the only duration on the scale that is restricted by rule rather than by convention:
 
 > `ambient` is for **non-interactive, one-shot, decorative** motion on a background or ground plane. It MUST NOT be used for any state change, transition, entrance, or exit, and MUST NOT be applied to text, to a control, or to any element carrying content. Under `prefers-reduced-motion: reduce` an `ambient` animation is not shortened — it is not played.
 
 Its one authorised use is the portrait hero's background settle (ADR-0069 D8). A second use requires a new ADR. The restriction is machine-checkable: `ambient` must not appear on a selector that also carries a `:hover`, `:focus` or `[data-state]` condition. The five transition durations are unchanged, and the count does not grow again without an ADR that states what the previous five could not express.
+
+**Documented Exception (ADR-0098 D5) — the eighth value, and the first that is not a duration.** `orbit` is a **cycle period**: the time for one revolution of `BrandBorder`'s rotating edge. It is added because none of the seven values above could express it, which is the statement the paragraph above requires of any eighth value — **all seven are one-way durations**, the time to travel from one state to another, and a revolution has no destination state. Binding `orbit` to a transition duration would tie the speed of a loop to the speed of a hover, a relationship neither value has a reason to hold.
+
+> `orbit` is admissible in exactly two places, both bounded, and in neither of them does it survive the boundary: a rotation bounded by `:hover`/`:focus-within`, which stops on exit, and a rotation bounded by a live broadcast, which stops when the broadcast ends. **At most one continuously rotating border may render in any view.** Under `prefers-reduced-motion: reduce` the rotation stops and the border **stays visible, static, at full strength** — the border is the affordance and the rotation is only emphasis, so removing the motion must never remove the mark (Chapter 5 §5.8 is the authority and is unchanged). `orbit` animates a registered `--angle` custom property and `transform` only, per ADR-0009.
+
+**`ambient` is unaffected by this exception in every respect** — its restriction stands as written above, and its authorised use is still exactly one. `orbit` is not a relaxation of `ambient`; it exists so that `ambient` does not have to be relaxed.
 
 **Documented Exception (Project Owner, §3.7):** `color.gray` is allowed a maximum of **14 shades** (instead of 10), due to its extensive use across Light/Dark Mode. Additional values are required at both ends: `25` is close to white for extremely light Light-mode surfaces, while `950` is close to black for extremely dark Dark-mode surfaces — see Chapter 7 §7.3 examples `--color-gray-25` and `--color-gray-950`.
 
@@ -627,6 +633,10 @@ Document version bump per Chapter 22 §1: this is a **Minor** change (new conten
 
 ### 3.34.1 Functional Role per Identity Color
 
+> **Superseded by ADR-0059 D2/D3 (2026-09-08) — recorded here for the first time by ADR-0098 A8.** The table below was **replaced by the section-register model**: three full-bleed identity registers (green, red, black), each a complete measured set, with neutral as the fourth and dominant register. In particular the two `Explicitly NOT` clauses — Green *"a full-section background wash"* and Red *"or a section background"* — were **retired on evidence** (Guide §6.1 shows the logo on white, red, green and black grounds as four official options, and the guide uses coloured grounds on twelve pages). Black, absent from the table entirely, became a first-class register by ADR-0059 D3.
+>
+> ADR-0059's own Consequences recorded this replacement; Chapter 3 was never updated to say so, which left a retired prohibition reading as live for sixteen days. The rest of each row — the functional roles themselves — still applies at element scale, refined by ADR-0065 D2's ten-role table and ADR-0098 D1's third category (identity colour). **§3.34.2 and §3.34.3 below are unaffected by that supersession and remain in force.**
+
 | Color | Token | Functional Role | Explicitly NOT |
 | --- | --- | --- | --- |
 | 🟢 Federation Green | `brand/primary` | Primary buttons, important links, active/selected states, status indicators, sparing accents | A full-section background wash |
@@ -637,7 +647,8 @@ Document version bump per Chapter 22 §1: this is a **Minor** change (new conten
 
 | Page / Content Type | Personality | Color Treatment | Hero Strategy |
 | --- | --- | --- | --- |
-| Board of Directors, Committees, Policies, Strategic Plan | Quiet / Institutional | White + Green only; Red virtually absent | Typography-led or portrait-led, minimal color |
+| Board of Directors, Committees, Strategic Plan | Quiet / Institutional | White + Green only; Red virtually absent | Typography-led or portrait-led, minimal color |
+| Regulations & Policies | Quiet / Institutional | White dominant; **Green for the Regulations category, Red for the Policies category**, one red CTA band at the foot | Ink hero with the mesh tint; typography-led (ADR-0098 A9) |
 | Championships, Results, live/major events | Dynamic / Athletic | Green-dominant accents, Red for highlights/urgency | Photography + motion + countdowns, boldest register on the site |
 | Clubs (Directory + Profile) | Editorial / Community | White + Green; club identity marks | Photography/crest-led, horizontal movement, hover interaction |
 | News / Media Centre | Editorial | Neutral background, Green typography accents, large imagery, Red only for rare highlights | One dominant image + supporting list (already established this session, §Chapter 27 precedent) |
@@ -645,6 +656,8 @@ Document version bump per Chapter 22 §1: this is a **Minor** change (new conten
 | Homepage | Cinematic (highest register) | Full range available, still Green-sparingly per §3.34.1 | Photography/motion-led, the site's single boldest moment |
 
 This table extends, and must be read together with, the page-level motion/art-direction assignments already established in the Global Visual & Motion Direction policy (Quiet/Editorial/Cinematic levels) — color personality and motion level travel together per page, they are not independent decisions.
+
+> **Amended by ADR-0098 A9 (2026-09-24) — why Regulations & Policies leaves the combined Institutional row.** The page carries two genuinely distinct document categories, Regulations and Policies, and ADR-0065 D3 requires that *"where the data carries a real classification, colour is assigned per category and fixed — never per item."* "White + Green only; Red virtually absent" would force both categories into one colour, which D3 names as a functional defect rather than a restraint. Red here is a category mark on a real classification, not emphasis: it is applied to the card header for every Policy and to no individual card, and it satisfies ADR-0038's caps because those count semantic red (`live`/`achievement`), not a category. The page personality itself is unchanged — still Quiet/Institutional, still typography-led, still white-dominant.
 
 ### 3.34.3 Global Governing Rule (Binding Text)
 
@@ -761,24 +774,65 @@ DT-COLOR-019 · accent.category.media (→ color.desert-sand.700) · Status: Act
 | | |
 | --- | --- |
 | **Context** | A form field took its background from `--color-surface-sunken` and its edge from `--color-border-strong` (`forms.css`). In the dark theme `surface.sunken` is `#000000`, so every field was a pure-black box inside a `#21201C` card: **1.29:1** against it and *darker* than it, inverting the light theme's recessed step. On focus it became `--color-surface-raised` — the card's own colour, **1.00:1** — so the field lost its shape at the moment of interaction. The edge measured **2.75:1** against the proposed new ground, under WCAG 1.4.11's 3:1. |
-| **Decision** | Give the field its own three semantic tokens per theme rather than borrowing from the surface ramp: `color.field.surface`, `color.field.surface-focus`, `color.field.border`. **Light keeps exactly the values it had.** Dark points at existing neutral-warm steps — `.800` at rest, `.700` on focus, `.400` for the edge. No new primitive; no new colour. |
+| **Decision** | Give the field its own three semantic tokens per theme rather than borrowing from the surface ramp: `color.field.surface`, `color.field.surface-focus`, `color.field.border`. **Light keeps exactly the values it had.** Dark points at existing neutral-warm steps — **`.900` at rest, `.950` on focus** (corrected 2026-09-23, see below), `.400` for the edge. No new primitive; no new colour. |
 | **Why this and not a remap** | Remapping `--field-surface` alone fixed the fill and left the edge at 2.75:1. No *neutral* border token in the dark theme clears 3:1 on the new ground; the ten that do are coloured (`border.accent`, the section and item edges), and a green edge on a resting field would read as "active" while red would read as "error" — the substitution ADR-0065 R2 forbids. |
 | **Consequences** | Every form in **both** applications changes in dark mode; light does not. The field no longer borrows from the surface ramp, so a future change to `surface.sunken` — used for chips, hover states and panels — can no longer silently restyle every input on the platform. |
-| **Risks** | Muted hint text on a field falls from 7.72:1 to **4.72:1**. It clears AA, but with less headroom; that figure is a property of the fill and is recorded as an open question on ADR-0097 rather than silently accepted. |
+| **Risks** | In dark the resting field is the **same colour as the card** it sits in (`#21201C` both), so the field is read from its 5.99:1 border alone — deliberate, and the one thing to check on a rendered screen rather than in a table. The muted-text risk recorded here at first build (7.72 → 4.72) is gone: on `#21201C` muted measures **5.99:1**. |
 
-**Verification:** measured in Chromium on the running dashboard from
-`getComputedStyle` — not from the token files. Dark: field `#33322D`, card
-`#21201C`, border `#9E9D96` → field/card **1.27**, border/field **4.72**,
-border/card **5.99**, primary text **12.29**, muted **4.72**; focus `#4A4942`
-→ **1.80** against the card (was 1.00). Light: `#F5F4F1` / `#FFFFFF` /
-`#757470` → 1.10 / 4.25 / 19.09, **unchanged**. Public site (`apps/web` shares
-`forms.css`) measured the same in both themes. Dashboard suite 1370/1370.
+### Correction, 2026-09-23 — the dark fills
+
+As first built the dark fills were `neutral-warm.800` `#33322D` at rest and
+`.700` `#4A4942` on focus. Both passed every pair that had been measured — the
+field against its card, and the text on the field — and both were wrong,
+because neither set was measured against the **edges the field draws in its
+own states**. Five of those were under WCAG 1.4.11's 3:1, three of them worse
+than the black field this section replaced:
+
+| Pair (dark) | Before ADR-0097 | As first built | Floor |
+| --- | ---: | ---: | ---: |
+| Field surface × hover/focus edge (`action.default`) | 4.37 | **2.67** | 3 |
+| Field surface × invalid edge (`semantic.error`) | 5.09 | **3.11** | 3 |
+| Focus surface × hover/focus edge | 3.39 | **1.88** | 3 |
+| Focus surface × invalid edge | 3.95 | **2.19** | 3 |
+| Focus surface × field border | 5.99 | **3.32** | 3 |
+
+The dark Action green `#00843D` is itself a dark colour: it reads only on a
+ground darker still. Two rules follow, and they bind any future change to
+these tokens:
+
+1. **In dark the focus fill is never lighter than the resting fill.** No ramp
+   step above the resting ground lets the green edge clear 3:1, so the focused
+   field cannot lift. The ring (18.72:1) and the edge's change of colour carry
+   the state instead.
+2. **The field fill may equal the card fill.** WCAG 1.4.11 asks that a
+   control's *boundary* be perceivable, and `field.border` is 5.99:1 on both.
+
+`neutral-warm.900` is the **lightest** ramp step on which all seven pairs
+clear their floors (`.800` fails one, `.700` fails two, `.600` four, `.500`
+six); `.950` is the lightest step strictly darker than it, so the focused
+field keeps a ground of its own. Light and high contrast are unchanged.
+
+The full seventeen-pair table across the three themes, the candidate-step
+table, and how the gap was caught, are in **ADR-0097**.
+
+**Verification:** seventeen pairs — the three state edges, the focus ring and
+the three text tiers against both field fills — computed in all three themes
+from the built CSS (`packages/design-tokens/build/css/*.css`), so the value
+measured is the one the cascade resolves. Zero failures. Dark: border/field
+**5.99**, border/focus-fill **6.88**, error edge **3.95** / **4.54**, action
+edge **3.39** / **3.89**, primary text **15.60** / **17.91**, secondary
+**8.57** / **9.84**. Light `#F5F4F1` / `#FFFFFF` / `#757470` → 4.25 / 4.68 /
+19.09, **unchanged by the correction**; high contrast likewise. Every pair is
+now recorded in `packages/design-tokens/tokens/semantic/pairings.json` and
+held by `apps/web/src/lib/design-system/token-lists-contract.spec.ts` (37/37)
+— the guard that went red on `main` when these three tokens shipped without
+records.
 
 ### 3.37.1 Registry Additions
 
 ```text
-DT-COLOR-020 · field.surface (light → neutral-warm.100, dark → neutral-warm.800, HC → white) · Status: Active · v1.0 · Owner: Design System · References: [ADR-0097]
-DT-COLOR-021 · field.surface-focus (light → white, dark → neutral-warm.700, HC → white) · Status: Active · v1.0 · Owner: Design System · References: [ADR-0097]
+DT-COLOR-020 · field.surface (light → neutral-warm.100, dark → neutral-warm.900, HC → white) · Status: Active · v1.0 · Owner: Design System · References: [ADR-0097]
+DT-COLOR-021 · field.surface-focus (light → white, dark → neutral-warm.950, HC → white) · Status: Active · v1.0 · Owner: Design System · References: [ADR-0097]
 DT-COLOR-022 · field.border (light → neutral-warm.500, dark → neutral-warm.400, HC → neutral-warm.900) · Status: Active · v1.0 · Owner: Design System · References: [ADR-0097] · Supersedes border.strong for the field boundary only; border.strong itself is unchanged
 ```
 

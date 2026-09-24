@@ -16,11 +16,11 @@
     "heroImageId": null,
     "heroTitle": {
       "en": "News & Articles",
-      "ar": "الأخبار و المقالات"
+      "ar": "الأخبار والمقالات"
     },
     "heroSubtitle": {
-      "en": "sample text for visual verification only — not approved content. Long enough to test wrapping across every breakpoint and to test how the column behaves at its narrowest.",
-      "ar": "نص تجريبي  ليس محتوى معتمدًا. طوله كافٍ لاختبار الالتفاف عبر كل النطاقات، ولاختبار سلوك النص العربي داخل عمود ضيّق."
+      "en": "The latest from the UAE Athletics Federation: championship results, national team news, and training and youth programmes.",
+      "ar": "آخر أخبار اتحاد الإمارات لألعاب القوى: نتائج البطولات، ومسيرة المنتخب الوطني، وبرامج التدريب والناشئين."
     }
   }
 ]

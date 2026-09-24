@@ -236,6 +236,31 @@ Shared contextual values across all Widgets on the same screen (selected season,
 
 **This chapter documents only the architectural principle** — the exact implementation mechanism (React Context, Global Store, etc.) **MUST NOT** be decided here, but rather in Chapter 21 (Technical Architecture).
 
+## 12.15 Brand Presence — the Operational Dose (ADR-0098 D6)
+
+Added 2026-09-24. Until this section existed the dashboard had **no recorded identity rule at all**, so the only governing sentence was Chapter 1 ADR-0001's *"Do not impose one layer's decoration on the other"* — which, read literally, barred the identity from the operational layer entirely. ADR-0098 D6 scopes that prohibition to what ADR-0001's own Risks row names as the harm: decoration that slows task completion.
+
+The dashboard therefore carries the same identity as the public site, from the same shared library, in a **smaller, quieter dose**.
+
+| | Expressive (public site) | **Operational (this chapter)** |
+| --- | --- | --- |
+| Accent edge | 4px | **3px**, at the top of the screen |
+| Tricolour placements | Header edge, section headings, featured items, sidebar active item | **Screen edge, page headings, sidebar active item** |
+| `BrandBorder` variants | `static`, `hover`, `live` | **`static` and `live` only** |
+| Coloured surfaces | Per the register assignment (ADR-0060 D1) | **Login screen only** |
+| Mesh tint | Permitted | **Never under working content** |
+
+### 12.15.1 Prohibited in the Operational dose (MUST NOT)
+
+1. **`BrandBorder variant="hover"` anywhere.** An operator's pointer crosses dozens of rows in a minute; motion following it is noise, not feedback. PR-001 (Clarity Over Decoration) prevails over PR-005 in any direct conflict — Chapter 2 §Resolution states this, and this is that conflict.
+2. **Any coloured or photographic surface beneath a table, a form or an input.** This is not a new rule: Chapter 27 §20 already requires *"flat token-driven surface colors only […] no photographic backgrounds where the content is data"*, and ADR-0098 leaves that clause deliberately unamended because it is the strongest thing the chapter says about operational screens. The login screen is **not** an exception — its coloured ground sits behind a neutral card, never under the fields.
+3. **Colour as the only cue for a selected item.** Where `BrandBorder static` marks a selection, a non-colour indicator (a check mark or a label) accompanies it, and the border clears **≥ 3:1** against its surface. Chapter 6 §6.2 (WCAG 1.4.1 and non-text contrast) is the authority and is unamended.
+4. **More than one continuously rotating border in any view** — and rotation only where a broadcast is actually live (ADR-0098 D5).
+
+### 12.15.2 What the sidebar indicator becomes
+
+The active item's solid-colour bar becomes a tricolour edge on the inline-start side. This changes the indicator's **paint only**: `aria-current="page"` remains mandatory (Chapter 8 L3 §Active Route), the collapsed/tablet/mobile behaviour of §12.4 is unchanged, and the collapse-state persistence and its `--motion-duration-fast` timing are untouched.
+
 ---
 
 # Dashboard Template Registry

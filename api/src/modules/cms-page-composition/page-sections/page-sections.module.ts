@@ -11,6 +11,6 @@ import { PageSectionsController } from './page-sections.controller.js';
   ],
   controllers: [PageSectionsController],
   providers: [PageSectionsRepository, PageSectionsService],
-  exports: [PageSectionsService],
+  exports: [PageSectionsService, PageSectionsRepository],
 })
 export class PageSectionsModule {}

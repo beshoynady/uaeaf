@@ -3,7 +3,7 @@
 import { useCallback, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { MediaPicker, type MediaAssetOption } from "@/components/admin/pages/media-picker";
-import { SwitchField } from "@/components/admin/homepage-hero/switch-field";
+import { SwitchField } from "@/components/ui/switch-field";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { SelectField } from "@/components/ui/select-field";

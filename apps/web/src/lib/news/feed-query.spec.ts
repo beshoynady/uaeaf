@@ -38,6 +38,25 @@ describe("feedHref", () => {
   it("keeps the page when asked for the page it is already on", () => {
     expect(feedHref({ ...base, page: 2 }, { page: 2 })).toBe("/news?page=2");
   });
+
+  it("writes the category, and keeps it independent of the topic", () => {
+    // Two different questions about one story: `category` is which shelf of
+    // the newsroom wrote it, `topic` is what it is about. A reader may narrow
+    // by both at once, so neither may stand in for the other.
+    const current: FeedQuery = { range: {}, page: 1 };
+
+    expect(feedHref(current, { category: "FederationInMedia" })).toBe("/news?category=FederationInMedia");
+    expect(feedHref({ ...current, category: "FederationInMedia" }, { topic: "international" })).toBe(
+      "/news?category=FederationInMedia&topic=international",
+    );
+  });
+
+  it("clears the category without disturbing the other filters", () => {
+    // "All" is the absence of the parameter, not a third value for it.
+    const current: FeedQuery = { category: "General", topic: "records", range: {}, page: 3 };
+
+    expect(feedHref(current, { category: undefined })).toBe("/news?topic=records");
+  });
 });
 
 describe("pageCount", () => {

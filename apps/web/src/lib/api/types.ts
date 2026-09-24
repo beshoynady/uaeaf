@@ -307,10 +307,18 @@ export interface AthletePublic {
  * would be a second thing to keep true, and the card and the meta description
  * both want exactly this.
  */
-/** `ARTICLE_CATEGORIES`. Not `externalMediaCoverage`, which is a separate
- *  collection of links to coverage published elsewhere — this labels an
- *  article the federation wrote itself. */
-export type ArticleCategory = "General" | "FederationInMedia";
+/**
+ * `ARTICLE_CATEGORIES`: which shelf of the newsroom a story belongs to. Not
+ * `externalMediaCoverage`, which is a separate collection of links to coverage
+ * published elsewhere — this labels an article the federation wrote itself.
+ *
+ * The list and the type are one declaration for the same reason `ARTICLE_TOPICS`
+ * below is: the category tabs iterate the shelves at runtime, and an array
+ * beside a hand-written union is two places a third shelf has to be added to,
+ * only one of which would fail to compile if it were added to the other.
+ */
+export const ARTICLE_CATEGORIES = ["General", "FederationInMedia"] as const;
+export type ArticleCategory = (typeof ARTICLE_CATEGORIES)[number];
 
 /**
  * `ARTICLE_TOPICS`: what a story is about, six and closed (ADR-0094).

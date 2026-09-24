@@ -18,7 +18,7 @@ import { absoluteUrl, SITE_ORIGIN } from "./metadata";
  *  `dangerouslySetInnerHTML` — the standard approach, and safe here because
  *  every value originates in our own API rather than in user input. `<` is
  *  still escaped to `<` so a string value can never close the tag. */
-function JsonLd({ data }: { data: object }) {
+export function JsonLd({ data }: { data: object }) {
   return (
     <script
       type="application/ld+json"

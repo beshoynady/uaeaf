@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "@uaeaf/design-tokens/build/css/index.css";
 @import "../../styles/motion.css";
+/* The video system's own dark register, scoped to `.video-system` -- see the
+   file for why these are variables rather than design tokens. */
+@import "../../styles/video-system.css";
 @import "@uaeaf/design-tokens/css/forms.css";
 @import "@uaeaf/design-tokens/css/interaction.css";
 

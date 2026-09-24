@@ -1,13 +1,18 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
-import { StaticPageScreen, buildStaticPageMetadata, loadStaticPage } from "@/components/pages/static-page-screen";
+import {
+  StaticPageScreen,
+  buildStaticPageMetadata,
+  loadStaticPage,
+} from "@/components/pages/static-page-screen";
 import { NewsList } from "@/components/pages/news/news-list";
 import { NewsPagination } from "@/components/pages/news/news-pagination";
 import { NewsSidebar } from "@/components/pages/news/news-sidebar";
 import { TagFilterNotice } from "@/components/pages/news/tag-filter-notice";
 import { NewsTimeFilter } from "@/components/pages/news/time-filter";
 import { NewsTopicFilter } from "@/components/pages/news/topic-filter";
+import { NewsCategoryTabs } from "@/components/pages/news/category-tabs";
 import { rangeIsPossible } from "@uaeaf/content/time-range";
 import { Section } from "@/components/ui/section";
 import { NEWS_PAGE_SIZE, fetchArticles } from "@/lib/api/articles";
@@ -15,8 +20,8 @@ import { fetchPublicMedia } from "@/lib/api/media";
 import { clampPage, feedHref, pageCount } from "@/lib/news/feed-query";
 import { findPublicPage } from "@/lib/pages/public-pages";
 import { isIndexable } from "@/lib/pages/indexability";
-import { ARTICLE_TOPICS } from "@/lib/api/types";
-import type { ArticleTopic } from "@/lib/api/types";
+import { ARTICLE_CATEGORIES, ARTICLE_TOPICS } from "@/lib/api/types";
+import type { ArticleCategory, ArticleTopic } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
 
 const KEY = "news";
@@ -69,7 +74,11 @@ export async function generateMetadata({
   params: Promise<{ locale: AppLocale }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return buildStaticPageMetadata(KEY, locale, await isIndexable(findPublicPage(KEY)!));
+  return buildStaticPageMetadata(
+    KEY,
+    locale,
+    await isIndexable(findPublicPage(KEY)!),
+  );
 }
 
 export default async function NewsPage({
@@ -93,22 +102,31 @@ export default async function NewsPage({
   // is a 400 upstream, and the page would render an error where a reader
   // expects a list.
   const asked = one(search.topic);
-  const topic = ARTICLE_TOPICS.includes(asked as ArticleTopic) ? (asked as ArticleTopic) : undefined;
+  const topic = ARTICLE_TOPICS.includes(asked as ArticleTopic)
+    ? (asked as ArticleTopic)
+    : undefined;
+
+  const askedCategory = one(search.category);
+  const category = ARTICLE_CATEGORIES.includes(askedCategory as ArticleCategory)
+    ? (askedCategory as ArticleCategory)
+    : undefined;
 
   const askedRange = { from: one(search.from), to: one(search.to) };
   // A window that closes before it opens is refused upstream with a 400. Sent
   // anyway, the page would render an error where a reader expects a list.
-  const range = rangeIsPossible(askedRange.from, askedRange.to) ? askedRange : {};
+  const range = rangeIsPossible(askedRange.from, askedRange.to)
+    ? askedRange
+    : {};
   const page = clampPage(one(search.page));
 
   const [{ title, subtitle, heroImage }, feed] = await Promise.all([
     loadStaticPage(KEY, locale),
-    fetchArticles(page, undefined, tag, undefined, range, topic),
+    fetchArticles(page, undefined, tag, category, range, topic),
   ]);
 
   const articles = feed?.items ?? [];
   const pages = pageCount(feed?.total ?? 0, feed?.limit ?? NEWS_PAGE_SIZE);
-  const query = { tag, topic, range, page };
+  const query = { tag, category, topic, range, page };
 
   // A page past the end is a stale link into a feed that has since shrunk, or
   // a hand-edited number. Corrected in the address rather than answered with
@@ -119,7 +137,9 @@ export default async function NewsPage({
     redirect({ href: feedHref(query, { page: pages }), locale });
   }
 
-  const covers = await fetchPublicMedia(articles.map((article) => article.coverMediaId));
+  const covers = await fetchPublicMedia(
+    articles.map((article) => article.coverMediaId),
+  );
 
   return (
     <StaticPageScreen
@@ -135,6 +155,9 @@ export default async function NewsPage({
     >
       <Section className="pt-12 md:pt-16">
         <div className="flex flex-col gap-5 border-b border-[color:var(--color-border-default)] pb-6">
+          {/* The shelf first, then the subject within it, then the window on
+              it: three questions in the order a reader narrows by them. */}
+          <NewsCategoryTabs query={query} />
           <NewsTopicFilter query={query} />
           <NewsTimeFilter query={query} />
         </div>
@@ -165,7 +188,11 @@ export default async function NewsPage({
             scroll". `min-w-0` on each child is the same rule one level down,
             for the flex column inside. */}
         <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-10 lg:grid-cols-[minmax(0,840fr)_minmax(0,424fr)] lg:gap-12">
-          <div data-reveal="" data-reveal-reduced="fade" className="flex min-w-0 flex-col gap-10">
+          <div
+            data-reveal=""
+            data-reveal-reduced="fade"
+            className="flex min-w-0 flex-col gap-10"
+          >
             <NewsList articles={articles} covers={covers} locale={locale} />
             <NewsPagination query={query} pages={pages} />
           </div>

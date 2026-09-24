@@ -11,6 +11,10 @@ Read this before starting any visual/design task, alongside `UAEAF-GLOBAL-VISUAL
 - **Brand colors (raw values):** `00-01-Introduction-BrandIdentity.md` — ADR-0001–0005 (Green `#00843D`, Red `#C8102E`, Black/Neutral).
 - **Token architecture (Primitive→Brand→Semantic→Component→Runtime):** `03-Design-Tokens.md` §3.1–3.2.
 - **Usage hierarchy (70–80% neutral / 15–20% green / ≤5% red) + per-page color personality table:** `03-Design-Tokens.md` §3.34 (**ADR-0050**) — the binding rule.
+- **⚠ The numeric ratio above is superseded** — by ADR-0051 (`03-Design-Tokens.md` §3.35.1, qualitative hierarchy: neutral dominant, brand subordinate-but-significant, no percentage as a budget) and again by ADR-0059 D1 (colour marks *what a region is*). What binds today: §3.34.2 per-page personality, §3.34.3 the qualitative rule, **ADR-0060 D1** register per page, **ADR-0065 D2** role per element.
+- **Full-bleed identity grounds (green / red / black section registers) + the mandatory green–red separator:** `ADR-0059-Brand-Guide-Conformance-And-Colour-Registers.md` D2–D4 — this replaced §3.34.1's "no background wash" prohibition, which Chapter 3 had gone on stating until ADR-0098 A8.
+- **The three categories of colour** — role (`ADR-0065` R1), categorical (`ADR-0065` D3), and **identity** (`ADR-0098` D1 **R3**, colour that encodes nothing and is admissible only as a bounded edge, rule, ring or full surface): `ADR-0098-Brand-UI-Kit-Surfaces-And-Accents.md` D1.
+- **The five kit surfaces, the tricolour accent, and the prohibition on direct green→red blending:** `ADR-0098` D2–D3. **Five approved token values are open owner decisions, not yet settled** — `ADR-0098` §8.
 - **Protocol summary:** `UAEAF-GLOBAL-VISUAL-DESIGN-PROTOCOL.md` §5.
 - **Photography color grading (warm highlight / cool-green shadow), gradient rules:** `27-Brand-Visual-Language.md` §20–22, §28 (Draft status — creative-direction only, does not override ADR-0050 or Chapter 1).
 
@@ -18,6 +22,8 @@ Read this before starting any visual/design task, alongside `UAEAF-GLOBAL-VISUAL
 
 - **Categories (Cinematic / Editorial / Service-Trust / Institutional / Sport-Performance):** Protocol §4, cross-referenced with `03-Design-Tokens.md` §3.34.2.
 - **Motion level per personality (Quiet/Editorial/Cinematic):** Protocol §13 — travels together with color personality, not decided independently.
+- **The two brand doses** — Expressive (public site) and Operational (dashboard, with its explicit prohibition list): `12-Dashboard-Patterns.md` **§12.15** (ADR-0098 D6).
+- **Bounded rotation (hover / live) and `motion.duration.orbit`,** the scale's eighth value and first cycle period: `03-Design-Tokens.md` §3.14 + `ADR-0098` D5. `ambient`'s restriction is untouched.
 - **Page template assembly (which components compose which page):** `20-Page-Templates.md`.
 
 ## 3. RTL / LTR Rules

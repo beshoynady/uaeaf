@@ -1,5 +1,5 @@
 import type { TimeRange } from "@uaeaf/content/time-range";
-import type { ArticleTopic } from "@/lib/api/types";
+import type { ArticleCategory, ArticleTopic } from "@/lib/api/types";
 
 /**
  * Everything that narrows the newsroom's listing, as one address.
@@ -23,6 +23,12 @@ import type { ArticleTopic } from "@/lib/api/types";
 export interface FeedQuery {
   /** One free label, matched whole and case-insensitively upstream. */
   tag?: string;
+  /** Which shelf of the newsroom the story belongs to. Its own axis: a story
+   *  has exactly one category and one topic, and they answer different
+   *  questions — who published it first, and what it is about. Absent means
+   *  every shelf, so "all" is the missing parameter rather than a third
+   *  value. */
+  category?: ArticleCategory;
   /** One subject from the closed list (ADR-0094). */
   topic?: ArticleTopic;
   /** A window on the publication date. */
@@ -52,6 +58,7 @@ export const feedHref = (current: FeedQuery, change: Partial<FeedQuery> = {}): s
 
   const query = new URLSearchParams();
   if (next.tag) query.set("tag", next.tag);
+  if (next.category) query.set("category", next.category);
   if (next.topic) query.set("topic", next.topic);
   if (next.range.from) query.set("from", next.range.from);
   if (next.range.to) query.set("to", next.range.to);

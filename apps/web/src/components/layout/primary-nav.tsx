@@ -212,6 +212,14 @@ export function PrimaryNav({ drawerOpen, onCloseDrawer, activePath }: Props) {
   };
 
   const renderLeaf = (item: NavItem, level: number) => {
+    // Exactly this address, and no descendant of it.
+    //
+    // A leaf must NOT match its own descendants: `PRIMARY_NAV` lists `/about`
+    // beside `/about/president`, so a prefix match would put
+    // `aria-current="page"` on two links at once on that page — ambiguous to a
+    // screen reader and visibly wrong. Descendants are the GROUP's business,
+    // and `containsPath` below (which does match them) is what keeps
+    // "المركز الإعلامي" current across every page under `/media`.
     const active = item.href === current;
     return (
       <Link

@@ -47,7 +47,18 @@ This chapter formalizes the decision made in Chapter 0 Discovery ("lightweight g
 
 ## 1. Document Versioning
 
+**Current version: `v1.1.0`.**
+
 `v1.0.0` is the version of this document upon completion of Chapters 0–20 (the design/content/composition layer). Each individual chapter has its own independent Baseline Freeze status (documented at the top of each file) — however, the overall document version **MUST** follow the highest-level change that has occurred in any chapter (Chapter 3 §3.6 follows the same logic, applied at the level of the complete document).
+
+### Version history
+
+| Version | Date | Level | Change |
+| --- | --- | --- | --- |
+| `v1.0.0` | 2026-08 | — | Baseline freeze: Chapters 0–26 complete, Chapter 27 added as a Draft extension |
+| `v1.1.0` | 2026-09-24 | **Minor** | **ADR-0098 — Brand UI Kit: Surfaces & Accents.** Adds the identity-colour category (R3), the eighth motion duration (`orbit`, the first cycle period), the Operational brand dose (new §12.15), and twenty-four amendments across nine files. **Minor, not Major:** no prior decision is invalidated except the two clauses recorded at ADR-0098 A27 and A14 with their reasons; every other amendment scopes an existing rule to the case it was written for and leaves it in force. The full changelog lives in `CHANGELOG.md`. |
+
+A **Minor** bump is correct when content is added and no previous decision is broken; a **Major** bump is required the moment a previous decision is invalidated outright (ADR-0034 above). Where an amendment reverses a measured decision, the measurement **MUST** be preserved beside the reversal rather than deleted, so a future reader can see what was traded and why — the pattern ADR-0098 A27 follows.
 
 ## 2. Roles & Ownership (Current State)
 

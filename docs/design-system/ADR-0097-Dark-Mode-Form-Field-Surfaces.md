@@ -110,6 +110,11 @@ Rest stays `#000000`; focus becomes `#33322D` instead of `#21201C`.
 
 ### Option 3 — Option 1 plus the field's own tokens *(ACCEPTED AND BUILT)*
 
+> **Owner decision, 2026-09-23 — FINAL.** `neutral-warm.400` (`#9E9D96`) is
+> approved as `--color-field-border`'s dark value, confirmed after reviewing the
+> rendered dark form. This supersedes the provisional acceptance below and
+> closes the substitution raised against the earlier `#83827E` proposal.
+
 **Correction to this ADR's own earlier draft.** The draft proposed `#83827E`,
 described as "the first warm neutral on the system's ramp" clearing 3.3:1. It
 was not on the ramp: it was derived by walking RGB values, and the neutral-warm
@@ -124,15 +129,19 @@ ground and edge, so the field stops borrowing from the surface ramp.
 
 | Token | Light | Dark | High contrast |
 | --- | --- | --- | --- |
-| `--color-field-surface` | `neutral-warm.100` `#F5F4F1` | `neutral-warm.800` `#33322D` | `#FFFFFF` |
-| `--color-field-surface-focus` | `#FFFFFF` | `neutral-warm.700` `#4A4942` | `#FFFFFF` |
+| `--color-field-surface` | `neutral-warm.100` `#F5F4F1` | `neutral-warm.900` `#21201C` | `#FFFFFF` |
+| `--color-field-surface-focus` | `#FFFFFF` | `neutral-warm.950` `#131210` | `#FFFFFF` |
 | `--color-field-border` | `neutral-warm.500` `#757470` | `neutral-warm.400` `#9E9D96` | `neutral-warm.900` |
 
 **Light keeps exactly the values it had** — the pairing already worked there,
 and the tokens exist so the two themes can differ without a component knowing
 which theme it is in.
 
-#### Dark, measured in a live browser after implementation
+#### Dark, first implementation — SUPERSEDED by the correction below
+
+These are the numbers as first built (`neutral-warm.800` / `.700`). They are
+kept because the correction is only legible beside them: every figure here
+passes, and the build was still wrong.
 
 | Pair | Before | After | Floor | |
 | --- | ---: | ---: | ---: | --- |
@@ -160,6 +169,125 @@ grey panel.
 
 ---
 
+## Correction, 2026-09-23 — the state edges
+
+The table above measures the field against its **card**, and the **text** on
+the field. It never measures the edges the field draws in its own states.
+Those edges are what WCAG 1.4.11 is about, and on `neutral-warm.800` / `.700`
+five of them were under 3:1 — worse, in three cases, than the black field this
+ADR replaced:
+
+| Pair (dark) | Before this ADR | As first built | Floor |
+| --- | ---: | ---: | ---: |
+| Field surface × hover/focus edge (`action.default` `#00843D`) | 4.37 | **2.67** | 3 |
+| Field surface × invalid edge (`semantic.error` `#E53E3E`) | 5.09 | **3.11** | 3 |
+| Focus surface × hover/focus edge | 3.39 | **1.88** | 3 |
+| Focus surface × invalid edge | 3.95 | **2.19** | 3 |
+| Focus surface × field border | 5.99 | **3.32** | 3 |
+
+The dark Action green `#00843D` is a *dark* colour. It can only be read
+against a ground darker still, and `#33322D` is not. Lightening the field to
+fix its relationship with the card broke its relationship with every edge it
+draws.
+
+### The two rules this forces
+
+1. **In dark, `--color-field-surface-focus` is not lighter than
+   `--color-field-surface`.** There is no ramp step above the resting ground on
+   which the green edge clears 3:1, so the focused field cannot lift. The focus
+   state is carried by the ring (18.72:1) and by the edge changing colour —
+   both stronger signals than a 1.4:1 change of fill, and both available to a
+   reader who does not perceive the fill change at all.
+2. **The field ground may equal the card ground.** Since ADR-0097 the field has
+   an edge at 5.99:1, and WCAG 1.4.11 asks for the *boundary* of a control to
+   be perceivable, not for its fill to differ from what is behind it. The
+   original complaint — a field that vanishes on focus — was never about the
+   fill on its own; it was about a field with neither a fill difference nor an
+   edge that could be read.
+
+### The chosen values, and why these and not others
+
+Every existing `neutral-warm` step, measured as a dark field ground against
+all seven things drawn on or beside it:
+
+| Step | Hex | field-border | error edge | action edge | text-primary | text-secondary | focus ring | |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| `.500` | `#757470` | 1.72 | 1.13 | 1.03 | 4.48 | 2.46 | 4.68 | fails 6 |
+| `.600` | `#616058` | 2.32 | 1.53 | 1.31 | 6.05 | 3.32 | 6.32 | fails 4 |
+| `.700` | `#4A4942` | 3.32 | 2.19 | 1.88 | 8.65 | 4.75 | 9.04 | fails 2 |
+| `.800` | `#33322D` | 4.72 | 3.11 | 2.67 | 12.29 | 6.75 | 12.84 | fails 1 |
+| **`.900`** | **`#21201C`** | 5.99 | 3.95 | 3.39 | 15.60 | 8.57 | 16.30 | **first step that passes** |
+| `.950` | `#131210` | 6.88 | 4.54 | 3.89 | 17.91 | 9.84 | 18.72 | passes |
+| `black` | `#000000` | 7.72 | 5.09 | 4.37 | 20.09 | 11.03 | 21.00 | passes |
+
+Floors: 3 for the three edges and the ring (WCAG 1.4.11), 4.5 for the two text
+tiers (WCAG 1.4.3). Steps `.50`–`.400` are omitted: they are light colours and
+fail the text tiers outright.
+
+- **Resting ground = `neutral-warm.900` `#21201C`** — the **lightest** step on
+  which every pair clears its floor. Lighter is the direction this ADR wanted
+  (complaint 1); `.900` is as far as the green edge allows.
+- **Focus ground = `neutral-warm.950` `#131210`** — under rule 1 the focus
+  ground cannot be lighter than `.900`, and `.950` is the lightest step that is
+  strictly darker, so the focused field keeps a ground of its own instead of
+  being identical to its resting state.
+
+`--color-field-border` is unchanged at `neutral-warm.400` `#9E9D96` (owner
+decision above).
+
+### Every field pair, all three themes
+
+Measured from the built CSS (`packages/design-tokens/build/css/*.css`) with the
+WCAG 2.x relative-luminance formula, compared unrounded.
+
+| Pair | Floor | Light | Dark | High contrast |
+| --- | ---: | ---: | ---: | ---: |
+| `field-border` × `field-surface` | 3 | 4.25 | 5.99 | 16.30 |
+| `field-border` × `field-surface-focus` | 3 | 4.68 | 6.88 | 16.30 |
+| `field-border` × `surface-raised` (the card) | 3 | 4.68 | 5.99 | 16.30 |
+| `semantic-error` × `field-surface` | 3 | 4.53 | 3.95 | 10.39 |
+| `semantic-error` × `field-surface-focus` | 3 | 4.98 | 4.54 | 10.39 |
+| `action-default` × `field-surface` | 3 | 4.37 | 3.39 | 4.81 |
+| `action-default` × `field-surface-focus` | 3 | 4.81 | 3.89 | 4.81 |
+| `brand-primary` × `field-surface` | 3 | 4.37 | 3.39 | 4.81 |
+| `brand-primary` × `field-surface-focus` | 3 | 4.81 | 3.89 | 4.81 |
+| `a11y-focus-ring` × `field-surface` | 3 | 19.09 | 16.30 | 21.00 |
+| `a11y-focus-ring` × `field-surface-focus` | 3 | 21.00 | 18.72 | 21.00 |
+| `text-primary` × `field-surface` | 4.5 | 19.09 | 15.60 | 21.00 |
+| `text-primary` × `field-surface-focus` | 4.5 | 21.00 | 17.91 | 21.00 |
+| `text-secondary` × `field-surface` | 4.5 | 8.22 | 8.57 | 21.00 |
+| `text-secondary` × `field-surface-focus` | 4.5 | 9.04 | 9.84 | 21.00 |
+| `text-disabled` × `field-surface` | exempt | 2.47 | 2.58 | 9.04 |
+| `text-disabled` × `field-surface-focus` | exempt | 2.72 | 2.96 | 9.04 |
+
+`--color-brand-primary` is declared once in `base.css` and never per theme, so
+the contract holds no record for it; it is `#00843D` in all three themes, the
+same value as `--color-action-default`, so those two rows are one measurement.
+
+`--color-text-disabled` is exempt under WCAG 1.4.3, which exempts the text of
+an inactive component. `--color-text-muted` is absent because nothing paints it
+inside a field — the label, the placeholder and the select chevron are all
+`--color-text-secondary`.
+
+### The lesson
+
+The first pass measured a **surface against the surfaces near it**. A field is
+not a surface: it is a control, and a control's ground is also the backdrop for
+every edge it draws in every one of its states. The question to ask of a
+ground is not *what is this next to* but *what is drawn on this, in each
+state*.
+
+What caught it was not a second reading. It was
+`apps/web/src/lib/design-system/token-lists-contract.spec.ts`, which fails when
+a colour enters a theme list with no record in `tokens/semantic/pairings.json`
+naming what it is measured against. The three new tokens shipped without those
+records, so `main` went red — and writing the records is what forced every
+partner to be named and every pair to be measured. **The guard did not check
+the arithmetic; it refused to let the arithmetic go unwritten.** That is the
+whole of its value here.
+
+---
+
 ## What this ADR does NOT cover
 
 `--color-surface-sunken` is `#000000` in dark, and that is also why the public
@@ -183,22 +311,20 @@ Flagged here so the two are not confused. It needs its own ADR.
 | `packages/design-tokens/css/forms.css` | `.field` and `.field:focus-within` read `--color-field-surface` / `--color-field-surface-focus` instead of the surface ramp |
 | `apps/dashboard/src/components/ui/interactive.ts` | `FIELD_EDGE` → `--color-field-border` |
 | `apps/web/src/components/ui/surface.ts` | `FIELD_EDGE` → `--color-field-border` |
+| `packages/design-tokens/tokens/semantic/pairings.json` | records for the three tokens, and the two field grounds added to the partners of `action.default`, `semantic.error` and the focus ring |
 
 ## Verification
 
-Measured in Chromium on the running dashboard, reading `getComputedStyle` and
-computing WCAG ratios from the rendered colours — not from the token files:
-
-- **Dark, `/ar/news/new`:** field `#33322D`, card `#21201C`, border `#9E9D96`,
-  text `#FAFAF8` → 1.27 / 4.72 / 5.99 / 12.29, muted 4.72. Focus `#4A4942` →
-  **1.80** against the card and 1.42 against rest.
-- **Light, same screen:** field `#F5F4F1`, card `#FFFFFF`, border `#757470` →
-  1.10 / 4.25 / 19.09 — **identical to before the change**.
-- **Public site** (`apps/web` shares `forms.css`): the contact form measures
-  light `#F5F4F1`/`#757470` (19.09 / 4.25, unchanged) and dark `#33322D`/
-  `#9E9D96` (12.29 / 4.72). `/news` date inputs use a different recipe and are
-  untouched.
-- Dashboard suite: **1370/1370**.
+- **Every pair in the three tables above**, computed from the built CSS rather
+  than from the token sources, so the number measured is the one the cascade
+  resolves. Zero failures.
+- `apps/web/src/lib/design-system/token-lists-contract.spec.ts` — the guard
+  that went red on `main` when these tokens shipped without pairings records.
+  Green, 37/37, with the records written.
+- **Light and high contrast are untouched by the correction.** Only the two
+  dark fills moved; every light and high-contrast figure in this ADR is the
+  one it carried before.
+- Both application suites, default configuration — see the session report.
 
 ## Consequences
 
@@ -210,9 +336,13 @@ computing WCAG ratios from the rendered colours — not from the token files:
   states and panels — can no longer silently restyle every input on the
   platform.
 
-## Open question for the owner
+## Open question for the owner — CLOSED by the correction
 
-The 4.72:1 muted-hint margin is a property of the `#33322D` fill, not the edge.
-It clears AA, but with less room than the 7.72:1 it had on black. If that is too
-thin, the fill has to change and this ADR should be reopened with a fourth fill
-candidate rather than amended.
+The question was whether the 4.72:1 muted-hint margin on the `#33322D` fill was
+too thin. The correction moved the fill to `#21201C`, where muted text measures
+**5.99:1** at rest and **6.88:1** on focus. No fourth fill candidate is needed.
+
+Remaining, and deliberate: in dark the resting field is the same colour as the
+card it sits in, and its 5.99:1 border is what gives it a shape. That is rule 2
+above, not an oversight — but it is the one thing in this ADR a reviewer should
+look at on a rendered screen rather than in a table.

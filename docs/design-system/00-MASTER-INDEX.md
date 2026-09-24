@@ -1,6 +1,6 @@
 # UAEAF Enterprise Design System Framework — Master Index
 
-### Design System Review & Consolidation (v1.0.0 Final)
+### Design System Review & Consolidation (v1.1.0 — baseline v1.0.0 plus the amendments registered below)
 
 **Status:** 27 Chapters (0–26) completed. This document serves as the **single entry point** to the complete framework and is the outcome of the “Design System Review & Consolidation” phase planned since Chapter 0.
 
@@ -101,8 +101,21 @@ Both are explicit citations to the authoritative source rather than independent 
 
 # Final Release Statement
 
-**UAEAF Enterprise Design System Framework — v1.0.0**
+**UAEAF Enterprise Design System Framework — v1.1.0**
 
 **Status: Baseline Frozen — Ready for Technical Handoff (Chapter 21) and Full Implementation.**
 
 Any subsequent development **MUST** proceed exclusively through **Chapter 22 — Governance**.
+
+---
+
+## Version Register
+
+| Version | Date | Level | Governing ADR | Changelog |
+| --- | --- | --- | --- | --- |
+| `v1.0.0` | 2026-08 | Baseline freeze | ADR-0001 → ADR-0035 | — |
+| **`v1.1.0`** | **2026-09-24** | **Minor** | **ADR-0098 — Brand UI Kit: Surfaces & Accents** | `CHANGELOG.md` |
+
+Chapter 22 §1 carries the version-history table and the Minor/Major criteria. `CHANGELOG.md` in this directory carries the per-amendment record.
+
+**ADR-0098** (`ADR-0098-Brand-UI-Kit-Surfaces-And-Accents.md`, standalone — the expressive identity layer built once as a shared UI library for both applications: the identity-colour category R3 added beside ADR-0065's R1/R2, the five kit surfaces mapped onto the registers ADR-0059 D2 already established, the tricolour accent with its surface-dependent middle step and the prohibition on direct green→red blending, `BrandStreaks` discharging ADR-0005's undelivered Chapter 8 component with its ascent angle held against RTL, `motion.duration.orbit` as the scale's eighth value and first cycle period while `ambient`'s restriction stays untouched, the two named doses with the dashboard's prohibition list in new Chapter 12 §12.15, and five approved token values held open as owner decisions rather than adopted against a measured conflict).

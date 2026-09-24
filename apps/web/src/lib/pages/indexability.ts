@@ -73,8 +73,16 @@ export async function isIndexable(page: PublicPage): Promise<boolean> {
       const response = await fetchPublic<Paginated<ArticlePublic>>("/articles/public?page=1&limit=1");
       return Array.isArray(response?.items) && response.items.length > 0;
     }
+    case "videos": {
+      // The library's threshold is met the moment one video is published. The
+      // page shipped `noindex` because `videos` had no public list at all;
+      // it has one now, so the flag follows the content rather than the
+      // history — and it flips here, where the sitemap reads it too.
+      const response = await fetchPublic<Paginated<unknown>>("/videos/public?page=1&limit=1");
+      return Array.isArray(response?.items) && response.items.length > 0;
+    }
     default:
-      // The remaining seven have no content source at all yet. This is not a
+      // The remaining six have no content source at all yet. This is not a
       // pessimistic default — it is the accurate one, and it flips per page
       // in the same change that gives that page a list to render.
       return false;
