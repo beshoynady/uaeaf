@@ -40,11 +40,14 @@ export const VideoStill = ({
   return (
     <span
       aria-hidden="true"
+      data-surface="ink"
       className={`flex size-full items-center justify-center ${rounded} ${className}`}
-      // The site's own dark register, as literals for the same reason the
-      // preview card uses literals: it belongs to the video system alone, and
-      // a token would invite it into screens that never agreed to it.
-      style={{ background: "linear-gradient(135deg, #121614, #0A0C0B)", color: "#4C5651" }}
+      // The site's own ground, through ADR-0098's ink surface rather than a
+      // second copy of its values.
+      style={{
+        background: "linear-gradient(var(--brand-ramp-angle), color-mix(in srgb, var(--surface-text) 6%, var(--surface-bg)), var(--surface-bg))",
+        color: "var(--surface-text-muted)",
+      }}
     >
       <UiIcon name="video" className="size-[var(--icon-size-sm)]" />
     </span>

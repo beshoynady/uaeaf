@@ -14,6 +14,7 @@
     "@tiptap/pm": "3.31.3",
     "@tiptap/react": "3.31.3",
     "@tiptap/starter-kit": "3.31.3",
+    "@uaeaf/brand-ui": "*",
     "@uaeaf/design-tokens": "*",
     "next": "16.3.5",
     "next-intl": "^4.14.2",

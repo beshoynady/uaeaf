@@ -14,7 +14,7 @@
     "governance": "Governance & Strategy",
     "visionMission": "Vision & Mission",
     "strategicPlan": "Strategic Plan",
-    "policies": "Policies & Regulations",
+    "policies": "Regulations & Policies",
     "members": "Members",
     "clubs": "Clubs",
     "clubsDescription": "General Assembly members",
@@ -84,7 +84,8 @@
     "president-message": "President's Message",
     "vision-mission": "Vision & Mission",
     "strategic-plan": "Strategic Plan",
-    "breadcrumbLabel": "Breadcrumb"
+    "breadcrumbLabel": "Breadcrumb",
+    "policies": "Regulations & Policies"
   },
   "Sections": {
     "boardMembers": "Board members",
@@ -389,5 +390,66 @@
     "filterAssociation": "Championship or event",
     "filterAssociationAll": "All championships and events",
     "rangeBackwards": "The “to” date must come after the “from” date."
+  },
+  "Policies": {
+    "title": "Regulations and Policies",
+    "intro": "The documents that govern the federation's work: competition and registration regulations, approved policies, and official forms. Every document published here is the version in force.",
+    "breadcrumbLabel": "Breadcrumb",
+    "searchLabel": "Search the documents",
+    "searchPlaceholder": "Regulation or policy name",
+    "clearSearch": "Clear search",
+    "allFilter": "All",
+    "countUnit": "documents",
+    "showing": "Showing {shown} of {total} documents",
+    "groups": {
+      "regulations": {
+        "title": "Regulations",
+        "description": "The rules governing competitions, registration and club membership."
+      },
+      "policies": {
+        "title": "Policies",
+        "description": "Policies approved by the board and binding on every party."
+      },
+      "forms": {
+        "title": "Forms",
+        "description": "The official forms required for applications and submissions."
+      },
+      "guides": {
+        "title": "Guides",
+        "description": "Detailed guidance documents."
+      }
+    },
+    "emptySearchTitle": "No document matches “{query}”",
+    "emptyGroupTitle": "No documents published in this section yet",
+    "emptyDescription": "Try another word, or show every document.",
+    "showAll": "Show all documents",
+    "view": "View document",
+    "download": "Download {title}",
+    "dateLabel": "Published",
+    "sizeLabel": "File size",
+    "featuredBadge": "Core",
+    "seedNotice": "This is a preliminary list: documents are published from the CMS as they are approved, and their files are not yet uploaded.",
+    "governanceTitle": "Governance and strategy",
+    "governanceDescription": "The framework these documents rest on: the federation's vision and mission, and its strategic plan.",
+    "tiles": {
+      "vision": {
+        "title": "Vision and Mission",
+        "description": "What the federation works toward, and the values it works by."
+      },
+      "strategy": {
+        "title": "Strategic Plan",
+        "description": "The goals and workstreams for the coming years."
+      }
+    },
+    "ctaTitle": "Didn't find the document you were looking for?",
+    "ctaDescription": "Contact the federation and we will point you to the right department.",
+    "ctaAction": "Contact us",
+    "types": {
+      "Regulation": "Regulation",
+      "Policy": "Policy",
+      "Form": "Form",
+      "Guide": "Guide",
+      "Decision": "Decision"
+    }
   }
 }

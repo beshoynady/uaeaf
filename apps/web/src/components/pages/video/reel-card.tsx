@@ -7,6 +7,7 @@ import { titleOf } from "@/lib/video/types";
 import type { VideoPublic } from "@/lib/video/types";
 import type { MediaAssetPublic } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
+import { FOCUS_WIDE } from "./chrome";
 
 /**
  * One vertical short, on the reels shelf.
@@ -48,11 +49,10 @@ export const ReelCard = ({
       type="button"
       onClick={onPlay}
       data-testid="reel-card"
-      className="vs-rise group relative block w-full overflow-hidden text-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--vs-green)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--vs-bg)]"
+      className={`vs-rise group relative block w-full overflow-hidden text-start ${FOCUS_WIDE}`}
       style={{
         aspectRatio: "9 / 16",
-        borderRadius: "var(--vs-radius-reel)",
-        background: "var(--vs-surface)",
+        borderRadius: "var(--radius-lg)",
         ...(revealIndex === undefined ? {} : { ["--vs-reveal-index" as string]: revealIndex }),
       }}
     >
@@ -60,13 +60,13 @@ export const ReelCard = ({
         asset={thumbnail}
         locale={locale}
         sizes="(max-width: 640px) 46vw, 200px"
-        className="transition-transform duration-500 ease-[cubic-bezier(.16,.8,.24,1)] group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+        className="transition-transform duration-[var(--motion-duration-slower)] ease-[cubic-bezier(.16,.8,.24,1)] group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
       />
 
       <span
         aria-hidden="true"
         className="absolute inset-0"
-        style={{ background: "linear-gradient(to bottom, rgba(10,12,11,0.4) 0%, transparent 30%, transparent 46%, rgba(10,12,11,0.88) 100%)" }}
+        style={{ background: "linear-gradient(to bottom, color-mix(in srgb, var(--color-surface-overlay) 40%, transparent) 0%, transparent 30%, transparent 46%, color-mix(in srgb, var(--color-surface-overlay) 88%, transparent) 100%)" }}
       />
 
       <span className="absolute end-2.5 top-2.5">
@@ -76,16 +76,16 @@ export const ReelCard = ({
       {/* Towards the top rather than dead centre: the foot of the card belongs
           to the title, and a disc over the words would compete with them. */}
       <span className="absolute start-2.5 top-2.5">
-        <span className="transition-opacity duration-[var(--motion-duration-fast)] group-hover:opacity-0 motion-reduce:transition-none">
+        <span className="transition-opacity duration-[var(--motion-duration-fast)] group-hover:opacity-0 group-active:opacity-0 motion-reduce:transition-none">
           <PlayButton size="sm" />
         </span>
-        <span className="absolute inset-0 opacity-0 transition-opacity duration-[var(--motion-duration-fast)] group-hover:opacity-100 motion-reduce:transition-none">
+        <span className="absolute inset-0 opacity-0 transition-opacity duration-[var(--motion-duration-fast)] group-hover:opacity-100 group-active:opacity-100 motion-reduce:transition-none">
           <PlayButton size="sm" filled />
         </span>
       </span>
 
       <span className="absolute inset-x-0 bottom-0 block p-3">
-        <span className="line-clamp-3 text-body-sm font-semibold leading-snug" style={{ color: "#FFFFFF" }}>
+        <span className="line-clamp-3 text-body-sm font-semibold leading-snug" style={{ color: "var(--surface-text)" }}>
           {title}
         </span>
       </span>

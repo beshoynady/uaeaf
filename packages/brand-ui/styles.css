@@ -1,0 +1,11 @@
+/*
+ * One import for a consuming application: the surface mechanism plus every
+ * component stylesheet in this package.
+ *
+ * Order matters and is the cascade's, not alphabetical. The surfaces come
+ * first because every rule below reads the custom properties they publish.
+ */
+@import "@uaeaf/design-tokens/css/surfaces.css";
+@import "./accent/accent.css";
+@import "./controls/controls.css";
+@import "./content/content.css";

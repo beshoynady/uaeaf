@@ -148,7 +148,9 @@ describe("SiteHeader disclosure behaviour", () => {
     await user.click(nested);
     expect(nested).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("link", { name: "Vision & Mission" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Policies & Regulations" })).toBeInTheDocument();
+    // Renamed 2026-09-24 (ADR-0098 Phase F): the page leads with what it
+    // mostly holds, and the Arabic and English labels now agree on the order.
+    expect(screen.getByRole("link", { name: "Regulations & Policies" })).toBeInTheDocument();
   });
 
   it("opens only one panel at a time", async () => {

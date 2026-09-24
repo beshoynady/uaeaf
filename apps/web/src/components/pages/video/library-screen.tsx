@@ -20,6 +20,8 @@ import type { AssociationOption } from "@/lib/video/association-options";
 import type { LiveStreamPublic, VideoPublic } from "@/lib/video/types";
 import type { MediaAssetPublic } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
+import { FOCUS } from "@/components/ui/interactive";
+import { GHOST_PILL } from "./chrome";
 
 /**
  * The video library.
@@ -167,13 +169,13 @@ export const LibraryScreen = ({
   const liveVenue = live?.venue ? live.venue[locale] || live.venue.ar : "";
 
   return (
-    <div className="video-system">
+    <div data-surface="ink" className="video-system">
       <div className="mx-auto flex max-w-[1440px] flex-col gap-12 px-4 py-10 sm:px-6 md:px-8 lg:px-12 xl:px-16">
         <header className="flex flex-col gap-3 text-center">
-          <h1 className="text-h1 font-extrabold leading-[1.1]" style={{ color: "var(--vs-text)" }}>
+          <h1 className="text-h1 font-extrabold leading-[1.1]" style={{ color: "var(--surface-text)" }}>
             {t("libraryTitle")}
           </h1>
-          <p className="mx-auto max-w-2xl text-body leading-relaxed" style={{ color: "var(--vs-text-secondary)" }}>
+          <p className="mx-auto max-w-2xl text-body leading-relaxed" style={{ color: "var(--surface-text-muted)" }}>
             {t("libraryIntro")}
           </p>
         </header>
@@ -195,10 +197,10 @@ export const LibraryScreen = ({
             />
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="flex flex-col gap-1.5">
-                <h2 className="text-h3 font-bold leading-tight" style={{ color: "var(--vs-text)" }}>
+                <h2 className="text-h3 font-bold leading-tight" style={{ color: "var(--surface-text)" }}>
                   {liveTitle}
                 </h2>
-                <p className="text-body-sm" style={{ color: "var(--vs-text-secondary)" }}>
+                <p className="text-body-sm" style={{ color: "var(--surface-text-muted)" }}>
                   {liveVenue ? (
                     <>
                       {liveVenue}
@@ -220,7 +222,7 @@ export const LibraryScreen = ({
               navigate, they do not switch a panel in place. Announced as
               "tab 1 of 3" a screen-reader user would press arrow keys and get
               nothing. `aria-pressed` says what is actually true. */}
-          <div role="group" aria-label={t("libraryTitle")} className="flex gap-1 rounded-[var(--vs-radius-pill)] p-1" style={{ background: "var(--vs-surface)" }}>
+          <div role="group" aria-label={t("libraryTitle")} className="vs-fill flex gap-1 rounded-[var(--radius-full)] p-1">
             {tabs.map((tab) => {
               const selected = query.kind === tab.value;
               return (
@@ -229,11 +231,11 @@ export const LibraryScreen = ({
                   type="button"
                   aria-pressed={selected}
                   onClick={() => go({ kind: tab.value })}
-                  className="min-h-11 rounded-[var(--vs-radius-pill)] px-5 text-body-sm font-semibold transition-colors duration-[var(--motion-duration-fast)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--vs-green)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--vs-bg)]"
+                  className={`min-h-11 rounded-[var(--radius-full)] px-5 text-body-sm font-semibold transition-colors duration-[var(--motion-duration-fast)] ${FOCUS}`}
                   style={
                     selected
-                      ? { background: "var(--vs-text)", color: "var(--vs-bg)" }
-                      : { color: "var(--vs-text-secondary)" }
+                      ? { background: "var(--surface-text)", color: "var(--surface-bg)" }
+                      : { color: "var(--surface-text-muted)" }
                   }
                 >
                   {tab.label}
@@ -250,8 +252,7 @@ export const LibraryScreen = ({
                 const value = new FormData(event.currentTarget).get("search");
                 go({ search: typeof value === "string" && value.trim() ? value.trim() : undefined });
               }}
-              className="flex min-w-48 flex-1 items-center gap-2 rounded-[var(--vs-radius-pill)] px-4 sm:max-w-sm"
-              style={{ background: "var(--vs-surface)", boxShadow: "inset 0 0 0 1px var(--vs-hairline)" }}
+              className="vs-fill vs-edge flex min-w-48 flex-1 items-center gap-2 rounded-[var(--radius-full)] px-4 sm:max-w-sm"
             >
               {/* A plain text input, not `type="search"`: in Chromium the
                   browser's own clear-on-Escape swallows the key before any
@@ -264,12 +265,12 @@ export const LibraryScreen = ({
                 aria-label={t("searchLabel")}
                 placeholder={t("searchLabel")}
                 className="min-h-11 flex-1 bg-transparent text-body-sm focus-visible:outline-none"
-                style={{ color: "var(--vs-text)" }}
+                style={{ color: "var(--surface-text)" }}
               />
               {/* 44px, not the 36px the glyph needs: WCAG 2.5.8 and IA §12 set
                   the floor on the TARGET, and the icon is drawn inside it. */}
-              <button type="submit" aria-label={t("searchLabel")} className="inline-flex size-11 shrink-0 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--vs-green)]">
-                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="size-4" fill="none" stroke="var(--vs-text-secondary)" strokeWidth="1.8" strokeLinecap="round">
+              <button type="submit" aria-label={t("searchLabel")} className={`inline-flex size-11 shrink-0 items-center justify-center rounded-full ${FOCUS}`}>
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="size-4" fill="none" stroke="var(--surface-text-muted)" strokeWidth="1.8" strokeLinecap="round">
                   <circle cx="11" cy="11" r="6.2" />
                   <path d="m15.6 15.6 3.6 3.6" />
                 </svg>
@@ -296,10 +297,10 @@ export const LibraryScreen = ({
           {reels.length > 0 ? (
             <section className="flex flex-col gap-5">
               <div className="flex flex-col gap-1">
-                <h2 className="text-h3 font-bold" style={{ color: "var(--vs-text)" }}>
+                <h2 className="text-h3 font-bold" style={{ color: "var(--surface-text)" }}>
                   {t("reelsHeading")}
                 </h2>
-                <p className="text-body-sm" style={{ color: "var(--vs-text-secondary)" }}>
+                <p className="text-body-sm" style={{ color: "var(--surface-text-muted)" }}>
                   {t("reelsIntro")}
                 </p>
               </div>
@@ -325,7 +326,7 @@ export const LibraryScreen = ({
 
           {videos.length > 0 ? (
             <section className="flex flex-col gap-6">
-              <h2 className="text-h3 font-bold" style={{ color: "var(--vs-text)" }}>
+              <h2 className="text-h3 font-bold" style={{ color: "var(--surface-text)" }}>
                 {t("latestVideosHeading")}
               </h2>
               <ul className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
@@ -365,8 +366,7 @@ export const LibraryScreen = ({
               type="button"
               onClick={() => go({ page: query.page + 1 })}
               disabled={pending}
-              className="inline-flex min-h-11 items-center rounded-[var(--vs-radius-pill)] px-8 text-body-sm font-semibold transition-colors duration-[var(--motion-duration-fast)] hover:bg-[rgba(255,255,255,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--vs-green)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--vs-bg)] disabled:opacity-50"
-              style={{ boxShadow: "inset 0 0 0 1px var(--vs-hairline)", color: "var(--vs-text)" }}
+              className={`${GHOST_PILL} px-8 disabled:opacity-50`}
             >
               {t("showMore")}
             </button>

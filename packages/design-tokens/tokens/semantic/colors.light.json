@@ -488,6 +488,102 @@
         "value": "{color.neutral-warm.700}",
         "type": "color"
       }
+    },
+    "brand-surface": {
+      "comment": "ADR-0098 D2 and §8 — the Brand UI Kit grounds. These sit beside `color.section.*` (ADR-0059 D2) rather than replacing them: the registers are flat, carry two text tiers and are assigned per page by ADR-0060 D1; these are the expressive variant, drawn as a short ramp from the identity value itself and carrying one text tier. Both obey the green/red adjacency rule. The `from` stop is the official Pantone value, so the gradient's lightest point — which is the point that has to pass — is 4.81:1 for green and 5.88:1 for red with white text. That is one tier's headroom and no more, which is why `text-muted` here is the same white as `text` and hierarchy is carried by size and weight (guarded in brand-surface-contract.spec.ts).",
+      "green": {
+        "from": {
+          "value": "{color.green.500}",
+          "type": "color",
+          "comment": "Pantone 348C, the identity value (Chapter 1). White text 4.81:1"
+        },
+        "to": {
+          "value": "{color.green.700}",
+          "type": "color",
+          "comment": "The dark end from the existing ramp — the specification's #00502A resolves here, four units away on one channel, so no new value enters the ramp"
+        },
+        "text": {
+          "value": "{color.white}",
+          "type": "color"
+        },
+        "text-muted": {
+          "value": "{color.white}",
+          "type": "color",
+          "comment": "The same white on purpose. A second tier does not fit above 4.81:1"
+        },
+        "border": {
+          "value": "{color.white}",
+          "type": "color",
+          "comment": "4.81:1 on the lightest stop — WCAG 1.4.11"
+        },
+        "divider": {
+          "value": "{color.green.300}",
+          "type": "color"
+        }
+      },
+      "red": {
+        "from": {
+          "value": "{color.red.500}",
+          "type": "color",
+          "comment": "Pantone 186C, the identity value (Chapter 1). White text 5.88:1"
+        },
+        "to": {
+          "value": "{color.red.700}",
+          "type": "color",
+          "comment": "The dark end from the existing ramp — the specification's #7A0A1C resolves here, two units away on one channel"
+        },
+        "text": {
+          "value": "{color.white}",
+          "type": "color"
+        },
+        "text-muted": {
+          "value": "{color.white}",
+          "type": "color",
+          "comment": "The same white on purpose, as for green"
+        },
+        "border": {
+          "value": "{color.white}",
+          "type": "color",
+          "comment": "5.88:1 on the lightest stop"
+        },
+        "divider": {
+          "value": "{color.red.300}",
+          "type": "color"
+        }
+      },
+      "ink": {
+        "surface": {
+          "value": "{color.ink.500}",
+          "type": "color",
+          "comment": "Fixed in every theme. 18.83:1 against the light page and 1.05:1 against the dark one — the second number is why an accent bar or a mesh is mandatory here"
+        },
+        "text": {
+          "value": "{color.white}",
+          "type": "color",
+          "comment": "19.68:1"
+        },
+        "text-muted": {
+          "value": "{color.neutral-warm.300}",
+          "type": "color",
+          "comment": "10.34:1 — ink is dark enough to carry a real second tier, unlike the two gradients"
+        },
+        "border": {
+          "value": "{color.neutral-warm.500}",
+          "type": "color",
+          "comment": "4.21:1. `neutral-warm.600` also clears 1.4.11 at 3.11:1 but with almost nothing to spare"
+        },
+        "divider": {
+          "value": "{color.neutral-warm.700}",
+          "type": "color"
+        }
+      }
+    },
+    "tricolor": {
+      "mid": {
+        "value": "{color.black}",
+        "type": "color",
+        "comment": "ADR-0098 D3 — the tricolour's middle step on a light ground. Black separates green from red at 4.37 and 3.57; without it the ramp blends through a brown that is in no part of the identity, and puts the 1.22:1 pair into one continuous field"
+      }
     }
   },
   "elevation": {

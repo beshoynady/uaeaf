@@ -44,11 +44,11 @@ export const PlayButton = ({
         <>
           <span
             className="vs-pulse-ring absolute inset-0 rounded-full"
-            style={{ border: "1px solid rgba(255,255,255,0.55)" }}
+            style={{ border: "1px solid color-mix(in srgb, var(--surface-text) 55%, transparent)" }}
           />
           <span
             className="vs-pulse-ring vs-pulse-second absolute inset-0 rounded-full"
-            style={{ border: "1px solid rgba(255,255,255,0.35)" }}
+            style={{ border: "1px solid color-mix(in srgb, var(--surface-text) 35%, transparent)" }}
           />
         </>
       ) : null}
@@ -63,10 +63,10 @@ export const PlayButton = ({
       <span
         className="absolute inset-0 rounded-full transition-[background-color,box-shadow] duration-[var(--motion-duration-fast)]"
         style={{
-          background: filled ? "var(--vs-green)" : "rgba(10,12,11,0.46)",
+          background: filled ? "var(--surface-btn-primary-bg)" : "color-mix(in srgb, var(--color-surface-overlay) 46%, transparent)",
           boxShadow: filled
             ? "none"
-            : "inset 0 0 0 1px rgba(255,255,255,0.55), 0 2px 18px -4px rgba(0,0,0,0.6)",
+            : "inset 0 0 0 1px color-mix(in srgb, var(--surface-text) 55%, transparent), 0 2px 18px -4px color-mix(in srgb, var(--color-surface-overlay) 60%, transparent)",
           backdropFilter: filled ? undefined : "blur(4px)",
         }}
       />
@@ -84,7 +84,7 @@ export const PlayButton = ({
         className="relative"
         style={{ inlineSize: px * 0.36, blockSize: px * 0.36, transform: "translateX(6%)" }}
       >
-        <path d="M8 5.2 19 12 8 18.8V5.2Z" fill={filled ? "var(--vs-on-green)" : "#FFFFFF"} />
+        <path d="M8 5.2 19 12 8 18.8V5.2Z" fill={filled ? "var(--surface-btn-primary-ink)" : "var(--surface-text)"} />
       </svg>
     </span>
   );

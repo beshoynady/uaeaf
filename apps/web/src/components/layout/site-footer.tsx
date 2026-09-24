@@ -6,12 +6,13 @@ import { UaeafLogo } from "@/components/brand/uaeaf-logo";
 import { LocationMap } from "@/components/pages/contact/location-map";
 import { FooterMapFrame } from "./footer-map-frame";
 import { FOCUS, TRANSITION } from "@/components/ui/interactive";
-import { REGISTER_CLASSES } from "@/components/ui/section";
+import { REGISTER_CLASSES, SURFACE_OF } from "@/components/ui/section";
 import { SocialChannelLink } from "@/components/ui/social-channel-link";
 import { FOOTER_QUICK_LINKS, LEGAL_LINKS } from "@/lib/navigation";
 import { isBuilt } from "@/lib/pages/built-routes";
 import type { FooterContent } from "@/lib/pages/footer-content";
 import { socialChannels } from "@/lib/social-channels";
+import { BrandAccentBar } from "@uaeaf/brand-ui";
 
 /**
  * Global site footer (ADR-0092).
@@ -126,9 +127,21 @@ export const SiteFooter = ({ content }: { content: FooterContent }) => {
 
   return (
     <footer
+      // The footer stands on the black register, and now says so in the kit's
+      // vocabulary too. Without `data-surface` the accent bar below resolved
+      // its middle step from the `:root` fallback — black, on a black footer —
+      // so the bar was drawn and a third of it was invisible.
+      data-surface={SURFACE_OF.black}
       className={`footer-first-screen relative flex w-full flex-col items-center overflow-hidden px-4 pt-[72px] sm:px-6 md:px-8 lg:px-12 xl:px-16 ${tone.surface}`}
       data-node-id="2374:2198"
     >
+      {/*
+        The footer stands on the black register, which is a near-black ground
+        against a near-black page in dark theme — so it takes the same edge
+        every ink-like ground takes (ADR-0098 §8.4). Here the bar is the top
+        boundary of the section as well as the identity mark.
+      */}
+      <BrandAccentBar className="absolute inset-x-0 top-0" />
       {decorations.map((d) => (
         <span
           key={d.src}

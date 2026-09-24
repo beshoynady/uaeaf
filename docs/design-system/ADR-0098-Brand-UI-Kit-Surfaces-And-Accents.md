@@ -2,16 +2,16 @@
 
 | Field | Details |
 | --- | --- |
-| **Status** | Accepted — documentation phase only (Phase A). The token and library phases it authorises (B–F) are **not built by this ADR**. |
+| **Status** | Accepted. Phase A (this record and its amendments) landed 2026-09-24. **§8 settled the same day by Product Owner decision**, unblocking Phases B–F, which are built against this ADR rather than by it. |
 | **Authority** | Product Owner Decision, 2026-09-24. Recorded under Chapter 22 §4 and ADR-0056 §2 (document-first: the amendment is written before the change is implemented). |
 | **Supersedes** | Nothing outright. **Amends:** Chapter 1 ADR-0005 and ADR-0038 · Chapter 3 §3.14 and §3.34.2 · Chapter 12 (new §12.15) · Chapter 27 §13, §20, §21, §24, §25, §28, §39, §40 and its Do & Don't · ADR-0059 D2 (one clause, on owner instruction) · ADR-0060 D1 (one table row) · ADR-0065 R2 and D2 · `UAEAF-GLOBAL-VISUAL-DESIGN-PROTOCOL.md` §5, §13, §18. |
 | **Does not amend** | Chapter 6 in any part · WCAG 2.1 AA as the acceptance floor · `focus-visible` and `color.focus.*` (WCAG 1.4.11, ≥ 3:1) · Chapter 5 §5.8 `prefers-reduced-motion` and §5.9 no-layout-shift · **Chapter 3 §3.14's `ambient` restriction and its single authorised use** · ADR-0051's structural separation of `color.brand.secondary` from `color.error.*` · CSS logical properties · Chapter 1's Logo Misuse rules and the mirroring prohibition (both sourced from the federation's own guide) · PR-001 including its four-colour hero cap · ADR-0063's `color.text.link` · ADR-0088's two accent roles and their guard. |
 | **Context** | The public site and the dashboard read as neutral and quiet. The federation's own published social output does not: it is colour-forward, and it is built from the same three identity colours the design system already holds. A review of the *UAEAF Visual Standard Guide 2023* against fifteen published posts produced an expressive layer the Product Owner has approved for build in both applications, and asked to be built **once**, as a shared UI library, rather than twice. The governing question this ADR answers is not "may the brand colours appear" — ADR-0059 D2 already settled that, and ADR-0060 D1 already assigns a register to each of twelve pages. It is narrower and harder: **what may carry identity colour when it carries no information**, which is the one thing ADR-0065 R2 forbids in a single sentence. |
-| **Decision** | Eight decisions, D1–D8 below. In summary: (D1) a third colour category — *identity* — is added beside R1's role colour and D3's categorical colour, defined by what it may never do rather than by where it may appear; (D2) the five surfaces of the kit are mapped onto the registers and neutral grounds that already exist, and the five places where the approved token values conflict with a measured existing value are listed as **open owner decisions**, not resolved here; (D3) the tricolour accent is defined, its middle step bound to the surface, and direct green→red blending prohibited; (D4) the diagonal motif discharges ADR-0005's undelivered Chapter 8 component, with its angle fixed and never mirrored; (D5) one duration token is added — `orbit`, the scale's first cycle period — carrying two bounded rotation roles, while `ambient`'s restriction is left untouched; (D6) the two doses are named: Expressive for the public site, Operational for the dashboard, with a prohibition list for the second; (D7) the library is one internal workspace read by both applications, and no component in it takes a background-aware prop; (D8) every visual state this ADR creates is listed as PENDING FIGMA BACK-SYNC. |
+| **Decision** | Eight decisions, D1–D8 below. In summary: (D1) a third colour category — *identity* — is added beside R1's role colour and D3's categorical colour, defined by what it may never do rather than by where it may appear; (D2) the five surfaces of the kit are mapped onto the registers and neutral grounds that already exist, and the five places where the approved token values conflicted with a measured existing value are settled in §8, three of them enforced by a test rather than by prose; (D3) the tricolour accent is defined, its middle step bound to the surface, and direct green→red blending prohibited; (D4) the diagonal motif discharges ADR-0005's undelivered Chapter 8 component, with its angle fixed and never mirrored; (D5) one duration token is added — `orbit`, the scale's first cycle period — carrying two bounded rotation roles, while `ambient`'s restriction is left untouched; (D6) the two doses are named: Expressive for the public site, Operational for the dashboard, with a prohibition list for the second; (D7) the library is one internal workspace read by both applications, and no component in it takes a background-aware prop; (D8) every visual state this ADR creates is listed as PENDING FIGMA BACK-SYNC. |
 | **Alternatives Considered** | **(A) The tricolour gradient across large areas** — rejected on measurement, not taste: a tricolour wash puts `#00843D` and `#C8102E` in one plane at 1.22:1 from each other (ADR-0059 D2), which is the adjacency defect that ADR made a mandatory token to prevent. Confined to a 2–4px edge the two colours never share a boundary a reader must resolve. **(B) Waving flag ribbons and grunge brush strokes** — rejected: they are generic (nothing in them is UAEAF's), they arrive as raster PNG where the rest of the system is SVG and tokenised, and Chapter 27 §23 already prohibits applied digital texture in the UI layer. The diagonal motif is the federation's one ownable device and already exists. **(C) Black-and-white photography as the default** — rejected: it contradicts the federation's actual published output, which is the evidence this whole layer is derived from. Retained as an opt-in campaign variant. **(D) Duplicating the components in each application** — rejected: the tricolour rule is conditional on surface, theme and direction; two copies of a conditional rule diverge, and the divergence is invisible until a reader sees black tricolour on a black ground. **(E) Leaving Chapter 27 §28 alone and building the surfaces anyway** — rejected: that is the silent-override failure mode ADR-0056 §2 exists to prevent. Chapter 27 is Draft, so overriding it costs nothing procedurally, which is exactly why doing it without a record would set the worse precedent. |
 | **Why This Decision** | The system's existing colour discipline was written against one failure mode: colour standing in for information it does not carry. ADR-0065 R2 states it in one line, and it is right. But R2 was derived from two pages where colour was *pretending* — a four-step ladder on a contact form, six positional fills on a policies page — and a rule derived from pretence over-reaches when applied to a mark that pretends nothing. A 4px tricolour edge above a header does not claim to encode a category; it claims the page belongs to this federation. D1 draws that line where it can be enforced: identity colour may never be placed where an encoding colour is expected. That keeps R2 intact for every case it was written for. |
-| **Risks** | **The line in D1 is a judgement, and judgements drift.** A future reader may read "identity colour" as a licence for any colour anywhere. **Mitigation:** D1 is written as three prohibitions, not as a permission, and D6 carries an explicit dashboard prohibition list. **Two rotating borders in one view read as an error state.** **Mitigation:** D5 caps continuous rotation at one per view and binds it to a live broadcast only. **The gradient surfaces break the measured text ladder.** A gradient's contrast is its lightest point, and two of the three approved gradients start at a `500` step that carries white text with no room for a second tier. **Mitigation:** D2 lists this as an open owner decision with the measurement, rather than adopting the values and discovering it in Phase B. **`surface-ink` held fixed across themes reverses a measured ADR-0059 decision.** **Mitigation:** D2.4 states the measured consequence (≈1.1:1 against the dark page ground) and makes a non-surface boundary cue mandatory wherever it is used. |
-| **Consequences** | Twenty-four amendments across nine files, registered in §9 below. The document moves to **v1.1.0** (Chapter 22 §1: Minor — new governing content, no prior decision invalidated except the two clauses named in §9 with their reasons). Five token values in the approved Phase B specification are **blocked on owner decision** and listed in §8. Chapter 8 gains the Brand Pattern component ADR-0005 promised in 2026-08 and never delivered. |
+| **Risks** | **The line in D1 is a judgement, and judgements drift.** A future reader may read "identity colour" as a licence for any colour anywhere. **Mitigation:** D1 is written as three prohibitions, not as a permission, and D6 carries an explicit dashboard prohibition list. **Two rotating borders in one view read as an error state.** **Mitigation:** D5 caps continuous rotation at one per view and binds it to a live broadcast only. **The gradient surfaces break the measured text ladder.** A gradient's contrast is its lightest point, and two of the three approved gradients start at a `500` step that carries white text with no room for a second tier. **Mitigation:** §8.2 keeps the official colours and gives up the second tier instead — one text tier, pure white, hierarchy by size and weight — with a guard that fails if a muted tier or an alpha channel appears on either surface. **`surface-ink` held fixed across themes reverses a measured ADR-0059 decision.** **Mitigation:** §8.4 states the measured consequence (**1.05:1** against the dark page ground) and makes a non-surface boundary cue — an accent bar or a mesh — mandatory, enforced by a guard rather than by this sentence. |
+| **Consequences** | Twenty-four amendments across nine files, registered in §9 below. The document moves to **v1.1.0** (Chapter 22 §1: Minor — new governing content, no prior decision invalidated except the two clauses named in §9 with their reasons). The five token conflicts §8 opened are settled there, and **no new colour value enters the green or red ramp** — the dark ends the specification named resolve to steps that already exist. One new primitive is added (`color.ink.500` `#0B0B0B`) and one new duration (`motion.duration.orbit`). Chapter 8 gains the Brand Pattern component ADR-0005 promised in 2026-08 and never delivered. |
 
 ---
 
@@ -81,11 +81,17 @@ The accent is three stops, and its middle stop is a function of the surface it s
 
 ---
 
-## 4. D4 — The diagonal motif, and a 2026-08 consequence finally discharged
+## 4. D4 — The diagonal motif and its placements
 
-ADR-0005's Consequences row states: *"Chapter 8 includes this as a core 'Brand Pattern' component."* **It never did.** No `CMP-BRANDPATTERN-*` exists in any of the eight component chapters; the string appears nowhere in Chapter 8. The obligation has been open since the chapter was frozen.
+ADR-0005's Consequences row states: *"Chapter 8 includes this as a core 'Brand Pattern' component."* No `CMP-BRANDPATTERN-*` exists in any of the eight component chapters, so the **documentation** obligation is still open.
 
-**Decision.** The kit's `BrandStreaks` is that component: inline SVG, `aria-hidden`, three placements (`corner`, `behind-photo`, `cross-headline`), colour resolved from the surface per D3. It is registered in Chapter 8 L1, discharging ADR-0005.
+> **Corrected 2026-09-24, after review.** An earlier draft of this section said the component "never existed" and claimed `BrandStreaks` discharged ADR-0005. **That was wrong**, and the error is recorded rather than quietly edited out: `apps/web/src/components/brand/uaeaf-motif.tsx` — `UaeafMotif` — already exists, already describes itself as "ADR-0005's Brand Pattern component, built at last", already carries a `tone="inherit"` mode for coloured grounds, and already states the never-mirror rule this ADR "discovered". It was built before this work began.
+>
+> So there are now **two** artworks claiming to be the brand pattern: `UaeafMotif`'s real four strokes with token-bound fills, and `BrandStreaks`'s stretched lines. That is one more than the system may have, and it is a defect this ADR introduced.
+>
+> **Resolution, recorded as the next action rather than done here:** move `UaeafMotif` into `packages/brand-ui`, and reduce `BrandStreaks` to what it actually adds — placement (`corner`, `behind-photo`, `cross-headline`) and surface-resolved colour — rendering `UaeafMotif`'s geometry inside it. One artwork, one angle, one component. Deferred because `UaeafMotif` is consumed by built pages and moving it is a change to working code that belongs in its own pass.
+
+**Decision.** `BrandStreaks` provides the **placement layer**: inline SVG, `aria-hidden`, three placements, colour resolved from the surface per D3. Its geometry is to be replaced by `UaeafMotif`'s per the note above.
 
 **The angle is fixed and is never mirrored.** ADR-0005's *Why This Decision* row lists *"supports automatic RTL mirroring"* among SVG's benefits. Read as a licence it contradicts the federation's own guide §9.1 and the absolute mirroring prohibition in Protocol §9: the motif is derived from the logo's take-off angle, and a mirrored take-off angle is a mirrored identity mark. **Amended (§9, A4): the ascent angle is invariant under direction.** Placement follows `dir` through logical properties; the angle does not.
 
@@ -159,30 +165,139 @@ Chapter 1 ADR-0001 builds two experience layers on shared tokens and closes with
 
 ---
 
-## 8. Open owner decisions — blocking Phase B
+## 8. Settled owner decisions (2026-09-24)
 
-Each is a conflict between a value approved for this build and a value already measured in the token layer. None is resolved here, per Chapter 22 §4 and root `CLAUDE.md` §24.
+These five were opened by the documentation phase as conflicts between a value approved for this build and a value already measured in the token layer. **All five are now SETTLED by Product Owner decision of 2026-09-24** and are recorded here as final. Three of them are enforced by a test rather than by this paragraph, because a rule that lives only in a document is a rule a future reader can miss.
 
-**8.1 `surface-canvas` — `#F4F4F4` or the existing page ground?**
-`#F4F4F4` is a neutral-cool grey. ADR-0051 replaced the cool `color.gray.*` curve with `color.neutral-warm.*`, and ADR-0065's audit recorded cool greys imported from elsewhere (`#E5E7EB`, `#D1D5DB`) as a defect for that reason. The role `surface-canvas` describes is already held by the page ground `#FAFAF8` (ADR-0059 D4), against which the whole text ladder was measured.
-*Recommendation:* bind `surface-canvas` to the existing ground. It costs nothing and keeps one measured ladder instead of two.
+### 8.1 `surface-canvas` — SETTLED: bind to the existing page ground
 
-**8.2 `surface-brand-green` — the gradient's light end.**
-The approved gradient is `#00843D → #00502A`. Its lightest point is `green.500`, which carries white text at **4.81:1** — AA for normal text with 0.31 of headroom, and, in ADR-0059 D2's words, *"no room for a second tier."* The kit requires a muted text tier on every surface. On this gradient it cannot exist.
-*Recommendation:* run the gradient `green.700 → green.900`-equivalent (`#005226 → #00502A`, the dark end already matches), preserving `text` at 9.40:1 and `text-muted` at 6.49:1. The `500` value keeps its role unchanged as the brand-mark reference (Chapter 1).
+**Decision.** `surface-canvas` resolves to the page ground that already exists — `color.surface.base`, which is `neutral-warm.50` `#FAFAF8` in light and `neutral-warm.950` `#131210` in dark. **No cool grey is introduced**, and `#F4F4F4` is not adopted.
 
-**8.3 `surface-brand-red` — the same, at the same point.**
-`#C8102E → #7A0A1C`: lightest point `red.500`, white text **5.88:1**, muted tier does not fit under it.
-*Recommendation:* `red.600 → #7A0A1C` (`#A00D25 → #7A0A1C`), preserving `text` at 8.14:1 and `text-muted` at 4.85:1.
+**If cards do not separate from the ground.** Step to the next warm step on the same ramp (`neutral-warm.100` `#F5F4F1`, which is already `color.surface.sunken`) — never to `#F4F4F4`. The ramp is warm by ADR-0051's architecture, and a cool grey imported into it is the defect ADR-0065's audit recorded twice (`#E5E7EB`, `#D1D5DB`).
 
-**8.4 `surface-ink` — theme-invariant, against a measured decision.**
-The approved specification fixes `surface-ink` at `#0B0B0B` in every theme. ADR-0059 D2 measured pure black against the dark page ground at **1.12:1** — *"no boundary at all"* — and for that reason made the black register the only one that changes with the theme, resolving to `neutral-warm.700` `#4A4942` in dark. Chapter 27 §20 additionally requires a dark ground to carry *"the subtlest hint of green in the deep shadow tone"*, which `#0B0B0B` does not.
-Per root `CLAUDE.md` §1 an explicit current-task instruction outranks an ADR, so the owner's instruction governs — but the consequence is not optional: **held fixed, `surface-ink` has no visible boundary against the dark page ground, so wherever it is used its edge must come from something that is not the surface value** — the accent edge, a border, or an adjacent register. Recorded as the amendment in §9 (A27), with that mitigation mandatory.
-*Owner decision required:* (a) fix at `#0B0B0B` with the mandatory edge cue, (b) keep ADR-0059 D2's theme-variance, or (c) fix it at a near-black that carries §20's green whisper.
+**Why this is the right outcome.** The whole text ladder was measured against `#FAFAF8` (ADR-0059 D4). Binding to it keeps one measured ladder instead of creating a second one that nobody has checked.
 
-**8.5 The green text link — already decided, no new value needed.**
-The specification proposes ≈`#006B32` for green link text, noting `#00843D` measures ≈4.4:1 on a light ground. ADR-0063 reached the same conclusion and repointed `color.text.link` to `green.600` `#006B31` (light) and `green.300` (dark), measured at **6.38:1** on the page ground. The estimate and the existing token differ by one hex digit.
-*Resolution:* use `color.text.link`. No token is created and no value is changed. **This item is closed, not open.**
+### 8.2 `surface-brand-green` and `surface-brand-red` — SETTLED: start at the official colours, white text only
+
+**Decision.** The gradients start at the identity values exactly as the guide publishes them:
+
+| Surface | Light end | Dark end | Lightest-point contrast, white text |
+| --- | --- | --- | --- |
+| `surface-brand-green` | `green.500` `#00843D` — Pantone 348C | `green.700` `#005226` | **4.81:1** — AA for normal text |
+| `surface-brand-red` | `red.500` `#C8102E` — Pantone 186C | `red.700` `#7A0A1A` | **5.88:1** — AA for normal text |
+
+**No new colour value is added to either ramp.** The dark ends the original specification named (`#00502A`, `#7A0A1C`) sit within four and two units respectively of existing scale steps, so both resolve to steps that already exist and are already measured.
+
+**One text tier, and it is pure white.** On these two surfaces `text` and `text-muted` both resolve to `color.white`. Hierarchy is carried by size and weight, never by colour or opacity. **Translucent text and light-grey text are prohibited on them.**
+
+**Why.** A gradient's contrast is its lightest point. At `green.500` white text measures 4.81:1 — 0.31 above the AA floor, which is one tier's worth of headroom and no more. ADR-0059 D2 chose `green.700` for the flat register for exactly this reason. The owner's decision keeps the official colour and gives up the second tier instead, which is the trade the guide's own §5.1 favours: the identity value is the identity value.
+
+**Guard:** `brand-surface-contract.spec.ts` fails if `text-muted` on either surface resolves to anything but pure white, or if any `text-*` token on them carries an alpha channel.
+
+**Relationship to the flat registers.** `color.section.green.*` and `color.section.red.*` (ADR-0059 D2, flat, two tiers) are **unchanged and remain in use** for the page-level register bands ADR-0060 D1 assigns. The kit's two gradient surfaces are the expressive variant, used for component grounds — a CTA band, a link-tile section, the login screen. Both are governed, both obey the adjacency rule, and neither replaces the other.
+
+### 8.3 — folded into 8.2 above
+
+Recorded separately when the two were open; they were settled by one decision and are documented together.
+
+### 8.4 `surface-ink` — SETTLED: `#0B0B0B`, fixed in every theme, never without an edge
+
+**Decision.** `surface-ink` is `#0B0B0B` in light, dark and high-contrast alike. It is a **new primitive** (`color.ink.500`) — the ramp holds `color.black` `#000000` and `neutral-warm.950` `#131210`, and neither is this value.
+
+**The mandatory edge.** ADR-0059 D2's measurement stands: a near-black ground has effectively no boundary against a near-black page. `#0B0B0B` against the dark page ground `#131210` measures **1.05:1**. Therefore **every `Surface kind="ink"` MUST carry one of two non-surface boundary cues**, and neither is optional:
+
+1. a `BrandAccentBar` — whose middle step is white on this ground, so the edge is visible in every theme; or
+2. a mesh tint, whose green and red radial fields give the ground a perceivable extent.
+
+**Guard:** `brand-surface-contract.spec.ts` fails if any source renders `<Surface kind="ink">` without `mesh` and without an accent bar as its first child.
+
+**Chapter 27 §20's green whisper does not apply to `surface-ink`.** §20 asks a dark *photographic* section to carry a hint of green in its shadow tone, which is a grading instruction for a photograph. `surface-ink` is a flat identity ground with no photograph in it, and the colour that gives it its extent is the accent edge and the mesh, not a tint inside the black. Recorded so a future reader does not read the two as contradicting.
+
+### 8.5 Green link text — SETTLED: closed, use the existing token
+
+Links use `color.text.link`, which ADR-0063 already repointed to `green.600` `#006B31` in light and `green.300` in dark, measured at 6.38:1 on the page ground. **No token is created and no value changes.** The estimate the specification carried (`#006B32`) and the token differ by one hex digit.
+
+### 8.6 The adjacency correction on the policies page — SETTLED
+
+The original page composition put the green "Governance & Strategy" section directly above the red "Didn't find it?" band. Those two grounds measure **1.15:1** from each other (ADR-0059 D2): stacked full-bleed they are one band with no boundary anywhere in it.
+
+**Decision.** On that page the `CtaBand` is a **red card inside `surface-canvas`**, inset on all four sides, not a full-bleed section. The canvas gutter is the separator, and it is wider than the `--space-2` minimum `SectionStack` would insert.
+
+**Recorded as an approved deviation from the reference design**, and generalised: **green and red never abut anywhere, in either application, without a separator.** Where both are full-bleed sections, `color.section.adjacent-separator` is mandatory (ADR-0059 D2, unchanged). Where one can be inset instead, insetting is preferred, because a gutter is a boundary a reader sees rather than a hairline they must find.
+
+**Guard:** `surface-adjacency-contract.spec.ts` reads page sources for a green surface immediately followed by a red one, and fails on the pair. Where a composition is assembled at runtime and the guard cannot see it, the rule is a review item recorded here — the guard's own coverage note says which pages it can and cannot see.
+
+## 8b. Amended during the build (2026-09-24)
+
+Three things this record got wrong, found by building the Brand Kit page and measuring it in a browser rather than by review. All three were silent: the page rendered, nothing threw, and the defect was visible only on some surfaces.
+
+### 8b.1 A sixth ground — `raised`
+
+D2 named five surfaces. A card body inside a coloured section is a **sixth**: it paints its own neutral plate, and everything inside it reads the on-surface variables. Without a ground of its own, a `DocumentCard` on `brand-red` painted its body white while `--surface-text` still resolved to the section's white — so the card's title, links and secondary button were white ink on a white plate. Measured on the Brand Kit page: the "View document" button was an empty outline on three surfaces and correct on two.
+
+`raised` is added to the set, bound to `color.surface.raised`. It is **not an expressive ground**: no section chooses it, it does not appear in the §5-D usage matrix, and the rhythm and adjacency rules do not apply to it. Components use it internally — `DocumentCard`'s body and `SearchField`'s control both declare it, which is also how Chapter 27 §20's "a field never sits on a coloured ground" is satisfied structurally rather than by remembering.
+
+The alternative — re-declaring eleven variables in every component that paints a plate — is the duplication the surface mechanism exists to remove, and it would have been wrong in a different place each time someone forgot one.
+
+### 8b.2 The border technique is a masked band, not `padding-box`/`border-box`
+
+The specification named `padding-box` + `border-box` and excluded `border-image`. The exclusion stands and its reason is unchanged: `border-image` ignores `border-radius` entirely.
+
+**The named technique does not work here.** It paints two background layers and therefore needs an *opaque interior*, which it takes from the surface. That is fine on `canvas`, `raised` and `ink`, where the ground is a colour — and it fails on the two brand surfaces, where the ground is itself a gradient: `linear-gradient(<gradient>, <gradient>)` is invalid, the whole `background-image` is dropped, and the border vanishes. It also cannot ring a photograph, which is the one job `shape="circle"` exists for.
+
+**Adopted instead:** one shared `.brand-ring` utility — a pseudo-element painted with the gradient and masked with `mask-composite: exclude` so only the band survives. It keeps `border-radius`, leaves the interior transparent, and needs to know nothing about the ground. `BrandBorder`, the secondary `Button`, `FilterChip` and `SearchField` all consume it, so there is one implementation of the band rather than four.
+
+### 8b.3 A build-tool constraint worth recording
+
+**Lightning CSS deletes `--x: conic-gradient(...)`.** Not a warning, not a mangled value — the declaration is absent from the served stylesheet, `var(--x)` resolves to nothing, and the property that used it becomes invalid. A `linear-gradient` in the same position survives, which is what makes it easy to walk past.
+
+Measured against the running dev server: three `conic-gradient` declarations in source, zero in the CSS the browser received. The same gradient written directly into a real property survives untouched, `from var(--brand-border-angle)` included. So conic gradients go in a real property, never in a custom property, and `brand-surface-contract.spec.ts` fails if one reappears in a custom property.
+
+A related scoping rule found the same way: a custom property containing `var()` is substituted **on the element that declares it**, and descendants inherit the result. `--brand-tricolor` declared only on `:root` resolved `var(--surface-tricolor-mid)` where no surface had set it, became guaranteed-invalid, and inherited as invalid into every surface — so every accent bar, divider and border rendered at the right size, in the right place, painted with nothing. It is now declared on `:root` **and** on `[data-surface]`, so each ground re-substitutes it with its own middle step.
+
+---
+
+## 8c. The video exemption is cancelled (owner decision, 2026-09-24)
+
+### What is cancelled
+
+`apps/web/src/styles/video-system.css` opens by recording that **"the owner took this section and its pages out of the design system's colour rules by decision on 2026-09-23, without an ADR."** That grant is **withdrawn**, one day later, by the same authority.
+
+**Scope of the cancellation:** the homepage video section, the public video pages, and the dashboard's video and broadcast screens. All of them come under this ADR in full — the same surfaces, the same tokens, the same components, the same usage matrix. The §5-D matrix row stands as written: `surface-ink` with its mandatory edge cue, `BrandBorder variant="hover"` on the video cards, and `BrandBorder variant="live"` on the broadcast card **while the broadcast is live and only then**.
+
+**Everything the video system holds privately is removed, not aliased permanently:** the `--vs-*` palette, its three bespoke surfaces, its bespoke radii, and any other rule that exists for this one section. The conversion runs in three steps — central aliasing, component application, then deletion of the private layer — so that the section changes once and visibly rather than drifting across a dozen files.
+
+**Why.** A design system with one exempt region is not a design system; it is a default. The exemption was granted under build pressure and lasted a day, and the cost of keeping it is permanent: every future reader has to learn which parts of the site the rules apply to. The federation's own guide does not have a video chapter with different colours in it.
+
+### The green that may sit on ink
+
+The official green is not a text colour on this ground, and the measurement is the reason rather than the decoration:
+
+| Step | Value | On `surface-ink` `#0B0B0B` | Verdict |
+| --- | --- | --- | --- |
+| `green.500` — the identity value | `#00843D` | **4.09:1** | **Fails text.** Passes WCAG 1.4.11 for a non-text mark |
+| `green.400` | `#1A9448` | 5.04:1 | Passes, with little headroom |
+| **`green.300`** | **`#3DAD65`** | **6.90:1** | **Adopted** |
+
+**Decision.** Text, links, figures and emphasis on `surface-ink` take **`green.300`**. That is not a new value and not a new decision either: ADR-0063 already repointed `color.text.link` to `green.300` in dark theme for the same reason, so the ink ground inherits an answer the system had already reached. **No new colour enters the ramp.**
+
+`#2BD46E` — the value `--vs-green` holds today — is **rejected**. It measures 10.07:1 and would pass; it is out of the identity ramp entirely, which is the whole objection. A colour that is not in the palette is not made acceptable by being legible.
+
+The identity green keeps its non-text roles on this ground: button fills, borders, rules and marks, all at ≥ 3:1.
+
+### The live red
+
+`--vs-live` `#D11A27` is replaced by **`color.semantic.live`** — the token ADR-0038 created for exactly this state, and which ADR-0051 §3.35.1 confirmed still resolves through `color.brand.secondary`.
+
+It is **not** `color.brand.secondary` directly (that is the identity colour, not the state) and **not** `color.error.*` (ADR-0051 made that separation structural and this ADR does not touch it).
+
+Measured on ink, `color.semantic.live` is `#C8102E` at **3.35:1** — which clears WCAG 1.4.11 for the dot and the edge, and does not clear 4.5:1 for text. That is not a gap: ADR-0038's own accessibility clause already requires the live state to carry the word "مباشر"/"Live" beside the mark, never colour alone (Chapter 6 §6.2, WCAG 1.4.1). **The mark is red; the word is white.**
+
+### Why the four failing guards are left failing
+
+`motion-contract` (two rules), `seo-contract` (the page-heading rule) and `token-contract` (one rule) fail today on `video-system.css` and `video/library-screen.tsx`. **They are correct.** They are catching colours, durations and a heading that sit outside the system, and the conversion above is what fixes them.
+
+Neither guard is weakened, and no allowlist is added. A guard that is taught to ignore the thing it was written to catch has been deleted with extra steps. They stay red, and they go green by the code changing.
 
 ---
 

@@ -58,6 +58,60 @@ ruling; the origin list is in the backlog below.
 
 ---
 
+## The design-system exception, and its withdrawal
+
+This system was taken out of the design system's colour rules by owner
+decision on 2026-09-23, without an ADR. It held its own dark register in
+`video-system.css` — a `#0A0C0B` ground, three surfaces, three inks, a green
+and a live red, all scoped to `.video-system` — and nine animation durations
+that matched no rung on the motion scale.
+
+**That exception was withdrawn on 2026-09-24.** ADR-0098 gives the system a
+fifth surface, `ink`, and the video system is now one of its users. Every
+colour resolves through `[data-surface="ink"]`; every duration is a token rung.
+
+**The one exception that remains** is the five platform logos in
+`platform-badge.tsx` (and `platform-mark.tsx` on the dashboard). Those are
+other organisations' registered identities, published in their own brand
+guidelines: a YouTube mark in federation green is not YouTube's mark, and
+tokenising them would imply this system may change them. They are literals on
+purpose, marked as such where they are drawn, and they are the only literals
+anywhere in the system.
+
+### What the change moved, and what it could not
+
+| Was | Is | Why |
+|---|---|---|
+| `--vs-bg` `#0A0C0B` | `--surface-bg` on `[data-surface="ink"]`, `#0B0B0B` | ADR-0098 §8.4 |
+| `--vs-text` / `-secondary` / `-muted` | `--surface-text`, `--surface-text-muted` | The surface publishes two inks, not three; secondary and muted were within 1 step of each other |
+| `--vs-green` `#2bd46e` as a label colour | `--surface-text` | The kit's green is a button plate: it measures **4.09:1** on this ground, a boundary and not readable text. The green survives where something legible is printed on it |
+| `--vs-live` `#d11a27` | `--color-brand-secondary` `#C8102E` | A broadcast is brand red, not `semantic-error` — and the error red is themed, dropping to **1.89:1** on ink in high contrast |
+| `--vs-surface` / `-raised` | `.vs-fill` / `.vs-fill-strong`, mixed from the surface's own ink | DESIGN SYSTEM GAP: the kit publishes no raised step on ink |
+| a green-to-red eyebrow ramp | `var(--brand-tricolor)` | ADR-0098 D3 forbids blending the two identity colours directly; the token also resolves its middle step per surface and its angle from `dir` |
+| scrims mixed from the ground | `--color-surface-overlay`, the scrim role | ADR-0071 D5; a scrim's darkness should not follow whatever the ground happens to be |
+| a per-call-site focus ring in the plate green | the shared `FOCUS` (ADR-0051's two-tone) | 21 hand-written copies, painted with the button role rather than the a11y one |
+| 16s / 2.8s / 1.8s / 1.6s / 0.7s / 0.6s durations | `orbit`, `entrance`, `instant` rungs | See "Two rungs this system may not use" in `video-system.css` |
+
+Three things could not move, and are open in the backlog: there is no long
+motion rung a general consumer may use, no raised-on-ink token, and no accent
+ink on ink — which is why the category label is white rather than green.
+
+### The two classes that carry state
+
+`video-system.css` also holds `.vs-ghost` (the hover and active tints) and
+`.vs-edge` (the 1px edge **and** the focus ring). They are classes rather than
+Tailwind utilities for two measured reasons:
+
+1. **An arbitrary value may not contain a space.** `hover:bg-[color-mix(in srgb,
+   …)]` splits on its spaces into junk class names, so the rule is never
+   generated — silently, with the hover simply absent.
+2. **An inline `box-shadow` beats the ring.** Tailwind draws the focus ring with
+   `box-shadow` too, so `style={{ boxShadow: "inset 0 0 0 1px …" }}` removed the
+   indicator from every pill, chip and arrow in this system. The edge and the
+   ring are one declaration now, and they cannot be separated by a call site.
+
+---
+
 ## 2. The files, in the order work flows through them
 
 ### An editor adds a video
@@ -109,7 +163,7 @@ ruling; the origin list is in the backlog below.
 | `apps/web/src/components/pages/video/library-screen.tsx` | The library's behaviour: tabs, search, filters, "show more", the modal. | The library page |
 | `apps/web/src/components/pages/video/embed-frame.tsx` | **The zero-iframe promise.** No `<iframe>` exists until a press. | Every player |
 | `apps/web/src/components/pages/video/video-player-modal.tsx` | Focus trap, Escape, focus return, previous/next. | Both surfaces |
-| `apps/web/src/styles/video-system.css` | The dark register and every animation, including the one reduced-motion rule. | `globals.css` |
+| `apps/web/src/styles/video-system.css` | The keyframes, the two fills the kit has no token for, and the ghost/edge state classes. The ground is ADR-0098's `ink` surface. | `globals.css` |
 
 ---
 
@@ -327,9 +381,12 @@ failing.
 
 - **The dashboard table's drag handle** (PDF p. 9). The owner removed manual
   ordering; the library is `publishedAt` descending.
-- **A table at phone width.** Below `md` each row is a card carrying the
+- **A table narrower than `xl`.** Below 1280 each row is a card carrying the
   still, the title, the platform, the state, the date and the same `⋯` menu;
-  from `md` up it is the table the design draws. Owner decision 2026-09-24 —
+  from `xl` up it is the table the design draws, laid out `fixed` so it can
+  never push past its container. The breakpoint is measured, not chosen: at
+  1024 the title column was squeezed to 39px — the table fitted and was
+  unreadable. Owner decision 2026-09-24 —
   this is the approved mobile composition for this screen, and it closes the
   §13 gap that had been reported as `DESIGN DECISION REQUIRED`. Both layouts
   are built from `video-row-parts.tsx`, so neither can drift from the other.
@@ -360,7 +417,8 @@ failing.
 | **active** | `isActive: true` **and** `expectedEndAt > now`. Evaluated on every read, which is why nothing polls. A broadcast whose time has passed is inactive while its row still says `isActive: true` — harmless, because reads filter by the clock. |
 | **facade** | The still, the play button and the badges drawn in place of a player. The embed replaces it on the press. |
 | **the featured video** | What the homepage stage shows at rest. `latest` or a specific id, set on the section editor only. A running broadcast replaces it and it returns by itself afterwards. |
-| **the dark register** | The `--vs-*` variables in `video-system.css`, scoped to `.video-system`. Not design tokens: the owner exempted this system from the design system's colour rules, and that exemption is this system's alone. |
+| **the chrome module** | `pages/video/chrome.ts` — the ghost pill, its edge and the wide focus ring, defined once for the eleven call sites that used to paste them. |
+| **the ink surface** | ADR-0098's fifth surface, `[data-surface="ink"]` — the institutional dark ground this system paints on. It replaced the private `--vs-*` register on 2026-09-24. Its `#0B0B0B` is fixed in every theme, so it draws no edge of its own and every ink surface carries an accent bar or the mesh instead. |
 | **season** | Computed from `publishedAt`, never stored. `SEASON_START_MONTH = 9`, so September–August, shown as `2025-2026`. |
 | **association** | A `{ownerType, ownerId}` link to a championship, sports event or public event. The API filters by it; nothing produces one yet. |
 | **resolve** | Asking a platform's public oEmbed endpoint what a pasted link is. Requires `videos:Create`, because it makes an outbound request on caller input. |

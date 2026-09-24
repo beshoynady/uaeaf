@@ -462,6 +462,90 @@
         "value": "#000000",
         "type": "color"
       }
+    },
+    "brand-surface": {
+      "comment": "ADR-0098 D2 and §8 — the Brand UI Kit grounds. These sit beside `color.section.*` (ADR-0059 D2) rather than replacing them: the registers are flat, carry two text tiers and are assigned per page by ADR-0060 D1; these are the expressive variant, drawn as a short ramp from the identity value itself and carrying one text tier. Both obey the green/red adjacency rule. The `from` stop is the official Pantone value, so the gradient's lightest point — which is the point that has to pass — is 4.81:1 for green and 5.88:1 for red with white text. That is one tier's headroom and no more, which is why `text-muted` here is the same white as `text` and hierarchy is carried by size and weight (guarded in brand-surface-contract.spec.ts). In this theme the two gradients flatten to a white ground with black ink, following `color.section.*`'s own high-contrast treatment; ink keeps its value, since 19.68:1 is already what this theme is for.",
+      "green": {
+        "from": {
+          "value": "#FFFFFF",
+          "type": "color"
+        },
+        "to": {
+          "value": "#FFFFFF",
+          "type": "color"
+        },
+        "text": {
+          "value": "#000000",
+          "type": "color"
+        },
+        "text-muted": {
+          "value": "{color.neutral-warm.700}",
+          "type": "color"
+        },
+        "border": {
+          "value": "#000000",
+          "type": "color"
+        },
+        "divider": {
+          "value": "#000000",
+          "type": "color"
+        }
+      },
+      "red": {
+        "from": {
+          "value": "#FFFFFF",
+          "type": "color"
+        },
+        "to": {
+          "value": "#FFFFFF",
+          "type": "color"
+        },
+        "text": {
+          "value": "#000000",
+          "type": "color"
+        },
+        "text-muted": {
+          "value": "{color.neutral-warm.700}",
+          "type": "color"
+        },
+        "border": {
+          "value": "#000000",
+          "type": "color"
+        },
+        "divider": {
+          "value": "#000000",
+          "type": "color"
+        }
+      },
+      "ink": {
+        "surface": {
+          "value": "{color.ink.500}",
+          "type": "color"
+        },
+        "text": {
+          "value": "#FFFFFF",
+          "type": "color"
+        },
+        "text-muted": {
+          "value": "#FFFFFF",
+          "type": "color"
+        },
+        "border": {
+          "value": "#FFFFFF",
+          "type": "color"
+        },
+        "divider": {
+          "value": "#FFFFFF",
+          "type": "color"
+        }
+      }
+    },
+    "tricolor": {
+      "mid": {
+        "value": "#000000",
+        "type": "color",
+        "comment": "ADR-0098 D3 — the high-contrast page is white, so the middle step is its ink"
+      }
     }
   },
   "elevation": {

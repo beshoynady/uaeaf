@@ -8,6 +8,8 @@ import { rangeIsPossible } from "@uaeaf/content/time-range";
 import { VIDEO_PERIODS, activeFilterCount } from "@/lib/video/library-query";
 import type { LibraryQuery, VideoPeriod } from "@/lib/video/library-query";
 import type { AssociationOption } from "@/lib/video/association-options";
+import { FOCUS } from "@/components/ui/interactive";
+import { GHOST_PILL } from "./chrome";
 
 /**
  * The library's filter panel: a popover on a wide screen, a bottom sheet on a
@@ -109,18 +111,18 @@ export const LibraryFilters = ({
   };
 
   const chip = (selected: boolean) =>
-    `inline-flex min-h-11 items-center gap-2 rounded-[var(--vs-radius-pill)] px-4 text-body-sm transition-colors duration-[var(--motion-duration-fast)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--vs-green)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--vs-surface)] ${
-      selected ? "font-bold" : "hover:bg-[rgba(255,255,255,0.05)]"
+    `inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-full)] px-4 text-body-sm transition-colors duration-[var(--motion-duration-fast)] ${FOCUS} ${
+      selected ? "font-bold" : "vs-ghost vs-edge"
     }`;
 
   const chipStyle = (selected: boolean) =>
     selected
-      ? { background: "var(--vs-green)", color: "var(--vs-on-green)" }
-      : { boxShadow: "inset 0 0 0 1px var(--vs-hairline)", color: "var(--vs-text-secondary)" };
+      ? { background: "var(--surface-btn-primary-bg)", color: "var(--surface-btn-primary-ink)" }
+      : { color: "var(--surface-text-muted)" };
 
   const field =
-    "min-h-11 w-full rounded-[var(--vs-radius-pill)] px-4 text-body-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--vs-green)]";
-  const fieldStyle = { background: "var(--vs-surface-raised)", color: "var(--vs-text)", border: "1px solid var(--vs-hairline)" };
+    `vs-fill-strong min-h-11 w-full rounded-[var(--radius-full)] px-4 text-body-sm ${FOCUS}`;
+  const fieldStyle = { color: "var(--surface-text)", border: "1px solid var(--surface-divider)" };
 
   // The same function the empty state's "clear filters" is gated on. Two
   // counts that disagree put a badge of 0 next to a button offering to clear
@@ -135,13 +137,12 @@ export const LibraryFilters = ({
         aria-expanded={open}
         aria-controls={ids.panel}
         onClick={() => setOpen((was) => !was)}
-        className="inline-flex min-h-11 items-center gap-2 rounded-[var(--vs-radius-pill)] px-4 text-body-sm font-semibold transition-colors duration-[var(--motion-duration-fast)] hover:bg-[rgba(255,255,255,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--vs-green)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--vs-bg)]"
-        style={{ boxShadow: "inset 0 0 0 1px var(--vs-hairline)", color: "var(--vs-text)" }}
+        className={`${GHOST_PILL} px-4`}
       >
         {count > 0 ? (
           <span
             className="inline-flex size-5 items-center justify-center rounded-full text-[0.6875rem] font-bold"
-            style={{ background: "var(--vs-green)", color: "var(--vs-on-green)" }}
+            style={{ background: "var(--surface-btn-primary-bg)", color: "var(--surface-btn-primary-ink)" }}
           >
             {count}
           </span>
@@ -172,14 +173,13 @@ export const LibraryFilters = ({
              the page gutter would still not fit. */
           className="fixed inset-x-0 bottom-0 z-40 flex max-h-[85vh] flex-col gap-5 overflow-y-auto p-5 sm:absolute sm:inset-auto sm:top-full sm:end-0 sm:mt-2 sm:max-h-none sm:w-[22rem] sm:max-w-[calc(100vw-2rem)]"
           style={{
-            background: "var(--vs-surface)",
-            border: "1px solid var(--vs-hairline)",
-            borderRadius: "var(--vs-radius-player)",
-            boxShadow: "0 24px 60px -20px rgba(0,0,0,0.7)",
+            border: "1px solid var(--surface-divider)",
+            borderRadius: "var(--radius-xl)",
+            boxShadow: "0 24px 60px -20px color-mix(in srgb, var(--color-surface-overlay) 70%, transparent)",
           }}
         >
           <div className="flex items-center justify-between">
-            <p className="text-h5 font-bold" style={{ color: "var(--vs-text)" }}>
+            <p className="text-h5 font-bold" style={{ color: "var(--surface-text)" }}>
               {t("filtersTitle")}
             </p>
             <button
@@ -189,8 +189,8 @@ export const LibraryFilters = ({
                 trigger.current?.focus();
               }}
               aria-label={t("filtersClose")}
-              className="inline-flex size-11 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--vs-green)]"
-              style={{ color: "var(--vs-text-secondary)" }}
+              className={`inline-flex size-11 items-center justify-center rounded-full ${FOCUS}`}
+              style={{ color: "var(--surface-text-muted)" }}
             >
               <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
                 <path d="M6 6l12 12M18 6L6 18" />
@@ -199,7 +199,7 @@ export const LibraryFilters = ({
           </div>
 
           <fieldset className="flex flex-col gap-2.5">
-            <legend className="mb-2.5 text-caption font-bold" style={{ color: "var(--vs-text-secondary)" }}>
+            <legend className="mb-2.5 text-caption font-bold" style={{ color: "var(--surface-text-muted)" }}>
               {t("filterPlatform")}
             </legend>
             <div className="flex flex-wrap gap-2">
@@ -223,7 +223,7 @@ export const LibraryFilters = ({
           </fieldset>
 
           <fieldset className="flex flex-col gap-2.5">
-            <legend className="mb-2.5 text-caption font-bold" style={{ color: "var(--vs-text-secondary)" }}>
+            <legend className="mb-2.5 text-caption font-bold" style={{ color: "var(--surface-text-muted)" }}>
               {t("filterCategory")}
             </legend>
             <div className="flex flex-wrap gap-2">
@@ -248,7 +248,7 @@ export const LibraryFilters = ({
           {/* Drawn only when the library actually spans more than one season. */}
           {seasons.length > 1 ? (
             <div className="flex flex-col gap-2">
-              <label htmlFor={ids.season} className="text-caption font-bold" style={{ color: "var(--vs-text-secondary)" }}>
+              <label htmlFor={ids.season} className="text-caption font-bold" style={{ color: "var(--surface-text-muted)" }}>
                 {t("filterSeason")}
               </label>
               <select
@@ -271,7 +271,7 @@ export const LibraryFilters = ({
           {/* Nothing at all while the adapter is empty -- see the file header. */}
           {associations.length > 0 ? (
             <div className="flex flex-col gap-2">
-              <label htmlFor={ids.link} className="text-caption font-bold" style={{ color: "var(--vs-text-secondary)" }}>
+              <label htmlFor={ids.link} className="text-caption font-bold" style={{ color: "var(--surface-text-muted)" }}>
                 {t("filterAssociation")}
               </label>
               <select
@@ -292,7 +292,7 @@ export const LibraryFilters = ({
           ) : null}
 
           <div className="flex flex-col gap-2">
-            <label htmlFor={ids.period} className="text-caption font-bold" style={{ color: "var(--vs-text-secondary)" }}>
+            <label htmlFor={ids.period} className="text-caption font-bold" style={{ color: "var(--surface-text-muted)" }}>
               {t("filterPeriod")}
             </label>
             <select
@@ -316,7 +316,7 @@ export const LibraryFilters = ({
           {draft.period === "custom" ? (
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-2">
-                <label htmlFor={ids.from} className="text-caption" style={{ color: "var(--vs-text-secondary)" }}>
+                <label htmlFor={ids.from} className="text-caption" style={{ color: "var(--surface-text-muted)" }}>
                   {t("filterFrom")}
                 </label>
                 <input
@@ -329,7 +329,7 @@ export const LibraryFilters = ({
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <label htmlFor={ids.to} className="text-caption" style={{ color: "var(--vs-text-secondary)" }}>
+                <label htmlFor={ids.to} className="text-caption" style={{ color: "var(--surface-text-muted)" }}>
                   {t("filterTo")}
                 </label>
                 <input
@@ -342,7 +342,7 @@ export const LibraryFilters = ({
                 />
               </div>
               {rangeIsUsable ? null : (
-                <p role="status" className="col-span-2 text-caption" style={{ color: "#F8A5AB" }}>
+                <p role="status" className="col-span-2 text-caption" style={{ color: "var(--color-semantic-error-text)" }}>
                   {t("rangeBackwards")}
                 </p>
               )}
@@ -356,8 +356,8 @@ export const LibraryFilters = ({
                 setOpen(false);
                 onClear();
               }}
-              className="inline-flex min-h-11 items-center px-2 text-body-sm underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--vs-green)]"
-              style={{ color: "var(--vs-text-secondary)" }}
+              className={`inline-flex min-h-11 items-center px-2 text-body-sm underline-offset-4 hover:underline ${FOCUS}`}
+              style={{ color: "var(--surface-text-muted)" }}
             >
               {t("clearAll")}
             </button>
@@ -365,8 +365,8 @@ export const LibraryFilters = ({
               type="button"
               onClick={apply}
               disabled={!rangeIsUsable}
-              className="inline-flex min-h-11 items-center rounded-[var(--vs-radius-pill)] px-6 text-body-sm font-bold transition-[filter] duration-[var(--motion-duration-fast)] hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--vs-green)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--vs-surface)] disabled:opacity-45"
-              style={{ background: "var(--vs-green)", color: "var(--vs-on-green)" }}
+              className={`inline-flex min-h-11 items-center rounded-[var(--radius-full)] px-6 text-body-sm font-bold transition-[filter] duration-[var(--motion-duration-fast)] hover:brightness-110 ${FOCUS} disabled:opacity-45`}
+              style={{ background: "var(--surface-btn-primary-bg)", color: "var(--surface-btn-primary-ink)" }}
             >
               {t("apply")}
             </button>

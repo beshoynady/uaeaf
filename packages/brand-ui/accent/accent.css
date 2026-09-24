@@ -1,0 +1,355 @@
+/*
+ * The identity accents (ADR-0098 D1 R3, D3, D4, D5).
+ *
+ * Every colour here comes from a surface variable or a brand token, every
+ * duration from `--motion-duration-*`, and every width from
+ * `--border-width-*`. Nothing in this file is a number someone chose while
+ * looking at a screenshot.
+ */
+
+/* ------------------------------------------------------------------ *
+ * BrandAccentBar — the tricolour edge.
+ * ------------------------------------------------------------------ */
+.brand-accent-bar {
+  block-size: var(--brand-accent-bar-height);
+  inline-size: 100%;
+  flex: 0 0 auto;
+  background: var(--brand-tricolor);
+}
+
+/*
+ * The two doses, named rather than numbered at the call site (ADR-0098 D6).
+ * 4px on the public site, 3px in the dashboard: the operational dose is
+ * smaller because an operator sees it on every screen, all day.
+ */
+.brand-accent-bar[data-dose="expressive"] {
+  --brand-accent-bar-height: 4px;
+}
+
+.brand-accent-bar[data-dose="operational"] {
+  --brand-accent-bar-height: 3px;
+}
+
+/* ------------------------------------------------------------------ *
+ * TricolorDivider — the short rule under a heading.
+ * ------------------------------------------------------------------ */
+.brand-tricolor-divider {
+  /* Short on purpose: at full width the green and red ends stop reading as
+     one mark, and a tricolour rule under every heading is the "everywhere
+     faintly" failure Chapter 27 §24 names. */
+  inline-size: var(--space-16);
+  block-size: var(--border-width-ring);
+  margin-block-start: var(--space-3);
+  background: var(--brand-tricolor);
+  border-radius: var(--radius-full);
+}
+
+/* ------------------------------------------------------------------ *
+ * BrandStreaks — the diagonal motif.
+ *
+ * `currentColor` is the whole colour story: the stroke inherits the surface's
+ * ink, so the motif is black on light grounds, white on dark ones, and white
+ * on the two brand grounds where Guide §6.1 requires a monochrome mark. There
+ * is no `tone` prop and no variant per surface.
+ * ------------------------------------------------------------------ */
+.brand-streaks {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  color: var(--surface-text);
+  stroke: currentColor;
+  stroke-width: var(--border-width-thick);
+  /* Chapter 27 §24 caps the motif at 5% where it is a repeating field. These
+     are bounded figures, not a field, but they still sit under content, so the
+     opacity keeps them from competing with text. */
+  opacity: var(--opacity-mesh-subtle);
+}
+
+/*
+ * Placement follows reading order. The angle does not — the four strokes above
+ * are literal geometry, and Guide §9.1 forbids mirroring an identity mark.
+ */
+.brand-streaks[data-placement="corner"] {
+  inset-block-start: 0;
+  inset-inline-end: 0;
+  inline-size: 40%;
+  block-size: 60%;
+}
+
+.brand-streaks[data-placement="behind-photo"] {
+  inset-block-end: 0;
+  inset-inline-start: 0;
+  inline-size: 55%;
+  block-size: 70%;
+}
+
+.brand-streaks[data-placement="cross-headline"] {
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  /* Crossing a headline is the one placement that sits over a content-bearing
+     area, so it is fainter still — the 5% Chapter 27 §24 names for a field. */
+  opacity: 0.05;
+}
+
+/* ------------------------------------------------------------------ *
+ * The band — one implementation, used by every bordered thing here.
+ *
+ * A gradient edge around a box whose interior stays transparent. Three
+ * components need exactly this (BrandBorder, the secondary Button, FilterChip
+ * and SearchField), and three copies of it would be three places to fix the
+ * next time a browser changes how `mask-composite` is spelled.
+ *
+ * **Two techniques were tried first and both fail in ways that pass review.**
+ *
+ * `border-image` ignores `border-radius` completely: every rounded card gets
+ * square gradient corners around a rounded fill.
+ *
+ * The `padding-box`/`border-box` pair — two background layers, the ground
+ * clipped to the padding box and the gradient to the border box — needs an
+ * opaque interior, and takes it from `--surface-bg`. That works on `canvas`
+ * and `ink`, where the ground is a colour, and **fails silently on the two
+ * brand surfaces**, where the ground is itself a gradient:
+ * `linear-gradient(<gradient>, <gradient>)` is invalid, the whole
+ * `background-image` is dropped, and the edge disappears. Measured on the
+ * Brand Kit page on 2026-09-24 — correct on three surfaces, absent on two,
+ * which is exactly how a reviewer walks past it. It also cannot ring a
+ * photograph, which is the one thing `shape="circle"` exists for.
+ *
+ * The mask keeps the radius, keeps the interior transparent, and needs to know
+ * nothing about the ground.
+ * ------------------------------------------------------------------ */
+.brand-ring {
+  position: relative;
+}
+
+.brand-ring::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: var(--brand-ring-width, var(--border-width-thick));
+  background: var(--brand-ring-paint, var(--brand-tricolor));
+  /* Paint the whole box, subtract the content box, keep the band. `exclude` is
+     the standard name; the `-webkit-` pair is what Safari still understands. */
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------------ *
+ * BrandBorder.
+ *
+ * A gradient band around a box whose interior stays transparent, so the same
+ * component works on a flat ground, on a gradient ground, and around a
+ * photograph. The band is a masked pseudo-element; the reasoning, and the two
+ * techniques that were tried and rejected, are on `.brand-ring` above.
+ * ------------------------------------------------------------------ */
+
+/*
+ * A registered property, so the angle can be animated at all. Unregistered
+ * custom properties interpolate as strings — `0deg` to `360deg` jumps rather
+ * than sweeping — so without this the rotation simply does not happen.
+ */
+@property --brand-border-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.brand-border {
+  /* `--brand-ring-*` is the shared band's contract; these two names stay so the
+     variants below read as being about a border rather than about a utility. */
+  --brand-ring-width: var(--brand-border-width, var(--border-width-thick));
+  --brand-ring-paint: var(--brand-border-paint);
+  --brand-border-paint: var(--brand-tricolor);
+
+  padding: var(--brand-ring-width);
+  border-radius: var(--radius-lg);
+}
+
+/*
+ * The solid tones read the surface's own stops rather than the brand tokens.
+ *
+ * That is what makes them collapse to white on an identity ground without a
+ * descendant override: a green border on the green ground is not a border, and
+ * a red one on the red ground is worse — a boundary drawn in the colour it is
+ * supposed to bound. The surface has already decided what "green" and "red"
+ * mean on it (Guide §6.1), and these two rules just ask.
+ */
+.brand-border[data-tone="green"] {
+  --brand-border-paint: linear-gradient(
+    var(--brand-tricolor-angle),
+    var(--surface-tricolor-start),
+    var(--surface-tricolor-start)
+  );
+}
+
+.brand-border[data-tone="red"] {
+  --brand-border-paint: linear-gradient(
+    var(--brand-tricolor-angle),
+    var(--surface-tricolor-end),
+    var(--surface-tricolor-end)
+  );
+}
+
+.brand-border[data-shape="circle"] {
+  /* A ring reads thinner than a straight edge of the same width, because its
+     stroke is never parallel to itself for long. So it steps up one. */
+  --brand-ring-width: var(--border-width-ring);
+  border-radius: var(--radius-full);
+}
+
+/*
+ * The rotation.
+ *
+ * `--brand-border-angle` feeds the conic sweep declared in surfaces.css. The
+ * sweep closes back on green, so the seam is green-to-green: a red-to-green
+ * seam would put the 1.22:1 pair hard against each other at the one place a
+ * rotation makes the eye pass twice.
+ */
+@keyframes brand-border-orbit {
+  to {
+    --brand-border-angle: 360deg;
+  }
+}
+
+/*
+ * `hover` — bounded by the pointer or by focus. A solid tone becomes the
+ * tricolour while it turns, so the motion reads as the identity rather than as
+ * a spinning green line.
+ *
+ * `:focus-within` is not an extra: a keyboard user reaching a card's link gets
+ * the same emphasis a pointer user gets, which is the difference between an
+ * affordance and a mouse trick.
+ */
+/*
+ * The two rotating variants.
+ *
+ * **The conic gradient is written into `background-image` and not into a
+ * custom property, and that is not a style choice.** Lightning CSS — the
+ * engine behind Tailwind v4 — silently drops a declaration of the form
+ * `--x: conic-gradient(...)`. Not a warning, not a mangled value: the whole
+ * declaration disappears from the delivered stylesheet, so `var(--x)` resolves
+ * to nothing, `background-image` becomes invalid, and the border renders at
+ * the right size with no paint at all. A `linear-gradient` in the same
+ * position survives, which is what makes the failure so easy to walk past.
+ *
+ * Measured in the browser on 2026-09-24: zero occurrences of `conic-gradient`
+ * in the served CSS while the source had three. The same gradient written
+ * directly in `background-image`, including `from var(--brand-border-angle)`,
+ * survives untouched. So it is written directly, twice, rather than shared
+ * through a variable that does not survive the build.
+ *
+ * `:focus-within` is not an extra on the hover variant: a keyboard user
+ * reaching a card's link gets the same emphasis a pointer user gets, which is
+ * the difference between an affordance and a mouse trick.
+ *
+ * The sweep closes back on green, so the seam is green-to-green. A red-to-green
+ * seam would put the 1.22:1 pair hard against each other at the one place a
+ * rotation makes the eye pass it twice.
+ */
+.brand-border[data-variant="hover"]:hover::after,
+.brand-border[data-variant="hover"]:focus-within::after,
+.brand-border[data-variant="live"]::after {
+  background: conic-gradient(
+    from var(--brand-border-angle),
+    var(--surface-tricolor-start) 0deg,
+    var(--surface-tricolor-mid) 60deg,
+    var(--surface-tricolor-end) 120deg,
+    var(--surface-tricolor-mid) 200deg,
+    var(--surface-tricolor-start) 280deg,
+    var(--surface-tricolor-start) 360deg
+  );
+}
+
+/*
+ * The animation runs on the element, not the pseudo-element: `@property`
+ * registers `--brand-border-angle` with `inherits: false`, so animating it on
+ * `::before` would leave the element's own copy untouched and vice versa. It
+ * is declared and animated in one place, and the pseudo-element reads it —
+ * which works because `inherits: false` still lets a pseudo-element inherit
+ * from its originating element.
+ */
+.brand-border[data-variant="hover"]:hover,
+.brand-border[data-variant="hover"]:focus-within,
+.brand-border[data-variant="live"] {
+  animation: brand-border-orbit var(--motion-duration-orbit) linear infinite;
+}
+
+/*
+ * Reduced motion: the rotation stops, the border stays.
+ *
+ * The global `* { animation-duration: 0.01ms }` reset in base.css already
+ * halts the animation, and `--motion-duration-orbit` is zeroed there too. What
+ * that reset does NOT do is restore a visible edge — a conic gradient frozen
+ * at its start angle is still a valid tricolour, but the safer statement is
+ * the explicit one: drop back to the static ramp. The border is the
+ * affordance; the rotation was only emphasis.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .brand-border[data-variant="hover"]:hover::after,
+  .brand-border[data-variant="hover"]:focus-within::after,
+  .brand-border[data-variant="live"]::after {
+    background: var(--brand-tricolor);
+  }
+
+  .brand-border[data-variant="hover"]:hover,
+  .brand-border[data-variant="hover"]:focus-within,
+  .brand-border[data-variant="live"] {
+    animation: none;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * The hover draw line — a utility, not a component.
+ *
+ * A tricolour rule that draws itself from the inline start on hover or focus.
+ * It is a class rather than a component because it decorates something that
+ * already exists (a card, a row) instead of wrapping it, and wrapping every
+ * list row in an extra element to get one pseudo-element would be a worse
+ * trade than a class.
+ *
+ * `scaleX` on a `transform-origin` of the inline start: a width transition
+ * would animate a layout property, which ADR-0009 forbids for exactly this
+ * kind of repeated motion.
+ * ------------------------------------------------------------------ */
+.brand-draw-line {
+  position: relative;
+}
+
+/* `::before`, not `::after`: the band above owns `::after`, and a card that
+   carries both a border and a draw line would otherwise lose one of them. */
+.brand-draw-line::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: var(--border-width-thick);
+  background: var(--brand-tricolor);
+  /* `transform-origin` has no logical form, so it is resolved from direction
+     the same way the gradient angles are — once, at system level. */
+  transform-origin: var(--brand-draw-origin, left);
+  transform: scaleX(0);
+  transition: transform var(--motion-duration-base) var(--motion-easing-decelerate);
+}
+
+.brand-draw-line:hover::before,
+.brand-draw-line:focus-within::before {
+  transform: scaleX(1);
+}
+
+:root {
+  --brand-draw-origin: left;
+}
+
+[dir="rtl"] {
+  --brand-draw-origin: right;
+}

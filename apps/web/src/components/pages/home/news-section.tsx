@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { BRAND_DRAW_LINE, BrandBorder, Surface } from "@uaeaf/brand-ui";
 import { Section } from "@/components/ui/section";
 import { LeadArticleCard } from "@/components/pages/news/lead-article-card";
 import { ArticleListItem } from "@/components/pages/news/article-list-item";
@@ -49,7 +50,15 @@ export const HomeNewsSection = async ({
 
   return (
     <Section labelledBy={id} enter={false} className="py-16">
-      <div data-reveal="" data-reveal-reduced="fade" className="flex flex-col gap-10">
+      {/*
+        The neutral ground with the mesh tint over it (ADR-0098 §5-D). Nested
+        inside `Section` rather than replacing it: `Section` still owns the
+        register, the landmark and the entrance, and this adds the tint and the
+        on-surface variables the kit's components read. Same ground, one extra
+        layer.
+      */}
+      <Surface kind="canvas" mesh as="div" className="flex flex-col gap-10">
+        <div data-reveal="" data-reveal-reduced="fade" className="contents">
         <HomeSectionHeader
           id={id}
           title={section.sectionTitle?.[locale] ?? t("homeLatestHeading")}
@@ -58,20 +67,33 @@ export const HomeNewsSection = async ({
         />
 
         <div className="grid items-start gap-12 lg:grid-cols-2">
+          {/* The lead article carries a static tricolour edge instead of an
+              accent bar — one mark, not two stacked (ADR-0098 §5-D). */}
           <div data-reveal-part="rise" style={revealStep(2)}>
-            <LeadArticleCard article={lead} cover={coverOf(lead)} locale={locale} />
+            <BrandBorder variant="static">
+              <LeadArticleCard article={lead} cover={coverOf(lead)} locale={locale} />
+            </BrandBorder>
           </div>
           {rest.length > 0 ? (
             <ul className="flex list-none flex-col divide-y divide-[color:var(--color-border-default)] p-0">
               {rest.slice(0, LIST_LENGTH).map((article, index) => (
-                <li key={article.id} data-reveal-part="rise" style={revealStep(3 + index)}>
+                /* The draw line is applied here rather than inside
+                   `ArticleListItem`, which `/news` also renders: this section's
+                   treatment is not that page's, and `/news` is a separate task. */
+                <li
+                  key={article.id}
+                  className={BRAND_DRAW_LINE}
+                  data-reveal-part="rise"
+                  style={revealStep(3 + index)}
+                >
                   <ArticleListItem article={article} cover={coverOf(article)} locale={locale} />
                 </li>
               ))}
             </ul>
           ) : null}
         </div>
-      </div>
+        </div>
+      </Surface>
     </Section>
   );
 };

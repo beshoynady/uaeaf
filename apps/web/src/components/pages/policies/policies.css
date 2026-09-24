@@ -1,0 +1,165 @@
+/*
+ * Regulations & Policies — layout only.
+ *
+ * Nothing here paints a component from `@uaeaf/brand-ui`: every colour, edge
+ * and radius on this page comes from the library, which is the point of the
+ * page. These rules place things.
+ *
+ * The container reproduces the site's existing convention rather than
+ * introducing a second one — the `grid.margin.*` ladder with a 1248px inner
+ * cap, the same steps `contact/page.tsx` and `ui/section.tsx`'s `CONTAINER`
+ * use: 16 / 24 / 32 / 48 / 64. The first version of this block had only three
+ * of the five, so the grid ran wider than every other page between 768 and
+ * 1023 and again above 1280.
+ */
+
+.policies-filters__card,
+.policies-results,
+.policies-governance__body {
+  margin-inline: auto;
+  inline-size: 100%;
+  max-inline-size: 1248px;
+  padding-inline: var(--space-4);
+}
+
+@media (min-width: 40rem) {
+  .policies-filters__card,
+  .policies-results,
+  .policies-governance__body {
+    padding-inline: var(--space-6);
+  }
+}
+
+@media (min-width: 48rem) {
+  .policies-filters__card,
+  .policies-results,
+  .policies-governance__body {
+    padding-inline: var(--space-8);
+  }
+}
+
+@media (min-width: 64rem) {
+  .policies-filters__card,
+  .policies-results,
+  .policies-governance__body {
+    padding-inline: var(--space-12);
+  }
+}
+
+@media (min-width: 80rem) {
+  .policies-filters__card,
+  .policies-results,
+  .policies-governance__body {
+    padding-inline: var(--space-16);
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * The filter card, riding the hero's lower edge.
+ * ------------------------------------------------------------------ */
+.policies-filters {
+  /* The card is pulled up over the hero, so the band behind it only has to
+     cover the half that still sits on the canvas. */
+  padding-block-end: var(--space-12);
+}
+
+.policies-filters__card {
+  /* The overlap. Negative margin rather than a transform: the card must still
+     take its own space in the flow below the hero, or the grid under it
+     collides with it. */
+  margin-block-start: calc(var(--space-12) * -1);
+  padding-inline: 0;
+}
+
+.policies-filters__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  background-color: var(--color-surface-raised);
+  box-shadow: var(--elevation-panel);
+}
+
+.policies-filters__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.policies-filters__count {
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------------ *
+ * The document grids.
+ * ------------------------------------------------------------------ */
+.policies-results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  padding-block-end: var(--space-20);
+}
+
+.policies-results__notice {
+  padding: var(--space-3) var(--space-4);
+  border-inline-start: var(--border-width-ring) solid var(--color-brand-primary);
+  background-color: var(--color-surface-sunken);
+  color: var(--color-text-secondary);
+}
+
+.policies-group {
+  display: flex;
+  flex-direction: column;
+}
+
+/*
+ * One column on a phone, three at desktop — the reference design's own
+ * arrangement. `auto-fit` with a floor rather than three fixed tracks, so the
+ * middle widths get two columns instead of three cramped ones.
+ */
+.policies-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+}
+
+@media (min-width: 48rem) {
+  .policies-grid {
+    grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Governance and strategy — the green section.
+ * ------------------------------------------------------------------ */
+.policies-governance__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-block: var(--space-16);
+}
+
+.policies-governance__title {
+  color: var(--surface-text);
+}
+
+.policies-governance__description {
+  max-inline-size: 68ch;
+  /* The same white as the title: this ground carries one ink, and the
+     hierarchy between them is size and weight (ADR-0098 §8.2). */
+  color: var(--surface-text-muted);
+}
+
+.policies-governance__tiles {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  margin-block-start: var(--space-4);
+}
+
+@media (min-width: 48rem) {
+  .policies-governance__tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

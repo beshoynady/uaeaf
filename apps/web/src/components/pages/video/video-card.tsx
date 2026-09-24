@@ -8,6 +8,7 @@ import { titleOf } from "@/lib/video/types";
 import type { VideoPublic } from "@/lib/video/types";
 import type { MediaAssetPublic } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
+import { FOCUS_WIDE } from "./chrome";
 
 /**
  * One landscape video, as the carousel and the library grid both draw it.
@@ -49,18 +50,18 @@ export const VideoCard = ({
       type="button"
       onClick={onPlay}
       data-testid="video-card"
-      className="vs-rise group flex w-full flex-col gap-3 text-start focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--vs-green)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--vs-bg)]"
-      style={{ borderRadius: "var(--vs-radius-card)", ...(revealIndex === undefined ? {} : { ["--vs-reveal-index" as string]: revealIndex }) }}
+      className={`vs-rise group flex w-full flex-col gap-3 text-start ${FOCUS_WIDE}`}
+      style={{ borderRadius: "var(--radius-md)", ...(revealIndex === undefined ? {} : { ["--vs-reveal-index" as string]: revealIndex }) }}
     >
       <span
         className="relative block w-full overflow-hidden"
-        style={{ aspectRatio: "16 / 9", borderRadius: "var(--vs-radius-card)", background: "var(--vs-surface)" }}
+        style={{ aspectRatio: "16 / 9", borderRadius: "var(--radius-md)" }}
       >
         <VideoThumbnail
           asset={thumbnail}
           locale={locale}
           sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 320px"
-          className="transition-transform duration-500 ease-[cubic-bezier(.16,.8,.24,1)] group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
+          className="transition-transform duration-[var(--motion-duration-slower)] ease-[cubic-bezier(.16,.8,.24,1)] group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
         />
 
         {/* A scrim under the marks. The still is an uncontrolled photograph, so
@@ -68,7 +69,7 @@ export const VideoCard = ({
         <span
           aria-hidden="true"
           className="absolute inset-0"
-          style={{ background: "linear-gradient(to bottom, rgba(10,12,11,0.34) 0%, transparent 34%, transparent 62%, rgba(10,12,11,0.5) 100%)" }}
+          style={{ background: "linear-gradient(to bottom, color-mix(in srgb, var(--color-surface-overlay) 34%, transparent) 0%, transparent 34%, transparent 62%, color-mix(in srgb, var(--color-surface-overlay) 50%, transparent) 100%)" }}
         />
 
         {/* The far corner in either language: `end-3` is `right` in English and
@@ -81,10 +82,10 @@ export const VideoCard = ({
           {/* `filled` on hover is the design's one hover promise: the disc
               takes the federation's green. Group-hover cannot cross into a
               prop, so both are drawn and one is faded out -- no layout moves. */}
-          <span className="transition-opacity duration-[var(--motion-duration-fast)] group-hover:opacity-0 motion-reduce:transition-none">
+          <span className="transition-opacity duration-[var(--motion-duration-fast)] group-hover:opacity-0 group-active:opacity-0 motion-reduce:transition-none">
             <PlayButton size="sm" />
           </span>
-          <span className="absolute opacity-0 transition-opacity duration-[var(--motion-duration-fast)] group-hover:opacity-100 motion-reduce:transition-none">
+          <span className="absolute opacity-0 transition-opacity duration-[var(--motion-duration-fast)] group-hover:opacity-100 group-active:opacity-100 motion-reduce:transition-none">
             <PlayButton size="sm" filled />
           </span>
         </span>
@@ -96,7 +97,7 @@ export const VideoCard = ({
             agree reads as broken rather than as varied. */}
         <span
           className="line-clamp-2 text-body font-semibold leading-snug"
-          style={{ color: "var(--vs-text)", fontSize: "1.0625rem" }}
+          style={{ color: "var(--surface-text)", fontSize: "1.0625rem" }}
         >
           {title}
         </span>
@@ -104,8 +105,13 @@ export const VideoCard = ({
             it is what pins Latin numerals in Arabic (Chapter 19 §5), and a
             second place calling `useFormatter` with its own options would
             silently get the locale's default numbering system instead. */}
-        <span className="flex items-center gap-2 text-caption" style={{ color: "var(--vs-text-muted)" }}>
-          <span style={{ color: "var(--vs-green)" }}>{labels.category}</span>
+        <span className="flex items-center gap-2 text-caption" style={{ color: "var(--surface-text-muted)" }}>
+          {/* The kit's green is a button plate, not an ink: on this ground it
+          measures 4.09:1, which is a fine boundary and not readable text.
+          So the label takes the surface's own ink and the date beside it
+          stays muted -- the hierarchy without the failing colour.
+          DESIGN SYSTEM GAP, in the backlog: ink publishes no accent ink. */}
+          <span style={{ color: "var(--surface-text)" }}>{labels.category}</span>
           {video.publishedAt ? <span aria-hidden="true">·</span> : null}
           <PublishDate date={video.publishedAt} />
         </span>

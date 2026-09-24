@@ -6,6 +6,7 @@ import { MediaCoverageCarousel } from "./media-coverage-carousel";
 import { PressCoverageCard } from "./press-coverage-card";
 import type { PageSectionPublic } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
+import { PhotoSurface } from "@uaeaf/brand-ui";
 
 /**
  * "UAEAF in the Media" (Homepage Specification §11b, position 8).
@@ -38,8 +39,23 @@ export const MediaCoverageSection = async ({
   const id = `home-coverage-${section.id}`;
 
   return (
-    <Section labelledBy={id} enter={false} className="py-16">
-      <div data-reveal="" data-reveal-reduced="fade" className="flex flex-col gap-9">
+    <Section labelledBy={id} enter={false}>
+      {/*
+        The photographic ground (usage matrix §5-D). One asset, the hero's own
+        stadium frame, reused rather than a second photograph: at 88% wash it
+        reads as texture under the page and no reader can tell which picture it
+        is, so a dedicated image would be a second request for nothing.
+
+        `priority` is deliberately absent — this section is below the fold, and
+        a second priority image is how an LCP regression arrives.
+      */}
+      <PhotoSurface
+        src="/design-assets/hero/hero-slide-1-2374-1203.png"
+        alt=""
+        as="div"
+        className="py-16"
+      >
+        <div data-reveal="" data-reveal-reduced="fade" className="flex flex-col gap-9">
         <HomeSectionHeader
           id={id}
           title={t("heading")}
@@ -62,7 +78,8 @@ export const MediaCoverageSection = async ({
             />
           ))}
         </MediaCoverageCarousel>
-      </div>
+        </div>
+      </PhotoSurface>
     </Section>
   );
 };

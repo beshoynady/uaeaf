@@ -9,15 +9,11 @@ import type { VideoCategory, VideoKind, VideoPlatform } from "@/lib/admin/videos
  *
  * -- Why it is dark inside a light dashboard --------------------------------
  *
- * The video system's public surface is a dark register (`#0A0C0B` / `#121614`,
- * scoped to `.video-system` on the site). A preview drawn on the dashboard's
- * light surface would be a card nobody approved: the editor would sign off on
- * a contrast, a scrim and a play button that do not exist anywhere. So the
- * preview carries the site's own ground, as literals, and says so.
- *
- * They are literals rather than tokens for the same reason they are literals
- * on the site: the dark register is that system's alone, and a token would
- * invite it into screens that never agreed to it.
+ * The site draws this card on ADR-0098's ink surface, so the preview declares
+ * that surface too. Drawn on the dashboard's own light ground it would be a
+ * card nobody approved: the editor would sign off on a contrast, a scrim and a
+ * play button that exist nowhere. Both sides read the same `--surface-*` set
+ * from the same kit, so the preview cannot drift from the page it mirrors.
  *
  * -- It updates as the editor types -----------------------------------------
  *
@@ -45,16 +41,25 @@ export const VideoPreviewCard = ({
   live?: boolean;
   liveLabel?: string;
 }) => (
+  // The preview shows the public site's ground, so it declares that
+  // ground: `data-surface="ink"` resolves every `--surface-*` below to
+  // ADR-0098's ink set, exactly as the site resolves them. Literals here
+  // would be a second copy of a surface the kit already publishes.
   <div
+    data-surface="ink"
     className="flex flex-col gap-3 overflow-hidden rounded-[14px] p-3"
-    style={{ background: "#0A0C0B" }}
+    style={{ background: "var(--surface-bg)" }}
   >
     <div
       className="relative w-full overflow-hidden rounded-[10px]"
       style={{
         aspectRatio: kind === "reel" ? "9 / 16" : "16 / 9",
-        background: "#121614",
-        boxShadow: live ? "0 0 0 1px #D11A27, 0 0 28px -8px #D11A27" : undefined,
+        background: "color-mix(in srgb, var(--surface-text) 6%, var(--surface-bg))",
+        // The site's frame, to the value (`.vs-live-frame`): a preview that shows a
+        // different red at a different spread is not showing the card.
+        boxShadow: live
+          ? "0 0 0 1px var(--color-brand-secondary), 0 0 34px -6px color-mix(in srgb, var(--color-brand-secondary) 70%, transparent)"
+          : undefined,
       }}
     >
       <span className="absolute inset-0">
@@ -65,13 +70,15 @@ export const VideoPreviewCard = ({
       <span
         aria-hidden="true"
         className="absolute inset-0"
-        style={{ background: "linear-gradient(to bottom, rgba(10,12,11,0.34) 0%, transparent 34%)" }}
+        style={{ background: "linear-gradient(to bottom, color-mix(in srgb, var(--color-surface-overlay) 34%, transparent) 0%, transparent 34%)" }}
       />
 
       {live && liveLabel ? (
+        // `brand-red` publishes the ground and the ink together, measured in
+        // ADR-0098 §8.3 -- the same pair `LiveBadge` asks for on the site.
         <span
+          data-surface="brand-red"
           className="absolute start-2 top-2 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-caption font-bold"
-          style={{ background: "#D11A27", color: "#FFFFFF" }}
         >
           <span aria-hidden="true" className="inline-block size-1.5 rounded-full bg-current" />
           {liveLabel}
@@ -92,22 +99,22 @@ export const VideoPreviewCard = ({
       >
         <span
           className="inline-flex size-11 items-center justify-center rounded-full"
-          style={{ background: "rgba(10,12,11,0.46)", boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.55)" }}
+          style={{ background: "color-mix(in srgb, var(--color-surface-overlay) 46%, transparent)", boxShadow: "inset 0 0 0 1px color-mix(in srgb, var(--surface-text) 55%, transparent)" }}
         >
           <svg viewBox="0 0 24 24" className="size-4" focusable="false">
-            <path d="M8 5.2 19 12 8 18.8V5.2Z" fill="#FFFFFF" />
+            <path d="M8 5.2 19 12 8 18.8V5.2Z" fill="var(--surface-text)" />
           </svg>
         </span>
       </span>
     </div>
 
     <div className="flex flex-col gap-1">
-      <p className="line-clamp-2 text-body-sm font-semibold leading-snug" style={{ color: "#F3F5F2" }}>
+      <p className="line-clamp-2 text-body-sm font-semibold leading-snug" style={{ color: "var(--surface-text)" }}>
         {title}
       </p>
       {categoryLabel || dateLabel ? (
-        <p className="flex items-center gap-2 text-caption" style={{ color: "#8A938D" }}>
-          {categoryLabel ? <span style={{ color: "#2BD46E" }}>{categoryLabel}</span> : null}
+        <p className="flex items-center gap-2 text-caption" style={{ color: "var(--surface-text-muted)" }}>
+          {categoryLabel ? <span style={{ color: "var(--surface-text)" }}>{categoryLabel}</span> : null}
           {categoryLabel && dateLabel ? <span aria-hidden="true">·</span> : null}
           {dateLabel ? <span>{dateLabel}</span> : null}
         </p>

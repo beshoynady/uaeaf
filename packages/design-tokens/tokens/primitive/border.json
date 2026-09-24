@@ -2,7 +2,8 @@
   "border": {
     "width": {
       "default": { "value": "1px", "type": "borderWidth" },
-      "thick": { "value": "2px", "type": "borderWidth", "comment": "High Contrast theme default border (Chapter 7 §7.3)" }
+      "thick": { "value": "2px", "type": "borderWidth", "comment": "High Contrast theme default border (Chapter 7 §7.3); also the Brand UI Kit card border width (ADR-0098 D7)" },
+      "ring": { "value": "3px", "type": "borderWidth", "comment": "ADR-0098 D7 — BrandBorder shape=circle. A ring reads thinner than a straight edge of the same width because its stroke is never parallel to itself for long, so the circular variant steps up one." }
     }
   }
 }

@@ -27,6 +27,33 @@ import { SECTION_ENTER } from "./surface";
 export type Register = "neutral" | "green" | "red" | "black";
 
 /**
+ * A register, expressed as a Brand UI Kit surface.
+ *
+ * The two systems were built five weeks apart and painted the same grounds
+ * twice: `Section` through Tailwind classes, `Surface` through `data-surface`.
+ * That cost more than tidiness. A `BrandAccentBar` inside a black-register
+ * footer resolved `--surface-tricolor-mid` from the `:root` fallback, so its
+ * middle step was **black on the black footer** — the bar was there and half
+ * of it was invisible. Measured 2026-09-24.
+ *
+ * Emitting both attributes from one element is the smallest change that makes
+ * them one mechanism: the Tailwind classes keep painting exactly what they
+ * painted, and every kit component inside now reads the right ink, edge and
+ * tricolour without the call site wrapping anything.
+ */
+export const SURFACE_OF: Record<Register, string> = {
+  neutral: "canvas",
+  // The register surfaces, not the kit's expressive `brand-green`/`brand-red`.
+  // These publish ADR-0059 D2's own measured values — `green.700` with
+  // `green.100` under it — which is what the shipped pages were measured
+  // against. Mapping to the gradient variant would have quietly moved every
+  // register band's second text tier below AA.
+  green: "section-green",
+  red: "section-red",
+  black: "section-black",
+};
+
+/**
  * Class strings per register, written out in full rather than composed.
  *
  * Tailwind scans source text for complete class names; a template literal
@@ -132,6 +159,8 @@ export function Section({
       id={id}
       aria-labelledby={labelledBy}
       data-register={register}
+      // The same band, named in the kit's vocabulary. See `SURFACE_OF`.
+      data-surface={SURFACE_OF[register]}
       data-ground={register === "neutral" ? ground : undefined}
       className={`w-full ${surface}${className ? ` ${className}` : ""}`}
     >

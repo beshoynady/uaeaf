@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { VideoPlatform } from "@/lib/video/types";
+import { FOCUS } from "@/components/ui/interactive";
 
 /**
  * The player, and the promise that nothing loads until a reader asks for it.
@@ -13,6 +14,11 @@ import type { VideoPlatform } from "@/lib/video/types";
  * and a network waterfall, and a homepage carrying eight of them at rest pays
  * all of that for a video most visitors will never start. The card's own
  * thumbnail stands in until then, and the press is what buys the embed.
+ *
+ * Every control here carries the shared `FOCUS` ring. The facade covers the
+ * whole frame, so a keyboard user landing on it had no way to see where they
+ * were — four interactive elements with no indicator at all, on the most
+ * pressed element in the video system (WCAG 2.4.7).
  *
  * `embed-frame.spec.tsx` asserts the iframe count is 0 before the press and 1
  * after, which is the guard that keeps this true through future edits.
@@ -105,15 +111,15 @@ export const EmbedFrame = ({
 
   if (failed) {
     return (
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center" style={{ background: "rgba(10,12,11,0.82)" }}>
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="size-8" fill="none" stroke="#F8A5AB" strokeWidth="1.7">
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center" style={{ background: "color-mix(in srgb, var(--color-surface-overlay) 82%, transparent)" }}>
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="size-8" fill="none" stroke="var(--color-semantic-error-text)" strokeWidth="1.7">
           <path d="M12 4.8 2.6 20h18.8L12 4.8Z" strokeLinejoin="round" />
           <path d="M12 10.4v3.4M12 16.6v.1" strokeLinecap="round" />
         </svg>
-        <p className="text-h5 font-bold" style={{ color: "var(--vs-text)" }}>
+        <p className="text-h5 font-bold" style={{ color: "var(--surface-text)" }}>
           {labels.failedTitle}
         </p>
-        <p className="text-body-sm" style={{ color: "var(--vs-text-secondary)" }}>
+        <p className="text-body-sm" style={{ color: "var(--surface-text-muted)" }}>
           {labels.failedBody}
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3">
@@ -121,16 +127,15 @@ export const EmbedFrame = ({
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex min-h-11 items-center rounded-[var(--vs-radius-pill)] px-5 text-body-sm font-semibold"
-            style={{ boxShadow: "inset 0 0 0 1px var(--vs-hairline)", color: "var(--vs-text)" }}
+            className={`vs-edge inline-flex min-h-11 items-center rounded-[var(--radius-full)] px-5 text-body-sm font-semibold ${FOCUS}`}
           >
             {labels.openOn}
           </a>
           <button
             type="button"
             onClick={() => setFailed(false)}
-            className="inline-flex min-h-11 items-center rounded-[var(--vs-radius-pill)] px-4 text-body-sm"
-            style={{ color: "var(--vs-text-secondary)" }}
+            className={`inline-flex min-h-11 items-center rounded-[var(--radius-full)] px-4 text-body-sm ${FOCUS}`}
+            style={{ color: "var(--surface-text-muted)" }}
           >
             {labels.retry}
           </button>
@@ -158,14 +163,25 @@ export const EmbedFrame = ({
   // button that would open an empty frame.
   if (src === null) {
     return (
-      <a href={url} target="_blank" rel="noopener noreferrer" aria-label={`${labels.openOn} — ${title}`} className="absolute inset-0 block">
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`${labels.openOn} — ${title}`}
+        className={`absolute inset-0 block ${FOCUS}`}
+      >
         {children}
       </a>
     );
   }
 
   return (
-    <button type="button" onClick={() => setPlaying(true)} aria-label={`${labels.play} — ${title}`} className="absolute inset-0 block cursor-pointer">
+    <button
+      type="button"
+      onClick={() => setPlaying(true)}
+      aria-label={`${labels.play} — ${title}`}
+      className={`absolute inset-0 block cursor-pointer ${FOCUS}`}
+    >
       {children}
     </button>
   );

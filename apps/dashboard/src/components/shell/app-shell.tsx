@@ -8,6 +8,7 @@ import { UiIcon } from "@/lib/icons/ui-icons";
 import { BUTTON_ICON } from "@/components/ui/interactive";
 import { SidebarNav } from "./sidebar-nav";
 import { CommandPalette } from "./command-palette";
+import { BrandAccentBar } from "@uaeaf/brand-ui";
 
 /**
  * The signed-in frame: header, sidebar and the page between them.
@@ -81,7 +82,12 @@ export const AppShell = ({
   const closeDrawer = () => setDrawerOpen(false);
 
   return (
-    <div className="flex min-h-screen bg-[color:var(--color-surface-sunken)]">
+    // The identity edge at the top of the screen, 3px rather than the public
+    // site's 4px: an operator sees it on every screen all day, so the
+    // Operational dose is the smaller one (Chapter 12 §12.15, ADR-0098 D6).
+    <div className="flex min-h-screen flex-col bg-[color:var(--color-surface-sunken)]">
+      <BrandAccentBar dose="operational" />
+      <div className="flex min-h-0 flex-1">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-4 focus:rounded-[var(--radius-md)] focus:bg-[color:var(--color-surface-raised)] focus:px-4 focus:py-2"
@@ -197,6 +203,7 @@ export const AppShell = ({
           */}
           <div className="flex flex-col gap-8">{children}</div>
         </main>
+      </div>
       </div>
     </div>
   );

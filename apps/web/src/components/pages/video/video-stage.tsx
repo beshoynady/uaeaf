@@ -51,8 +51,7 @@ export const VideoStage = ({
     className={`relative w-full overflow-hidden ${live ? "vs-live-frame" : ""}`}
     style={{
       aspectRatio: "16 / 9",
-      borderRadius: "var(--vs-radius-player)",
-      background: "var(--vs-surface)",
+      borderRadius: "var(--radius-xl)",
     }}
   >
     <EmbedFrame platform={platform} externalId={externalId} url={url} title={title} live={live} labels={labels}>
@@ -71,7 +70,7 @@ export const VideoStage = ({
         <span
           aria-hidden="true"
           className="absolute inset-0"
-          style={{ background: "linear-gradient(to bottom, rgba(10,12,11,0.36) 0%, transparent 32%)" }}
+          style={{ background: "linear-gradient(to bottom, color-mix(in srgb, var(--color-surface-overlay) 36%, transparent) 0%, transparent 32%)" }}
         />
 
         {live && liveLabel ? (

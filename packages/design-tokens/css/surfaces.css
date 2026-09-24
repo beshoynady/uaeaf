@@ -1,0 +1,606 @@
+/*
+ * The five Brand UI Kit surfaces (ADR-0098 D2).
+ *
+ * A surface publishes a fixed set of custom properties; every component in
+ * `@uaeaf/brand-ui` reads them from the cascade. That is the whole reason no
+ * component in the kit takes an `onDark` or `background` prop: a prop of that
+ * shape is a second source of truth for a fact the cascade already holds, and
+ * it is wrong the moment the component is moved into a different section.
+ *
+ * Adding a surface means adding one block here. Nothing in any component
+ * changes, which is the property being bought.
+ *
+ * The set, in full:
+ *   --surface-bg              the ground, a colour or a gradient
+ *   --surface-gradient-from   the ground's lightest stop, for measurement
+ *   --surface-gradient-to     the ground's darkest stop
+ *   --surface-text            primary ink
+ *   --surface-text-muted      secondary ink
+ *   --surface-link            link ink
+ *   --surface-icon            icon ink
+ *   --surface-border          hairline and card edge
+ *   --surface-focus-ring      the focus indicator, always a solid colour
+ *   --surface-tricolor-mid    the tricolour's middle stop on this ground
+ *   --surface-btn-primary-bg  primary button ground
+ *   --surface-btn-primary-ink primary button ink
+ *   --surface-mesh-alpha      how strongly the mesh reads here
+ */
+
+/* ------------------------------------------------------------------ *
+ * Direction. Resolved once, here, and nowhere else.
+ *
+ * Gradient angles and `transform-origin` have no logical equivalent in CSS,
+ * so they are the one family of values that cannot follow `dir` on their own.
+ * Resolving them per component would put a `[dir]` selector in nineteen
+ * files, and the nineteenth would be forgotten.
+ *
+ * Both angles derive from `--motion-ascent-angle` (45deg, measured from the
+ * mark at a mean of 44.46 degrees — ADR-0059 D7, ADR-0060 D2). Neither is a
+ * written-in number.
+ * ------------------------------------------------------------------ */
+:root {
+  /* Top-start to bottom-end: 90 + 45 = 135deg. */
+  --brand-ramp-angle: calc(90deg + var(--motion-ascent-angle));
+  /* Along the inline axis, start to end. Green leads. */
+  --brand-tricolor-angle: 90deg;
+}
+
+[dir="rtl"] {
+  /* Top-start is now top-right: 270 - 45 = 225deg. */
+  --brand-ramp-angle: calc(270deg - var(--motion-ascent-angle));
+  --brand-tricolor-angle: 270deg;
+}
+
+/*
+ * `BrandStreaks` is deliberately NOT in the rule above. The diagonal motif is
+ * derived from the logo's take-off angle, and Guide §9.1 forbids mirroring an
+ * identity mark — so the streaks keep their angle in both directions and only
+ * their placement follows reading order, through logical properties. A ramp
+ * on a ground is not an identity mark; the motif is.
+ */
+
+/* ------------------------------------------------------------------ *
+ * The tricolour.
+ *
+ * Green, a middle step that belongs to the ground, then red. The middle step
+ * is the load-bearing part: ADR-0059 D2 measured green against red at 1.15:1
+ * at their register values and 1.22:1 at the identity values, so a two-stop
+ * green-to-red ramp is a field with no boundary anywhere in it that also
+ * blends through a brown appearing in no part of the identity. ADR-0098 D3
+ * prohibits that ramp outright.
+ *
+ * The stop positions are short on purpose. The blend regions are where two
+ * identity colours mix into a third, so they are kept narrow: green holds to
+ * 26%, the middle step owns 44-56%, red starts at 74%.
+ * ------------------------------------------------------------------ */
+:root,
+[data-surface] {
+  /*
+   * Declared on `[data-surface]` as well as `:root`, and that is load-bearing
+   * rather than belt-and-braces.
+   *
+   * A custom property containing `var()` is substituted at computed-value time
+   * **on the element that declares it**, and descendants inherit the already
+   * substituted result. Declared on `:root` alone, `--brand-tricolor` would
+   * resolve `var(--surface-tricolor-mid)` at the root — where no surface has
+   * set it — become the guaranteed-invalid value, and inherit as invalid into
+   * every surface below. The symptom is not an error: `background: var(--brand-tricolor)`
+   * simply computes to `none`, so the accent bar, the divider and every border
+   * render at the right size, in the right place, painted with nothing.
+   *
+   * Re-declaring it per surface re-substitutes it with that surface's own
+   * middle step, which is the whole point of the middle step being a variable.
+   * The `:root` copy covers the few elements that sit outside any surface.
+   */
+  /*
+   * All three stops are variables, not just the middle one.
+   *
+   * The first version redeclared the whole `--brand-tricolor` gradient as flat
+   * white on the identity grounds. That worked for the linear ramp and missed
+   * everything composed separately — the rotating conic sweep still drew green
+   * on green, and the high-contrast block's middle step was overruled by the
+   * white gradient sitting above it. Three variables instead of one override
+   * means every consumer, linear or conic, follows the same decision.
+   */
+  --surface-tricolor-start: var(--color-brand-primary);
+  --surface-tricolor-mid: var(--color-tricolor-mid);
+  --surface-tricolor-end: var(--color-brand-secondary);
+
+  --brand-tricolor: linear-gradient(
+    var(--brand-tricolor-angle),
+    var(--surface-tricolor-start) 0%,
+    var(--surface-tricolor-start) 26%,
+    var(--surface-tricolor-mid) 44%,
+    var(--surface-tricolor-mid) 56%,
+    var(--surface-tricolor-end) 74%,
+    var(--surface-tricolor-end) 100%
+  );
+
+  /*
+   * The same ramp along the block axis, for an edge that is taller than it is
+   * wide — the dashboard's active-item indicator.
+   *
+   * A 3px-wide strip painted with the inline-axis ramp shows whichever stop
+   * happens to fall across those three pixels, which in practice is green: the
+   * "tricolour edge" was a green bar. A vertical edge needs a vertical ramp.
+   */
+  --brand-tricolor-block: linear-gradient(
+    to bottom,
+    var(--surface-tricolor-start) 0%,
+    var(--surface-tricolor-start) 26%,
+    var(--surface-tricolor-mid) 44%,
+    var(--surface-tricolor-mid) 56%,
+    var(--surface-tricolor-end) 74%,
+    var(--surface-tricolor-end) 100%
+  );
+
+  /* The ink that sits ON the tricolour when something fills with it — the
+     secondary button, filled. White on the three-colour ramp; the surfaces
+     where the ramp collapses to white override it below. */
+  --surface-tricolor-ink: var(--color-white);
+}
+
+/* ------------------------------------------------------------------ *
+ * canvas — the neutral ground.
+ *
+ * ADR-0098 §8.1: bound to the page ground that already exists rather than to
+ * the `#F4F4F4` the specification first named. That value is a cool grey, and
+ * ADR-0051 replaced the cool ramp with `neutral-warm`; ADR-0065's audit
+ * recorded two cool greys imported from elsewhere as defects for the same
+ * reason. Binding here also keeps one measured text ladder instead of two.
+ * ------------------------------------------------------------------ */
+[data-surface="canvas"] {
+  --surface-bg: var(--color-surface-base);
+  --surface-gradient-from: var(--color-surface-base);
+  --surface-gradient-to: var(--color-surface-base);
+  --surface-text: var(--color-text-primary);
+  --surface-text-muted: var(--color-text-muted);
+  --surface-link: var(--color-text-link);
+  --surface-icon: var(--color-text-secondary);
+  --surface-border: var(--color-border-default);
+  --surface-focus-ring: var(--a11y-focus-ring);
+  --surface-tricolor-mid: var(--color-tricolor-mid);
+  /* The component tokens the rest of the product already paints its
+     buttons with, so a kit button and a page button are the same button. */
+  --surface-btn-primary-bg: var(--button-primary-background);
+  --surface-btn-primary-ink: var(--button-primary-text);
+  /* LinkTile and AthleteResultBadge: a translucent white fill is invisible
+     on a light ground, so each surface names its own. */
+  --surface-tile-fill: var(--color-surface-raised);
+  --surface-tile-edge: var(--color-border-default);
+  --surface-mesh-alpha: var(--opacity-mesh-subtle);
+}
+
+/* ------------------------------------------------------------------ *
+ * raised — a neutral plate inside any section.
+ *
+ * Added during the build, on evidence (ADR-0098 D2, amended). A card body
+ * inside a coloured section **is a surface**: it has its own ground, and
+ * anything inside it reads the on-surface variables. Without this kind a card
+ * on `brand-red` paints its body white and leaves `--surface-text` resolving
+ * to the section's white, so the card's own label, links and secondary button
+ * are white ink on a white plate. Measured on the Brand Kit page on
+ * 2026-09-24: the "View document" button was an empty outline on three of the
+ * five surfaces and correct on the other two.
+ *
+ * The alternative — re-declaring eleven variables in each component that
+ * paints a plate — is the duplication the surface mechanism exists to remove,
+ * and it would be wrong in a different place every time someone forgot one.
+ *
+ * It is a neutral ground, so it is not an "expressive" surface in the sense
+ * §5-D's usage matrix uses: nothing chooses `raised` for a section. Components
+ * use it internally, which is why it does not appear in the rhythm rule.
+ * ------------------------------------------------------------------ */
+[data-surface="raised"] {
+  --surface-bg: var(--color-surface-raised);
+  --surface-gradient-from: var(--color-surface-raised);
+  --surface-gradient-to: var(--color-surface-raised);
+  --surface-text: var(--color-text-primary);
+  --surface-text-muted: var(--color-text-muted);
+  --surface-link: var(--color-text-link);
+  --surface-icon: var(--color-text-secondary);
+  --surface-border: var(--color-border-default);
+  --surface-focus-ring: var(--a11y-focus-ring);
+  --surface-tricolor-mid: var(--color-tricolor-mid);
+  /* The component tokens the rest of the product already paints its
+     buttons with, so a kit button and a page button are the same button. */
+  --surface-btn-primary-bg: var(--button-primary-background);
+  --surface-btn-primary-ink: var(--button-primary-text);
+  /* LinkTile and AthleteResultBadge: a translucent white fill is invisible
+     on a light ground, so each surface names its own. */
+  --surface-tile-fill: var(--color-surface-raised);
+  --surface-tile-edge: var(--color-border-default);
+  --surface-mesh-alpha: var(--opacity-mesh-subtle);
+}
+
+/* ------------------------------------------------------------------ *
+ * photo-light — a photograph under a wash.
+ *
+ * The wash is white in light and black in dark, which is what keeps one
+ * photograph usable in both themes without a second asset. Text over it is
+ * measured against the composited result, never against the wash colour
+ * alone: alpha-blend the channels first, then compute luminance (Chapter 27
+ * §22 — and blending in luminance space instead reports a failure that isn't
+ * there).
+ * ------------------------------------------------------------------ */
+[data-surface="photo-light"] {
+  --surface-bg: var(--color-surface-base);
+  --surface-gradient-from: var(--color-surface-base);
+  --surface-gradient-to: var(--color-surface-base);
+  --surface-text: var(--color-text-primary);
+  --surface-text-muted: var(--color-text-muted);
+  --surface-link: var(--color-text-link);
+  --surface-icon: var(--color-text-secondary);
+  --surface-border: var(--color-border-default);
+  --surface-focus-ring: var(--a11y-focus-ring);
+  --surface-tricolor-mid: var(--color-tricolor-mid);
+  --surface-btn-primary-bg: var(--button-primary-background);
+  --surface-btn-primary-ink: var(--button-primary-text);
+  --surface-mesh-alpha: var(--opacity-mesh-subtle);
+  --surface-tile-fill: var(--color-surface-raised);
+  --surface-tile-edge: var(--color-border-default);
+  --surface-scrim: var(--color-surface-base);
+  --surface-scrim-alpha: var(--opacity-scrim-photo);
+}
+
+[data-theme="dark"] [data-surface="photo-light"],
+[data-theme="dark"][data-surface="photo-light"] {
+  --surface-scrim: var(--color-black);
+  --surface-scrim-alpha: var(--opacity-scrim-photo-dark);
+}
+
+/* ------------------------------------------------------------------ *
+ * brand-green and brand-red — the identity grounds.
+ *
+ * ADR-0098 §8.2: the ramp starts at the Pantone value the guide publishes, so
+ * the ground's lightest point is 4.81:1 (green) and 5.88:1 (red) with white
+ * text. That is one text tier's worth of headroom and no more, which is why
+ * `--surface-text-muted` is the same white as `--surface-text` here and
+ * hierarchy is carried by size and weight instead of colour. Translucent and
+ * grey ink are prohibited on these two grounds, and
+ * `brand-surface-contract.spec.ts` fails if either reappears.
+ *
+ * Guide §6.1 — on a coloured ground the mark is monochrome — is why the
+ * tricolour's middle step is white here: every tricolour element on these two
+ * surfaces collapses to white rather than drawing red on red.
+ *
+ * The primary button inverts: a white plate with coloured ink, because a green
+ * button on a green ground is not a button.
+ * ------------------------------------------------------------------ */
+[data-surface="brand-green"] {
+  --surface-gradient-from: var(--color-brand-surface-green-from);
+  --surface-gradient-to: var(--color-brand-surface-green-to);
+  --surface-bg: linear-gradient(
+    var(--brand-ramp-angle),
+    var(--surface-gradient-from),
+    var(--surface-gradient-to)
+  );
+  --surface-text: var(--color-brand-surface-green-text);
+  --surface-text-muted: var(--color-brand-surface-green-text-muted);
+  --surface-link: var(--color-brand-surface-green-text);
+  --surface-icon: var(--color-brand-surface-green-text);
+  --surface-border: var(--color-brand-surface-green-border);
+  --surface-divider: var(--color-brand-surface-green-divider);
+  --surface-focus-ring: var(--color-brand-surface-green-text);
+  --surface-tricolor-mid: var(--color-white);
+  --surface-btn-primary-bg: var(--color-white);
+  --surface-btn-primary-ink: var(--color-brand-surface-green-to);
+  --surface-mesh-alpha: 0;
+  --surface-tile-fill: color-mix(in srgb, var(--color-white) calc(var(--opacity-tile-fill) * 100%), transparent);
+  --surface-tile-edge: color-mix(in srgb, var(--color-white) calc(var(--opacity-tile-edge) * 100%), transparent);
+}
+
+[data-surface="brand-red"] {
+  --surface-gradient-from: var(--color-brand-surface-red-from);
+  --surface-gradient-to: var(--color-brand-surface-red-to);
+  --surface-bg: linear-gradient(
+    var(--brand-ramp-angle),
+    var(--surface-gradient-from),
+    var(--surface-gradient-to)
+  );
+  --surface-text: var(--color-brand-surface-red-text);
+  --surface-text-muted: var(--color-brand-surface-red-text-muted);
+  --surface-link: var(--color-brand-surface-red-text);
+  --surface-icon: var(--color-brand-surface-red-text);
+  --surface-border: var(--color-brand-surface-red-border);
+  --surface-divider: var(--color-brand-surface-red-divider);
+  --surface-focus-ring: var(--color-brand-surface-red-text);
+  --surface-tricolor-mid: var(--color-white);
+  --surface-btn-primary-bg: var(--color-white);
+  --surface-btn-primary-ink: var(--color-brand-surface-red-to);
+  --surface-mesh-alpha: 0;
+  --surface-tile-fill: color-mix(in srgb, var(--color-white) calc(var(--opacity-tile-fill) * 100%), transparent);
+  --surface-tile-edge: color-mix(in srgb, var(--color-white) calc(var(--opacity-tile-edge) * 100%), transparent);
+}
+
+/*
+ * On an identity ground every tricolour element collapses to white.
+ *
+ * Guide §6.1 states it for the mark — on a coloured background the monochrome
+ * logo is used — and the same logic decides it for every accent built from the
+ * same three colours. A tricolour edge on the red ground would put red beside
+ * red at the boundary and draw green where green means nothing; a green-toned
+ * border on the green ground is not a border at all. Both were visible on the
+ * Brand Kit page before this rule existed.
+ *
+ * One override, and the accent bar, the divider, every border tone, the
+ * streaks and the secondary button all follow it, because they all read the
+ * same variable.
+ */
+[data-surface="brand-green"],
+[data-surface="brand-red"] {
+  --surface-tricolor-start: var(--color-white);
+  --surface-tricolor-mid: var(--color-white);
+  --surface-tricolor-end: var(--color-white);
+  --surface-tricolor-ink: var(--surface-btn-primary-ink);
+}
+
+/*
+ * High contrast flattens both gradients to the theme's white ground with black
+ * ink, following `color.section.*`'s own treatment there: a reader who has
+ * asked for maximum contrast is asking the identity to stop competing with
+ * legibility. The token file already carries the flattened values, so the only
+ * thing this block changes is the ramp and the inverted button, both of which
+ * stop making sense once the two stops are the same white.
+ */
+[data-theme="high-contrast"] [data-surface="brand-green"],
+[data-theme="high-contrast"] [data-surface="brand-red"],
+[data-theme="high-contrast"][data-surface="brand-green"],
+[data-theme="high-contrast"][data-surface="brand-red"] {
+  --surface-bg: var(--surface-gradient-from);
+  --surface-btn-primary-bg: var(--color-black);
+  --surface-btn-primary-ink: var(--color-white);
+  /* The ground is white here, so every accent on it is this theme's ink. All
+     three stops, or the two the block above set to white would survive. */
+  --surface-tricolor-start: var(--color-black);
+  --surface-tricolor-mid: var(--color-black);
+  --surface-tricolor-end: var(--color-black);
+}
+
+/* ------------------------------------------------------------------ *
+ * The section registers, as surfaces.
+ *
+ * ADR-0059 D2's flat identity grounds, expressed in the kit's vocabulary so
+ * that `Section` and `Surface` are one mechanism. These publish the registers'
+ * **own measured values** — `green.700` with `green.100` under it, not the
+ * kit's gradient — because those are the numbers the existing pages were
+ * measured against and this bridge is not a redesign.
+ *
+ * The kit's `brand-green` / `brand-red` remain the expressive variant: a ramp
+ * from the Pantone value with a single white text tier. Both are governed,
+ * both obey the adjacency rule, and neither replaces the other.
+ * ------------------------------------------------------------------ */
+[data-surface="section-green"] {
+  --surface-bg: var(--color-section-green-surface);
+  --surface-gradient-from: var(--color-section-green-surface);
+  --surface-gradient-to: var(--color-section-green-surface);
+  --surface-text: var(--color-section-green-text);
+  --surface-text-muted: var(--color-section-green-text-muted);
+  --surface-link: var(--color-section-green-text);
+  --surface-icon: var(--color-section-green-text);
+  --surface-border: var(--color-section-green-border);
+  --surface-divider: var(--color-section-green-divider);
+  --surface-focus-ring: var(--color-section-green-text);
+  /* The register's own ink, not a literal white. In high contrast this
+     register flattens to a white ground and its text becomes black, so a
+     hard-coded white accent would be white on white — which is what this
+     surface's own guard caught the moment it was measured. */
+  --surface-tricolor-start: var(--color-section-green-text);
+  --surface-tricolor-mid: var(--color-section-green-text);
+  --surface-tricolor-end: var(--color-section-green-text);
+  --surface-tricolor-ink: var(--color-section-green-surface);
+  --surface-btn-primary-bg: var(--color-section-green-text);
+  --surface-btn-primary-ink: var(--color-section-green-surface);
+  --surface-mesh-alpha: 0;
+  --surface-tile-fill: color-mix(in srgb, var(--color-white) calc(var(--opacity-tile-fill) * 100%), transparent);
+  --surface-tile-edge: color-mix(in srgb, var(--color-white) calc(var(--opacity-tile-edge) * 100%), transparent);
+}
+
+[data-surface="section-red"] {
+  --surface-bg: var(--color-section-red-surface);
+  --surface-gradient-from: var(--color-section-red-surface);
+  --surface-gradient-to: var(--color-section-red-surface);
+  --surface-text: var(--color-section-red-text);
+  --surface-text-muted: var(--color-section-red-text-muted);
+  --surface-link: var(--color-section-red-text);
+  --surface-icon: var(--color-section-red-text);
+  --surface-border: var(--color-section-red-border);
+  --surface-divider: var(--color-section-red-divider);
+  --surface-focus-ring: var(--color-section-red-text);
+  /* The register's own ink, not a literal white. In high contrast this
+     register flattens to a white ground and its text becomes black, so a
+     hard-coded white accent would be white on white — which is what this
+     surface's own guard caught the moment it was measured. */
+  --surface-tricolor-start: var(--color-section-red-text);
+  --surface-tricolor-mid: var(--color-section-red-text);
+  --surface-tricolor-end: var(--color-section-red-text);
+  --surface-tricolor-ink: var(--color-section-red-surface);
+  --surface-btn-primary-bg: var(--color-section-red-text);
+  --surface-btn-primary-ink: var(--color-section-red-surface);
+  --surface-mesh-alpha: 0;
+  --surface-tile-fill: color-mix(in srgb, var(--color-white) calc(var(--opacity-tile-fill) * 100%), transparent);
+  --surface-tile-edge: color-mix(in srgb, var(--color-white) calc(var(--opacity-tile-edge) * 100%), transparent);
+}
+
+/*
+ * The black register keeps ADR-0059 D2's theme behaviour — `#000000` in light,
+ * `neutral-warm.700` in dark — which is deliberately *not* the kit's fixed
+ * `surface-ink`. Two dark grounds with different rules, both recorded: the
+ * register varies because a near-black cannot depart from a near-black page;
+ * the kit's ink is fixed by owner decision and carries a mandatory edge cue
+ * instead (ADR-0098 §8.4).
+ */
+[data-surface="section-black"] {
+  --surface-bg: var(--color-section-black-surface);
+  --surface-gradient-from: var(--color-section-black-surface);
+  --surface-gradient-to: var(--color-section-black-surface);
+  --surface-text: var(--color-section-black-text);
+  --surface-text-muted: var(--color-section-black-text-muted);
+  --surface-link: var(--color-section-black-text);
+  --surface-icon: var(--color-section-black-text-muted);
+  --surface-border: var(--color-section-black-border);
+  --surface-divider: var(--color-section-black-divider);
+  --surface-focus-ring: var(--color-section-black-text);
+  --surface-tricolor-start: var(--color-brand-primary);
+  --surface-tricolor-mid: var(--color-white);
+  --surface-tricolor-end: var(--color-brand-secondary);
+  --surface-btn-primary-bg: var(--color-brand-primary);
+  --surface-btn-primary-ink: var(--color-text-on-brand);
+  --surface-mesh-alpha: var(--opacity-mesh-strong);
+  --surface-tile-fill: color-mix(in srgb, var(--color-white) calc(var(--opacity-tile-fill) * 100%), transparent);
+  --surface-tile-edge: color-mix(in srgb, var(--color-white) calc(var(--opacity-tile-edge) * 100%), transparent);
+}
+
+/* ------------------------------------------------------------------ *
+ * ink — the institutional dark ground.
+ *
+ * ADR-0098 §8.4: `#0B0B0B`, fixed in every theme by owner instruction. That
+ * reverses ADR-0059 D2, which varied the black register by theme because a
+ * near-black ground has no boundary against a near-black page — and the
+ * measurement it was reversed against still holds: 18.83:1 against the light
+ * page, 1.05:1 against the dark one.
+ *
+ * So the boundary cannot come from the ground. Every ink surface carries one
+ * of two non-surface cues, and neither is optional:
+ *   1. a BrandAccentBar, whose middle step is white on this ground, or
+ *   2. a mesh tint, whose green and red fields give the ground extent.
+ *
+ * `brand-surface-contract.spec.ts` fails if an ink surface is rendered with
+ * neither. Chapter 27 §20's "hint of green in the deep shadow tone" is a
+ * grading instruction for a photograph and does not apply here — the colour
+ * that gives this ground its extent is the edge and the mesh, not a tint
+ * inside the black.
+ * ------------------------------------------------------------------ */
+[data-surface="ink"] {
+  --surface-bg: var(--color-brand-surface-ink-surface);
+  --surface-gradient-from: var(--color-brand-surface-ink-surface);
+  --surface-gradient-to: var(--color-brand-surface-ink-surface);
+  --surface-text: var(--color-brand-surface-ink-text);
+  --surface-text-muted: var(--color-brand-surface-ink-text-muted);
+  --surface-link: var(--color-brand-surface-ink-text);
+  --surface-icon: var(--color-brand-surface-ink-text-muted);
+  --surface-border: var(--color-brand-surface-ink-border);
+  --surface-divider: var(--color-brand-surface-ink-divider);
+  --surface-focus-ring: var(--color-brand-surface-ink-text);
+  --surface-tricolor-mid: var(--color-white);
+  --surface-btn-primary-bg: var(--color-brand-primary);
+  --surface-btn-primary-ink: var(--color-text-on-brand);
+  --surface-mesh-alpha: var(--opacity-mesh-strong);
+  --surface-tile-fill: color-mix(in srgb, var(--color-white) calc(var(--opacity-tile-fill) * 100%), transparent);
+  --surface-tile-edge: color-mix(in srgb, var(--color-white) calc(var(--opacity-tile-edge) * 100%), transparent);
+}
+
+/* ------------------------------------------------------------------ *
+ * What a surface actually paints.
+ * ------------------------------------------------------------------ */
+/*
+ * Declaring a surface and *painting* one are two different things.
+ *
+ * `[data-surface]` publishes the variables. `.brand-surface` — added by the
+ * `Surface` component and by nothing else — paints the ground.
+ *
+ * The split exists because `Section` (ADR-0059's register bands) now emits
+ * `data-surface` too, so that a kit component inside a register band reads the
+ * right ink and the right tricolour. Painting on the attribute would have had
+ * that bridge repaint every register band in the product with the kit's
+ * gradient — turning a measured flat `green.700` ground into a ramp starting
+ * at `green.500`, where the register's second text tier no longer clears AA.
+ * The bridge is meant to make one mechanism out of two, not to restyle eleven
+ * shipped pages on the way past.
+ */
+.brand-surface {
+  background: var(--surface-bg);
+  color: var(--surface-text);
+  /* The mesh and the photograph are absolutely positioned inside. */
+  position: relative;
+  isolation: isolate;
+}
+
+/* A band that only borrows the variables still needs to contain its own
+   decorative layers. */
+[data-surface] {
+  position: relative;
+  isolation: isolate;
+}
+
+/*
+ * The mesh: two radial fields in opposite corners, green and red.
+ *
+ * Not a pattern within the meaning of Chapter 27 §25 — it has no motif, no
+ * repeat and no edge, so there is no figure in it that could compete with the
+ * diagonal for recognition. It is a tint that gives a ground extent, which on
+ * `ink` is one of the two things standing in for a boundary the ground cannot
+ * provide.
+ *
+ * Corners are physical on purpose: the composition is symmetric, so flipping
+ * it with direction would be a change nobody could see and a rule everybody
+ * would have to remember.
+ */
+.brand-mesh {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: var(--surface-mesh-alpha);
+  background-image:
+    radial-gradient(
+      60% 60% at 0% 0%,
+      var(--color-brand-primary) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      60% 60% at 100% 100%,
+      var(--color-brand-secondary) 0%,
+      transparent 70%
+    );
+}
+
+/*
+ * The photographic wash. One image, two themes: the wash colour and its alpha
+ * turn over, the asset does not.
+ */
+.brand-photo-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: var(--surface-scrim);
+  opacity: var(--surface-scrim-alpha);
+}
+
+.brand-photo-image {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------------ *
+ * Event accent — structure only, no page uses it yet.
+ *
+ * Tournament pages will want one accent per event that is not an identity
+ * colour and not a role colour: a mark that says "this is the Fujairah
+ * meeting" across a page's chips, its progress line and its result headers.
+ * The structure is declared now, scoped to an element, so that adding an
+ * event later is a value change rather than a design decision made under
+ * deadline.
+ *
+ * Deliberately NOT in the token files. ADR-0088 D4 recorded the cost of
+ * declaring a colour nothing uses: `color.accent.track` has sat unused since
+ * 2026-09-18 behind a guard that fails if any source names it. A scoped
+ * default here consumes no token namespace and shows up in no theme file
+ * until a real event supplies real values.
+ *
+ * The defaults are the identity, so an event page with no accent configured
+ * looks like the rest of the site rather than looking broken. Whatever
+ * replaces them must be measured on every surface it will appear on, exactly
+ * as `color.category.*` was (ADR-0065 D3a) — an accent that only works on
+ * canvas is not an accent, it is a canvas decoration.
+ * ------------------------------------------------------------------ */
+[data-event-accent] {
+  --event-accent: var(--color-brand-primary);
+  --event-accent-ink: var(--color-text-on-brand);
+  --event-accent-edge: var(--color-brand-primary);
+  --event-accent-tint: var(--color-green-50);
+}

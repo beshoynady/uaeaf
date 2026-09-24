@@ -7,9 +7,13 @@
  * motion alone (WCAG 1.4.1 -- colour and movement are never the only channel).
  */
 export const LiveBadge = ({ label, className = "" }: { label: string; className?: string }) => (
+  // A nested surface, not a colour. `brand-red` publishes its own ground and
+  // its own ink, both settled and measured in ADR-0098 §8.3 — so the badge
+  // asks for the surface and inherits the pair, instead of naming a ramp step
+  // and re-deciding the contrast on it (Chapter 7 §7.7: roles, not steps).
   <span
-    className={`inline-flex items-center gap-2 rounded-[var(--vs-radius-pill)] px-3 py-1.5 text-caption font-bold ${className}`}
-    style={{ background: "var(--vs-live)", color: "var(--vs-live-ink)" }}
+    data-surface="brand-red"
+    className={`inline-flex items-center gap-2 rounded-[var(--radius-full)] px-3 py-1.5 text-caption font-bold ${className}`}
   >
     <span
       aria-hidden="true"

@@ -14,6 +14,8 @@ import { titleOf } from "@/lib/video/types";
 import type { VideoSectionPublic } from "@/lib/video/types";
 import type { MediaAssetPublic } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
+import { FOCUS } from "@/components/ui/interactive";
+import { GHOST_PILL } from "../video/chrome";
 
 /**
  * The homepage's video section, in its two states.
@@ -66,15 +68,25 @@ export const HomeVideoSection = ({
   const subtitle = section.subtitle?.[locale] || section.subtitle?.ar || "";
 
   return (
-    <section className="video-system relative overflow-hidden py-16 md:py-24">
+    // `data-surface="ink"` is what makes every `--surface-*` below resolve:
+    // ADR-0098 declares the set on the surface element and descendants read it
+    // through the cascade, so no component here needs to know its ground.
+    <section data-surface="ink" className="video-system relative overflow-hidden py-16 md:py-24">
       <div className="mx-auto flex max-w-[1440px] flex-col gap-10 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
         <header className="flex flex-wrap items-end justify-between gap-6">
           <div className="flex flex-col gap-3">
-            <p className="flex items-center gap-2.5 text-caption font-bold" style={{ color: "var(--vs-green)" }}>
+            <p className="flex items-center gap-2.5 text-caption font-bold" style={{ color: "var(--surface-text)" }}>
+              {/* The kit's tricolour, not a green-to-red ramp of its own: ADR-0098
+                  D3 forbids blending the two brand colours directly, and the
+                  token resolves the middle step per surface (white on ink) and
+                  the angle from `dir`. It is also this surface's required cue:
+                  ink is fixed at #0B0B0B in every theme, 1.05:1 against the
+                  dark page, so without an accent the section has no visible
+                  edge at all. */}
               <span
                 aria-hidden="true"
                 className="inline-block h-[3px] w-6 rounded-full"
-                style={{ background: "linear-gradient(90deg, var(--vs-green), var(--vs-live))" }}
+                style={{ background: "var(--brand-tricolor)" }}
               />
               {t("eyebrow")}
             </p>
@@ -85,7 +97,7 @@ export const HomeVideoSection = ({
               />
             ) : null}
             {subtitle ? (
-              <p className="max-w-xl text-body leading-relaxed" style={{ color: "var(--vs-text-secondary)" }}>
+              <p className="max-w-xl text-body leading-relaxed" style={{ color: "var(--surface-text-muted)" }}>
                 {subtitle}
               </p>
             ) : null}
@@ -93,8 +105,7 @@ export const HomeVideoSection = ({
 
           <Link
             href="/media/videos"
-            className="inline-flex min-h-11 items-center gap-2 rounded-[var(--vs-radius-pill)] px-6 text-body-sm font-semibold transition-colors duration-[var(--motion-duration-fast)] hover:bg-[rgba(255,255,255,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--vs-green)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--vs-bg)]"
-            style={{ boxShadow: "inset 0 0 0 1px var(--vs-hairline)", color: "var(--vs-text)" }}
+            className={`${GHOST_PILL} px-6`}
           >
             {t("libraryCta")}
             {/* Mirrored in Arabic: this one IS a directional arrow — it points
@@ -121,10 +132,10 @@ export const HomeVideoSection = ({
 
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="flex flex-col gap-1.5">
-                <h3 className="text-h3 font-bold leading-tight" style={{ color: "var(--vs-text)" }}>
+                <h3 className="text-h3 font-bold leading-tight" style={{ color: "var(--surface-text)" }}>
                   {stageTitle}
                 </h3>
-                <p className="text-body-sm" style={{ color: "var(--vs-text-secondary)" }}>
+                <p className="text-body-sm" style={{ color: "var(--surface-text-muted)" }}>
                   {liveVenue ? (
                     <>
                       {liveVenue}
@@ -141,8 +152,7 @@ export const HomeVideoSection = ({
                   href={live.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex min-h-11 items-center gap-2 rounded-[var(--vs-radius-pill)] px-5 text-body-sm font-semibold transition-colors duration-[var(--motion-duration-fast)] hover:bg-[rgba(255,255,255,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--vs-green)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--vs-bg)]"
-                  style={{ boxShadow: "inset 0 0 0 1px var(--vs-hairline)", color: "var(--vs-text)" }}
+                  className={`${GHOST_PILL} px-5`}
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M14 4h6v6M20 4l-8.5 8.5M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
@@ -169,7 +179,7 @@ export const HomeVideoSection = ({
               kenBurns
             />
             <div className="flex flex-col gap-2">
-              <h3 className="max-w-3xl text-h3 font-bold leading-tight" style={{ color: "var(--vs-text)" }}>
+              <h3 className="max-w-3xl text-h3 font-bold leading-tight" style={{ color: "var(--surface-text)" }}>
                 {stageTitle}
               </h3>
             </div>
@@ -179,7 +189,7 @@ export const HomeVideoSection = ({
         {carousel.length > 0 ? (
           <VideoCarousel
             heading={
-              <h3 className="text-h4 font-bold" style={{ color: "var(--vs-text)" }}>
+              <h3 className="text-h4 font-bold" style={{ color: "var(--surface-text)" }}>
                 {live ? t("alsoWatchHeading") : t("latestHeading")}
               </h3>
             }

@@ -9,6 +9,8 @@ import { titleOf } from "@/lib/video/types";
 import type { EmbedLabels } from "./embed-frame";
 import type { VideoPublic } from "@/lib/video/types";
 import type { AppLocale } from "@/i18n/routing";
+import { FOCUS } from "@/components/ui/interactive";
+import { GHOST_PILL } from "./chrome";
 
 /**
  * The cinematic player.
@@ -168,12 +170,16 @@ export const VideoPlayerModal = ({
   }, [onClose]);
 
   const circle =
-    "inline-flex size-11 items-center justify-center rounded-full transition-colors duration-[var(--motion-duration-fast)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--vs-green)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--vs-bg)] disabled:opacity-35";
+    `inline-flex size-11 items-center justify-center rounded-full transition-colors duration-[var(--motion-duration-fast)] vs-edge ${FOCUS} disabled:opacity-35`;
 
   return (
+    // The scrim, and only the scrim. The surface is declared on the panel
+    // inside it, not here: `[data-surface]` sets `position: relative`, which
+    // beats the `fixed` utility -- unlayered CSS wins over Tailwind's layer --
+    // and the overlay dropped into the page flow at the foot of the document.
     <div
       className="video-system fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-8"
-      style={{ background: "rgba(6,8,7,0.93)" }}
+      style={{ background: "color-mix(in srgb, var(--color-surface-overlay) 93%, transparent)" }}
       // A press on the ground closes; a press inside does not. `currentTarget`
       // rather than a stopPropagation on the panel, so a drag that starts
       // inside and ends outside does not close it either.
@@ -183,20 +189,25 @@ export const VideoPlayerModal = ({
     >
       <div
         ref={container}
+        data-surface="ink"
         role="dialog"
         aria-modal="true"
         tabIndex={-1}
         aria-label={title}
         className="flex w-full max-w-5xl flex-col gap-4"
+        // The panel is the ink surface, but it draws no ground of its own: the
+        // scrim behind it is the ground. Everything inside still reads the
+        // ink set from here.
+        style={{ background: "transparent" }}
       >
         <div className="flex items-center justify-between gap-3">
-          <button ref={closeButton} type="button" onClick={onClose} aria-label={labels.close} className={circle} style={{ background: "var(--vs-surface-raised)", color: "var(--vs-text)" }}>
+          <button ref={closeButton} type="button" onClick={onClose} aria-label={labels.close} className={`${circle} vs-fill-strong`} style={{ color: "var(--surface-text)" }}>
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
               <path d="M6 6l12 12M18 6L6 18" />
             </svg>
           </button>
 
-          <p className="flex items-center gap-2.5 text-caption" style={{ color: "var(--vs-text-secondary)" }}>
+          <p className="flex items-center gap-2.5 text-caption" style={{ color: "var(--surface-text-muted)" }}>
             {labels.position}
             <PlatformBadge platform={video.platform} label={labels.platform} size={26} />
           </p>
@@ -204,7 +215,7 @@ export const VideoPlayerModal = ({
 
         <div
           className="relative w-full overflow-hidden"
-          style={{ aspectRatio: "16 / 9", borderRadius: "var(--vs-radius-player)", background: "#000" }}
+          style={{ aspectRatio: "16 / 9", borderRadius: "var(--radius-xl)", background: "var(--surface-bg)" }}
         >
           <EmbedFrame
             platform={video.platform}
@@ -221,7 +232,7 @@ export const VideoPlayerModal = ({
                 link — a reader has no way to find. */}
             <span className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 text-center">
               <PlatformBadge platform={video.platform} label={labels.platform} size={44} />
-              <span className="text-body-sm" style={{ color: "var(--vs-text-secondary)" }}>
+              <span className="text-body-sm" style={{ color: "var(--surface-text-muted)" }}>
                 {labels.openOn}
               </span>
             </span>
@@ -230,11 +241,11 @@ export const VideoPlayerModal = ({
 
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex flex-col gap-1.5">
-            <h2 className="text-h4 font-bold leading-snug" style={{ color: "var(--vs-text)" }}>
+            <h2 className="text-h4 font-bold leading-snug" style={{ color: "var(--surface-text)" }}>
               {title}
             </h2>
-            <p className="flex items-center gap-2 text-caption" style={{ color: "var(--vs-text-muted)" }}>
-              <span style={{ color: "var(--vs-green)" }}>{labels.category}</span>
+            <p className="flex items-center gap-2 text-caption" style={{ color: "var(--surface-text-muted)" }}>
+              <span style={{ color: "var(--surface-text)" }}>{labels.category}</span>
               {video.publishedAt ? <span aria-hidden="true">·</span> : null}
               <PublishDate date={video.publishedAt} />
             </p>
@@ -246,8 +257,7 @@ export const VideoPlayerModal = ({
               href={video.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-h-11 items-center gap-2 rounded-[var(--vs-radius-pill)] px-5 text-body-sm font-semibold transition-colors duration-[var(--motion-duration-fast)] hover:bg-[rgba(255,255,255,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--vs-green)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--vs-bg)]"
-              style={{ boxShadow: "inset 0 0 0 1px var(--vs-hairline)", color: "var(--vs-text)" }}
+              className={`${GHOST_PILL} px-5`}
             >
               <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14 4h6v6M20 4l-8.5 8.5M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
@@ -255,14 +265,14 @@ export const VideoPlayerModal = ({
               {labels.openOn}
             </a>
 
-            <button type="button" onClick={onPrevious} disabled={!hasPrevious} aria-label={labels.previous} className={circle} style={{ boxShadow: "inset 0 0 0 1px var(--vs-hairline)", color: "var(--vs-text)" }}>
+            <button type="button" onClick={onPrevious} disabled={!hasPrevious} aria-label={labels.previous} className={circle}>
               {/* The chevron follows the reading direction: "previous" is
                   towards the start of the line, which is the right in Arabic. */}
               <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="size-5 rtl:-scale-x-100" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14.5 5.5 8 12l6.5 6.5" />
               </svg>
             </button>
-            <button type="button" onClick={onNext} disabled={!hasNext} aria-label={labels.next} className={circle} style={{ boxShadow: "inset 0 0 0 1px var(--vs-hairline)", color: "var(--vs-text)" }}>
+            <button type="button" onClick={onNext} disabled={!hasNext} aria-label={labels.next} className={circle}>
               <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="size-5 rtl:-scale-x-100" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9.5 5.5 16 12l-6.5 6.5" />
               </svg>

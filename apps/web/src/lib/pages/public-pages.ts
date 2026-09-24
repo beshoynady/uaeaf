@@ -207,6 +207,33 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
     listEndpoint: null,
   },
   {
+    key: "policies",
+    route: "/about/governance/policies",
+    /**
+     * **Not reachable publicly yet, and that is the recorded gap.**
+     *
+     * `GET /governance-documents` requires the `governanceDocuments:Read`
+     * permission, so a public page cannot call it. The only public read is
+     * `GET /governance-documents/:id/public` — one document, by id — which
+     * cannot enumerate a list. The missing piece is a public list route; until
+     * it exists the page renders clearly-marked seed records from
+     * `lib/pages/governance-documents.ts`, and `listEndpoint: null` below is
+     * what keeps it out of the index.
+     *
+     * This path is written as the one the page will read, so the day the route
+     * is opened the change is one module, not one page.
+     */
+    apiPath: "/governance-documents",
+    messageKey: "policies",
+    register: "green",
+    registerBasis:
+      "§3.34.2 files Policies under Quiet/Institutional; ADR-0098 A9 amended that row for this page only — green marks the Regulations category and red the Policies category, per category and never per item (ADR-0065 D3). The page ground stays neutral and the hero is the black register.",
+    schemaType: "CollectionPage",
+    // No public list route exists (see `apiPath`), so the page's content is
+    // seed data and Chapter 14 §11 keeps it `noindex` until that changes.
+    listEndpoint: null,
+  },
+  {
     key: "contact-us",
     route: "/contact",
     apiPath: "/contact-us-page",
@@ -315,13 +342,6 @@ export const PREPARING_PAGES: readonly PreparingPage[] = [
     register: "green",
     registerBasis:
       "Derived (CLAUDE.md §1a): guide §3.3 gives administration green; the structure is the board's and committees' own subject, §3.34.2 Quiet/Institutional.",
-  },
-  {
-    key: "policies",
-    route: "/about/governance/policies",
-    titleKey: "Nav.policies",
-    register: "green",
-    registerBasis: "§3.34.2 names Policies in the same Quiet/Institutional row as the board.",
   },
   {
     key: "officials",

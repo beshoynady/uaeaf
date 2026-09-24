@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { declaredTokens } from "@uaeaf/design-tokens/testing";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -27,7 +28,6 @@ import { dirname, join } from "node:path";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const APP_SRC = join(HERE, "../..");
-const TOKEN_CSS_DIR = join(HERE, "../../../../../packages/design-tokens/build/css");
 
 /** Names supplied by something other than the token package. */
 const EXTERNAL: ReadonlySet<string> = new Set([
@@ -39,27 +39,15 @@ const EXTERNAL: ReadonlySet<string> = new Set([
   "--tone",
 ]);
 
-function walk(dir: string): string[] {
-  return readdirSync(dir).flatMap((entry) => {
+const walk = (dir: string): string[] =>
+  readdirSync(dir).flatMap((entry) => {
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) return walk(full);
     return /\.(tsx|ts|css)$/.test(entry) && !/\.(spec|test)\.tsx?$/.test(entry) ? [full] : [];
   });
-}
-
-function declaredTokens(): Set<string> {
-  const declared = new Set<string>();
-  for (const file of readdirSync(TOKEN_CSS_DIR).filter((f) => f.endsWith(".css"))) {
-    const css = readFileSync(join(TOKEN_CSS_DIR, file), "utf-8");
-    for (const [, name] of css.matchAll(/^\s*(--[a-zA-Z0-9-]+)\s*:/gm)) {
-      declared.add(name);
-    }
-  }
-  return declared;
-}
 
 /** Every `var(--x)` the app asks for, with the file that asks for it. */
-function referencedTokens(): Map<string, string[]> {
+const referencedTokens = (): Map<string, string[]> => {
   const refs = new Map<string, string[]>();
   for (const file of walk(APP_SRC)) {
     const source = readFileSync(file, "utf-8");
@@ -74,7 +62,24 @@ function referencedTokens(): Map<string, string[]> {
     }
   }
   return refs;
-}
+};
+
+/**
+ * What the package declares, both halves of it.
+ *
+ * `declaredTokens` is the token package's own reader: it walks `build/css`,
+ * which the pipeline emits, AND `css/`, the hand-written layer beside it --
+ * `surfaces.css`, `forms.css`, `interaction.css`. A surface's `--surface-*`
+ * set is conditional on an attribute, which no JSON token can express, so it
+ * lives in the second half.
+ *
+ * Reading only the first half was this rule's blind spot. The dashboard loads
+ * the whole package (`globals.css` imports `@uaeaf/brand-ui/surfaces.css`,
+ * which imports `surfaces.css` first), so a component reading `--surface-bg`
+ * inside a `data-surface` element was reported as referencing a property
+ * nothing declares -- the opposite of what this is for. Widening can only
+ * remove false offenders; it adds names, never drops them.
+ */
 
 describe("design token contract", () => {
   it("defines every custom property the dashboard references", () => {

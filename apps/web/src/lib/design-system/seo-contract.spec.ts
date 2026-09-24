@@ -42,6 +42,22 @@ function sourceFiles(dir: string): string[] {
  *  route can never be excluded by accident. */
 const NOT_A_PAGE = ["src/app/[locale]/[...rest]/page.tsx"];
 
+/**
+ * Routes that exist but are not public pages, so the registry rule below does
+ * not apply to them. Exempted by name, for the same reason `NOT_A_PAGE` is: a
+ * pattern would eventually swallow a real page.
+ *
+ * `brand-kit` is the Brand UI Kit's own reference page (ADR-0098 D7): every
+ * component on every surface, in both themes and both directions, used to
+ * verify the library visually. It calls `notFound()` outside development, is
+ * `noindex`, is linked from nothing, and is deliberately absent from
+ * `PUBLIC_PAGES` — which is what keeps it out of the sitemap. It still needs to
+ * be a real `page.tsx` rather than a route handler like `/api/colour-review`,
+ * because its whole purpose is to render the actual React components, two of
+ * which are interactive.
+ */
+const NOT_A_PUBLIC_PAGE = ["/brand-kit"];
+
 const ROUTES = routeFiles(APP)
   .map((file) => ({
     file: file.replace(APP, "src/app").split("\\").join("/"),
@@ -102,6 +118,7 @@ describe("every public page implements Chapter 14", () => {
       // navigation need — and the entity's own addresses are enumerated by
       // `sitemap-news.ts` from the API, not from this list.
       .filter((route) => !route.includes("["))
+      .filter((route) => !NOT_A_PUBLIC_PAGE.includes(route))
       .filter((route) => route !== "" && !registered.has(route));
     expect(unregistered).toEqual([]);
   });

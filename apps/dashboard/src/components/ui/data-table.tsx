@@ -4,6 +4,14 @@ export interface Column<T> {
   key: string;
   header: string;
   render: (row: T) => ReactNode;
+  /**
+   * A CSS width for this column, honoured because the table lays out `fixed`.
+   *
+   * Give one to every column that has a natural size — a badge, a date, an
+   * icon button — and leave the one column that should absorb the remainder
+   * without. A column with no width shares whatever is left.
+   */
+  width?: string;
   /** Forces LTR on a cell whose content is a technical identifier — an
    *  email address, a resource name — which must not be reordered by an
    *  Arabic paragraph direction even though the page around it is RTL. */
@@ -17,6 +25,19 @@ export interface Column<T> {
  * treats overflow as a visual regression, and a wide table in a narrow window
  * is exactly where that happens. `<caption>` carries the accessible name so
  * the table is announced as what it lists.
+ *
+ * -- The table fits its container, and truncates rather than pushing --------
+ *
+ * `table-layout: fixed` with a `<colgroup>`, because the browser's automatic
+ * layout sizes every column to its widest cell — and one cell here holds a
+ * YouTube URL, which is a single unbreakable string. That pushed the table
+ * past its container at every width and produced a horizontal scrollbar under
+ * a list that looked like it fitted.
+ *
+ * Fixed layout inverts that: the columns take the widths they are given, the
+ * unsized one absorbs the rest, and text too long for its column is clipped by
+ * the cell rather than widening it. The scroll container below is still there,
+ * because a window narrow enough will still defeat any set of widths.
  *
  * -- The scroll container is focusable, and that is deliberate --------------
  *
@@ -59,8 +80,13 @@ export const DataTable = <T,>({
       tabIndex={0}
       className="overflow-x-auto rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--a11y-focus-ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--a11y-focus-offset)]"
     >
-      <table className="w-full border-collapse text-start">
+      <table className="w-full table-fixed border-collapse text-start">
         <caption className="sr-only">{caption}</caption>
+        <colgroup>
+          {columns.map((column) => (
+            <col key={column.key} style={column.width ? { width: column.width } : undefined} />
+          ))}
+        </colgroup>
         <thead>
           <tr className="bg-[color:var(--color-surface-sunken)]">
             {columns.map((column) => (

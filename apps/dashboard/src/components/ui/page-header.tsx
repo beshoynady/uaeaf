@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { TricolorDivider } from "@uaeaf/brand-ui";
 
 /**
  * The top of an administration screen: where it sits, what it is, and what can
@@ -62,6 +63,18 @@ export const PageHeader = ({
           ) : null}
 
           <h1 className="text-h3 text-[color:var(--color-text-primary)]">{title}</h1>
+          {/*
+            The tricolour rule under every administration heading — the
+            Operational dose of the same mark the public site carries
+            (ADR-0098 D6, Chapter 12 §12.15).
+
+            Added here rather than by swapping this component for the library's
+            `SectionHeading`: this header already owns the trail, the actions
+            row and the screen's `h1`, and replacing it would rewrite the
+            structure of every screen to change one rule. The mark is what was
+            missing, not the component.
+          */}
+          <TricolorDivider />
           {description ? (
             <p className="max-w-[70ch] text-body-sm text-[color:var(--color-text-muted)]">{description}</p>
           ) : null}

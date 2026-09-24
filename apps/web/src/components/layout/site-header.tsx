@@ -8,6 +8,7 @@ import { FOCUS, TRANSITION } from "@/components/ui/interactive";
 import { LanguageToggle } from "./language-toggle";
 import { PrimaryNav } from "./primary-nav";
 import { ThemeToggle } from "./theme-toggle";
+import { BrandAccentBar } from "@uaeaf/brand-ui";
 
 /**
  * Global site header.
@@ -79,6 +80,17 @@ export function SiteHeader({ activePath }: { activePath?: string }) {
         }`}
         data-node-id="2374:1175"
       >
+        {/*
+          The identity edge (ADR-0098 D6, Expressive dose).
+
+          Inside the sticky header rather than above it, and absolutely
+          positioned rather than in the flow: above it the bar would scroll
+          away on the first gesture, which is the opposite of what a permanent
+          identity mark is for; in the flow it would either eat 4px of
+          `--header-height` or change it, and changing it moves every page's
+          first screen. Overlaying the top edge costs no layout and no CLS.
+        */}
+        <BrandAccentBar className="absolute inset-x-0 top-0" />
         {/* WCAG 2.2 SC 2.4.1 Bypass Blocks. Not present in the Figma frame —
             a keyboard affordance the static mockup has no way to express. */}
         <a

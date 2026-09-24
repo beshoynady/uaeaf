@@ -1,0 +1,500 @@
+/*
+ * Content components (ADR-0098 D7).
+ *
+ * Every colour is a surface variable, every space a `--space-*`, every duration
+ * a `--motion-duration-*`. A hex, a raw `ms` or a raw gutter in this file is a
+ * defect the token guard fails on.
+ */
+
+/* ------------------------------------------------------------------ *
+ * SectionHeading.
+ * ------------------------------------------------------------------ */
+.brand-section-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-block-end: var(--space-8);
+}
+
+.brand-section-heading__title {
+  color: var(--surface-text);
+}
+
+.brand-section-heading__description {
+  margin-block-start: var(--space-3);
+  max-inline-size: 68ch;
+  color: var(--surface-text-muted);
+}
+
+/*
+ * The plate variant: a raised card whose two inline edges carry the flag
+ * colours. Reserved for a section that opens a page — a plate on every heading
+ * is the uniform rhythm Chapter 27 §38 asks the homepage to break.
+ */
+.brand-section-heading[data-variant="plate"] {
+  padding: var(--space-6);
+  border-radius: var(--radius-md);
+  border-inline-start: var(--border-width-ring) solid var(--color-brand-primary);
+  border-inline-end: var(--border-width-ring) solid var(--color-brand-secondary);
+  box-shadow: var(--elevation-card);
+}
+
+/* ------------------------------------------------------------------ *
+ * PageHero.
+ * ------------------------------------------------------------------ */
+.brand-page-hero {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/*
+ * Faint track lines: a repeating gradient, not an asset. No request, and it
+ * scales to any width without a second breakpoint.
+ */
+.brand-page-hero__track {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.06;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--surface-text) 0,
+    var(--surface-text) 1px,
+    transparent 1px,
+    transparent var(--space-10)
+  );
+}
+
+.brand-page-hero__body {
+  padding-block: var(--space-16) var(--space-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.brand-page-hero__breadcrumb ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  color: var(--surface-text-muted);
+}
+
+/*
+ * The separator is a pseudo-element rather than a character in the markup, so
+ * it is not read out and does not need mirroring — `/` is direction-neutral,
+ * and an arrow here would need to flip while the streaks must not.
+ */
+.brand-page-hero__breadcrumb li + li::before {
+  content: "/";
+  margin-inline-end: var(--space-2);
+  opacity: 0.6;
+}
+
+.brand-page-hero__breadcrumb a {
+  color: var(--surface-text-muted);
+  text-decoration: none;
+}
+
+.brand-page-hero__breadcrumb a:hover {
+  color: var(--surface-text);
+  text-decoration: underline;
+}
+
+.brand-page-hero__breadcrumb [aria-current="page"] {
+  color: var(--surface-text);
+}
+
+.brand-page-hero__title {
+  color: var(--surface-text);
+}
+
+.brand-page-hero__description {
+  max-inline-size: 68ch;
+  color: var(--surface-text-muted);
+}
+
+.brand-page-hero__slot {
+  margin-block-start: var(--space-4);
+  max-inline-size: 42rem;
+}
+
+/* The mandatory ink edge (ADR-0098 §8.4) sits at the foot of the hero. */
+.brand-page-hero__edge {
+  margin-block-start: auto;
+}
+
+/* ------------------------------------------------------------------ *
+ * DocumentCard.
+ * ------------------------------------------------------------------ */
+/*
+ * The card's own box is the band; its content lives one level in, inside
+ * `BrandBorder`'s clipping wrapper. The flex column therefore goes on the
+ * wrapper, not here — put it on the outer element and the header and body
+ * would be laid out beside the band rather than inside it.
+ */
+.brand-document-card {
+  /* A square-ish card: the grid gives it its width, this keeps the columns the
+     same height without a fixed pixel value. */
+  block-size: 100%;
+}
+
+.brand-document-card > .brand-border__inner {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-document-card__header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  color: var(--color-text-on-brand);
+}
+
+/*
+ * The category colour, fixed per category and never per item (ADR-0065 D3).
+ * These are the flat register surfaces rather than the gradient ones: a card
+ * header is small, and a ramp across 56px of height reads as a banding
+ * artefact rather than as a gradient.
+ */
+.brand-document-card__header[data-category="regulation"] {
+  background-color: var(--color-section-green-surface);
+}
+
+.brand-document-card__header[data-category="policy"] {
+  background-color: var(--color-section-red-surface);
+}
+
+.brand-document-card__header[data-category="guide"] {
+  background-color: var(--color-section-black-surface);
+}
+
+/* The featured card's header is the ink ground, with its own edge. */
+.brand-document-card__header[data-featured="true"] {
+  background-color: var(--color-brand-surface-ink-surface);
+  background-image: radial-gradient(
+    80% 120% at 100% 0%,
+    color-mix(in srgb, var(--color-brand-primary) 40%, transparent) 0%,
+    transparent 70%
+  );
+  padding-block-start: var(--space-6);
+}
+
+.brand-document-card__edge {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+}
+
+.brand-document-card__type {
+  font-weight: 600;
+}
+
+.brand-document-card__featured-badge {
+  margin-inline-start: auto;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  border: var(--border-width-default) solid currentColor;
+}
+
+.brand-document-card__icon {
+  margin-inline-start: auto;
+  display: inline-flex;
+  inline-size: var(--space-6);
+  block-size: var(--space-6);
+}
+
+.brand-document-card__header[data-featured="true"] .brand-document-card__icon {
+  margin-inline-start: 0;
+}
+
+/*
+ * The body is always the neutral raised surface, never the section's ground.
+ * Chapter 27 §20: content sits on a flat token surface. That is also what keeps
+ * the card readable when the section around it is red.
+ */
+.brand-document-card__body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  background-color: var(--color-surface-raised);
+  color: var(--color-text-primary);
+}
+
+.brand-document-card__description {
+  color: var(--color-text-muted);
+}
+
+.brand-document-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin: 0;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.brand-document-card__meta dd {
+  margin: 0;
+}
+
+.brand-document-card__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-block-start: auto;
+}
+
+.brand-document-card__download {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 44px;
+  min-block-size: 44px;
+  border: var(--border-width-default) solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-link);
+  text-decoration: none;
+}
+
+.brand-document-card__download:hover {
+  border-color: var(--color-text-link);
+}
+
+.brand-document-card__download:focus-visible {
+  outline: var(--a11y-focus-ring-width) solid var(--a11y-focus-ring);
+  outline-offset: var(--a11y-focus-offset-width);
+}
+
+/* ------------------------------------------------------------------ *
+ * LinkTile — for the two brand grounds.
+ * ------------------------------------------------------------------ */
+.brand-link-tile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--surface-text);
+  /*
+   * A translucent white fill and edge, both measured against the gradient's
+   * lightest stop — which is where a translucent white is hardest to see.
+   */
+  /* Both published by the surface: a translucent white on a dark or identity
+     ground, a raised plate with a real border on a light one. The first
+     version hard-coded the translucent white, so the tile was invisible on
+     canvas — which the Brand Kit hid by only ever showing it on brand grounds. */
+  background-color: var(--surface-tile-fill);
+  border: var(--border-width-default) solid var(--surface-tile-edge);
+  transition: background-color var(--motion-transition-fast);
+}
+
+.brand-link-tile:hover {
+  background-color: var(--surface-tile-edge);
+}
+
+.brand-link-tile__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.brand-link-tile__title {
+  font-weight: 600;
+}
+
+.brand-link-tile__arrow {
+  flex: 0 0 auto;
+  /*
+   * One glyph, mirrored by transform rather than by swapping the character —
+   * so there is no second string anyone can forget to change. `scaleX(-1)` and
+   * not a different arrow, because the two arrows are not always the same
+   * weight in every font.
+   */
+  transform: scaleX(var(--brand-arrow-flip, 1));
+  transition: translate var(--motion-transition-fast);
+}
+
+:root {
+  --brand-arrow-flip: 1;
+}
+
+[dir="rtl"] {
+  --brand-arrow-flip: -1;
+}
+
+.brand-link-tile:hover .brand-link-tile__arrow {
+  /* Logical: moves toward the inline end in both directions. */
+  translate: var(--space-1) 0;
+}
+
+[dir="rtl"] .brand-link-tile:hover .brand-link-tile__arrow {
+  translate: calc(var(--space-1) * -1) 0;
+}
+
+/* ------------------------------------------------------------------ *
+ * CtaBand.
+ * ------------------------------------------------------------------ */
+.brand-cta-band__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  padding-block: var(--space-12);
+}
+
+.brand-cta-band__title {
+  color: var(--surface-text);
+  /* Hierarchy from size and weight, because there is only one ink here. */
+  font-size: var(--font-size-h3-desktop, 1.5rem);
+  font-weight: 700;
+}
+
+.brand-cta-band__description {
+  margin-block-start: var(--space-2);
+  color: var(--surface-text-muted);
+}
+
+/*
+ * The inset form (ADR-0098 §8.6). The canvas gutter is the separator that keeps
+ * this red ground off an adjacent green one.
+ */
+.brand-cta-band__inner[data-layout="card"] {
+  padding: var(--space-8);
+}
+
+.brand-cta-band-holder {
+  padding-block: var(--space-12);
+}
+
+.brand-cta-band-holder > .brand-cta-band {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+/* ------------------------------------------------------------------ *
+ * EmptyState.
+ * ------------------------------------------------------------------ */
+.brand-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-16) var(--space-6);
+  border: var(--border-width-default) dashed var(--surface-border);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.brand-empty-state__title {
+  color: var(--surface-text);
+  font-weight: 600;
+}
+
+.brand-empty-state__description {
+  max-inline-size: 52ch;
+  color: var(--surface-text-muted);
+}
+
+.brand-empty-state__action {
+  margin-block-start: var(--space-2);
+}
+
+/* ------------------------------------------------------------------ *
+ * StatHighlight.
+ * ------------------------------------------------------------------ */
+.brand-stat-highlight__figure {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  color: var(--surface-text);
+}
+
+.brand-stat-highlight__value {
+  font-size: var(--font-size-display-xl-desktop, 3rem);
+  font-weight: 700;
+  /* Tabular figures so a row of these does not jitter between values. */
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.brand-stat-highlight__unit {
+  color: var(--surface-text-muted);
+  font-weight: 600;
+}
+
+.brand-stat-highlight__label {
+  margin-block-start: var(--space-2);
+  color: var(--surface-text-muted);
+}
+
+/* ------------------------------------------------------------------ *
+ * AthleteResultBadge.
+ * ------------------------------------------------------------------ */
+.brand-athlete-result {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-tile-fill);
+}
+
+/*
+ * The medal disc. Decorative: the rank reaches a screen reader through the
+ * visually hidden label beside it, so nothing a reader must read is drawn in a
+ * medal colour — which is how this composition avoids the medal tokens' known
+ * contrast problem without changing any of them.
+ */
+.brand-athlete-result__medal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  inline-size: var(--space-10);
+  block-size: var(--space-10);
+  border-radius: var(--radius-full);
+  color: var(--color-black);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.brand-athlete-result__medal[data-place="1"] {
+  background-color: var(--color-semantic-medal-gold);
+}
+
+.brand-athlete-result__medal[data-place="2"] {
+  background-color: var(--color-semantic-medal-silver);
+}
+
+.brand-athlete-result__medal[data-place="3"] {
+  background-color: var(--color-semantic-medal-bronze);
+}
+
+.brand-athlete-result__text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.brand-athlete-result__name {
+  color: var(--surface-text);
+  font-weight: 600;
+}
+
+.brand-athlete-result__detail {
+  color: var(--surface-text-muted);
+}

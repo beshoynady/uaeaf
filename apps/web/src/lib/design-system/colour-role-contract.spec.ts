@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { AA_NORMAL_TEXT, contrastRatio, stripComments, themeTokens } from "@uaeaf/design-tokens/testing";
+
+import { sourceFiles } from "./source-files";
 
 /**
  * ADR-0065 — the colour role table and the categorical scale.
@@ -85,14 +87,6 @@ function deltaE(a: string, b: string): number {
   return Math.hypot(la - lb, aa - ab, ba - bb);
 }
 
-function sourceFiles(dir: string): string[] {
-  return readdirSync(dir).flatMap((entry) => {
-    const full = join(dir, entry);
-    if (statSync(full).isDirectory()) return sourceFiles(full);
-    return entry.endsWith(".tsx") && !entry.includes(".test.") ? [full] : [];
-  });
-}
-
 describe("ADR-0065 D3a — the categorical scale", () => {
   const tokens = themeTokens("light");
 
@@ -144,7 +138,7 @@ describe("ADR-0065 D3a — the categorical scale", () => {
 });
 
 describe("ADR-0065 R2 — no colour for decoration", () => {
-  const files = sourceFiles(join(SRC, "components"));
+  const files = sourceFiles("components");
 
   it("scans the component tree", () => {
     expect(files.length).toBeGreaterThan(5);

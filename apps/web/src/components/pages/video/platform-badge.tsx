@@ -22,6 +22,21 @@ import type { VideoPlatform } from "@/lib/video/types";
  * decision for the opposite reason -- an editor is scanning a column.
  */
 
+/**
+ * ── The one place in this system that carries a literal colour ─────────────
+ *
+ * ADR-0098 governs every other colour in the video system, and this file is
+ * its single named exception. The values below are not a palette: each one is
+ * another organisation's registered identity, published in that platform's own
+ * brand guidelines, and a platform mark drawn in UAEAF green is not that
+ * platform's mark. Tokenising them would also imply this system may change
+ * them, and it may not.
+ *
+ * They are therefore literals on purpose, and they are the ONLY literals
+ * permitted here. Everything drawn around them — the badge's ground, its ring,
+ * its ink when a mark has none — comes from the surface, like the rest of the
+ * system.
+ */
 interface Mark {
   /** The brand's own colour, as the platform publishes it. */
   fill: string;
@@ -77,7 +92,7 @@ const discStyle = (mark: Mark, size: number): CSSProperties => ({
   background: mark.gradient
     ? "radial-gradient(circle at 30% 107%, #FDF497 0%, #FD5949 45%, #D6249F 60%, #285AEB 90%)"
     : mark.fill,
-  boxShadow: mark.outlined ? "inset 0 0 0 1px rgba(255,255,255,0.22)" : undefined,
+  boxShadow: mark.outlined ? "inset 0 0 0 1px color-mix(in srgb, var(--surface-text) 22%, transparent)" : undefined,
 });
 
 /**

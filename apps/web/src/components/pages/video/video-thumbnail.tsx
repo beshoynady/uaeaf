@@ -53,7 +53,7 @@ export const VideoThumbnail = ({
     <div
       aria-hidden
       className={`absolute inset-0 overflow-hidden ${className}`}
-      style={{ background: "linear-gradient(135deg, var(--vs-surface-raised), var(--vs-surface))" }}
+      style={{ background: "linear-gradient(var(--brand-ramp-angle), color-mix(in srgb, var(--surface-text) 10%, var(--surface-bg)), color-mix(in srgb, var(--surface-text) 6%, var(--surface-bg)))" }}
     >
       <UaeafMotif
         tone="inherit"
@@ -62,7 +62,7 @@ export const VideoThumbnail = ({
           insetInlineStart: "50%",
           top: "50%",
           width: "44%",
-          color: "var(--vs-text-muted)",
+          color: "var(--surface-text-muted)",
           transform: "translate(-50%, -50%)",
         }}
       />

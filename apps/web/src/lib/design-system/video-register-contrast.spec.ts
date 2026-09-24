@@ -1,62 +1,79 @@
 import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import { createRequire } from "node:module";
+import { dirname, join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { AA_LARGE_TEXT_OR_NON_TEXT, AA_NORMAL_TEXT, contrastRatio } from "@uaeaf/design-tokens/testing";
+import {
+  AA_LARGE_TEXT_OR_NON_TEXT,
+  AA_NORMAL_TEXT,
+  contrastRatio,
+  themeTokens,
+} from "@uaeaf/design-tokens/testing";
 
 /**
- * The video system's dark register, measured.
+ * What the video system actually paints, measured.
  *
- * The owner took this system out of the design system's colour rules
- * (2026-09-23), so none of these values is a token and none of them is checked
- * by `register-contrast.spec.ts`. That grant is about which colours may be
- * used, not about whether they are legible: WCAG 2.1 AA still applies, and the
- * brief states the ratios must be computed rather than assumed.
+ * The system stands on ADR-0098's `ink` surface. `brand-surface-contract.spec`
+ * measures what that surface publishes — its ink on its ground, in every
+ * theme. This measures the pairs the video system composes on top of it, which
+ * no surface can know about:
  *
- * So this reads the values out of `video-system.css` itself rather than
- * restating them. A colour edited in the stylesheet is measured here on the
- * next run; a colour restated in a test is a number that agrees with the
- * stylesheet only until someone changes one of them.
+ * - the two fills it mixes because the kit publishes no raised-on-ink step;
+ * - the brand green it uses as a label colour rather than as a button plate;
+ * - the live red, as a frame around the player and as a badge behind white;
+ * - the focus indicator, whose two tones have to work on both fills.
+ *
+ * Read from the stylesheets rather than restated here: a number copied into a
+ * test agrees with the design system only until one of the two is edited.
  */
 
-const CSS = readFileSync(join(__dirname, "../../styles/video-system.css"), "utf8");
+const require_ = createRequire(import.meta.url);
+const TOKENS_ROOT = dirname(require_.resolve("@uaeaf/design-tokens/package.json"));
+const SURFACES_CSS = readFileSync(join(TOKENS_ROOT, "css", "surfaces.css"), "utf-8");
 
-/** One `--vs-*` value from the `.video-system` block. */
-const value = (name: string): string => {
-  const match = CSS.match(new RegExp(`--${name}:\\s*([^;]+);`));
-  if (!match) throw new Error(`video-system.css declares no --${name}`);
-  return match[1].trim();
+const THEMES = ["light", "dark", "high-contrast"] as const;
+
+/** One surface's unthemed block, as declared. */
+const surfaceBlock = (surface: string): Record<string, string> => {
+  const declarations: Record<string, string> = {};
+  for (const [, selector, body] of SURFACES_CSS.matchAll(
+    new RegExp(`([^{}]*\[data-surface=["']${surface}["']\][^{]*)\{([^}]*)\}`, "g"),
+  )) {
+    if (selector.includes("[data-theme=")) continue;
+    for (const [, name, value] of body.matchAll(/(--[a-zA-Z0-9-]+)\s*:\s*([^;]+);/g)) {
+      declarations[name] = value.trim();
+    }
+  }
+  if (Object.keys(declarations).length === 0) throw new Error(`surfaces.css declares no ${surface} block`);
+  return declarations;
 };
 
-const C = {
-  bg: value("vs-bg"),
-  surface: value("vs-surface"),
-  surfaceRaised: value("vs-surface-raised"),
-  text: value("vs-text"),
-  textSecondary: value("vs-text-secondary"),
-  textMuted: value("vs-text-muted"),
-  green: value("vs-green"),
-  onGreen: value("vs-on-green"),
-  live: value("vs-live"),
-  liveInk: value("vs-live-ink"),
+/** `var(--a)` chains, followed until a literal colour comes out. */
+const resolve = (value: string, tokens: Record<string, string>): string => {
+  let current = value.trim();
+  for (let hop = 0; hop < 8; hop += 1) {
+    const match = current.match(/^var\((--[a-zA-Z0-9-]+)\)$/);
+    if (!match) return current;
+    const next = tokens[match[1]];
+    if (!next) throw new Error(`no token declares ${match[1]}`);
+    current = next.trim();
+  }
+  throw new Error(`${value} does not resolve to a colour`);
 };
 
 /**
- * The hairline is `rgba(255,255,255,0.09)` and so has no ratio of its own: it
- * is a translucent white composited onto whichever ground it sits on. It is
- * measured as its composite, in channel space — blending luminances instead
- * of channels reports a different (and wrong) number, which this project has
- * already been caught by once.
+ * `color-mix(in srgb, fg P%, bg)`, computed the way the browser computes it.
+ *
+ * In channel space, then luminance -- blending the two luminances instead
+ * reports a different and wrong number, which this project has been caught by
+ * once already.
  */
-const over = (ground: string, white: number): string => {
-  const g = ground.replace("#", "");
-  const mix = (offset: number) => {
-    const base = parseInt(g.slice(offset, offset + 2), 16);
-    return Math.round(base * (1 - white) + 255 * white);
-  };
-  return `#${[0, 2, 4].map((o) => mix(o).toString(16).padStart(2, "0")).join("")}`;
+const mix = (fg: string, percent: number, bg: string): string => {
+  const channel = (hex: string, offset: number) => parseInt(hex.replace("#", "").slice(offset, offset + 2), 16);
+  const blended = [0, 2, 4].map((offset) =>
+    Math.round(channel(fg, offset) * (percent / 100) + channel(bg, offset) * (1 - percent / 100)),
+  );
+  return `#${blended.map((v) => v.toString(16).padStart(2, "0")).join("")}`;
 };
-
-const HAIRLINE_ALPHA = 0.09;
 
 interface Pair {
   what: string;
@@ -66,65 +83,124 @@ interface Pair {
   floor: number;
 }
 
-const PAIRS: Pair[] = [
-  { what: "body text on the page ground", fg: C.text, bg: C.bg, floor: AA_NORMAL_TEXT },
-  { what: "body text on a card", fg: C.text, bg: C.surface, floor: AA_NORMAL_TEXT },
-  { what: "body text on a raised control", fg: C.text, bg: C.surfaceRaised, floor: AA_NORMAL_TEXT },
-  { what: "secondary text on the page ground", fg: C.textSecondary, bg: C.bg, floor: AA_NORMAL_TEXT },
-  { what: "secondary text on a card", fg: C.textSecondary, bg: C.surface, floor: AA_NORMAL_TEXT },
-  { what: "secondary text on a raised control", fg: C.textSecondary, bg: C.surfaceRaised, floor: AA_NORMAL_TEXT },
-  { what: "muted meta on the page ground", fg: C.textMuted, bg: C.bg, floor: AA_NORMAL_TEXT },
-  { what: "muted meta on a card", fg: C.textMuted, bg: C.surface, floor: AA_NORMAL_TEXT },
-  { what: "green category label on the page ground", fg: C.green, bg: C.bg, floor: AA_NORMAL_TEXT },
-  { what: "green category label on a card", fg: C.green, bg: C.surface, floor: AA_NORMAL_TEXT },
-  { what: "ink on the green button", fg: C.onGreen, bg: C.green, floor: AA_NORMAL_TEXT },
-  { what: "ink on the live badge", fg: C.liveInk, bg: C.live, floor: AA_NORMAL_TEXT },
-  // The focus ring and the live frame are boundaries, not text: §1.4.11.
-  { what: "green focus ring against the page ground", fg: C.green, bg: C.bg, floor: AA_LARGE_TEXT_OR_NON_TEXT },
-  { what: "live frame against the page ground", fg: C.live, bg: C.bg, floor: AA_LARGE_TEXT_OR_NON_TEXT },
-  { what: "hairline on the page ground", fg: over(C.bg, HAIRLINE_ALPHA), bg: C.bg, floor: 1 },
-  { what: "hairline on a card", fg: over(C.surface, HAIRLINE_ALPHA), bg: C.surface, floor: 1 },
-];
+/** Every pair the video system composes, in one theme. */
+const pairsFor = (theme: (typeof THEMES)[number]): Pair[] => {
+  const tokens = themeTokens(theme);
+  const ink = surfaceBlock("ink");
+  const red = surfaceBlock("brand-red");
+  const at = (block: Record<string, string>, name: string) => resolve(block[name], tokens);
 
-describe("the video system's dark register", () => {
-  it.each(PAIRS)("$what clears $floor:1", ({ fg, bg, floor }) => {
+  const ground = at(ink, "--surface-bg");
+  const text = at(ink, "--surface-text");
+  const muted = at(ink, "--surface-text-muted");
+  const divider = at(ink, "--surface-divider");
+  const green = at(ink, "--surface-btn-primary-bg");
+  const onGreen = at(ink, "--surface-btn-primary-ink");
+
+  // The two fills `video-system.css` mixes, because the kit publishes no
+  // raised step on ink. Same expression, same order.
+  const fill = mix(text, 6, ground);
+  const fillStrong = mix(text, 10, ground);
+
+  return [
+    { what: "body text on the ground", fg: text, bg: ground, floor: AA_NORMAL_TEXT },
+    { what: "body text on a card", fg: text, bg: fill, floor: AA_NORMAL_TEXT },
+    { what: "body text on a field", fg: text, bg: fillStrong, floor: AA_NORMAL_TEXT },
+    { what: "muted meta on the ground", fg: muted, bg: ground, floor: AA_NORMAL_TEXT },
+    { what: "muted meta on a card", fg: muted, bg: fill, floor: AA_NORMAL_TEXT },
+    // The green is a plate here, never a word: see the test below.
+    { what: "the green plate against the ground", fg: green, bg: ground, floor: AA_LARGE_TEXT_OR_NON_TEXT },
+    { what: "ink on the green button", fg: onGreen, bg: green, floor: AA_NORMAL_TEXT },
+    // The badge's ground is a ramp, so both of its ends are measured: text
+    // over a gradient is only as legible as its worst stop.
+    {
+      what: "ink on the live badge, at the ramp's start",
+      fg: at(red, "--surface-text"),
+      bg: at(red, "--surface-gradient-from"),
+      floor: AA_NORMAL_TEXT,
+    },
+    {
+      what: "ink on the live badge, at the ramp's end",
+      fg: at(red, "--surface-text"),
+      bg: at(red, "--surface-gradient-to"),
+      floor: AA_LARGE_TEXT_OR_NON_TEXT,
+    },
+    // Boundaries, not text: WCAG 1.4.11.
+    {
+      what: "the live frame against the ground",
+      fg: resolve("var(--color-brand-secondary)", tokens),
+      bg: ground,
+      floor: AA_LARGE_TEXT_OR_NON_TEXT,
+    },
+    { what: "the divider on a card", fg: divider, bg: fill, floor: 1 },
+  ];
+};
+
+describe.each(THEMES)("the video system's colours in %s", (theme) => {
+  it.each(pairsFor(theme))("$what clears $floor:1", ({ fg, bg, floor }) => {
     expect(contrastRatio(fg, bg)).toBeGreaterThanOrEqual(floor);
   });
 
   /**
-   * The hairline is decoration, not a boundary a reader must find: a card's
-   * edge is its own surface against the page, and the 1px line only refines
-   * it. So it has no §1.4.11 floor. It is measured anyway, and asserted to be
-   * VISIBLE at all, because a hairline nobody can see is a line that should be
-   * deleted rather than kept at a value that does nothing.
+   * The focus indicator is two tones, and the promise is that ONE of them is
+   * always visible -- which is the whole reason ADR-0051 draws a band as well
+   * as a ring. In light theme the ring is black, and on this ground a black
+   * ring is invisible; the white band beside it is what a reader sees.
    */
-  it("draws a hairline that is actually visible on both grounds", () => {
-    expect(contrastRatio(over(C.bg, HAIRLINE_ALPHA), C.bg)).toBeGreaterThan(1.1);
-    expect(contrastRatio(over(C.surface, HAIRLINE_ALPHA), C.surface)).toBeGreaterThan(1.1);
+  it("keeps one tone of the focus indicator visible on both fills", () => {
+    const tokens = themeTokens(theme);
+    const ink = surfaceBlock("ink");
+    const ground = resolve(ink["--surface-bg"], tokens);
+    const text = resolve(ink["--surface-text"], tokens);
+    const ring = resolve("var(--a11y-focus-ring)", tokens);
+    const band = resolve("var(--a11y-focus-offset)", tokens);
+
+    for (const behind of [ground, mix(text, 6, ground), mix(text, 10, ground)]) {
+      const best = Math.max(contrastRatio(ring, behind), contrastRatio(band, behind));
+      expect(best, `focus indicator on ${behind}`).toBeGreaterThanOrEqual(AA_LARGE_TEXT_OR_NON_TEXT);
+    }
   });
 
   /**
-   * The one pair the design gets wrong if nobody checks it: the live red is a
-   * fine boundary against the ground, but white-on-red is only just a pass and
-   * red-on-dark as TEXT is not. The badge therefore puts white ink on a red
-   * fill and never red text on the dark ground, and this is what holds that.
+   * The brand green is the ink surface's button plate, and this is what stops
+   * it from being used as a label colour again: on this ground it measures
+   * 4.09:1, a fine boundary and unreadable text. The category label that used
+   * to be green is the surface's own ink now, and the green survives only
+   * where something legible is printed on top of it.
    */
-  it("keeps the live red as a fill and a frame, never as text on the ground", () => {
-    expect(contrastRatio(C.live, C.bg)).toBeLessThan(AA_NORMAL_TEXT);
-    expect(contrastRatio(C.liveInk, C.live)).toBeGreaterThanOrEqual(AA_NORMAL_TEXT);
+  it("keeps the brand green a plate, never text on the ground", () => {
+    const tokens = themeTokens(theme);
+    const ink = surfaceBlock("ink");
+    const ground = resolve(ink["--surface-bg"], tokens);
+    const green = resolve(ink["--surface-btn-primary-bg"], tokens);
+    expect(contrastRatio(green, ground)).toBeLessThan(AA_NORMAL_TEXT);
+    expect(contrastRatio(resolve(ink["--surface-btn-primary-ink"], tokens), green)).toBeGreaterThanOrEqual(
+      AA_NORMAL_TEXT,
+    );
   });
+});
 
-  /** Printed so the report's contrast table is generated rather than typed. */
-  it("prints the measured table", () => {
-    const rows = PAIRS.map(({ what, fg, bg, floor }) => ({
+/** Printed so the report's contrast table is generated rather than typed. */
+it("prints the measured table", () => {
+  const rows = THEMES.flatMap((theme) =>
+    pairsFor(theme).map(({ what, fg, bg, floor }) => ({
+      theme,
       pair: what,
       foreground: fg,
       background: bg,
       ratio: `${contrastRatio(fg, bg).toFixed(2)}:1`,
       floor: `${floor}:1`,
-    }));
-    // eslint-disable-next-line no-console -- the table IS the deliverable here.
-    console.table(rows);
-    expect(rows).toHaveLength(PAIRS.length);
-  });
+    })),
+  );
+  // `console.log`, not `console.table`: vitest forwards the first out of the
+  // jsdom environment and swallows the second, so the table printed nowhere.
+  console.log(
+    rows
+      .map(
+        (r) =>
+          `${r.theme.padEnd(14)} ${r.pair.padEnd(42)} ${r.foreground} on ${r.background} = ${r.ratio} (floor ${r.floor})`,
+      )
+      .join("\n"),
+  );
+  expect(rows.length).toBeGreaterThan(0);
 });

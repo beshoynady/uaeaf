@@ -11,6 +11,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@uaeaf/brand-ui": "*",
     "@uaeaf/design-tokens": "*",
     "motion": "^13.3.0",
     "next": "16.3.5",

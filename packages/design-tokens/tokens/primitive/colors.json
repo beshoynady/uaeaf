@@ -26,6 +26,9 @@
     },
     "black": { "value": "#000000", "type": "color", "comment": "DO NOT MODIFY — Brand Neutral, independent of neutral-warm (UAEAF Digital UI Brand Guide v1.0 §4)" },
     "white": { "value": "#FFFFFF", "type": "color", "comment": "DO NOT MODIFY — Brand Neutral, independent of neutral-warm (UAEAF Digital UI Brand Guide v1.0 §4)" },
+    "ink": {
+      "500": { "value": "#0B0B0B", "type": "color", "comment": "ADR-0098 §8.4 — the Brand UI Kit ink ground, fixed in every theme. Not `black` (#000000) and not `neutral-warm.950` (#131210): a near-black that is its own value rather than either end of an existing ramp. It measures 1.05:1 against the dark page ground, which is why every ink surface MUST carry a non-surface edge cue — an accent bar or a mesh — guarded in brand-surface-contract.spec.ts rather than left to reviewers." }
+    },
     "neutral-warm": {
       "50": { "value": "#FAFAF8", "type": "color", "comment": "ADR-0051" },
       "100": { "value": "#F5F4F1", "type": "color", "comment": "ADR-0051" },

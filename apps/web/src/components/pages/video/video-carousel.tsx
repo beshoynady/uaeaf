@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import { FOCUS } from "@/components/ui/interactive";
+import { FOCUS_WIDE } from "./chrome";
 
 /**
  * The landscape rail: four cards at rest, the next one showing at the edge.
@@ -110,7 +112,7 @@ export const VideoCarousel = ({
   };
 
   const arrow =
-    "inline-flex size-11 items-center justify-center rounded-full transition-colors duration-[var(--motion-duration-fast)] hover:bg-[rgba(255,255,255,0.07)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--vs-green)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--vs-bg)] disabled:opacity-30";
+    `inline-flex size-11 items-center justify-center rounded-full transition-colors duration-[var(--motion-duration-fast)] vs-ghost vs-edge ${FOCUS} disabled:opacity-30`;
 
   return (
     <section className="flex flex-col gap-5">
@@ -134,22 +136,22 @@ export const VideoCarousel = ({
                   className="group inline-flex h-11 items-center px-0.5 focus-visible:outline-none"
                 >
                   <span
-                    className="block h-1 rounded-full transition-all duration-[var(--motion-duration-fast)] group-focus-visible:ring-2 group-focus-visible:ring-[color:var(--vs-green)]"
+                    className="block h-1 rounded-full transition-all duration-[var(--motion-duration-fast)] group-focus-visible:ring-2 group-focus-visible:ring-[color:var(--a11y-focus-ring)]"
                     style={{
                       inlineSize: index === page ? 26 : 12,
-                      background: index === page ? "var(--vs-green)" : "rgba(255,255,255,0.22)",
+                      background: index === page ? "var(--surface-btn-primary-bg)" : "color-mix(in srgb, var(--surface-text) 22%, transparent)",
                     }}
                   />
                 </button>
               ))}
             </div>
 
-            <button type="button" onClick={() => move(-1)} disabled={page === 0} aria-label={labels.previous} className={arrow} style={{ boxShadow: "inset 0 0 0 1px var(--vs-hairline)", color: "var(--vs-text)" }}>
+            <button type="button" onClick={() => move(-1)} disabled={page === 0} aria-label={labels.previous} className={arrow}>
               <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="size-5 rtl:-scale-x-100" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14.5 5.5 8 12l6.5 6.5" />
               </svg>
             </button>
-            <button type="button" onClick={() => move(1)} disabled={page >= pages - 1} aria-label={labels.next} className={arrow} style={{ boxShadow: "inset 0 0 0 1px var(--vs-hairline)", color: "var(--vs-text)" }}>
+            <button type="button" onClick={() => move(1)} disabled={page >= pages - 1} aria-label={labels.next} className={arrow}>
               <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="size-5 rtl:-scale-x-100" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9.5 5.5 16 12l-6.5 6.5" />
               </svg>
@@ -168,7 +170,7 @@ export const VideoCarousel = ({
         tabIndex={0}
         role="group"
         aria-label={labels.rail}
-        className="vs-rail gap-4 pb-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--vs-green)] focus-visible:ring-offset-4 focus-visible:ring-offset-[color:var(--vs-bg)]"
+        className={`vs-rail gap-4 pb-1 ${FOCUS_WIDE}`}
       >
         {children}
       </div>

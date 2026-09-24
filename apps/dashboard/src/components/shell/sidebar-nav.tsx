@@ -28,7 +28,22 @@ const LABEL =
 const LINK_LAYOUT =
   "flex min-h-11 items-center gap-3 overflow-hidden rounded-[var(--radius-md)] px-4 py-2.5 text-body-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-focus-default)] md:max-lg:[aside_&]:justify-center md:max-lg:[aside_&]:px-0 lg:[aside[data-collapsed=true]_&]:justify-center lg:[aside[data-collapsed=true]_&]:px-0";
 
-const LINK_ACTIVE = "bg-[color:var(--color-surface-sunken)] font-medium text-[color:var(--color-text-primary)]";
+/**
+ * The active screen.
+ *
+ * The solid-colour indicator becomes a tricolour edge on the inline start
+ * (ADR-0098 D6, Chapter 12 §12.15.2). This changes the indicator's **paint
+ * only**: `aria-current="page"` is still what carries the state to a screen
+ * reader, so the state never depends on seeing the colour (WCAG 1.4.1), and
+ * the collapsed, tablet and mobile behaviour of §12.4 is untouched — the edge
+ * sits on the inline start in every one of them.
+ *
+ * `brand-active-edge` is a class rather than a Tailwind arbitrary value
+ * because the edge is a gradient, and a gradient in a `border-inline-start`
+ * is not something the utility layer can express.
+ */
+const LINK_ACTIVE =
+  "brand-active-edge bg-[color:var(--color-surface-sunken)] font-medium text-[color:var(--color-text-primary)]";
 const LINK_IDLE =
   "text-[color:var(--color-text-secondary)] hover:bg-[color:var(--color-surface-sunken)] hover:text-[color:var(--color-text-primary)] active:bg-[color:var(--color-surface-skeleton)]";
 

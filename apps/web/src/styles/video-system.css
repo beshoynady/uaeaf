@@ -1,68 +1,141 @@
 /**
- * The video system's dark register.
+ * The video system's ground.
  *
- * -- Why these are variables and not design tokens --------------------------
+ * -- It is the institutional ink surface, and nothing more -------------------
  *
- * The owner took this section and its pages out of the design system's colour
- * rules by decision on 2026-09-23, without an ADR. That grant is for this
- * system only, so the values it needs live scoped to `.video-system` rather
- * than in `packages/design-tokens`: a token is a promise to the whole site,
- * and nothing outside this system has agreed to a #0A0C0B ground.
+ * Every colour this system paints resolves through `[data-surface="ink"]` in
+ * `surfaces.css` (ADR-0098), so a change to the ink ground reaches the video
+ * system the day it reaches everything else standing on it. Nothing here
+ * declares a colour. The only literal colours anywhere in the system are the
+ * five platform logos, and they are marked where they are drawn.
  *
- * Everything the system does share it still takes from the tokens -- the
- * Alexandria stack, the focus ring, the motion durations -- so a reader who
- * asks for reduced motion or a larger focus indicator gets it here too.
+ * -- What lives here ---------------------------------------------------------
  *
- * Contrast for every pair below is computed, not assumed: see
- * `contrast.spec.ts`, which fails rather than reports.
+ * This system's own motion, and the two fills the kit has no token for. Every
+ * duration is a token rung, so the reduced-motion reset reaches all of it.
+ *
+ * Two rungs this system may NOT use, and what it does instead:
+ *
+ * - `ambient` (1200ms) is bound by ADR-0069 D9 to one authorised selector, the
+ *   President's Message ground plane; ADR-0098 leaves that standing. So the
+ *   four repeating animations here — the live dot, the two pulse rings and the
+ *   skeleton's band — take `entrance` (720ms), the longest rung open to them.
+ * - Ken Burns takes `orbit` (6000ms), the longest rung there is, by owner
+ *   instruction 2026-09-24.
+ *
+ * DESIGN SYSTEM GAP, recorded in the backlog: the scale has no long rung a
+ * general consumer may use. Everything above `entrance` is reserved.
+ *
+ * -- The boundary this ground cannot draw ------------------------------------
+ *
+ * ADR-0098 §8.4 fixes ink at `#0B0B0B` in every theme, which measures 1.05:1
+ * against the dark page. So the ground gives no edge of its own, and ADR-0098
+ * requires every ink surface to carry a non-surface cue — an accent bar or the
+ * mesh tint — for its extent to be visible at all.
  */
-
 .video-system {
-  /* Grounds. `--vs-bg` is the page behind the section; the two surfaces are
-     the card and the raised control on top of it. */
-  --vs-bg: #0a0c0b;
-  --vs-surface: #121614;
-  --vs-surface-raised: #1a1f1c;
-  --vs-hairline: rgba(255, 255, 255, 0.09);
-
-  /* Inks. */
-  --vs-text: #f3f5f2;
-  --vs-text-secondary: #a7afaa;
-  --vs-text-muted: #8a938d;
-
-  /* The one accent. Green is the federation's; on this ground it is the
-     colour of an action, never of a decoration. */
-  --vs-green: #2bd46e;
-  --vs-on-green: #06120b;
-
-  /* Live. Red appears only while a broadcast is running -- it is a state, not
-     a palette entry, which is why nothing at rest uses it. */
-  --vs-live: #d11a27;
-  --vs-live-ink: #ffffff;
-
-  /* Radii, as the approved design draws them. */
-  --vs-radius-card: 14px;
-  --vs-radius-player: 22px;
-  --vs-radius-reel: 18px;
-  --vs-radius-pill: 999px;
-
+  /* `color-scheme` stays: it is what makes the browser draw dark form controls
+     and scrollbars inside the section, which no colour token can do. */
   color-scheme: dark;
-  background-color: var(--vs-bg);
-  color: var(--vs-text);
+
+  /*
+   * Two app-local properties, declared here with their resting value.
+   *
+   * They are stagger positions, not tokens: the reveal script writes one per
+   * element in document order, which is reading order in either language. The
+   * default keeps an element that the script never reaches — because it was
+   * server-rendered and hydration failed, or because the observer never
+   * fired — at delay zero rather than at an unresolved `var()`.
+   */
+  --vs-reveal-index: 0;
+  --vs-word-index: 0;
+
+  /* The curve every animation here uses. Not a token: the scale publishes four
+     easings and none of them is this one, which is a decelerate with a longer
+     tail. DESIGN SYSTEM GAP, recorded in the backlog — named once meanwhile,
+     so adopting a token later is one edit. */
+  --vs-ease: cubic-bezier(0.16, 0.8, 0.24, 1);
+}
+
+/*
+ * A card's fill on ink, and the step above it.
+ *
+ * ADR-0098's ink surface publishes a ground, two inks, a border and a divider
+ * — and no raised step, because on ink the extent of a shape comes from its
+ * edge rather than from a lighter fill. The design draws cards with a fill, so
+ * the fill is mixed from the surface's own ink against its own ground: no new
+ * value enters, and the step follows the ground if the ground ever moves.
+ *
+ * Here rather than inline at each card, so that the day the kit publishes a
+ * raised-on-ink token there is one place to adopt it instead of eighteen.
+ *
+ * DESIGN SYSTEM GAP — recorded in the backlog: the kit has no raised-on-ink
+ * token. This is the closest approved treatment, not a substitute for one.
+ */
+.vs-fill {
+  background: color-mix(in srgb, var(--surface-text) 6%, var(--surface-bg));
+}
+
+.vs-fill-strong {
+  background: color-mix(in srgb, var(--surface-text) 10%, var(--surface-bg));
+}
+
+/*
+ * The 1px edge a control carries instead of a fill -- and the focus ring that
+ * has to survive it.
+ *
+ * Both are here, in one rule, because they are one declaration: a focus ring
+ * is drawn with `box-shadow` too, and an inline `style={{ boxShadow }}` beats
+ * the utility that draws it. Written inline, the edge silently removed the
+ * indicator from every pill, chip and arrow in this system -- WCAG 2.4.7,
+ * failing on a control that looked entirely correct until a keyboard reached
+ * it.
+ *
+ * The ring is ADR-0051's, to the pixel: a 2px band in the offset colour, then
+ * 2px of the ring colour, so that whichever of the two the ground swallows,
+ * the other is visible.
+ */
+.vs-edge {
+  box-shadow: inset 0 0 0 1px var(--surface-divider);
+}
+
+.vs-edge:focus-visible {
+  outline: none;
+  box-shadow:
+    inset 0 0 0 1px var(--surface-divider),
+    0 0 0 var(--a11y-focus-offset-width) var(--a11y-focus-offset),
+    0 0 0 calc(var(--a11y-focus-offset-width) + var(--a11y-focus-ring-width)) var(--a11y-focus-ring);
+}
+
+/*
+ * A control with no fill of its own, answering the pointer.
+ *
+ * The tints are mixed from the surface's own ink over whatever is behind the
+ * control, so one class serves every ground this system paints on. It is a
+ * class and not a `hover:bg-[…]` utility because an arbitrary Tailwind value
+ * may not contain spaces: written with them, the class list splits mid-value
+ * and the rule is never generated — silently, with the hover simply absent.
+ */
+.vs-ghost:hover {
+  background: color-mix(in srgb, var(--surface-text) 6%, transparent);
+}
+
+.vs-ghost:active {
+  background: color-mix(in srgb, var(--surface-text) 12%, transparent);
 }
 
 /* -- Motion -----------------------------------------------------------------
    Every animation below is `transform` and `opacity` only, so the compositor
    does the work and no frame costs layout (ADR-0009). Each runs once, except
    the two that are invitations rather than entrances. `prefers-reduced-motion`
-   collapses all of them to a fade of at most 150ms, which is the brief's
-   ruling and not a per-component choice. */
+   collapses all of them to a plain fade, which is the brief's ruling and not a
+   per-component choice. */
 
-/* The featured image's slow push in, once, on entry: 1.09 to 1 over 16s. On
-   the image itself rather than a wrapper, because a transform on the wrapper
-   would scale the rounded corners with it. */
+/* The featured image's slow push in, 1.09 to 1, once on entry. On the image
+   itself rather than a wrapper, because a transform on the wrapper would scale
+   the rounded corners with it. */
 .vs-kenburns {
-  animation: vs-kenburns 16s cubic-bezier(0.16, 0.8, 0.24, 1) both;
+  animation: vs-kenburns var(--motion-duration-orbit) var(--vs-ease) both;
   will-change: transform;
 }
 
@@ -75,44 +148,15 @@
   }
 }
 
-/* One pass of light across the backdrop, once. A pseudo-element, so the image
-   underneath is untouched. */
-.vs-sheen::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.11) 50%, transparent 62%);
-  transform: translateX(-130%);
-  animation: vs-sheen 2.6s 0.5s cubic-bezier(0.16, 0.8, 0.24, 1) both;
-}
-
-/* The start edge is reading-direction relative: in Arabic the light travels
-   the other way, as the eye does. */
-[dir="rtl"] .vs-sheen::after {
-  transform: translateX(130%);
-  animation-name: vs-sheen-rtl;
-}
-
-@keyframes vs-sheen {
-  to {
-    transform: translateX(130%);
-  }
-}
-
-@keyframes vs-sheen-rtl {
-  to {
-    transform: translateX(-130%);
-  }
-}
-
 /* Two rings leaving the play button, one after the other. */
 .vs-pulse-ring {
-  animation: vs-pulse 2.8s cubic-bezier(0.16, 0.8, 0.24, 1) infinite;
+  animation: vs-pulse var(--motion-duration-entrance) var(--vs-ease) infinite;
 }
 
+/* A third of a cycle behind the first, which is what makes them two rings. A
+   delay equal to the duration would put them in phase and draw one. */
 .vs-pulse-ring.vs-pulse-second {
-  animation-delay: 0.7s;
+  animation-delay: var(--motion-duration-base);
 }
 
 @keyframes vs-pulse {
@@ -126,9 +170,9 @@
   }
 }
 
-/* The live dot, every 1.8s. */
+/* The live dot, breathing. */
 .vs-live-dot {
-  animation: vs-live-dot 1.8s ease-in-out infinite;
+  animation: vs-live-dot var(--motion-duration-entrance) ease-in-out infinite;
 }
 
 @keyframes vs-live-dot {
@@ -143,28 +187,37 @@
   }
 }
 
-/* The red frame around a running broadcast, breathing with the dot so the two
-   read as one state rather than two effects. A `box-shadow` rather than a
-   border, so the player's geometry does not move. */
+/*
+ * The red frame around a running broadcast.
+ *
+ * A `box-shadow` rather than a border, so the player's geometry does not move,
+ * and on the player itself rather than on a layer above it: the player is
+ * `overflow: hidden`, which clips a child's outset shadow to nothing while
+ * leaving the element's own shadow untouched.
+ *
+ * Brand red, not `semantic-error`: this is a broadcast, not a fault, and the
+ * error red is themed -- in high contrast it drops to 1.89:1 against this
+ * ground, where brand red holds 3.35:1 in every theme because it does not move.
+ *
+ * Static, at the resting frame of the breathing it used to do. That breathing
+ * animated `box-shadow` between two spreads, which ADR-0009 forbids — every
+ * frame of it repaints, continuously, for as long as a broadcast is live — and
+ * the two ways to keep it both cost more than it is worth: animating opacity on
+ * a child puts the glow where the player clips it, and lifting the clip is a
+ * composition change. The state is not carried by the glow in any case: the
+ * badge says "مباشر الآن" and its dot still pulses.
+ *
+ * DESIGN DECISION REQUIRED, recorded in the backlog: whether the frame breathes
+ * again, and at what cost.
+ */
 .vs-live-frame {
-  animation: vs-live-frame 1.8s ease-in-out infinite;
+  box-shadow:
+    0 0 0 1px var(--color-brand-secondary),
+    0 0 34px -6px color-mix(in srgb, var(--color-brand-secondary) 70%, transparent);
 }
 
-@keyframes vs-live-frame {
-  0%,
-  100% {
-    box-shadow:
-      0 0 0 1px var(--vs-live),
-      0 0 34px -6px color-mix(in srgb, var(--vs-live) 70%, transparent);
-  }
-  50% {
-    box-shadow:
-      0 0 0 1px var(--vs-live),
-      0 0 52px -2px color-mix(in srgb, var(--vs-live) 85%, transparent);
-  }
-}
-
-/* A card's entrance: 28px up with a fade, staggered 100ms, once on entry.
+/* A card's entrance: 28px up with a fade, staggered by one `instant` rung,
+   once on entry.
    `--vs-reveal-index` is set by the reveal script in document order, which is
    reading order in either language. */
 .vs-rise[data-vs-reveal="waiting"] {
@@ -173,8 +226,8 @@
 }
 
 .vs-rise[data-vs-reveal="in"] {
-  animation: vs-rise 1s cubic-bezier(0.16, 0.8, 0.24, 1) both;
-  animation-delay: calc(var(--vs-reveal-index, 0) * 100ms);
+  animation: vs-rise var(--motion-duration-entrance) var(--vs-ease) both;
+  animation-delay: calc(var(--vs-reveal-index, 0) * var(--motion-duration-instant));
 }
 
 @keyframes vs-rise {
@@ -193,35 +246,77 @@
 .vs-word {
   display: inline-block;
   opacity: 0;
-  filter: blur(6px);
   transform: translateY(0.5em);
-  animation: vs-word 0.9s cubic-bezier(0.16, 0.8, 0.24, 1) both;
-  animation-delay: calc(var(--vs-word-index, 0) * 100ms);
+  animation: vs-word var(--motion-duration-entrance) var(--vs-ease) both;
+  animation-delay: calc(var(--vs-word-index, 0) * var(--motion-duration-instant));
 }
 
+/*
+ * The heading's words, rising one after another.
+ *
+ * A rise and a fade, and no blur: ADR-0009 allows only `transform` and
+ * `opacity` in a keyframe, and a blur is the expensive case the rule is written
+ * for — it repaints, per word, staggered, on the largest text on the page.
+ */
 @keyframes vs-word {
   to {
     opacity: 1;
-    filter: blur(0);
     transform: translateY(0);
   }
 }
 
-/* The skeleton's shimmer. */
+/*
+ * The skeleton's shimmer.
+ *
+ * A band that travels by `transform`, not a background whose position moves:
+ * `background-position` repaints the whole element every frame, which ADR-0009
+ * forbids and which is worst exactly here — a dozen skeletons at once, while
+ * the page is already busy fetching.
+ */
 .vs-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--surface-text) 6%, var(--surface-bg));
+}
+
+.vs-skeleton::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 60%;
   background: linear-gradient(
     100deg,
-    var(--vs-surface) 40%,
-    color-mix(in srgb, var(--vs-surface-raised) 70%, var(--vs-text) 4%) 50%,
-    var(--vs-surface) 60%
+    transparent 0%,
+    color-mix(in srgb, var(--surface-text) 7%, transparent) 50%,
+    transparent 100%
   );
-  background-size: 300% 100%;
-  animation: vs-shimmer 1.6s linear infinite;
+  animation: vs-shimmer var(--motion-duration-entrance) linear infinite;
+}
+
+/* `inset-inline-start` puts the band at the reading start, but a physical
+   `translateX` then carries it the same way in both languages: in Arabic it
+   began half on screen and left by the edge it started from. Mirrored the way
+   the sheen above is. */
+[dir="rtl"] .vs-skeleton::after {
+  animation-name: vs-shimmer-rtl;
 }
 
 @keyframes vs-shimmer {
+  from {
+    transform: translateX(-100%);
+  }
   to {
-    background-position: -200% 0;
+    transform: translateX(266%);
+  }
+}
+
+@keyframes vs-shimmer-rtl {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(-266%);
   }
 }
 
@@ -303,10 +398,11 @@
 
 /* -- The one stop -----------------------------------------------------------
    Chapter 5 and the brief both require motion to stop completely for a reader
-   who asks for it. Everything above becomes a fade of at most 150ms with no
-   transform, no blur and no loop. Written once, here, rather than guarded in
-   nine components: a rule each component is trusted to remember is a rule one
-   of them eventually forgets. */
+   who asks for it. Everything above becomes a plain fade on the `fast` rung --
+   which the token layer itself collapses to zero under `reduce`, so in practice
+   the content is simply there -- with no transform, no loop and no delay.
+   Written once, here, rather than guarded in nine components: a rule each
+   component is trusted to remember is a rule one of them eventually forgets. */
 
 @keyframes vs-fade {
   from {
@@ -318,17 +414,15 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* The pseudo-elements are named individually. Two of these animations run on
+     `::after` rather than on the element, and stopping the element does not
+     stop them -- a loop that kept moving for the one reader who asked for
+     stillness. */
   .video-system .vs-kenburns,
-  .video-system .vs-sheen::after,
   .video-system .vs-pulse-ring,
   .video-system .vs-live-dot,
-  .video-system .vs-live-frame,
-  .video-system .vs-skeleton {
+  .video-system .vs-skeleton::after {
     animation: none !important;
-  }
-
-  .video-system .vs-sheen::after {
-    display: none;
   }
 
   /* The rings are an invitation the reader declined. The button itself keeps
@@ -337,8 +431,10 @@
     opacity: 0;
   }
 
-  .video-system .vs-live-frame {
-    box-shadow: 0 0 0 1px var(--vs-live);
+  /* The travelling band is the whole of the shimmer, so it goes; the skeleton
+     keeps its fill, which is what says "not here yet". */
+  .video-system .vs-skeleton::after {
+    display: none;
   }
 
   .video-system .vs-rise[data-vs-reveal="waiting"] {
@@ -347,9 +443,8 @@
 
   .video-system .vs-rise[data-vs-reveal="in"],
   .video-system .vs-word {
-    animation: vs-fade 150ms linear both !important;
+    animation: vs-fade var(--motion-duration-fast) linear both !important;
     animation-delay: 0ms !important;
-    filter: none;
     transform: none;
   }
 }

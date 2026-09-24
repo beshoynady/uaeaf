@@ -13,10 +13,15 @@ import type { AdminVideo } from "@/lib/admin/videos/types";
  *
  * -- Two arrangements of one list --------------------------------------------
  *
- * A table below `md` puts every column after the title off-screen: the state,
- * the date and the options are reachable only by discovering a sideways
- * scroll that nothing advertises. So at phone width each row becomes a card,
- * and from `md` up it is the table the design draws.
+ * A table that does not fit puts every column after the title behind a
+ * sideways scroll nothing advertises. So below `xl` each row becomes a card,
+ * and from `xl` up it is the table the design draws.
+ *
+ * `xl`, not `md`, and the number is measured rather than chosen: seven columns
+ * plus a 96px still need about 1100px, and the sidebar takes roughly 330 of
+ * the window. At 1024 the title column was squeezed to 39px — the table
+ * technically fitted and was unreadable, which is worse than the scrollbar it
+ * replaced. At 1280 the title gets 295px and at 1440 it gets 455.
  *
  * Both are built from the same rows, the same link and the same `rowMenu`,
  * with the cells themselves coming from `video-row-parts`. Only the boxes
@@ -81,7 +86,10 @@ export const VideoTable = ({
       key: "title",
       header: t("colThumbnail"),
       render: (row) => (
-        <span className="flex items-center gap-3">
+        // `min-w-0` on both levels so the text can actually shrink inside the
+        // width the column was given. Without it the URL — one unbreakable
+        // string — sets the stack's floor and the clipping never happens.
+        <span className="flex min-w-0 items-center gap-3">
           <RowStill row={row} thumbnails={thumbnails} />
           <span className="flex min-w-0 flex-col gap-0.5">
             <RowTitle row={row} locale={locale} />
@@ -90,15 +98,18 @@ export const VideoTable = ({
         </span>
       ),
     },
-    { key: "platform", header: t("colPlatform"), render: (row) => <RowPlatform row={row} /> },
-    { key: "kind", header: t("colKind"), render: (row) => t(`kind_${row.kind}`) },
-    { key: "category", header: t("colCategory"), render: (row) => t(`category_${row.category}`) },
-    { key: "status", header: t("colStatus"), render: (row) => <RowStatus row={row} /> },
-    { key: "date", header: t("colDate"), ltr: true, render: (row) => <RowDate row={row} locale={locale} /> },
+    // Every column but the first has a natural size, so it is given one and
+    // the title column absorbs whatever is left. Without the widths, fixed
+    // layout would divide the table into seven equal parts.
+    { key: "platform", header: t("colPlatform"), width: "8.5rem", render: (row) => <RowPlatform row={row} /> },
+    { key: "kind", header: t("colKind"), width: "5.5rem", render: (row) => t(`kind_${row.kind}`) },
+    { key: "category", header: t("colCategory"), width: "7.5rem", render: (row) => t(`category_${row.category}`) },
+    { key: "status", header: t("colStatus"), width: "6.5rem", render: (row) => <RowStatus row={row} /> },
+    { key: "date", header: t("colDate"), width: "8rem", ltr: true, render: (row) => <RowDate row={row} locale={locale} /> },
   ];
 
   if (rowMenu) {
-    columns.push({ key: "actions", header: t("colActions"), render: menuFor });
+    columns.push({ key: "actions", header: t("colActions"), width: "5rem", render: menuFor });
   }
 
   // One empty line for both layouts, rather than the table's empty row on one
@@ -115,7 +126,7 @@ export const VideoTable = ({
     <>
       {/* Phone width. A list, announced as one: a screen reader should not be
           told about a table that is not being drawn. */}
-      <ul aria-label={t("tableCaption")} className="flex flex-col gap-3 md:hidden">
+      <ul aria-label={t("tableCaption")} className="flex flex-col gap-3 xl:hidden">
         {rows.map((row) => (
           <li
             key={row.id}
@@ -139,7 +150,7 @@ export const VideoTable = ({
         ))}
       </ul>
 
-      <div className="hidden md:block">
+      <div className="hidden xl:block">
         {/* `empty` is unreachable — the early return above covers it for both
             layouts — but the prop is required, and the same words are the
             honest value for it. */}

@@ -61,21 +61,40 @@ const stateConstants = (source: string): { name: string; body: string }[] => {
   return found;
 };
 
-const INTERACTIVE = stripComments(readFileSync(join(SRC, "components", "ui", "interactive.ts"), "utf-8"));
+/**
+ * The modules that define an interaction state once, for other files to use.
+ *
+ * `ui/interactive` is the application's. `pages/video/chrome` is the video
+ * system's, and it composes the first: its `GHOST_PILL` is `FOCUS` plus the
+ * pill. A call site that references either module's exports is judged with the
+ * states those exports carry -- otherwise this rule would push code away from
+ * a shared definition and back toward pasting the ring at every call site,
+ * which is the defect it exists for.
+ *
+ * A module is matched by the specifier its importers spell, so a relative one
+ * is listed in each spelling that is used.
+ */
+const SHARED_MODULES = [
+  { specifier: "@/components/ui/interactive", file: join(SRC, "components", "ui", "interactive.ts") },
+  { specifier: "./chrome", file: join(SRC, "components", "pages", "video", "chrome.ts") },
+  { specifier: "../video/chrome", file: join(SRC, "components", "pages", "video", "chrome.ts") },
+].map(({ specifier, file }) => {
+  const source = stripComments(readFileSync(file, "utf-8"));
+  return {
+    specifier,
+    constants: stateConstants(source),
+    /** The exports that carry a state: their own variants, or a composed one
+     *  built on another (`CARD_LINK`, `GHOST_PILL`). One that only sizes a
+     *  target (`TOUCH_TARGET`) brings none. */
+    names: [...source.matchAll(/^export const ([A-Z_][A-Z0-9_]*)\s*=\s*([\s\S]*?);$/gm)]
+      .filter(([, , body]) => /(?:focus|hover|active)[a-z-]*:|\bFOCUS[A-Z_]*\b/.test(body))
+      .map(([, name]) => name),
+  };
+});
 
-const SHARED_CONSTANTS = stateConstants(INTERACTIVE);
-
-/** The `ui/interactive` exports that carry a state: their own variants, or a
- *  composed one built on `FOCUS` (`CARD_LINK`). A call site referencing one is
- *  judged with those states, as one referencing `FOCUS` always was; one that
- *  only sizes a target (`TOUCH_TARGET`) brings none. */
-const SHARED_NAMES = [
-  ...INTERACTIVE.matchAll(/^export const ([A-Z_][A-Z0-9_]*)\s*=\s*([\s\S]*?);$/gm),
-]
-  .filter(([, , body]) => /(?:focus|hover|active)[a-z-]*:|\bFOCUS\b/.test(body))
-  .map(([, name]) => name);
-
-const imports = (source: string): boolean => /from "@\/components\/ui\/interactive"/.test(source);
+/** The shared definitions a file has actually imported. */
+const sharedFor = (source: string) =>
+  SHARED_MODULES.filter(({ specifier }) => source.includes(`from "${specifier}"`));
 
 const classAttributes = (file: string): ClassAttr[] => {
   const raw = readFileSync(file, "utf-8");
@@ -87,11 +106,12 @@ const classAttributes = (file: string): ClassAttr[] => {
   // Without this the rules would push code *away* from `ui/interactive` and
   // toward pasting the ring inline at every call site — the duplication that
   // caused the defect these rules exist for.
-  const shared = [...constants, ...(imports(source) ? SHARED_CONSTANTS : [])].map(({ body }) => body).join(" ");
+  const inScope = sharedFor(source);
+  const shared = [...constants, ...inScope.flatMap((module) => module.constants)].map(({ body }) => body).join(" ");
   // The names a class string may reference to bring those states with it,
   // looked for in the string and in the body of any file constant it uses:
   // a local `STEP` built on `FOCUS` carries the ring as surely as `FOCUS`.
-  const names = ["FOCUS", "TRANSITION", "LINK", "FOOTER_LINK", ...(imports(source) ? SHARED_NAMES : [])];
+  const names = ["FOCUS", "TRANSITION", "LINK", "FOOTER_LINK", ...inScope.flatMap((module) => module.names)];
   const references = new RegExp(`\\b(${names.join("|")})\\b`);
   const expanded = (value: string) =>
     [value, ...constants.filter(({ name }) => new RegExp(`\\b${name}\\b`).test(value)).map(({ body }) => body)].join(" ");
@@ -164,15 +184,37 @@ describe("interaction state contract", () => {
    * drawing one drops off this list by itself, and the check goes red again.
    */
   const FOCUS_CLASSES = (() => {
-    const styles = join(SRC, "styles");
+    // Every stylesheet the project owns, not just `src/styles`.
+    //
+    // The narrower walk was this rule's own blind spot: a control styled from
+    // a route-level stylesheet, or from `@uaeaf/brand-ui`, drew a perfectly
+    // good 2px outline on focus and was reported as having none. The intent
+    // stated above — "any class name in the project's own CSS" — was always
+    // the right one; the walk just did not reach that far.
+    const roots = [
+      SRC,
+      join(SRC, "..", "..", "..", "packages", "brand-ui"),
+      join(SRC, "..", "..", "..", "packages", "design-tokens", "css"),
+    ];
     const names = new Set<string>();
-    for (const file of readdirSync(styles)) {
-      if (!file.endsWith(".css")) continue;
-      const css = readFileSync(join(styles, file), "utf-8");
-      for (const [, name] of css.matchAll(/\.([a-z][\w-]*)(?::[\w-]+)*:focus-visible/g)) {
-        names.add(name);
+
+    const collect = (dir: string) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const full = join(dir, entry.name);
+        if (entry.isDirectory()) {
+          if (entry.name === "node_modules" || entry.name === ".next") continue;
+          collect(full);
+          continue;
+        }
+        if (!entry.name.endsWith(".css")) continue;
+        const css = readFileSync(full, "utf-8");
+        for (const [, name] of css.matchAll(/\.([a-z][\w-]*)(?::[\w-]+)*:focus-visible/g)) {
+          names.add(name);
+        }
       }
-    }
+    };
+
+    for (const root of roots) collect(root);
     return [...names];
   })();
 

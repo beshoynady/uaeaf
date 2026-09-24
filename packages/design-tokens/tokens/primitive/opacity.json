@@ -2,7 +2,13 @@
   "opacity": {
     "disabled": { "value": "0.5", "type": "opacity" },
     "hover": { "value": "0.92", "type": "opacity" },
-    "overlay": { "value": "0.6", "type": "opacity" }
+    "overlay": { "value": "0.6", "type": "opacity" },
+    "mesh-subtle": { "value": "0.12", "type": "opacity", "comment": "ADR-0098 D2 — the mesh tint over a light ground. Low enough that body text over it keeps the ratio measured against the flat ground: the mesh gives the ground extent, it does not become the ground." },
+    "mesh-strong": { "value": "0.5", "type": "opacity", "comment": "ADR-0098 D2 and §8.4 — the mesh tint over the ink ground, where it is one of the two permitted boundary cues and therefore has to be seen." },
+    "scrim-photo": { "value": "0.88", "type": "opacity", "comment": "ADR-0098 D2 — surface-photo-light wash in light theme. Text over it is measured against the composited result, never against the wash colour alone (Chapter 27 §22)." },
+    "scrim-photo-dark": { "value": "0.85", "type": "opacity", "comment": "ADR-0098 D2 — the same wash in dark theme, black instead of white." },
+    "tile-fill": { "value": "0.12", "type": "opacity", "comment": "ADR-0098 D7 — LinkTile fill on a brand surface. White at this alpha over either gradient stays under the white text that sits on it." },
+    "tile-edge": { "value": "0.4", "type": "opacity", "comment": "ADR-0098 D7 — LinkTile edge on a brand surface, which has to clear WCAG 1.4.11 against the gradient lightest stop." }
   },
   "blur": {
     "glass": { "value": "12px", "type": "blur" }

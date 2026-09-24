@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { FOCUS } from "@/components/ui/interactive";
+import { GHOST_PILL } from "./chrome";
 
 /**
  * Share, with the browser's own sheet where there is one.
@@ -67,8 +69,7 @@ export const ShareButton = ({
       <button
         type="button"
         onClick={share}
-        className="inline-flex min-h-11 items-center gap-2 rounded-[var(--vs-radius-pill)] px-5 text-body-sm font-semibold transition-colors duration-[var(--motion-duration-fast)] hover:bg-[rgba(255,255,255,0.06)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--vs-green)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--vs-bg)]"
-        style={{ boxShadow: "inset 0 0 0 1px var(--vs-hairline)", color: "var(--vs-text)" }}
+        className={`${GHOST_PILL} px-5`}
       >
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="18" cy="5.5" r="2.5" />

@@ -7,6 +7,7 @@ import type { AppLocale } from "@/i18n/routing";
 import type { SponsorshipPublic } from "@/lib/api/types";
 import { OrganizationLogo } from "./organization-logo";
 import { OrganizationName } from "./organization-name";
+import { BrandBorder } from "@uaeaf/brand-ui";
 
 /**
  * The sponsors section's banner (ADR-0085 D6): the sponsorship of the highest
@@ -31,6 +32,15 @@ export const SponsorBanner = async ({ sponsorship, locale }: { sponsorship: Spon
   const shown = displayName(sponsor.name, locale);
 
   return (
+    // The official sponsor is the one commercial relationship the homepage
+    // singles out, so it carries the static identity edge (usage matrix §5-D).
+    // `static`, never `hover`: the card is not interactive as a whole.
+    //
+    // The border wraps the `<article>` rather than replacing it. `BrandBorder`
+    // forwards no ARIA — widening it to would make it a second place where an
+    // accessible name can be set — and replacing the element here would have
+    // silently dropped `aria-labelledby`, leaving the banner unnamed.
+    <BrandBorder variant="static" className="rounded-[var(--radius-lg)]">
     <article
       data-sponsor-banner=""
       aria-labelledby={`sponsor-banner-${sponsorship.id}`}
@@ -75,5 +85,6 @@ export const SponsorBanner = async ({ sponsorship, locale }: { sponsorship: Spon
         </div>
       </div>
     </article>
+    </BrandBorder>
   );
 };

@@ -116,7 +116,7 @@ describe("LiveBanner", () => {
 const table = () => within(screen.getByRole("table").closest("div.hidden") as HTMLElement);
 const cards = () => within(screen.getByRole("list", { name: "tableCaption" }));
 
-describe("VideoTable — the table, from `md` up", () => {
+describe("VideoTable — the table, from `xl` up", () => {
   it("names each row's platform in words, not only by its mark", () => {
     // The dashboard shows the word; the public card hides it. An editor
     // scanning a mixed list reads faster than they recognise a monochrome mark.
@@ -215,10 +215,10 @@ describe("VideoTable — the table, from `md` up", () => {
     expect(table().getByText("status_draft")).toBeInTheDocument();
   });
 
-  it("draws the same rows as cards at phone width", () => {
-    // Below `md` a table hides every column after the title behind a sideways
-    // scroll nothing advertises. The card carries the same facts and the same
-    // actions — built from the same parts, so neither layout can drift.
+  it("draws the same rows as cards below `xl`", () => {
+    // A table that does not fit hides every column after the title behind a
+    // sideways scroll nothing advertises. The card carries the same facts and
+    // the same actions — built from the same parts, so neither can drift.
     render(
       <VideoTable
         videos={[video()]}
