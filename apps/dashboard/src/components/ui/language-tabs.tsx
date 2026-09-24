@@ -1,7 +1,8 @@
 "use client";
 
-import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
-import { FOCUS_RING, TRANSITION } from "@/components/ui/interactive";
+import { useId, useState, type KeyboardEvent, type ReactNode } from "react";
+import { Tabs } from "@uaeaf/brand-ui";
+import { FOCUS_RING } from "@/components/ui/interactive";
 
 export interface LanguageTab {
   value: string;
@@ -40,10 +41,29 @@ export interface LanguageTab {
  *
  * The APG tabs pattern: arrows move between tabs, Home and End jump to the
  * ends, and only the selected tab is in the tab order, so Tab from the list
- * goes into the panel rather than along the tabs. The arrows follow the
- * reading direction — in Arabic, ArrowLeft moves forward — because a tab row
- * that moves right when the reader presses left is a control that disagrees
- * with the page it sits in.
+ * goes into the panel rather than along the tabs.
+ *
+ * ── Why the library's `Tabs` is wrapped rather than used bare ──────────────
+ *
+ * The tab row is the shared library's (Chapter 12 §12.15: language switchers
+ * become `Tabs`), so the selected language carries the tricolour rule *and*
+ * `aria-selected`. Three things this component already did are not in the
+ * library's version, and dropping them would be a regression, so they stay
+ * here around it:
+ *
+ * - **Unique ids.** The library derives `tab-<id>` and `panel-<id>` from the
+ *   item id. Two bilingual fields on one form would both produce `tab-ar`, so
+ *   each id is prefixed with this instance's `useId()`.
+ * - **Focus follows selection.** The library moves the selection on an arrow
+ *   press and leaves focus where it was — on a tab that has just left the tab
+ *   order. The newly selected tab takes focus here.
+ * - **Home and End.** Not handled by the library; the key press bubbles out of
+ *   its tablist to the wrapper below.
+ *
+ * The library's arrows do not follow reading direction (ArrowRight is always
+ * "next"). With exactly two languages next and previous are the same tab, so
+ * nothing a reader can press behaves differently here; a third tab would
+ * expose it, and the fix belongs in the library.
  */
 export const LanguageTabs = ({
   tabs,
@@ -59,93 +79,71 @@ export const LanguageTabs = ({
 }) => {
   const base = useId();
   const [active, setActive] = useState(tabs[0]?.value ?? "");
-  const listRef = useRef<HTMLDivElement>(null);
 
-  const tabId = (value: string) => `${base}-tab-${value}`;
-  const panelId = (value: string) => `${base}-panel-${value}`;
+  // The id the library is given; it derives `tab-…` and `panel-…` from it.
+  const itemId = (value: string) => `${base}-${value}`;
+  const valueOf = (id: string) => tabs.find((tab) => itemId(tab.value) === id)?.value;
 
-  const move = (event: KeyboardEvent<HTMLDivElement>) => {
-    const keys = ["ArrowLeft", "ArrowRight", "Home", "End"];
-    if (!keys.includes(event.key)) {
+  const select = (value: string) => {
+    setActive(value);
+    // Selection follows focus, and focus follows selection: the tab the
+    // arrow landed on must actually take the keyboard, or the next arrow
+    // press would be read by whatever held it before.
+    document.getElementById(`tab-${itemId(value)}`)?.focus();
+  };
+
+  const jump = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== "Home" && event.key !== "End") {
       return;
     }
     event.preventDefault();
-
-    const rtl = getComputedStyle(listRef.current ?? document.body).direction === "rtl";
-    const forward = rtl ? "ArrowLeft" : "ArrowRight";
-    const index = tabs.findIndex((tab) => tab.value === active);
-
-    const next =
-      event.key === "Home"
-        ? 0
-        : event.key === "End"
-          ? tabs.length - 1
-          : event.key === forward
-            ? (index + 1) % tabs.length
-            : (index - 1 + tabs.length) % tabs.length;
-
-    const value = tabs[next]?.value;
+    const value = (event.key === "Home" ? tabs[0] : tabs[tabs.length - 1])?.value;
     if (value) {
-      setActive(value);
-      // Selection follows focus, and focus follows selection: the tab the
-      // arrow landed on must actually take the keyboard, or the next arrow
-      // press would be read by whatever held it before.
-      document.getElementById(tabId(value))?.focus();
+      select(value);
     }
   };
 
   return (
     <div className="flex flex-col gap-3">
-      <div
-        ref={listRef}
-        role="tablist"
-        aria-label={label}
-        onKeyDown={move}
-        className="flex flex-wrap items-center gap-1 rounded-[var(--radius-md)] bg-[color:var(--color-surface-sunken)] p-1"
-      >
-        {tabs.map((tab) => {
-          const selected = tab.value === active;
-          return (
-            <button
-              key={tab.value}
-              type="button"
-              id={tabId(tab.value)}
-              role="tab"
-              aria-selected={selected}
-              aria-controls={panelId(tab.value)}
-              // Only the selected tab is reachable by Tab; the arrows move
-              // within the list (APG).
-              tabIndex={selected ? 0 : -1}
-              onClick={() => setActive(tab.value)}
-              className={`inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-sm)] px-4 text-label ${TRANSITION} ${FOCUS_RING} ${
-                selected
-                  ? "bg-[color:var(--color-surface-raised)] font-bold text-[color:var(--color-text-primary)] shadow-card"
-                  : "text-[color:var(--color-text-secondary)] hover:bg-[color:var(--color-surface-raised)] hover:text-[color:var(--color-text-primary)] active:bg-[color:var(--color-surface-skeleton)]"
-              }`}
-            >
-              {tab.label}
-              {/* The dot is the glance; the words beside it are what the fact
-                  actually rests on, so it never depends on colour alone. */}
-              <span
-                aria-hidden="true"
-                className={`size-1.5 shrink-0 rounded-full ${
-                  tab.complete
-                    ? "bg-[color:var(--color-brand-primary)]"
-                    : "bg-[color:var(--color-border-strong)]"
-                }`}
-              />
-              <span className="sr-only">{tab.statusLabel}</span>
-            </button>
-          );
-        })}
+      <div onKeyDown={jump}>
+        <Tabs
+          label={label}
+          activeId={itemId(active)}
+          onSelect={(id) => {
+            const value = valueOf(id);
+            if (value) {
+              select(value);
+            }
+          }}
+          items={tabs.map((tab) => ({
+            id: itemId(tab.value),
+            label: (
+              <>
+                {tab.label}
+                {/* The dot is the glance; the words beside it are what the
+                    fact actually rests on, so it never depends on colour
+                    alone. */}
+                <span
+                  aria-hidden="true"
+                  className={`ms-2 inline-block size-1.5 shrink-0 rounded-full align-middle ${
+                    tab.complete
+                      ? "bg-[color:var(--color-brand-primary)]"
+                      : "bg-[color:var(--color-border-strong)]"
+                  }`}
+                />
+                <span className="sr-only">{tab.statusLabel}</span>
+              </>
+            ),
+          }))}
+        />
       </div>
 
       {tabs.map((tab) => (
         <div
           key={tab.value}
-          id={panelId(tab.value)}
+          id={`panel-${itemId(tab.value)}`}
           role="tabpanel"
-          aria-labelledby={tabId(tab.value)}
+          aria-labelledby={`tab-${itemId(tab.value)}`}
           // `hidden`, not unmounted: an editor holds its document, its history
           // and its selection, and all three would be thrown away on a tab
           // change. `tabIndex={0}` because a panel whose content is not itself

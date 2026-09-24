@@ -23,6 +23,8 @@ import { PermissionMatrixTable } from "./permission-matrix-table";
 import { RoleEditor } from "./role-editor";
 import { PermissionCatalogueLens } from "./permission-catalogue-lens";
 import type { AppLocale } from "@/i18n/routing";
+import { FilterChip, SectionHeading } from "@uaeaf/brand-ui";
+import { Button } from "@/components/ui/button";
 import { SearchField } from "@/components/ui/search-field";
 import { BUTTON_DESTRUCTIVE } from "@/components/ui/interactive";
 
@@ -39,7 +41,7 @@ import { BUTTON_DESTRUCTIVE } from "@/components/ui/interactive";
  * behind one button is what lets the screen state the consequence before it
  * happens rather than after.
  */
-export function RoleWorkbench({
+export const RoleWorkbench = ({
   roles,
   permissions,
   users,
@@ -56,7 +58,7 @@ export function RoleWorkbench({
   users: readonly UserResponse[];
   actorGrants: readonly PermissionGrant[];
   locale: AppLocale;
-}) {
+}) => {
   const t = useTranslations("RolesWorkbench");
   // Copy, not punctuation this component may choose — see status-panel.
   const common = useTranslations("Common");
@@ -145,7 +147,7 @@ export function RoleWorkbench({
     [rows, selection],
   );
 
-  async function save() {
+  const save = async () => {
     if (!role) return;
     setSaving(true);
     setFailureKey(null);
@@ -182,9 +184,9 @@ export function RoleWorkbench({
       setFailureKey("save_serviceUnavailable");
       setSaving(false);
     }
-  }
+  };
 
-  async function archive() {
+  const archive = async () => {
     if (!role) return;
     setArchiving(true);
     setFailureKey(null);
@@ -219,7 +221,7 @@ export function RoleWorkbench({
       setArchiving(false);
       setPanel("matrix");
     }
-  }
+  };
 
   return (
     <div
@@ -235,19 +237,29 @@ export function RoleWorkbench({
         className="rounded-[var(--card-radius)] border border-[color:var(--card-border)] bg-[color:var(--card-background)]"
       >
         <div className="flex items-center gap-3 border-b border-[color:var(--color-border-default)] px-4 py-3">
-          <h2 className="text-title font-bold text-[color:var(--color-text-primary)]">
-            {t("rolesLabel")}
-          </h2>
-          <span className="rounded-[var(--radius-full)] border border-[color:var(--color-border-default)] px-2 text-caption tabular-nums text-[color:var(--color-text-secondary)]">
-            {roles.length}
-          </span>
-          <button
-            type="button"
-            onClick={() => setPanel("create")}
-            className="ms-auto h-9 whitespace-nowrap rounded-[var(--radius-md)] border border-[color:var(--color-brand-primary)] px-3 text-caption font-medium text-[color:var(--color-brand-primary)] transition-colors duration-[var(--motion-duration-fast)] hover:bg-[color:color-mix(in_srgb,var(--color-brand-primary)_8%,var(--color-surface-base))] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-focus-default)] active:bg-[color:var(--color-surface-skeleton)]"
-          >
+          {/* The group's heading is the library's `SectionHeading` (Chapter 12
+            §12.15, settings recipe): the title and the short tricolour rule
+            under it. The library leaves the title's size to the page, so the
+            size this card used before is set on the title itself; `!mb-0`
+            because the library's own bottom margin is for page sections, and
+            this heading sits inside a card that spaces its own rows. */}
+          <SectionHeading
+            className="!mb-0"
+            title={
+              <span className="inline-flex items-center gap-3">
+                <span className="text-title font-bold">{t("rolesLabel")}</span>
+                <span className="rounded-[var(--radius-full)] border border-[color:var(--color-border-default)] px-2 text-caption font-normal tabular-nums text-[color:var(--color-text-secondary)]">
+                  {roles.length}
+                </span>
+              </span>
+            }
+          />
+          {/* The create action is the shared primary button (settings and
+              list recipes). The handler is unchanged: it opens the create
+              panel, and the API still checks the grant on the write. */}
+          <Button variant="primary" className="ms-auto" onClick={() => setPanel("create")}>
             {t("newRole")}
-          </button>
+          </Button>
         </div>
         <RoleList
           roles={roles}
@@ -469,18 +481,13 @@ export function RoleWorkbench({
           onValueChange={setQuery}
           dir="ltr"
         />
-                  <button
-                    type="button"
-                    aria-pressed={rowFilter === "granted"}
-                    onClick={() => setRowFilter(rowFilter === "granted" ? "all" : "granted")}
-                    className={`h-10 rounded-[var(--radius-md)] border px-3 text-label transition-colors duration-[var(--motion-duration-fast)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-focus-default)] ${
-                      rowFilter === "granted"
-                        ? "border-[color:var(--color-brand-primary)] bg-[color:color-mix(in_srgb,var(--color-brand-primary)_10%,var(--color-surface-base))] font-medium text-[color:var(--color-text-primary)]"
-                        : "border-[color:var(--color-border-default)] text-[color:var(--color-text-secondary)] hover:border-[color:var(--color-border-strong)] active:bg-[color:var(--color-surface-skeleton)]"
-                    }`}
-                  >
-                    {t("onlyGranted")}
-                  </button>
+                  {/* The shared filter chip (Chapter 12 §12.15): pressed is a
+                      solid plate *and* `aria-pressed`, never colour alone. */}
+                  <FilterChip
+                    selected={rowFilter === "granted"}
+                    onSelect={() => setRowFilter(rowFilter === "granted" ? "all" : "granted")}
+                    label={t("onlyGranted")}
+                  />
                 </div>
                 ) : null}
 
@@ -565,9 +572,9 @@ export function RoleWorkbench({
       </section>
     </div>
   );
-}
+};
 
-function Fact({ label, value }: { label: string; value: string }) {
+const Fact = ({ label, value }: { label: string; value: string }) => {
   return (
     <div>
       <dt className="text-caption text-[color:var(--color-text-muted)]">{label}</dt>
@@ -576,4 +583,4 @@ function Fact({ label, value }: { label: string; value: string }) {
       </dd>
     </div>
   );
-}
+};

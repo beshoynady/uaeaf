@@ -1,23 +1,23 @@
 import type { CSSProperties } from "react";
-import { AccentRule } from "@/components/ui/accent-rule";
-import { REGISTER_CLASSES, Section } from "@/components/ui/section";
+import { SectionHeading, Surface } from "@uaeaf/brand-ui";
+import { CONTAINER } from "@/components/ui/section";
 import type { AppLocale } from "@/i18n/routing";
 import type { PlanPhasePublic } from "@/lib/api/types";
 import { PlanPhaseIcon } from "@/lib/icons/plan-phase-icons";
 import { planRowLayout, type PlanBreakpoint } from "./row-capacity";
 
 /**
- * The plan's phases (Figma `756:217`, the "Timeline Row"), on the green
- * register as a rail (ADR-0075).
+ * The plan's phases (Figma `756:217`, the "Timeline Row"), as a rail on a
+ * full-bleed brand-green surface (ADR-0075, ADR-0098 D7).
  *
- * - Figma sets four white cards on a black panel with pastel-free green
- *   accents; the register carries the section's identity here (rule 1), the
- *   seams on both sides are register changes (rule 3), and no card grid stands
- *   next to the pillars' (rule 5).
+ * - The green surface carries the section's identity (rule 1), the seams on
+ *   both sides are surface changes (rule 3), and no card grid stands next to
+ *   the pillars' (rule 5).
  * - A rail joins the phases: horizontal through the icons from `lg`, vertical
  *   along the reading-start edge on a phone, absent at `md`, where two columns
- *   share no line. The rail is the band's own border colour (3.29:1 on green;
- *   black on white in high contrast).
+ *   share no line. The rail is the surface's own border colour.
+ * - Everything on the green is its one white tier (ADR-0098 §8.2): the number
+ *   is set apart by size, not by a quieter ink.
  * - From `lg` one column per phase (`--plan-phases`), as the execution path
  *   sets one per step: a phase added in the dashboard stays on the rail's row
  *   instead of wrapping below the line with its chip off it.
@@ -95,67 +95,63 @@ export const PlanPhasesBand = ({
   if (ordered.length === 0) return null;
 
   const titleId = "strategic-plan-phases-title";
-  const green = REGISTER_CLASSES.green;
   // How many the rail holds at each width decides where the row is drawn
   // (`row-capacity.ts`); past that the phases are the phone's list.
   const layout = planRowLayout("phases", ordered.length);
   const shape = layout.rowFrom ? PHASE_ROW[layout.rowFrom] : PHASE_STACKED;
 
   return (
-    <Section register="green" enter={false} labelledBy={titleId} className="py-12 md:py-16 lg:py-24">
-      {title ? (
-        <div data-reveal="">
-          <h2 id={titleId} data-reveal-part="rise" className="flex items-center gap-4 text-h2 text-balance">
-            <AccentRule onRegister />
-            <span data-field="phasesTitle">{title}</span>
+    <Surface kind="brand-green">
+      <div className={`${CONTAINER} py-12 md:py-16 lg:py-24`}>
+        {title ? (
+          <SectionHeading title={<span data-field="phasesTitle">{title}</span>} />
+        ) : (
+          <h2 id={titleId} className="sr-only">
+            {label}
           </h2>
-        </div>
-      ) : (
-        <h2 id={titleId} className="sr-only">
-          {label}
-        </h2>
-      )}
+        )}
 
-      <ol
-        data-field="phases"
-        className={`relative grid gap-8 ${shape.list} ${title ? "mt-8 md:mt-12" : ""}`}
-        style={{ "--plan-phases": ordered.length } as CSSProperties}
-      >
-        {/* The rail: through the chips' centres — 24px from the start edge
-            while the phases stand in a column, 24px from the top once they
-            stand in a row. */}
-        <span
-          aria-hidden="true"
-          data-plan-rail=""
-          className={`pointer-events-none absolute bg-[color:var(--color-section-green-border)] ${shape.rail}`}
-        />
-        {ordered.map((phase, index) => (
-          <li key={phase.id} data-reveal="" className={`relative flex gap-4 ${shape.item}`}>
-            <span
-              data-reveal-part="chip"
-              data-plan-chip=""
-              className={`relative flex size-12 shrink-0 items-center justify-center rounded-full border border-[color:var(--color-section-green-border)] ${green.surface}`}
-            >
-              <PlanPhaseIcon iconKey={phase.iconKey} className="size-6" />
-            </span>
-            <div data-reveal-part="rise" style={revealStep(1)} className={`min-w-0 pt-2 ${shape.body}`}>
+        <ol
+          data-field="phases"
+          className={`relative grid gap-8 ${shape.list}`}
+          style={{ "--plan-phases": ordered.length } as CSSProperties}
+        >
+          {/* The rail: through the chips' centres — 24px from the start edge
+              while the phases stand in a column, 24px from the top once they
+              stand in a row. */}
+          <span
+            aria-hidden="true"
+            data-plan-rail=""
+            className={`pointer-events-none absolute bg-[color:var(--surface-border)] ${shape.rail}`}
+          />
+          {ordered.map((phase, index) => (
+            <li key={phase.id} data-reveal="" className={`relative flex gap-4 ${shape.item}`}>
               <span
-                aria-hidden="true"
-                data-item-number=""
-                className={`block text-display-l tabular-nums ${green.muted}`}
+                data-reveal-part="chip"
+                data-plan-chip=""
+                className="relative flex size-12 shrink-0 items-center justify-center rounded-full border border-[color:var(--surface-border)] bg-[color:var(--color-brand-primary)]"
               >
-                {String(index + 1).padStart(2, "0")}
+                <PlanPhaseIcon iconKey={phase.iconKey} className="size-6" />
               </span>
-              <h3 data-part="title" className="mt-2 text-h3 text-balance">
-                {phase.title[locale]}
-              </h3>
-              <p data-part="description" className={`mt-2 text-body text-pretty ${green.muted}`}>
-                {phase.description[locale]}
-              </p>
-            </div>
-          </li>
-        ))}
-      </ol>
-    </Section>
+              <div data-reveal-part="rise" style={revealStep(1)} className={`min-w-0 pt-2 ${shape.body}`}>
+                <span
+                  aria-hidden="true"
+                  data-item-number=""
+                  className="block text-display-l tabular-nums text-[color:var(--surface-text)]"
+                >
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <h3 data-part="title" className="mt-2 text-h3 text-balance">
+                  {phase.title[locale]}
+                </h3>
+                <p data-part="description" className="mt-2 text-body text-pretty text-[color:var(--surface-text)]">
+                  {phase.description[locale]}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </Surface>
   );
 };

@@ -1,19 +1,24 @@
+import { SectionHeading } from "@uaeaf/brand-ui";
 import { Link } from "@/i18n/navigation";
 import { ChevronIcon } from "@/components/ui/chevron-icon";
 import { FOCUS, TEXT_TARGET } from "@/components/ui/interactive";
-import { revealStep } from "@/lib/motion/reveal";
 
 /**
- * A homepage section's heading as the approved canvas draws it (2026-09-22):
- * the title and its sentence at the start, the way into the full list at the
- * end, both resting on one line. Shared by "Latest news" and "UAEAF in the
- * Media", which the canvas draws the same way.
+ * A homepage section's heading: the title and its sentence at the start, the
+ * way into the full list at the end, both resting on one line. Shared by
+ * "Latest news" and "UAEAF in the Media", which are drawn the same way.
  *
- * No accent rule before the title, unlike `SectionHeading`: the canvas has
- * none, and it is the reference for these two sections.
+ * Built on the kit's `SectionHeading` (ADR-0098), so the tricolour rule under
+ * the title and the on-surface text colours come from the library rather than
+ * from classes written here — the heading reads correctly on the canvas and on
+ * the photographic ground alike.
  *
- * Its parts are the first two steps of the section's reveal: the title, then
- * its sentence and the link together.
+ * `SectionHeading` takes no `id`, and the section's landmark is named by
+ * `aria-labelledby`. The id therefore goes on a span that wraps the title
+ * inside the `h2`: the computed name is the same words, and no second heading
+ * element is introduced to hold an attribute.
+ *
+ * The whole heading is the section's first reveal step; the link rides with it.
  */
 export const HomeSectionHeader = ({
   id,
@@ -26,28 +31,23 @@ export const HomeSectionHeader = ({
   subtitle: string | null;
   link: { href: string; label: string; ariaLabel?: string };
 }) => (
-  <div className="flex flex-wrap items-end justify-between gap-6">
-    <div className="max-w-[640px]">
-      <h2 id={id} data-reveal-part="rise" className="text-h2 text-balance text-[color:var(--color-text-primary)]">
-        {title}
-      </h2>
-      {subtitle ? (
-        <p data-reveal-part="rise" style={revealStep(1)} className="mt-2.5 text-body text-pretty text-[color:var(--color-text-secondary)]">
-          {subtitle}
-        </p>
-      ) : null}
-    </div>
-    <Link
-      href={link.href}
-      aria-label={link.ariaLabel}
-      data-reveal-part="rise"
-      style={revealStep(1)}
-      // The gap opens on hover, as drawn: the arrow leans toward where the
-      // link goes.
-      className={`${TEXT_TARGET} ${FOCUS} inline-flex items-center gap-1.5 rounded-xs text-body font-bold text-[color:var(--color-text-link)] transition-[gap] duration-[var(--motion-duration-fast)] ease-[var(--motion-easing-standard)] hover:gap-2.5`}
-    >
-      {link.label}
-      <ChevronIcon direction="forward" />
-    </Link>
+  <div data-reveal-part="rise">
+    <SectionHeading
+      title={<span id={id}>{title}</span>}
+      // `undefined`, not `null`: the kit draws its paragraph for anything that
+      // is not `undefined`, and an empty paragraph is a gap in the rhythm.
+      description={subtitle ?? undefined}
+      action={
+        <Link
+          href={link.href}
+          aria-label={link.ariaLabel}
+          // The gap opens on hover: the arrow leans toward where the link goes.
+          className={`${TEXT_TARGET} ${FOCUS} inline-flex items-center gap-1.5 rounded-xs text-body font-bold text-[color:var(--surface-link)] transition-[gap] duration-[var(--motion-duration-fast)] ease-[var(--motion-easing-standard)] hover:gap-2.5`}
+        >
+          {link.label}
+          <ChevronIcon direction="forward" />
+        </Link>
+      }
+    />
   </div>
 );

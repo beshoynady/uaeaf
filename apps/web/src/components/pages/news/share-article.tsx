@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { BADGE, CARD } from "@/components/ui/surface";
-import { FOCUS } from "@/components/ui/interactive";
+import { Button } from "@uaeaf/brand-ui";
+import { CARD } from "@/components/ui/surface";
 import { SHARE_TARGETS, shareHref, type ShareTarget } from "@/lib/news/share-targets";
 
 /**
@@ -35,6 +35,11 @@ import { SHARE_TARGETS, shareHref, type ShareTarget } from "@/lib/news/share-tar
  * half do not reads as unfinished, so all five carry their label at the
  * design's own size, geometry and colour, and the marks are recorded as
  * PENDING FIGMA BACK-SYNC rather than drawn from memory.
+ *
+ * That is also why these are the kit's labelled `Button` (secondary) and not
+ * its `IconButton` (ADR-0098): an icon-only control needs the mark, and three
+ * of the five have none. When the marks exist, the row becomes `IconButton`s
+ * with the platform's name as the required `aria-label`.
  *
  * ── Why the dialog is a `dialog` ───────────────────────────────────────────
  *
@@ -109,13 +114,9 @@ export const ShareArticle = ({
       <ul className="flex list-none flex-wrap gap-2 p-0">
         {SHARE_TARGETS.map((target) => (
           <li key={target}>
-            <button
-              type="button"
-              onClick={() => setChosen(target)}
-              className={`${BADGE} min-h-11 border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)] px-4 font-medium text-[color:var(--color-text-secondary)] transition-colors duration-[var(--motion-duration-instant)] hover:border-[color:var(--color-action-default)] active:border-[color:var(--color-action-default)] hover:text-[color:var(--color-text-primary)] active:text-[color:var(--color-text-primary)] ${FOCUS}`}
-            >
+            <Button variant="secondary" onClick={() => setChosen(target)}>
               {t(`share_${target}`)}
-            </button>
+            </Button>
           </li>
         ))}
       </ul>
@@ -126,7 +127,9 @@ export const ShareArticle = ({
         aria-labelledby="share-preview-heading"
         className="m-auto w-[min(30rem,calc(100vw-2rem))] bg-transparent p-0 backdrop:bg-[color:var(--color-surface-overlay)]/60"
       >
-        <div className={`${CARD} flex flex-col gap-4 p-6 text-start`}>
+        {/* `raised`: the dialog sits in the top layer, outside every section,
+            so the plate declares its own ground for the kit buttons in it. */}
+        <div data-surface="raised" className={`${CARD} flex flex-col gap-4 p-6 text-start`}>
           <h2 id="share-preview-heading" className="text-h4 text-[color:var(--color-text-primary)]">
             {chosen ? t("sharePreviewHeading", { platform: t(`share_${chosen}`) }) : ""}
           </h2>
@@ -148,13 +151,9 @@ export const ShareArticle = ({
           </div>
 
           <div className="flex flex-wrap justify-end gap-3">
-            <button
-              type="button"
-              onClick={dismiss}
-              className={`${BADGE} min-h-11 border-[color:var(--color-border-strong)] px-4 text-[color:var(--color-text-secondary)] ${FOCUS}`}
-            >
+            <Button variant="ghost" onClick={dismiss}>
               {t("shareCancel")}
-            </button>
+            </Button>
 
             {copied ? (
               // The confirmation takes the button's place rather than sitting
@@ -163,13 +162,9 @@ export const ShareArticle = ({
                 {t("shareCopied")}
               </p>
             ) : (
-              <button
-                type="button"
-                onClick={() => void confirm()}
-                className={`${BADGE} min-h-11 border-transparent bg-[color:var(--color-brand-primary)] px-4 text-[color:var(--color-text-on-brand)] ${FOCUS}`}
-              >
+              <Button variant="primary" onClick={() => void confirm()}>
                 {chosen === "copy" ? t("shareCopyAction") : t("shareOpenAction")}
-              </button>
+              </Button>
             )}
           </div>
         </div>

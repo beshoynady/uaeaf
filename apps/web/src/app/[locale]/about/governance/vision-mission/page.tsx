@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { PageHero } from "@uaeaf/brand-ui";
 import { RevealOnce } from "@/components/pages/president/reveal-once";
 import { ValuesBand } from "@/components/pages/president/values-band";
 import { StrategicGoals } from "@/components/pages/vision-mission/goals";
 import { VisionMissionStatements } from "@/components/pages/vision-mission/statements";
 import { StrategyCta } from "@/components/pages/vision-mission/strategy-cta";
 import type { Crumb } from "@/components/ui/breadcrumb";
-import { IdentityHero } from "@/components/ui/identity-hero";
 import type { AppLocale } from "@/i18n/routing";
 import { fetchPublic } from "@/lib/api/public-client";
 import type { VisionMissionPublic } from "@/lib/api/types";
@@ -24,7 +24,10 @@ import { buildMetadata } from "@/lib/seo/metadata";
  * empty hero, and stays out of the index and the sitemap (`indexability.ts`).
  *
  * The order is the frames' (Figma `720:483`, `1507:2495`): the hero, the two
- * statements, the goals, the values, the call to the strategic plan.
+ * statements, the goals, the values, the call to the strategic plan. Every
+ * section is a `@uaeaf/brand-ui` surface (ADR-0098 D7 institutional recipe):
+ * ink hero, canvas statements and goals, the green values band, and the red
+ * call inset as a card so it never abuts the green.
  */
 
 /** Rendered per request, as the contact page is and for its reason: a build
@@ -93,11 +96,13 @@ const VisionMissionPage = async ({ params }: { params: Promise<{ locale: AppLoca
 
   const nav = await getTranslations({ locale, namespace: "Nav" });
   const copy = await getTranslations({ locale, namespace: "VisionMission" });
+  const pages = await getTranslations({ locale, namespace: "Pages" });
   const { title, description } = await describe(record, locale);
 
-  // IA §8.1: Home / About / Governance & Strategy / the page, in the structured
-  // data only: an institutional page shows no trail (owner decision 2026-09-15,
-  // ADR-0072 D7), and the header's menu carries the place.
+  // IA §8.1: Home / About / Governance & Strategy / the page. The structured
+  // data carries all four; the kit's hero shows the ones that are places a
+  // reader can go, since "Governance & Strategy" has no page of its own and a
+  // crumb without a link would read as the current page.
   const trail: Crumb[] = [
     { name: nav("home"), route: "/" },
     { name: nav("about"), route: null },
@@ -117,29 +122,24 @@ const VisionMissionPage = async ({ params }: { params: Promise<{ locale: AppLoca
         trail={trail.filter((crumb): crumb is { name: string; route: string } => crumb.route !== null)}
       />
 
-      <IdentityHero
-        titleId="vision-mission-hero-title"
+      <PageHero
         title={record.heroTitle[locale]}
-        subtitle={record.heroSubtitle[locale]}
-        subtitleField="heroSubtitle"
-        ground={record.heroImage}
-        locale={locale}
+        description={<span data-field="heroSubtitle">{record.heroSubtitle[locale]}</span>}
+        breadcrumb={[
+          { label: nav("home"), href: `/${locale}` },
+          { label: nav("about"), href: `/${locale}/about` },
+          { label: nav("visionMission") },
+        ]}
+        breadcrumbLabel={pages("breadcrumbLabel")}
       />
       <VisionMissionStatements record={record} locale={locale} />
       <StrategicGoals record={record} locale={locale} />
-      {/* The values on the green register and the call after them on the page's
-          ground, as the President's Message sets them: the base and sunken
-          grounds alone do not show the seam after the goals, and a second card
-          grid on a neutral ground reads as one set with the goals (owner
-          decision, closing brief M2; ADR-0074 D2). */}
       <ValuesBand
         record={{ values: record.coreValues, valuesTitle: { ar: valuesLabel, en: valuesLabel } }}
         locale={locale}
-        titleId="vision-mission-values-title"
         field="coreValues"
-        register="green"
       />
-      <StrategyCta locale={locale} register="neutral" ground={record.ctaImage} />
+      <StrategyCta locale={locale} />
       <RevealOnce />
     </>
   );

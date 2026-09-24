@@ -10,6 +10,7 @@ import { CreateUserForm, type PersonOption } from "./create-user-form";
 import type { AppLocale } from "@/i18n/routing";
 import { SearchField } from "@/components/ui/search-field";
 import { SelectField } from "@/components/ui/select-field";
+import { Button } from "@/components/ui/button";
 
 type StatusFilter = "all" | "Active" | "Suspended" | "Deactivated";
 
@@ -28,7 +29,7 @@ type StatusFilter = "all" | "Active" | "Suspended" | "Deactivated";
  * Role editing is an inline panel under the row, not a modal. The row stays
  * visible while its roles change, and there is no focus trap to get wrong.
  */
-export function UserDirectory({
+export const UserDirectory = ({
   users,
   roles,
   actorUserId,
@@ -51,7 +52,7 @@ export function UserDirectory({
    *  the picker with a reason rather than showing an empty one. */
   people: readonly PersonOption[] | null;
   locale: AppLocale;
-}) {
+}) => {
   const t = useTranslations("UsersDirectory");
   const statuses = useTranslations("AccountStatus");
   const common = useTranslations("Common");
@@ -130,14 +131,16 @@ export function UserDirectory({
         </p>
 
         {canCreate ? (
-          <button
-            type="button"
+          // The shared button (list recipe): "new user" is the screen's create
+          // action and so primary; once the form is open the same control
+          // reads "close", which is a secondary action and drawn as one.
+          <Button
+            variant={creating ? "secondary" : "primary"}
             onClick={() => setCreating((open) => !open)}
             aria-expanded={creating}
-            className="h-10 whitespace-nowrap rounded-[var(--radius-md)] border border-[color:var(--color-brand-primary)] px-4 text-label font-medium text-[color:var(--color-brand-primary)] transition-colors duration-[var(--motion-duration-fast)] hover:bg-[color:color-mix(in_srgb,var(--color-brand-primary)_8%,var(--color-surface-base))] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-focus-default)] active:bg-[color:var(--color-surface-skeleton)]"
           >
             {creating ? t("closeEditor") : t("newUser")}
-          </button>
+          </Button>
         ) : null}
       </div>
 
@@ -285,9 +288,9 @@ export function UserDirectory({
       ) : null}
     </div>
   );
-}
+};
 
-function RoleChips({
+const RoleChips = ({
   roleIds,
   roleById,
   locale,
@@ -299,7 +302,7 @@ function RoleChips({
   locale: AppLocale;
   emptyLabel: string;
   staleLabel: string;
-}) {
+}) => {
   if (roleIds.length === 0) {
     return <span className="text-caption text-[color:var(--color-text-muted)]">{emptyLabel}</span>;
   }
@@ -326,7 +329,7 @@ function RoleChips({
       })}
     </span>
   );
-}
+};
 
 const STATUS_RULE: Record<UserResponse["accountStatus"], string> = {
   Active: "var(--color-semantic-success)",
@@ -334,13 +337,13 @@ const STATUS_RULE: Record<UserResponse["accountStatus"], string> = {
   Deactivated: "var(--color-text-disabled)",
 };
 
-function StatusPill({
+const StatusPill = ({
   status,
   label,
 }: {
   status: UserResponse["accountStatus"];
   label: string;
-}) {
+}) => {
   return (
     <span className="flex items-center gap-2 whitespace-nowrap text-body-sm text-[color:var(--color-text-primary)]">
       {/* A dot, with the word beside it. Colour alone would fail Chapter 6
@@ -353,5 +356,5 @@ function StatusPill({
       {label}
     </span>
   );
-}
+};
 

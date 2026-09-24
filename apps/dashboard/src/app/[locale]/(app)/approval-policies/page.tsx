@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { PageHeader } from "@/components/ui/page-header";
+import { BrandGround } from "@/components/ui/brand-ground";
 import { AccessDenied } from "@/components/ui/access-denied";
 import { PolicyBoard } from "@/components/admin/news/policy-board";
 import { loadApprovalPolicies } from "@/lib/admin/newsroom-screen";
@@ -28,18 +29,18 @@ const PoliciesPage = async ({ params }: { params: Promise<{ locale: string }> })
 
   if (screen.status !== "ready") {
     return (
-      <>
+      <BrandGround>
         {header}
         <AccessDenied title={common("accessDeniedTitle")} message={common("accessDenied")} />
-      </>
+      </BrandGround>
     );
   }
 
   return (
-    <>
+    <BrandGround>
       {header}
       <PolicyBoard entities={screen.data.entities} approvers={screen.data.approvers} locale={locale} />
-    </>
+    </BrandGround>
   );
 };
 

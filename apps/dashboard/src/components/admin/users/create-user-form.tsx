@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { SectionHeading } from "@uaeaf/brand-ui";
 import { localized, type LocalizedText, type RoleResponse } from "@/lib/api/types";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth/password-strength";
 import { toggleSelection } from "@/lib/admin/permission-matrix";
@@ -35,7 +36,7 @@ export interface PersonOption {
  * this screen, and it is never shown again. That is what the hint says,
  * because discovering it afterwards means resetting the account.
  */
-export function CreateUserForm({
+export const CreateUserForm = ({
   roles,
   people,
   locale,
@@ -51,7 +52,7 @@ export function CreateUserForm({
   locale: AppLocale;
   onDone: () => void;
   onCancel: () => void;
-}) {
+}) => {
   const t = useTranslations("UsersDirectory");
   const errors = useTranslations("WriteErrors");
   const router = useRouter();
@@ -66,7 +67,7 @@ export function CreateUserForm({
   const [saving, setSaving] = useState(false);
   const [errorKey, setErrorKey] = useState<string | null>(null);
 
-  async function submit() {
+  const submit = async () => {
     if (nameAr.trim().length === 0 || nameEn.trim().length === 0) {
       setErrorKey("nameRequired");
       return;
@@ -114,7 +115,7 @@ export function CreateUserForm({
       setErrorKey("serviceUnavailable");
       setSaving(false);
     }
-  }
+  };
 
   return (
     // POST, and not HTML's default GET. React attaches `onSubmit` at
@@ -134,9 +135,16 @@ export function CreateUserForm({
       }}
       className="flex flex-col gap-6 rounded-[var(--card-radius)] border border-[color:var(--card-border)] bg-[color:var(--card-background)] px-5 py-5"
     >
-      <h2 className="text-title font-bold text-[color:var(--color-text-primary)]">
-        {t("formCreateTitle")}
-      </h2>
+      {/* The group's heading is the library's `SectionHeading` (Chapter 12
+        §12.15, settings recipe): the title and the short tricolour rule
+        under it. The library leaves the title's size to the page, so the
+        size this card used before is set on the title itself; `!mb-0`
+        because the library's own bottom margin is for page sections, and
+        this heading sits inside a card that spaces its own rows. */}
+      <SectionHeading
+        className="!mb-0"
+        title={<span className="text-title font-bold">{t("formCreateTitle")}</span>}
+      />
 
       {errorKey ? (
         <StatusMessage tone="error" title={t("createFailedTitle")}>
@@ -277,4 +285,4 @@ export function CreateUserForm({
       </div>
     </form>
   );
-}
+};

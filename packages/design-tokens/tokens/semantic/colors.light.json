@@ -575,6 +575,21 @@
         "divider": {
           "value": "{color.neutral-warm.700}",
           "type": "color"
+        },
+        "accent": {
+          "value": "{color.green.300}",
+          "type": "color",
+          "comment": "ADR-0098 §8c — the green ink tier on ink. 6.90:1 against #0B0B0B, where the kit's own green (green.500) measures 4.09:1: a fine boundary, not readable text. Closes the gap `video-card.tsx` had recorded in a comment"
+        },
+        "raised": {
+          "value": "#1A1A1A",
+          "type": "color",
+          "comment": "ADR-0098 §8c — the raised step on ink, white at 6% over #0B0B0B resolved once. Carries all three ink tiers: 17.40:1, 11.60:1, 6.10:1. It measures 1.13:1 against the ink ground itself, so it is a fill and never a boundary — a card using it takes `border` (6.44:1) for its edge"
+        },
+        "raised-strong": {
+          "value": "#232323",
+          "type": "color",
+          "comment": "ADR-0098 §8c — the step above `raised`, white at 10%. 15.72:1, 10.47:1, 5.51:1. 1.25:1 against ink, so the same edge rule applies"
         }
       }
     },
@@ -609,32 +624,4 @@
       "value": "{elevation.2}",
       "type": "boxShadow"
     },
-    "modal": {
-      "value": "{elevation.4}",
-      "type": "boxShadow"
-    }
-  },
-  "a11y": {
-    "focus": {
-      "ring": {
-        "value": "{color.focus.default}",
-        "type": "color",
-        "comment": "ADR-0051 — repointed from {color.brand.primary} per Brand Guide v1.0 §9"
-      },
-      "ring-width": {
-        "value": "2px",
-        "type": "borderWidth"
-      },
-      "offset": {
-        "value": "{color.focus.offset}",
-        "type": "color",
-        "comment": "ADR-0051 — new"
-      },
-      "offset-width": {
-        "value": "2px",
-        "type": "borderWidth",
-        "comment": "ADR-0051 — new"
-      }
-    }
-  }
-}
+    "moda

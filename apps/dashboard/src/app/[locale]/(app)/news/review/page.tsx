@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { PageHeader } from "@/components/ui/page-header";
+import { BrandGround } from "@/components/ui/brand-ground";
 import { AccessDenied } from "@/components/ui/access-denied";
 import { ReviewBoard } from "@/components/admin/news/review-board";
 import { loadReviewQueue } from "@/lib/admin/newsroom-screen";
@@ -12,7 +13,7 @@ import { resolveLocale } from "@/i18n/params";
  * identity from their token and takes no user parameter, so no screen — this
  * one included — can ask for somebody else's worklist.
  */
-export default async function ReviewPage({ params }: { params: Promise<{ locale: string }> }) {
+const ReviewPage = async ({ params }: { params: Promise<{ locale: string }> }) => {
   const locale = await resolveLocale(params);
   setRequestLocale(locale);
 
@@ -24,10 +25,10 @@ export default async function ReviewPage({ params }: { params: Promise<{ locale:
 
   if (screen.status !== "ready") {
     return (
-      <>
+      <BrandGround>
         {header}
         <AccessDenied title={common("accessDeniedTitle")} message={common("accessDenied")} />
-      </>
+      </BrandGround>
     );
   }
 
@@ -41,9 +42,11 @@ export default async function ReviewPage({ params }: { params: Promise<{ locale:
   });
 
   return (
-    <>
+    <BrandGround>
       {header}
       <ReviewBoard items={items} locale={locale} />
-    </>
+    </BrandGround>
   );
-}
+};
+
+export default ReviewPage;

@@ -1,4 +1,6 @@
 import { useTranslations } from "next-intl";
+import { BrandStreaks, SectionHeading, Surface } from "@uaeaf/brand-ui";
+import { coverScrim, coverScrimFade } from "@uaeaf/content/hero";
 import { Link } from "@/i18n/navigation";
 import { RichText } from "@/components/rich-text/rich-text";
 import { NewsCard } from "./news-card";
@@ -32,6 +34,19 @@ import type { AppLocale } from "@/i18n/routing";
  * here with a descendant variant rather than changed in the shared renderer —
  * the pattern the dashboard's own editor already uses. Nothing about the other
  * page changes.
+ *
+ * ── The hero: the article's own picture ─────────────────────────────────────
+ *
+ * The cover is the ground the headline stands on (ADR-0098, detail recipe),
+ * in the treatment the newsroom's cover story already uses: the picture, a
+ * spacer holding the frame open at its ratio as a floor, and the words on the
+ * measured `coverScrim` that hugs the text block — every glyph on at least
+ * `COVER_SCRIM_MIN`% of the overlay token however the headline wraps
+ * (`cover-scrim.spec.ts`). The motif sits in the far corner over the picture.
+ * The topic chip keeps its own `color.topic.*` ground, which carries it on any
+ * photograph. The picture keeps its alt text and its caption below the frame,
+ * and the round-up's source line moves out from under the wash to directly
+ * beneath it, where its own colours were measured.
  *
  * ── The foot of the article ────────────────────────────────────────────────
  *
@@ -72,44 +87,8 @@ export const ArticleScreen = ({
   return (
     <div className="flex flex-col gap-10 md:gap-14">
       <article className="mx-auto flex w-full max-w-[72ch] flex-col gap-6">
-        <header className="flex flex-col items-start gap-4">
-          <TopicBadge topic={article.topic} />
-
-          <h1 className="text-h1 text-balance text-[color:var(--color-text-primary)]">
-            {article.title[locale]}
-          </h1>
-
-          {/* No standing excerpt here. The editor generates `excerpt` from the
-              article's opening paragraph, so on this page it read as the first
-              paragraph printed twice — once in the secondary tier and again in
-              the body a few lines below. It still carries the article
-              everywhere it summarises something the reader cannot see: the
-              listing cards, the share preview and the metadata description. */}
-
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-caption text-[color:var(--color-text-secondary)]">
-            <span>
-              {t("byline")} {article.authorDisplayName[locale]}
-            </span>
-            {article.publishDate ? (
-              <>
-                <span aria-hidden>•</span>
-                <PublishDate date={article.publishDate} />
-              </>
-            ) : null}
-          </div>
-
-          {/* Where a media round-up came from, before the reader starts on the
-              words. A `FederationInMedia` article is the federation reporting
-              that somebody else published something, and shown without its
-              source it is indistinguishable from the newsroom's own writing —
-              which is a provenance claim, not a styling detail. Nothing at all
-              on an ordinary article, and nothing on a round-up written before
-              the fields existed. */}
-          <SourceBlock article={article} />
-        </header>
-
         <figure className="m-0 flex flex-col gap-2">
-          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[var(--radius-md)]">
+          <header className="relative isolate grid overflow-hidden rounded-[var(--radius-md)]">
             <ArticleCover
               article={article}
               cover={cover}
@@ -118,13 +97,71 @@ export const ArticleScreen = ({
               // The article's own picture is its Largest Contentful Paint.
               priority
             />
-          </div>
+
+            {/* Nothing but a height: the frame's ratio as a floor, overtaken
+                by the panel when a long headline needs more. */}
+            <div aria-hidden="true" className="col-start-1 row-start-1 aspect-[16/9] w-full" />
+
+            {/* The motif over the picture, away from the words at the foot.
+                The inner element publishes the ink ground's white, which is
+                the ink the words below use; the outer one positions, because
+                `[data-surface]` sets `position: relative` outside Tailwind's
+                layer and would beat `absolute` on the same node. */}
+            <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+              <div data-surface="ink" className="h-full">
+                <BrandStreaks placement="corner" />
+              </div>
+            </div>
+
+            <div
+              className="relative col-start-1 row-start-1 flex flex-col items-start gap-4 self-end p-6 md:p-8"
+              style={{ backgroundImage: coverScrim() }}
+            >
+              {/* The panel's upper edge, carried out to nothing. Decorative
+                  only: no text stands here. */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 bottom-full h-24"
+                style={{ backgroundImage: coverScrimFade() }}
+              />
+
+              <TopicBadge topic={article.topic} />
+
+              <h1 className="text-h1 text-balance text-[color:var(--color-text-on-brand)]">
+                {article.title[locale]}
+              </h1>
+
+              {/* No standing excerpt here. The editor generates `excerpt` from
+                  the article's opening paragraph, so on this page it read as
+                  the first paragraph printed twice. It still carries the
+                  article everywhere it summarises something the reader cannot
+                  see: the listing cards, the share preview and the metadata. */}
+
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-caption text-[color:var(--color-text-on-brand)]">
+                <span>
+                  {t("byline")} {article.authorDisplayName[locale]}
+                </span>
+                {article.publishDate ? (
+                  <>
+                    <span aria-hidden>•</span>
+                    <PublishDate date={article.publishDate} />
+                  </>
+                ) : null}
+              </div>
+            </div>
+          </header>
           {cover?.altText?.[locale] ? (
             <figcaption className="text-caption text-[color:var(--color-text-secondary)]">
               {cover.altText[locale]}
             </figcaption>
           ) : null}
         </figure>
+
+        {/* Where a media round-up came from, before the reader starts on the
+            words. A `FederationInMedia` article shown without its source is
+            indistinguishable from the newsroom's own writing — a provenance
+            claim, not a styling detail. Nothing on an ordinary article. */}
+        <SourceBlock article={article} />
 
         {/* The measure, the rhythm between blocks and the quote's treatment
             belong to the page that places the text, not to the text. */}
@@ -158,23 +195,27 @@ export const ArticleScreen = ({
       </article>
 
       {related.length > 0 ? (
-        <section aria-labelledby="news-related" className="flex flex-col gap-5">
-          <h2 id="news-related" className="text-h3 text-[color:var(--color-text-primary)]">
-            {t("relatedHeading")}
-          </h2>
-          <ul className="grid list-none gap-5 p-0 sm:grid-cols-2 lg:grid-cols-4">
-            {related.map((item) => (
-              <li key={item.id} className="relative flex">
-                <NewsCard
-                  article={item}
-                  locale={locale}
-                  cover={item.coverMediaId ? covers.get(item.coverMediaId) : undefined}
-                  className="w-full"
-                />
-              </li>
-            ))}
-          </ul>
-        </section>
+        // The canvas with its mesh (ADR-0098 §5-D): the related row reads as
+        // the page's next region rather than as more of the article.
+        <Surface kind="canvas" mesh as="div" className="py-10 md:py-12">
+          <section aria-labelledby="news-related" className="flex flex-col gap-5">
+            {/* The kit's heading takes no `id`; the span names the region with
+                the same words. */}
+            <SectionHeading title={<span id="news-related">{t("relatedHeading")}</span>} />
+            <ul className="grid list-none gap-5 p-0 sm:grid-cols-2 lg:grid-cols-4">
+              {related.map((item) => (
+                <li key={item.id} className="relative flex">
+                  <NewsCard
+                    article={item}
+                    locale={locale}
+                    cover={item.coverMediaId ? covers.get(item.coverMediaId) : undefined}
+                    className="w-full"
+                  />
+                </li>
+              ))}
+            </ul>
+          </section>
+        </Surface>
       ) : null}
     </div>
   );

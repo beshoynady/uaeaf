@@ -118,12 +118,27 @@ export const SectionRail = ({
         return (
           <li
             key={entry.key}
-            className={`flex items-center gap-2 rounded-[var(--radius-md)] border px-3 py-2 transition-colors duration-[var(--motion-duration-fast)] ${
-              active
-                ? "border-[color:var(--color-brand-primary)] bg-[color-mix(in_srgb,var(--color-brand-primary)_8%,transparent)]"
-                : "border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)]"
+            className={`relative flex items-center gap-2 overflow-hidden rounded-[var(--radius-md)] border bg-[color:var(--color-surface-raised)] px-3 py-2 transition-colors duration-[var(--motion-duration-fast)] ${
+              active ? "border-[color:var(--color-border-strong)]" : "border-[color:var(--color-border-default)]"
             }`}
           >
+            {/*
+              The active section's tricolour edge on the inline-start side —
+              the same indicator the sidebar's active item carries (Chapter 12
+              §12.15.2), drawn with the block-axis ramp because a vertical edge
+              painted with the inline ramp shows only its green end.
+
+              It replaces a green tint under the row, which was a coloured
+              ground beneath a switch (§12.15.1 item 2). The edge is not the
+              only cue: `aria-current="page"` stays on the link, and the
+              row's border steps up to the strong neutral.
+            */}
+            {active ? (
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute start-0 w-[var(--border-width-thick)] bg-[image:var(--brand-tricolor-block)] [inset-block:0]"
+              />
+            ) : null}
             <span className={`flex min-w-0 flex-1 items-center gap-2 ${enabled ? "" : "opacity-70"}`}>
               {entry.href ? (
                 <Link

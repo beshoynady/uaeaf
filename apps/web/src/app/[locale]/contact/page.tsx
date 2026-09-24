@@ -1,18 +1,20 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { BrandBorder } from "@uaeaf/brand-ui";
 import {
   buildStaticPageMetadata,
   loadStaticPage,
   text,
 } from "@/components/pages/static-page-screen";
 import { ContactHero } from "@/components/pages/contact/contact-hero";
-import { ContactForm, type MessageTypeOption } from "@/components/pages/contact/contact-form";
+import { ContactForm } from "@/components/pages/contact/contact-form";
 import { ContactMap } from "@/components/pages/contact/contact-map";
 import { ContactSocial } from "@/components/pages/contact/contact-social";
+import { addressLinesOf, messageTypesOf, schemaAddress } from "@/components/pages/contact/contact-record";
 import { PANEL_ROW, PANEL_TALL } from "@/components/ui/surface";
 import { ContactPageJsonLd } from "@/lib/seo/json-ld";
 import { fetchPublicMedia } from "@/lib/api/media";
-import { CONTACT_MESSAGE_TYPES, type ContactUsPage, type PostalAddress } from "@/lib/api/types";
+import type { ContactUsPage } from "@/lib/api/types";
 import { findPublicPage } from "@/lib/pages/public-pages";
 import { isIndexable } from "@/lib/pages/indexability";
 import type { AppLocale } from "@/i18n/routing";
@@ -20,49 +22,15 @@ import type { AppLocale } from "@/i18n/routing";
 const KEY = "contact-us";
 
 /**
- * Rendered per request, never prerendered.
- *
- * `fetchPublic` resolves every failure to `null` on purpose, so the site
- * still serves when the API is restarting. This page then puts its whole
- * body behind `{record ? … : null}`. Those two decisions are each correct
- * and together they were a trap: Next prerenders a route like this at build
- * time, so a build that could not reach the API baked a page of a header,
- * four empty cards and a footer into `.next` — and `next start` served that
- * to the first visitor after every deploy, repairing it silently on the
- * second request. On a CI machine with no API, that is every deploy.
- *
- * The fetch layer cannot fix it, because it cannot tell the two events
- * apart: rendering without data is right at request time and wrong at build
- * time. Removing the build-time prerender is what makes the bad state
- * unreachable rather than merely unlikely.
+ * Rendered per request, never prerendered: `fetchPublic` resolves every failure
+ * to `null`, and a build that could not reach the API once baked a page of
+ * four empty cards into `.next`, served to the first visitor after each deploy.
  */
 export const dynamic = "force-dynamic";
 
-/**
- * ...but the data is still cached.
- *
- * `force-dynamic` alone defaults `fetchCache` to no-store, which would put
- * an uncached API round trip in front of every visitor and fail the Core Web
- * Vitals requirement in Chapter 14 §7 — trading a rare empty page for a
- * permanently slower one. Restoring the default keeps `fetchPublic`'s own
- * `revalidate` window in force, so the API is consulted once per window and
- * the page is composed fresh for everyone. Cache the data, not the page.
- */
+/** ...with the data still cached for `fetchPublic`'s window (Chapter 14 §7):
+ *  cache the data, not the page. */
 export const fetchCache = "default-cache";
-
-/** The eight parts in the order they are written on an envelope in the UAE —
- *  the same order and the same names the admin form uses, so what an editor
- *  typed into a labelled field appears in the position that label implied. */
-const ADDRESS_PARTS: readonly (keyof PostalAddress)[] = [
-  "building",
-  "street",
-  "area",
-  "city",
-  "emirate",
-  "country",
-  "poBox",
-  "postalCode",
-];
 
 export const generateMetadata = async ({
   params,
@@ -91,25 +59,8 @@ const ContactPage = async ({ params }: { params: Promise<{ locale: AppLocale }> 
     ...(record?.socialLinks ?? []).map((link) => link.iconId),
   ]);
 
-  const addressLines = record?.address
-    ? ADDRESS_PARTS.map((part) => record.address?.[part]).filter(
-        (value): value is string => Boolean(value && value.trim()),
-      )
-    : [];
-
-  // An option the editor has not labelled still needs a name, or the select
-  // shows a blank row; a label carrying a value outside the four the API
-  // accepts is dropped rather than offered, because submitting it would fail
-  // validation upstream.
-  const labelled = new Map(
-    (record?.form?.messageTypeLabels ?? [])
-      .filter((entry) => (CONTACT_MESSAGE_TYPES as readonly string[]).includes(entry.value))
-      .map((entry) => [entry.value, text(entry.label, locale)] as const),
-  );
-  const messageTypes: MessageTypeOption[] = CONTACT_MESSAGE_TYPES.map((value) => ({
-    value,
-    label: labelled.get(value) ?? t(`messageTypes.${value}`),
-  }));
+  const addressLines = addressLinesOf(record);
+  const messageTypes = messageTypesOf(record, locale, (value) => t(`messageTypes.${value}`));
 
   const titleId = `page-title-${page.key}`;
 
@@ -135,57 +86,54 @@ const ContactPage = async ({ params }: { params: Promise<{ locale: AppLocale }> 
       />
 
       {record ? (
-        // The section ground is the page's own neutral surface. ADR-0065 R2:
-        // the green wash it once carried was decoration — removing it loses no
-        // information, and it was the last hue on a page whose register
-        // (`public-pages.ts`) is black.
-        <div className="bg-[color:var(--color-surface-base)]">
-          {/* `max-w-[1248px]` inside the project's own gutters reproduces the
-              designed 96px margin at the 1440 root frame exactly — 1440 − 2×64
-              leaves 1312, and the cap centres 1248 in it — while narrower
-              viewports keep the gutters every other page uses.
-
-              DOM order is form then map: that is the order the design stacks on
-              small screens, and it puts the page's action ahead of a picture
-              for anyone reading linearly. `xl:flex-row-reverse` restores the
-              designed side-by-side composition, which places the map at the
-              reading start in both languages. */}
-          <div
-            className={`mx-auto w-full max-w-[1248px] gap-12 px-4 pt-16 pb-16 sm:px-6 md:px-8 lg:px-12 xl:flex-row-reverse xl:px-16 ${PANEL_ROW}`}
-          >
-            <div className={`rise-scroll ${PANEL_TALL}`}>
-              <ContactForm
-                headingId="contact-form-heading"
-                title={text(record.form?.title, locale) ?? t("form.title")}
-                consentNote={text(record.form?.consentNote, locale)}
-                messageTypes={messageTypes}
-              />
-            </div>
-            <div className={`rise-scroll ${PANEL_TALL}`}>
-              <ContactMap locale={locale} record={record} headingId="contact-map-heading" />
+        <>
+          {/* The neutral ground under the form and the map. ADR-0065 R2: the
+              green wash it once carried was decoration. */}
+          <div className="bg-[color:var(--color-surface-base)]">
+            {/* `max-w-[1248px]` inside the project's gutters reproduces the
+                designed 96px margin at the 1440 root frame. DOM order is form
+                then map — the order the design stacks on small screens, and the
+                page's action ahead of a picture for a linear reader;
+                `xl:flex-row-reverse` restores the side-by-side composition. */}
+            <div
+              className={`mx-auto w-full max-w-[1248px] gap-12 px-4 pt-16 pb-16 sm:px-6 md:px-8 lg:px-12 xl:flex-row-reverse xl:px-16 ${PANEL_ROW}`}
+            >
+              {/* The form's identity edge is the full tricolour, `static`
+                  (ADR-0098 D5); the panel inside stays on its own neutral
+                  `raised` ground. `*:flex-1` stretches the ring's wrapper so the
+                  two panels keep one height in the row. */}
+              <BrandBorder variant="static" tone="tricolor" className={`rise-scroll ${PANEL_TALL} *:flex *:flex-1 *:flex-col`}>
+                <ContactForm
+                  headingId="contact-form-heading"
+                  title={text(record.form?.title, locale) ?? t("form.title")}
+                  consentNote={text(record.form?.consentNote, locale)}
+                  messageTypes={messageTypes}
+                />
+              </BrandBorder>
+              {/* The map's edge is the green line. The frame inside is the
+                  live, interactive map and is untouched. */}
+              <BrandBorder variant="static" tone="green" className={`rise-scroll ${PANEL_TALL} *:flex *:flex-1 *:flex-col`}>
+                <ContactMap locale={locale} record={record} headingId="contact-map-heading" />
+              </BrandBorder>
             </div>
           </div>
 
           {/* The social channels answer "and if I would rather not write" —
-              after the form, never in competition with it. They come from the
-              record, not from the footer's site-wide constant: this is content
-              an editor controls. */}
-          <div className="mx-auto w-full max-w-[1248px] px-4 pb-20 sm:px-6 md:px-8 lg:px-12 xl:px-16">
-            <ContactSocial links={record.socialLinks ?? []} icons={media} />
-          </div>
+              after the form, never in competition with it, on the page's one
+              identity band. They come from the record: content an editor
+              controls. */}
+          <ContactSocial links={record.socialLinks ?? []} icons={media} />
 
-          {/* The postal address is part of the record but not of the designed
-              composition — the footer already renders it a screen height below.
-              It is exposed to assistive technology and to the structured-data
-              block so the `ContactPage` schema above describes something the
-              page really carries (Chapter 14 §4), without repeating the footer
-              on screen. */}
+          {/* The postal address is in the record but not the composition — the
+              footer renders it a screen below. Exposed to assistive technology
+              and to the structured data, so the `ContactPage` schema describes
+              something the page carries (Chapter 14 §4). */}
           {addressLines.length > 0 ? (
             <address className="sr-only not-italic">
               {addressLines.join(locale === "ar" ? "، " : ", ")}
             </address>
           ) : null}
-        </div>
+        </>
       ) : null}
     </>
   );
@@ -193,15 +141,3 @@ const ContactPage = async ({ params }: { params: Promise<{ locale: AppLocale }> 
 
 export default ContactPage;
 
-/** Chapter 14 §4: every property asserted here is rendered or exposed above. */
-const schemaAddress = (address: PostalAddress): Record<string, string> => {
-  const mapped: Record<string, string> = {};
-  const street = [address.building, address.street].filter(Boolean).join(" ");
-  if (street) mapped.streetAddress = street;
-  if (address.city) mapped.addressLocality = address.city;
-  if (address.emirate) mapped.addressRegion = address.emirate;
-  if (address.poBox) mapped.postOfficeBoxNumber = address.poBox;
-  if (address.postalCode) mapped.postalCode = address.postalCode;
-  if (address.country) mapped.addressCountry = address.country;
-  return mapped;
-};

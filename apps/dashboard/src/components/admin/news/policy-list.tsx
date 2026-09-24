@@ -2,6 +2,7 @@
 
 import { useId } from "react";
 import { useTranslations } from "next-intl";
+import { SectionHeading } from "@uaeaf/brand-ui";
 import { SelectField } from "@/components/ui/select-field";
 import { SELECTABLE_ROW } from "@/components/ui/interactive";
 import { UiIcon } from "@/lib/icons/ui-icons";
@@ -87,9 +88,18 @@ export const PolicyList = ({
         className="hidden flex-col gap-4 rounded-[var(--card-radius)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)] p-4 lg:flex"
       >
         <div className="flex flex-col gap-1">
-          <h2 id={`${id}-title`} className="text-label font-bold text-[color:var(--color-text-primary)]">
-            {t("policyListTitle")}
-          </h2>
+          {/* `SectionHeading` for the group (settings recipe). The id moves to
+              a span inside the heading so `aria-labelledby` on the section
+              still resolves to the same words. `!mb-0`: the card spaces its
+              own rows. */}
+          <SectionHeading
+            className="!mb-0"
+            title={
+              <span id={`${id}-title`} className="text-label font-bold">
+                {t("policyListTitle")}
+              </span>
+            }
+          />
           <p className="text-caption text-[color:var(--color-text-muted)]">{t("policyListHint")}</p>
         </div>
 

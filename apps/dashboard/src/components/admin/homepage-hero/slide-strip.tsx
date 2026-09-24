@@ -3,6 +3,7 @@
 import { memo, useState, type DragEvent, type KeyboardEvent } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { SelectedMark } from "@/components/ui/selected-mark";
 import {
   HERO_SLIDE_MAX,
   slideImageIds,
@@ -135,10 +136,14 @@ const SlideStripView = ({
               onDrop={(event) => onDrop(event, at)}
               className={`relative flex flex-col overflow-hidden rounded-[var(--radius-lg)] border bg-[color:var(--color-surface-raised)] transition-colors duration-[var(--motion-duration-fast)] data-[dragging]:opacity-60 ${
                 selected
-                  ? "border-2 border-[color:var(--color-brand-primary)]"
+                  ? "border-[color:var(--color-border-default)]"
                   : "border-[color:var(--color-border-default)] hover:border-[color:var(--color-border-strong)] active:border-[color:var(--color-border-strong)]"
               }`}
             >
+              {/* Selected: a static tricolour edge plus a check, never colour
+                  alone (Chapter 12 §12.15.1). Drawn last in paint order by
+                  `absolute`, so it sits over the thumbnail's corner. */}
+              {selected ? <SelectedMark radius="lg" /> : null}
               <button
                 type="button"
                 aria-current={selected ? "true" : undefined}

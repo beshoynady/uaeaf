@@ -41,11 +41,11 @@ const BrandKitPage = async ({ params }: { params: Promise<{ locale: AppLocale }>
   setRequestLocale(locale);
 
   return (
-    <main className="brand-kit">
+    <div className="brand-kit">
       <BrandKitStage>
         <Specimens />
       </BrandKitStage>
-    </main>
+    </div>
   );
 };
 

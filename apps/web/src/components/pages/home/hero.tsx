@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { getTranslations } from "next-intl/server";
+import { BrandStreaks } from "@uaeaf/brand-ui";
 import { heroScrim } from "@uaeaf/content/hero";
 import { HeroControlsSlot } from "./hero-controls-slot";
 import { HeroCtaRow } from "./hero-cta";
@@ -210,6 +211,22 @@ export const HomeHero = async ({
             </li>
           ))}
         </ul>
+
+        {/* The identity motif over the photograph (ADR-0098 D4), in the stage's
+            far corner, away from the words, which read from the start edge at
+            the foot. A layer after the track and under the controls (`z-10`),
+            so it paints over every slide without taking a pointer or a place in
+            the reading order.
+
+            Two elements because `[data-surface]` sets `position: relative`
+            outside Tailwind's layer and would beat `absolute` on the same node:
+            the outer one positions, the inner one publishes the ink ground's
+            white so the strokes are white over the dark wash, as the words are. */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0">
+          <div data-surface="ink" className="h-full">
+            <BrandStreaks placement="corner" />
+          </div>
+        </div>
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col gap-3 md:gap-4">
           {/* The controls at the start of the text column, the scroll cue at the

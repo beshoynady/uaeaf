@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { PageHeader } from "@/components/ui/page-header";
+import { BrandGround } from "@/components/ui/brand-ground";
 import { EditorialScreenNotice } from "@/components/admin/editorial-editor/editorial-screen-notice";
 import { PresidentMessageEditor } from "@/components/admin/president-message/editor";
 import { loadEditorialScreen } from "@/lib/admin/editorial-screen";
@@ -19,7 +20,7 @@ import { resolveLocale } from "@/i18n/params";
  * a later decision (plan, decision 5), so the screen edits one row. Creating
  * it needs an appointment to attach to, and comes from seeding or an import.
  */
-export default async function PresidentMessagePage({
+const PresidentMessagePage = async ({
   params,
   searchParams,
 }: {
@@ -27,7 +28,7 @@ export default async function PresidentMessagePage({
   /** `?record=<id>` opens one specific row of the collection — how a test
    *  record is rehearsed on without touching the real message. */
   searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
+}) => {
   const locale = await resolveLocale(params);
   setRequestLocale(locale);
 
@@ -38,10 +39,10 @@ export default async function PresidentMessagePage({
   if (screen.status !== "ready") {
     const common = await getTranslations("Common");
     return (
-      <>
+      <BrandGround>
         {header}
         <EditorialScreenNotice screen={screen} t={t} common={common} />
-      </>
+      </BrandGround>
     );
   }
 
@@ -56,7 +57,7 @@ export default async function PresidentMessagePage({
   };
 
   return (
-    <>
+    <BrandGround>
       {header}
       {/* The editor owns the screen's two columns, not this page: the version
           panel's unsaved-changes guard needs the draft, and the draft lives
@@ -70,6 +71,8 @@ export default async function PresidentMessagePage({
         editorial={screen.editorial}
         fieldLabels={fieldLabels}
       />
-    </>
+    </BrandGround>
   );
-}
+};
+
+export default PresidentMessagePage;

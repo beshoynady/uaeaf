@@ -1,4 +1,5 @@
 import { useTranslations } from "next-intl";
+import { BrandBorder } from "@uaeaf/brand-ui";
 import { FeaturedArticleCard } from "./featured-article-card";
 import { NewsCard } from "./news-card";
 import type { ArticlePublic, MediaAssetPublic } from "@/lib/api/types";
@@ -65,7 +66,12 @@ export const NewsList = ({
 
   return (
     <div className="flex flex-col gap-10">
-      <FeaturedArticleCard article={lead} locale={locale} cover={coverOf(lead)} />
+      {/* The cover story carries the static tricolour edge (ADR-0098 D5), the
+          same mark the homepage's lead story carries: one edge, not an edge
+          and an accent bar stacked. */}
+      <BrandBorder variant="static">
+        <FeaturedArticleCard article={lead} locale={locale} cover={coverOf(lead)} />
+      </BrandBorder>
 
       {rest.length > 0 ? (
         <section aria-labelledby="news-latest" className="flex flex-col gap-5">

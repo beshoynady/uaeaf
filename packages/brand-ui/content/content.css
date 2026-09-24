@@ -69,11 +69,85 @@
   );
 }
 
+/*
+ * The content measure.
+ *
+ * The same value and the same five steps as the site's own `CONTAINER` in
+ * `ui/section` (1440px; 16/24/32/48/64 at 0/640/768/1024/1280) — reproduced
+ * rather than imported, because a package cannot reach into an application,
+ * and reproduced *exactly*, because a hero whose text starts 8px to the left of
+ * the section below it is worse than one with no measure at all.
+ *
+ * Its absence was the defect: `__body` set `padding-block` only, so every page
+ * that adopted this hero put its title hard against the viewport edge.
+ */
+.brand-container {
+  margin-inline: auto;
+  inline-size: 100%;
+  max-inline-size: var(--container-public-max);
+  padding-inline: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .brand-container {
+    padding-inline: var(--space-6);
+  }
+}
+
+@media (min-width: 768px) {
+  .brand-container {
+    padding-inline: var(--space-8);
+  }
+}
+
+@media (min-width: 1024px) {
+  .brand-container {
+    padding-inline: var(--space-12);
+  }
+}
+
+@media (min-width: 1280px) {
+  .brand-container {
+    padding-inline: var(--space-16);
+  }
+}
+
 .brand-page-hero__body {
   padding-block: var(--space-16) var(--space-12);
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+}
+
+/*
+ * An editor-managed photograph behind the ink.
+ *
+ * The wash is not a taste decision: this hero's text tiers are measured against
+ * `#0B0B0B`, and a photograph the federation's editors upload has no luminance
+ * anyone has measured. Holding the ink at 78% keeps the measured ground as the
+ * ground and lets the image read as depth behind it.
+ *
+ * `z-index: -1` puts it behind the body and, with the surface's `isolation`,
+ * cannot escape above the page.
+ */
+.brand-page-hero__media {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.brand-page-hero__media > * {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+.brand-page-hero__media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--surface-bg) 78%, transparent);
 }
 
 .brand-page-hero__breadcrumb ol {
@@ -497,4 +571,262 @@
 
 .brand-athlete-result__detail {
   color: var(--surface-text-muted);
+}
+
+/* ------------------------------------------------------------------ *
+ * StatCard — the most repeated shape in the product.
+ *
+ * The tone is a border, never a fill. A row of filled colour tiles is the
+ * "everywhere faintly" failure Chapter 27 §24 names, and a filled tile puts
+ * the figure on a coloured ground where only white ink would pass. Size
+ * carries the emphasis; colour carries the meaning.
+ * ------------------------------------------------------------------ */
+.brand-stat-card {
+  --brand-stat-edge: var(--color-border-default);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-5);
+  border-radius: var(--radius-md);
+  border: var(--border-width-default) solid var(--color-border-default);
+  border-inline-start: var(--border-width-ring) solid var(--brand-stat-edge);
+  background-color: var(--color-surface-raised);
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+
+.brand-stat-card[data-tone="action"] {
+  --brand-stat-edge: var(--color-action-default);
+}
+
+.brand-stat-card[data-tone="attention"] {
+  --brand-stat-edge: var(--color-semantic-warning);
+}
+
+.brand-stat-card[data-tone="positive"] {
+  --brand-stat-edge: var(--color-semantic-success);
+}
+
+.brand-stat-card[data-tone="live"] {
+  --brand-stat-edge: var(--color-semantic-live);
+}
+
+.brand-stat-card__value {
+  font-size: var(--font-size-h1-desktop, 2rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.brand-stat-card__label {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.brand-stat-card__detail {
+  color: var(--color-text-muted);
+}
+
+/* ------------------------------------------------------------------ *
+ * FeatureCard — a card that is an identity colour.
+ * ------------------------------------------------------------------ */
+.brand-feature-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-6);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+/*
+ * The ordinal is a ghost of the card's own ink, not a second colour. These
+ * grounds carry exactly one text tier (ADR-0098 §8.2), so a "quieter" ordinal
+ * is the same white at a lower alpha and a larger size — which is the one
+ * place opacity is the right tool here, because the figure is decorative and
+ * `aria-hidden`.
+ */
+.brand-feature-card__ordinal {
+  position: absolute;
+  inset-block-start: var(--space-2);
+  inset-inline-end: var(--space-4);
+  font-size: var(--font-size-display-xl-desktop, 3rem);
+  font-weight: 800;
+  line-height: 1;
+  opacity: 0.18;
+  pointer-events: none;
+}
+
+.brand-feature-card__icon {
+  display: inline-flex;
+  inline-size: var(--space-8);
+  block-size: var(--space-8);
+  color: var(--surface-text);
+}
+
+.brand-feature-card__title {
+  color: var(--surface-text);
+}
+
+.brand-feature-card__description {
+  color: var(--surface-text-muted);
+}
+
+/* ------------------------------------------------------------------ *
+ * InfoCard — a fact on the neutral plate.
+ * ------------------------------------------------------------------ */
+.brand-info-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  border: var(--border-width-default) solid var(--surface-border);
+  background-color: var(--surface-bg);
+  color: var(--surface-text);
+}
+
+.brand-info-card__edge {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+}
+
+.brand-info-card__body {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding: var(--space-5);
+}
+
+.brand-info-card__icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  inline-size: var(--space-6);
+  block-size: var(--space-6);
+  color: var(--surface-link);
+}
+
+.brand-info-card__text {
+  display: flex;
+  min-inline-size: 0;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.brand-info-card__label {
+  color: var(--surface-text-muted);
+}
+
+.brand-info-card__value {
+  font-weight: 600;
+}
+
+.brand-info-card__link {
+  color: var(--surface-link);
+}
+
+/* ------------------------------------------------------------------ *
+ * StepBadge — a step number in a green disc.
+ * ------------------------------------------------------------------ */
+.brand-step-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  inline-size: var(--space-8);
+  block-size: var(--space-8);
+  border-radius: var(--radius-full);
+  background-color: var(--color-brand-primary);
+  color: var(--color-text-on-brand);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------------ *
+ * TableHeader — the tricolour rule under a table's head.
+ *
+ * `border-image` is the exception here, and the exception is narrow.
+ * `BrandBorder` rejects it because it destroys `border-radius`. A `<thead>`
+ * has no radius and exactly one straight edge, which is the one shape
+ * `border-image` renders correctly. The masked band cannot be used instead: a
+ * pseudo-element on a table section is not laid out reliably across engines.
+ * ------------------------------------------------------------------ */
+.brand-table-header {
+  border-block-end: var(--border-width-thick) solid transparent;
+  border-image: var(--brand-tricolor) 1;
+}
+
+/* ------------------------------------------------------------------ *
+ * GlassTile — a translucent tile on a coloured ground.
+ * ------------------------------------------------------------------ */
+.brand-glass-tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  border-radius: var(--radius-md);
+  /* Published by the surface: translucent white on a coloured or dark ground,
+     a raised plate with a real edge on a light one. */
+  background-color: var(--surface-tile-fill);
+  border: var(--border-width-default) solid var(--surface-tile-edge);
+}
+
+.brand-glass-tile__icon {
+  display: inline-flex;
+  inline-size: var(--space-6);
+  block-size: var(--space-6);
+  color: var(--surface-icon);
+}
+
+.brand-glass-tile__title {
+  color: var(--surface-text);
+}
+
+.brand-glass-tile__description {
+  color: var(--surface-text-muted);
+}
+
+/* ------------------------------------------------------------------ *
+ * SplitFeature — a photograph beside a statement.
+ * ------------------------------------------------------------------ */
+.brand-split-feature {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-8);
+  align-items: center;
+}
+
+@media (min-width: 64rem) {
+  .brand-split-feature {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-16);
+  }
+
+  /* Logical, so the composition mirrors with reading direction while the
+     motif behind the image keeps its angle. */
+  .brand-split-feature[data-media="start"] .brand-split-feature__media {
+    order: -1;
+  }
+}
+
+.brand-split-feature__title {
+  color: var(--surface-text);
+}
+
+.brand-split-feature__body {
+  margin-block-start: var(--space-4);
+  max-inline-size: 60ch;
+  color: var(--surface-text-muted);
+}
+
+.brand-split-feature__media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.brand-split-feature__image {
+  object-fit: cover;
 }

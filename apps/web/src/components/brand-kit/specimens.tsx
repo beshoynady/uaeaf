@@ -1,5 +1,12 @@
 import {
   AthleteResultBadge,
+  FEATURE_CYCLE,
+  FeatureCard,
+  GlassTile,
+  InfoCard,
+  StatCard,
+  StepBadge,
+  TableHeader,
   BRAND_DRAW_LINE,
   BrandAccentBar,
   BrandBorder,
@@ -76,6 +83,59 @@ const HEADINGS = (
     <SectionHeading title="Section heading" description="Plain variant, with a description." />
     <SectionHeading title="Plate variant" variant="plate" />
   </>
+);
+
+const STAT_CARDS = (
+  <div className="brand-kit-card-grid">
+    {(["neutral", "action", "attention", "positive", "live"] as const).map((tone) => (
+      <StatCard
+        key={tone}
+        value="00"
+        label={`Tone: ${tone}`}
+        detail="The edge carries the meaning"
+        tone={tone}
+      />
+    ))}
+  </div>
+);
+
+const INFO_CARDS = (
+  <div className="brand-kit-card-grid">
+    <InfoCard label="Placeholder label" value="Placeholder value" accent />
+    <InfoCard label="With a link" value="Placeholder link" href="/brand-kit" />
+  </div>
+);
+
+const TABLE = (
+  <table className="brand-kit-table">
+    <TableHeader>
+      <tr>
+        <th scope="col">Column</th>
+        <th scope="col">Another</th>
+      </tr>
+    </TableHeader>
+    <tbody>
+      <tr>
+        <td>Row value</td>
+        <td>Row value</td>
+      </tr>
+    </tbody>
+  </table>
+);
+
+const STEPS = (
+  <div className="brand-kit-row">
+    {["1", "2", "3"].map((step) => (
+      <StepBadge key={step} step={step} stepLabel="Step" />
+    ))}
+  </div>
+);
+
+const GLASS = (
+  <div className="brand-kit-card-grid">
+    <GlassTile title="Placeholder value" description="Translucent on a coloured ground, a plate on a light one." />
+    <GlassTile title="Second tile" />
+  </div>
 );
 
 const FIGURES = (
@@ -158,6 +218,28 @@ export const Specimens = () => (
     <SurfaceMatrix title="Buttons and IconButton">{BUTTONS}</SurfaceMatrix>
     <SurfaceMatrix title="SectionHeading">{HEADINGS}</SurfaceMatrix>
     <SurfaceMatrix title="StatHighlight and AthleteResultBadge">{FIGURES}</SurfaceMatrix>
+    <SurfaceMatrix title="StatCard — the tone is an edge, never a fill">{STAT_CARDS}</SurfaceMatrix>
+    <SurfaceMatrix title="InfoCard">{INFO_CARDS}</SurfaceMatrix>
+    <SurfaceMatrix title="TableHeader">{TABLE}</SurfaceMatrix>
+    <SurfaceMatrix title="StepBadge">{STEPS}</SurfaceMatrix>
+    <SurfaceMatrix title="GlassTile">{GLASS}</SurfaceMatrix>
+
+    <section className="brand-kit-specimen">
+      <h2 className="brand-kit-specimen__title">
+        FeatureCard — alternating, so no one identity colour becomes the ground
+      </h2>
+      <div className="brand-kit-card-grid brand-kit-card-grid--three">
+        {FEATURE_CYCLE.map((tone, index) => (
+          <FeatureCard
+            key={tone}
+            tone={tone}
+            ordinal={String(index + 1)}
+            title={`Tone: ${tone}`}
+            description="One ink, white, on every tone."
+          />
+        ))}
+      </div>
+    </section>
     <SurfaceMatrix title="Hover draw line (a utility class, not a component)">{DRAW_LINE}</SurfaceMatrix>
     <SurfaceMatrix title="DocumentCard — the middle card has no date and no size">
       {DOCUMENT_CARDS}

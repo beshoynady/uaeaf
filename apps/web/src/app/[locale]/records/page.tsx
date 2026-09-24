@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
-import {
-  StaticPageScreen,
-  buildStaticPageMetadata,
-  loadStaticPage,
-} from "@/components/pages/static-page-screen";
+import { RecordsScreen } from "@/components/pages/records/records-screen";
+import { buildStaticPageMetadata } from "@/components/pages/static-page-screen";
 import { findPublicPage } from "@/lib/pages/public-pages";
 import { isIndexable } from "@/lib/pages/indexability";
 import type { AppLocale } from "@/i18n/routing";
@@ -29,20 +26,19 @@ const KEY = "records";
  * function and cannot disagree.
  */
 
-export async function generateMetadata({
+export const generateMetadata = async ({
   params,
 }: {
   params: Promise<{ locale: AppLocale }>;
-}): Promise<Metadata> {
+}): Promise<Metadata> => {
   const { locale } = await params;
   return buildStaticPageMetadata(KEY, locale, await isIndexable(findPublicPage(KEY)!));
-}
+};
 
-export default async function RecordsPage({ params }: { params: Promise<{ locale: AppLocale }> }) {
+const RecordsPage = async ({ params }: { params: Promise<{ locale: AppLocale }> }) => {
   const { locale } = await params;
   setRequestLocale(locale);
+  return <RecordsScreen locale={locale} />;
+};
 
-  const { title, subtitle, heroImage } = await loadStaticPage(KEY, locale);
-
-  return <StaticPageScreen pageKey={KEY} locale={locale} title={title} subtitle={subtitle} heroImage={heroImage} />;
-}
+export default RecordsPage;

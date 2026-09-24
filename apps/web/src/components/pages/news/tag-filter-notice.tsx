@@ -1,4 +1,5 @@
 import { useTranslations } from "next-intl";
+import { EmptyState } from "@uaeaf/brand-ui";
 import { Link } from "@/i18n/navigation";
 import { BADGE } from "@/components/ui/surface";
 import { FOCUS } from "@/components/ui/interactive";
@@ -18,7 +19,10 @@ import { FOCUS } from "@/components/ui/interactive";
  *
  * A tag nothing carries is not a missing page; it is a true answer to a real
  * question. The hero above stays, the sentence explains, and the way back is
- * one press.
+ * one press. The sentence is the kit's `EmptyState` (ADR-0098), so an empty
+ * listing reads as a stated result on the page's own ground rather than as a
+ * gap; the way back stays the one link above it rather than being repeated as
+ * the state's action.
  */
 export const TagFilterNotice = ({ tag, empty }: { tag: string; empty: boolean }) => {
   const t = useTranslations("News");
@@ -34,9 +38,7 @@ export const TagFilterNotice = ({ tag, empty }: { tag: string; empty: boolean })
         {t("tagClear")}
       </Link>
 
-      {empty ? (
-        <p className="w-full text-body text-[color:var(--color-text-secondary)]">{t("tagEmpty")}</p>
-      ) : null}
+      {empty ? <EmptyState title={t("tagEmpty")} className="w-full" /> : null}
     </div>
   );
 };

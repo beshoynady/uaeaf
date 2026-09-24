@@ -1,47 +1,36 @@
 import type { CSSProperties } from "react";
+import { Surface } from "@uaeaf/brand-ui";
 import { renderBlocks } from "@/components/rich-text/rich-text";
-import { SeamLines } from "@/components/ui/identity-hero";
-import { Section } from "@/components/ui/section";
+import { CONTAINER } from "@/components/ui/section";
 import type { AppLocale } from "@/i18n/routing";
-import type { PresidentMessagePublic } from "@/lib/api/types";
+import { isCloudinaryUrl } from "@/lib/api/cloudinary-loader";
+import { cloudinarySrcSet } from "@/lib/api/cloudinary-srcset";
+import type { PublicImage, PresidentMessagePublic } from "@/lib/api/types";
 
 /**
- * The message itself: the pull-quote, the full body and the signature, in one
- * `<article>` on the neutral band (`page-president-message.md` §7.4, ADR-0069
- * D10).
+ * The message itself: the full body, the signature, and beside them an ink
+ * card carrying the president's portrait and the pull-quote, in one
+ * `<article>` on the canvas (ADR-0098 D7 recipe for institutional pages).
  *
- * - **Two columns from `lg`** (ADR-0072 D9, the owner's reference): the body at
- *   Chapter 4 §4.6's measure on the reading-start side, the pull-quote one column
- *   gap beside it at the same measure, under a decorative quotation mark in the
- *   accent colour, alongside every paragraph and held in
- *   view while the body scrolls. Below `lg`, one centred reading column at the
- *   measure (§7.5-3), in
- *   place of Figma's 1344px line (PM-D26). `body` type, `text-secondary`, and
- *   `space-4` between paragraphs; the bold lead-ins carry `text-primary`
- *   (PM-D13, D24, D28).
- * - **The pull-quote is editorial text**, `h3`, with a thin rule on the
- *   reading-start edge. From `md` it opens the message; on a phone it follows
- *   the first paragraph, so the first screen after the hero starts with the
- *   message rather than an excerpt of it. The DOM keeps it after the first
- *   paragraph at every width: it is a separate statement, not a repetition,
- *   and holds no control, so the reading order a screen reader follows stays
- *   the phone's. Rendered at every breakpoint (PM-D03).
+ * - **Two columns from `lg`**: the body at Chapter 4 §4.6's measure on the
+ *   reading-start side, the ink card beside it and held in view while the body
+ *   scrolls. Below `lg`, one reading column, with the card after the first
+ *   paragraph, so the first screen after the hero starts with the message
+ *   rather than an excerpt of it.
+ * - **The card is an ink surface with the mesh**, as every pull-quote in the
+ *   kit is. The mesh is not decoration there: ink measures 1.05:1 against the
+ *   dark page ground and needs a cue that is not the ground (ADR-0098 §8.4).
+ *   Its text is the surface's one white tier.
+ * - **The portrait moved here from the old photographic hero.** The kit's
+ *   `PageHero` is ink with no photograph, and the portrait is content with a
+ *   field, so it stays on the page, beside the words it signs.
+ *   A plain `<img>` rather than `SplitFeature`/`next/image`: the portrait is a
+ *   remote Cloudinary asset, and the kit's image components take project
+ *   assets only.
  * - **The signature** takes its name and title from the record and its date
- *   from the Live publication (§7.5-4), in a `<time>`.
+ *   from the Live publication, in a `<time>`.
  *
- * - **The identity strokes below the seam with the hero, from `lg`**
- *   (`SeamLines placement="below" from="lg"`, ADR-0075 M0-B): the message has
- *   no photograph and follows the green hero, so its section-scale identity
- *   element (rule 1) is the strokes, drawn wholly on the page's ground where
- *   they clear 3:1, in the far corner the two-column layout leaves empty.
- *   Below `lg` the body opens the section across the frame and the guard
- *   measured the strokes 0px from it, so they are not drawn there and the
- *   finding stays recorded for those widths. The section is positioned for
- *   them and reserves no room. They keep their lg size at xl (`capUnit="lg"`):
- *   grown, group B stood 31.63px from the English first paragraph at 1280 and
- *   1366, under IL-5's 32px.
- *
- * Body paragraphs never move. The quote and the signature are marked for the
+ * Body paragraphs never move. The card and the signature are marked for the
  * one-shot reveal (`reveal-once.tsx`); the server HTML is complete and at rest.
  */
 
@@ -58,7 +47,7 @@ export const MEASURE: Record<AppLocale, string> = {
   en: "max-w-[61ch]",
 };
 
-/** From `lg` the body keeps its measure and the quote takes the rest of the row.
+/** From `lg` the body keeps its measure and the card takes the rest of the row.
  *  Written per locale in full, so the class scanner finds each one. */
 const COLUMNS: Record<AppLocale, string> = {
   ar: "lg:grid-cols-[minmax(0,47ch)_minmax(0,1fr)]",
@@ -74,64 +63,83 @@ const DATE_FORMAT: Record<AppLocale, Intl.DateTimeFormat> = {
 
 const revealStep = (n: number): CSSProperties => ({ "--reveal-step": n }) as CSSProperties;
 
-const PullQuote = ({ quote, rows, locale }: { quote: string; rows: number; locale: AppLocale }) => (
-  // `md:mb-2 lg:mb-4` on top of the column's `gap-4`: the quote stands 24px
-  // above the body at `md` and 32px from `lg`, one step with the Speech Card's
-  // padding ramp (§1.3 rule 3, PM-D22). On a phone the column's 16px holds.
-  // From `lg` the figure spans every row the body's paragraphs take, so the body
+const Portrait = ({ image, locale }: { image: PublicImage; locale: AppLocale }) => (
+  // eslint-disable-next-line @next/next/no-img-element
+  <img
+    data-portrait=""
+    src={image.url}
+    srcSet={isCloudinaryUrl(image.url) ? cloudinarySrcSet(image.url, image.width) : undefined}
+    sizes="(min-width: 1024px) 40vw, 100vw"
+    alt={image.altText[locale]}
+    width={image.width}
+    height={image.height}
+    loading="lazy"
+    decoding="async"
+    className="block h-auto w-full rounded-[var(--radius-md)]"
+  />
+);
+
+const QuoteCard = ({
+  quote,
+  portrait,
+  rows,
+  locale,
+}: {
+  quote: string | null;
+  portrait: PublicImage | null;
+  rows: number;
+  locale: AppLocale;
+}) => (
+  // From `lg` the card spans every row the body's paragraphs take, so the body
   // runs on without a gap beside it.
-  <figure
+  <div
     data-reveal=""
-    className={`relative m-0 ps-6 md:order-first md:mb-2 lg:sticky lg:top-[var(--space-32)] lg:order-none lg:col-start-2 lg:mb-0 lg:self-start lg:justify-self-start ${MEASURE[locale]}`}
+    className="md:order-first md:mb-2 lg:sticky lg:top-[var(--space-32)] lg:order-none lg:col-start-2 lg:mb-0 lg:self-start"
     style={{ gridRow: `1 / span ${rows}` }}
   >
-    <span
-      aria-hidden="true"
-      data-reveal-part="rule"
-      className="absolute inset-y-0 start-0 w-[var(--border-width-thick)] origin-top bg-[color:var(--color-border-accent)]"
-    />
-    <span
-      aria-hidden="true"
-      data-quote-mark=""
-      data-reveal-part="rise"
-      className="block text-display-xl leading-none text-[color:var(--color-border-accent)]"
-    >
-      “
-    </span>
-    <blockquote data-reveal-part="rise" style={revealStep(1)} className="m-0 text-h3 text-balance text-[color:var(--color-text-primary)]">
-      <p>{quote}</p>
-    </blockquote>
-  </figure>
+    <Surface kind="ink" mesh as="figure" className="m-0 flex flex-col gap-6 overflow-clip rounded-[var(--radius-lg)] p-6 md:p-8">
+      {portrait ? <Portrait image={portrait} locale={locale} /> : null}
+      {quote ? (
+        <blockquote data-reveal-part="rise" className="m-0 text-h3 text-balance text-[color:var(--surface-text)]">
+          <p>{quote}</p>
+        </blockquote>
+      ) : null}
+    </Surface>
+  </div>
 );
 
 export const PresidentMessage = ({ record, locale }: { record: PresidentMessagePublic; locale: AppLocale }) => {
   const [first, ...rest] = renderBlocks(record.messageBody[locale], locale);
-  const quote = record.pullQuote?.[locale];
+  const quote = record.pullQuote?.[locale] ?? null;
+  const portrait = record.featuredImage;
 
   return (
-    <Section enter={false} className="relative py-12 md:py-16">
-      <SeamLines placement="below" from="lg" capUnit="lg" />
-      <article className={`mx-auto ${MEASURE[locale]} text-body text-[color:var(--color-text-secondary)] lg:max-w-none`}>
-        <div className={`flex flex-col gap-4 text-pretty lg:grid ${COLUMNS[locale]} lg:gap-x-16`}>
-          {first}
-          {quote ? <PullQuote quote={quote} rows={1 + rest.length} locale={locale} /> : null}
-          {rest}
-        </div>
+    <Surface kind="canvas" mesh>
+      <div className={`${CONTAINER} py-12 md:py-16 lg:py-24`}>
+        <article className={`mx-auto ${MEASURE[locale]} text-body text-[color:var(--color-text-secondary)] lg:max-w-none`}>
+          <div className={`flex flex-col gap-4 text-pretty lg:grid ${COLUMNS[locale]} lg:gap-x-16`}>
+            {first}
+            {quote || portrait ? (
+              <QuoteCard quote={quote} portrait={portrait} rows={1 + rest.length} locale={locale} />
+            ) : null}
+            {rest}
+          </div>
 
-        <footer data-reveal="" className="mt-8">
-          <p data-reveal-part="rise" style={revealStep(0)} className="text-h4 text-balance text-[color:var(--color-text-primary)]">
-            {record.signatoryName[locale]}
-          </p>
-          <p data-reveal-part="rise" style={revealStep(1)} className="mt-1 text-body">
-            {record.signatoryTitle[locale]}
-          </p>
-          {/* `body-sm`, 13px on a phone: the caption role is 12px there, under
-              Chapter 4 §4.10's minimum (owner decision, closing brief M4). */}
-          <p data-reveal-part="rise" style={revealStep(2)} className="mt-2 text-body-sm text-[color:var(--color-text-muted)]">
-            <time dateTime={record.publishedAt}>{DATE_FORMAT[locale].format(new Date(record.publishedAt))}</time>
-          </p>
-        </footer>
-      </article>
-    </Section>
+          <footer data-reveal="" className="mt-8">
+            <p data-reveal-part="rise" style={revealStep(0)} className="text-h4 text-balance text-[color:var(--color-text-primary)]">
+              {record.signatoryName[locale]}
+            </p>
+            <p data-reveal-part="rise" style={revealStep(1)} className="mt-1 text-body">
+              {record.signatoryTitle[locale]}
+            </p>
+            {/* `body-sm`, 13px on a phone: the caption role is 12px there, under
+                Chapter 4 §4.10's minimum (owner decision, closing brief M4). */}
+            <p data-reveal-part="rise" style={revealStep(2)} className="mt-2 text-body-sm text-[color:var(--color-text-muted)]">
+              <time dateTime={record.publishedAt}>{DATE_FORMAT[locale].format(new Date(record.publishedAt))}</time>
+            </p>
+          </footer>
+        </article>
+      </div>
+    </Surface>
   );
 };

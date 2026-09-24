@@ -91,6 +91,9 @@ describe("Button", () => {
 
     const button = screen.getByRole("button", { name: "Publish" });
     expect(button.className).toContain("w-full");
-    expect(button.className).toMatch(/--button-primary-background/);
+    // Primary is the shared library's button (ADR-0098 D7): its plate is
+    // drawn by the library's own stylesheet from the variant attribute.
+    expect(button.className).toContain("brand-button");
+    expect(button).toHaveAttribute("data-variant", "primary");
   });
 });

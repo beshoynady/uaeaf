@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
+import { InfoCard } from "@uaeaf/brand-ui";
 import type { AppLocale } from "@/i18n/routing";
 import type { ContactUsPage, LocalizedText, MediaAssetPublic } from "@/lib/api/types";
 import { altOf, isExternalMedia } from "@/lib/api/media";
@@ -8,10 +9,6 @@ import { cloudinarySrcSet } from "@/lib/api/cloudinary-srcset";
 import { ContactIcon, type ContactIconName } from "@/components/ui/contact-icon";
 import { TOUCH_TARGET } from "@/components/ui/interactive";
 import {
-  CARD_ICON,
-  CARD_INTERACTIVE,
-  GLASS_EDGE_MD,
-  GLASS_OVER_ART_MD,
   HERO_COMPOSITION,
   HERO_MEASURE,
   HERO_MEDIA,
@@ -52,35 +49,26 @@ import { text } from "@/components/pages/static-page-screen";
 const CARD_ICONS: readonly ContactIconName[] = ["phone", "mail", "mapPin", "clock"];
 
 /**
- * The cards carry no hue at all — and two grounds, not one.
+ * The four cards are the kit's `InfoCard` with its accent (ADR-0098): the
+ * neutral raised plate, a `BrandAccentBar` along its top edge, the icon, the
+ * label and the value.
  *
- * ADR-0065 R2: four cards distinguished by four steps of one ramp encode
- * nothing — a telephone number is not "lighter green" than an email address
- * in any sense a reader can decode. The four are peers, so they are painted
- * as peers.
+ * ADR-0065 R2 still holds: the four are peers and carry no hue of their own —
+ * the only colour is the identity edge, the same on all four, which encodes
+ * nothing about a telephone number that it does not also say about an email
+ * address. The plate is the same in both of the card's situations — stacked
+ * on the page below `md`, pinned over the photograph from `md` — because it
+ * paints its own ground (`data-surface="raised"`), so neither situation can
+ * inherit the other's text colour.
  *
- * What the earlier version got wrong is that this component appears in two
- * places. From `md` up it is pinned inside the hero band, over a photograph
- * under a fixed dark overlay; below `md` it leaves the band entirely and
- * stacks on the page's own surface. One set of classes was written for the
- * first situation and inherited by the second, which put white text on
- * `#FAFAF8` at 1.04:1 — the four contact details, unreadable on every phone
- * in the light theme, on the page whose whole job is to give them.
- *
- * So the unprefixed classes describe the stacked card and follow the theme,
- * and the `md:` ones describe the pinned card and deliberately do not: the
- * band's ground is an uploaded picture under a fixed overlay, and a token
- * that flipped with the theme would invert over a ground that never does.
- * `currentColor` carries the icon ring and the underline across both, so
- * neither can be forgotten when the other changes.
- *
- * The pinned card's 12% and the overlay's 0.64/0.74 remain one decision:
- * solved against the worst admissible input, a pure white photograph. Both
- * situations are measured by `contact-card-contrast.spec.ts`.
+ * The actionable values are written as their own links inside the card rather
+ * than through `InfoCard`'s `href`: the kit's link has no minimum height, and
+ * the telephone and email are the page's primary actions on a phone, where a
+ * 20px-tall link fails WCAG 2.5.8's floor. `TOUCH_TARGET` keeps them at 44px.
  */
-const CARD = `${CARD_INTERACTIVE} ${GLASS_OVER_ART_MD} ${GLASS_EDGE_MD} flex w-full items-center gap-4 px-4 py-3 text-start text-[color:var(--color-text-primary)] md:flex-col md:justify-center md:gap-2 md:py-6 md:text-center md:text-[color:var(--color-text-on-brand)] xl:gap-3 xl:px-6 xl:py-8`;
+const VALUE_LINK = `inline-flex ${TOUCH_TARGET} items-center rounded-xs underline decoration-current/50 underline-offset-4 text-[color:var(--surface-link)] transition-[text-decoration-color] duration-[var(--motion-duration-fast)] hover:decoration-current focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--surface-focus-ring)] focus-visible:ring-offset-2`;
 
-export async function ContactHero({
+export const ContactHero = async ({
   locale,
   record,
   titleId,
@@ -94,7 +82,7 @@ export async function ContactHero({
   title: string;
   subtitle: string | null;
   heroImage: MediaAssetPublic | undefined;
-}) {
+}) => {
   const t = await getTranslations({ locale, namespace: "Contact" });
 
   const label = (own: LocalizedText | null | undefined, fallback: string) =>
@@ -225,12 +213,6 @@ export async function ContactHero({
         className="mx-auto grid w-full max-w-[1248px] shrink-0 grid-cols-1 gap-2 px-4 pt-4 sm:px-6 md:absolute md:inset-x-0 md:bottom-8 md:grid-cols-2 md:gap-4 md:px-8 md:pt-0 lg:px-12 xl:grid-cols-4 xl:gap-6 xl:px-16"
       >
         {cards.map((card, index) => (
-          // Entry and interaction on two elements, never one. A scroll-driven
-          // animation holds `transform` for the whole life of the element, and
-          // the animation origin outranks any rule — so `.rise-scroll` and
-          // `.lift` on the same node silently cancel the hover lift. Measured
-          // on a live page: the card stayed at `matrix(1,0,0,1,0,0)` under
-          // `:focus-within`. Guarded by `motion-contract.spec.ts`.
           // `.rise-in`, not `.rise-scroll`. A scroll-driven entry belongs to
           // content below the fold; these cards are now inside the first
           // screen by construction, so a scroll animation sits near zero
@@ -243,49 +225,26 @@ export async function ContactHero({
             className="rise-in flex"
             style={{ "--rise-index": HERO_STAGE.card + index } as React.CSSProperties}
           >
-            <div className={CARD}>
-              {/* Two grounds, two treatments, one class list. On the stacked
-                  card the icon is the shared `CARD_ICON` — Federation Green
-                  on the recessed step, inverting to white-on-green when the
-                  card is hovered. On the pinned card the ground is a
-                  photograph under a fixed overlay, where that green measures
-                  3.1:1 and reads as dim, so the ring falls back to
-                  `currentColor` (the band's white) and the hover inversion is
-                  the same green fill either way. */}
-              <span
-                className={`${CARD_ICON} size-11 md:border-2 md:border-current md:bg-transparent md:text-[color:var(--color-text-on-brand)] xl:size-13`}
-              >
-                <ContactIcon name={CARD_ICONS[index]} className="size-[18px] xl:size-[22px]" />
-              </span>
-              <span className="flex min-w-0 flex-col gap-1 md:contents">
-              <span className="text-label font-bold">{card.label}</span>
-              {card.value ? (
-                card.href ? (
-                  // Underlined at rest, not on hover — the affordance never
-                  // rests on colour alone (WCAG 1.4.1), and on the pinned card
-                  // Federation Green would fail 1.4.3 against the dark band
-                  // anyway.
-                  //
-                  // `min-h-11` is the reason this is an inline-flex box: at
-                  // its natural line height the link measured 109×20, under
-                  // even the 24px floor of WCAG 2.5.8, on the two card values
-                  // that are the page's primary actions on a phone.
-                  <a
-                    href={card.href}
-                    dir={card.ltr ? "ltr" : undefined}
-                    className={`text-body-sm inline-flex ${TOUCH_TARGET} items-center justify-center rounded-xs px-2 underline decoration-current/50 underline-offset-4 transition-[text-decoration-color,color] duration-[var(--motion-duration-fast)] hover:decoration-current focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2 focus-visible:ring-offset-transparent xl:text-body`}
-                  >
+            <InfoCard
+              accent
+              className="w-full"
+              icon={<ContactIcon name={CARD_ICONS[index]} className="size-full" />}
+              label={card.label}
+              // A card with no stored value still names what it is for; the
+              // value line is simply empty rather than a placeholder.
+              value={
+                card.value && card.href ? (
+                  <a href={card.href} dir={card.ltr ? "ltr" : undefined} className={VALUE_LINK}>
                     {card.value}
                   </a>
-                ) : (
-                  <span className="text-body-sm xl:text-body">{card.value}</span>
-                )
-              ) : null}
-              </span>
-            </div>
+                ) : card.value ? (
+                  <span dir={card.ltr ? "ltr" : undefined}>{card.value}</span>
+                ) : null
+              }
+            />
           </li>
         ))}
       </ul>
     </section>
   );
-}
+};

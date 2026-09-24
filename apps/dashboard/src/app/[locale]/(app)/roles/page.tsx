@@ -3,6 +3,7 @@ import { fetchAsUser, readGrants } from "@/lib/auth/session";
 import type { PermissionResponse, RoleResponse, UserResponse } from "@/lib/api/types";
 import { summariseDirectory } from "@/lib/admin/directory-stats";
 import { PageHeader } from "@/components/ui/page-header";
+import { BrandGround } from "@/components/ui/brand-ground";
 import { AccessDenied } from "@/components/ui/access-denied";
 import { StatTiles, type StatTile } from "@/components/admin/stat-tiles";
 import { RoleWorkbench } from "@/components/admin/roles/role-workbench";
@@ -26,7 +27,7 @@ import { resolveLocale } from "@/i18n/params";
  * to render sensibly when either is refused rather than failing whole. Each
  * `null` is a 403 and is handled as an absence, not an error.
  */
-export default async function RolesPage({ params }: { params: Promise<{ locale: string }> }) {
+const RolesPage = async ({ params }: { params: Promise<{ locale: string }> }) => {
   const locale = await resolveLocale(params);
   setRequestLocale(locale);
 
@@ -42,10 +43,10 @@ export default async function RolesPage({ params }: { params: Promise<{ locale: 
 
   if (roles === null) {
     return (
-      <>
+      <BrandGround>
         <PageHeader title={t("title")} description={t("description")} />
         <AccessDenied title={common("accessDeniedTitle")} message={common("accessDenied")} />
-      </>
+      </BrandGround>
     );
   }
 
@@ -88,7 +89,7 @@ export default async function RolesPage({ params }: { params: Promise<{ locale: 
   ];
 
   return (
-    <>
+    <BrandGround>
       <PageHeader title={t("title")} description={t("description")} />
       <StatTiles tiles={tiles} caption={t("tilesCaption")} />
       <RoleWorkbench
@@ -98,6 +99,8 @@ export default async function RolesPage({ params }: { params: Promise<{ locale: 
         actorGrants={grants}
         locale={locale}
       />
-    </>
+    </BrandGround>
   );
-}
+};
+
+export default RolesPage;

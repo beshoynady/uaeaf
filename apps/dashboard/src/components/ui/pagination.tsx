@@ -1,7 +1,7 @@
 "use client";
 
 import { UiIcon } from "@/lib/icons/ui-icons";
-import { BUTTON_SECONDARY } from "./interactive";
+import { Button } from "./button";
 
 /**
  * Moving through a list that does not fit on one screen.
@@ -40,20 +40,27 @@ export const Pagination = ({
 
   return (
     <nav aria-label={labels.label} className="flex items-center justify-between gap-4 pt-2">
-      <button type="button" onClick={() => onChange(page - 1)} disabled={busy || page <= 1} className={`${BUTTON_SECONDARY} gap-2`}>
-        {/* Mirrored in Arabic: this one points the way the reader is going. */}
-        <UiIcon name="chevron-right" className="size-[var(--icon-size-xs)] rtl:-scale-x-100 ltr:rotate-180" />
-        {labels.previous}
-      </button>
+      {/* The shared secondary action (Chapter 12 §12.15). The icon and label
+          sit in one flex row because the button wraps its content in a
+          single label span. */}
+      <Button variant="secondary" onClick={() => onChange(page - 1)} disabled={busy || page <= 1}>
+        <span className="inline-flex items-center gap-2">
+          {/* Mirrored in Arabic: this one points the way the reader is going. */}
+          <UiIcon name="chevron-right" className="size-[var(--icon-size-xs)] rtl:-scale-x-100 ltr:rotate-180" />
+          {labels.previous}
+        </span>
+      </Button>
 
       <p role="status" aria-live="polite" className="text-body-sm text-[color:var(--color-text-secondary)]">
         {labels.position}
       </p>
 
-      <button type="button" onClick={() => onChange(page + 1)} disabled={busy || page >= pageCount} className={`${BUTTON_SECONDARY} gap-2`}>
-        {labels.next}
-        <UiIcon name="chevron-right" className="size-[var(--icon-size-xs)] rtl:-scale-x-100" />
-      </button>
+      <Button variant="secondary" onClick={() => onChange(page + 1)} disabled={busy || page >= pageCount}>
+        <span className="inline-flex items-center gap-2">
+          {labels.next}
+          <UiIcon name="chevron-right" className="size-[var(--icon-size-xs)] rtl:-scale-x-100" />
+        </span>
+      </Button>
     </nav>
   );
 };

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { PageHeader } from "@/components/ui/page-header";
+import { BrandGround } from "@/components/ui/brand-ground";
 import { AccessDenied } from "@/components/ui/access-denied";
 import { ArticleEditor } from "@/components/admin/news/article-editor";
 import { loadArticleEditor } from "@/lib/admin/newsroom-screen";
@@ -37,10 +38,10 @@ const ArticlePage = async ({ params }: { params: Promise<{ locale: string; id: s
 
   if (screen.status !== "ready") {
     return (
-      <>
+      <BrandGround>
         {header}
         <AccessDenied title={common("accessDeniedTitle")} message={common("accessDenied")} />
-      </>
+      </BrandGround>
     );
   }
 
@@ -53,7 +54,7 @@ const ArticlePage = async ({ params }: { params: Promise<{ locale: string; id: s
   };
 
   return (
-    <>
+    <BrandGround>
       {header}
       <ArticleEditor
         record={screen.data.record}
@@ -65,7 +66,7 @@ const ArticlePage = async ({ params }: { params: Promise<{ locale: string; id: s
         editorial={screen.data.editorial}
         fieldLabels={fieldLabels}
       />
-    </>
+    </BrandGround>
   );
 };
 

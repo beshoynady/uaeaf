@@ -2,6 +2,7 @@
 
 import { useId, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
+import { SectionHeading } from "@uaeaf/brand-ui";
 import { Button } from "@/components/ui/button";
 import { SelectField } from "@/components/ui/select-field";
 import { TextField } from "@/components/auth/text-field";
@@ -169,9 +170,16 @@ export const PolicyDetail = ({
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex min-w-0 flex-col gap-1">
           <p className="text-caption text-[color:var(--color-text-muted)]">{groupLabel}</p>
-          <h2 id={`${id}-title`} className="text-h4 font-bold text-[color:var(--color-text-primary)]">
-            {title}
-          </h2>
+          {/* `SectionHeading` (settings recipe); the id sits on a span inside
+              the heading so the section's `aria-labelledby` still names it. */}
+          <SectionHeading
+            className="!mb-0"
+            title={
+              <span id={`${id}-title`} className="text-h4 font-bold">
+                {title}
+              </span>
+            }
+          />
           <p className="text-body-sm text-[color:var(--color-text-secondary)]">{savedSentence()}</p>
         </div>
 

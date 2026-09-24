@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { PageHero } from "@uaeaf/brand-ui";
 import { RevealOnce } from "@/components/pages/president/reveal-once";
 import { PlanExecutionPath } from "@/components/pages/strategic-plan/execution-path";
 import { PlanMetrics } from "@/components/pages/strategic-plan/metrics";
@@ -10,7 +11,6 @@ import { PlanPhasesBand } from "@/components/pages/strategic-plan/phases-band";
 import { PlanPillars } from "@/components/pages/strategic-plan/pillars";
 import { PlanCta } from "@/components/pages/strategic-plan/plan-cta";
 import type { Crumb } from "@/components/ui/breadcrumb";
-import { IdentityHero } from "@/components/ui/identity-hero";
 import type { AppLocale } from "@/i18n/routing";
 import { fetchPublic } from "@/lib/api/public-client";
 import type { StrategicPlanPublic } from "@/lib/api/types";
@@ -32,6 +32,11 @@ import { buildMetadata } from "@/lib/seo/metadata";
  * order and each section's composition are the page's, not the record's: the
  * page rules (guide §٨) hold on this sequence, and the record decides only
  * what each section says and shows.
+ *
+ * Every section is a `@uaeaf/brand-ui` surface (ADR-0098 D7 institutional
+ * recipe): ink hero; canvas overview; green phases; canvas pillars and
+ * objectives; ink indicators; green execution path; and the red call inset as
+ * a card, so it never abuts the green band before it.
  */
 
 /** Rendered per request, as Vision & Mission is and for its reason: a build
@@ -52,7 +57,7 @@ const loadRecord = () => fetchPublic<StrategicPlanPublic>(PAGE.apiPath);
  * heights are the sections' at 1440, measured on the built page; below `lg`
  * the picture takes the column's full width.
  */
-const SECTION_HEIGHT = { overview: 340, objectives: 770, metrics: 510, cta: 460 } as const;
+const SECTION_HEIGHT = { overview: 340, objectives: 770, metrics: 510 } as const;
 
 const sizesFor = (image: { width: number; height: number } | null, section: keyof typeof SECTION_HEIGHT): string => {
   if (!image) return "100vw";
@@ -114,11 +119,13 @@ const StrategicPlanPage = async ({ params }: { params: Promise<{ locale: AppLoca
 
   const nav = await getTranslations({ locale, namespace: "Nav" });
   const copy = await getTranslations({ locale, namespace: "StrategicPlan" });
+  const pages = await getTranslations({ locale, namespace: "Pages" });
   const { title, description } = await describe(record, locale);
 
-  // IA §8.1: Home / About / Governance & Strategy / the page, in the structured
-  // data only: an institutional page shows no trail (owner decision 2026-09-15,
-  // ADR-0072 D7), and the hero's eyebrow names the section instead.
+  // IA §8.1: Home / About / Governance & Strategy / the page. The structured
+  // data carries all four; the kit's hero shows the ones a reader can go to,
+  // since "Governance & Strategy" has no page and an unlinked crumb would read
+  // as the current page.
   const trail: Crumb[] = [
     { name: nav("home"), route: "/" },
     { name: nav("about"), route: null },
@@ -134,14 +141,15 @@ const StrategicPlanPage = async ({ params }: { params: Promise<{ locale: AppLoca
         trail={trail.filter((crumb): crumb is { name: string; route: string } => crumb.route !== null)}
       />
 
-      <IdentityHero
-        titleId="strategic-plan-hero-title"
-        eyebrow={nav("governance")}
+      <PageHero
         title={record.heroTitle[locale]}
-        subtitle={record.heroSubtitle[locale]}
-        subtitleField="heroSubtitle"
-        ground={record.heroImage}
-        locale={locale}
+        description={<span data-field="heroSubtitle">{record.heroSubtitle[locale]}</span>}
+        breadcrumb={[
+          { label: nav("home"), href: `/${locale}` },
+          { label: nav("about"), href: `/${locale}/about` },
+          { label: nav("strategicPlan") },
+        ]}
+        breadcrumbLabel={pages("breadcrumbLabel")}
       />
       <PlanOverview record={record} locale={locale} sizes={sizesFor(record.introImage, "overview")} />
       <PlanPhasesBand phases={record.phases} title={record.phasesTitle?.[locale] ?? null} label={copy("phasesLabel")} locale={locale} />
@@ -168,7 +176,7 @@ const StrategicPlanPage = async ({ params }: { params: Promise<{ locale: AppLoca
         label={copy("executionLabel")}
         locale={locale}
       />
-      <PlanCta title={record.ctaTitle} text={record.ctaText} image={record.ctaImage} locale={locale} sizes={sizesFor(record.ctaImage, "cta")} />
+      <PlanCta title={record.ctaTitle} text={record.ctaText} locale={locale} />
       <RevealOnce />
     </>
   );

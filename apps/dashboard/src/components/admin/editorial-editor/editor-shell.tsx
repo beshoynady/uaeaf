@@ -139,7 +139,10 @@ export const EditorShell = ({
       <div className="flex min-w-0 flex-col gap-4 lg:col-start-1 lg:row-start-1">
         <StickyFormActions statusProps={{ "data-dirty": dirty }} status={dirty ? t("unsaved") : t("allSaved")}>
           {canEdit ? (
-            <Button onClick={() => void save()} loading={saving} disabled={!dirty}>
+          // Saving writes the draft; publishing is a decision taken in the
+          // status panel, and that is the screen's one primary action
+          // (Chapter 12 §12.15, editor recipe). So Save is the companion.
+            <Button variant="secondary" onClick={() => void save()} loading={saving} disabled={!dirty}>
               {saving ? t("saving") : t("save")}
             </Button>
           ) : (

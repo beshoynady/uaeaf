@@ -1,5 +1,6 @@
 "use client";
 
+import { BrandBorder } from "@uaeaf/brand-ui";
 import { useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
@@ -211,6 +212,11 @@ export const EditorialStatusPanel = ({
     actor?.name ? localized(actor.name, locale) : t("unknownActor");
 
   return (
+    // The one static tricolour edge on an editor screen: the panel where the
+    // status is read and the decisions are taken (Chapter 12 §12.15, editor
+    // recipe). `static` only — the Operational dose never animates an edge
+    // under the pointer.
+    <BrandBorder variant="static" tone="tricolor" className="rounded-[var(--radius-md)]">
     <aside
       aria-label={t("panelTitle")}
       className="rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)]"
@@ -510,6 +516,7 @@ export const EditorialStatusPanel = ({
         </div>
       ) : null}
     </aside>
+    </BrandBorder>
   );
 };
 

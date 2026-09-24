@@ -537,6 +537,21 @@
         "divider": {
           "value": "#FFFFFF",
           "type": "color"
+        },
+        "accent": {
+          "value": "#FFFFFF",
+          "type": "color",
+          "comment": "ADR-0098 §8c — this theme carries no hue on the ink ground, exactly as `text-muted` here drops to the same white. 19.68:1"
+        },
+        "raised": {
+          "value": "#1A1A1A",
+          "type": "color",
+          "comment": "ADR-0098 §8c — ink keeps its value in this theme, so the step on it keeps its own. The separation is carried by the solid edge this theme already mandates, not by the fill"
+        },
+        "raised-strong": {
+          "value": "#232323",
+          "type": "color",
+          "comment": "ADR-0098 §8c — as `raised`, one step further"
         }
       }
     },
@@ -592,24 +607,4 @@
         "comment": "Chapter 7 §7.3 — wider than default 2px"
       },
       "offset": {
-        "value": "{color.focus.offset}",
-        "type": "color",
-        "comment": "ADR-0051 — new"
-      },
-      "offset-width": {
-        "value": "2px",
-        "type": "borderWidth",
-        "comment": "ADR-0051 — new"
-      }
-    }
-  },
-  "border": {
-    "width": {
-      "default": {
-        "value": "{border.width.thick}",
-        "type": "borderWidth",
-        "comment": "2px override in High Contrast per Chapter 7 §7.3"
-      }
-    }
-  }
-}
+        

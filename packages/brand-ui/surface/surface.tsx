@@ -23,6 +23,24 @@ export type SurfaceKind =
   | "brand-red"
   | "ink";
 
+/**
+ * The kinds, as a list.
+ *
+ * Exported so that the Brand Kit's matrix and anything else that wants to
+ * iterate them does not keep its own copy — two copies were already drifting
+ * before this existed. The register surfaces (`section-green` and friends) are
+ * deliberately absent: they exist for `Section` to borrow and nothing chooses
+ * one for a component.
+ */
+export const SURFACE_KINDS: readonly SurfaceKind[] = [
+  "canvas",
+  "raised",
+  "photo-light",
+  "brand-green",
+  "brand-red",
+  "ink",
+];
+
 export type SurfaceProps = {
   kind: SurfaceKind;
   /**

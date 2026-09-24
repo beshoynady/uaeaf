@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { PresidentHero } from "@/components/pages/president/president-hero";
+import { PageHero } from "@uaeaf/brand-ui";
 import { PresidentMessage } from "@/components/pages/president/president-message";
 import { RevealOnce } from "@/components/pages/president/reveal-once";
 import { ValuesBand } from "@/components/pages/president/values-band";
@@ -44,11 +44,11 @@ const describe = async (record: PresidentMessagePublic | null, locale: AppLocale
   };
 };
 
-export async function generateMetadata({
+export const generateMetadata = async ({
   params,
 }: {
   params: Promise<{ locale: AppLocale }>;
-}): Promise<Metadata> {
+}): Promise<Metadata> => {
   const { locale } = await params;
   const record = await loadRecord();
   const { title, description, siteTitle } = await describe(record, locale);
@@ -72,13 +72,9 @@ export async function generateMetadata({
     openGraph: { ...metadata.openGraph, images },
     twitter: { ...metadata.twitter, images },
   };
-}
+};
 
-export default async function PresidentMessagePage({
-  params,
-}: {
-  params: Promise<{ locale: AppLocale }>;
-}) {
+const PresidentMessagePage = async ({ params }: { params: Promise<{ locale: AppLocale }> }) => {
   const { locale } = await params;
   setRequestLocale(locale);
 
@@ -86,10 +82,12 @@ export default async function PresidentMessagePage({
   if (!record) notFound();
 
   const nav = await getTranslations({ locale, namespace: "Nav" });
+  const pages = await getTranslations({ locale, namespace: "Pages" });
   const { title, description } = await describe(record, locale);
 
-  // IA §8.5: Home / About / the page, in the structured data only: an
-  // institutional page shows no trail (owner decision 2026-09-15, ADR-0072 D7).
+  // IA §8.5: Home / About / the page. The kit's hero shows the trail (ADR-0098
+  // D7 recipe), which reverses ADR-0072 D7's "structured data only" for this
+  // page; the structured data keeps it too.
   const trail: Crumb[] = [
     { name: nav("home"), route: "/" },
     { name: nav("about"), route: null },
@@ -104,14 +102,22 @@ export default async function PresidentMessagePage({
         trail={trail.filter((crumb): crumb is { name: string; route: string } => crumb.route !== null)}
       />
 
-      <PresidentHero
-        record={record}
-        locale={locale}
+      <PageHero
+        title={record.heroTitle[locale]}
+        description={record.heroSubtitle[locale]}
+        breadcrumb={[
+          { label: nav("home"), href: `/${locale}` },
+          { label: nav("about"), href: `/${locale}/about` },
+          { label: nav("presidentMessage") },
+        ]}
+        breadcrumbLabel={pages("breadcrumbLabel")}
       />
       <PresidentMessage record={record} locale={locale} />
       <ValuesBand record={record} locale={locale} />
-      <StrategyCta locale={locale} register="neutral" />
+      <StrategyCta locale={locale} />
       <RevealOnce />
     </>
   );
-}
+};
+
+export default PresidentMessagePage;

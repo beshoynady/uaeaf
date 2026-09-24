@@ -110,7 +110,7 @@ const CONTROL_INVALID = `${CONTROL_SHAPE} border border-[color:var(--color-seman
 
 const controlClass = (invalid: boolean) => (invalid ? CONTROL_INVALID : CONTROL_RESTING);
 
-export function ContactForm({
+export const ContactForm = ({
   title,
   consentNote,
   messageTypes,
@@ -120,7 +120,7 @@ export function ContactForm({
   consentNote: string | null;
   messageTypes: readonly MessageTypeOption[];
   headingId: string;
-}) {
+}) => {
   const t = useTranslations("Contact.form");
   const formId = useId();
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
@@ -131,7 +131,7 @@ export function ContactForm({
 
   const describedBy = (name: FieldName) => (errors[name] ? errorId(name) : undefined);
 
-  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const form = event.currentTarget;
     const data = new FormData(form);
@@ -178,7 +178,7 @@ export function ContactForm({
     } catch {
       setState("failed");
     }
-  }
+  };
 
   const field = (
     name: FieldName,
@@ -259,6 +259,10 @@ export function ContactForm({
     <section
       aria-labelledby={headingId}
       data-testid="contact-form"
+      // The form's own neutral ground (ADR-0098 §6.3): a form never takes the
+      // colour of what surrounds it, so the panel declares `raised` and every
+      // kit component inside reads the plate's ink.
+      data-surface="raised"
       // `elevation-dropdown` at rest rather than `elevation-card`: this panel
       // is the page's primary surface, it sits on a ground only 1.04:1 away
       // from its own fill, and the card step (0 1px 2px at 6%) left it reading
@@ -498,4 +502,4 @@ export function ContactForm({
       </form>
     </section>
   );
-}
+};

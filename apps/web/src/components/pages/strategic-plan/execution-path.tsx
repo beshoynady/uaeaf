@@ -1,14 +1,16 @@
 import type { CSSProperties } from "react";
 import { MEASURE } from "@/components/pages/president/president-message";
-import { AccentRule } from "@/components/ui/accent-rule";
-import { REGISTER_CLASSES, Section } from "@/components/ui/section";
+import { SectionHeading, Surface } from "@uaeaf/brand-ui";
+import { CONTAINER } from "@/components/ui/section";
 import type { AppLocale } from "@/i18n/routing";
 import type { LocalizedText, PlanStepPublic } from "@/lib/api/types";
 import { planRowLayout, type PlanBreakpoint } from "./row-capacity";
 
 /**
  * From the plan to delivery, «نحوّل الاستراتيجية إلى واقع» (Figma `758:218`),
- * redesigned as an ascending path on the green register (ADR-0075).
+ * redesigned as an ascending path on a full-bleed brand-green surface
+ * (ADR-0075, ADR-0098 D7). Every line and chip edge is the surface's border
+ * colour, and every word its one white tier (ADR-0098 §8.2).
  *
  * Figma prints five English labels joined by ↓ arrows on an Arabic page. Here
  * the steps climb: from `md` each stands one rise higher than the one before
@@ -94,8 +96,6 @@ export const PlanExecutionPath = ({
   const ordered = [...steps].sort((a, b) => a.displayOrder - b.displayOrder);
   if (ordered.length === 0) return null;
 
-  const titleId = "strategic-plan-execution-title";
-  const green = REGISTER_CLASSES.green;
   const count = ordered.length;
   // How many columns of the measured minimum fit decides where the climb is
   // drawn (`row-capacity.ts`); past that the steps are the phone's list, and
@@ -104,102 +104,92 @@ export const PlanExecutionPath = ({
   const shape = layout.rowFrom ? STEP_ROW[layout.rowFrom] : null;
 
   return (
-    <Section register="green" enter={false} labelledBy={titleId} className="py-12 md:py-16 lg:py-24">
-      <div data-reveal="" className="flex flex-col gap-4">
-        <h2 id={titleId} data-reveal-part="rise" className="flex items-center gap-4 text-h2 text-balance">
-          <AccentRule onRegister />
-          <span data-field="executionTitle">{title[locale]}</span>
-        </h2>
-        {text ? (
-          <p
-            data-field="executionText"
-            data-reveal-part="rise"
-            style={revealStep(1)}
-            className={`${MEASURE[locale]} text-body-lg text-pretty ${green.muted}`}
-          >
-            {text[locale]}
-          </p>
-        ) : null}
-      </div>
-
-      <div
-        data-plan-path=""
-        data-reveal=""
-        className="relative mt-8 md:mt-12"
-        style={{ "--plan-steps": count } as CSSProperties}
-      >
-        {/* The line while the steps stand in a column: along the reading-start
-            edge, through the chips. */}
-        <span
-          aria-hidden="true"
-          className={`pointer-events-none absolute inset-y-0 start-6 w-[var(--border-width-thick)] bg-[color:var(--color-section-green-border)] ${shape?.line ?? ""}`}
+    <Surface kind="brand-green">
+      <div className={`${CONTAINER} py-12 md:py-16 lg:py-24`}>
+        <SectionHeading
+          title={<span data-field="executionTitle">{title[locale]}</span>}
+          description={text ? <span data-field="executionText" className={`block ${MEASURE[locale]}`}>{text[locale]}</span> : undefined}
         />
 
-        <ol
-          data-field="executionSteps"
-          aria-label={label}
-          className={`relative flex flex-col gap-6 [--plan-gap:var(--space-4)] lg:[--plan-gap:var(--space-6)] ${shape?.list ?? ""}`}
+        <div
+          data-plan-path=""
+          data-reveal=""
+          className="relative"
+          style={{ "--plan-steps": count } as CSSProperties}
         >
-          {ordered.map((step, index) => (
-            <li
-              key={step.id}
-              className={`relative flex gap-4 ${shape?.item ?? ""}`}
-              style={{ "--plan-step": count - 1 - index } as CSSProperties}
-            >
-              {/* The climb to the next step, from `md`: a box from this chip's
-                  centre up one rise and across to the next chip's centre, its
-                  diagonal drawn corner to corner. The last step leaves none. */}
-              {shape && index < count - 1 ? (
-                <div
-                  aria-hidden="true"
-                  data-plan-segment=""
-                  className={`pointer-events-none absolute start-6 top-[calc(var(--plan-step)*var(--space-12)+var(--space-6)-var(--space-12))] hidden h-[var(--space-12)] w-[calc(100%+var(--plan-gap))] rtl:-scale-x-100 ${shape.segment}`}
-                >
-                  <svg
-                    data-reveal-part="draw"
-                    style={revealStep(index)}
-                    viewBox="0 0 100 100"
-                    preserveAspectRatio="none"
-                    focusable="false"
-                    className="block size-full overflow-visible"
-                  >
-                    <line
-                      x1="0"
-                      y1="100"
-                      x2="100"
-                      y2="0"
-                      stroke="var(--color-section-green-border)"
-                      strokeWidth="var(--border-width-thick)"
-                      strokeLinecap="round"
-                      vectorEffect="non-scaling-stroke"
-                    />
-                  </svg>
-                </div>
-              ) : null}
-              <span
-                data-reveal-part="chip"
-                data-plan-chip=""
-                style={revealStep(index + 1)}
-                className={`relative flex size-12 shrink-0 items-center justify-center rounded-full border border-[color:var(--color-section-green-border)] text-h4 tabular-nums ${green.surface}`}
+          {/* The line while the steps stand in a column: along the reading-start
+              edge, through the chips. */}
+          <span
+            aria-hidden="true"
+            className={`pointer-events-none absolute inset-y-0 start-6 w-[var(--border-width-thick)] bg-[color:var(--surface-border)] ${shape?.line ?? ""}`}
+          />
+
+          <ol
+            data-field="executionSteps"
+            aria-label={label}
+            className={`relative flex flex-col gap-6 [--plan-gap:var(--space-4)] lg:[--plan-gap:var(--space-6)] ${shape?.list ?? ""}`}
+          >
+            {ordered.map((step, index) => (
+              <li
+                key={step.id}
+                className={`relative flex gap-4 ${shape?.item ?? ""}`}
+                style={{ "--plan-step": count - 1 - index } as CSSProperties}
               >
-                <span aria-hidden="true" data-item-number="">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-              </span>
-              <div data-reveal-part="rise" style={revealStep(index + 2)} className={`min-w-0 pt-2 ${shape?.body ?? ""}`}>
-                <h3 data-part="title" className="text-h4 text-balance">
-                  {step.title[locale]}
-                </h3>
-                {step.description ? (
-                  <p data-part="description" className={`mt-1 text-body-sm text-pretty ${green.muted}`}>
-                    {step.description[locale]}
-                  </p>
+                {/* The climb to the next step, from `md`: a box from this chip's
+                    centre up one rise and across to the next chip's centre, its
+                    diagonal drawn corner to corner. The last step leaves none. */}
+                {shape && index < count - 1 ? (
+                  <div
+                    aria-hidden="true"
+                    data-plan-segment=""
+                    className={`pointer-events-none absolute start-6 top-[calc(var(--plan-step)*var(--space-12)+var(--space-6)-var(--space-12))] hidden h-[var(--space-12)] w-[calc(100%+var(--plan-gap))] rtl:-scale-x-100 ${shape.segment}`}
+                  >
+                    <svg
+                      data-reveal-part="draw"
+                      style={revealStep(index)}
+                      viewBox="0 0 100 100"
+                      preserveAspectRatio="none"
+                      focusable="false"
+                      className="block size-full overflow-visible"
+                    >
+                      <line
+                        x1="0"
+                        y1="100"
+                        x2="100"
+                        y2="0"
+                        stroke="var(--surface-border)"
+                        strokeWidth="var(--border-width-thick)"
+                        strokeLinecap="round"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    </svg>
+                  </div>
                 ) : null}
-              </div>
-            </li>
-          ))}
-        </ol>
+                <span
+                  data-reveal-part="chip"
+                  data-plan-chip=""
+                  style={revealStep(index + 1)}
+                  className={`relative flex size-12 shrink-0 items-center justify-center rounded-full border border-[color:var(--surface-border)] bg-[color:var(--color-brand-primary)] text-h4 tabular-nums`}
+                >
+                  <span aria-hidden="true" data-item-number="">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                </span>
+                <div data-reveal-part="rise" style={revealStep(index + 2)} className={`min-w-0 pt-2 ${shape?.body ?? ""}`}>
+                  <h3 data-part="title" className="text-h4 text-balance">
+                    {step.title[locale]}
+                  </h3>
+                  {step.description ? (
+                    <p data-part="description" className={`mt-1 text-body-sm text-pretty text-[color:var(--surface-text)]`}>
+                      {step.description[locale]}
+                    </p>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
       </div>
-    </Section>
+    </Surface>
   );
 };

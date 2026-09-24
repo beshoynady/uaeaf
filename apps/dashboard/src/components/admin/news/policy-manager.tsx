@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { TOGGLE_SEGMENT } from "@/components/ui/interactive";
+import { FilterChip } from "@uaeaf/brand-ui";
 import { StatTiles, type StatTile } from "@/components/admin/stat-tiles";
 import { RESOURCE_DOMAINS, UNCLASSIFIED_DOMAIN_KEY, domainKeyFor, domainOrder } from "@/lib/admin/resource-domains";
 import {
@@ -290,20 +290,20 @@ export const PolicyManager = ({
       <div
         role="group"
         aria-label={t("filtersLabel")}
-        className="inline-flex flex-wrap gap-1 self-start rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-sunken)] p-1"
+        className="flex flex-wrap gap-2 self-start"
       >
+        {/* Filters are the shared chip (Chapter 12 §12.15): selected is a solid
+            plate *and* `aria-pressed`, never colour alone. The group sits on
+            the page's own neutral ground rather than a sunken tray. */}
         {POLICY_FILTERS.map((option) => (
-          <button
+          <FilterChip
             key={option}
-            type="button"
-            aria-pressed={filter === option}
-            onClick={() => setFilter(option)}
-            className={TOGGLE_SEGMENT}
-          >
-            {t(`filter_${option}`, {
+            selected={filter === option}
+            onSelect={() => setFilter(option)}
+            label={t(`filter_${option}`, {
               count: entities.filter((entity) => matchesFilter(entity, option, approvers)).length,
             })}
-          </button>
+          />
         ))}
       </div>
 

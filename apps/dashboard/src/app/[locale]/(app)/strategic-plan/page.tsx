@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { PageHeader } from "@/components/ui/page-header";
+import { BrandGround } from "@/components/ui/brand-ground";
 import { EditorialScreenNotice } from "@/components/admin/editorial-editor/editorial-screen-notice";
 import { StrategicPlanEditor } from "@/components/admin/strategic-plan/editor";
 import { loadEditorialScreen } from "@/lib/admin/editorial-screen";
@@ -27,10 +28,10 @@ const StrategicPlanAdminPage = async ({
   if (screen.status !== "ready") {
     const common = await getTranslations("Common");
     return (
-      <>
+      <BrandGround>
         {header}
         <EditorialScreenNotice screen={screen} t={t} common={common} />
-      </>
+      </BrandGround>
     );
   }
 
@@ -40,7 +41,7 @@ const StrategicPlanAdminPage = async ({
   };
 
   return (
-    <>
+    <BrandGround>
       {header}
       <StrategicPlanEditor
         record={screen.record}
@@ -51,7 +52,7 @@ const StrategicPlanAdminPage = async ({
         editorial={screen.editorial}
         fieldLabels={fieldLabels}
       />
-    </>
+    </BrandGround>
   );
 };
 

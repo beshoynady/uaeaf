@@ -4,6 +4,7 @@ import type { FederationPersonResponse, RoleResponse, UserResponse } from "@/lib
 import { summariseDirectory } from "@/lib/admin/directory-stats";
 import { hasPermission } from "@/lib/auth/permissions";
 import { PageHeader } from "@/components/ui/page-header";
+import { BrandGround } from "@/components/ui/brand-ground";
 import { AccessDenied } from "@/components/ui/access-denied";
 import { StatTiles, type StatTile } from "@/components/admin/stat-tiles";
 import { StatusMessage } from "@/components/auth/status-message";
@@ -28,7 +29,7 @@ import { resolveLocale } from "@/i18n/params";
  * at all and this screen said so rather than offering a button that could
  * not work.
  */
-export default async function UsersPage({ params }: { params: Promise<{ locale: string }> }) {
+const UsersPage = async ({ params }: { params: Promise<{ locale: string }> }) => {
   const locale = await resolveLocale(params);
   setRequestLocale(locale);
 
@@ -46,10 +47,10 @@ export default async function UsersPage({ params }: { params: Promise<{ locale: 
 
   if (users === null) {
     return (
-      <>
+      <BrandGround>
         <PageHeader title={t("title")} description={t("description")} />
         <AccessDenied title={common("accessDeniedTitle")} message={common("accessDenied")} />
-      </>
+      </BrandGround>
     );
   }
 
@@ -100,7 +101,7 @@ export default async function UsersPage({ params }: { params: Promise<{ locale: 
   ];
 
   return (
-    <>
+    <BrandGround>
       <PageHeader title={t("title")} description={t("description")} />
       <StatTiles tiles={tiles} caption={t("tilesCaption")} />
 
@@ -124,6 +125,8 @@ export default async function UsersPage({ params }: { params: Promise<{ locale: 
         locale={locale}
       />
 
-    </>
+    </BrandGround>
   );
-}
+};
+
+export default UsersPage;

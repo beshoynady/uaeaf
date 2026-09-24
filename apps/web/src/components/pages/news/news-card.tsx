@@ -1,4 +1,5 @@
 import { useTranslations } from "next-intl";
+import { BRAND_DRAW_LINE, BrandBorder } from "@uaeaf/brand-ui";
 import { Link } from "@/i18n/navigation";
 import { CARD_INTERACTIVE } from "@/components/ui/surface";
 import { CARD_LINK } from "@/components/ui/interactive";
@@ -6,6 +7,7 @@ import { ArticleCover } from "./cover";
 import { PublishDate } from "./publish-date";
 import { SourceAttribution } from "./source-attribution";
 import { TopicBadge } from "./topic-badge";
+import { topicTone } from "./topic-tone";
 import type { ArticlePublic, MediaAssetPublic } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
 
@@ -41,6 +43,15 @@ import type { AppLocale } from "@/i18n/routing";
  * 2026-09-22) and a card that announced itself with a second chip would read
  * as a different kind of card rather than as the same card with a source.
  *
+ * ── The identity edge ──────────────────────────────────────────────────────
+ *
+ * The card sits inside the kit's `BrandBorder` (ADR-0098 D5), `static`, in the
+ * tone its topic maps to (`topic-tone.ts`), with the kit's draw line along the
+ * foot as the hover rule. `static` rather than `hover`: the draw line is
+ * already the card's hover response, and two motions on one pointer is noise.
+ * The border wraps the `<article>` rather than replacing it, so the element
+ * and its semantics are unchanged.
+ *
  * Tags are deliberately NOT here. The design carries them on the article page
  * and one category badge on the card, and four chips under a headline in a
  * grid of twelve would bury the headline they are meant to label.
@@ -66,7 +77,14 @@ export const NewsCard = ({
   const t = useTranslations("News");
 
   return (
-    <article className={`${CARD_INTERACTIVE} flex flex-col overflow-hidden p-0 ${className}`}>
+    // `*:flex *:flex-1` stretches the ring's clipping wrapper, so cards in one
+    // grid row keep one height and their dates keep one baseline.
+    <BrandBorder
+      variant="static"
+      tone={topicTone(article.topic)}
+      className={`${BRAND_DRAW_LINE} flex *:flex *:flex-1 ${className}`}
+    >
+    <article className={`${CARD_INTERACTIVE} flex flex-1 flex-col overflow-hidden p-0`}>
       {/* A fixed ratio rather than a fixed height: the card is fluid below
           the grid's breakpoints, and a fixed height would letterbox it there. */}
       <div className="relative aspect-[16/10] w-full overflow-hidden">
@@ -100,5 +118,6 @@ export const NewsCard = ({
         </div>
       </div>
     </article>
+    </BrandBorder>
   );
 };

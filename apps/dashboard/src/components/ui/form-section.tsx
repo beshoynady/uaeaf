@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { StepBadge } from "@uaeaf/brand-ui";
 
 /**
  * One collapsible part of a long form.
@@ -69,33 +70,32 @@ export const FormSection = ({
         <path d="m6 3 5 5-5 5" />
       </svg>
 
-      <span
-        className={`inline-flex size-6 shrink-0 items-center justify-center rounded-full text-caption font-bold ${
-          complete
-            ? "bg-[color:var(--color-brand-primary)] text-[color:var(--color-text-on-brand)]"
-            : "bg-[color:var(--color-surface-sunken)] text-[color:var(--color-text-secondary)]"
-        }`}
-      >
-        {complete ? (
-          <>
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 16 16"
-              className="size-3.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="m3 8.5 3.5 3.5L13 5" />
-            </svg>
-            <span className="sr-only">{completeLabel}</span>
-          </>
-        ) : (
-          <span aria-hidden="true">{number}</span>
-        )}
-      </span>
+      {/* The tick takes the step disc's own size, so a part turning complete
+          swaps the mark without the heading beside it moving. */}
+      {complete ? (
+        <span className="inline-flex size-[var(--space-8)] shrink-0 items-center justify-center rounded-full bg-[color:var(--color-brand-primary)] text-[color:var(--color-text-on-brand)]">
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 16 16"
+            className="size-3.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="m3 8.5 3.5 3.5L13 5" />
+          </svg>
+          <span className="sr-only">{completeLabel}</span>
+        </span>
+      ) : (
+        // The library's step disc (Chapter 12 §12.15, editor recipe). Its
+        // `stepLabel` is the badge's whole accessible text, and it is empty on
+        // purpose: the heading beside it already names the part, the number
+        // was never announced before this change, and announcing it now would
+        // need a new translated string that a visual-only change must not add.
+        <StepBadge step={number} stepLabel="" />
+      )}
 
       <h3 className="text-label font-bold text-[color:var(--color-text-primary)]">{title}</h3>
     </summary>

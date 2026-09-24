@@ -2,7 +2,7 @@
 
 import { useId } from "react";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
+import { FilterChip } from "@uaeaf/brand-ui";
 import { TextField } from "@/components/auth/text-field";
 import { TIME_RANGE_PRESETS, activePreset, presetRange, rangeIsPossible } from "@uaeaf/content/time-range";
 import type { TimeRange } from "@uaeaf/content/time-range";
@@ -56,25 +56,17 @@ export const NewsTimeFilter = ({
             other filters, and a clipped row hides a control an editor is
             looking for. */}
         <div className="flex flex-wrap gap-2">
-          <Button
-            variant={filtered ? "secondary" : "primary"}
-            aria-pressed={!filtered}
-            onClick={() => onChange({})}
-          >
-            {t("timeAll")}
-          </Button>
+          {/* The shared filter chip (Chapter 12 §12.15): selected is a solid
+              plate *and* `aria-pressed`, never colour alone. */}
+          <FilterChip label={t("timeAll")} selected={!filtered} onSelect={() => onChange({})} />
 
           {TIME_RANGE_PRESETS.map((preset) => (
-            <Button
+            <FilterChip
               key={preset}
-              variant={active === preset ? "primary" : "secondary"}
-              // `aria-pressed` rather than the variant alone: which button is
-              // filled is not information a screen reader can see.
-              aria-pressed={active === preset}
-              onClick={() => onChange(presetRange(preset))}
-            >
-              {t(`time_${preset}`)}
-            </Button>
+              label={t(`time_${preset}`)}
+              selected={active === preset}
+              onSelect={() => onChange(presetRange(preset))}
+            />
           ))}
         </div>
       </div>

@@ -482,6 +482,17 @@
   --surface-border: var(--color-brand-surface-ink-border);
   --surface-divider: var(--color-brand-surface-ink-divider);
   --surface-focus-ring: var(--color-brand-surface-ink-text);
+  /*
+   * The green ink tier, and the only surface that publishes one (ADR-0098 §8c).
+   *
+   * Everything that reads it does so as `var(--surface-accent, …)` with the
+   * surface's own ink as the fallback, so a green label is green on ink and
+   * simply the surface's ink everywhere else. That is deliberate: green.300 is
+   * measured against #0B0B0B and against nothing else, and a variable that
+   * resolved to an unmeasured green on a light ground would be worse than one
+   * that resolves to nothing.
+   */
+  --surface-accent: var(--color-brand-surface-ink-accent);
   --surface-tricolor-mid: var(--color-white);
   --surface-btn-primary-bg: var(--color-brand-primary);
   --surface-btn-primary-ink: var(--color-text-on-brand);

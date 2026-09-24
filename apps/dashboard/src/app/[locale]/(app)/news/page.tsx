@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { PageHeader } from "@/components/ui/page-header";
+import { BrandGround } from "@/components/ui/brand-ground";
 import { AccessDenied } from "@/components/ui/access-denied";
 import { ArticleList } from "@/components/admin/news/article-list";
 import { NewsroomSummaryCards } from "@/components/admin/news/newsroom-summary";
@@ -14,7 +15,7 @@ import { resolveLocale } from "@/i18n/params";
  * worked from, and showing one to somebody with no action available on it is
  * showing them a worklist they cannot use.
  */
-export default async function NewsroomPage({ params }: { params: Promise<{ locale: string }> }) {
+const NewsroomPage = async ({ params }: { params: Promise<{ locale: string }> }) => {
   const locale = await resolveLocale(params);
   setRequestLocale(locale);
 
@@ -26,15 +27,15 @@ export default async function NewsroomPage({ params }: { params: Promise<{ local
 
   if (screen.status !== "ready") {
     return (
-      <>
+      <BrandGround>
         {header}
         <AccessDenied title={common("accessDeniedTitle")} message={common("accessDenied")} />
-      </>
+      </BrandGround>
     );
   }
 
   return (
-    <>
+    <BrandGround>
       {header}
 
       {/* Absent rather than zeroed when the read was refused: a row of noughts
@@ -47,6 +48,8 @@ export default async function NewsroomPage({ params }: { params: Promise<{ local
         locale={locale}
         canCreate={screen.data.canCreate}
       />
-    </>
+    </BrandGround>
   );
-}
+};
+
+export default NewsroomPage;

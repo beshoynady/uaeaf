@@ -13,20 +13,13 @@ import { PlanCta } from "./plan-cta";
 /**
  * The Strategic Plan as ADR-0075 lays it out: eight sections whose order and
  * composition the code fixes, and whose words, pictures and list items the
- * record decides. What is asserted here is that structure; distances, contrast
- * and the entrance are measured in a browser.
+ * record decides, each section a `@uaeaf/brand-ui` surface (ADR-0098 D7). What
+ * is asserted here is that structure; distances, contrast and the entrance are
+ * measured in a browser.
  */
 
 vi.mock("next-intl/server", () => ({
   getTranslations: async () => (key: string) => key,
-}));
-
-vi.mock("@/i18n/navigation", () => ({
-  Link: ({ href, children, ...props }: { href: string; children: React.ReactNode }) => (
-    <a href={href} {...props}>
-      {children}
-    </a>
-  ),
 }));
 
 const text = (value: string) => ({ ar: value, en: value });
@@ -65,15 +58,18 @@ const steps: PlanStepPublic[] = ["المحور الاستراتيجي", "اله�
 
 const numbers = (container: HTMLElement) => [...container.querySelectorAll("[data-item-number]")].map((n) => n.textContent);
 
+const ordinals = (container: HTMLElement) =>
+  [...container.querySelectorAll(".brand-feature-card__ordinal")].map((n) => n.textContent);
+
 describe("PlanOverview", () => {
-  it("prints the stored heading with the accent rule and the photograph at the start of the reading line", () => {
+  it("prints the stored heading as the kit's section heading and the photograph at the start of the reading line", () => {
     const { container } = render(
       <PlanOverview record={{ introHeading: text("خارطة"), introText: text("نص"), introImage: photo("intro") }} locale="ar" sizes="100vw" />,
     );
     const section = container.querySelector("section")!;
-    expect(section).toHaveAttribute("data-ground", "base");
-    expect(container.querySelector("h2 [data-accent-rule]")).not.toBeNull();
-    expect(container.querySelector('[data-field="introHeading"]')!.textContent).toBe("خارطة");
+    expect(section).toHaveAttribute("data-surface", "canvas");
+    expect(section.querySelector(":scope > .brand-mesh")).not.toBeNull();
+    expect(container.querySelector('.brand-section-heading h2 [data-field="introHeading"]')!.textContent).toBe("خارطة");
     expect(container.querySelector('[data-field="introText"]')!.className).toContain("text-body-lg");
     const picture = container.querySelector<HTMLElement>("[data-slanted-photo]")!;
     expect(picture).toHaveAttribute("data-side", "start");
@@ -90,10 +86,11 @@ describe("PlanOverview", () => {
 });
 
 describe("PlanPhasesBand", () => {
-  it("stands on the green register as an ordered list of phases, numbered in display order with their icons", () => {
+  it("stands on the brand-green surface as an ordered list of phases, numbered in display order with their icons", () => {
     const { container } = render(<PlanPhasesBand phases={phases} title={null} label="مراحل" locale="ar" />);
     const section = container.querySelector("section")!;
-    expect(section).toHaveAttribute("data-register", "green");
+    expect(section).toHaveAttribute("data-surface", "brand-green");
+    expect(section.innerHTML).not.toMatch(/color-section-green/);
     expect(container.querySelector('ol[data-field="phases"]')).not.toBeNull();
     expect(numbers(container)).toEqual(["01", "02", "03", "04"]);
     expect([...container.querySelectorAll("ol > li h3")].map((h) => h.textContent)).toEqual(["الأساس", "التطوير", "التنافسية", "الأثر"]);
@@ -106,11 +103,10 @@ describe("PlanPhasesBand", () => {
     const heading = hidden.container.querySelector("h2")!;
     expect(heading.textContent).toBe("مراحل الخطة");
     expect(heading.className).toContain("sr-only");
-    expect(hidden.container.querySelector("section")).toHaveAttribute("aria-labelledby", heading.id);
     hidden.unmount();
 
     const stored = render(<PlanPhasesBand phases={phases} title="مراحلنا" label="مراحل الخطة" locale="ar" />);
-    expect(stored.container.querySelector("h2")!.textContent).toBe("مراحلنا");
+    expect(stored.container.querySelector(".brand-section-heading h2")!.textContent).toBe("مراحلنا");
     expect(stored.container.querySelector("h2")!.className).not.toContain("sr-only");
   });
 
@@ -188,48 +184,53 @@ describe("countable", () => {
 });
 
 describe("PlanPillars", () => {
-  it("numbers the pillars in display order on cards coloured by position, without icons", () => {
+  it("numbers the pillars in display order on feature cards cycling green, ink and red, without icons", () => {
     const { container } = render(<PlanPillars pillars={items(6)} title={text("محاورنا")} text={text("نركز")} locale="ar" />);
-    const cards = [...container.querySelectorAll('ol[data-field="pillars"] > li')];
-    expect(cards.map((card) => card.className.match(/--color-item-(\d)-surface/)?.[1])).toEqual(["1", "2", "3", "4", "1", "2"]);
-    expect(numbers(container)).toEqual(["01", "02", "03", "04", "05", "06"]);
+    const cards = [...container.querySelectorAll('ol[data-field="pillars"] > li > article')];
+    expect(cards.map((card) => card.getAttribute("data-surface"))).toEqual([
+      "brand-green",
+      "ink",
+      "brand-red",
+      "brand-green",
+      "ink",
+      "brand-red",
+    ]);
+    expect(container.innerHTML).not.toMatch(/color-item-/);
+    expect(ordinals(container)).toEqual(["01", "02", "03", "04", "05", "06"]);
     expect([...container.querySelectorAll('[data-part="title"]')].map((t) => t.textContent)).toEqual(
       ["عنصر 1", "عنصر 2", "عنصر 3", "عنصر 4", "عنصر 5", "عنصر 6"],
     );
     expect(container.querySelectorAll("ol svg")).toHaveLength(0);
-    expect(container.querySelector('[data-field="pillarsText"]')!.className).toContain("text-body-lg");
+    expect(container.querySelector('.brand-section-heading__description [data-field="pillarsText"]')!.textContent).toBe("نركز");
   });
 
-  // Rule 1 after a coloured band (ADR-0075 M0-B): the strokes stand below the seam.
-  it("draws the identity strokes below the seam with the band before, on a positioned section", () => {
+  it("stands on a canvas surface with the mesh, and prints no description when none is stored", () => {
     const { container } = render(<PlanPillars pillars={items(3)} title={text("م")} text={null} locale="ar" />);
     const section = container.querySelector("section")!;
-    expect(section.className).toContain("relative");
-    expect(section).toHaveAttribute("data-ground", "base");
-    expect(section.querySelector("[data-seam-lines]")).toHaveAttribute("data-placement", "below");
-    // From md: on a phone the heading spans the line and no corner stays 32px
-    // clear of it (IL-5 measured 3.7–11px at 360).
-    expect(section.querySelector("[data-seam-lines]")).toHaveAttribute("data-from", "md");
+    expect(section).toHaveAttribute("data-surface", "canvas");
+    expect(section.querySelector(":scope > .brand-mesh")).not.toBeNull();
     expect(container.querySelector('[data-field="pillarsText"]')).toBeNull();
   });
 });
 
 describe("PlanObjectives", () => {
-  it("prints numbered rows in display order, each edged and numbered in its item's ink, beside a photograph at the start", () => {
+  it("prints numbered rows in display order, each edged in the identity tone its position gives it, beside a photograph at the start", () => {
     const { container } = render(
       <PlanObjectives objectives={items(5)} title={text("من المحاور")} image={photo("objectives")} locale="ar" sizes="100vw" />,
     );
     const section = container.querySelector("section")!;
-    expect(section).toHaveAttribute("data-ground", "sunken");
-    expect(section.className).toContain("overflow-x-clip");
-    expect(section.querySelector("[data-seam-lines]")).toHaveAttribute("data-placement", "centered");
+    expect(section).toHaveAttribute("data-surface", "canvas");
+    expect(section.className).toContain("overflow-clip");
+    expect(section.innerHTML).not.toMatch(/color-item-/);
 
     const rows = [...container.querySelectorAll('ol[data-field="objectives"] > li')];
     expect(rows).toHaveLength(5);
-    expect(rows.map((row) => row.className.match(/--color-item-(\d)-ink/)?.[1])).toEqual(["1", "2", "3", "4", "1"]);
+    expect(rows.map((row) => row.getAttribute("data-tone"))).toEqual(["green", "ink", "red", "green", "ink"]);
+    expect(rows[0].className).toContain("var(--color-brand-primary)");
+    expect(rows[2].className).toContain("var(--color-brand-secondary)");
     expect(numbers(container)).toEqual(["01", "02", "03", "04", "05"]);
     expect(rows[0].querySelector("[data-item-number]")!.className).toContain("text-display-l");
-    expect(rows[0].querySelector("[data-item-number]")!.className).toContain("var(--color-item-1-ink)");
+    expect(rows[0].querySelector("[data-item-number]")!.className).toContain("var(--surface-text)");
     expect(rows[0].querySelector("h3")!.textContent).toBe("عنصر 1");
     // Rows, not cards: no item-card tone attribute, so the section reads as a statement.
     expect(container.querySelector("li[data-item-tone]")).toBeNull();
@@ -238,16 +239,19 @@ describe("PlanObjectives", () => {
 });
 
 describe("PlanMetrics", () => {
-  it("prints each figure as stored, counted by CountUp, in its item's ink, beside a photograph at the end", () => {
+  it("prints each figure as stored, counted by CountUp, in white on an ink surface, beside a photograph at the end", () => {
     const { container } = render(
       <PlanMetrics metrics={metrics} title={text("نقيس")} label="مؤشرات" image={photo("metrics")} locale="ar" sizes="100vw" />,
     );
-    expect(container.querySelector("section")).toHaveAttribute("data-ground", "base");
+    const section = container.querySelector("section")!;
+    expect(section).toHaveAttribute("data-surface", "ink");
+    // ADR-0098 §8.4: an ink surface always carries an edge cue.
+    expect(section.querySelector(":scope > .brand-mesh")).not.toBeNull();
     const figures = [...container.querySelectorAll('ul[data-field="metrics"] [data-count]')];
     expect(figures.map((f) => f.getAttribute("data-count"))).toEqual(["2030", "15", "+30%", "+25%"]);
     expect(figures.map((f) => f.querySelector('[data-part="value"]')!.textContent)).toEqual(["2030", "15", "+30%", "+25%"]);
-    expect(figures[0].className).toContain("var(--color-item-1-ink)");
-    expect(figures[3].className).toContain("var(--color-item-4-ink)");
+    for (const figure of figures) expect(figure.className).toContain("var(--surface-text)");
+    expect(container.innerHTML).not.toMatch(/color-item-/);
     expect(figures[0].className).toContain("text-display-l");
     expect(container.querySelector("ul")).toHaveAttribute("aria-label", "مؤشرات");
     expect(container.querySelector("[data-slanted-photo]")).toHaveAttribute("data-side", "end");
@@ -257,11 +261,11 @@ describe("PlanMetrics", () => {
 });
 
 describe("PlanExecutionPath", () => {
-  it("stands on the green register as an ordered list of steps climbing in reading order, joined by one line", () => {
+  it("stands on the brand-green surface as an ordered list of steps climbing in reading order, joined by one line", () => {
     const { container } = render(
       <PlanExecutionPath steps={steps} title={text("نحوّل")} text={text("لا تقاس")} label="خطوات" locale="ar" />,
     );
-    expect(container.querySelector("section")).toHaveAttribute("data-register", "green");
+    expect(container.querySelector("section")).toHaveAttribute("data-surface", "brand-green");
     const list = container.querySelector<HTMLElement>('ol[data-field="executionSteps"]')!;
     expect(list).toHaveAttribute("aria-label", "خطوات");
     expect(numbers(container)).toEqual(["01", "02", "03", "04", "05"]);
@@ -286,7 +290,7 @@ describe("PlanExecutionPath", () => {
       expect(segment!.className).toContain("w-[calc(100%+var(--plan-gap))]");
       expect(segment!.className).toContain("rtl:-scale-x-100");
       expect(segment!.querySelector("svg")).toHaveAttribute("data-reveal-part", "draw");
-      expect(segment!.querySelector("line")!.getAttribute("stroke")).toBe("var(--color-section-green-border)");
+      expect(segment!.querySelector("line")!.getAttribute("stroke")).toBe("var(--surface-border)");
     }
     expect(container.querySelector("[data-plan-line]"), "no single line across column middles").toBeNull();
   });
@@ -339,26 +343,21 @@ describe("PlanExecutionPath", () => {
 });
 
 describe("PlanCta", () => {
-  it("prints the stored title and text beside the photograph, with the two navigation links as buttons", async () => {
-    const { container } = render(
-      await PlanCta({ title: text("نبني"), text: text("مع رؤية"), image: photo("cta"), locale: "ar", sizes: "100vw" }),
-    );
-    expect(container.querySelector("section")).toHaveAttribute("data-ground", "base");
+  it("is a red card inset into the canvas, so it never abuts the green band before it", async () => {
+    const { container } = render(await PlanCta({ title: text("نبني"), text: text("مع رؤية"), locale: "ar" }));
+    const holder = container.querySelector('section[data-surface="canvas"]')!;
+    expect(holder.querySelector('[data-surface="brand-red"]')).not.toBeNull();
     expect(container.querySelector('[data-field="ctaTitle"]')!.textContent).toBe("نبني");
     expect(container.querySelector('[data-field="ctaText"]')!.textContent).toBe("مع رؤية");
-    expect([...container.querySelectorAll("a")].map((a) => a.getAttribute("href"))).toEqual([
-      "/about/governance/vision-mission",
-      "/about/governance/policies",
-    ]);
-    expect(container.querySelector("a")!.className).toContain("focus-visible:ring-2");
-    expect(container.querySelector("[data-slanted-photo]")).toHaveAttribute("data-side", "end");
-    expect(container.querySelector('[class*="linear-gradient"]'), "no scrim: the words stand beside the picture").toBeNull();
   });
 
-  it("centres the call and draws no picture when the record has none", async () => {
-    const { container } = render(await PlanCta({ title: text("نبني"), text: null, image: null, locale: "en", sizes: "100vw" }));
-    expect(container.querySelector("img")).toBeNull();
-    expect(container.querySelector("[data-reveal]")!.className).toContain("text-center");
+  it("offers the two navigation links as kit buttons, primary first, in the page's locale", async () => {
+    const { container } = render(await PlanCta({ title: text("نبني"), text: null, locale: "en" }));
+    const links = [...container.querySelectorAll<HTMLAnchorElement>("a.brand-button")];
+    expect(links.map((a) => [a.getAttribute("href"), a.dataset.variant])).toEqual([
+      ["/en/about/governance/vision-mission", "primary"],
+      ["/en/about/governance/policies", "secondary"],
+    ]);
     expect(container.querySelector('[data-field="ctaText"]')).toBeNull();
   });
 });

@@ -2,8 +2,8 @@
 
 import { useId, useMemo, useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
-import { BUTTON_PRIMARY } from "@/components/ui/interactive";
+import { Button } from "@uaeaf/brand-ui";
+import { Link, getPathname } from "@/i18n/navigation";
 import { SearchField } from "@/components/ui/search-field";
 import { SelectField } from "@/components/ui/select-field";
 import { NewsTimeFilter } from "./time-filter";
@@ -147,12 +147,13 @@ export const ArticleList = ({
           // button would lose the middle-click, the new tab and the address
           // an editor copies to a colleague.
           //
-          // `BUTTON_PRIMARY` rather than a hand-written approximation of it,
-          // so this carries the same rest, hover, pressed and focus states as
-          // every other primary action and cannot drift from them.
-          <Link href="/news/new" className={BUTTON_PRIMARY}>
+          // The shared library's primary button (Chapter 12 §12.15), so the
+          // create action is the same control as every other primary action.
+          // It renders a plain `next/link`, which does not add the locale, so
+          // the address is resolved here with the router's own `getPathname`.
+          <Button variant="primary" href={getPathname({ href: "/news/new", locale })}>
             {t("newArticle")}
-          </Link>
+          </Button>
         ) : null}
       </div>
 

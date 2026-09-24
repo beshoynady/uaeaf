@@ -5,6 +5,7 @@ import { FOCUS, TOUCH_TARGET, TRANSITION } from "@/components/ui/interactive";
 import { REGISTER_CLASSES } from "@/components/ui/section";
 import type { AppLocale } from "@/i18n/routing";
 import type { SponsorshipPublic } from "@/lib/api/types";
+import { sponsorTone } from "./organization-card";
 import { OrganizationLogo } from "./organization-logo";
 import { OrganizationName } from "./organization-name";
 import { BrandBorder } from "@uaeaf/brand-ui";
@@ -32,15 +33,17 @@ export const SponsorBanner = async ({ sponsorship, locale }: { sponsorship: Spon
   const shown = displayName(sponsor.name, locale);
 
   return (
-    // The official sponsor is the one commercial relationship the homepage
-    // singles out, so it carries the static identity edge (usage matrix §5-D).
+    // The banner is the one commercial relationship the homepage singles out,
+    // so it carries the static identity edge (usage matrix §5-D), in the tone
+    // its tier earns (`sponsorTone`): the tricolour for a strategic partner,
+    // the green line for any other tier the banner may hold (D5.1).
     // `static`, never `hover`: the card is not interactive as a whole.
     //
     // The border wraps the `<article>` rather than replacing it. `BrandBorder`
     // forwards no ARIA — widening it to would make it a second place where an
     // accessible name can be set — and replacing the element here would have
     // silently dropped `aria-labelledby`, leaving the banner unnamed.
-    <BrandBorder variant="static" className="rounded-[var(--radius-lg)]">
+    <BrandBorder variant="static" tone={sponsorTone(sponsorship.tier)} className="rounded-[var(--radius-lg)]">
     <article
       data-sponsor-banner=""
       aria-labelledby={`sponsor-banner-${sponsorship.id}`}

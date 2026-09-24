@@ -4,6 +4,7 @@ import type { LocalizedText } from "@/lib/api/types";
 import { hasPermission } from "@/lib/auth/permissions";
 import { STATIC_PAGES } from "@/lib/admin/static-pages";
 import { PageHeader } from "@/components/ui/page-header";
+import { BrandGround } from "@/components/ui/brand-ground";
 import { AccessDenied } from "@/components/ui/access-denied";
 import { StatTiles, type StatTile } from "@/components/admin/stat-tiles";
 import { PageWorkbench, type PageEntry } from "@/components/admin/pages/page-workbench";
@@ -25,11 +26,11 @@ import { resolveLocale } from "@/i18n/params";
  * exposes no update path for them at all, so a screen would be a form with
  * nowhere to submit. See `static-pages.ts`.
  */
-export default async function SitePagesScreen({
+const SitePagesScreen = async ({
   params,
 }: {
   params: Promise<{ locale: string }>;
-}) {
+}) => {
   const locale = await resolveLocale(params);
   setRequestLocale(locale);
 
@@ -57,10 +58,10 @@ export default async function SitePagesScreen({
     // Nothing to read and nothing to write: the only honest thing this
     // screen can say.
     return (
-      <>
+      <BrandGround>
         <PageHeader title={t("title")} description={t("description")} />
         <AccessDenied title={common("accessDeniedTitle")} message={common("accessDenied")} />
-      </>
+      </BrandGround>
     );
   }
 
@@ -94,7 +95,7 @@ export default async function SitePagesScreen({
   ];
 
   return (
-    <>
+    <BrandGround>
       <PageHeader title={t("title")} description={t("description")} />
       <StatTiles tiles={tiles} caption={t("tilesCaption")} />
       <PageWorkbench
@@ -103,6 +104,8 @@ export default async function SitePagesScreen({
         canReadMedia={media !== null}
         locale={locale}
       />
-    </>
+    </BrandGround>
   );
-}
+};
+
+export default SitePagesScreen;

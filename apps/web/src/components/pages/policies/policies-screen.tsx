@@ -70,7 +70,7 @@ export const PoliciesScreen = async ({ locale }: { locale: AppLocale }) => {
   };
 
   return (
-    <main className="policies">
+    <div className="policies">
       <PageHero
         title={t("title")}
         // The old page carried a separate "Governance and organisation"
@@ -117,6 +117,6 @@ export const PoliciesScreen = async ({ locale }: { locale: AppLocale }) => {
           </Button>
         }
       />
-    </main>
+    </div>
   );
 };

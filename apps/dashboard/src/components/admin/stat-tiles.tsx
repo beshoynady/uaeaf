@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { StatCard, type StatTone as CardTone } from "@uaeaf/brand-ui";
 
 /**
  * The indicator row above the administration screens.
@@ -8,19 +9,26 @@ import type { ReactNode } from "react";
  * actionable — "39 active accounts" is context, "2 accounts can sign in and
  * see nothing" is a task.
  *
- * `tone` marks the two that mean work, and it is carried by a rule under the
- * tile, never by the figure's colour: measured on the light surface, the
- * warning hue reaches 2.45:1 and would fail WCAG 1.4.3 as text (see
- * components/auth/status-message.tsx for the full measurement and the token
- * conflict behind it). The tone is redundant with the note beneath the
- * figure, so nothing is carried by colour alone (Chapter 6 §6.2).
+ * Drawn with the shared library's `StatCard` (ADR-0098, Chapter 12 §12.15):
+ * the tone is the card's inline-start edge, never the figure's colour —
+ * measured on the light surface, the warning hue reaches 2.45:1 and would fail
+ * WCAG 1.4.3 as text (see components/auth/status-message.tsx). The tone is
+ * redundant with the note beneath the figure, so nothing is carried by colour
+ * alone (Chapter 6 §6.2).
  */
 export type StatTone = "neutral" | "attention" | "critical";
 
-const TONE_RULE: Record<StatTone, string> = {
-  neutral: "transparent",
-  attention: "var(--color-semantic-warning)",
-  critical: "var(--color-semantic-error)",
+/**
+ * `critical` has no counterpart in the library's tone set, which names roles
+ * (`action`, `attention`, `positive`, `live`) and carries no error edge. It
+ * folds into `attention` — the one warning-family tone — rather than being
+ * drawn with a local error border beside the library's own, which would put
+ * two border systems in one row. The distinction is still in the note text.
+ */
+const CARD_TONE: Record<StatTone, CardTone> = {
+  neutral: "neutral",
+  attention: "attention",
+  critical: "attention",
 };
 
 export interface StatTile {
@@ -32,22 +40,21 @@ export interface StatTile {
   tone?: StatTone;
 }
 
-export function StatTiles({ tiles, caption }: { tiles: readonly StatTile[]; caption: string }) {
-  return (
-    <section aria-label={caption} className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+export const StatTiles = ({ tiles, caption }: { tiles: readonly StatTile[]; caption: string }) => (
+  <section aria-label={caption}>
+    {/* A list, so a screen reader announces how many figures the row holds. */}
+    <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
       {tiles.map((tile) => (
-        <div
-          key={tile.key}
-          style={{ borderBottomColor: TONE_RULE[tile.tone ?? "neutral"] }}
-          className="flex flex-col gap-1 rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] border-b-[3px] bg-[color:var(--color-surface-raised)] px-4 py-3"
-        >
-          <p className="text-caption text-[color:var(--color-text-secondary)]">{tile.label}</p>
-          <p className="text-h4 font-bold tabular-nums text-[color:var(--color-text-primary)]">
-            {tile.value}
-          </p>
-          <p className="text-caption text-[color:var(--color-text-muted)]">{tile.note}</p>
-        </div>
+        <li key={tile.key} className="flex">
+          <StatCard
+            className="flex-1"
+            value={String(tile.value)}
+            label={tile.label}
+            detail={tile.note}
+            tone={CARD_TONE[tile.tone ?? "neutral"]}
+          />
+        </li>
       ))}
-    </section>
-  );
-}
+    </ul>
+  </section>
+);

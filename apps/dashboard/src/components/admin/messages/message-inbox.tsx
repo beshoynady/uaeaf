@@ -4,6 +4,7 @@ import { useId, useRef, useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import { useToast } from "@/components/ui/toast";
 import { SelectField } from "@/components/ui/select-field";
+import { FilterChip } from "@uaeaf/brand-ui";
 import { SELECTABLE_ROW, TOGGLE_SEGMENT } from "@/components/ui/interactive";
 import {
   MESSAGE_FILTERS,
@@ -124,18 +125,18 @@ export const MessageInbox = ({
       <div
         role="group"
         aria-label={t("filtersLabel")}
-        className="inline-flex flex-wrap gap-1 self-start rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-sunken)] p-1"
+        className="flex flex-wrap gap-2 self-start"
       >
+        {/* Filters are the shared chip (Chapter 12 §12.15): selected is a solid
+            plate *and* `aria-pressed`, never colour alone. The group sits on
+            the page's own neutral ground rather than a sunken tray. */}
         {MESSAGE_FILTERS.map((option) => (
-          <button
+          <FilterChip
             key={option}
-            type="button"
-            aria-pressed={filter === option}
-            onClick={() => setFilter(option)}
-            className={TOGGLE_SEGMENT}
-          >
-            {t(`filter_${option}`, { count: counts[option] })}
-          </button>
+            selected={filter === option}
+            onSelect={() => setFilter(option)}
+            label={t(`filter_${option}`, { count: counts[option] })}
+          />
         ))}
       </div>
 

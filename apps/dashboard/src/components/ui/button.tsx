@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { Button as BrandButton } from "@uaeaf/brand-ui";
 import {
   BUTTON_DESTRUCTIVE,
   BUTTON_GHOST,
@@ -47,7 +48,23 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
   children?: ReactNode;
 }
 
-export function Button({
+/**
+ * The two variants the shared library owns.
+ *
+ * `primary` and `secondary` render the library's `Button` so a dashboard
+ * action and a public-site action are one control (ADR-0098 D7): the solid
+ * green plate, and the tricolour edge on the companion action. `ghost`,
+ * `icon` and `destructive` have no library counterpart and keep the local
+ * class strings — a destructive action in the error family is not something
+ * the identity layer should restyle.
+ *
+ * The loading contract below is this component's, not the library's, so it
+ * wraps the library button rather than being replaced by it: the label keeps
+ * its width and the spinner is drawn over it, exactly as before.
+ */
+const LIBRARY_VARIANTS = new Set<ButtonVariant>(["primary", "secondary"]);
+
+export const Button = ({
   variant = "primary",
   loading = false,
   disabled = false,
@@ -55,25 +72,46 @@ export function Button({
   className = "",
   children,
   ...rest
-}: ButtonProps) {
+}: ButtonProps) => {
+  const body = (
+    <>
+      <span className={loading ? "pointer-events-none opacity-0" : undefined}>{children}</span>
+      {loading ? <ButtonSpinner /> : null}
+    </>
+  );
+
+  if (LIBRARY_VARIANTS.has(variant)) {
+    return (
+      <BrandButton
+        variant={variant as "primary" | "secondary"}
+        type={type}
+        // Loading disables too: the operation is already running, and the
+        // second press is the one that publishes twice.
+        disabled={disabled || loading}
+        aria-busy={loading || undefined}
+        className={className || undefined}
+        {...rest}
+      >
+        {body}
+      </BrandButton>
+    );
+  }
+
   return (
     <button
       // `type` defaults to "button", not the platform's "submit". A button
       // inside a form with no explicit type submits it, which is how a
       // "Cancel" beside a form ends up saving.
       type={type}
-      // Loading disables too: the operation is already running, and the
-      // second press is the one that publishes twice.
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       className={`relative ${VARIANT_CLASSES[variant]} ${className}`}
       {...rest}
     >
-      <span className={loading ? "pointer-events-none opacity-0" : undefined}>{children}</span>
-      {loading ? <ButtonSpinner /> : null}
+      {body}
     </button>
   );
-}
+};
 
 /**
  * CMP-SPINNER-001, `Inline` variant — 16px, centred over the label it hides.
@@ -94,8 +132,7 @@ export function Button({
  * §Anti-Patterns) because it reports a real ongoing wait — and it stops, while
  * staying visible, under reduced motion, exactly as the spec requires.
  */
-function ButtonSpinner() {
-  return (
+const ButtonSpinner = () => (
     <span className="absolute inset-0 flex items-center justify-center">
       <svg
         aria-hidden="true"
@@ -111,5 +148,4 @@ function ButtonSpinner() {
         <path d="M17.5 10a7.5 7.5 0 0 0-7.5-7.5" />
       </svg>
     </span>
-  );
-}
+);

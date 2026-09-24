@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { PageHeader } from "@/components/ui/page-header";
+import { BrandGround } from "@/components/ui/brand-ground";
 import { EditorialScreenNotice } from "@/components/admin/editorial-editor/editorial-screen-notice";
 import { VisionMissionEditor } from "@/components/admin/vision-mission/editor";
 import { loadEditorialScreen } from "@/lib/admin/editorial-screen";
@@ -27,10 +28,10 @@ const VisionMissionAdminPage = async ({
   if (screen.status !== "ready") {
     const common = await getTranslations("Common");
     return (
-      <>
+      <BrandGround>
         {header}
         <EditorialScreenNotice screen={screen} t={t} common={common} />
-      </>
+      </BrandGround>
     );
   }
 
@@ -41,7 +42,7 @@ const VisionMissionAdminPage = async ({
   };
 
   return (
-    <>
+    <BrandGround>
       {header}
       <VisionMissionEditor
         record={screen.record}
@@ -52,7 +53,7 @@ const VisionMissionAdminPage = async ({
         editorial={screen.editorial}
         fieldLabels={fieldLabels}
       />
-    </>
+    </BrandGround>
   );
 };
 

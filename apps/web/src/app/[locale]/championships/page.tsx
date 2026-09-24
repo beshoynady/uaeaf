@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
-import { PreparingPageScreen, buildPreparingPageMetadata } from "@/components/pages/preparing-page-screen";
+import { buildPreparingPageMetadata } from "@/components/pages/preparing-page-screen";
+import { ChampionshipsScreen } from "@/components/pages/championships/championships-screen";
 import type { AppLocale } from "@/i18n/routing";
 
 /** `/championships`: in preparation (`PREPARING_PAGES`) until its full page replaces this file at the same route. */
@@ -18,7 +19,7 @@ export const generateMetadata = async ({
 const ChampionshipsPage = async ({ params }: { params: Promise<{ locale: AppLocale }> }) => {
   const { locale } = await params;
   setRequestLocale(locale);
-  return <PreparingPageScreen pageKey={KEY} locale={locale} />;
+  return <ChampionshipsScreen locale={locale} />;
 };
 
 export default ChampionshipsPage;

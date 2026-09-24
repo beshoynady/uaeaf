@@ -28,22 +28,48 @@
 }
 
 /*
- * One focus treatment for every control in this package, on all five surfaces.
+ * One focus treatment for every control in this package, on all six surfaces.
  *
- * A solid ring plus an offset band. The pair always spans the ground's extremes
- * — `--surface-focus-ring` against `--a11y-focus-offset` — so one of the two
- * always clears WCAG 1.4.11 against whatever is behind it. The tricolour is
- * never the focus indicator: a gradient ring has no single measurable contrast
- * against a ground, which is exactly what 1.4.11 asks for.
+ * A solid ring with a painted band inside it. The pair spans the ground's
+ * extremes — `--surface-focus-ring` against `--a11y-focus-offset`, which are
+ * black and white in either order in every theme — so one of the two always
+ * clears WCAG 1.4.11 against whatever is behind it. The tricolour is never the
+ * focus indicator: a gradient ring has no single measurable contrast against a
+ * ground, which is exactly what 1.4.11 asks for.
+ *
+ * The band is a `box-shadow` and not `outline-offset` alone. `outline-offset`
+ * leaves the gap *transparent*, so on a ground that happens to sit near the
+ * ring colour there is no second colour at all and the sandwich this comment
+ * promised was never drawn — the white ring on the ink surface had only ink
+ * behind it. The shadow paints that gap, and it sits under the outline at the
+ * same width, so the two are one 4px indicator rather than two rings.
+ *
+ * `--brand-focus-offset` exists so a card can widen the gap without restating
+ * the rule. Nothing may set it below `--a11y-focus-offset-width`: the token is
+ * the floor, and the variable only ever moves outward.
  */
 .brand-button:focus-visible,
 .brand-icon-button:focus-visible,
 .brand-filter-chip:focus-visible,
 .brand-search-field__input:focus-visible,
 .brand-search-field__clear:focus-visible,
-.brand-link-tile:focus-visible {
+.brand-link-tile:focus-visible,
+.brand-focusable:focus-visible {
   outline: var(--a11y-focus-ring-width) solid var(--surface-focus-ring);
-  outline-offset: var(--a11y-focus-offset-width);
+  outline-offset: var(--brand-focus-offset, var(--a11y-focus-offset-width));
+  box-shadow: 0 0 0 var(--brand-focus-offset, var(--a11y-focus-offset-width))
+    var(--a11y-focus-offset);
+}
+
+/*
+ * The card gap: `--space-1` rather than the control's 2px.
+ *
+ * A card's own edge is already at its bounding box, so a 2px gap reads as a
+ * thickening of that edge instead of as a ring around it. Ported from the
+ * video system, which had measured the same thing and written its own copy.
+ */
+.brand-focus-wide {
+  --brand-focus-offset: var(--space-1);
 }
 
 /* ------------------------------------------------------------------ *
@@ -316,4 +342,56 @@
 
 .brand-search-field__clear:hover {
   color: var(--color-text-primary);
+}
+
+/* ------------------------------------------------------------------ *
+ * Tabs — the selected tab carries the tricolour.
+ * ------------------------------------------------------------------ */
+.brand-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  border-block-end: var(--border-width-default) solid var(--surface-border);
+}
+
+.brand-tabs__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-block-size: 44px;
+  padding-inline: var(--space-4);
+  border: 0;
+  /* The rule is drawn on the tab's own block edge, so it sits exactly on the
+     line the tablist draws and replaces that segment of it. */
+  border-block-end: var(--border-width-thick) solid transparent;
+  margin-block-end: calc(var(--border-width-default) * -1);
+  background: transparent;
+  color: var(--surface-text-muted);
+  cursor: pointer;
+  transition: color var(--motion-transition-fast);
+}
+
+.brand-tabs__tab:hover {
+  color: var(--surface-text);
+}
+
+/*
+ * Selected is the tricolour rule *and* `aria-selected` — never the rule
+ * alone, which would be colour-only state (WCAG 1.4.1). The weight change is
+ * the third cue, for a reader who sees neither.
+ */
+.brand-tabs__tab[aria-selected="true"] {
+  color: var(--surface-text);
+  font-weight: 600;
+  border-image: var(--brand-tricolor) 1;
+}
+
+.brand-tabs__tab:focus-visible {
+  outline: var(--a11y-focus-ring-width) solid var(--surface-focus-ring);
+  outline-offset: var(--a11y-focus-offset-width);
+}
+
+.brand-tabs__count {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
 }

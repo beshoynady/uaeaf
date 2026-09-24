@@ -1,4 +1,5 @@
 import { useTranslations } from "next-intl";
+import { StatCard, type StatTone } from "@uaeaf/brand-ui";
 import type { NewsroomSummary } from "@/lib/admin/newsroom-screen";
 
 /**
@@ -29,31 +30,40 @@ import type { NewsroomSummary } from "@/lib/admin/newsroom-screen";
 export const NewsroomSummaryCards = ({ summary }: { summary: NewsroomSummary }) => {
   const t = useTranslations("Newsroom");
 
+  // The tone is what the figure means (ADR-0098, StatCard): a queue that is
+  // waiting on somebody is `action`, published work is `positive`, and a plain
+  // tally is `neutral`. A zero is not waiting on anyone, so it stays neutral —
+  // an edge that says "act" over a nought would be a claim with nothing behind it.
+  const waiting = (value: number): StatTone => (value > 0 ? "action" : "neutral");
+
   const figures = [
-    { key: "draft", value: summary.byState.Draft ?? 0 },
-    { key: "live", value: summary.byState.Live ?? 0 },
-    { key: "inReview", value: summary.inReview },
-    { key: "awaitingPublication", value: summary.awaitingPublication },
-    { key: "changesRequested", value: summary.changesRequested },
-    { key: "hidden", value: summary.archived },
-  ] as const;
+    { key: "draft", value: summary.byState.Draft ?? 0, tone: "neutral" },
+    { key: "live", value: summary.byState.Live ?? 0, tone: "positive" },
+    { key: "inReview", value: summary.inReview, tone: waiting(summary.inReview) },
+    {
+      key: "awaitingPublication",
+      value: summary.awaitingPublication,
+      tone: waiting(summary.awaitingPublication),
+    },
+    { key: "changesRequested", value: summary.changesRequested, tone: waiting(summary.changesRequested) },
+    { key: "hidden", value: summary.archived, tone: "neutral" },
+  ] as const satisfies readonly { key: string; value: number; tone: StatTone }[];
 
   return (
-    <dl className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+    // A list rather than the former `<dl>`: the library card draws its figure
+    // and label as paragraphs, and a list still tells a screen reader how many
+    // figures the row holds. The figure still comes first in the source.
+    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
       {figures.map((figure) => (
-        <div
-          key={figure.key}
-          className="flex flex-col gap-1 rounded-[var(--radius-md)] border border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)] p-4"
-        >
-          {/* The number first in the source as well as on screen, so a screen
-              reader reads "12, drafts" rather than making the listener hold a
-              label while waiting for its figure. */}
-          <dd className="text-h3 font-bold text-[color:var(--color-text-primary)]">{figure.value}</dd>
-          <dt className="text-caption text-[color:var(--color-text-secondary)]">
-            {t(`summary_${figure.key}`)}
-          </dt>
-        </div>
+        <li key={figure.key} className="flex">
+          <StatCard
+            className="flex-1"
+            value={String(figure.value)}
+            label={t(`summary_${figure.key}`)}
+            tone={figure.tone}
+          />
+        </li>
       ))}
-    </dl>
+    </ul>
   );
 };

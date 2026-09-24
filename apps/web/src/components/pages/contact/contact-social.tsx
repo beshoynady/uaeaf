@@ -1,4 +1,5 @@
 import { useTranslations } from "next-intl";
+import { SectionHeading, Surface } from "@uaeaf/brand-ui";
 import { SocialChannelLink } from "@/components/ui/social-channel-link";
 import { LIFT } from "@/components/ui/surface";
 import { socialChannels } from "@/lib/social-channels";
@@ -29,6 +30,13 @@ import type { ContactSocialLink, MediaAssetPublic } from "@/lib/api/types";
  * be transparent, and a brand gradient would be a colour the editor did not
  * choose. When it does not resolve (hidden, deleted, or never set), the
  * built-in artwork is drawn as before, so a channel never goes blank.
+ *
+ * The band is the kit's `brand-green` surface, full-bleed (ADR-0098 D2): the
+ * page's one identity ground, after the neutral form and map, and before the
+ * footer's black register — never beside a red one. On it every text is the
+ * surface's pure white (§8.2), which is why the heading is the kit's
+ * `SectionHeading` and the note reads `--surface-text` rather than a
+ * secondary tier. The channel tiles keep their own artwork and plates.
  */
 
 export const ContactSocial = ({
@@ -51,35 +59,34 @@ export const ContactSocial = ({
   if (channels.length === 0) return null;
 
   return (
-    <section
-      aria-labelledby="contact-social-heading"
-      data-testid="contact-social"
-      className="rise-scroll flex flex-col items-center gap-4 border-t border-[color:var(--color-border-default)] pt-10 text-center"
-    >
-      <h2
-        id="contact-social-heading"
-        className="text-h3 text-[color:var(--color-text-primary)]"
+    <Surface kind="brand-green" as="div" className="py-16 md:py-20">
+      {/* The same container the form row above uses, so the heading and the
+          row line up with the panels over them. */}
+      <section
+        aria-labelledby="contact-social-heading"
+        data-testid="contact-social"
+        className="rise-scroll mx-auto flex w-full max-w-[1248px] flex-col items-center gap-4 px-4 text-center sm:px-6 md:px-8 lg:px-12 xl:px-16"
       >
-        {t("title")}
-      </h2>
-      <p className="max-w-[52ch] text-body-sm text-[color:var(--color-text-secondary)]">
-        {t("note")}
-      </p>
+        {/* The kit's heading takes no `id`; the span names the region with the
+            same words. */}
+        <SectionHeading title={<span id="contact-social-heading">{t("title")}</span>} />
+        <p className="max-w-[52ch] text-body-sm text-[color:var(--surface-text)]">{t("note")}</p>
 
-      <ul className="flex flex-wrap items-center justify-center gap-3">
-        {channels.map((channel) => (
-          <li key={channel.href}>
-            {/* This page's own shell — `radius.md`, and `.lift` carrying the
-                elevation and the ascent-vector nudge so hover is felt and not
-                merely seen. The 44px target, the artwork and the
-                external-link semantics are the shared component's. */}
-            <SocialChannelLink
-              channel={channel}
-              className={`${LIFT} rounded-[var(--radius-md)]`}
-            />
-          </li>
-        ))}
-      </ul>
-    </section>
+        <ul className="flex flex-wrap items-center justify-center gap-3">
+          {channels.map((channel) => (
+            <li key={channel.href}>
+              {/* This page's own shell — `radius.md`, and `.lift` carrying the
+                  elevation and the ascent-vector nudge so hover is felt and not
+                  merely seen. The 44px target, the artwork and the
+                  external-link semantics are the shared component's. */}
+              <SocialChannelLink
+                channel={channel}
+                className={`${LIFT} rounded-[var(--radius-md)]`}
+              />
+            </li>
+          ))}
+        </ul>
+      </section>
+    </Surface>
   );
 };

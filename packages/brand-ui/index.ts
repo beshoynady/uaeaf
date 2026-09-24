@@ -27,7 +27,7 @@
  */
 
 // Foundations
-export { Surface } from "./surface/surface";
+export { Surface, SURFACE_KINDS } from "./surface/surface";
 export type { SurfaceKind, SurfaceProps } from "./surface/surface";
 export { PhotoSurface } from "./surface/photo-surface";
 export type { PhotoSurfaceProps } from "./surface/photo-surface";
@@ -55,6 +55,8 @@ export { FilterChip } from "./controls/filter-chip";
 export type { FilterChipProps } from "./controls/filter-chip";
 export { SearchField } from "./controls/search-field";
 export type { SearchFieldProps } from "./controls/search-field";
+export { Tabs } from "./controls/tabs";
+export type { TabItem, TabsProps } from "./controls/tabs";
 
 // Content
 export { SectionHeading } from "./content/section-heading";
@@ -74,6 +76,23 @@ export type { StatHighlightProps } from "./content/stat-highlight";
 export { AthleteResultBadge } from "./content/athlete-result-badge";
 export type { AthleteResultBadgeProps } from "./content/athlete-result-badge";
 
+// Added in Phase H, each for a shape the inventory found written out in two or
+// more places. Nothing here was added for a pattern that appeared once.
+export { StatCard } from "./content/stat-card";
+export type { StatCardProps, StatTone } from "./content/stat-card";
+export { FeatureCard, FEATURE_CYCLE } from "./content/feature-card";
+export type { FeatureCardProps, FeatureTone } from "./content/feature-card";
+export { InfoCard } from "./content/info-card";
+export type { InfoCardProps } from "./content/info-card";
+export { SplitFeature } from "./content/split-feature";
+export type { SplitFeatureProps } from "./content/split-feature";
+export { StepBadge } from "./content/step-badge";
+export type { StepBadgeProps } from "./content/step-badge";
+export { TableHeader } from "./content/table-header";
+export type { TableHeaderProps } from "./content/table-header";
+export { GlassTile } from "./content/glass-tile";
+export type { GlassTileProps } from "./content/glass-tile";
+
 /**
  * The hover draw line is a class, not a component: it decorates something that
  * already exists rather than wrapping it, and wrapping every list row in an
@@ -83,3 +102,24 @@ export const BRAND_DRAW_LINE = "brand-draw-line";
 
 /** Visually hidden, still announced. Exported so applications reuse one rule. */
 export const BRAND_VISUALLY_HIDDEN = "brand-visually-hidden";
+
+/**
+ * The package's focus indicator, for a focusable element this package does not
+ * own — a card link, a rail arrow, a native `<select>`.
+ *
+ * Exported as a class rather than left to each application, because the
+ * alternative is measured: the same ring was written out at six call sites in
+ * the video system, and one of them lost it entirely when an inline
+ * `box-shadow` edge overrode it.
+ */
+export const BRAND_FOCUSABLE = "brand-focusable";
+
+/** Widens that indicator's gap to 4px, which is what a card needs. */
+export const BRAND_FOCUS_WIDE = "brand-focus-wide";
+
+/**
+ * The content measure this package's own blocks use — 1440px with the site's
+ * five padding steps. Exported so a page laying out beside a kit block lines up
+ * with it instead of guessing.
+ */
+export const BRAND_CONTAINER = "brand-container";

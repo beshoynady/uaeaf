@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { localized, type RoleResponse } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
+import { FilterChip } from "@uaeaf/brand-ui";
 import { SearchField } from "@/components/ui/search-field";
 
 export type RoleFilter = "all" | "system" | "custom";
@@ -20,7 +21,7 @@ export type RoleFilter = "all" | "system" | "custom";
  * people hold it, and whether the system owns it. A role nobody holds is
  * called out — it is the archive candidate, and it is invisible otherwise.
  */
-export function RoleList({
+export const RoleList = ({
   roles,
   usage,
   locale,
@@ -32,7 +33,7 @@ export function RoleList({
   locale: AppLocale;
   selectedId: string | null;
   onSelect: (roleId: string) => void;
-}) {
+}) => {
   const t = useTranslations("RolesWorkbench");
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<RoleFilter>("all");
@@ -60,22 +61,18 @@ export function RoleList({
       <div
         role="group"
         aria-label={t("filterRoles")}
-        className="flex gap-1 rounded-[var(--radius-md)] bg-[color:var(--color-surface-sunken)] p-1"
+        className="flex flex-wrap gap-2"
       >
+        {/* Filters are the shared chip (Chapter 12 §12.15): selected is a solid
+            plate *and* `aria-pressed`, never colour alone. The group sits on
+            the page's own neutral ground rather than a sunken tray. */}
         {(["all", "system", "custom"] as const).map((value) => (
-          <button
+          <FilterChip
             key={value}
-            type="button"
-            aria-pressed={filter === value}
-            onClick={() => setFilter(value)}
-            className={`flex-1 rounded-[var(--radius-sm)] px-2 py-1.5 text-caption transition-colors duration-[var(--motion-duration-fast)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-focus-default)] ${
-              filter === value
-                ? "bg-[color:var(--color-surface-raised)] font-bold text-[color:var(--color-text-primary)] shadow-card"
-                : "text-[color:var(--color-text-secondary)] hover:text-[color:var(--color-text-primary)] active:bg-[color:var(--color-surface-skeleton)]"
-            }`}
-          >
-            {t(`filter_${value}`)}
-          </button>
+            selected={filter === value}
+            onSelect={() => setFilter(value)}
+            label={t(`filter_${value}`)}
+          />
         ))}
       </div>
 
@@ -133,5 +130,5 @@ export function RoleList({
       )}
     </div>
   );
-}
+};
 

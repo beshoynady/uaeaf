@@ -36,7 +36,7 @@ import { SeoSection } from "./seo-section";
  * and a save posting every field would have the second overwrite the first's
  * work with the values their own form was loaded with.
  */
-export function PresidentMessageEditor({
+export const PresidentMessageEditor = ({
   record,
   images,
   canEdit,
@@ -55,7 +55,7 @@ export function PresidentMessageEditor({
    *  API refused that read, which costs the panels and not the form. */
   editorial?: EditorialState | null;
   fieldLabels?: Readonly<Record<string, string>>;
-}) {
+}) => {
   const t = useTranslations("PresidentMessage");
   const errors = useTranslations("WriteErrors");
   const router = useRouter();
@@ -108,7 +108,7 @@ export function PresidentMessageEditor({
    * before a restore, and a restore that went ahead on a failed save would
    * overwrite the very work the save failed to keep.
    */
-  async function save(): Promise<boolean> {
+  const save = async (): Promise<boolean> => {
     setSaving(true);
     setFailure(null);
 
@@ -145,15 +145,15 @@ export function PresidentMessageEditor({
     } finally {
       setSaving(false);
     }
-  }
+  };
 
   /** Throws the unsaved edits away, back to the record as last read from the
    *  server. Offered only by the version panel's guard, which is the one
    *  place discarding is the lesser loss. */
-  function discard(): void {
+  const discard = (): void => {
     setFailure(null);
     setDraft(original);
-  }
+  };
 
   const imageProps = { images: library, canReadMedia, locale, onUploaded };
   const shared = { draft, onChange: change, disabled };
@@ -219,7 +219,10 @@ export function PresidentMessageEditor({
         </p>
 
         {canEdit ? (
-          <Button onClick={() => void save()} loading={saving} disabled={!dirty}>
+        // Saving writes the draft; publishing is a decision taken in the
+        // status panel, and that is the screen's one primary action
+        // (Chapter 12 §12.15, editor recipe). So Save is the companion.
+          <Button variant="secondary" onClick={() => void save()} loading={saving} disabled={!dirty}>
             {saving ? t("saving") : t("save")}
           </Button>
         ) : (
@@ -262,4 +265,4 @@ export function PresidentMessageEditor({
       </div>
     </div>
   );
-}
+};

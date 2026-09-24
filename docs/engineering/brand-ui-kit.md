@@ -41,9 +41,11 @@ packages/brand-ui/
   index.ts                            one entry point, and the API contract
   surface/     Surface, PhotoSurface
   accent/      BrandAccentBar, TricolorDivider, BrandStreaks, BrandBorder, .brand-ring
-  controls/    Button, IconButton, FilterChip, SearchField
+  controls/    Button, IconButton, FilterChip, SearchField, Tabs
   content/     SectionHeading, PageHero, DocumentCard, LinkTile, CtaBand,
-               EmptyState, StatHighlight, AthleteResultBadge
+               EmptyState, StatHighlight, AthleteResultBadge,
+               StatCard, FeatureCard, InfoCard, SplitFeature,
+               StepBadge, TableHeader, GlassTile
 
 apps/web/src/lib/design-system/
   brand-surface-contract.spec.ts      decisions 8.2 and 8.4, and the build constraint
@@ -193,3 +195,48 @@ All three new guards were verified by **mutation**: each defect was introduced d
 | **Dose** | Expressive (public site, 4px edge, hover motion) vs Operational (dashboard, 3px edge, no hover motion) |
 | **Mesh** | Two radial tint fields, green and red, in opposite corners. Not a pattern: no motif, no repeat, no edge |
 | **Orbit** | `motion.duration.orbit`, the scale's first *cycle period* as opposed to a one-way duration |
+
+---
+
+## 10. Phase H — one mechanism, and the shapes the product actually repeats
+
+### `Section` and `Surface` are now one thing
+
+Two systems painted the same grounds: `Section` (ADR-0059's register bands) through Tailwind classes, `Surface` through `data-surface`. The cost was not tidiness. A `BrandAccentBar` inside the black-register footer resolved its middle step from the `:root` fallback — **black, on the black footer** — so the bar rendered with a third of it invisible.
+
+`Section` now emits `data-surface` alongside its classes, and three register surfaces were added (`section-green`, `section-red`, `section-black`) publishing the registers' **own measured values** — `green.700` with `green.100` under it, not the kit's gradient. Mapping the registers onto `brand-green`/`brand-red` would have moved every register band's second text tier below AA.
+
+Declaring a surface and *painting* one are now different: `[data-surface]` publishes the variables, `.brand-surface` (added by the `Surface` component and nothing else) paints. That is what lets a register band borrow the variables without having its ground repainted.
+
+**The register surfaces' tricolour is the register's own ink, not a literal white.** In high contrast a register flattens to a white ground with black text, so a hard-coded white accent is white on white — which is what this file's own guard caught the moment the register surfaces were measured.
+
+### Seven components for seven repeated shapes
+
+Each exists because the inventory found it written out in two or more places. Nothing was added for a shape that appeared once.
+
+| Component | The shape it replaces |
+| --- | --- |
+| `StatCard` | A figure with a label. Six on the dashboard's news screen alone; every overview and list screen wants a row. **The tone is an edge, never a fill** — a wall of filled colour tiles is the "everywhere faintly" failure, and a fill puts the figure on a ground only white ink would clear |
+| `FeatureCard` | A goal or axis card that *is* an identity colour, cycling green → ink → red. Replaces the pastel `color.item.*` cards on institutional pages. Green and red are never adjacent in the cycle |
+| `InfoCard` | An icon, a label and a value on the neutral plate — the contact page's information row |
+| `SplitFeature` | A photograph beside a statement, the institutional body shape. `media` is logical (`start`/`end`) so the composition mirrors while the motif keeps its angle |
+| `Tabs` | The WAI-ARIA tab pattern with a tricolour rule on the selected tab — plus `aria-selected` and a weight change, so the state is never colour alone |
+| `StepBadge` | A step number in a green disc, for a long editor form |
+| `TableHeader` | A `<thead>` with the tricolour rule under it |
+| `GlassTile` | A translucent tile for a coloured ground — no `backdrop-filter`, which buys nothing over a flat ground and costs a repaint on scroll |
+
+### Two more things that only worked on dark grounds
+
+`LinkTile` and `AthleteResultBadge` hard-coded a translucent white fill, so they were invisible on canvas — a limitation the Brand Kit hid by only ever showing them on brand grounds. Both now read `--surface-tile-fill` and `--surface-tile-edge`, which each surface publishes: translucent white on a dark or identity ground, a raised plate with a real border on a light one.
+
+The kit's neutral-ground button also now binds to `--button-primary-*`, the component tokens the rest of the product already paints its buttons with, so a kit button and a page button are the same button.
+
+### Adding a page with a recipe
+
+Each page type has a recipe (ADR-0098 §5-4 of the Phase H brief). To add a page:
+
+1. Decide its type — Landing, Institutional, Directory, Editorial list, Detail, Events, Documents, Form, Static/Legal, or a dashboard Overview / List / Editor / Section manager / Settings.
+2. Start from `PageHero`, and give the page at least one full-width section on an identity ground besides the hero and footer.
+3. Every section heading is a `SectionHeading`; every card, control and filter comes from the kit.
+4. Canvas sections carry `mesh`.
+5. Check the two rules a guard enforces: no green surface adjacent to a red one, and no `Surface kind="ink"` without a mesh or an accent bar.

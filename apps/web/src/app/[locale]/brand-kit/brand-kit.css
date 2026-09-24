@@ -161,3 +161,27 @@
   grid-template-columns: 1fr;
   gap: var(--space-4);
 }
+
+/* Three across for the feature-card cycle, which is the arrangement the
+   alternating tones are designed for. */
+.brand-kit-card-grid--three {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 64rem) {
+  .brand-kit-card-grid--three {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.brand-kit-table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  color: var(--surface-text);
+}
+
+.brand-kit-table th,
+.brand-kit-table td {
+  padding: var(--space-2) var(--space-3);
+  text-align: start;
+}

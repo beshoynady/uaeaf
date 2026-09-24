@@ -5,6 +5,7 @@ import { displayName, type ContentLocale } from "@uaeaf/content/sponsors";
 import { TextField } from "@/components/auth/text-field";
 import { Button } from "@/components/ui/button";
 import { SELECTABLE_ROW } from "@/components/ui/interactive";
+import { SelectedMark } from "@/components/ui/selected-mark";
 import type { FieldError } from "@/lib/admin/sponsor-relations/organizations";
 
 /**
@@ -117,6 +118,9 @@ export const RecordList = ({
           const name = nameLabel(record.ar, record.en, locale) ?? t("untitled");
           return (
             <li key={record.key} className="flex items-stretch gap-1">
+              {/* The selected row carries a static tricolour edge and a check
+                  (Chapter 12 §12.15.1) — never the green border alone. */}
+              <span className="relative flex min-w-0 flex-1">
               <button type="button" aria-current={record.key === selectedKey} onClick={() => onSelect(record.key)} className={`${SELECTABLE_ROW} flex min-w-0 flex-1 items-center gap-3`}>
                 <LogoPlate url={record.logoUrl} size="list" />
                 <span className="flex min-w-0 flex-col gap-1">
@@ -130,6 +134,8 @@ export const RecordList = ({
                   </span>
                 </span>
               </button>
+              {record.key === selectedKey ? <SelectedMark radius="md" /> : null}
+              </span>
               <span className="flex flex-col justify-center">
                 <Button variant="icon" aria-label={`${t("moveUp")}: ${name}`} disabled={at === 0} onClick={() => onMove(record.key, -1)}>
                   <Chevron up />
