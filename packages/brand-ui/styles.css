@@ -9,3 +9,7 @@
 @import "./accent/accent.css";
 @import "./controls/controls.css";
 @import "./content/content.css";
+/* After `content.css`: every rule in it is a modifier on the ink hero that
+   file draws, and equal-specificity override by source order is the whole
+   mechanism (see the note at the top of the file). */
+@import "./content/page-hero.css";

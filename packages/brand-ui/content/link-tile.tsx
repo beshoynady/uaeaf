@@ -1,10 +1,20 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { ElementType, ReactNode } from "react";
 
 export type LinkTileProps = {
   title: ReactNode;
   description?: ReactNode;
   href: string;
+  /**
+   * The component that renders the href.
+   *
+   * Defaults to `next/link`, which is wrong for an internal route in this
+   * project: `localePrefix: "always"` leaves `/about/committees` without a
+   * locale, and the middleware then supplies one from a cookie — so a reader on
+   * the English page can be sent to Arabic. Every internal tile passes the
+   * application's locale-aware `Link` here.
+   */
+  linkComponent?: ElementType;
   className?: string;
 };
 
@@ -24,8 +34,14 @@ export type LinkTileProps = {
  *
  * Server Component.
  */
-export const LinkTile = ({ title, description, href, className }: LinkTileProps) => (
-  <Link href={href} className={["brand-link-tile", className].filter(Boolean).join(" ")}>
+export const LinkTile = ({
+  title,
+  description,
+  href,
+  linkComponent: Anchor = Link,
+  className,
+}: LinkTileProps) => (
+  <Anchor href={href} className={["brand-link-tile", className].filter(Boolean).join(" ")}>
     <span className="brand-link-tile__text">
       <span className="brand-link-tile__title">{title}</span>
       {description === undefined ? null : (
@@ -35,5 +51,5 @@ export const LinkTile = ({ title, description, href, className }: LinkTileProps)
     <span className="brand-link-tile__arrow" aria-hidden="true">
       &rarr;
     </span>
-  </Link>
+  </Anchor>
 );

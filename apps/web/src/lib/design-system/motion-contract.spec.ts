@@ -39,6 +39,25 @@ const SRC = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
  */
 const SHARED_CSS = join(SRC, "..", "..", "..", "packages", "design-tokens", "css");
 
+/*
+ * KNOWN GAP — `packages/brand-ui`'s four stylesheets are not walked here.
+ *
+ * Nothing else walks them either: `token-contract.spec.ts` stops at
+ * `apps/web/src`, and `source-files.ts` adds the package but only its `.tsx`. So
+ * no keyframe whitelist, duration-token rule or `animation-timeline` guard in
+ * this file reaches `accent/accent.css`, `controls/controls.css`,
+ * `content/content.css` or `content/page-hero.css`.
+ *
+ * It is a gap and not an exemption: `accent/accent.css` animates a custom
+ * property inside `@keyframes brand-border-orbit`, which the whitelist below
+ * would reject, so adding the directory turns this suite red on a file no
+ * current task owns. Closing it means deciding what happens to that keyframe
+ * first.
+ *
+ * Until then, `page-hero-photo-contract.spec.ts` covers `content/page-hero.css`
+ * with the same whitelist, and ADR-0100 D4 records the rest.
+ */
+
 function stylesheets(dir: string): string[] {
   return readdirSync(dir).flatMap((entry) => {
     const full = join(dir, entry);

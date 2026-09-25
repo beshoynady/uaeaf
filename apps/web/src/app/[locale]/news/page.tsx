@@ -68,7 +68,7 @@ const NewsPage = async ({
   const tag = one(search.tag);
   const page = clampPage(one(search.page));
 
-  const [{ title, subtitle }, feed] = await Promise.all([
+  const [{ title, subtitle, heroImage }, feed] = await Promise.all([
     loadStaticPage(KEY, locale),
     fetchArticles(page, undefined, tag, category, range, topic),
   ]);
@@ -90,6 +90,7 @@ const NewsPage = async ({
       locale={locale}
       title={title}
       subtitle={subtitle}
+      heroImage={heroImage}
       articles={articles}
       covers={covers}
       query={query}

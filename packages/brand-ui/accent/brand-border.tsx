@@ -1,4 +1,4 @@
-import type { ElementType, ReactNode } from "react";
+import type { CSSProperties, ElementType, ReactNode } from "react";
 
 /**
  * How the edge behaves (ADR-0098 D5).
@@ -31,6 +31,13 @@ export type BrandBorderProps = {
   shape?: "rounded" | "circle";
   as?: ElementType;
   className?: string;
+  /**
+   * Geometry only — an `aspect-ratio`, or a custom property a stagger reads.
+   *
+   * Not colour: the band's colours come from `tone` and from the surface, and a
+   * `background` set here would sit behind the ring where nothing measured it.
+   */
+  style?: CSSProperties;
   children?: ReactNode;
 };
 
@@ -62,6 +69,7 @@ export const BrandBorder = ({
   shape = "rounded",
   as: Element = "div",
   className,
+  style,
   children,
 }: BrandBorderProps) => (
   <Element
@@ -69,6 +77,7 @@ export const BrandBorder = ({
     data-variant={variant}
     data-tone={tone}
     data-shape={shape}
+    style={style}
   >
     {/*
       The band is drawn by the pseudo-element on the outer box. This wrapper

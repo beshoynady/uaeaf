@@ -301,6 +301,146 @@ Neither guard is weakened, and no allowlist is added. A guard that is taught to 
 
 ---
 
+---
+
+## 8d. Phase H: the ink surface's missing tiers, and one conflict
+
+Phase H re-skinned every route against this kit. Doing so exercised the ink
+surface far harder than Phases B–F had, and three things it did not publish
+turned out to be things the design needed. All three are recorded here as
+decisions, each with the measurement that settled it.
+
+### D8d.1 — `color.brand-surface.ink.accent` (the green ink tier)
+
+**Decision.** The ink surface publishes `--surface-accent`, bound to
+`green.300` in the light and dark lists and to white in high contrast, which
+carries no hue on this ground.
+
+**Why.** `video-card.tsx` carried this comment before Phase H:
+
+> The kit's green is a button plate, not an ink: on this ground it measures
+> 4.09:1, which is a fine boundary and not readable text. … DESIGN SYSTEM GAP,
+> in the backlog: ink publishes no accent ink.
+
+Measured against `#0B0B0B`: `green.500` is 4.09:1 — the comment was right —
+and `green.300` is **6.90:1**, clear of the 4.5 floor with a tier to spare.
+The owner's Phase H instruction named `green.300`, and the measurement agrees
+with it.
+
+**How it is read.** Always as `var(--surface-accent, var(--surface-text))`.
+No other surface publishes one, so the fallback is each surface's own measured
+ink. `green.300` is measured against `#0B0B0B` and against nothing else, and a
+variable that resolved to an unmeasured green on a light ground would be worse
+than one that resolves to nothing.
+
+### D8d.2 — `raised` and `raised-strong` on ink
+
+**Decision.** The ink surface publishes `--surface-raised` (`#1A1A1A`) and
+`--surface-raised-strong` (`#232323`).
+
+**Why.** `video-system.css` mixed those two values inline in five places, under
+a comment recording that the kit had no raised-on-ink token. It has one now.
+The values are unchanged — white at 6% and 10% over `#0B0B0B`, resolved once.
+
+All three ink tiers clear AA on both steps: 17.40 / 11.60 / 6.10 on `raised`,
+and 15.72 / 10.47 / 5.51 on `raised-strong`.
+
+**The constraint that travels with them.** Both measure ~1.2:1 against the ink
+ground itself (1.13 and 1.25). **Neither is ever a boundary.** A card that uses
+one takes its edge from `--surface-border` (6.44:1) — in practice a kit control
+or a `BrandBorder`. This is why D6's two-dose rule and the ink edge cue are not
+separable on this surface: without an edge, an ink card has no shape at all.
+
+### D8d.3 — the broadcast colour: CONFLICT, not resolved
+
+**The instruction.** Phase H requires broadcast red to stop consuming
+Federation Red and bind to the live token instead. The reasoning is right:
+ADR-0038 reserves red, and ADR-0088 D1 created `accent.live` naming "a live
+mark" as its first example.
+
+**Why it is not implemented.** `pairings.json` already records, and this phase
+re-measured, that `accent.live` cannot be drawn on this ground:
+
+| | on ink `#0B0B0B` | white on it |
+|---|---|---|
+| `accent.live` light / high contrast `#333CE0` | **2.68:1** | 7.33:1 |
+| `accent.live` dark `#6783FE` | 5.86:1 | **3.36:1** |
+| Federation Red `#E4002B` (current) | 4.06:1 | 4.85:1 |
+
+`pairings.json` states it plainly: *"It is not a partner of the coloured
+registers: on the green, red and black bands it measures 1.11 to 2.86:1 and is
+not drawn there."* The video system paints on ink.
+
+So the swap fails in two of three themes for the live frame (2.68:1, below even
+the 3:1 non-text floor) and in the dark theme for the live badge's caption text
+(3.36:1, below 4.5). The colour it would replace passes in all three.
+
+**Status: BLOCKED — owner decision required.** Nothing was changed; the live
+frame and badge still carry Federation Red, and the frame is now drawn by
+`BrandBorder variant="live"` rather than a red `box-shadow` glow, so the
+*mechanism* is the kit's even while the colour question is open.
+
+The options, none of which may be chosen here:
+
+* **A.** Keep Federation Red for broadcast and record it as a named exception
+  to ADR-0038, on the grounds that a live mark is a reserved-status use.
+* **B.** Add a measured live pair for dark grounds — a lighter `night-blue`
+  step as ink on ink, and a plate whose white text clears 4.5 in every list.
+  This is a new token with new measurements, i.e. system evolution.
+* **C.** Carry "live" on this surface without colour: the badge's word, the
+  pulsing dot and the rotating edge already carry it, and the edge could take
+  the tricolour instead of any single colour.
+
+### D8d.4 — defects this phase found in the kit itself
+
+Each was measured, not reasoned about, and each is fixed:
+
+1. **`TableHeader` drew nothing, ever.** `border-image` does not apply to an
+   internal table element: 0 of 300 sampled pixels painted at *both*
+   `border-collapse` values. Now a background band, which painted the full
+   width in both. (The further claim that the transparent band erased a `<tr>`'s
+   own rule did **not** reproduce: that rule painted 300/300 with the band and
+   without it.)
+2. **`PageHero` had no inline padding**, so every page that adopted it put its
+   title against the viewport edge. `.brand-container` now reproduces the site's
+   own measure exactly — 1440px, and 16/24/32/48/64 at the same five steps.
+3. **`PageHero` required a breadcrumb**, which silently reversed ADR-0072 D7
+   for every /about page that adopted it. Now optional.
+4. **`.brand-border__inner` had no rule at all**, while the component's comment
+   said it "rounds and clips the content inside it". It now does.
+5. **The focus ring promised a sandwich it did not paint.** `outline-offset`
+   leaves its gap transparent, so on ink the white ring had only ink behind it.
+   A `box-shadow` band now paints `--a11y-focus-offset` in that gap.
+6. **`Button` and `LinkTile` linked through `next/link`**, which drops the
+   locale prefix under `localePrefix: "always"` — a reader on the English page
+   could be sent to Arabic. Both now take `linkComponent`, and
+   `locale-aware-link-contract.spec.ts` fails on a literal internal path that
+   passes neither that prop nor a locale in its href.
+7. **`Tabs` arrows ignored reading direction**, had no Home/End, did not move
+   focus with selection, and derived fixed ids that collided when two tab rows
+   shared a screen. All four fixed; the dashboard's `LanguageTabs` dropped the
+   three workarounds it had built around them.
+8. **`.vs-edge` drew a control boundary at 2.94:1** (`--surface-divider` on
+   ink), below WCAG 1.4.11's 3:1 floor. It is gone; the controls that used it
+   are kit controls, whose edge is `--surface-border` at 6.44:1.
+
+### D8d.5 — still open, deliberately
+
+* **`StatCard` has no critical tone.** The dashboard has two tiles that mean
+  "critical" and they currently show the `attention` edge. Red is reserved by
+  ADR-0038, so which colour carries "critical" is a design decision and is not
+  taken here. **DESIGN DECISION REQUIRED.**
+* **The kit publishes no select control**, so the video library's filter keeps
+  a hand-written one. **DESIGN SYSTEM GAP.**
+* **`CtaBand` and `PageHero` cannot show a CMS photograph** other than through
+  `PageHero`'s new `media` slot; `SplitFeature` still takes project images only,
+  and the stored photographs are on a remote host `next.config` does not allow.
+  **DESIGN SYSTEM GAP.**
+* **Visible breadcrumbs on /about pages.** The recipe put them there; ADR-0072
+  D7 says structured data only. The prop is now optional, so this is a content
+  decision per page rather than a component constraint. **DESIGN DECISION
+  REQUIRED.**
+
 ## 9. Amendment register
 
 Every row is an edit made by this ADR in this phase. "Before" is the text as it stood at v1.0.0.

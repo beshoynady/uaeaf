@@ -6,12 +6,30 @@ import type {
   FederationAppointmentDocument,
 } from './schemas/federation-appointments.schema.js';
 import { CreateFederationAppointmentDto } from './dto/create-federation-appointments.dto.js';
+import { FederationPersonnelsService } from '../federation-personnel/federation-personnel.service.js';
+import type { LocalizedText } from '../../../common/schemas/localized-text.schema.js';
+
+/** The roles the federation's own board is made of. Committee posts are the
+ *  committees page's subject and are deliberately absent. */
+const LEADERSHIP_ROLES: readonly AppointmentRoleType[] = ['President', 'BoardMember'];
+
+/** One serving officer, in the only shape the public page receives. */
+export interface LeadershipEntry {
+  fullName: LocalizedText;
+  positionTitle: LocalizedText;
+  roleType: AppointmentRoleType;
+  displayOrder: number;
+  photoId: string | null;
+}
 
 /** Implements: federationAppointments collection, Domain 1 — Federation &
  *  Governance. */
 @Injectable()
 export class FederationAppointmentsService {
-  constructor(private readonly repository: FederationAppointmentsRepository) {}
+  constructor(
+    private readonly repository: FederationAppointmentsRepository,
+    private readonly personnel: FederationPersonnelsService,
+  ) {}
 
   /** Explicit succession (confirmed decision #3): when
    *  `supersedesAppointmentId` is given, that ONE appointment is closed —
@@ -75,6 +93,58 @@ export class FederationAppointmentsService {
 
   async findById(id: string): Promise<FederationAppointmentDocument | null> {
     return this.repository.findById(id);
+  }
+
+  /**
+   * The federation's own leadership as it stands today, for the public About
+   * page's panel.
+   *
+   * Four fields per person and no more. The personnel record carries an
+   * `internalContact` block marked `[RESTRICTED]`, a biography and contact
+   * details, none of which this panel prints — so the response is assembled
+   * field by field rather than filtered down from the whole record, which is
+   * the version that stays safe when someone later adds a field.
+   *
+   * "As it stands today" is three conditions together, because each alone
+   * lets someone through who should not be there: the appointment is still
+   * `Active`, its term has not run out, and its role is one the federation's
+   * own board holds. Committee posts are the committees page's subject.
+   */
+  async currentLeadership(now: Date = new Date()): Promise<LeadershipEntry[]> {
+    const appointments = await this.repository.find({ status: 'Active' });
+
+    const serving = appointments
+      .filter((appointment) => LEADERSHIP_ROLES.includes(appointment.roleType))
+      .filter((appointment) => appointment.termEnd === null || appointment.termEnd > now)
+      .sort((left, right) => left.displayOrder - right.displayOrder);
+
+    if (serving.length === 0) {
+      return [];
+    }
+
+    const people = await this.personnel.findByIds(
+      serving.map((appointment) => appointment.personId.toString()),
+    );
+    const byId = new Map(people.map((person) => [person._id.toString(), person]));
+
+    // An appointment whose person is gone is dropped rather than printed
+    // nameless: a card with a title and no one in it reads as a mistake, and
+    // it is one.
+    return serving.flatMap((appointment) => {
+      const person = byId.get(appointment.personId.toString());
+      if (!person) {
+        return [];
+      }
+      return [
+        {
+          fullName: person.fullName,
+          positionTitle: appointment.positionTitle,
+          roleType: appointment.roleType,
+          displayOrder: appointment.displayOrder,
+          photoId: person.photoId ? person.photoId.toString() : null,
+        },
+      ];
+    });
   }
 
   async remove(id: string, archivedBy: Types.ObjectId): Promise<FederationAppointmentDocument | null> {

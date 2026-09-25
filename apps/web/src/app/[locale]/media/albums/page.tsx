@@ -39,9 +39,11 @@ const AlbumsPage = async ({ params }: { params: Promise<{ locale: AppLocale }> }
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const { title, subtitle } = await loadStaticPage(KEY, locale);
+  const { title, subtitle, heroImage } = await loadStaticPage(KEY, locale);
 
-  return <EditorialHero pageKey={KEY} locale={locale} title={title} subtitle={subtitle} />;
+  return (
+    <EditorialHero pageKey={KEY} locale={locale} title={title} subtitle={subtitle} heroImage={heroImage} />
+  );
 };
 
 export default AlbumsPage;

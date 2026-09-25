@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { EmptyState, PageHero, Surface, type BreadcrumbItem } from "@uaeaf/brand-ui";
 
 import { breadcrumbTrail, loadStaticPage } from "@/components/pages/static-page-screen";
+import { heroPhotoSlot } from "@/components/ui/hero-photo";
 import { CONTAINER } from "@/components/ui/section";
 import { BreadcrumbJsonLd, CollectionPageJsonLd } from "@/lib/seo/json-ld";
 import type { AppLocale } from "@/i18n/routing";
@@ -9,7 +10,8 @@ import type { AppLocale } from "@/i18n/routing";
 const KEY = "results-rankings";
 
 /**
- * Results & rankings, on `@uaeaf/brand-ui`: the ink hero and an empty state.
+ * Results & rankings, on `@uaeaf/brand-ui`: the hero (the record's photograph
+ * where it has one, the ink ground where it has none) and an empty state.
  *
  * No public read for results or rankings exists upstream, so there is no
  * event to feature on the red ground and no podium for `AthleteResultBadge`:
@@ -17,7 +19,7 @@ const KEY = "results-rankings";
  * says what the page is instead of letting it end at the hero.
  */
 export const ResultsRankingsScreen = async ({ locale }: { locale: AppLocale }) => {
-  const [{ page, title, subtitle }, tPages, tNav, tPreparing] = await Promise.all([
+  const [{ page, title, subtitle, heroImage }, tPages, tNav, tPreparing] = await Promise.all([
     loadStaticPage(KEY, locale),
     getTranslations({ locale, namespace: "Pages" }),
     getTranslations({ locale, namespace: "Nav" }),
@@ -53,6 +55,7 @@ export const ResultsRankingsScreen = async ({ locale }: { locale: AppLocale }) =
       <PageHero
         title={title}
         description={subtitle ?? undefined}
+        media={heroPhotoSlot(heroImage, locale)}
         breadcrumb={breadcrumb}
         breadcrumbLabel={tPages("breadcrumbLabel")}
       />

@@ -11,7 +11,14 @@ import type { PublicImage } from "@/lib/api/types";
 
 /**
  * The identity-lines hero (ADR-0069 D10), for the pages the owner adopted the
- * lines on: the President's Message, and Vision & Mission (ADR-0070).
+ * lines on: the President's Message, Vision & Mission (ADR-0070) and the
+ * Strategic Plan (ADR-0075).
+ *
+ * **This is the institutional photographic hero. `@uaeaf/brand-ui`'s `PageHero`
+ * is the listing pages'.** Two components for one idea, and ADR-0100 D2 is
+ * where that is recorded, along with the plan to merge them and what the merge
+ * costs — the measured geometry below is the part that cannot simply move,
+ * and three guards name this file by path.
  *
  * The composition follows the record, as `PageHero`'s height does (ADR-0067
  * D2): with a background image the hero stands on it under `HERO_SCRIM`

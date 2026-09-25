@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { PageHero } from "@uaeaf/brand-ui";
+import { IdentityHero } from "@/components/ui/identity-hero";
 import { RevealOnce } from "@/components/pages/president/reveal-once";
 import { PlanExecutionPath } from "@/components/pages/strategic-plan/execution-path";
 import { PlanMetrics } from "@/components/pages/strategic-plan/metrics";
@@ -119,7 +119,6 @@ const StrategicPlanPage = async ({ params }: { params: Promise<{ locale: AppLoca
 
   const nav = await getTranslations({ locale, namespace: "Nav" });
   const copy = await getTranslations({ locale, namespace: "StrategicPlan" });
-  const pages = await getTranslations({ locale, namespace: "Pages" });
   const { title, description } = await describe(record, locale);
 
   // IA §8.1: Home / About / Governance & Strategy / the page. The structured
@@ -141,15 +140,14 @@ const StrategicPlanPage = async ({ params }: { params: Promise<{ locale: AppLoca
         trail={trail.filter((crumb): crumb is { name: string; route: string } => crumb.route !== null)}
       />
 
-      <PageHero
+      <IdentityHero
+        titleId="strategic-plan-hero-title"
+        eyebrow={nav("governance")}
         title={record.heroTitle[locale]}
-        description={<span data-field="heroSubtitle">{record.heroSubtitle[locale]}</span>}
-        breadcrumb={[
-          { label: nav("home"), href: `/${locale}` },
-          { label: nav("about"), href: `/${locale}/about` },
-          { label: nav("strategicPlan") },
-        ]}
-        breadcrumbLabel={pages("breadcrumbLabel")}
+        subtitle={record.heroSubtitle[locale]}
+        subtitleField="heroSubtitle"
+        ground={record.heroImage}
+        locale={locale}
       />
       <PlanOverview record={record} locale={locale} sizes={sizesFor(record.introImage, "overview")} />
       <PlanPhasesBand phases={record.phases} title={record.phasesTitle?.[locale] ?? null} label={copy("phasesLabel")} locale={locale} />

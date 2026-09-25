@@ -33,7 +33,8 @@
     "backfill:article-topic": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/backfill-article-topic.js",
     "backfill:article-source": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/backfill-article-source.js",
     "check:policy-duplicates": "nest build && node --env-file-if-exists=.env dist/check-policy-duplicates.js",
-    "migrate:president-message": "nest build && node --env-file-if-exists=.env dist/migrate-president-message-v2.js"
+    "migrate:president-message": "nest build && node --env-file-if-exists=.env dist/migrate-president-message-v2.js",
+    "seed:about": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/seed-about-federation-page.js"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",

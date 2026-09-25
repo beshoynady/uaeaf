@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { Tabs } from "@uaeaf/brand-ui";
 import { FOCUS_RING } from "@/components/ui/interactive";
 
@@ -47,23 +47,14 @@ export interface LanguageTab {
  *
  * The tab row is the shared library's (Chapter 12 §12.15: language switchers
  * become `Tabs`), so the selected language carries the tricolour rule *and*
- * `aria-selected`. Three things this component already did are not in the
- * library's version, and dropping them would be a regression, so they stay
- * here around it:
+ * `aria-selected`. What is left here is the part that is about bilingual
+ * editing and not about tabs: both panels stay mounted, each tab shows whether
+ * its language has been written, and the panel is rendered once per language.
  *
- * - **Unique ids.** The library derives `tab-<id>` and `panel-<id>` from the
- *   item id. Two bilingual fields on one form would both produce `tab-ar`, so
- *   each id is prefixed with this instance's `useId()`.
- * - **Focus follows selection.** The library moves the selection on an arrow
- *   press and leaves focus where it was — on a tab that has just left the tab
- *   order. The newly selected tab takes focus here.
- * - **Home and End.** Not handled by the library; the key press bubbles out of
- *   its tablist to the wrapper below.
- *
- * The library's arrows do not follow reading direction (ArrowRight is always
- * "next"). With exactly two languages next and previous are the same tab, so
- * nothing a reader can press behaves differently here; a third tab would
- * expose it, and the fix belongs in the library.
+ * Three things used to be worked around here and are now the library's:
+ * ids unique per instance (`idPrefix`), focus following selection, and Home and
+ * End. Its arrows follow reading direction too. This file passes the prefix so
+ * that it can name the panel ids that the library's `aria-controls` points at.
  */
 export const LanguageTabs = ({
   tabs,
@@ -80,43 +71,16 @@ export const LanguageTabs = ({
   const base = useId();
   const [active, setActive] = useState(tabs[0]?.value ?? "");
 
-  // The id the library is given; it derives `tab-…` and `panel-…` from it.
-  const itemId = (value: string) => `${base}-${value}`;
-  const valueOf = (id: string) => tabs.find((tab) => itemId(tab.value) === id)?.value;
-
-  const select = (value: string) => {
-    setActive(value);
-    // Selection follows focus, and focus follows selection: the tab the
-    // arrow landed on must actually take the keyboard, or the next arrow
-    // press would be read by whatever held it before.
-    document.getElementById(`tab-${itemId(value)}`)?.focus();
-  };
-
-  const jump = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key !== "Home" && event.key !== "End") {
-      return;
-    }
-    event.preventDefault();
-    const value = (event.key === "Home" ? tabs[0] : tabs[tabs.length - 1])?.value;
-    if (value) {
-      select(value);
-    }
-  };
-
   return (
     <div className="flex flex-col gap-3">
-      <div onKeyDown={jump}>
+      <div>
         <Tabs
           label={label}
-          activeId={itemId(active)}
-          onSelect={(id) => {
-            const value = valueOf(id);
-            if (value) {
-              select(value);
-            }
-          }}
+          idPrefix={base}
+          activeId={active}
+          onSelect={setActive}
           items={tabs.map((tab) => ({
-            id: itemId(tab.value),
+            id: tab.value,
             label: (
               <>
                 {tab.label}
@@ -141,9 +105,11 @@ export const LanguageTabs = ({
       {tabs.map((tab) => (
         <div
           key={tab.value}
-          id={`panel-${itemId(tab.value)}`}
+          // The library builds `<prefix>-tab-<id>` for each tab; these two name
+          // the other half of that pair with the same prefix.
+          id={`${base}-panel-${tab.value}`}
           role="tabpanel"
-          aria-labelledby={`tab-${itemId(tab.value)}`}
+          aria-labelledby={`${base}-tab-${tab.value}`}
           // `hidden`, not unmounted: an editor holds its document, its history
           // and its selection, and all three would be thrown away on a tab
           // change. `tabIndex={0}` because a panel whose content is not itself

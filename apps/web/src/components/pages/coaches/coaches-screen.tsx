@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { EmptyState, PageHero, Surface, type BreadcrumbItem } from "@uaeaf/brand-ui";
 
 import { breadcrumbTrail, loadStaticPage } from "@/components/pages/static-page-screen";
+import { heroPhotoSlot } from "@/components/ui/hero-photo";
 import { CONTAINER } from "@/components/ui/section";
 import { BreadcrumbJsonLd, CollectionPageJsonLd } from "@/lib/seo/json-ld";
 import type { AppLocale } from "@/i18n/routing";
@@ -9,14 +10,15 @@ import type { AppLocale } from "@/i18n/routing";
 const KEY = "coaches";
 
 /**
- * Coaches, on `@uaeaf/brand-ui`: the ink hero and an empty state.
+ * Coaches, on `@uaeaf/brand-ui`: the hero (the record's photograph where it has
+ * one, the ink ground where it has none) and an empty state.
  *
  * `coaches` exposes no `@Public()` read upstream, so there is no directory to
  * list: no cards, no search, no filter chips and no count band. The empty
  * state says what the page is instead of letting it end at the hero.
  */
 export const CoachesScreen = async ({ locale }: { locale: AppLocale }) => {
-  const [{ page, title, subtitle }, tPages, tNav, tPreparing] = await Promise.all([
+  const [{ page, title, subtitle, heroImage }, tPages, tNav, tPreparing] = await Promise.all([
     loadStaticPage(KEY, locale),
     getTranslations({ locale, namespace: "Pages" }),
     getTranslations({ locale, namespace: "Nav" }),
@@ -52,6 +54,7 @@ export const CoachesScreen = async ({ locale }: { locale: AppLocale }) => {
       <PageHero
         title={title}
         description={subtitle ?? undefined}
+        media={heroPhotoSlot(heroImage, locale)}
         breadcrumb={breadcrumb}
         breadcrumbLabel={tPages("breadcrumbLabel")}
       />

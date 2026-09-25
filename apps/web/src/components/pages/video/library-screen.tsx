@@ -21,7 +21,7 @@ import type { LiveStreamPublic, VideoPublic } from "@/lib/video/types";
 import type { MediaAssetPublic } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
 import { FOCUS } from "@/components/ui/interactive";
-import { GHOST_PILL } from "./chrome";
+import { Button, PageHero } from "@uaeaf/brand-ui";
 
 /**
  * The video library.
@@ -169,16 +169,25 @@ export const LibraryScreen = ({
   const liveVenue = live?.venue ? live.venue[locale] || live.venue.ar : "";
 
   return (
-    <div data-surface="ink" className="video-system">
+    /*
+      `brand-surface` paints; `data-surface` alone only declares.
+      Without the class this ground resolved its white ink against the page's
+      own off-white: the two section headings measured 1.05:1 on screen --
+      invisible -- while every `--surface-*` variable read correctly. A DOM walk
+      said it was fine; sampling the painted pixels is what found it.
+    */
+    <div data-surface="ink" className="brand-surface video-system">
+      {/*
+        The kit's hero, which owns the page's `<h1>`.
+        The heading was written out here with its own size, weight and colour,
+        which is the duplication `seo-contract.spec.ts` exists to catch: a page
+        title is one component's job, and every other page on the site now asks
+        `PageHero` for it. The hero also brings the ink surface's two required
+        cues -- the mesh and the accent bar -- which this header had neither of.
+      */}
+      <PageHero title={t("libraryTitle")} description={t("libraryIntro")} />
+
       <div className="mx-auto flex max-w-[1440px] flex-col gap-12 px-4 py-10 sm:px-6 md:px-8 lg:px-12 xl:px-16">
-        <header className="flex flex-col gap-3 text-center">
-          <h1 className="text-h1 font-extrabold leading-[1.1]" style={{ color: "var(--surface-text)" }}>
-            {t("libraryTitle")}
-          </h1>
-          <p className="mx-auto max-w-2xl text-body leading-relaxed" style={{ color: "var(--surface-text-muted)" }}>
-            {t("libraryIntro")}
-          </p>
-        </header>
 
         {/* The broadcast takes the top of the library too, on the same terms as
             the homepage: while one is running it IS the lead. */}
@@ -252,7 +261,11 @@ export const LibraryScreen = ({
                 const value = new FormData(event.currentTarget).get("search");
                 go({ search: typeof value === "string" && value.trim() ? value.trim() : undefined });
               }}
-              className="vs-fill vs-edge flex min-w-48 flex-1 items-center gap-2 rounded-[var(--radius-full)] px-4 sm:max-w-sm"
+              /* The edge is `--surface-border` (6.44:1 on ink), not the
+                 divider `.vs-edge` used at 2.94:1 — a search field is a
+                 control, and WCAG 1.4.11 sets its boundary's floor at 3. */
+              className="vs-fill flex min-w-48 flex-1 items-center gap-2 rounded-[var(--radius-full)] px-4 sm:max-w-sm"
+              style={{ border: "var(--border-width-default) solid var(--surface-border)" }}
             >
               {/* A plain text input, not `type="search"`: in Chromium the
                   browser's own clear-on-Escape swallows the key before any
@@ -362,14 +375,14 @@ export const LibraryScreen = ({
 
         {hasMore ? (
           <div className="flex justify-center">
-            <button
-              type="button"
+            <Button
+              variant="secondary"
+              size="lg"
               onClick={() => go({ page: query.page + 1 })}
               disabled={pending}
-              className={`${GHOST_PILL} px-8 disabled:opacity-50`}
             >
               {t("showMore")}
-            </button>
+            </Button>
           </div>
         ) : null}
 

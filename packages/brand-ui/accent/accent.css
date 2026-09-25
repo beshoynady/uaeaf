@@ -200,6 +200,24 @@
   );
 }
 
+/*
+ * What the ring encloses.
+ *
+ * This rule was missing: `brand-border.tsx` said the wrapper "rounds and clips
+ * the content inside it", and nothing in any stylesheet did either — so a card
+ * with a photograph in it showed square corners through a rounded ring, and a
+ * ring given an `aspect-ratio` did not pass its height to its content.
+ *
+ * `inherit` rather than the outer radius minus the band: the difference is the
+ * band's own width, under a rounded corner, and one fewer `calc` that has to be
+ * kept in step with three variants.
+ */
+.brand-border__inner {
+  border-radius: inherit;
+  overflow: hidden;
+  block-size: 100%;
+}
+
 .brand-border[data-shape="circle"] {
   /* A ring reads thinner than a straight edge of the same width, because its
      stroke is never parallel to itself for long. So it steps up one. */

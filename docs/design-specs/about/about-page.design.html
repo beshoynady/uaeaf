@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>نبذة عن الاتحاد — سطح المكتب</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800;900&amp;display=swap">
+<style>
+@property --a{syntax:'<angle>';initial-value:0deg;inherits:false}
+@keyframes rot{to{--a:360deg}}
+@keyframes rise{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+@keyframes wipe{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes cue{0%,100%{transform:translateY(0)}50%{transform:translateY(8px)}}
+body{margin:0;background:#F4F4F4}
+a{color:#006B32}a:hover{color:#00502A}
+*{box-sizing:border-box}
+a:focus-visible,button:focus-visible{outline:2px solid #0B0B0B;outline-offset:3px}
+.on-dark a:focus-visible,.on-dark button:focus-visible{outline-color:#FFFFFF}
+.nav-link{color:#1F2328;text-decoration:none;font-size:15px;font-weight:500;padding:10px 4px;display:inline-flex;align-items:center;gap:4px;border-bottom:2px solid transparent}
+.nav-link:hover{color:#006B32}
+.nav-on{color:#006B32;border-bottom-color:#00843D;font-weight:600}
+@media (prefers-reduced-motion:no-preference){
+.cue{animation:cue 1.8s ease-in-out infinite}
+}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:14px;font-weight:700;letter-spacing:.5px}
+.eyebrow::before{content:"";width:28px;height:3px;border-radius:2px;background:linear-gradient(to left,#00843D 0 33%,#0B0B0B 33% 66%,#C8102E 66%)}
+.on-dark .eyebrow::before{background:linear-gradient(to left,#00843D 0 33%,#FFFFFF 33% 66%,#C8102E 66%)}
+.fact{position:relative;display:flex;flex-direction:column;justify-content:space-between;height:196px;padding:24px 26px;border-radius:20px;border:2px solid transparent;background:linear-gradient(#FFFFFF,#FFFFFF) padding-box,var(--edge) border-box;box-shadow:0 18px 40px rgba(11,11,11,.10);overflow:hidden;transition:transform .3s,box-shadow .3s}
+.fact:hover{transform:translateY(-4px);box-shadow:0 24px 48px rgba(11,11,11,.14)}
+.ms{position:relative;border:2px solid transparent;border-radius:20px;background:linear-gradient(#FFFFFF,#FFFFFF) padding-box,var(--edge) border-box;padding:26px 28px;display:flex;flex-direction:column;gap:10px;transition:box-shadow .3s}
+.ms:hover{background:linear-gradient(#FFFFFF,#FFFFFF) padding-box,conic-gradient(from var(--a),#00843D,#0B0B0B 30%,#C8102E 50%,#0B0B0B 70%,#00843D) border-box;box-shadow:0 16px 34px rgba(11,11,11,.10)}
+@media (prefers-reduced-motion:no-preference){.ms:hover{animation:rot 3s linear infinite}}
+.ph{position:relative;overflow:hidden;display:flex;align-items:flex-end;justify-content:flex-start;padding:16px;color:#FFFFFF;font-size:13px;font-weight:600}
+.ph-tag{position:relative;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:rgba(11,11,11,.55);border:1px solid rgba(255,255,255,.35);color:#FFFFFF;font-size:13px;font-weight:600}
+.person{display:flex;flex-direction:column;border-radius:20px;overflow:hidden;border:2px solid transparent;background:linear-gradient(#141414,#141414) padding-box,linear-gradient(to left,#00843D 0 26%,#FFFFFF 44% 56%,#C8102E 74% 100%) border-box;color:#FFFFFF}
+.ach{flex-shrink:0;width:388px;height:440px;display:flex;flex-direction:column;border-radius:22px;overflow:hidden;border:2px solid transparent;background:linear-gradient(#141414,#141414) padding-box,var(--edge) border-box;color:#FFFFFF}
+.pcard{display:flex;border-radius:18px;overflow:hidden;border:2px solid transparent;background:linear-gradient(#FFFFFF,#FFFFFF) padding-box,var(--edge) border-box;transition:transform .3s,box-shadow .3s}
+.pcard:hover{transform:translateY(-4px);box-shadow:0 18px 38px rgba(11,11,11,.14)}
+.node{display:flex;flex-direction:column;justify-content:space-between;min-height:132px;padding:20px 22px;border-radius:18px;border:2px solid #D5D8D4;background:#FFFFFF;color:#0B0B0B;text-decoration:none;transition:border-color .25s,transform .25s}
+.node:hover{border-color:#00843D;transform:translateY(-3px);color:#0B0B0B}
+.node-more{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:#006B32}
+.stat{display:flex;flex-direction:column;justify-content:space-between;height:156px;padding:22px 24px;border-radius:18px;color:#FFFFFF}
+.btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:52px;padding:0 28px;border-radius:12px;background:#00843D;color:#FFFFFF;font-size:16px;font-weight:700;text-decoration:none;transition:background .2s}
+.btn-primary:hover{background:#006B32;color:#FFFFFF}
+.btn-white{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:52px;padding:0 28px;border-radius:12px;background:#FFFFFF;color:#A30D26;font-size:16px;font-weight:700;text-decoration:none}
+.btn-white:hover{background:#FBE9EC;color:#7A0A1C}
+.btn-ghost{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:52px;padding:0 28px;border-radius:12px;border:2px solid rgba(255,255,255,.8);color:#FFFFFF;font-size:16px;font-weight:700;text-decoration:none}
+.btn-ghost:hover{background:rgba(255,255,255,.12);color:#FFFFFF}
+.rail-btn{width:52px;height:52px;border-radius:999px;border:2px solid rgba(255,255,255,.5);background:transparent;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.rail-btn:hover{border-color:#FFFFFF;background:rgba(255,255,255,.1)}
+.foot-link{color:#D0D3D6;text-decoration:none;font-size:14px}
+.foot-link:hover{color:#FFFFFF}
+.soc{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:999px;border:1px solid #33373B;color:#FFFFFF}
+.soc:hover{border-color:#FFFFFF;color:#FFFFFF}
+</style>
+</helmet>
+<div style="width: 1440px; height: 8700px; display: flex; flex-direction: column; background: #F4F4F4; font-family: Alexandria, Tahoma, sans-serif; color: #0B0B0B; direction: rtl; overflow: hidden">
+
+<div style="height: 4px; flex-shrink: 0; background: linear-gradient(to left, #00843D 0 26%, #0B0B0B 44% 56%, #C8102E 74% 100%)"></div>
+
+<header style="height: 84px; flex-shrink: 0; background: #FFFFFF; display: flex; align-items: center; justify-content: space-between; padding: 0 64px">
+<div style="display: flex; align-items: center; gap: 48px">
+<a href="#" aria-label="اتحاد الإمارات لألعاب القوى — الصفحة الرئيسية" style="display: flex; align-items: center; gap: 10px; text-decoration: none; color: #0B0B0B">
+<svg width="52" height="44" viewBox="0 0 240 200" aria-hidden="true"><path d="M20 170 L75.05 105.05 A7 7 0 0 1 84.95 114.95 Z" fill="#C8102E"></path><path d="M40 190 L142.2 72.2 A11 11 0 0 1 157.8 87.8 Z" fill="#00843D"></path><path d="M95 190 L182.9 87.9 A10 10 0 0 1 197.1 102.1 Z" fill="#0B0B0B"></path><path d="M150 190 L200.05 130.05 A7 7 0 0 1 209.95 139.95 Z" fill="#C8102E"></path></svg>
+<span style="font-size: 26px; font-weight: 800; letter-spacing: -0.5px">UAEAF</span>
+</a>
+<nav aria-label="القائمة الرئيسية">
+<ul style="list-style: none; margin: 0; padding: 0; display: flex; align-items: center; gap: 22px">
+<li><a class="nav-link" href="#">الرئيسية</a></li>
+<li><a class="nav-link nav-on" href="#" aria-current="page">عن الاتحاد <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></a></li>
+<li><a class="nav-link" href="#">الأعضاء <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></a></li>
+<li><a class="nav-link" href="#">الأندية</a></li>
+<li><a class="nav-link" href="#">البطولات</a></li>
+<li><a class="nav-link" href="#">الفعاليات</a></li>
+<li><a class="nav-link" href="#">الأخبار والمقالات <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></a></li>
+<li><a class="nav-link" href="#">المركز الإعلامي <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></a></li>
+<li><a class="nav-link" href="#">تواصل معنا</a></li>
+</ul>
+</nav>
+</div>
+<div style="display: flex; align-items: center; gap: 8px">
+<button aria-label="بحث في الموقع" style="width: 44px; height: 44px; border: none; background: transparent; border-radius: 10px; color: #1F2328; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg></button>
+<button aria-label="تفعيل الوضع الداكن" style="width: 44px; height: 44px; border: none; background: transparent; border-radius: 10px; color: #1F2328; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"></path></svg></button>
+<a href="#" lang="en" style="height: 44px; padding: 0 14px; border: 1px solid #D5D8D4; border-radius: 10px; display: flex; align-items: center; color: #1F2328; text-decoration: none; font-size: 14px; font-weight: 600">EN</a>
+</div>
+</header>
+
+<section class="on-dark" data-scene="01-hero" aria-labelledby="page-title" style="position: relative; height: 700px; flex-shrink: 0; overflow: hidden; color: #FFFFFF; background: linear-gradient(180deg, #1B2A22 0%, #0E1612 100%)">
+<svg data-scroll="parallax" width="1440" height="700" viewBox="0 0 1440 700" aria-hidden="true" style="position: absolute; inset: 0"><g fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="2"><ellipse cx="720" cy="780" rx="900" ry="330"></ellipse><ellipse cx="720" cy="780" rx="840" ry="290"></ellipse><ellipse cx="720" cy="780" rx="780" ry="250"></ellipse><ellipse cx="720" cy="780" rx="720" ry="210"></ellipse><ellipse cx="720" cy="780" rx="660" ry="170"></ellipse><ellipse cx="720" cy="780" rx="600" ry="130"></ellipse></g></svg>
+<div aria-hidden="true" style="position: absolute; inset: 0; background: linear-gradient(to left, rgba(11,11,11,0.92) 0%, rgba(11,11,11,0.6) 45%, rgba(11,11,11,0.1) 100%), radial-gradient(circle at 8% 90%, rgba(200,16,46,0.5), transparent 35%), radial-gradient(circle at 20% 0%, rgba(0,132,61,0.55), transparent 40%)"></div>
+<span class="ph-tag" style="position: absolute; left: 64px; top: 28px">[صورة الهيرو الحالية — الملعب]</span>
+<svg data-scroll="drift" width="380" height="317" viewBox="0 0 240 200" aria-hidden="true" style="position: absolute; left: 80px; bottom: 110px"><path d="M20 170 L75.05 105.05 A7 7 0 0 1 84.95 114.95 Z" fill="#C8102E"></path><path d="M40 190 L142.2 72.2 A11 11 0 0 1 157.8 87.8 Z" fill="#00843D"></path><path d="M95 190 L182.9 87.9 A10 10 0 0 1 197.1 102.1 Z" fill="#FFFFFF"></path><path d="M150 190 L200.05 130.05 A7 7 0 0 1 209.95 139.95 Z" fill="#C8102E"></path></svg>
+<div style="position: absolute; right: 64px; bottom: 180px; max-width: 740px; display: flex; flex-direction: column; gap: 20px">
+<nav aria-label="مسار التنقل" class="rv">
+<ol style="list-style: none; margin: 0; padding: 0; display: flex; align-items: center; gap: 10px; font-size: 14px; color: #C4C8CC">
+<li><a href="#" style="color: #C4C8CC; text-decoration: none">الرئيسية</a></li>
+<li aria-hidden="true">/</li>
+<li><a href="#" style="color: #C4C8CC; text-decoration: none">عن الاتحاد</a></li>
+<li aria-hidden="true">/</li>
+<li aria-current="page" style="color: #FFFFFF; font-weight: 600">نبذة عن الاتحاد</li>
+</ol>
+</nav>
+<span class="rv rv2" style="align-self: flex-start; font-size: 13px; font-weight: 700; letter-spacing: 1px; padding: 6px 14px; border-radius: 999px; background: #00843D">منذ أبريل 1974</span>
+<h1 id="page-title" class="rv rv2" data-scroll="split-words" style="margin: 0; font-size: 84px; line-height: 1.1; font-weight: 900; letter-spacing: -1.5px">نبذة عن الاتحاد</h1>
+<div class="wipe" aria-hidden="true" style="width: 160px; height: 6px; border-radius: 3px; background: linear-gradient(to left, #00843D 0 30%, #FFFFFF 40% 60%, #C8102E 70% 100%)"></div>
+<p class="rv rv3" style="margin: 0; font-size: 20px; line-height: 1.8; color: #E4E6E8">أكثر من نصف قرن من رعاية ألعاب القوى في دولة الإمارات — من جمعية أُشهرت بمرسوم من المغفور له الشيخ زايد بن سلطان آل نهيان، إلى اتحاد وطني عضو في المنظومتين الدولية والآسيوية.</p>
+</div>
+<a href="#facts" class="rv rv4" style="position: absolute; right: 64px; bottom: 110px; display: inline-flex; align-items: center; gap: 12px; color: #FFFFFF; text-decoration: none; font-size: 14px; font-weight: 600; min-height: 44px">
+<span class="cue" aria-hidden="true" style="width: 28px; height: 44px; border-radius: 14px; border: 2px solid rgba(255,255,255,0.7); display: flex; justify-content: center; padding-top: 8px"><span style="width: 4px; height: 8px; border-radius: 2px; background: #FFFFFF"></span></span>
+مرّر لاكتشاف المسيرة
+</a>
+</section>
+
+<section id="facts" data-scene="02-facts" aria-label="محطات رئيسية بالأرقام" style="position: relative; flex-shrink: 0; padding: 0 64px 112px; margin-top: -84px">
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px">
+<div class="fact" data-scroll="count-up" style="--edge: linear-gradient(#00843D, #00843D)">
+<span style="align-self: flex-start; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 999px; background: #E8F5ED; color: #00632F">أبريل</span>
+<div><div style="font-size: 60px; font-weight: 900; line-height: 1; color: #00843D; letter-spacing: -1px">1974</div><div style="margin-top: 10px; font-size: 16px; font-weight: 600">إشهار جمعية الإمارات لألعاب القوى</div></div>
+</div>
+<div class="fact" data-scroll="count-up" style="--edge: linear-gradient(#0B0B0B, #0B0B0B)">
+<span style="align-self: flex-start; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 999px; background: #EDEDED; color: #0B0B0B">15 يناير</span>
+<div><div style="font-size: 60px; font-weight: 900; line-height: 1; color: #0B0B0B; letter-spacing: -1px">1976</div><div style="margin-top: 10px; font-size: 16px; font-weight: 600">تأسيس الاتحاد وإشهاره</div></div>
+</div>
+<div class="fact" data-scroll="count-up" style="--edge: linear-gradient(#C8102E, #C8102E)">
+<span style="align-self: flex-start; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 999px; background: #FBE9EC; color: #A30D26">عضوية دولية</span>
+<div><div style="font-size: 60px; font-weight: 900; line-height: 1; color: #C8102E; letter-spacing: -1px">1976</div><div style="margin-top: 10px; font-size: 16px; font-weight: 600">الانضمام إلى الاتحاد الدولي</div></div>
+</div>
+<div class="fact" data-scroll="count-up" style="--edge: linear-gradient(135deg, #00843D 0 26%, #0B0B0B 44% 56%, #C8102E 74% 100%)">
+<span style="align-self: flex-start; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 999px; background: #0B0B0B; color: #FFFFFF">عضوية قارية</span>
+<div><div style="font-size: 60px; font-weight: 900; line-height: 1; color: #006B32; letter-spacing: -1px">1977</div><div style="margin-top: 10px; font-size: 16px; font-weight: 600">الانضمام إلى الاتحاد الآسيوي</div></div>
+</div>
+</div>
+</section>
+
+<section data-scene="03-story" aria-labelledby="story-title" style="flex-shrink: 0; padding: 0 64px 128px; display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 72px; align-items: center">
+<div style="display: flex; flex-direction: column; gap: 22px">
+<span class="eyebrow" style="color: #006B32">البدايات · من جمعية إلى اتحاد</span>
+<h2 id="story-title" data-scroll="split-lines" style="margin: 0; font-size: 46px; line-height: 1.3; font-weight: 800">مسيرة بدأت بمرسوم، وتواصلت برؤية وطنية</h2>
+<p data-scroll="fade-up" style="margin: 0; font-size: 18px; line-height: 1.95; color: #2B3036">صدر مرسوم من المغفور له بإذن الله الشيخ زايد بن سلطان آل نهيان، طيّب الله ثراه، بإشهار <strong style="color: #006B32">جمعية الإمارات لألعاب القوى</strong> اعتبارًا من شهر <strong style="color: #006B32">أبريل 1974م</strong>، وتولّى رئاستها الأولى سعادة أحمد عبدالله الخرجي.</p>
+<p data-scroll="fade-up" style="margin: 0; font-size: 18px; line-height: 1.95; color: #2B3036">وفي <strong style="color: #0B0B0B">يناير 1976م</strong> تأسّس الاتحاد، وأُشهر رسميًا في <strong style="color: #0B0B0B">15 يناير 1976م</strong>، لينضم في العام نفسه إلى <strong style="color: #A30D26">الاتحاد الدولي لألعاب القوى</strong>، ثم إلى الاتحاد الآسيوي لألعاب القوى في عام <strong style="color: #A30D26">1977م</strong>.</p>
+</div>
+<div style="position: relative; height: 540px">
+<div class="ph" data-scroll="clip-reveal" style="position: absolute; inset: 0 0 60px 60px; border-radius: 24px; background: repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0 2px, transparent 2px 90px), linear-gradient(160deg, #B79A6C, #6E5A3C 60%, #3B2F20)">
+<span class="ph-tag">[صورة أرشيفية — الجمعية 1974]</span>
+</div>
+<div data-scroll="float-in" style="position: absolute; left: 0; bottom: 0; width: 330px; padding: 24px 26px; border-radius: 20px; background: #0B0B0B; color: #FFFFFF; box-shadow: 0 20px 44px rgba(11,11,11,0.25); display: flex; flex-direction: column; gap: 10px; overflow: hidden">
+<div aria-hidden="true" style="position: absolute; inset: 0 0 auto 0; height: 4px; background: linear-gradient(to left, #00843D 0 26%, #FFFFFF 44% 56%, #C8102E 74% 100%)"></div>
+<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#1A9448" stroke-width="1.6" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5M9 13h6M9 17h4"></path></svg>
+<span style="font-size: 13px; font-weight: 600; color: #BFC4C8">وثيقة التأسيس</span>
+<span style="font-size: 20px; font-weight: 800; line-height: 1.5">مرسوم إشهار جمعية الإمارات لألعاب القوى</span>
+<span style="font-size: 15px; color: #E4E6E8">أبريل 1974م</span>
+</div>
+</div>
+</section>
+
+<section data-scene="04-timeline" aria-labelledby="tl-title" style="position: relative; flex-shrink: 0; padding: 112px 64px 128px; background: radial-gradient(circle at 96% 8%, rgba(0,132,61,0.10), transparent 30%), radial-gradient(circle at 4% 92%, rgba(200,16,46,0.08), transparent 30%), #FDFCFB; overflow: hidden">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; margin-bottom: 64px">
+<span class="eyebrow" style="color: #006B32">سنوات التأسيس · 1974–1977</span>
+<h2 id="tl-title" style="margin: 0; font-size: 46px; font-weight: 800">محطات صنعت تاريخ الاتحاد</h2>
+<p style="margin: 0; font-size: 17px; color: #4B5157; max-width: 620px; line-height: 1.8">من إشهار الجمعية إلى العضوية الدولية والقارية — المحطات الموثّقة في سنوات التأسيس.</p>
+</div>
+<ol style="position: relative; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 28px">
+<li aria-hidden="true" style="position: absolute; top: 0; bottom: 0; left: 50%; width: 4px; margin-left: -2px; border-radius: 2px; background: #E0DFDB"></li>
+<li aria-hidden="true" data-scroll="line-draw" style="position: absolute; top: 0; height: 62%; left: 50%; width: 4px; margin-left: -2px; border-radius: 2px; background: linear-gradient(180deg, #00843D 0%, #00843D 55%, #0B0B0B 80%, #C8102E 100%)"></li>
+
+<li data-scroll="slide-from-side" style="position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 120px minmax(0, 1fr); align-items: center">
+<article class="ms" style="--edge: linear-gradient(#00843D, #00843D)">
+<div style="display: flex; align-items: center; gap: 10px"><span style="font-size: 30px; font-weight: 900; color: #00843D">أبريل 1974</span><span style="font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 999px; background: #E8F5ED; color: #00632F">الجمعية</span></div>
+<h3 style="margin: 0; font-size: 22px; font-weight: 700">مرسوم إشهار جمعية الإمارات لألعاب القوى</h3>
+<p style="margin: 0; font-size: 16px; line-height: 1.8; color: #4B5157">صدر مرسوم من المغفور له الشيخ زايد بن سلطان آل نهيان، رحمه الله، بإشهار الجمعية اعتبارًا من أبريل 1974م.</p>
+</article>
+<div style="display: flex; justify-content: center"><span style="width: 28px; height: 28px; border-radius: 999px; background: #FFFFFF; border: 6px solid #00843D; box-shadow: 0 0 0 6px rgba(0,132,61,0.15)"></span></div>
+<div></div>
+</li>
+
+<li data-scroll="slide-from-side" style="position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 120px minmax(0, 1fr); align-items: center">
+<div></div>
+<div style="display: flex; justify-content: center"><span style="width: 28px; height: 28px; border-radius: 999px; background: #FFFFFF; border: 6px solid #00843D; box-shadow: 0 0 0 6px rgba(0,132,61,0.15)"></span></div>
+<article class="ms" style="--edge: linear-gradient(#00843D, #00843D)">
+<div style="display: flex; align-items: center; gap: 10px"><span style="font-size: 30px; font-weight: 900; color: #00843D">1974</span><span style="font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 999px; background: #E8F5ED; color: #00632F">القيادة الأولى</span></div>
+<h3 style="margin: 0; font-size: 22px; font-weight: 700">أول رئيس للجمعية</h3>
+<p style="margin: 0; font-size: 16px; line-height: 1.8; color: #4B5157">تولّى سعادة أحمد عبدالله الخرجي رئاسة جمعية الإمارات لألعاب القوى في مرحلتها التأسيسية.</p>
+</article>
+</li>
+
+<li data-scroll="slide-from-side" style="position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 120px minmax(0, 1fr); align-items: center">
+<article class="ms" style="--edge: linear-gradient(#00843D, #00843D)">
+<div style="display: flex; align-items: center; gap: 10px"><span style="font-size: 30px; font-weight: 900; color: #00843D">[السنة]</span><span style="font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 999px; background: #E8F5ED; color: #00632F">أول مشاركة</span></div>
+<h3 style="margin: 0; font-size: 22px; font-weight: 700">بطولة الخليج — البصرة</h3>
+<p style="margin: 0; font-size: 16px; line-height: 1.8; color: #4B5157">أول مشاركة خارجية للجمعية، ومثّلها السيد علي حميد عضو مجلس إدارة الجمعية.</p>
+</article>
+<div style="display: flex; justify-content: center"><span style="width: 28px; height: 28px; border-radius: 999px; background: #FFFFFF; border: 6px solid #00843D; box-shadow: 0 0 0 6px rgba(0,132,61,0.15)"></span></div>
+<div></div>
+</li>
+
+<li data-scroll="slide-from-side" style="position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 120px minmax(0, 1fr); align-items: center">
+<div></div>
+<div style="display: flex; justify-content: center"><span style="width: 40px; height: 40px; border-radius: 999px; background: conic-gradient(#00843D 0 33%, #0B0B0B 33% 66%, #C8102E 66% 100%); box-shadow: 0 0 0 8px rgba(11,11,11,0.10)"></span></div>
+<article class="ms" style="background: linear-gradient(#0B0B0B, #0B0B0B) padding-box, linear-gradient(135deg, #00843D 0 26%, #FFFFFF 44% 56%, #C8102E 74% 100%) border-box; color: #FFFFFF">
+<div style="display: flex; align-items: center; gap: 10px"><span style="font-size: 30px; font-weight: 900; color: #FFFFFF">يناير 1976</span><span style="font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 999px; background: #00843D; color: #FFFFFF">الاتحاد</span></div>
+<h3 style="margin: 0; font-size: 22px; font-weight: 700">تأسيس اتحاد الإمارات لألعاب القوى</h3>
+<p style="margin: 0; font-size: 16px; line-height: 1.8; color: #E4E6E8">تأسّس الاتحاد في يناير 1976م، وأُشهر رسميًا بتاريخ 15/01/1976م.</p>
+<div style="display: flex; gap: 8px; margin-top: 4px"><span style="font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3)">التأسيس: يناير 1976م</span><span style="font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3)">الإشهار: 15/01/1976م</span></div>
+</article>
+</li>
+
+<li data-scroll="slide-from-side" style="position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 120px minmax(0, 1fr); align-items: center">
+<article class="ms" style="--edge: linear-gradient(#C8102E, #C8102E)">
+<div style="display: flex; align-items: center; gap: 10px"><span style="font-size: 30px; font-weight: 900; color: #C8102E">1976</span><span style="font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 999px; background: #FBE9EC; color: #A30D26">العضوية الدولية</span></div>
+<h3 style="margin: 0; font-size: 22px; font-weight: 700">الانضمام إلى الاتحاد الدولي لألعاب القوى</h3>
+<p style="margin: 0; font-size: 16px; line-height: 1.8; color: #4B5157">في عام تأسيسه نفسه، أصبح الاتحاد عضوًا في الاتحاد الدولي لألعاب القوى، ليفتح الباب أمام الرياضيين الإماراتيين للمنافسة عالميًا.</p>
+</article>
+<div style="display: flex; justify-content: center"><span style="width: 28px; height: 28px; border-radius: 999px; background: #FFFFFF; border: 6px solid #C8102E; box-shadow: 0 0 0 6px rgba(200,16,46,0.15)"></span></div>
+<div></div>
+</li>
+
+<li data-scroll="slide-from-side" style="position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 120px minmax(0, 1fr); align-items: center">
+<div></div>
+<div style="display: flex; justify-content: center"><span style="width: 28px; height: 28px; border-radius: 999px; background: #C8102E; border: 6px solid #FFFFFF; box-shadow: 0 0 0 3px #C8102E"></span></div>
+<article class="ms" style="--edge: linear-gradient(#C8102E, #C8102E)">
+<div style="display: flex; align-items: center; gap: 10px"><span style="font-size: 30px; font-weight: 900; color: #C8102E">1977</span><span style="font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 999px; background: #FBE9EC; color: #A30D26">العضوية القارية</span></div>
+<h3 style="margin: 0; font-size: 22px; font-weight: 700">الانضمام إلى الاتحاد الآسيوي لألعاب القوى</h3>
+<p style="margin: 0; font-size: 16px; line-height: 1.8; color: #4B5157">انضم الاتحاد إلى المنظومة القارية، لتبدأ مشاركات الإمارات في البطولات الآسيوية.</p>
+</article>
+</li>
+</ol>
+</section>
+
+<section class="on-dark" data-scene="05-achievements-pinned" aria-labelledby="ach-title" style="position: relative; flex-shrink: 0; padding: 112px 0 112px 0; color: #FFFFFF; background: radial-gradient(circle at 85% 0%, rgba(0,132,61,0.45), transparent 35%), radial-gradient(circle at 10% 100%, rgba(200,16,46,0.35), transparent 35%), #0B0B0B; overflow: hidden">
+<div style="padding: 0 64px; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 48px">
+<div style="display: flex; flex-direction: column; gap: 14px">
+<span class="eyebrow" style="color: #4CC27E">لحظات ذهبية</span>
+<h2 id="ach-title" style="margin: 0; font-size: 46px; font-weight: 800">إنجازات رفعت علم الإمارات</h2>
+<p style="margin: 0; font-size: 17px; line-height: 1.8; color: #D6D9DC; max-width: 620px">من أول ذهبية في دورة الألعاب الآسيوية إلى جيل جديد يحصد الذهب ويحطم الأرقام القياسية.</p>
+</div>
+<div style="display: flex; align-items: center; gap: 12px">
+<span style="font-size: 14px; color: #BFC4C8" lang="en">01 / 05</span>
+<button class="rail-btn" aria-label="الإنجاز السابق"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></button>
+<button class="rail-btn" aria-label="الإنجاز التالي"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg></button>
+</div>
+</div>
+<ul data-scroll="pin-horizontal" style="list-style: none; margin: 0; padding: 0 64px; display: flex; gap: 24px">
+<li class="ach" style="--edge: linear-gradient(135deg, #00843D 0 26%, #FFFFFF 44% 56%, #C8102E 74% 100%)">
+<div class="ph" style="height: 190px; background: radial-gradient(circle at 70% 30%, #5E4B1C, #2A2210)"><span class="ph-tag">[صورة علياء سعيد محمد — إنشيون 2014]</span></div>
+<div style="flex-grow: 1; padding: 22px 24px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: baseline; justify-content: space-between"><span style="font-size: 44px; font-weight: 900; line-height: 1; color: #E3B341" lang="en">2014</span><span style="font-size: 13px; font-weight: 700; padding: 4px 12px; border-radius: 999px; background: #E3B341; color: #0B0B0B">ذهبية</span></div>
+<h3 style="margin: 0; font-size: 20px; font-weight: 800; line-height: 1.5">أول ذهبية إماراتية في ألعاب القوى بدورة الألعاب الآسيوية</h3>
+<p style="margin: 0; font-size: 15px; line-height: 1.75; color: #D6D9DC">علياء سعيد محمد — سباق 10,000م، إنشيون، بزمن 31:51.86 ورقم وطني جديد.</p>
+</div>
+</li>
+<li class="ach" style="--edge: linear-gradient(#00843D, #00843D)">
+<div class="ph" style="height: 190px; background: radial-gradient(circle at 70% 30%, #1F5A38, #0D2418)"><span class="ph-tag">[صورة — ووهان 2015]</span></div>
+<div style="flex-grow: 1; padding: 22px 24px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: baseline; justify-content: space-between"><span style="font-size: 44px; font-weight: 900; line-height: 1; color: #4CC27E" lang="en">2015</span><span style="font-size: 13px; font-weight: 700; padding: 4px 12px; border-radius: 999px; background: #E3B341; color: #0B0B0B">ذهبية</span></div>
+<h3 style="margin: 0; font-size: 20px; font-weight: 800; line-height: 1.5">بطلة آسيا في سباق 10,000م</h3>
+<p style="margin: 0; font-size: 15px; line-height: 1.75; color: #D6D9DC">علياء سعيد محمد تتوّج بذهبية بطولة آسيا لألعاب القوى في ووهان.</p>
+</div>
+</li>
+<li class="ach" style="--edge: linear-gradient(#FFFFFF, #FFFFFF)">
+<div class="ph" style="height: 190px; background: radial-gradient(circle at 70% 30%, #3E4247, #1A1C1F)"><span class="ph-tag">[صورة — عشق آباد 2017]</span></div>
+<div style="flex-grow: 1; padding: 22px 24px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: baseline; justify-content: space-between"><span style="font-size: 44px; font-weight: 900; line-height: 1; color: #FFFFFF" lang="en">2017</span><span style="font-size: 13px; font-weight: 700; padding: 4px 12px; border-radius: 999px; background: #E3B341; color: #0B0B0B">ذهبية</span></div>
+<h3 style="margin: 0; font-size: 20px; font-weight: 800; line-height: 1.5">ذهبية آسيا داخل الصالات</h3>
+<p style="margin: 0; font-size: 15px; line-height: 1.75; color: #D6D9DC">علياء سعيد محمد تحرز ذهبية 3000م في بطولة آسيا داخل الصالات بعشق آباد.</p>
+</div>
+</li>
+<li class="ach" style="--edge: linear-gradient(#C8102E, #C8102E)">
+<div class="ph" style="height: 190px; background: radial-gradient(circle at 70% 30%, #5A1F28, #240C10)"><span class="ph-tag">[صورة محمد عادل العلي]</span></div>
+<div style="flex-grow: 1; padding: 22px 24px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: baseline; justify-content: space-between"><span style="font-size: 44px; font-weight: 900; line-height: 1; color: #FF6B7F" lang="en">2025</span><span style="font-size: 13px; font-weight: 700; padding: 4px 12px; border-radius: 999px; background: #C98A5B; color: #0B0B0B">برونزية</span></div>
+<h3 style="margin: 0; font-size: 20px; font-weight: 800; line-height: 1.5">أول ميدالية إماراتية في تاريخ الألعاب الآسيوية للشباب</h3>
+<p style="margin: 0; font-size: 15px; line-height: 1.75; color: #D6D9DC">محمد عادل العلي — رمي المطرقة، 62.03م، في النسخة الثالثة بالبحرين.</p>
+</div>
+</li>
+<li class="ach" style="--edge: linear-gradient(135deg, #00843D 0 26%, #FFFFFF 44% 56%, #C8102E 74% 100%)">
+<div class="ph" style="height: 190px; background: radial-gradient(circle at 70% 30%, #1F5A38, #0D2418)"><span class="ph-tag">[صورة المنتخب — هونغ كونغ 2026]</span></div>
+<div style="flex-grow: 1; padding: 22px 24px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: baseline; justify-content: space-between"><span style="font-size: 44px; font-weight: 900; line-height: 1; color: #4CC27E" lang="en">2026</span><span style="font-size: 13px; font-weight: 700; padding: 4px 12px; border-radius: 999px; background: #E3B341; color: #0B0B0B">5 ذهبيات</span></div>
+<h3 style="margin: 0; font-size: 20px; font-weight: 800; line-height: 1.5">المركز الثالث في بطولة آسيا للشباب تحت 20 عامًا</h3>
+<p style="margin: 0; font-size: 15px; line-height: 1.75; color: #D6D9DC">5 ذهبيات ورقمان قياسيان للبطولة، أبرزها سليمان عبدالرحمن في 400م بزمن 44.85ث.</p>
+</div>
+</li>
+</ul>
+<div style="margin: 40px 64px 0; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.15); position: relative">
+<div data-scroll="progress" style="position: absolute; right: 0; top: 0; bottom: 0; width: 20%; border-radius: 2px; background: linear-gradient(to left, #00843D, #FFFFFF, #C8102E)"></div>
+</div>
+</section>
+
+<section class="on-dark" data-scene="06-pioneers" aria-labelledby="pio-title" style="position: relative; flex-shrink: 0; padding: 112px 64px; color: #FFFFFF; background: linear-gradient(180deg, #141414, #0B0B0B); overflow: hidden">
+<svg width="420" height="350" viewBox="0 0 240 200" aria-hidden="true" style="position: absolute; left: -40px; top: -30px; opacity: 0.08"><path d="M20 170 L75.05 105.05 A7 7 0 0 1 84.95 114.95 Z" fill="#FFFFFF"></path><path d="M40 190 L142.2 72.2 A11 11 0 0 1 157.8 87.8 Z" fill="#FFFFFF"></path><path d="M95 190 L182.9 87.9 A10 10 0 0 1 197.1 102.1 Z" fill="#FFFFFF"></path><path d="M150 190 L200.05 130.05 A7 7 0 0 1 209.95 139.95 Z" fill="#FFFFFF"></path></svg>
+<div style="position: relative; display: flex; flex-direction: column; gap: 14px; margin-bottom: 48px">
+<span class="eyebrow" style="color: #4CC27E">روّاد البدايات</span>
+<h2 id="pio-title" style="margin: 0; font-size: 46px; font-weight: 800">الأسماء التي وضعت حجر الأساس</h2>
+</div>
+<div style="position: relative; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 24px">
+<article class="person" data-scroll="mask-reveal" style="flex-direction: row">
+<div class="ph" style="width: 300px; flex-shrink: 0; background: linear-gradient(160deg, #3A3F44, #1C1F22)">
+<svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.2" aria-hidden="true" style="position: absolute; top: 50%; left: 50%; margin: -36px 0 0 -36px"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path></svg>
+<span class="ph-tag">[صورة أحمد عبدالله الخرجي]</span>
+</div>
+<div style="flex-grow: 1; padding: 36px; display: flex; flex-direction: column; gap: 14px; justify-content: center">
+<span style="font-size: 72px; font-weight: 900; line-height: 1; color: transparent; -webkit-text-stroke: 1.5px rgba(255,255,255,0.45)" lang="en">01</span>
+<span style="align-self: flex-start; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 999px; background: #00843D; color: #FFFFFF">أول رئيس للجمعية · 1974</span>
+<h3 style="margin: 0; font-size: 32px; font-weight: 800">سعادة أحمد عبدالله الخرجي</h3>
+<p style="margin: 0; font-size: 17px; line-height: 1.85; color: #D6D9DC">أول رئيس لجمعية الإمارات لألعاب القوى، قاد الجمعية في مرحلتها التأسيسية الأولى بعد إشهارها في أبريل 1974م.</p>
+</div>
+</article>
+<article class="person" data-scroll="mask-reveal">
+<div class="ph" style="height: 200px; background: linear-gradient(160deg, #3A3F44, #1C1F22)">
+<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.2" aria-hidden="true" style="position: absolute; top: 50%; left: 50%; margin: -28px 0 0 -28px"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path></svg>
+<span class="ph-tag">[صورة علي حميد]</span>
+</div>
+<div style="padding: 28px 30px; display: flex; flex-direction: column; gap: 12px">
+<span style="align-self: flex-start; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 999px; background: #C8102E; color: #FFFFFF">أول مشاركة خارجية</span>
+<h3 style="margin: 0; font-size: 26px; font-weight: 800">السيد علي حميد</h3>
+<p style="margin: 0; font-size: 16px; line-height: 1.8; color: #D6D9DC">عضو مجلس إدارة الجمعية، ارتبط اسمه بأول مشاركة للجمعية في بطولة الخليج بالبصرة.</p>
+</div>
+</article>
+</div>
+</section>
+
+<section class="on-dark" data-scene="07-leadership" aria-labelledby="lead-title" style="position: relative; flex-shrink: 0; padding: 112px 64px; background: linear-gradient(160deg, #00843D 0%, #006B32 45%, #00502A 100%); color: #FFFFFF; overflow: hidden">
+<svg width="900" height="600" viewBox="0 0 900 600" aria-hidden="true" style="position: absolute; left: -200px; top: -40px"><g fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"><path d="M0 560 C 250 560 380 440 460 300 C 540 160 660 80 900 80"></path><path d="M0 500 C 240 500 360 400 435 270 C 515 130 640 40 900 40"></path><path d="M0 440 C 230 440 340 360 410 240 C 490 100 620 0 900 0"></path></g></svg>
+<div style="position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 48px">
+<div style="display: flex; flex-direction: column; gap: 14px">
+<span class="eyebrow" style="color: #FFFFFF">القيادة اليوم</span>
+<h2 id="lead-title" style="margin: 0; font-size: 46px; font-weight: 800">قيادة تدفع ألعاب القوى نحو العالمية</h2>
+</div>
+<a class="btn-ghost" href="#">مجلس الإدارة كاملًا</a>
+</div>
+<div style="position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); border-radius: 24px; overflow: hidden; background: #0B0B0B; box-shadow: 0 30px 60px rgba(0,0,0,0.3)">
+<div class="ph" data-scroll="parallax" style="height: 500px; background: radial-gradient(circle at 50% 30%, #4A5A50, #1C2420)">
+<svg width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.1" aria-hidden="true" style="position: absolute; top: 50%; left: 50%; margin: -48px 0 0 -48px"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"></path></svg>
+<span class="ph-tag">[صورة رئيس الاتحاد]</span>
+</div>
+<div style="position: relative; padding: 48px 52px; display: flex; flex-direction: column; gap: 18px; justify-content: center">
+<div aria-hidden="true" style="position: absolute; inset: 0 0 auto 0; height: 5px; background: linear-gradient(to left, #00843D 0 26%, #FFFFFF 44% 56%, #C8102E 74% 100%)"></div>
+<svg width="44" height="44" viewBox="0 0 24 24" fill="#C8102E" aria-hidden="true"><path d="M10 7H6a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2v2a2 2 0 0 1-2 2H5v2h1a4 4 0 0 0 4-4zM20 7h-4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h2v2a2 2 0 0 1-2 2h-1v2h1a4 4 0 0 0 4-4z"></path></svg>
+<p data-scroll="word-highlight" style="margin: 0; font-size: 26px; line-height: 1.7; font-weight: 700">طموحنا أن تكون ألعاب القوى الإماراتية حاضرة بصورة دائمة في كبرى البطولات العالمية والأولمبية.</p>
+<div style="display: flex; flex-direction: column; gap: 4px; padding-top: 8px">
+<span style="font-size: 22px; font-weight: 800">اللواء الدكتور محمد عبدالله المر</span>
+<span style="font-size: 15px; color: #4CC27E; font-weight: 600">رئيس اتحاد الإمارات لألعاب القوى · لدورة تمتد حتى 2028</span>
+</div>
+<ul style="margin: 8px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 20px; font-size: 14px; line-height: 1.7; color: #D6D9DC">
+<li style="display: flex; gap: 8px"><span aria-hidden="true" style="margin-top: 8px; width: 8px; height: 8px; flex-shrink: 0; border-radius: 2px; background: #00843D"></span>تطوير المنتخبات الوطنية والارتقاء بمستوى الرياضيين</li>
+<li style="display: flex; gap: 8px"><span aria-hidden="true" style="margin-top: 8px; width: 8px; height: 8px; flex-shrink: 0; border-radius: 2px; background: #FFFFFF"></span>اكتشاف المواهب وصقلها عبر البرامج والمسابقات</li>
+<li style="display: flex; gap: 8px"><span aria-hidden="true" style="margin-top: 8px; width: 8px; height: 8px; flex-shrink: 0; border-radius: 2px; background: #C8102E"></span>تطوير الكوادر الفنية والتحكيمية</li>
+<li style="display: flex; gap: 8px"><span aria-hidden="true" style="margin-top: 8px; width: 8px; height: 8px; flex-shrink: 0; border-radius: 2px; background: #00843D"></span>الاستعداد لاستحقاقات 2028 و2032 الأولمبية</li>
+</ul>
+</div>
+</div>
+<div style="position: relative; margin-top: 40px; display: flex; align-items: center; gap: 16px">
+<h3 style="margin: 0; font-size: 24px; font-weight: 800; white-space: nowrap">أعضاء مجلس الإدارة المنتخبون</h3>
+<div aria-hidden="true" style="flex-grow: 1; height: 2px; background: rgba(255,255,255,0.3)"></div>
+<span style="font-size: 14px; font-weight: 600; white-space: nowrap">انتخابات سبتمبر 2025</span>
+</div>
+<ul data-scroll="stagger" style="position: relative; margin: 20px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px">
+<li class="pcard" style="--edge: linear-gradient(#00843D, #00843D); align-items: center; gap: 16px; padding: 16px"><span aria-hidden="true" style="width: 64px; height: 64px; flex-shrink: 0; border-radius: 999px; background: radial-gradient(circle at 50% 35%, #5D6A62, #2A322D)"></span><div style="display: flex; flex-direction: column; gap: 4px; color: #0B0B0B"><span style="font-size: 19px; font-weight: 800">ناصر بن عاشور</span><span style="font-size: 14px; font-weight: 600; color: #006B32">عضو مجلس الإدارة</span></div></li>
+<li class="pcard" style="--edge: linear-gradient(#0B0B0B, #0B0B0B); align-items: center; gap: 16px; padding: 16px"><span aria-hidden="true" style="width: 64px; height: 64px; flex-shrink: 0; border-radius: 999px; background: radial-gradient(circle at 50% 35%, #5B5F66, #26292E)"></span><div style="display: flex; flex-direction: column; gap: 4px; color: #0B0B0B"><span style="font-size: 19px; font-weight: 800">فيصل الخميري</span><span style="font-size: 14px; font-weight: 600; color: #3A3F44">عضو مجلس الإدارة</span></div></li>
+<li class="pcard" style="--edge: linear-gradient(#C8102E, #C8102E); align-items: center; gap: 16px; padding: 16px"><span aria-hidden="true" style="width: 64px; height: 64px; flex-shrink: 0; border-radius: 999px; background: radial-gradient(circle at 50% 35%, #6A5A5D, #2E2426)"></span><div style="display: flex; flex-direction: column; gap: 4px; color: #0B0B0B"><span style="font-size: 19px; font-weight: 800">خولة سجواني</span><span style="font-size: 14px; font-weight: 600; color: #A30D26">عضو مجلس الإدارة</span></div></li>
+<li class="pcard" style="--edge: linear-gradient(#00843D, #00843D); align-items: center; gap: 16px; padding: 16px"><span aria-hidden="true" style="width: 64px; height: 64px; flex-shrink: 0; border-radius: 999px; background: radial-gradient(circle at 50% 35%, #5D6A62, #2A322D)"></span><div style="display: flex; flex-direction: column; gap: 4px; color: #0B0B0B"><span style="font-size: 19px; font-weight: 800">راشد ناصر</span><span style="font-size: 14px; font-weight: 600; color: #006B32">رئيس لجنة المنتخبات الوطنية</span></div></li>
+<li class="pcard" style="--edge: linear-gradient(#0B0B0B, #0B0B0B); align-items: center; gap: 16px; padding: 16px"><span aria-hidden="true" style="width: 64px; height: 64px; flex-shrink: 0; border-radius: 999px; background: radial-gradient(circle at 50% 35%, #5B5F66, #26292E)"></span><div style="display: flex; flex-direction: column; gap: 4px; color: #0B0B0B"><span style="font-size: 19px; font-weight: 800">فهد عبدالله</span><span style="font-size: 14px; font-weight: 600; color: #3A3F44">عضو مجلس الإدارة</span></div></li>
+<li class="pcard" style="--edge: linear-gradient(#C8102E, #C8102E); align-items: center; gap: 16px; padding: 16px"><span aria-hidden="true" style="width: 64px; height: 64px; flex-shrink: 0; border-radius: 999px; background: radial-gradient(circle at 50% 35%, #6A5A5D, #2E2426)"></span><div style="display: flex; flex-direction: column; gap: 4px; color: #0B0B0B"><span style="font-size: 19px; font-weight: 800">جميلة عبدالله</span><span style="font-size: 14px; font-weight: 600; color: #A30D26">عضو مجلس الإدارة</span></div></li>
+</ul>
+</section>
+
+<section data-scene="08-governance" aria-labelledby="gov-title" style="position: relative; flex-shrink: 0; padding: 88px 64px; background: #FFFFFF; overflow: hidden">
+<div aria-hidden="true" style="position: absolute; inset: 0 0 auto 0; height: 4px; background: linear-gradient(to left, #00843D 0 26%, #0B0B0B 44% 56%, #C8102E 74% 100%)"></div>
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 64px; align-items: center">
+<div style="display: flex; flex-direction: column; gap: 14px">
+<span class="eyebrow" style="color: #006B32">الحوكمة والشفافية</span>
+<h2 id="gov-title" style="margin: 0; font-size: 38px; font-weight: 800; line-height: 1.35">منظومة مؤسسية قائمة على الحوكمة والمساءلة</h2>
+<p style="margin: 0; font-size: 17px; line-height: 1.85; color: #4B5157">في سبتمبر 2026 اعتمدت الجمعية العمومية غير العادية تعديلات النظام الأساسي للاتحاد، انسجامًا مع الإطار التنظيمي الموحّد للجنة الأولمبية الوطنية.</p>
+<a class="btn-primary" href="#" style="align-self: flex-start; margin-top: 8px">اللوائح والسياسات</a>
+</div>
+<div data-scroll="stagger" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px">
+<div style="padding: 24px; border-radius: 18px; background: #E8F5ED; display: flex; flex-direction: column; gap: 12px"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#006B32" stroke-width="1.8" aria-hidden="true"><path d="M9 11l3 3 8-8"></path><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"></path></svg><span style="font-size: 17px; font-weight: 800">لجنة انتخابات مركزية</span><span style="font-size: 14px; line-height: 1.7; color: #3A3F44">لائحة موحّدة تنظّم العملية الانتخابية.</span></div>
+<div style="padding: 24px; border-radius: 18px; background: #EDEDED; display: flex; flex-direction: column; gap: 12px"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#0B0B0B" stroke-width="1.8" aria-hidden="true"><path d="M12 3v18M5 7h14M7 7l-3 7a3 3 0 0 0 6 0zM17 7l-3 7a3 3 0 0 0 6 0z"></path></svg><span style="font-size: 17px; font-weight: 800">لجنة استئناف انتخابية</span><span style="font-size: 14px; line-height: 1.7; color: #3A3F44">جهة مستقلة للنظر في الطعون.</span></div>
+<div style="padding: 24px; border-radius: 18px; background: #FBE9EC; display: flex; flex-direction: column; gap: 12px"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#A30D26" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg><span style="font-size: 17px; font-weight: 800">مسؤوليات واضحة</span><span style="font-size: 14px; line-height: 1.7; color: #3A3F44">أولوية لتطوير الرياضة وخدمة الرياضيين.</span></div>
+</div>
+</div>
+</section>
+
+<section data-scene="09-ecosystem" aria-labelledby="eco-title" style="position: relative; flex-grow: 1; padding: 112px 64px; background: radial-gradient(circle at 50% 40%, rgba(0,132,61,0.08), transparent 45%), #F4F4F4">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; margin-bottom: 56px">
+<span class="eyebrow" style="color: #006B32">منظومة الاتحاد</span>
+<h2 id="eco-title" style="margin: 0; font-size: 46px; font-weight: 800">منظومة ألعاب القوى الإماراتية اليوم</h2>
+</div>
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) 300px minmax(0, 1fr); gap: 24px; align-items: center">
+<div data-scroll="stagger" style="display: flex; flex-direction: column; gap: 20px">
+<a class="node" href="#"><span style="font-size: 20px; font-weight: 800">مجلس الإدارة</span><span class="node-more">عرض التفاصيل <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg></span></a>
+<a class="node" href="#"><span style="font-size: 20px; font-weight: 800">اللجان</span><span class="node-more">عرض التفاصيل <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg></span></a>
+<a class="node" href="#"><span style="font-size: 20px; font-weight: 800">الأندية</span><span class="node-more">عرض التفاصيل <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg></span></a>
+</div>
+<div data-scroll="rotate-ring" style="position: relative; height: 300px; border-radius: 999px; display: flex; align-items: center; justify-content: center; background: conic-gradient(#00843D 0 33%, #0B0B0B 33% 66%, #C8102E 66% 100%); padding: 10px">
+<div style="width: 100%; height: 100%; border-radius: 999px; background: #0B0B0B; color: #FFFFFF; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center">
+<svg width="92" height="77" viewBox="0 0 240 200" aria-hidden="true"><path d="M20 170 L75.05 105.05 A7 7 0 0 1 84.95 114.95 Z" fill="#C8102E"></path><path d="M40 190 L142.2 72.2 A11 11 0 0 1 157.8 87.8 Z" fill="#00843D"></path><path d="M95 190 L182.9 87.9 A10 10 0 0 1 197.1 102.1 Z" fill="#FFFFFF"></path><path d="M150 190 L200.05 130.05 A7 7 0 0 1 209.95 139.95 Z" fill="#C8102E"></path></svg>
+<span style="font-size: 26px; font-weight: 900">الاتحاد</span>
+<span style="font-size: 13px; color: #BFC4C8">الحوكمة · التنظيم · التطوير</span>
+</div>
+</div>
+<div data-scroll="stagger" style="display: flex; flex-direction: column; gap: 20px">
+<a class="node" href="#"><span style="font-size: 20px; font-weight: 800">الرياضيون</span><span class="node-more">عرض التفاصيل <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg></span></a>
+<a class="node" href="#"><span style="font-size: 20px; font-weight: 800">البطولات</span><span class="node-more">عرض التفاصيل <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg></span></a>
+<a class="node" href="#"><span style="font-size: 20px; font-weight: 800">الأحداث</span><span class="node-more">عرض التفاصيل <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg></span></a>
+</div>
+</div>
+<div data-scroll="count-up" style="margin-top: 48px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px">
+<div class="stat" style="background: linear-gradient(135deg, #00843D, #00502A)"><span style="font-size: 15px; font-weight: 600">الأندية</span><div><div style="font-size: 48px; font-weight: 900; line-height: 1" lang="en">18</div><div style="margin-top: 8px; font-size: 14px">نادٍ عضو في المنظومة</div></div></div>
+<div class="stat" style="background: #0B0B0B"><span style="font-size: 15px; font-weight: 600">الرياضيون</span><div><div style="font-size: 48px; font-weight: 900; line-height: 1" lang="en">1,240+</div><div style="margin-top: 8px; font-size: 14px">رياضي مسجّل</div></div></div>
+<div class="stat" style="background: linear-gradient(135deg, #C8102E, #7A0A1C)"><span style="font-size: 15px; font-weight: 600">الحكام</span><div><div style="font-size: 48px; font-weight: 900; line-height: 1" lang="en">45+</div><div style="margin-top: 8px; font-size: 14px">حكم معتمد</div></div></div>
+<div class="stat" style="background: linear-gradient(135deg, #006B32 0%, #0B0B0B 55%, #A30D26 100%)"><span style="font-size: 15px; font-weight: 600">البطولات</span><div><div style="font-size: 48px; font-weight: 900; line-height: 1" lang="en">12</div><div style="margin-top: 8px; font-size: 14px">بطولة ضمن الروزنامة</div></div></div>
+</div>
+</section>
+
+<section class="on-dark" aria-labelledby="cta-title" style="position: relative; flex-shrink: 0; padding: 72px 64px; background: linear-gradient(135deg, #C8102E, #7A0A1C); color: #FFFFFF; display: flex; align-items: center; justify-content: space-between; gap: 40px; overflow: hidden">
+<svg width="280" height="233" viewBox="0 0 240 200" aria-hidden="true" style="position: absolute; left: 420px; top: -40px; opacity: 0.16"><path d="M20 170 L75.05 105.05 A7 7 0 0 1 84.95 114.95 Z" fill="#FFFFFF"></path><path d="M40 190 L142.2 72.2 A11 11 0 0 1 157.8 87.8 Z" fill="#FFFFFF"></path><path d="M95 190 L182.9 87.9 A10 10 0 0 1 197.1 102.1 Z" fill="#FFFFFF"></path><path d="M150 190 L200.05 130.05 A7 7 0 0 1 209.95 139.95 Z" fill="#FFFFFF"></path></svg>
+<div style="position: relative; display: flex; flex-direction: column; gap: 10px; max-width: 700px">
+<h2 id="cta-title" style="margin: 0; font-size: 34px; font-weight: 800">نعمل معًا من أجل مستقبل ألعاب القوى الإماراتية</h2>
+<p style="margin: 0; font-size: 17px; line-height: 1.75">تعرّف على البطولات القادمة، أو تواصل مع فريق الاتحاد.</p>
+</div>
+<div style="position: relative; display: flex; gap: 14px; flex-shrink: 0">
+<a class="btn-white" href="#">استكشف البطولات</a>
+<a class="btn-ghost" href="#">تواصل معنا</a>
+</div>
+</section>
+
+<footer class="on-dark" style="position: relative; flex-shrink: 0; background: #0B0B0B; color: #FFFFFF; overflow: hidden">
+<div style="height: 4px; background: linear-gradient(to left, #00843D 0 26%, #FFFFFF 44% 56%, #C8102E 74% 100%)"></div>
+<div style="padding: 56px 64px 28px; display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr); gap: 56px">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; align-items: center; gap: 10px">
+<svg width="44" height="37" viewBox="0 0 240 200" aria-hidden="true"><path d="M20 170 L75.05 105.05 A7 7 0 0 1 84.95 114.95 Z" fill="#FFFFFF"></path><path d="M40 190 L142.2 72.2 A11 11 0 0 1 157.8 87.8 Z" fill="#FFFFFF"></path><path d="M95 190 L182.9 87.9 A10 10 0 0 1 197.1 102.1 Z" fill="#FFFFFF"></path><path d="M150 190 L200.05 130.05 A7 7 0 0 1 209.95 139.95 Z" fill="#FFFFFF"></path></svg>
+<span style="font-size: 20px; font-weight: 700">اتحاد الإمارات لألعاب القوى</span>
+</div>
+<p style="margin: 0; font-size: 15px; line-height: 1.8; color: #D0D3D6; max-width: 420px">الجهة الرسمية المشرفة على رياضة ألعاب القوى في دولة الإمارات العربية المتحدة، وعضو في الاتحاد الدولي لألعاب القوى واتحاد ألعاب القوى الآسيوي.</p>
+<div style="display: flex; gap: 10px; margin-top: 6px">
+<a class="soc" href="#" aria-label="إنستغرام"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle></svg></a>
+<a class="soc" href="#" aria-label="إكس"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4l16 16M20 4L4 20"></path></svg></a>
+<a class="soc" href="#" aria-label="يوتيوب"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="4"></rect><path d="M10 9l5 3-5 3z"></path></svg></a>
+<a class="soc" href="#" aria-label="فيسبوك"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M15 3h-2.5A3.5 3.5 0 0 0 9 6.5V10H7v3h2v8h3v-8h2.5l.5-3h-3V7a1 1 0 0 1 1-1h2z"></path></svg></a>
+</div>
+</div>
+<nav aria-label="روابط سريعة" style="display: flex; flex-direction: column; gap: 14px">
+<h2 style="margin: 0 0 4px; font-size: 16px; font-weight: 700">روابط سريعة</h2>
+<a class="foot-link" href="#">عن الاتحاد</a>
+<a class="foot-link" href="#">البطولات</a>
+<a class="foot-link" href="#">الأخبار والمقالات</a>
+<a class="foot-link" href="#">المركز الإعلامي</a>
+<a class="foot-link" href="#">تواصل معنا</a>
+</nav>
+<div style="display: flex; flex-direction: column; gap: 14px; font-size: 14px; color: #D0D3D6">
+<h2 style="margin: 0 0 4px; font-size: 16px; font-weight: 700; color: #FFFFFF">التواصل</h2>
+<p style="margin: 0; line-height: 1.7">١ شارع النهدة، النهدة الأولى، دبي، الإمارات العربية المتحدة</p>
+<a class="foot-link" href="mailto:info@uaeaf.ae" lang="en">info@uaeaf.ae</a>
+<p style="margin: 0">الأحد–الخميس، 08:00–15:00</p>
+</div>
+</div>
+<div style="margin: 0 64px; padding: 22px 0 28px; border-top: 1px solid #26292C; display: flex; justify-content: space-between; font-size: 13px; color: #B8BCC0">
+<p style="margin: 0">© 2026 اتحاد الإمارات لألعاب القوى. جميع الحقوق محفوظة.</p>
+<div style="display: flex; gap: 24px"><a class="foot-link" href="#" style="font-size: 13px">بيان إمكانية الوصول</a><a class="foot-link" href="#" style="font-size: 13px">سياسة الخصوصية</a><a class="foot-link" href="#" style="font-size: 13px">شروط الاستخدام</a></div>
+</div>
+</footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":8700}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

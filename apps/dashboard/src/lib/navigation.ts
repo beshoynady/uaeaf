@@ -244,6 +244,23 @@ export const NAV_ITEMS: readonly NavItem[] = [
    * `workflowInstances:Approve` is what the API gates every review decision
    * on.
    */
+  /**
+   * About the Federation (ADR-0101), opened by the same two jobs as the pages
+   * below it, and placed first among them because the approved dashboard
+   * canvas lists it first.
+   *
+   * Its activation switch needs `aboutFederationPage:Publish` as well, but
+   * that is a control inside the screen rather than a reason to open it: an
+   * editor without it still has a page to write.
+   */
+  {
+    key: "aboutFederation",
+    href: "/about-federation",
+    requires: [
+      { resourceType: "aboutFederationPage", action: "Update" },
+      { resourceType: "workflowInstances", action: "Approve" },
+    ],
+  },
   {
     key: "presidentMessage",
     href: "/president-message",

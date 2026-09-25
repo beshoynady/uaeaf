@@ -105,6 +105,13 @@ export const EDITORIAL_ENTITIES: readonly EditorialEntity[] = [
     publishPermission: "strategicPlansPage:Publish",
   },
   {
+    entityType: "aboutFederationPage",
+    apiPath: "/about-federation-page",
+    readPermission: "aboutFederationPage:Read",
+    updatePermission: "aboutFederationPage:Update",
+    publishPermission: "aboutFederationPage:Publish",
+  },
+  {
     entityType: "articles",
     apiPath: "/articles",
     readPermission: "articles:Read",

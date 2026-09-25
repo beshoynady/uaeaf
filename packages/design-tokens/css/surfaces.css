@@ -483,7 +483,7 @@
   --surface-divider: var(--color-brand-surface-ink-divider);
   --surface-focus-ring: var(--color-brand-surface-ink-text);
   /*
-   * The green ink tier, and the only surface that publishes one (ADR-0098 §8c).
+   * The green ink tier, and the only surface that publishes one (ADR-0098 §8d).
    *
    * Everything that reads it does so as `var(--surface-accent, …)` with the
    * surface's own ink as the fallback, so a green label is green on ink and
@@ -493,6 +493,17 @@
    * that resolves to nothing.
    */
   --surface-accent: var(--color-brand-surface-ink-accent);
+  /*
+   * The two steps above the ink ground (ADR-0098 §8d).
+   *
+   * Published as tokens, not mixed at each call site, because the mix was
+   * written out in five places in the video system and the gap it worked around
+   * — "the kit has no raised-on-ink token" — was recorded in a comment rather
+   * than in the system. Both measure ~1.2:1 against the ground, so neither is a
+   * boundary: a card that uses one takes `--surface-border` for its edge.
+   */
+  --surface-raised: var(--color-brand-surface-ink-raised);
+  --surface-raised-strong: var(--color-brand-surface-ink-raised-strong);
   --surface-tricolor-mid: var(--color-white);
   --surface-btn-primary-bg: var(--color-brand-primary);
   --surface-btn-primary-ink: var(--color-text-on-brand);

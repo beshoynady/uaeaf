@@ -167,7 +167,9 @@ describe("ArticleList", () => {
 
     // A link, not a button: starting an article is a navigation, and an
     // editor opening it in a new tab keeps the list they were working from.
-    expect(screen.getByRole("link", { name: "newArticle" })).toHaveAttribute("href", "/news/new");
+    // The library button renders a plain `next/link`, so the locale prefix
+    // is part of the address it is given.
+    expect(screen.getByRole("link", { name: "newArticle" })).toHaveAttribute("href", "/ar/news/new");
   });
 
   it("offers nothing to start to whoever may not", () => {

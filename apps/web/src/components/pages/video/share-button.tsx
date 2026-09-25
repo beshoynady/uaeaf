@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { FOCUS } from "@/components/ui/interactive";
-import { GHOST_PILL } from "./chrome";
+import { Button } from "@uaeaf/brand-ui";
 
 /**
  * Share, with the browser's own sheet where there is one.
@@ -66,11 +66,7 @@ export const ShareButton = ({
 
   return (
     <>
-      <button
-        type="button"
-        onClick={share}
-        className={`${GHOST_PILL} px-5`}
-      >
+      <Button variant="secondary" onClick={share}>
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="18" cy="5.5" r="2.5" />
           <circle cx="6" cy="12" r="2.5" />
@@ -78,7 +74,7 @@ export const ShareButton = ({
           <path d="m8.2 10.8 7.6-4M8.2 13.2l7.6 4" />
         </svg>
         {copied ? copiedLabel : label}
-      </button>
+      </Button>
       <span role="status" aria-live="polite" className="sr-only">
         {copied ? copiedLabel : ""}
       </span>

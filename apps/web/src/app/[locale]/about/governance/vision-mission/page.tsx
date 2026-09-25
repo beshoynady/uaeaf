@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { PageHero } from "@uaeaf/brand-ui";
+import { IdentityHero } from "@/components/ui/identity-hero";
 import { RevealOnce } from "@/components/pages/president/reveal-once";
 import { ValuesBand } from "@/components/pages/president/values-band";
 import { StrategicGoals } from "@/components/pages/vision-mission/goals";
@@ -24,10 +24,15 @@ import { buildMetadata } from "@/lib/seo/metadata";
  * empty hero, and stays out of the index and the sitemap (`indexability.ts`).
  *
  * The order is the frames' (Figma `720:483`, `1507:2495`): the hero, the two
- * statements, the goals, the values, the call to the strategic plan. Every
- * section is a `@uaeaf/brand-ui` surface (ADR-0098 D7 institutional recipe):
- * ink hero, canvas statements and goals, the green values band, and the red
- * call inset as a card so it never abuts the green.
+ * statements, the goals, the values, the call to the strategic plan. The body
+ * sections are `@uaeaf/brand-ui` surfaces (ADR-0098 D7 institutional recipe):
+ * canvas statements and goals, the green values band, and the red call inset as
+ * a card so it never abuts the green.
+ *
+ * The hero is `IdentityHero`, the photographic composition ADR-0070 gave this
+ * page. ADR-0098 D7's ink hero replaced it and dropped the photograph the
+ * record still carries; the owner reversed that on 2026-09-25 and the
+ * photograph is the composition again.
  */
 
 /** Rendered per request, as the contact page is and for its reason: a build
@@ -96,7 +101,6 @@ const VisionMissionPage = async ({ params }: { params: Promise<{ locale: AppLoca
 
   const nav = await getTranslations({ locale, namespace: "Nav" });
   const copy = await getTranslations({ locale, namespace: "VisionMission" });
-  const pages = await getTranslations({ locale, namespace: "Pages" });
   const { title, description } = await describe(record, locale);
 
   // IA §8.1: Home / About / Governance & Strategy / the page. The structured
@@ -122,15 +126,13 @@ const VisionMissionPage = async ({ params }: { params: Promise<{ locale: AppLoca
         trail={trail.filter((crumb): crumb is { name: string; route: string } => crumb.route !== null)}
       />
 
-      <PageHero
+      <IdentityHero
+        titleId="vision-mission-hero-title"
         title={record.heroTitle[locale]}
-        description={<span data-field="heroSubtitle">{record.heroSubtitle[locale]}</span>}
-        breadcrumb={[
-          { label: nav("home"), href: `/${locale}` },
-          { label: nav("about"), href: `/${locale}/about` },
-          { label: nav("visionMission") },
-        ]}
-        breadcrumbLabel={pages("breadcrumbLabel")}
+        subtitle={record.heroSubtitle[locale]}
+        subtitleField="heroSubtitle"
+        ground={record.heroImage}
+        locale={locale}
       />
       <VisionMissionStatements record={record} locale={locale} />
       <StrategicGoals record={record} locale={locale} />

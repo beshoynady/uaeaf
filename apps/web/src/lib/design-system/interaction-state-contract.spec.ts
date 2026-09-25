@@ -64,33 +64,63 @@ const stateConstants = (source: string): { name: string; body: string }[] => {
 /**
  * The modules that define an interaction state once, for other files to use.
  *
- * `ui/interactive` is the application's. `pages/video/chrome` is the video
- * system's, and it composes the first: its `GHOST_PILL` is `FOCUS` plus the
- * pill. A call site that references either module's exports is judged with the
- * states those exports carry -- otherwise this rule would push code away from
- * a shared definition and back toward pasting the ring at every call site,
- * which is the defect it exists for.
+ * A call site that references such a module's exports is judged with the states
+ * those exports carry -- otherwise this rule would push code away from a shared
+ * definition and back toward pasting the ring at every call site, which is the
+ * defect it exists for.
  *
  * A module is matched by the specifier its importers spell, so a relative one
- * is listed in each spelling that is used.
+ * would be listed in each spelling that is used.
+ *
+ * The list is one entry long again. `pages/video/chrome` was the second: it
+ * defined the video system's own pill and its own wide focus ring, and it is
+ * gone. The pill is `Button variant="secondary"` and the ring is the kit's
+ * `.brand-focusable`, which this rule reaches through `FOCUS_CLASSES` below --
+ * as a class that draws a `:focus-visible` rule, not as a constant.
  */
 const SHARED_MODULES = [
   { specifier: "@/components/ui/interactive", file: join(SRC, "components", "ui", "interactive.ts") },
-  { specifier: "./chrome", file: join(SRC, "components", "pages", "video", "chrome.ts") },
-  { specifier: "../video/chrome", file: join(SRC, "components", "pages", "video", "chrome.ts") },
 ].map(({ specifier, file }) => {
   const source = stripComments(readFileSync(file, "utf-8"));
   return {
     specifier,
     constants: stateConstants(source),
     /** The exports that carry a state: their own variants, or a composed one
-     *  built on another (`CARD_LINK`, `GHOST_PILL`). One that only sizes a
-     *  target (`TOUCH_TARGET`) brings none. */
+     *  built on `FOCUS` (`CARD_LINK`). One that only sizes a
+     *  target (`TOUCH_TARGET`) brings none.
+     *  `FOCUS`, not `FOCUS[A-Z_]*`: the wider form arrived with `chrome.ts`
+     *  and was never needed even there -- `FOCUS_WIDE`'s body matched the first
+     *  alternative anyway -- while it would accept a `FOCUS_NONE` whose body
+     *  only turned the outline off. */
     names: [...source.matchAll(/^export const ([A-Z_][A-Z0-9_]*)\s*=\s*([\s\S]*?);$/gm)]
-      .filter(([, , body]) => /(?:focus|hover|active)[a-z-]*:|\bFOCUS[A-Z_]*\b/.test(body))
+      .filter(([, , body]) => /(?:focus|hover|active)[a-z-]*:|\bFOCUS\b/.test(body))
       .map(([, name]) => name),
   };
 });
+
+/**
+ * The kit's class-name exports, resolved to the class they name.
+ *
+ * `@uaeaf/brand-ui` publishes a handful of plain class names as constants --
+ * `BRAND_FOCUSABLE`, `BRAND_FOCUS_WIDE`, `BRAND_DRAW_LINE` -- so that a call
+ * site writes the name rather than the string. To this rule's static scan a
+ * `${BRAND_FOCUSABLE}` is opaque: the source text says `BRAND_FOCUSABLE`, the
+ * CSS defines `.brand-focusable`, and the two never meet. That is not a missing
+ * focus ring, it is an unresolved indirection -- the same one `expanded()`
+ * already resolves for a constant declared in the file being scanned, resolved
+ * here across the package boundary on exactly the same terms.
+ *
+ * Only a bare string literal is read. A constant whose value is computed is not
+ * a class name, and guessing at one would be the loophole this closes.
+ */
+const KIT_INDEX = join(SRC, "..", "..", "..", "packages", "brand-ui", "index.ts");
+
+const KIT_CLASSES: { name: string; body: string }[] = [
+  ...stripComments(readFileSync(KIT_INDEX, "utf-8")).matchAll(
+    /^export const ([A-Z_][A-Z0-9_]*)\s*=\s*"([a-z][\w-]*)";$/gm,
+  ),
+].map(([, name, body]) => ({ name, body }));
+
 
 /** The shared definitions a file has actually imported. */
 const sharedFor = (source: string) =>
@@ -113,8 +143,12 @@ const classAttributes = (file: string): ClassAttr[] => {
   // a local `STEP` built on `FOCUS` carries the ring as surely as `FOCUS`.
   const names = ["FOCUS", "TRANSITION", "LINK", "FOOTER_LINK", ...inScope.flatMap((module) => module.names)];
   const references = new RegExp(`\\b(${names.join("|")})\\b`);
+  // The kit's class constants resolve for any file, not only one whose import
+  // specifier matched above: `BRAND_FOCUSABLE` is unambiguous, and a file
+  // cannot mean anything else by it.
+  const resolvable = [...constants, ...KIT_CLASSES];
   const expanded = (value: string) =>
-    [value, ...constants.filter(({ name }) => new RegExp(`\\b${name}\\b`).test(value)).map(({ body }) => body)].join(" ");
+    [value, ...resolvable.filter(({ name }) => new RegExp(`\\b${name}\\b`).test(value)).map(({ body }) => body)].join(" ");
 
   for (const match of source.matchAll(/className=/g)) {
     let index = (match.index ?? 0) + match[0].length;
@@ -145,7 +179,11 @@ const classAttributes = (file: string): ClassAttr[] => {
     found.push({
       file: file.replace(SRC, "src").split("\\").join("/"),
       line: source.slice(0, match.index).split(String.fromCharCode(10)).length,
-      value: value + referenced,
+      // `expanded`, not the raw string: a class string that names a constant
+      // carries what that constant holds, whether the constant is declared in
+      // this file or exported by the kit. Every rule below then reads one
+      // resolved value instead of each re-deciding how to resolve it.
+      value: expanded(value) + referenced,
     });
   }
 

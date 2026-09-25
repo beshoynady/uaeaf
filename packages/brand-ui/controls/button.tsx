@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ComponentPropsWithoutRef, ReactNode } from "react";
+import type { ComponentPropsWithRef, ElementType, ReactNode } from "react";
 
 /**
  * `primary` is solid green (ADR-0050: green is the action colour), `secondary`
@@ -19,11 +19,31 @@ type Common = {
   children: ReactNode;
 };
 
+/**
+ * The component that renders an internal href.
+ *
+ * Defaults to `next/link`, which is correct for an absolute external URL and
+ * **wrong for an internal route in this project**: `localePrefix: "always"`
+ * means `/media/videos` has no locale, so the middleware supplies one from a
+ * cookie — and a reader on the English page can be sent to the Arabic article.
+ * An internal href therefore passes the application's locale-aware `Link`
+ * here.
+ */
+type LinkComponent = { linkComponent?: ElementType };
+
+/*
+ * `WithRef`, not `WithoutRef`: a menu trigger has to be focusable from code —
+ * a popover that traps focus must be able to give it back to the control that
+ * opened it. React 19 passes `ref` to a function component as an ordinary prop,
+ * so it reaches `<button>` through the same spread as everything else and this
+ * needs no `forwardRef`.
+ */
 type AsButton = Common &
-  Omit<ComponentPropsWithoutRef<"button">, keyof Common> & { href?: undefined };
+  Omit<ComponentPropsWithRef<"button">, keyof Common> & { href?: undefined };
 
 type AsLink = Common &
-  Omit<ComponentPropsWithoutRef<typeof Link>, keyof Common> & { href: string };
+  LinkComponent &
+  Omit<ComponentPropsWithRef<typeof Link>, keyof Common> & { href: string };
 
 export type ButtonProps = AsButton | AsLink;
 
@@ -52,9 +72,9 @@ export const Button = ({
   const classes = ["brand-button", "brand-ring", className].filter(Boolean).join(" ");
 
   if (rest.href !== undefined) {
-    const { href, ...linkRest } = rest as AsLink;
+    const { href, linkComponent: Anchor = Link, ...linkRest } = rest as AsLink;
     return (
-      <Link
+      <Anchor
         href={href}
         className={classes}
         data-variant={variant}
@@ -62,7 +82,7 @@ export const Button = ({
         {...linkRest}
       >
         <span className="brand-button__label">{children}</span>
-      </Link>
+      </Anchor>
     );
   }
 

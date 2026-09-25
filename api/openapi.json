@@ -4582,6 +4582,30 @@
         ]
       }
     },
+    "/api/v1/federation-appointments/public": {
+      "get": {
+        "operationId": "FederationAppointmentsController_currentLeadership_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AppointmentPublicResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "federation-appointments"
+        ]
+      }
+    },
     "/api/v1/federation-appointments/{id}": {
       "get": {
         "operationId": "FederationAppointmentsController_findOne_v1",
@@ -5618,30 +5642,22 @@
       }
     },
     "/api/v1/about-federation-page": {
-      "post": {
-        "operationId": "AboutFederationPagesController_create_v1",
+      "get": {
+        "operationId": "AboutFederationPagesController_findAll_v1",
         "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateAboutFederationPageDto"
-              }
-            }
-          }
-        },
         "responses": {
-          "201": {
+          "200": {
             "description": ""
           }
         },
         "tags": [
           "about-federation-page"
         ]
-      },
+      }
+    },
+    "/api/v1/about-federation-page/current/public": {
       "get": {
-        "operationId": "AboutFederationPagesController_findAll_v1",
+        "operationId": "AboutFederationPagesController_getCurrentPublic_v1",
         "parameters": [],
         "responses": {
           "200": {
@@ -5675,6 +5691,37 @@
           "about-federation-page"
         ]
       },
+      "patch": {
+        "operationId": "AboutFederationPagesController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAboutFederationPageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "about-federation-page"
+        ]
+      },
       "delete": {
         "operationId": "AboutFederationPagesController_remove_v1",
         "parameters": [
@@ -5689,6 +5736,181 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "about-federation-page"
+        ]
+      }
+    },
+    "/api/v1/about-federation-page/{id}/editorial-state": {
+      "get": {
+        "operationId": "AboutFederationPagesController_editorialState_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EditorialStateDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "about-federation-page"
+        ]
+      }
+    },
+    "/api/v1/about-federation-page/{id}/active": {
+      "patch": {
+        "operationId": "AboutFederationPagesController_setActive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToggleAboutActiveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "about-federation-page"
+        ]
+      }
+    },
+    "/api/v1/about-federation-page/{id}/publish": {
+      "post": {
+        "operationId": "AboutFederationPagesController_publish_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishEditorialDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "about-federation-page"
+        ]
+      }
+    },
+    "/api/v1/about-federation-page/{id}/submit": {
+      "post": {
+        "operationId": "AboutFederationPagesController_submit_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "about-federation-page"
+        ]
+      }
+    },
+    "/api/v1/about-federation-page/{id}/publish-approved": {
+      "post": {
+        "operationId": "AboutFederationPagesController_publishApproved_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "about-federation-page"
+        ]
+      }
+    },
+    "/api/v1/about-federation-page/{id}/restore": {
+      "post": {
+        "operationId": "AboutFederationPagesController_restore_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RestoreEditorialDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -11615,6 +11837,49 @@
           "displayOrder"
         ]
       },
+      "AppointmentPublicResponseDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "positionTitle": {
+            "description": "The specific title within the role, e.g. \"نائب الرئيس\".",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "roleType": {
+            "type": "string",
+            "enum": [
+              "President",
+              "BoardMember",
+              "CommitteeChair",
+              "CommitteeMember",
+              "ExecutiveDirector",
+              "Manager",
+              "Other"
+            ]
+          },
+          "displayOrder": {
+            "type": "number",
+            "description": "The order the board set for its own listing."
+          },
+          "photoId": {
+            "type": "object",
+            "nullable": true,
+            "description": "ref → mediaAssets, or null."
+          }
+        },
+        "required": [
+          "fullName",
+          "positionTitle",
+          "roleType",
+          "displayOrder"
+        ]
+      },
       "CreateCommitteeDto": {
         "type": "object",
         "properties": {
@@ -13198,104 +13463,581 @@
           "ids"
         ]
       },
-      "AchievementDto": {
+      "TitleTextDto": {
         "type": "object",
         "properties": {
-          "text": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
+          "en": {
+            "type": "string",
+            "maxLength": 160,
+            "description": "English text."
           },
-          "year": {
-            "type": "number"
+          "ar": {
+            "type": "string",
+            "maxLength": 160,
+            "description": "Arabic text."
           }
         },
         "required": [
-          "text",
-          "year"
+          "en",
+          "ar"
         ]
       },
-      "CreateAboutFederationPageDto": {
+      "ProseTextDto": {
         "type": "object",
         "properties": {
-          "heroImageId": {
+          "en": {
             "type": "string",
-            "description": "ref → mediaAssets, must be an image."
+            "maxLength": 800,
+            "description": "English text. `**bold**` reads as emphasis."
           },
-          "heroTitle": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "heroSubtitle": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "foundingDate": {
-            "type": "string"
-          },
-          "historicalIntro": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "foundingDecreeCaption": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "roleHeading": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "roleText": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "globalMembershipYear": {
-            "type": "number",
-            "description": "e.g. 1976."
-          },
-          "globalMembershipHeading": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "globalMembershipText": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "firstPresidentPhoto": {
+          "ar": {
             "type": "string",
-            "description": "ref → mediaAssets, must be an image."
+            "maxLength": 800,
+            "description": "Arabic text. `**bold**` reads as emphasis."
+          }
+        },
+        "required": [
+          "en",
+          "ar"
+        ]
+      },
+      "HeroSectionDto": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "$ref": "#/components/schemas/TitleTextDto"
           },
-          "firstPresidentName": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
+          "title": {
+            "$ref": "#/components/schemas/TitleTextDto"
           },
-          "firstPresidentTitle": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
+          "description": {
+            "$ref": "#/components/schemas/ProseTextDto"
           },
-          "firstPresidentBio": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
+          "imageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "ref → mediaAssets, or null."
+          }
+        }
+      },
+      "FactDto": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "The item's id when it already exists; omitted for a new item."
           },
-          "achievements": {
-            "maxItems": 10,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AchievementDto"
-            }
+          "isVisible": {
+            "type": "boolean",
+            "default": true,
+            "description": "False hides the item from the public page."
           },
-          "publicationState": {
+          "badge": {
+            "description": "Printed as given — \"1974\", \"+50\".",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TitleTextDto"
+              }
+            ]
+          },
+          "label": {
+            "$ref": "#/components/schemas/TitleTextDto"
+          },
+          "value": {
+            "type": "string",
+            "description": "Kept as text: the card prints \"1974\" today and may print \"+50\" later."
+          },
+          "tone": {
             "type": "string",
             "enum": [
-              "Draft",
-              "Live",
-              "Unpublished",
-              "Archived"
+              "green",
+              "black",
+              "red",
+              "tri"
             ]
           }
         },
         "required": [
-          "heroTitle",
-          "heroSubtitle",
-          "foundingDate",
-          "historicalIntro",
-          "foundingDecreeCaption",
-          "roleHeading",
-          "roleText",
-          "globalMembershipYear",
-          "globalMembershipHeading",
-          "globalMembershipText",
-          "firstPresidentName",
-          "firstPresidentTitle",
-          "firstPresidentBio",
-          "publicationState"
+          "badge",
+          "label",
+          "value",
+          "tone"
+        ]
+      },
+      "FactsSectionDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 4,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FactDto"
+            }
+          }
+        }
+      },
+      "StoryDocCardDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "$ref": "#/components/schemas/TitleTextDto"
+          },
+          "title": {
+            "$ref": "#/components/schemas/TitleTextDto"
+          },
+          "date": {
+            "$ref": "#/components/schemas/TitleTextDto"
+          }
+        }
+      },
+      "StorySectionDto": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "$ref": "#/components/schemas/TitleTextDto"
+          },
+          "title": {
+            "$ref": "#/components/schemas/TitleTextDto"
+          },
+          "paragraphs": {
+            "maxItems": 4,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProseTextDto"
+            }
+          },
+          "imageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "ref → mediaAssets, or null."
+          },
+          "docCard": {
+            "$ref": "#/components/schemas/StoryDocCardDto"
+          }
+        }
+      },
+      "MilestoneDto": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "The item's id when it already exists; omitted for a new item."
+          },
+          "isVisible": {
+            "type": "boolean",
+            "default": true,
+            "description": "False hides the item from the public page."
+          },
+          "datePrecision": {
+            "type": "string",
+            "enum": [
+              "year",
+              "monthYear",
+              "fullDate",
+              "unknown"
+            ],
+            "description": "How much of the date the federation has confirmed."
+          },
+          "year": {
+            "type": "number",
+            "minimum": 1900,
+            "maximum": 2200
+          },
+          "month": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 12
+          },
+          "day": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 31
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "association",
+              "firstLeadership",
+              "firstParticipation",
+              "federation",
+              "globalMembership",
+              "continentalMembership"
+            ]
+          },
+          "title": {
+            "$ref": "#/components/schemas/TitleTextDto"
+          },
+          "description": {
+            "$ref": "#/components/schemas/ProseTextDto"
+          },
+          "featured": {
+            "type": "boolean",
+            "default": false,
+            "description": "The dark card in the approved composition."
+          },
+          "imageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "ref → mediaAssets, or null."
+          }
+        },
+        "required": [
+          "datePrecision",
+          "category",
+          "title",
+          "description"
+        ]
+      },
+      "TimelineSectionDto": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "$ref": "#/components/schemas/TitleTextDto"
+          },
+          "title": {
+            "$ref": "#/components/schemas/TitleTextDto"
+          },
+          "description": {
+            "$ref": "#/components/schemas/ProseTextDto"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MilestoneDto"
+            }
+          }
+        }
+      },
+      "AchievementDto": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "The item's id when it already exists; omitted for a new item."
+          },
+          "isVisible": {
+            "type": "boolean",
+            "default": true,
+            "description": "False hides the item from the public page."
+          },
+          "year": {
+            "type": "number",
+            "minimum": 1900,
+            "maximum": 2200
+          },
+          "place": {
+            "description": "Where it happened.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TitleTextDto"
+              }
+            ]
+          },
+          "medalKind": {
+            "type": "string",
+            "enum": [
+              "gold",
+              "silver",
+              "bronze",
+              "other"
+            ]
+          },
+          "medalLabel": {
+            "nullable": true,
+            "description": "What the badge prints when the kind alone cannot say it — \"5 golds\".",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TitleTextDto"
+              }
+            ]
+          },
+          "title": {
+            "$ref": "#/components/schemas/TitleTextDto"
+          },
+          "description": {
+            "$ref": "#/components/schemas/ProseTextDto"
+          },
+          "athleteId": {
+            "type": "object",
+            "nullable": true,
+            "description": "ref → athletes, where the athlete has a record."
+          },
+          "imageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "ref → mediaAssets, or null."
+          }
+        },
+        "required": [
+          "year",
+          "place",
+          "medalKind",
+          "title",
+          "description"
+        ]
+      },
+      "AchievementsSectionDto": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "$ref": "#/components/schemas/TitleTextDto"
+          },
+          "title": {
+            "$ref": "#/components/schemas/TitleTextDto"
+          },
+          "description": {
+            "$ref": "#/components/schemas/ProseTextDto"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AchievementDto"
+            }
+          }
+        }
+      },
+      "PioneerDto": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "The item's id when it already exists; omitted for a new item."
+          },
+          "isVisible": {
+            "type": "boolean",
+            "default": true,
+            "description": "False hides the item from the public page."
+          },
+          "name": {
+            "$ref": "#/components/schemas/TitleTextDto"
+          },
+          "badge": {
+            "$ref": "#/components/schemas/TitleTextDto"
+          },
+          "description": {
+            "$ref": "#/components/schemas/ProseTextDto"
+          },
+          "imageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "ref → mediaAssets, or null."
+          },
+          "featured": {
+            "type": "boolean",
+            "default": false,
+            "description": "The wide card. At most one."
+          }
+        },
+        "required": [
+          "name",
+          "badge",
+          "description"
+        ]
+      },
+      "PioneersSectionDto": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "$ref": "#/components/schemas/TitleTextDto"
+          },
+          "title": {
+            "$ref": "#/components/schemas/TitleTextDto"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PioneerDto"
+            }
+          }
+        }
+      },
+      "LeadershipSectionDto": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "$ref": "#/components/schemas/TitleTextDto"
+          },
+          "title": {
+            "$ref": "#/components/schemas/TitleTextDto"
+          },
+          "quote": {
+            "$ref": "#/components/schemas/ProseTextDto"
+          },
+          "priorities": {
+            "maxItems": 4,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TitleTextDto"
+            }
+          }
+        }
+      },
+      "GovernanceCardDto": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "description": "The item's id when it already exists; omitted for a new item."
+          },
+          "isVisible": {
+            "type": "boolean",
+            "default": true,
+            "description": "False hides the item from the public page."
+          },
+          "title": {
+            "$ref": "#/components/schemas/TitleTextDto"
+          },
+          "text": {
+            "$ref": "#/components/schemas/ProseTextDto"
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "green",
+              "black",
+              "red"
+            ]
+          }
+        },
+        "required": [
+          "title",
+          "text",
+          "tone"
+        ]
+      },
+      "AboutLinkDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "$ref": "#/components/schemas/TitleTextDto"
+          },
+          "href": {
+            "type": "string",
+            "example": "/about/governance/policies"
+          }
+        },
+        "required": [
+          "label",
+          "href"
+        ]
+      },
+      "GovernanceSectionDto": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "$ref": "#/components/schemas/TitleTextDto"
+          },
+          "title": {
+            "$ref": "#/components/schemas/TitleTextDto"
+          },
+          "description": {
+            "$ref": "#/components/schemas/ProseTextDto"
+          },
+          "cards": {
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GovernanceCardDto"
+            }
+          },
+          "link": {
+            "$ref": "#/components/schemas/AboutLinkDto"
+          }
+        }
+      },
+      "EcosystemSectionDto": {
+        "type": "object",
+        "properties": {
+          "eyebrow": {
+            "$ref": "#/components/schemas/TitleTextDto"
+          },
+          "title": {
+            "$ref": "#/components/schemas/TitleTextDto"
+          }
+        }
+      },
+      "CtaSectionDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "$ref": "#/components/schemas/TitleTextDto"
+          },
+          "description": {
+            "$ref": "#/components/schemas/ProseTextDto"
+          },
+          "primary": {
+            "$ref": "#/components/schemas/AboutLinkDto"
+          },
+          "secondary": {
+            "$ref": "#/components/schemas/AboutLinkDto"
+          }
+        }
+      },
+      "UpdateAboutFederationPageDto": {
+        "type": "object",
+        "properties": {
+          "hiddenSections": {
+            "type": "array",
+            "description": "The content sections switched off. The hero always prints; leadership and the ecosystem follow their source (ADR-0101).",
+            "items": {
+              "type": "string",
+              "enum": [
+                "facts",
+                "story",
+                "timeline",
+                "achievements",
+                "pioneers",
+                "governance",
+                "cta"
+              ]
+            }
+          },
+          "hero": {
+            "$ref": "#/components/schemas/HeroSectionDto"
+          },
+          "facts": {
+            "$ref": "#/components/schemas/FactsSectionDto"
+          },
+          "story": {
+            "$ref": "#/components/schemas/StorySectionDto"
+          },
+          "timeline": {
+            "$ref": "#/components/schemas/TimelineSectionDto"
+          },
+          "achievements": {
+            "$ref": "#/components/schemas/AchievementsSectionDto"
+          },
+          "pioneers": {
+            "$ref": "#/components/schemas/PioneersSectionDto"
+          },
+          "leadership": {
+            "$ref": "#/components/schemas/LeadershipSectionDto"
+          },
+          "governance": {
+            "$ref": "#/components/schemas/GovernanceSectionDto"
+          },
+          "ecosystem": {
+            "$ref": "#/components/schemas/EcosystemSectionDto"
+          },
+          "cta": {
+            "$ref": "#/components/schemas/CtaSectionDto"
+          },
+          "seo": {
+            "$ref": "#/components/schemas/PageSeoDto"
+          }
+        }
+      },
+      "ToggleAboutActiveDto": {
+        "type": "object",
+        "properties": {
+          "isActive": {
+            "type": "boolean",
+            "description": "True serves the page; false shows visitors the \"in preparation\" screen."
+          }
+        },
+        "required": [
+          "isActive"
         ]
       },
       "LocalizedRichTextDto": {

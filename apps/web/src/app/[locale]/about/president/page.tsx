@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { PageHero } from "@uaeaf/brand-ui";
+import { PresidentHero } from "@/components/pages/president/president-hero";
 import { PresidentMessage } from "@/components/pages/president/president-message";
 import { RevealOnce } from "@/components/pages/president/reveal-once";
 import { ValuesBand } from "@/components/pages/president/values-band";
@@ -82,12 +82,11 @@ const PresidentMessagePage = async ({ params }: { params: Promise<{ locale: AppL
   if (!record) notFound();
 
   const nav = await getTranslations({ locale, namespace: "Nav" });
-  const pages = await getTranslations({ locale, namespace: "Pages" });
   const { title, description } = await describe(record, locale);
 
-  // IA §8.5: Home / About / the page. The kit's hero shows the trail (ADR-0098
-  // D7 recipe), which reverses ADR-0072 D7's "structured data only" for this
-  // page; the structured data keeps it too.
+  // IA §8.5: Home / About / the page, in the structured data only. ADR-0072 D7
+  // rules that the /about pages draw no visible trail, and the photographic
+  // hero honours that — the kit's ink hero drew one, which reversed the ruling.
   const trail: Crumb[] = [
     { name: nav("home"), route: "/" },
     { name: nav("about"), route: null },
@@ -102,16 +101,7 @@ const PresidentMessagePage = async ({ params }: { params: Promise<{ locale: AppL
         trail={trail.filter((crumb): crumb is { name: string; route: string } => crumb.route !== null)}
       />
 
-      <PageHero
-        title={record.heroTitle[locale]}
-        description={record.heroSubtitle[locale]}
-        breadcrumb={[
-          { label: nav("home"), href: `/${locale}` },
-          { label: nav("about"), href: `/${locale}/about` },
-          { label: nav("presidentMessage") },
-        ]}
-        breadcrumbLabel={pages("breadcrumbLabel")}
-      />
+      <PresidentHero record={record} locale={locale} />
       <PresidentMessage record={record} locale={locale} />
       <ValuesBand record={record} locale={locale} />
       <StrategyCta locale={locale} />

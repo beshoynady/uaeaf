@@ -1,6 +1,6 @@
-import type { ComponentPropsWithoutRef, ReactNode } from "react";
+import type { ComponentPropsWithRef, ReactNode } from "react";
 
-export type IconButtonProps = Omit<ComponentPropsWithoutRef<"button">, "aria-label" | "children"> & {
+export type IconButtonProps = Omit<ComponentPropsWithRef<"button">, "aria-label" | "children"> & {
   /**
    * Required by the type, not by a lint rule that can be disabled.
    *
@@ -13,6 +13,14 @@ export type IconButtonProps = Omit<ComponentPropsWithoutRef<"button">, "aria-lab
   /** The icon. Decorative: the label above is the accessible name. */
   children: ReactNode;
   tone?: "neutral" | "brand";
+  /**
+   * `circle` is the shape a media control takes — a player's dismiss, a rail's
+   * two arrows. Nothing else about the control changes: same floor size, same
+   * edge, same focus indicator. It exists because the alternative was each of
+   * those call sites writing `rounded-full` beside its own edge and its own
+   * ring, which is how the video system lost the ring on three of them.
+   */
+  shape?: "square" | "circle";
 };
 
 /**
@@ -23,6 +31,7 @@ export type IconButtonProps = Omit<ComponentPropsWithoutRef<"button">, "aria-lab
  */
 export const IconButton = ({
   tone = "neutral",
+  shape = "square",
   className,
   children,
   type = "button",
@@ -32,6 +41,7 @@ export const IconButton = ({
     type={type}
     className={["brand-icon-button", className].filter(Boolean).join(" ")}
     data-tone={tone}
+    data-shape={shape}
     {...rest}
   >
     <span className="brand-icon-button__glyph" aria-hidden="true">

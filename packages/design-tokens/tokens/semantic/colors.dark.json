@@ -572,17 +572,17 @@
         "accent": {
           "value": "{color.green.300}",
           "type": "color",
-          "comment": "ADR-0098 §8c — the green ink tier on ink. 6.90:1 against #0B0B0B. Same value as the light list: the ink ground does not move between themes, so neither does what is measured on it"
+          "comment": "ADR-0098 §8d — the green ink tier on ink. 6.90:1 against #0B0B0B. Same value as the light list: the ink ground does not move between themes, so neither does what is measured on it"
         },
         "raised": {
           "value": "#1A1A1A",
           "type": "color",
-          "comment": "ADR-0098 §8c — the raised step on ink, white at 6% over #0B0B0B resolved once. Carries all three ink tiers: 17.40:1, 11.60:1, 6.10:1. It measures 1.13:1 against the ink ground itself, so it is a fill and never a boundary — a card using it takes `border` (6.44:1) for its edge"
+          "comment": "ADR-0098 §8d — the raised step on ink, white at 6% over #0B0B0B resolved once. Carries all three ink tiers: 17.40:1, 11.60:1, 6.10:1. It measures 1.13:1 against the ink ground itself, so it is a fill and never a boundary — a card using it takes `border` (6.44:1) for its edge"
         },
         "raised-strong": {
           "value": "#232323",
           "type": "color",
-          "comment": "ADR-0098 §8c — the step above `raised`, white at 10%. 15.72:1, 10.47:1, 5.51:1. 1.25:1 against ink, so the same edge rule applies"
+          "comment": "ADR-0098 §8d — the step above `raised`, white at 10%. 15.72:1, 10.47:1, 5.51:1. 1.25:1 against ink, so the same edge rule applies"
         }
       }
     },
@@ -617,4 +617,35 @@
     },
     "dropdown": {
       "value": "0px 2px 8px rgba(0,0,0,0.45)",
-      "type": "boxS
+      "type": "boxShadow",
+      "comment": "ADR-0052"
+    },
+    "modal": {
+      "value": "0px 8px 24px rgba(0,0,0,0.55)",
+      "type": "boxShadow",
+      "comment": "ADR-0052"
+    }
+  },
+  "a11y": {
+    "focus": {
+      "ring": {
+        "value": "{color.focus.default}",
+        "type": "color"
+      },
+      "ring-width": {
+        "value": "2px",
+        "type": "borderWidth"
+      },
+      "offset": {
+        "value": "{color.focus.offset}",
+        "type": "color",
+        "comment": "ADR-0051 — new"
+      },
+      "offset-width": {
+        "value": "2px",
+        "type": "borderWidth",
+        "comment": "ADR-0051 — new"
+      }
+    }
+  }
+}

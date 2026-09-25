@@ -6,12 +6,20 @@ import type { Connection, Model, Schema } from 'mongoose';
  *  (see BE-PLAN-010 §5.3) — used by both repository unit tests and e2e specs.
  *
  *  Both Jest configs set `testTimeout` to 30 s, and a hook without its own
- *  limit takes that value. The instance itself gets 10 s to start, so under
- *  Jest's 5 s default a cold first start failed the hook before the real
- *  cause could surface. 30 s is also the limit the e2e suites already give
- *  their own `beforeAll`. */
+ *  limit takes that value. 30 s is also the limit the e2e suites already give
+ *  their own `beforeAll`.
+ *
+ *  `launchTimeout` is raised from the library's 10 s default because that
+ *  default is measured against a cold start on this project's disk: mongod
+ *  reaches "waiting for connections" in about 3 s once the OS has its pages
+ *  cached, and well past 10 s the first time, while ts-jest is compiling in
+ *  the same process. At 10 s every integration spec in the repository failed
+ *  identically — an environment limit reported as a instance error, with the
+ *  real cause not in the message. It stays inside the 30 s hook budget. */
+const LAUNCH_TIMEOUT_MS = 25_000;
+
 export async function connectTestDatabase(): Promise<MongoMemoryServer> {
-  const server = await MongoMemoryServer.create();
+  const server = await MongoMemoryServer.create({ instance: { launchTimeout: LAUNCH_TIMEOUT_MS } });
   await mongoose.connect(server.getUri());
   return server;
 }

@@ -9,6 +9,7 @@ import type { EmbedLabels } from "./embed-frame";
 import type { VideoPlatform } from "@/lib/video/types";
 import type { MediaAssetPublic } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
+import { BrandBorder } from "@uaeaf/brand-ui";
 
 /**
  * The large player, in the one shape both states share.
@@ -47,8 +48,25 @@ export const VideoStage = ({
   kenBurns?: boolean;
   priority?: boolean;
 }) => (
+  /*
+   * While a broadcast is live the stage carries the kit's one continuously
+   * rotating edge (ADR-0098 D5, `BrandBorder variant="live"`): the rotation
+   * stopping is the information, which is why this is the single place in the
+   * system where motion does not end on its own. Off air it is the same ring,
+   * static — so nothing about the stage's geometry moves when a stream ends.
+   *
+   * It replaces a `box-shadow` glow the video system drew in Federation Red.
+   * ADR-0038 reserves red, and a shadow is clipped to nothing by the
+   * `overflow: hidden` a player needs, which is why the glow had already been
+   * frozen at its resting frame.
+   */
+  <BrandBorder
+    variant={live ? "live" : "static"}
+    className="w-full"
+    style={{ aspectRatio: "16 / 9" }}
+  >
   <div
-    className={`relative w-full overflow-hidden ${live ? "vs-live-frame" : ""}`}
+    className="relative w-full overflow-hidden"
     style={{
       aspectRatio: "16 / 9",
       borderRadius: "var(--radius-xl)",
@@ -89,4 +107,5 @@ export const VideoStage = ({
       </span>
     </EmbedFrame>
   </div>
+  </BrandBorder>
 );

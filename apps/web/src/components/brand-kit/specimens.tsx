@@ -23,6 +23,7 @@ import {
   TricolorDivider,
 } from "@uaeaf/brand-ui";
 
+import { Link } from "@/i18n/navigation";
 import { SurfaceMatrix } from "./surface-matrix";
 import { InteractiveSpecimens } from "./interactive-specimens";
 
@@ -69,7 +70,7 @@ const BUTTONS = (
     <Button variant="primary">Primary</Button>
     <Button variant="secondary">Secondary</Button>
     <Button variant="ghost">Ghost</Button>
-    <Button variant="primary" href="/brand-kit">
+    <Button variant="primary" href="/brand-kit" linkComponent={Link}>
       As a link
     </Button>
     <IconButton aria-label="Specimen icon button">
@@ -279,8 +280,8 @@ export const Specimens = () => (
         title="Governance and strategy"
         action={
           <div className="brand-kit-row">
-            <LinkTile title="First tile" description="Translucent fill and edge." href="/brand-kit" />
-            <LinkTile title="Second tile" href="/brand-kit" />
+            <LinkTile title="First tile" description="Translucent fill and edge." href="/brand-kit" linkComponent={Link} />
+            <LinkTile title="Second tile" href="/brand-kit" linkComponent={Link} />
           </div>
         }
       />

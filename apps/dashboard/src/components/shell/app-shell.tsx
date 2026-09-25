@@ -193,7 +193,16 @@ export const AppShell = ({
           </div>
         </header>
 
-        <main id="main-content" className="flex-1 px-6 py-8">
+        {/*
+          `data-surface="canvas"` publishes the `--surface-*` set every
+          `@uaeaf/brand-ui` control reads for its ground, its ink, its edge and
+          its focus ring. Without it those variables are simply undefined here,
+          and a library primary button renders with no background at all -- which
+          is what the dashboard did until this attribute landed. It declares the
+          surface and paints nothing: `.brand-surface` is the class that paints,
+          and this is not it.
+        */}
+        <main id="main-content" data-surface="canvas" className="flex-1 px-6 py-8">
           {/*
             Fluid, not capped. Chapter 5 §Maximum Container is explicit and
             applies to exactly this surface: "1440px for the Public

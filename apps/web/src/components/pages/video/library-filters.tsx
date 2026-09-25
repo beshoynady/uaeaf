@@ -9,7 +9,7 @@ import { VIDEO_PERIODS, activeFilterCount } from "@/lib/video/library-query";
 import type { LibraryQuery, VideoPeriod } from "@/lib/video/library-query";
 import type { AssociationOption } from "@/lib/video/association-options";
 import { FOCUS } from "@/components/ui/interactive";
-import { GHOST_PILL } from "./chrome";
+import { Button, BRAND_FOCUSABLE } from "@uaeaf/brand-ui";
 
 /**
  * The library's filter panel: a popover on a wide screen, a bottom sheet on a
@@ -110,19 +110,34 @@ export const LibraryFilters = ({
     });
   };
 
-  const chip = (selected: boolean) =>
-    `inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-full)] px-4 text-body-sm transition-colors duration-[var(--motion-duration-fast)] ${FOCUS} ${
-      selected ? "font-bold" : "vs-ghost vs-edge"
-    }`;
+  /*
+   * The kit's chip, driven by `aria-pressed` rather than by two class strings.
+   *
+   * `.brand-filter-chip` carries the resting edge, the hover tint, the selected
+   * plate and the focus indicator — the four things this function used to
+   * assemble from `vs-ghost vs-edge` and an inline style. The edge it draws is
+   * `--surface-border` at 6.44:1 on ink, where `.vs-edge` drew
+   * `--surface-divider` at 2.94:1 and failed WCAG 1.4.11.
+   */
+  // `brand-ring` is not optional: `.brand-filter-chip` paints its edge through
+  // that shared masked band, so the chip has no edge at all without it.
+  const chip = () => "brand-filter-chip brand-ring";
 
-  const chipStyle = (selected: boolean) =>
-    selected
-      ? { background: "var(--surface-btn-primary-bg)", color: "var(--surface-btn-primary-ink)" }
-      : { color: "var(--surface-text-muted)" };
-
+  /*
+   * The select keeps a hand-written class: the kit publishes no select, and a
+   * native `<select>` is the right control for a one-of-many filter on a touch
+   * screen. Only two things changed — the fill is the published token, and the
+   * edge moved from `--surface-divider` (2.94:1) to `--surface-border`
+   * (6.44:1), which is the floor WCAG 1.4.11 sets for a control's boundary.
+   *
+   * DESIGN SYSTEM GAP, recorded: the kit has no select control.
+   */
   const field =
-    `vs-fill-strong min-h-11 w-full rounded-[var(--radius-full)] px-4 text-body-sm ${FOCUS}`;
-  const fieldStyle = { color: "var(--surface-text)", border: "1px solid var(--surface-divider)" };
+    `vs-fill-strong min-h-11 w-full rounded-[var(--radius-full)] px-4 text-body-sm ${BRAND_FOCUSABLE}`;
+  const fieldStyle = {
+    color: "var(--surface-text)",
+    border: "var(--border-width-default) solid var(--surface-border)",
+  };
 
   // The same function the empty state's "clear filters" is gated on. Two
   // counts that disagree put a badge of 0 next to a button offering to clear
@@ -131,13 +146,12 @@ export const LibraryFilters = ({
 
   return (
     <div className="relative">
-      <button
+      <Button
         ref={trigger}
-        type="button"
+        variant="secondary"
         aria-expanded={open}
         aria-controls={ids.panel}
         onClick={() => setOpen((was) => !was)}
-        className={`${GHOST_PILL} px-4`}
       >
         {count > 0 ? (
           <span
@@ -151,7 +165,7 @@ export const LibraryFilters = ({
         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
           <path d="M4 7h16M7 12h10M10 17h4" />
         </svg>
-      </button>
+      </Button>
 
       {open ? (
         <div
@@ -211,8 +225,7 @@ export const LibraryFilters = ({
                     type="button"
                     aria-pressed={selected}
                     onClick={() => set("platform", selected ? undefined : platform)}
-                    className={chip(selected)}
-                    style={chipStyle(selected)}
+                    className={chip()}
                   >
                     {t(`platform_${platform}`)}
                     <PlatformChipMark platform={platform} size={18} />
@@ -235,8 +248,7 @@ export const LibraryFilters = ({
                     type="button"
                     aria-pressed={selected}
                     onClick={() => set("category", selected ? undefined : category)}
-                    className={chip(selected)}
-                    style={chipStyle(selected)}
+                    className={chip()}
                   >
                     {t(`category_${category}`)}
                   </button>

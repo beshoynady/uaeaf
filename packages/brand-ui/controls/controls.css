@@ -107,6 +107,13 @@
   position: relative;
   /* Above the `::before` fill on the secondary variant. */
   z-index: 1;
+  /* A button with an icon beside its word is the common case, not a special
+     one: four of the video system's pills are exactly that. The gap belongs
+     here rather than at each call site, because the label is the box the icon
+     and the word share -- the button's own flex layout only sees this span. */
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 /*
@@ -211,6 +218,10 @@
   cursor: pointer;
   transition: color var(--motion-transition-fast),
     border-color var(--motion-transition-fast);
+}
+
+.brand-icon-button[data-shape="circle"] {
+  border-radius: var(--radius-full);
 }
 
 .brand-icon-button[data-tone="brand"] {

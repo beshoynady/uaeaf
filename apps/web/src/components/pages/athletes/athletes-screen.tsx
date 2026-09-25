@@ -10,6 +10,7 @@ import {
 } from "@uaeaf/brand-ui";
 
 import { breadcrumbTrail, loadStaticPage } from "@/components/pages/static-page-screen";
+import { heroPhotoSlot } from "@/components/ui/hero-photo";
 import { CONTAINER } from "@/components/ui/section";
 import { fetchPublic } from "@/lib/api/public-client";
 import type { AthletePublic, Paginated } from "@/lib/api/types";
@@ -33,12 +34,13 @@ const loadAthletes = async (): Promise<AthletePublic[]> => {
 };
 
 /**
- * Athletes, on `@uaeaf/brand-ui`: ink hero, the registered count on the green
+ * Athletes, on `@uaeaf/brand-ui`: the hero (the record's photograph where it
+ * has one, the ink ground where it has none), the registered count on the green
  * identity ground, then the directory as hover-bordered cards. No portrait
  * ring, because the public athlete record carries no photo field.
  */
 export const AthletesScreen = async ({ locale }: { locale: AppLocale }) => {
-  const [{ page, title, subtitle }, athletes, tPages, tNav, tSections, tPreparing] = await Promise.all([
+  const [{ page, title, subtitle, heroImage }, athletes, tPages, tNav, tSections, tPreparing] = await Promise.all([
     loadStaticPage(KEY, locale),
     loadAthletes(),
     getTranslations({ locale, namespace: "Pages" }),
@@ -82,6 +84,7 @@ export const AthletesScreen = async ({ locale }: { locale: AppLocale }) => {
       <PageHero
         title={title}
         description={subtitle ?? undefined}
+        media={heroPhotoSlot(heroImage, locale)}
         breadcrumb={breadcrumb}
         breadcrumbLabel={tPages("breadcrumbLabel")}
       />

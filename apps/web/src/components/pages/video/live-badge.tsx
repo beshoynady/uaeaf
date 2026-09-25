@@ -13,7 +13,7 @@ export const LiveBadge = ({ label, className = "" }: { label: string; className?
   // and re-deciding the contrast on it (Chapter 7 §7.7: roles, not steps).
   <span
     data-surface="brand-red"
-    className={`inline-flex items-center gap-2 rounded-[var(--radius-full)] px-3 py-1.5 text-caption font-bold ${className}`}
+    className={`brand-surface inline-flex items-center gap-2 rounded-[var(--radius-full)] px-3 py-1.5 text-caption font-bold ${className}`}
   >
     <span
       aria-hidden="true"

@@ -1,0 +1,355 @@
+/*
+ * `PageHero`'s photographic composition, and the entrance both compositions
+ * play on load.
+ *
+ * ── Why this is a second stylesheet ────────────────────────────────────────
+ *
+ * The ink hero's rules live in `content.css` beside the rest of the content
+ * group. This file is imported after it, so every rule here is a modifier on
+ * that base at equal specificity and the cascade resolves in this file's
+ * favour without a single `!important` or an inflated selector. Splitting a
+ * component's styles is normally the wrong trade; here the split *is* the
+ * override mechanism.
+ *
+ * ── The photograph (owner decision 2026-09-25) ─────────────────────────────
+ *
+ * ADR-0098 D2 made this hero ink with no photograph, and the pages that
+ * adopted it dropped the `heroImage` their records still carried. The owner
+ * reversed that: a page whose record has a picture opens on it again, and a
+ * page whose record has none keeps the ink band exactly as D2 drew it. The
+ * composition therefore follows the data, which is the rule ADR-0067 D2
+ * already set for every other hero on the site — not a flag an author
+ * remembers to pass.
+ *
+ * Every value below is a token or a measured floor with its measurement
+ * recorded. No literal colour, no raw duration outside the two component-local
+ * timing variables the owner authorised.
+ */
+
+/* ------------------------------------------------------------------ *
+ * The photographic composition.
+ * ------------------------------------------------------------------ */
+
+/*
+ * The first screen belongs to a hero that has a picture to fill it with.
+ *
+ * `--header-height` is the application's, and the fallback is what makes this
+ * package still correct on its own: with no header declared the hero takes the
+ * whole screen rather than resolving to an invalid length and collapsing.
+ *
+ * `min-block-size`, never `block-size`: a hero whose words are taller than the
+ * screen grows past the fold instead of clipping them. And `svh` rather than
+ * `vh` — `vh` on a phone measures the viewport with the browser bars retracted,
+ * so the hero stands taller than the screen it was sized to.
+ */
+.brand-page-hero--photo {
+  min-block-size: calc(100svh - var(--header-height, 0px));
+  /*
+     Three steps of lead before the words start, so the picture is established
+     before anything lands on it — the difference between a page assembling
+     itself and a photograph being introduced.
+
+     Chapter 5 §5.7 caps *total stagger* at 600ms. The last line is the
+     description at order 2, so it starts at five steps — 300ms — and the streaks
+     at four, 240ms.
+     The band gets no lead at all: its heading is the largest contentful paint,
+     and three steps of delay would be three steps of LCP.
+  */
+  --hero-lead: 3;
+  isolation: isolate;
+  justify-content: flex-end;
+}
+
+/*
+ * The scrim that turns an editor's photograph into a ground text can stand on.
+ *
+ * 64% → 74% of the overlay role, and both numbers are measured rather than
+ * chosen: white on the overlay at 64% over the lightest admissible picture — a
+ * pure white one — is 6.70:1, and at 58% it is 4.79:1, a margin thinner than
+ * the difference between two real photographs. `COVER_SCRIM_MIN` in
+ * `@uaeaf/content/hero` publishes that floor and `cover-scrim.spec.ts`
+ * re-measures it on every build; this package cannot import either, so
+ * `page-hero-photo-contract.spec.ts` asserts these two stops never drift below
+ * it.
+ *
+ * It replaces `__media::after`'s flat 78% ink wash, which was solved for a
+ * different problem: holding the *measured ink ground* as the ground while a
+ * picture read as depth behind it. Once the picture is the composition, a wash
+ * that strong is a picture nobody can see.
+ */
+.brand-page-hero--photo .brand-page-hero__media::after {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-surface-overlay) 64%, transparent),
+    color-mix(in srgb, var(--color-surface-overlay) 74%, transparent)
+  );
+}
+
+/*
+ * The mesh is the ink ground's edge cue (ADR-0098 §8.4) and it has nothing to
+ * do here: the cue a photograph needs is the photograph. It stays in the markup
+ * — `surface-adjacency-contract.spec.ts` requires `mesh` on every
+ * `<Surface kind="ink">` and that requirement is about the ink ground, which is
+ * still what this hero falls back to — and is simply not drawn over a picture.
+ */
+.brand-page-hero--photo > .brand-mesh {
+  display: none;
+}
+
+/*
+ * The exposure layer at rest: transparent, so it contributes nothing to the
+ * finished hero. The entrance fills `both` from 0.45, and under `reduce` — or
+ * with the `hero` switch off — no animation runs and this is the only state
+ * there is.
+ *
+ * Above the picture and below `__media::after`: both are absolutely positioned
+ * inside `__media`, and a pseudo-element paints after its originating element's
+ * children, so the scrim stays on top without either carrying a `z-index`.
+ */
+.brand-page-hero--photo .brand-page-hero__expose {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--color-surface-overlay);
+  opacity: 0;
+}
+
+/* The body sits at the foot of the screen the picture fills, not in the middle
+   of it: the reading edge is where the eye lands after the header. */
+.brand-page-hero--photo .brand-page-hero__body {
+  padding-block: var(--space-24) var(--space-16);
+}
+
+/* White is the one text tier over the scrim — the ratio above was measured for
+   it, and `--surface-text-muted` is a grey that was measured against the ink
+   ground instead. The subtitle separates by opacity, which scales the measured
+   ratio by a known factor rather than introducing a second unmeasured colour. */
+.brand-page-hero--photo .brand-page-hero__title,
+.brand-page-hero--photo .brand-page-hero__breadcrumb [aria-current="page"],
+.brand-page-hero--photo .brand-page-hero__breadcrumb a:hover {
+  color: var(--color-text-on-brand);
+}
+
+.brand-page-hero--photo .brand-page-hero__description,
+.brand-page-hero--photo .brand-page-hero__breadcrumb ol,
+.brand-page-hero--photo .brand-page-hero__breadcrumb a {
+  color: var(--color-text-on-brand);
+  /* The second tier over a picture is white at 85%, the value both existing
+     photo heroes already carry (`opacity-85` on their subtitles). No token
+     expresses it, and its consequence is measured rather than assumed:
+     `page-hero-photo-contract.spec.ts` composites it over the weakest scrim
+     stop above a pure white picture and holds it to AA. */
+  opacity: 0.85;
+}
+
+/* ------------------------------------------------------------------ *
+ * The entrance, played once on load.
+ * ------------------------------------------------------------------ */
+
+/*
+ * ── The timings ────────────────────────────────────────────────────────────
+ *
+ * Component-local custom properties rather than tokens, on the owner's
+ * instruction (2026-09-25), because the scale has no value for either: the
+ * longest duration token is `--motion-duration-ambient` at 1200ms and
+ * `motion-contract.spec.ts` binds it to one selector, `.pm-ground`, under
+ * ADR-0069 D9. A second consumer of that token is a governance change; a local
+ * variable with its reason written beside it is not.
+ *
+ * The stagger is the system's own (`--motion-ascent-stagger`, 60ms), and this is
+ * where the ceiling binds: Chapter 5 §5.7 caps *total stagger* at 600ms and the
+ * last line here starts at 300ms. The durations sit outside that cap by §5.7's
+ * own wording — the ceiling bounds the stagger, not the entrance after it.
+ *
+ * ── Why this is transform and opacity only ─────────────────────────────────
+ *
+ * The brief asked for `filter: brightness()` on the picture and `clip-path` on
+ * the streaks and the portrait. Both are avoidable and were avoided:
+ *
+ * - A black layer at `opacity: α` over a picture composites to exactly
+ *   `brightness(1 - α)` of it. The visual result is identical and the property
+ *   is one the compositor already handles per frame.
+ * - A mask reveal is a wrapper with `overflow: clip` and an inner `translate`.
+ *   Same picture, no per-frame path recalculation.
+ *
+ * So ADR-0009's `transform`/`opacity` restriction holds literally and this
+ * change needs no exception to it. `motion-contract.spec.ts:120` would fail
+ * `filter` and `clip-path` had these rules been written in the application's
+ * stylesheets, where that guard reaches; they are written to pass it anyway.
+ */
+.brand-page-hero {
+  --hero-enter: 640ms;
+  --hero-enter-ground: 1200ms;
+}
+
+/*
+ * Each line's place in the sequence, declared beside the class it belongs to
+ * rather than passed in from the markup: the order is a constant of the line's
+ * role, not something a caller chooses.
+ */
+.brand-page-hero__breadcrumb {
+  --hero-order: 0;
+}
+
+.brand-page-hero__title {
+  --hero-order: 1;
+}
+
+.brand-page-hero__description {
+  --hero-order: 2;
+}
+
+
+/*
+ * Everything is inside `no-preference`, so `reduce` gets the finished state in
+ * the first frame with no animation to zero out — Chapter 5 §5.8's requirement
+ * read as structure rather than as a duration override.
+ *
+ * `[data-motion-off~="hero"]` is the site's existing off switch for hero motion
+ * (`apps/web/src/lib/motion/switches.ts`), set from the environment without a
+ * build. This entrance answers to it for the same reason the homepage's does.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  /*
+     The ground settles rather than arrives: it is opaque in its first frame
+     and only its scale moves. An element at `opacity: 0` is not counted as
+     painted, so fading in a hero photograph pushes the largest contentful
+     paint out by the length of the fade for a decorative gain. Scaling it
+     costs nothing measurable.
+
+     1.04, matching `.pm-ground` — the same move the President's hero has
+     played since ADR-0069 D9. The brief asked for 1.08; at 1.04 the overshoot
+     is already past the `object-fit: cover` box at every breakpoint, and
+     matching the existing value keeps one camera move on the site instead of
+     two that differ by an amount nobody can see.
+  */
+  :root:not([data-motion-off~="hero"]) .brand-page-hero--photo .brand-page-hero__media > :not(.brand-page-hero__expose) {
+    animation: brand-hero-ground var(--hero-enter-ground) var(--motion-easing-decelerate) backwards;
+  }
+
+  /* The exposure settle: a black layer clearing to nothing, which is
+     `brightness(0.55) → 1` composited. Its own element rather than a filter
+     on the picture — see the note above. */
+  :root:not([data-motion-off~="hero"]) .brand-page-hero--photo .brand-page-hero__expose {
+    animation: brand-hero-expose var(--hero-enter-ground) var(--motion-easing-decelerate) backwards;
+  }
+
+  /*
+     The mask reveal, on the photographic composition only.
+
+     A masked heading is invisible until it clears its own clip box, which
+     makes it exactly as late to the largest contentful paint as
+     `opacity: 0` would. Over a photograph that costs nothing — the picture is
+     the largest paint and it is opaque in frame one. On the ink band the
+     heading *is* the largest paint, so there it rises without a mask and
+     arrives in the first frame. One contract, one documented exception, and
+     the reason is a measurement rather than a preference.
+  */
+  :root:not([data-motion-off~="hero"]) .brand-page-hero--photo .brand-page-hero__reveal {
+    overflow: clip;
+  }
+
+  /*
+     One rule for every line, and the composition changes only which keyframe
+     runs. `display: block` is load-bearing rather than tidiness: a transform
+     does not apply to a non-replaced inline box, so the same markup with the
+     span left inline attached the animation and moved nothing — measured on
+     /ar/news, where the heading's transform read as the identity matrix at
+     frame 0 while the animation reported itself as running.
+  */
+  :root:not([data-motion-off~="hero"]) .brand-page-hero__line {
+    display: block;
+    animation: brand-hero-rise var(--hero-enter) var(--motion-easing-decelerate) backwards;
+    animation-delay: calc(
+      (var(--hero-lead, 0) + var(--hero-order, 0)) * var(--motion-ascent-stagger)
+    );
+  }
+
+  /*
+     Over a photograph a line that has a clip box is revealed by it instead of
+     rising into place. Only the keyframe's name changes, so the timing and the
+     order cannot drift between the two compositions.
+
+     Scoped to `__reveal`'s descendants, and that scope is the correctness
+     argument rather than tidiness: `translateY(105%)` outside a clip box is not
+     a reveal, it is an element starting a line below where it belongs and
+     sliding up over whatever is beneath it. The breadcrumb is `__line` without a
+     clip box — measured on /ar/news, it took the mask and had nothing to be
+     masked by — so it keeps the rise.
+  */
+  :root:not([data-motion-off~="hero"])
+    .brand-page-hero--photo
+    .brand-page-hero__reveal
+    .brand-page-hero__line {
+    animation-name: brand-hero-unmask;
+  }
+
+  /* The streaks draw from their own base outwards. `scaleY` from the block
+     end, not `clip-path`: the strokes run corner to corner, so scaling along
+     the block axis draws them along their length. `transform-origin` is
+     physical and the motif must not mirror (ADR-0059 §D7.1), which is exactly
+     what makes a physical origin correct here rather than an oversight. */
+  :root:not([data-motion-off~="hero"]) .brand-page-hero--photo .brand-streaks {
+    animation: brand-hero-draw var(--hero-enter) var(--motion-easing-decelerate) backwards;
+    animation-delay: calc((var(--hero-lead, 0) + 1) * var(--motion-ascent-stagger));
+    transform-origin: bottom left;
+  }
+}
+
+@keyframes brand-hero-ground {
+  from {
+    transform: scale(1.04);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes brand-hero-expose {
+  from {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes brand-hero-unmask {
+  from {
+    transform: translateY(105%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/*
+ * The rise travels the identity's own ascent — lower-left to upper-right, the
+ * angle read off the mark's long green stroke — so it is one `translate` and
+ * not a vertical nudge. It never mirrors under RTL (ADR-0059 §D7.1): the vector
+ * is brand geometry, not reading direction, and CSS `transform` is physical,
+ * which is the behaviour wanted here rather than a bug to correct.
+ *
+ * `opacity` starts just above zero rather than at it. The difference is
+ * invisible and it is the whole point: an element at exactly `opacity: 0` is
+ * not a paint candidate, and one at 0.01 is.
+ */
+@keyframes brand-hero-rise {
+  from {
+    opacity: 0.01;
+    transform: translate(calc(-1 * var(--motion-ascent-offset)), var(--motion-ascent-offset));
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes brand-hero-draw {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}

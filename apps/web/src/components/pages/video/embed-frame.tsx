@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { VideoPlatform } from "@/lib/video/types";
 import { FOCUS } from "@/components/ui/interactive";
+import { Button } from "@uaeaf/brand-ui";
 
 /**
  * The player, and the promise that nothing loads until a reader asks for it.
@@ -123,14 +124,9 @@ export const EmbedFrame = ({
           {labels.failedBody}
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3">
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`vs-edge inline-flex min-h-11 items-center rounded-[var(--radius-full)] px-5 text-body-sm font-semibold ${FOCUS}`}
-          >
+          <Button variant="secondary" href={url} target="_blank" rel="noopener noreferrer">
             {labels.openOn}
-          </a>
+          </Button>
           <button
             type="button"
             onClick={() => setFailed(false)}

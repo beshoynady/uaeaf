@@ -50,6 +50,14 @@ export class FederationPersonnelsService {
     return this.repository.findById(id);
   }
 
+  /** The people behind a set of appointments, in one query rather than one
+   *  per appointment. Returns fewer than asked for when some are missing or
+   *  archived; a caller treats an absence as "no such person", never as an
+   *  error, so one stale reference cannot fail a whole page. */
+  async findByIds(ids: readonly string[]): Promise<FederationPersonnelDocument[]> {
+    return this.repository.findByIds(ids);
+  }
+
   /** Every Active person, in public-safe form — backs the public Board
    *  Members / committee listings. */
   async findAllPublic(): Promise<FederationPersonnelPublicResponseDto[]> {

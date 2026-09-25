@@ -17,7 +17,8 @@ import { NewsTopicFilter } from "./topic-filter";
  *
  * ── The hero ───────────────────────────────────────────────────────────────
  *
- * The kit's ink `PageHero` (ADR-0098), through `EditorialHero`, which also
+ * The kit's `PageHero` (ADR-0098), through `EditorialHero`: the record's
+ * photograph where it has one, the ink ground where it has none. It also
  * emits the `CollectionPage` structured data from the headlines actually
  * rendered below (Chapter 14 §4) — never from what the newsroom might publish
  * next.
@@ -43,6 +44,7 @@ export const NewsScreen = ({
   locale,
   title,
   subtitle,
+  heroImage,
   articles,
   covers,
   query,
@@ -51,6 +53,7 @@ export const NewsScreen = ({
   locale: AppLocale;
   title: string;
   subtitle: string | null;
+  heroImage: MediaAssetPublic | undefined;
   articles: readonly ArticlePublic[];
   covers: ReadonlyMap<string, MediaAssetPublic>;
   query: FeedQuery;
@@ -62,6 +65,7 @@ export const NewsScreen = ({
       locale={locale}
       title={title}
       subtitle={subtitle}
+      heroImage={heroImage}
       itemNames={articles.map((article) => article.title[locale])}
     />
 

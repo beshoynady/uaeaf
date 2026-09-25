@@ -15,7 +15,7 @@ import type { VideoSectionPublic } from "@/lib/video/types";
 import type { MediaAssetPublic } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
 import { FOCUS } from "@/components/ui/interactive";
-import { GHOST_PILL } from "../video/chrome";
+import { Button } from "@uaeaf/brand-ui";
 
 /**
  * The homepage's video section, in its two states.
@@ -71,7 +71,7 @@ export const HomeVideoSection = ({
     // `data-surface="ink"` is what makes every `--surface-*` below resolve:
     // ADR-0098 declares the set on the surface element and descendants read it
     // through the cascade, so no component here needs to know its ground.
-    <section data-surface="ink" className="video-system relative overflow-hidden py-16 md:py-24">
+    <section data-surface="ink" className="brand-surface video-system relative overflow-hidden py-16 md:py-24">
       <div className="mx-auto flex max-w-[1440px] flex-col gap-10 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16">
         <header className="flex flex-wrap items-end justify-between gap-6">
           <div className="flex flex-col gap-3">
@@ -103,17 +103,17 @@ export const HomeVideoSection = ({
             ) : null}
           </div>
 
-          <Link
-            href="/media/videos"
-            className={`${GHOST_PILL} px-6`}
-          >
+          {/* `linkComponent` is the locale-aware `Link`: the kit defaults to
+              `next/link`, which would drop the `/ar` or `/en` prefix and let
+              the middleware guess it from a cookie. */}
+          <Button variant="secondary" href="/media/videos" linkComponent={Link}>
             {t("libraryCta")}
             {/* Mirrored in Arabic: this one IS a directional arrow — it points
                 the way the reader is being sent, which reverses with the text. */}
             <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="size-4 rtl:-scale-x-100" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M5 12h13M12.5 5.5 19 12l-6.5 6.5" />
             </svg>
-          </Link>
+          </Button>
         </header>
 
         {live ? (
@@ -148,17 +148,17 @@ export const HomeVideoSection = ({
 
               <div className="flex flex-wrap items-center gap-2">
                 <ShareButton url={live.url} title={stageTitle} label={t("share")} copiedLabel={t("shareCopied")} />
-                <a
+                <Button
+                  variant="secondary"
                   href={live.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`${GHOST_PILL} px-5`}
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M14 4h6v6M20 4l-8.5 8.5M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
                   </svg>
                   {t("openOn", { platform: "YouTube" })}
-                </a>
+                </Button>
               </div>
             </div>
           </div>

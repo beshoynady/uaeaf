@@ -10,7 +10,7 @@ import type { EmbedLabels } from "./embed-frame";
 import type { VideoPublic } from "@/lib/video/types";
 import type { AppLocale } from "@/i18n/routing";
 import { FOCUS } from "@/components/ui/interactive";
-import { GHOST_PILL } from "./chrome";
+import { Button, IconButton } from "@uaeaf/brand-ui";
 
 /**
  * The cinematic player.
@@ -169,9 +169,6 @@ export const VideoPlayerModal = ({
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [onClose]);
 
-  const circle =
-    `inline-flex size-11 items-center justify-center rounded-full transition-colors duration-[var(--motion-duration-fast)] vs-edge ${FOCUS} disabled:opacity-35`;
-
   return (
     // The scrim, and only the scrim. The surface is declared on the panel
     // inside it, not here: `[data-surface]` sets `position: relative`, which
@@ -201,11 +198,21 @@ export const VideoPlayerModal = ({
         style={{ background: "transparent" }}
       >
         <div className="flex items-center justify-between gap-3">
-          <button ref={closeButton} type="button" onClick={onClose} aria-label={labels.close} className={`${circle} vs-fill-strong`} style={{ color: "var(--surface-text)" }}>
-            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+          {/* The dismiss carries the raised-on-ink step, which the ink surface
+              now publishes as a token. It is a fill and not a boundary -- at
+              1.25:1 against the ground it cannot be one -- so the shape comes
+              from `IconButton`'s own edge at 6.44:1. */}
+          <IconButton
+            ref={closeButton}
+            shape="circle"
+            onClick={onClose}
+            aria-label={labels.close}
+            className="vs-fill-strong"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
               <path d="M6 6l12 12M18 6L6 18" />
             </svg>
-          </button>
+          </IconButton>
 
           <p className="flex items-center gap-2.5 text-caption" style={{ color: "var(--surface-text-muted)" }}>
             {labels.position}
@@ -253,30 +260,30 @@ export const VideoPlayerModal = ({
 
           <div className="flex items-center gap-2">
             <ShareButton url={shareUrl ?? video.url} title={title} label={labels.share} copiedLabel={labels.shareCopied} />
-            <a
+            <Button
+              variant="secondary"
               href={video.url}
               target="_blank"
               rel="noopener noreferrer"
-              className={`${GHOST_PILL} px-5`}
             >
               <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14 4h6v6M20 4l-8.5 8.5M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
               </svg>
               {labels.openOn}
-            </a>
+            </Button>
 
-            <button type="button" onClick={onPrevious} disabled={!hasPrevious} aria-label={labels.previous} className={circle}>
+            <IconButton shape="circle" onClick={onPrevious} disabled={!hasPrevious} aria-label={labels.previous}>
               {/* The chevron follows the reading direction: "previous" is
                   towards the start of the line, which is the right in Arabic. */}
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="size-5 rtl:-scale-x-100" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="rtl:-scale-x-100" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14.5 5.5 8 12l6.5 6.5" />
               </svg>
-            </button>
-            <button type="button" onClick={onNext} disabled={!hasNext} aria-label={labels.next} className={circle}>
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="size-5 rtl:-scale-x-100" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            </IconButton>
+            <IconButton shape="circle" onClick={onNext} disabled={!hasNext} aria-label={labels.next}>
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="rtl:-scale-x-100" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9.5 5.5 16 12l-6.5 6.5" />
               </svg>
-            </button>
+            </IconButton>
           </div>
         </div>
       </div>

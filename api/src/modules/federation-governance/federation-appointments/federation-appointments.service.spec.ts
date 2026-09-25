@@ -3,6 +3,7 @@ import { NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { FederationAppointmentsService } from './federation-appointments.service.js';
 import { FederationAppointmentsRepository } from './federation-appointments.repository.js';
+import { FederationPersonnelsService } from '../federation-personnel/federation-personnel.service.js';
 
 describe('FederationAppointmentsService', () => {
   const makeRepository = () =>
@@ -11,6 +12,11 @@ describe('FederationAppointmentsService', () => {
       findById: jest.fn(),
       updateById: jest.fn(),
     }) as unknown as jest.Mocked<FederationAppointmentsRepository>;
+
+  /** These cases are about succession, which never reads a person record; the
+   *  personnel service is only here because the public leadership read shares
+   *  this constructor. */
+  const personnel = { findByIds: jest.fn(async () => []) } as unknown as FederationPersonnelsService;
 
   const baseDto = {
     personId: new Types.ObjectId().toString(),
@@ -25,7 +31,7 @@ describe('FederationAppointmentsService', () => {
     it('creates without touching any other row when no supersedesAppointmentId is given', async () => {
       const repository = makeRepository();
       repository.create.mockResolvedValue({} as never);
-      const service = new FederationAppointmentsService(repository);
+      const service = new FederationAppointmentsService(repository, personnel);
 
       await service.create(baseDto);
 
@@ -39,7 +45,7 @@ describe('FederationAppointmentsService', () => {
       const supersededId = new Types.ObjectId().toString();
       repository.findById.mockResolvedValue({ _id: new Types.ObjectId(supersededId) } as never);
       repository.create.mockResolvedValue({} as never);
-      const service = new FederationAppointmentsService(repository);
+      const service = new FederationAppointmentsService(repository, personnel);
 
       await service.create({ ...baseDto, supersedesAppointmentId: supersededId });
 
@@ -53,7 +59,7 @@ describe('FederationAppointmentsService', () => {
     it('throws NotFoundException when the superseded appointment does not exist', async () => {
       const repository = makeRepository();
       repository.findById.mockResolvedValue(null);
-      const service = new FederationAppointmentsService(repository);
+      const service = new FederationAppointmentsService(repository, personnel);
 
       await expect(
         service.create({ ...baseDto, supersedesAppointmentId: new Types.ObjectId().toString() }),
@@ -65,7 +71,7 @@ describe('FederationAppointmentsService', () => {
     it('never closes a same-roleType appointment implicitly (multi-holder roles stay open)', async () => {
       const repository = makeRepository();
       repository.create.mockResolvedValue({} as never);
-      const service = new FederationAppointmentsService(repository);
+      const service = new FederationAppointmentsService(repository, personnel);
 
       // Two BoardMembers appointed independently — no supersedes pointer.
       await service.create(baseDto);

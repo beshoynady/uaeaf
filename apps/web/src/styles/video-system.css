@@ -60,68 +60,28 @@
 /*
  * A card's fill on ink, and the step above it.
  *
- * ADR-0098's ink surface publishes a ground, two inks, a border and a divider
- * — and no raised step, because on ink the extent of a shape comes from its
- * edge rather than from a lighter fill. The design draws cards with a fill, so
- * the fill is mixed from the surface's own ink against its own ground: no new
- * value enters, and the step follows the ground if the ground ever moves.
+ * Both now read a token. `--surface-raised` and `--surface-raised-strong` are
+ * published by the ink surface (ADR-0098 §8d) and measured in `pairings.json`;
+ * what stood here was the same two values mixed inline, under a comment
+ * recording that the kit had no raised-on-ink token. It has one now, so this is
+ * two aliases and not a treatment.
  *
- * Here rather than inline at each card, so that the day the kit publishes a
- * raised-on-ink token there is one place to adopt it instead of eighteen.
+ * Neither is a boundary. They measure 1.13:1 and 1.25:1 against the ink ground,
+ * so anything that needs a shape takes an edge from `--surface-border`
+ * (6.44:1) — which in practice means a kit control or a `BrandBorder`, because
+ * `.vs-edge` is gone: it drew its edge from `--surface-divider`, which is
+ * 2.94:1 on this ground and fails WCAG 1.4.11 for a control's boundary.
  *
- * DESIGN SYSTEM GAP — recorded in the backlog: the kit has no raised-on-ink
- * token. This is the closest approved treatment, not a substitute for one.
+ * `.vs-ghost` is gone with it. Its hover and active tints are what
+ * `Button variant="secondary"` and `IconButton` already do, and the six call
+ * sites that pasted the pill now call one of the two.
  */
 .vs-fill {
-  background: color-mix(in srgb, var(--surface-text) 6%, var(--surface-bg));
+  background: var(--surface-raised);
 }
 
 .vs-fill-strong {
-  background: color-mix(in srgb, var(--surface-text) 10%, var(--surface-bg));
-}
-
-/*
- * The 1px edge a control carries instead of a fill -- and the focus ring that
- * has to survive it.
- *
- * Both are here, in one rule, because they are one declaration: a focus ring
- * is drawn with `box-shadow` too, and an inline `style={{ boxShadow }}` beats
- * the utility that draws it. Written inline, the edge silently removed the
- * indicator from every pill, chip and arrow in this system -- WCAG 2.4.7,
- * failing on a control that looked entirely correct until a keyboard reached
- * it.
- *
- * The ring is ADR-0051's, to the pixel: a 2px band in the offset colour, then
- * 2px of the ring colour, so that whichever of the two the ground swallows,
- * the other is visible.
- */
-.vs-edge {
-  box-shadow: inset 0 0 0 1px var(--surface-divider);
-}
-
-.vs-edge:focus-visible {
-  outline: none;
-  box-shadow:
-    inset 0 0 0 1px var(--surface-divider),
-    0 0 0 var(--a11y-focus-offset-width) var(--a11y-focus-offset),
-    0 0 0 calc(var(--a11y-focus-offset-width) + var(--a11y-focus-ring-width)) var(--a11y-focus-ring);
-}
-
-/*
- * A control with no fill of its own, answering the pointer.
- *
- * The tints are mixed from the surface's own ink over whatever is behind the
- * control, so one class serves every ground this system paints on. It is a
- * class and not a `hover:bg-[…]` utility because an arbitrary Tailwind value
- * may not contain spaces: written with them, the class list splits mid-value
- * and the rule is never generated — silently, with the hover simply absent.
- */
-.vs-ghost:hover {
-  background: color-mix(in srgb, var(--surface-text) 6%, transparent);
-}
-
-.vs-ghost:active {
-  background: color-mix(in srgb, var(--surface-text) 12%, transparent);
+  background: var(--surface-raised-strong);
 }
 
 /* -- Motion -----------------------------------------------------------------

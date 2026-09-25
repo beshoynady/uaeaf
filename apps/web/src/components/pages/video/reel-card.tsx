@@ -7,7 +7,7 @@ import { titleOf } from "@/lib/video/types";
 import type { VideoPublic } from "@/lib/video/types";
 import type { MediaAssetPublic } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
-import { FOCUS_WIDE } from "./chrome";
+import { BrandBorder, BRAND_FOCUSABLE, BRAND_FOCUS_WIDE } from "@uaeaf/brand-ui";
 
 /**
  * One vertical short, on the reels shelf.
@@ -45,17 +45,22 @@ export const ReelCard = ({
   const title = titleOf(video, locale);
 
   return (
-    <button
-      type="button"
-      onClick={onPlay}
-      data-testid="reel-card"
-      className={`vs-rise group relative block w-full overflow-hidden text-start ${FOCUS_WIDE}`}
-      style={{
-        aspectRatio: "9 / 16",
-        borderRadius: "var(--radius-lg)",
-        ...(revealIndex === undefined ? {} : { ["--vs-reveal-index" as string]: revealIndex }),
-      }}
+    /* The same ring as `VideoCard`, for the same reason: the shelf these sit on
+       gives them no perceivable edge of their own. */
+    <BrandBorder
+      variant="hover"
+      className="vs-rise"
+      {...(revealIndex === undefined
+        ? {}
+        : { style: { ["--vs-reveal-index" as string]: revealIndex } })}
     >
+      <button
+        type="button"
+        onClick={onPlay}
+        data-testid="reel-card"
+        className={`group relative block w-full overflow-hidden text-start ${BRAND_FOCUSABLE} ${BRAND_FOCUS_WIDE}`}
+        style={{ aspectRatio: "9 / 16", borderRadius: "var(--radius-lg)" }}
+      >
       <VideoThumbnail
         asset={thumbnail}
         locale={locale}
@@ -90,5 +95,6 @@ export const ReelCard = ({
         </span>
       </span>
     </button>
+    </BrandBorder>
   );
 };

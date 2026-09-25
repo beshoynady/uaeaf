@@ -3,7 +3,7 @@
 import { useId, useMemo, useState } from "react";
 import { useFormatter, useTranslations } from "next-intl";
 import { Button } from "@uaeaf/brand-ui";
-import { Link, getPathname } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 import { SearchField } from "@/components/ui/search-field";
 import { SelectField } from "@/components/ui/select-field";
 import { NewsTimeFilter } from "./time-filter";
@@ -149,9 +149,11 @@ export const ArticleList = ({
           //
           // The shared library's primary button (Chapter 12 §12.15), so the
           // create action is the same control as every other primary action.
-          // It renders a plain `next/link`, which does not add the locale, so
-          // the address is resolved here with the router's own `getPathname`.
-          <Button variant="primary" href={getPathname({ href: "/news/new", locale })}>
+          // It renders a plain `next/link`, which does not add the locale the
+          // way this app's `Link` does, so the prefix is written here — every
+          // locale is prefixed (`routing.ts` sets no `localePrefix`, so the
+          // default "always" applies).
+          <Button variant="primary" href={`/${locale}/news/new`}>
             {t("newArticle")}
           </Button>
         ) : null}

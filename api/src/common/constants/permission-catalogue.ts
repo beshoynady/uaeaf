@@ -22,8 +22,21 @@ export interface PermissionCatalogueEntry {
 }
 
 export const PERMISSION_CATALOGUE: readonly PermissionCatalogueEntry[] = [
-  { resourceType: 'aboutFederationPage', action: 'Create' },
+  // Rewritten when the page was actually built. It previously carried the
+  // three rows every collection gets by default, which left the page's own
+  // editor and its publisher with no grant to hold.
+  //
+  // `Create` is gone rather than added to: the About page is one row, put
+  // there by the seed and edited from then on, so no route creates one and a
+  // `Create` grant would gate nothing — which is the drift this file's own
+  // spec exists to catch.
+  //
+  // `Publish` gates the switch that takes the page on and off the site as
+  // well as publishing it: deciding what the public sees is a publishing
+  // decision, not an editing one.
   { resourceType: 'aboutFederationPage', action: 'Read' },
+  { resourceType: 'aboutFederationPage', action: 'Update' },
+  { resourceType: 'aboutFederationPage', action: 'Publish' },
   { resourceType: 'aboutFederationPage', action: 'Delete' },
   { resourceType: 'ageCategories', action: 'Create' },
   { resourceType: 'ageCategories', action: 'Read' },

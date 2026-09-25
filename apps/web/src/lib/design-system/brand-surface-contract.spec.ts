@@ -332,7 +332,12 @@ describe("no conic gradient hides inside a custom property", () => {
   // Every stylesheet the package ships. `surface/surface.css` is deliberately
   // absent: it held only prose once the blanket child rule was removed, and
   // an imported file with no rules is a file nobody will ever update.
-  const stylesheets = ["accent/accent.css", "controls/controls.css", "content/content.css"];
+  const stylesheets = [
+    "accent/accent.css",
+    "controls/controls.css",
+    "content/content.css",
+    "content/page-hero.css",
+  ];
 
   it.each(stylesheets)("%s declares no conic gradient in a custom property", (file) => {
     const source = readFileSync(join(BRAND_UI, file), "utf-8").replace(/\/\*[\s\S]*?\*\//g, "");

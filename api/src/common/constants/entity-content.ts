@@ -121,23 +121,27 @@ export const REVISION_READ_FIELDS: Record<PublicationEntityType, readonly string
     'coreValues',
     'seo',
   ],
+  // The ten sections of the composed page, plus which of them are switched
+  // off — that is content: it is part of what a version of this page *was*,
+  // and a reader comparing two versions needs to see that a section was
+  // hidden in one of them.
+  //
+  // `isActive` is deliberately absent, and not merely unlisted: the schema
+  // keeps it out of a snapshot altogether, so whether the page was being
+  // served is not part of any version's content. See its note there.
   aboutFederationPage: [
-    'heroImageId',
-    'heroTitle',
-    'heroSubtitle',
-    'foundingDate',
-    'historicalIntro',
-    'foundingDecreeCaption',
-    'roleHeading',
-    'roleText',
-    'globalMembershipYear',
-    'globalMembershipHeading',
-    'globalMembershipText',
-    'firstPresidentPhoto',
-    'firstPresidentName',
-    'firstPresidentTitle',
-    'firstPresidentBio',
+    'hiddenSections',
+    'hero',
+    'facts',
+    'story',
+    'timeline',
     'achievements',
+    'pioneers',
+    'leadership',
+    'governance',
+    'ecosystem',
+    'cta',
+    'seo',
   ],
   // `federationAppointmentId` is deliberately absent: it is the canonical
   // identity link, not editable and not read by any screen. Restoring a

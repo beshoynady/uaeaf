@@ -8,7 +8,7 @@ import { titleOf } from "@/lib/video/types";
 import type { VideoPublic } from "@/lib/video/types";
 import type { MediaAssetPublic } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
-import { FOCUS_WIDE } from "./chrome";
+import { BrandBorder, BRAND_FOCUSABLE, BRAND_FOCUS_WIDE } from "@uaeaf/brand-ui";
 
 /**
  * One landscape video, as the carousel and the library grid both draw it.
@@ -26,6 +26,13 @@ import { FOCUS_WIDE } from "./chrome";
  * would either letterbox it into bars or crop the subject's head off, and both
  * are worse than the separate shelf the design draws. `video-cards.spec.tsx`
  * holds that line.
+ *
+ * -- Why the ring ------------------------------------------------------------
+ *
+ * `BrandBorder variant="hover"` is the card's edge, and it is not decoration.
+ * The fill these cards sit on measures 1.13:1 against the ink ground, so
+ * without an edge the card has no perceivable boundary at all -- the shape
+ * comes from the ring, and the rotation on hover is the emphasis on top of it.
  */
 export const VideoCard = ({
   video,
@@ -46,12 +53,21 @@ export const VideoCard = ({
   const title = titleOf(video, locale);
 
   return (
+    <BrandBorder
+      variant="hover"
+      className="vs-rise"
+      // The stagger index rides on the ring, because the ring is now the
+      // element that enters; the button inside it is what the pointer answers.
+      {...(revealIndex === undefined
+        ? {}
+        : { style: { ["--vs-reveal-index" as string]: revealIndex } })}
+    >
     <button
       type="button"
       onClick={onPlay}
       data-testid="video-card"
-      className={`vs-rise group flex w-full flex-col gap-3 text-start ${FOCUS_WIDE}`}
-      style={{ borderRadius: "var(--radius-md)", ...(revealIndex === undefined ? {} : { ["--vs-reveal-index" as string]: revealIndex }) }}
+      className={`group flex w-full flex-col gap-3 text-start ${BRAND_FOCUSABLE} ${BRAND_FOCUS_WIDE}`}
+      style={{ borderRadius: "var(--radius-md)" }}
     >
       <span
         className="relative block w-full overflow-hidden"
@@ -106,16 +122,17 @@ export const VideoCard = ({
             second place calling `useFormatter` with its own options would
             silently get the locale's default numbering system instead. */}
         <span className="flex items-center gap-2 text-caption" style={{ color: "var(--surface-text-muted)" }}>
-          {/* The kit's green is a button plate, not an ink: on this ground it
-          measures 4.09:1, which is a fine boundary and not readable text.
-          So the label takes the surface's own ink and the date beside it
-          stays muted -- the hierarchy without the failing colour.
-          DESIGN SYSTEM GAP, in the backlog: ink publishes no accent ink. */}
-          <span style={{ color: "var(--surface-text)" }}>{labels.category}</span>
+          {/* The green ink tier, which the ink surface now publishes (ADR-0098
+          §8d): green.300 at 6.90:1 on this ground, where the kit's plate green
+          measured 4.09:1 and could not be text. The fallback is the surface's
+          own ink, so this label is green on ink and simply legible anywhere
+          else -- green.300 is measured against #0B0B0B and nothing else. */}
+          <span style={{ color: "var(--surface-accent, var(--surface-text))" }}>{labels.category}</span>
           {video.publishedAt ? <span aria-hidden="true">·</span> : null}
           <PublishDate date={video.publishedAt} />
         </span>
       </span>
     </button>
+    </BrandBorder>
   );
 };

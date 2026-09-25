@@ -1,14 +1,16 @@
 import { getTranslations } from "next-intl/server";
 import { PageHero, type BreadcrumbItem } from "@uaeaf/brand-ui";
 import { breadcrumbTrail } from "@/components/pages/static-page-screen";
+import { heroPhotoSlot } from "@/components/ui/hero-photo";
 import { findPublicPage } from "@/lib/pages/public-pages";
 import { BreadcrumbJsonLd, CollectionPageJsonLd } from "@/lib/seo/json-ld";
+import type { MediaAssetPublic } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
 
 /**
  * The hero of an editorial listing page (news, albums), drawn with the kit's
- * `PageHero` (ADR-0098 D2): the ink ground with its mesh, the diagonal motif
- * and the accent bar at its foot.
+ * `PageHero`: the record's photograph on the first screen where it has one, and
+ * the ink ground with its mesh where it has none (ADR-0098 D2).
  *
  * It replaces `StaticPageScreen` for these pages, so it also carries what that
  * screen emitted beside its hero and nothing else: the `CollectionPage` block
@@ -16,8 +18,10 @@ import type { AppLocale } from "@/i18n/routing";
  * wherever the page has a trail. The title and the sentence stay the page
  * record's own, read by `loadStaticPage` as before.
  *
- * What the kit's hero does not draw is the record's uploaded hero photograph:
- * the ink hero is photograph-free by composition. Reported with the change.
+ * The photograph is passed through `heroPhotoSlot`, which is also what decides
+ * the composition: ADR-0098 D2 made this hero photograph-free and dropped the
+ * picture these records carry, and the owner reversed that on 2026-09-25. A
+ * record with no picture is unchanged from D2.
  *
  * ── The visible trail ──────────────────────────────────────────────────────
  *
@@ -33,12 +37,16 @@ export const EditorialHero = async ({
   locale,
   title,
   subtitle,
+  heroImage,
   itemNames,
 }: {
   pageKey: string;
   locale: AppLocale;
   title: string;
   subtitle: string | null;
+  /** From `loadStaticPage`. Its presence is what gives the hero the first
+   *  screen and the photographic treatment (ADR-0067 D2). */
+  heroImage?: MediaAssetPublic;
   /** The names the page is rendering, in order, for the `ItemList`. */
   itemNames?: readonly string[];
 }) => {
@@ -81,6 +89,7 @@ export const EditorialHero = async ({
       <PageHero
         title={title}
         description={subtitle ?? undefined}
+        media={heroPhotoSlot(heroImage, locale)}
         breadcrumb={visible}
         breadcrumbLabel={t("breadcrumbLabel")}
       />

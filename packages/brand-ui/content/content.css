@@ -752,9 +752,29 @@
  * `border-image` renders correctly. The masked band cannot be used instead: a
  * pseudo-element on a table section is not laid out reliably across engines.
  * ------------------------------------------------------------------ */
+/*
+ * The tricolour rule under a table head, drawn as a background band.
+ *
+ * Not `border-image`. Measured in Chromium at both `border-collapse` values:
+ * the border-image form painted 0 of 300 sampled pixels in each -- `border-image`
+ * does not apply to an internal table element, so this component drew nothing at
+ * all from the day it was written. The background form painted the full width in
+ * both. (The same measurement did *not* reproduce the further claim that the
+ * transparent band erases a `<tr>`'s own rule: that rule painted 300/300 with
+ * the band and without it.)
+ *
+ * `bottom` is the block-end edge in both of this project's writing modes, and the
+ * gradient's own direction comes from `--brand-tricolor`, which is already
+ * resolved per `[dir]`. A `<th>` with an opaque background of its own would cover
+ * this band -- the row group paints below the cells -- which is why the rule sets
+ * no cell background and none of the four tables in the dashboard gives its
+ * header cells one.
+ */
 .brand-table-header {
-  border-block-end: var(--border-width-thick) solid transparent;
-  border-image: var(--brand-tricolor) 1;
+  background-image: var(--brand-tricolor);
+  background-repeat: no-repeat;
+  background-position: bottom;
+  background-size: 100% var(--border-width-thick);
 }
 
 /* ------------------------------------------------------------------ *

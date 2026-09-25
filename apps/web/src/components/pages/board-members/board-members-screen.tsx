@@ -10,7 +10,9 @@ import {
   type BreadcrumbItem,
 } from "@uaeaf/brand-ui";
 
-import { breadcrumbTrail, loadStaticPage, text } from "@/components/pages/static-page-screen";
+import { breadcrumbTrail, isInstitutional, loadStaticPage, text } from "@/components/pages/static-page-screen";
+import { heroPhotoSlot } from "@/components/ui/hero-photo";
+import { visibleTrail } from "@/components/ui/visible-trail";
 import { CONTAINER } from "@/components/ui/section";
 import { altOf, fetchPublicMedia, isExternalMedia } from "@/lib/api/media";
 import { fetchPublic } from "@/lib/api/public-client";
@@ -30,7 +32,8 @@ const loadMembers = async (): Promise<FederationPersonnelPublic[]> => {
 /**
  * Board members, on `@uaeaf/brand-ui`.
  *
- * Ink hero, then the board's size on the green identity ground (the page's
+ * The hero (the record's photograph where it has one, the ink ground where it
+ * has none), then the board's size on the green identity ground (the page's
  * own register is green, ADR-0060 D1), then the members as hover-bordered
  * cards. A portrait is ringed only when the record's photo resolves: an empty
  * ring would be a placeholder standing in for a person, and the system has no
@@ -41,7 +44,7 @@ const loadMembers = async (): Promise<FederationPersonnelPublic[]> => {
  * `EmptyState` exists to prevent.
  */
 export const BoardMembersScreen = async ({ locale }: { locale: AppLocale }) => {
-  const [{ page, title, subtitle }, members, tPages, tNav, tSections, tPreparing] = await Promise.all([
+  const [{ page, title, subtitle, heroImage }, members, tPages, tNav, tSections, tPreparing] = await Promise.all([
     loadStaticPage(KEY, locale),
     loadMembers(),
     getTranslations({ locale, namespace: "Pages" }),
@@ -52,15 +55,11 @@ export const BoardMembersScreen = async ({ locale }: { locale: AppLocale }) => {
   const portraits = await fetchPublicMedia(members.map((member) => member.photoId));
 
   const trail = breadcrumbTrail(page, (key) => tPages(key), (key) => tNav(key));
-  // The kit's hero shows the trail the structured data already carries; a
-  // crumb with no landing page (About) stays text rather than a dead link.
-  const breadcrumb: BreadcrumbItem[] = trail.map((crumb, index) => ({
-    label: crumb.name,
-    href:
-      index === trail.length - 1 || crumb.route === null
-        ? undefined
-        : `/${locale}${crumb.route === "/" ? "" : crumb.route}`,
-  }));
+  // ADR-0072 D7: an `/about` page emits its trail to `BreadcrumbJsonLd` and
+  // draws none. Drawn, this one also announced two current pages — the kit marks
+  // every step without an `href` as the current one, and "About" has no landing
+  // page of its own (IA §8.1).
+  const breadcrumb = isInstitutional(page.route) ? undefined : visibleTrail(trail, locale);
   // Pinned to Latin digits (Chapter 19 §5): `ar` alone reaches that only by
   // the locale's default, not by a decision.
   const count = new Intl.NumberFormat(locale, { numberingSystem: "latn" }).format(members.length);
@@ -77,6 +76,7 @@ export const BoardMembersScreen = async ({ locale }: { locale: AppLocale }) => {
       <PageHero
         title={title}
         description={subtitle ?? undefined}
+        media={heroPhotoSlot(heroImage, locale)}
         breadcrumb={breadcrumb}
         breadcrumbLabel={tPages("breadcrumbLabel")}
       />
