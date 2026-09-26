@@ -119,3 +119,46 @@ Any subsequent development **MUST** proceed exclusively through **Chapter 22 —
 Chapter 22 §1 carries the version-history table and the Minor/Major criteria. `CHANGELOG.md` in this directory carries the per-amendment record.
 
 **ADR-0098** (`ADR-0098-Brand-UI-Kit-Surfaces-And-Accents.md`, standalone — the expressive identity layer built once as a shared UI library for both applications: the identity-colour category R3 added beside ADR-0065's R1/R2, the five kit surfaces mapped onto the registers ADR-0059 D2 already established, the tricolour accent with its surface-dependent middle step and the prohibition on direct green→red blending, `BrandStreaks` discharging ADR-0005's undelivered Chapter 8 component with its ascent angle held against RTL, `motion.duration.orbit` as the scale's eighth value and first cycle period while `ambient`'s restriction stays untouched, the two named doses with the dashboard's prohibition list in new Chapter 12 §12.15, and five approved token values held open as owner decisions rather than adopted against a measured conflict).
+
+---
+
+## Authorization, Authentication, Accounts & Profiles — ADR-0103 → ADR-0119
+
+Seventeen standalone ADRs recorded 2026-09-26, all **Accepted**, governing the
+platform's permission model, authentication, audit completeness and the
+person/appointment domain. They are standalone rather than embedded in a numbered
+chapter because Chapters 0–26 govern visual and interaction design; the only
+chapter that reaches this work is **Chapter 17 — Data Privacy & Identity
+Architecture**, whose ADR-0028 and ADR-0029 they inherit and, in one place
+(§3a, audit-log retention), amend.
+
+Their evidence base is two read-only reviews:
+[`docs/reviews/accounts-profiles-review.md`](../reviews/accounts-profiles-review.md)
+and [`docs/reviews/roles-permissions-review.md`](../reviews/roles-permissions-review.md).
+The technical specification they implement is
+[`docs/superpowers/specs/2026-09-26-authz-authn-design.md`](../superpowers/specs/2026-09-26-authz-authn-design.md).
+
+| ADR | File | What it decides |
+| --- | --- | --- |
+| **0103** | `ADR-0103-Capability-Map-And-Action-Vocabulary.md` | One capability map per resource becomes the source `PERMISSION_CATALOGUE` derives from; `Delete` is renamed `Archive` and paired with `Restore`; `PermanentDelete`, `Print`, `ViewSensitive`, `ViewReports` and the administrative verbs enter the vocabulary while the two dead verbs (`HardDelete`, `EditProtectedData`) leave it; scopes become a column on the permission row, resolved in the service so the guard's flat pair comparison is untouched. |
+| **0104** | `ADR-0104-Grant-Assign-Superset-Rule-And-Stronger-User-Guard.md` | Closes the confirmed P0: "you cannot grant what you do not hold" is extended from role *building* to role *assignment*, and an actor may not act on an account holding any capability they lack. Amended the same day by owner decision 4 — account and role administration become Super-Admin-only, with both rules kept in the code as defence in depth. |
+| **0105** | `ADR-0105-Super-Admin-Protection-And-Break-Glass.md` | The last active Super Admin cannot be suspended or demoted, including by themselves; recovery is a server-only command that issues a setup link and never sets a password. |
+| **0106** | `ADR-0106-Approval-Is-Permission-Plus-Assignment-Plus-SoD.md` | Approving requires the per-type capability **and** the step assignment; an author may not approve their own submission; a Super Admin override needs a written, recorded reason; a reviewer who loses the capability blocks the step visibly instead of stalling it. |
+| **0107** | `ADR-0107-Approval-Policy-Change-Lock.md` | An approval policy cannot change while content is under review, and every policy change writes its own audit row with the previous and new arrangement. |
+| **0108** | `ADR-0108-TOTP-2FA-Trusted-Device-And-Step-Up.md` | Mandatory RFC 6238 TOTP with encrypted secrets and replay protection; trusted devices at 30/7/0 days by account class; step-up re-verification on the dangerous acts. Records the dependency decisions: TOTP on Node's `crypto`, `qrcode` approved, mail behind a `MailPort` until a provider is chosen. |
+| **0109** | `ADR-0109-Session-Policy-And-Security-Settings-Bounds.md` | Session limits per account class; one `securitySettings` singleton as the single home for numbers that previously lived in two places, with bounds enforced in code and out-of-range values refused rather than clamped; cross-tab expiry per Chapter 17 §6. |
+| **0110** | `ADR-0110-Password-Policy-And-Account-Setup-Links.md` | NIST 800-63B: length over composition, no periodic expiry, a local breach list with no network call; bcrypt raised to 12 rounds with transparent rehash; and `POST /users` stops accepting a password — a new account gets a single-use setup link instead. |
+| **0111** | `ADR-0111-Sensitive-Fields-Export-And-Report-Access.md` | `ViewSensitive` per resource, enforced in one serialization layer and intersected with every export's columns; `Export`/`Print`/`ViewReports` held per product group; every extraction audited, and — per Chapter 17 §7 — every sensitive **read** too, debounced per actor/record/minute. |
+| **0112** | `ADR-0112-Audit-Interceptor-No-Silent-Skip.md` | A mutating request that cannot be attributed is recorded anyway rather than silently dropped, with `@AuditEntity` for routes keyed by something other than `:id`, and a test that walks every write route. Carries the audit-log retention terms decided with Chapter 17 §3a. |
+| **0113** | `ADR-0113-Role-Reset-And-Templates.md` | Every non-system role is cleared once by a reported, run-once script, and six editable templates replace them. (Seven at first recording; the account-administration template was removed the same day by owner decision 4.) |
+| **0114** | `ADR-0114-Person-CV-Sections.md` | Five CV arrays on `federationPersonnel`, each item individually publishable, plus a slug — what the personal page needs and none of which existed. |
+| **0115** | `ADR-0115-Account-Person-Link-Cardinality.md` | The optional one-to-one account↔person link gains the partial unique index it never had, a writer after creation, and a clear-on-archive so the reference cannot dangle. |
+| **0116** | `ADR-0116-Appointment-Closure-Without-Succession.md` | A post can be closed with an end date and a final status without a successor and without archival — the states the enum already named but nothing could reach. |
+| **0117** | `ADR-0117-Public-Contact-Visibility.md` | A person's official contact is published only when a per-record switch says so, defaulting to withheld, with existing rows backfilled to withheld. |
+| **0118** | `ADR-0118-Federation-Personnel-Joins-The-Editorial-Cycle.md` | **Amends the closed List A / List B entity-type decision (FigJam `100:7435`).** The editorial cycle is first completed for the five governed types that could be approved but never published, then `federationPersonnel` joins both lists with the same six elements, defaulting to direct publish. **PENDING FIGMA BACK-SYNC.** |
+| **0119** | `ADR-0119-Derived-Org-Chart-And-Board-Page-Source.md` | The public board page reads appointments rather than every active person — closing a defect that published staff as board members — and the org chart is computed at read time from appointments, committees and club counts, leaving `organizationalStructure` untouched. |
+
+**Chapter 17 amendment.** §3a (audit-log retention) was added by the same owner
+decision: no deletion and no deletion mechanism, with the retention period made
+"explicitly defined", as §3 requires, through a named annual review by a Super
+Admin together with the Federation's data officer, itself recorded in the log.

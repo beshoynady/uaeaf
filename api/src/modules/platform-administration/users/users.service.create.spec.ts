@@ -35,12 +35,28 @@ describe('UsersService.create — roles and personnel link', () => {
     password: 'correct horse battery staple',
   };
 
+  /** ADR-0104 rule 1 needs the acting caller. These specs are about other
+   *  behaviour, so the role being assigned resolves to no grants at all and the
+   *  superset check passes on an empty list. */
+  const actor = {
+    userId: new Types.ObjectId().toString(),
+    roleIds: [],
+    permissions: [],
+  } as never;
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
         { provide: UsersRepository, useValue: { create: jest.fn(), updateById: jest.fn() } },
-        { provide: RolesService, useValue: { assertAssignable: jest.fn() } },
+        {
+          provide: RolesService,
+          useValue: {
+            assertAssignable: jest.fn(),
+            resolvePermissionsForRoles: jest.fn(),
+            isSystemRole: jest.fn(),
+          },
+        },
         { provide: AuthSessionsService, useValue: { revokeAllForUser: jest.fn() } },
         { provide: FederationPersonnelsService, useValue: { findById: jest.fn() } },
       ],
@@ -49,6 +65,8 @@ describe('UsersService.create — roles and personnel link', () => {
     service = module.get(UsersService);
     repository = module.get(UsersRepository);
     rolesService = module.get(RolesService);
+    rolesService.resolvePermissionsForRoles.mockResolvedValue([] as never);
+    rolesService.isSystemRole.mockResolvedValue(false as never);
     personnel = module.get(FederationPersonnelsService);
 
     rolesService.assertAssignable.mockResolvedValue(undefined as never);
@@ -59,7 +77,7 @@ describe('UsersService.create — roles and personnel link', () => {
   const created = () => repository.create.mock.calls[0][0] as Record<string, unknown>;
 
   it('writes the roles in the same operation as the account', async () => {
-    await service.create({ ...base, roleIds: [roleId] });
+    await service.create({ ...base, roleIds: [roleId] }, actor);
 
     expect(created().roleIds).toEqual([new Types.ObjectId(roleId)]);
   });
@@ -72,14 +90,14 @@ describe('UsersService.create — roles and personnel link', () => {
       new BadRequestException('Unknown or archived role: x.') as never,
     );
 
-    await expect(service.create({ ...base, roleIds: [roleId] })).rejects.toBeInstanceOf(
+    await expect(service.create({ ...base, roleIds: [roleId] }, actor)).rejects.toBeInstanceOf(
       BadRequestException,
     );
     expect(repository.create).not.toHaveBeenCalled();
   });
 
   it('links the account to a federation person when one is named', async () => {
-    await service.create({ ...base, personId });
+    await service.create({ ...base, personId }, actor);
 
     expect(created().personId).toEqual(new Types.ObjectId(personId));
   });
@@ -89,12 +107,12 @@ describe('UsersService.create — roles and personnel link', () => {
     // nothing would ever notice: `personId` is read by nothing today.
     personnel.findById.mockResolvedValue(null as never);
 
-    await expect(service.create({ ...base, personId })).rejects.toBeInstanceOf(BadRequestException);
+    await expect(service.create({ ...base, personId }, actor)).rejects.toBeInstanceOf(BadRequestException);
     expect(repository.create).not.toHaveBeenCalled();
   });
 
   it('defaults both to an unlinked account with no roles', async () => {
-    await service.create(base);
+    await service.create(base, actor);
 
     expect(created().roleIds).toEqual([]);
     expect(created().personId).toBeNull();

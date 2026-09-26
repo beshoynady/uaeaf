@@ -1140,19 +1140,42 @@ is fully specified above because it is next and it carries the P0.
 
 | Batch | Scope | Gated on | Deliverable that proves it |
 |---|---|---|---|
-| **2** | Capability map + vocabulary (A1, A2, A5); catalogue derived from the map; `Update` for the 30 resources (F3); `permission-catalogue.spec.ts` extended | Q4 (Export/Print granularity), Q6 (`purgeable` for six resources) | The catalogue test passes in three directions, and a `Delete`→`Archive` migration script exists unrun |
-| **3** | `ManageRoles` / `AssignRoles` split; system roles leave the API; `GET /me/permissions`; `reset-roles` and `seed-role-templates` **written, not run** | Batch 2 · Batch 1's ADR-0104 fix | The seven templates exist as data; a negative test shows template 6 cannot escalate |
+| **2** | Capability map + vocabulary (A1, A2, A5); catalogue derived from the map; **`superAdminOnly` on the five un-grantable pairs** (decision 4); `Update` for the 30 resources (F3); the ten group pseudo-resources; `permission-catalogue.spec.ts` extended | Batch 1. All questions answered. | The catalogue test passes in three directions; a role asking for `users:Create` is refused; a `Delete`→`Archive` migration script exists unrun |
+| **3** | `ManageRoles` / `AssignRoles` declared un-grantable; system roles leave the API; `GET /me/permissions` (with scopes + account class); `reset-roles` and `seed-role-templates` **written, not run** | Batch 2 · Batch 1's ADR-0104 fix | **Six** templates exist as data; a negative test shows no template can escalate, and none asks for an un-grantable pair |
 | **4** | Approvals: per-type `Approve`, SoD, blocked assignees, Super Admin override with reason (A6); editorial cycle completed for the five types, then `federationPersonnel` (F9) | Batch 2. **Stop-and-ask if `publications`/`revisions` need a shape change** | A review cannot be approved by its author; `committees` can be published |
-| **5** | Authentication: TOTP, recovery codes, trusted device, step-up, sessions, security settings, password policy (B1–B6); break-glass (A10); setup links (A11) | **Q7 (dependencies) and Q5 (hash) must be answered first** | RFC 6238 test vectors pass; a replayed code is refused; the last Super Admin can be recovered from the command line |
-| **6a** | Sensitive fields (`ViewSensitive`) + reports per group (A3 partial, A4) | Q2 (sensitive-read auditing), Q4 | A `Read`-only holder never receives a sensitive field, in a response or a file |
-| **6b** | Export/print routes + audit; `ViewAuditLog`, security events, log export (C1) | Q1 (retention), Q4, Q8 (split confirmed) | Every export writes a row naming filters and count; the log cannot be mutated |
+| **5** | Authentication: TOTP (`crypto`, RFC 6238 vectors), `qrcode` enrolment, recovery codes, trusted device, step-up, sessions, `securitySettings` + migration, bcrypt 12 + transparent rehash, `MailPort`/`LogMailAdapter` (B1–B6); break-glass (A10); setup links (A11) | **⛔ Stop and ask about the mail provider if still undecided** — "continue with the log" is an acceptable answer | RFC 6238 vectors pass; a replayed code is refused; `siteSettings`' two fields are gone; the last Super Admin can be recovered from the command line |
+| **6a** | Sensitive fields (`ViewSensitive`, per resource) + `ViewReports` per group + `SensitiveRead` auditing debounced per (actor, record, minute) | Batch 2 | A `Read`-only holder never receives a sensitive field; reading one record ten times in a minute writes one row, and ten records write ten |
+| **6b** | Export/print routes behind the **group** grants + audit with filters and count; `ViewAuditLog`, security events, log export (C1); the annual-review audit entry | Batch 6a | An exporter without `ViewSensitive` on a resource gets a file without its sensitive columns; the log has no mutating path |
 | **7** | Profiles domain: indexes (F2), appointment closure (F4), person link (F5), `showPublicContact` (F6), CV sections (F7), public endpoints (F8), derived org chart (F10) | Batch 2 for `Update`; Batch 4 for F9's read path | No N+1 on the board, committees or org chart; a closed post stays readable |
-| **8** | Dashboard UI: login, 2FA enrolment, step-up dialog, sessions and devices, security settings, role matrix, audit views, pending-content panel, D1 + D2, single-Super-Admin warning, "no role" marker | Batches 2–7 | Keyboard and screen-reader paths verified; every visual decision outside the chapters marked **Pending Figma Back-Sync** with its chapter number |
+| **8** | Dashboard: the nine new screens **and every existing screen the new rules touch** — see the Batch 8 table below | Batches 2–7. **⛔ Read `docs/design-specs/auth/2026-09-26-authz-accounts/README.md` first; stop and ask if the design needs something the API cannot do** | Keyboard and screen-reader paths verified; every visual decision outside the chapters marked **Pending Figma Back-Sync** with its chapter number |
 | **9** | `/simplify` on session-changed files only; full suite once; the three explanation documents, each in the agreed nine-item format | all | Full suite green, recorded |
+
+### Batch 8 — existing screens that must change, and the rule each one carries
+
+Not only the new screens. Every one of these already exists and breaks a new rule
+until it is changed.
+
+| Screen / surface | Change | Rule it applies |
+|---|---|---|
+| Every screen with a "Delete" action | becomes **Archive**; **Restore** added; **Permanent delete** only when the resource is `purgeable` and the actor holds it, behind step-up and a typed confirmation | ADR-0103 A2 |
+| Every list with an export or print affordance | shown by the **group** grant, not per resource | ADR-0111 (Q4) |
+| Every form or detail view carrying a sensitive field | field hidden with a "بيانات محمية / Protected data" marker when `ViewSensitive` is absent | ADR-0111 |
+| Every screen reachable with `Read` and no `Update` | opens **read-only** with the "عرض فقط / View only" bar | spec §10.1 |
+| Editorial lists under the `own` scope | no edit or archive control on another author's record, and the reason shown rather than the row hidden | spec §2.4 |
+| **Users screen** | creation without a password (setup link); person link and unlink; **the whole screen becomes Super-Admin-only** | decision 4, ADR-0110, ADR-0115 |
+| **Approval-policies screen** (`policy-manager` and its parts) | **kept as it is** — groups, cards, approval mode, approver order, "apply to group". **Added on top:** the change lock with the pending-content list; approvers pickable only from holders of `Approve` on that type; a "lost the approval capability" marker; step-up on save and on apply-to-group; the policy change log. "Apply to group" **skips** types with reviews running | ADR-0106, ADR-0107 |
+| Approval-step editor | approvers from `Approve` holders only; the approve control absent for the content's own author; Super Admin override with a reason field | ADR-0106 |
+| Sidebar + dashboard home | driven by `GET /me/permissions`; statistics by `ViewReports` | spec §10.1 |
+| Users directory | "بدون رول / No role" marker | ADR-0113 |
+| Global | standing warning while fewer than two active Super Admins | ADR-0105 |
+| **Person screens + board-page admin** | built to `source/governance/` and `screens/08-*`, `09-*` in the design reference | ADR-0114, ADR-0117, ADR-0119 |
+
+**Committees dashboard screen stays out of scope** until its design is ready.
 
 ### Backlog — noticed, deliberately not built
 
-- **ADR-0028 §2 parental consent** for minors has no fields in any schema, and the chapter requires documented, withdrawable consent with immediate effect. Out of scope for this brief; a real compliance gap.
+- **⚠️ MANDATORY COMPLIANCE GAP — ADR-0028 §2 parental consent.** No consent fields exist in any schema, and the chapter requires documented, withdrawable consent taking effect immediately. **Owner decision 2026-09-26: this is a blocking precondition for publishing any athlete data publicly** — not a nice-to-have and not deferrable past that point. Out of scope for this work; it needs its own spec.
+- **argon2id** as a stronger password hash than bcrypt-12 (ADR-0110 D1). Needs a native dependency; not taken.
 - **ADR-0029's promised Chapter 21 section** on the authentication abstraction does not exist — Chapter 21 is frontend architecture. This spec is the interim record.
 - **`docs/design-system/00-MASTER-INDEX.md`** needs the 17 new ADRs added; a Batch 9 documentation task.
 - **WebAuthn / passkeys** as a stronger second factor than TOTP (ADR-0108 alternative A).

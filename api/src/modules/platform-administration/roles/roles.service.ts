@@ -91,6 +91,33 @@ export class RolesService {
     return resolved;
   }
 
+  /**
+   * The deduplicated union of what a set of roles grants — what assigning them
+   * would actually hand over.
+   *
+   * Thin over `resolvePermissions`, and named separately because the question is
+   * different: that one answers "what may this signed-in caller do", this one
+   * answers "what would this role give someone". Sharing the implementation is
+   * the point — a second traversal is a second place for the two answers to
+   * disagree, and ADR-0104's rule compares them directly.
+   */
+  async resolvePermissionsForRoles(roleIds: readonly string[]): Promise<RequiredPermission[]> {
+    return this.resolvePermissions(roleIds);
+  }
+
+  /**
+   * Whether this id names a seeded, RBAC-critical role.
+   *
+   * Reads through `findByIdIncludingArchived` for the same reason
+   * `assertEditable` does: the soft-delete scope turns an archived role into
+   * `null`, and a `null` here would read as "not a system role" — so an
+   * archived Super Admin role would become assignable.
+   */
+  async isSystemRole(roleId: string): Promise<boolean> {
+    const role = await this.repository.findByIdIncludingArchived(roleId);
+    return role?.isSystemRole === true;
+  }
+
   async findAll(): Promise<RoleDocument[]> {
     return this.repository.find();
   }

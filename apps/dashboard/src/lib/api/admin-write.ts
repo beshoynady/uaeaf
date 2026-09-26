@@ -45,6 +45,17 @@ export const WRITE_ERROR_CODES = [
   "systemRole",
   "ungrantablePermission",
   "selfAssignment",
+  /** ADR-0104 / ADR-0105. Three different situations for one administrator,
+   *  and as a plain `forbidden` all three read "you lack permission" — which
+   *  is wrong for every one of them. `ungrantableRole`: they may assign roles,
+   *  just not this one, and the body names the pairs they would be handing
+   *  over without holding. `targetStronger`: the request is fine and the
+   *  account being edited is more powerful than they are, so someone else has
+   *  to make the change. `lastSuperAdmin`: the change is legitimate and would
+   *  leave nobody able to sign in and undo it. */
+  "ungrantableRole",
+  "targetStronger",
+  "lastSuperAdmin",
   /** The submitted permission set is not a coherent role: it may change a
    *  resource it cannot read. Not an authorization failure — the actor may
    *  hold the missing read — so it is a 400, and the body names the exact
@@ -301,6 +312,9 @@ const FROM_API_CODE: Record<string, WriteErrorCode> = {
   systemRole: "systemRole",
   ungrantablePermission: "ungrantablePermission",
   selfAssignment: "selfAssignment",
+  ungrantableRole: "ungrantableRole",
+  targetStronger: "targetStronger",
+  lastSuperAdmin: "lastSuperAdmin",
   impliedReadMissing: "impliedReadMissing",
   // ADR-0069 D4/D5. Each prevents the task, so each carries its own words:
   // "nobody has configured this yet", "someone edited this while you were

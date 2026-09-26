@@ -10,13 +10,12 @@
 
 ---
 
-## 0. Conflicts with approved documentation — read first
+## 0. Conflicts with approved documentation — **resolved**
 
 CLAUDE.md §1 puts the approved Design System above a task brief, and §24 requires
-a conflict to be reported rather than guessed. Four were found. **None is a
-refusal**: each is a place where the brief and an approved chapter disagree, or
-where the brief's wording has a consequence worth stating before it is built.
-Decisions requested in §12.
+a conflict to be reported rather than guessed. Four were found and all four are
+now decided by the owner (2026-09-26). Each subsection records the conflict, then
+the decision taken. §13 carries the same decisions as a flat list.
 
 ### 0.1 Audit-log retention — brief vs Chapter 17 §3
 
@@ -27,10 +26,20 @@ Decisions requested in §12.
   periodic review."*
 
 These are not reconcilable as written. The chapter does not forbid long
-retention; it forbids *indefinite with no review*. **Proposal (§13 Q1):** retain
-without deletion, and record a named review cadence in the ADR so the retention
-period is "explicitly defined" as the chapter requires. This satisfies both and
-changes no behaviour.
+retention; it forbids *indefinite with no review*.
+
+**Decided (owner, 2026-09-26).** No deletion, ever, and **no deletion mechanism
+is built** — there is nothing to misuse. The retention period becomes "explicitly
+defined" through a named annual review, recorded in ADR-0028 and ADR-0112:
+
+| | |
+|---|---|
+| **Who reviews** | a Super Admin **and** the federation's data officer, together — neither alone |
+| **When** | annually |
+| **What the review records** | the period covered, the row count, which categories were examined, whether anything requires escalation, and the reviewers' names — written as an `auditLogs` entry of its own, so the review of the log lives in the log |
+| **What it may change** | nothing about the stored rows. The review is an examination, not a purge. |
+
+This satisfies the chapter without giving anyone the ability to remove a row.
 
 ### 0.2 Audit scope — Chapter 17 §7 demands more than the brief
 
@@ -41,10 +50,12 @@ changes no behaviour.
   NOT be considered sufficient."*
 
 So the approved chapter requires auditing **reads** of sensitive fields, not only
-exports. The brief is narrower than the standard it inherits. **This spec
-implements the chapter** (§6.3): a read that actually returns a sensitive field
-writes an audit row. Cost is real — it puts a write on sensitive read paths — and
-is quantified in §13 Q2, which offers a sampling alternative.
+exports. The brief is narrower than the standard it inherits.
+
+**Decided (owner, 2026-09-26): implement the chapter, not the brief.** Any
+response that actually returns a `Restricted` or `Sensitive/Minor` field writes a
+`SensitiveRead` row naming the record, **debounced once per (actor, record,
+minute)**. Exports keep their own row as the brief specifies. Detail in §6.3.
 
 ### 0.3 Security settings already have two homes — the brief proposes a third
 
@@ -56,18 +67,23 @@ is quantified in §13 Q2, which offers a sampling alternative.
 | `siteSettings.sessionTimeoutMinutes`, `siteSettings.maxLoginAttempts` | nullable, `[RESTRICTED]` | `site-settings.schema.ts:128-135`. The schema comment **already flags this overlap**: *"See the flagged overlap with `config/auth.config.ts` above."* |
 
 Brief B5 asks for a security-settings singleton holding the same two numbers.
-Built literally, one number would live in three places. **Proposal (§13 Q3):**
-the new `securitySettings` singleton becomes the **single** source, the two
-`siteSettings` fields are deprecated and migrated, and `auth.config.ts` keeps
-only the floor/ceiling bounds (which B5 requires to be backend-enforced and
-un-overridable). One home, one migration, no third copy.
+Built literally, one number would live in three places.
+
+**Decided (owner, 2026-09-26).** `securitySettings` is the **single** source. The
+two `siteSettings` fields are copied across by an idempotent migration and then
+**removed from the schema** — not left deprecated in place, which would be a third
+copy that merely looks retired. `auth.config.ts` keeps only the floor/ceiling
+bounds, which B5 requires to be backend-enforced and un-overridable.
 
 ### 0.4 Cross-tab session expiry is an approved requirement the brief omits
 
 **Chapter 17 §6:** *"Session expiration MUST be synchronized across all open
 browser tabs belonging to the same user session"*, consuming Chapter 8 L4 §FB.24.
-Brief B4/D2 does not mention it. It is in scope by inheritance and is specified
-in §7.4. Not a conflict — an addition.
+Brief B4/D2 does not mention it. It is in scope by inheritance.
+
+**Decided (owner, 2026-09-26).** Expiry **and sign-out** reach every open tab,
+via `BroadcastChannel` with a fallback on the `storage` event for contexts where
+the channel is unavailable. Detail in §7.4.
 
 ### 0.5 Two further documentation facts, for the record
 
@@ -130,9 +146,15 @@ each) are retired in favour of `PermanentDelete` and `ViewSensitive`.
 | `Publish` | put on the public site; also the on/off switch (ADR-0102 §D2) |
 | `Approve` | act on a review step for this resource |
 
-**Group verb:** `ViewReports`, held per product group.
+**Group verbs:** `ViewReports`, `Export` and `Print`, held per product group
+(owner decision, Q4 option 2 — see §2.6).
 **Administrative verbs:** `ManageRoles`, `AssignRoles`, `ViewAuditLog`,
 `ManageSecuritySettings`.
+
+**Five pairs are un-grantable** — reserved to the Super Admin and refused to
+every role (owner decision 4, §3.4): `users:Create`, `users:Update`,
+`users:AssignRoles`, `roles:ManageRoles`, `securitySettings:ManageSecuritySettings`.
+`auditLogs:ViewAuditLog` stays grantable by decision.
 
 ### 2.2 How the new verbs fit the existing pair shape — no guard rewrite
 
@@ -209,104 +231,130 @@ declared judgements, each traced to its rule.
 `purgeable` follows **Chapter 17 §3/§4 alone**: true where a PDPL erasure right
 or a §2 consent withdrawal can oblige destruction rather than archival — a data
 subject's own personal data, and uploaded media (a withdrawn image must actually
-go). Everything else false. Six resources are genuinely unclear and are asked in
-§13 Q6 rather than guessed, per the brief's stop-point rule.
+go). **Ten** resources, after the owner's Q6 decision added `contactMessages`
+(a citizen's own submission is plainly within an erasure right); `documents`,
+`governanceDocuments`, `memberships`, `partnerships` and `sponsors` stay
+archival-only until a case appears. The other 59 are false.
+
+**SA-only** marks the five pairs the owner has declared un-grantable
+(decision 4, §3.4): no role may hold them at all.
 
 Sensitive fields are the **existing** `[RESTRICTED]` / `[SENSITIVE-MINOR]`
 markers in the schemas, classified by Chapter 17 §1. Nothing is newly declared
 sensitive except where the brief names it (residency status).
 
-| # | Resource | Group | Read | Create | Update | Archive | Restore | PermDel | Export | Print | ViewSens | Publish | Approve | purgeable | Sensitive fields (Ch.17 §1) | Scopes |
-|--:|---|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|---|---|
-| 1 | `aboutFederationPage` | Governance | • |  | • | • | **+** |  |  |  |  | • | **+** | no | — | — |
-| 2 | `ageCategories` | Athletics | • | • | **+** | • | **+** |  | **+** | **+** |  |  |  | no | — | — |
-| 3 | `albums` | Media | • | • | • | • | **+** |  | **+** | **+** |  | • |  | no | — | own · all |
-| 4 | `albumsPage` | Media |  |  | • |  |  |  |  |  |  | • |  | no | — | — |
-| 5 | `articles` | Comms | • | • | • | • | **+** |  | **+** | **+** |  | • | **+** | no | — | own · all |
-| 6 | `athleteClubHistory` | People | • | • | • | • | **+** |  | **+** | **+** |  |  |  | no | — | — |
-| 7 | `athleteCoachHistory` | People | • | • | **+** | • | **+** |  | **+** | **+** |  |  |  | no | — | — |
-| 8 | `athleteGuardianRelationships` | People | • | • | **+** | • | **+** | **+** | **+** | **+** | **+** |  |  | yes | R guardianContact.{phone,email} | — |
-| 9 | `athleteNationalTeamHistory` | People | • | • | **+** | • | **+** |  | **+** | **+** |  |  |  | no | — | — |
-| 10 | `athleteProfiles` | People | • | • | **+** | • | **+** | **+** | **+** | **+** | **+** |  |  | yes | M restricted.{emiratesIdOrPassport,address,phone,email} | — |
-| 11 | `athletes` | People | • | • | **+** | • | **+** | **+** | • | **+** | **+** |  |  | yes | M dateOfBirth; R residencyType | — |
-| 12 | `athletesPage` | CMS |  |  | • |  |  |  |  |  |  | • |  | no | — | — |
-| 13 | `auditLogs` | Workflow | • |  |  |  |  |  | • | **+** |  |  |  | no | — | — |
-| 14 | `boardMembersPage` | Governance |  |  | • |  |  |  |  |  |  | • |  | no | — | — |
-| 15 | `clubTeams` | People | • | • | **+** | • | **+** |  | **+** | **+** |  |  |  | no | — | — |
-| 16 | `clubs` | People | • | • | **+** | • | **+** |  | • | **+** |  |  |  | no | — | — |
-| 17 | `clubsPage` | CMS |  |  | • |  |  |  |  |  |  | • |  | no | — | — |
-| 18 | `coachClubHistory` | People | • | • | • | • | **+** |  | **+** | **+** |  |  |  | no | — | — |
-| 19 | `coaches` | People | • | • | **+** | • | **+** | **+** | **+** | **+** |  |  |  | yes | — | — |
-| 20 | `coachesPage` | CMS |  |  | • |  |  |  |  |  |  | • |  | no | — | — |
-| 21 | `committees` | Governance | • | • | **+** | • | **+** |  | **+** | **+** |  | **+** | **+** | no | — | — |
-| 22 | `committeesPage` | Governance |  |  | • |  |  |  |  |  |  | • |  | no | — | — |
-| 23 | `contactMessages` | Comms | • |  | • | • | **+** | **?** | • | **+** | **+** |  |  | **unclear** | ? submitter contact | — |
-| 24 | `contactUsPage` | Governance |  |  | • |  |  |  |  |  |  | • |  | no | — | — |
-| 25 | `countries` | People | • | • | **+** | • | **+** |  | **+** | **+** |  |  |  | no | — | — |
-| 26 | `disciplines` | Athletics | • | • | **+** | • | **+** |  | **+** | **+** |  |  |  | no | — | — |
-| 27 | `disciplinesPage` | CMS |  |  | • |  |  |  |  |  |  | • |  | no | — | — |
-| 28 | `documents` | Documents | • | • | **+** | • | **+** | **?** | **+** | **+** |  | **+** | **+** | **unclear** | — | — |
-| 29 | `electionCycles` | Governance | • | • | **+** | • | **+** |  | **+** | **+** |  |  |  | no | — | — |
-| 30 | `federation` | Governance | • | • | **+** | • | **+** |  | **+** | **+** |  |  |  | no | — | — |
-| 31 | `federationAppointments` | Governance | • | • | **+** | • | **+** |  | **+** | **+** |  |  |  | no | — | — |
-| 32 | `federationPersonnel` | Governance | • | • | **+** | • | **+** | **+** | **+** | **+** | **+** |  |  | yes | R internalContact.{personalEmail,idNumber} | — |
-| 33 | `governanceDocuments` | Governance | • | • | **+** | • | **+** | **?** | **+** | **+** |  | **+** | **+** | **unclear** | — | — |
-| 34 | `heroSlides` | CMS | • | • | • | • | **+** |  | **+** | **+** |  |  |  | no | — | own · all |
-| 35 | `mediaAssets` | Media | • | • | **+** | • | **+** | **+** | **+** | **+** |  |  |  | yes | — | — |
-| 36 | `memberships` | Sponsorship | • | • | • | • | **+** | **?** | **+** | **+** |  |  |  | **unclear** | — | — |
-| 37 | `navigationItems` | CMS | • | • | • | • | **+** |  | **+** | **+** |  |  |  | no | — | — |
-| 38 | `navigationMenus` | CMS | • | • | **+** | • | **+** |  | **+** | **+** |  |  |  | no | — | — |
-| 39 | `newsPage` | CMS |  |  | • |  |  |  |  |  |  | • |  | no | — | — |
-| 40 | `notifications` | Workflow |  | • | **+** |  |  |  |  |  |  |  |  | no | — | — |
-| 41 | `officialAssignments` | People | • | • | **+** | • | **+** |  | **+** | **+** |  |  |  | no | — | — |
-| 42 | `officialClubHistory` | People | • | • | • | • | **+** |  | **+** | **+** |  |  |  | no | — | — |
-| 43 | `officialProfiles` | People | • | • | **+** | • | **+** | **+** | **+** | **+** |  |  |  | yes | — | — |
-| 44 | `officials` | People | • | • | **+** | • | **+** | **+** | **+** | **+** | **+** |  |  | yes | R residencyType | — |
-| 45 | `organizationalStructure` | Governance | • | • | • | • | **+** |  | **+** | **+** |  | **+** | **+** | no | — | — |
-| 46 | `pageSections` | CMS | • | • | • | • | **+** |  | **+** | **+** |  |  |  | no | — | — |
-| 47 | `pages` | CMS | • | • | **+** | • | **+** |  | **+** | **+** |  |  |  | no | — | — |
-| 48 | `partnerships` | Sponsorship | • | • | • | • | **+** | **?** | **+** | **+** |  |  |  | **unclear** | — | — |
-| 49 | `permissions` | Platform | • | • | **+** |  |  |  | **+** | **+** |  |  |  | no | — | — |
-| 50 | `presidentMessagePage` | Governance | • | • | • | • | **+** |  | **+** | **+** |  | • | **+** | no | — | — |
-| 51 | `publications` | Workflow | • |  |  |  |  |  |  |  |  | • |  | no | — | — |
-| 52 | `recordsPage` | CMS |  |  | • |  |  |  |  |  |  | • |  | no | — | — |
-| 53 | `resultsRankingsPage` | CMS |  |  | • |  |  |  |  |  |  | • |  | no | — | — |
-| 54 | `revisions` | Workflow | • | • | **+** |  |  |  | **+** | **+** |  |  |  | no | — | — |
-| 55 | `roles` | Platform | • | • | • | • | **+** |  | **+** | **+** |  |  |  | no | — | — |
-| 56 | `siteSettings` | CMS | • |  | • |  |  |  |  |  | **+** |  |  | no | R googleAnalyticsId, metaPixelId, isMaintenanceMode, systemEmailSender | — |
-| 57 | `sponsors` | Sponsorship | • | • | • | • | **+** | **?** | **+** | **+** |  |  |  | **unclear** | — | — |
-| 58 | `sponsorships` | Sponsorship | • | • | • | • | **+** |  | **+** | **+** |  |  |  | no | — | — |
-| 59 | `strategicPlansPage` | Governance | • | • | • | • | **+** |  | **+** | **+** |  | • | **+** | no | — | — |
-| 60 | `users` | Platform | • | • | • |  |  | **+** | • | **+** | **+** |  |  | yes | ? email | — |
-| 61 | `venues` | People | • | • | **+** | • | **+** |  | **+** | **+** |  |  |  | no | — | — |
-| 62 | `videos` | Media | • | • | • | • | **+** |  | **+** | **+** |  |  |  | no | — | own · all |
-| 63 | `videosPage` | Media |  |  | • |  |  |  |  |  |  | • |  | no | — | — |
-| 64 | `visionMissionPage` | Governance | • | • | • | • | **+** |  | **+** | **+** |  | • | **+** | no | — | — |
-| 65 | `workflowActionHistory` | Workflow | • |  |  |  |  |  |  |  |  |  |  | no | — | — |
-| 66 | `workflowDefinitions` | Workflow | • | • | **+** | • | **+** |  | **+** | **+** |  |  |  | no | — | — |
-| 67 | `workflowInstances` | Workflow | • | • | • |  |  |  | **+** | **+** |  |  | • | no | — | — |
-| 68 | `workflowPolicies` | Workflow | • | • | • |  |  |  | **+** | **+** |  |  |  | no | — | — |
-| 69 | `workflowSteps` | Workflow | • | • | **+** | • | **+** |  | **+** | **+** |  |  |  | no | — | — |
+| # | Resource | Group | Read | Create | Update | Archive | Restore | PermDel | ViewSens | Publish | Approve | purgeable | SA-only | Sensitive fields (Ch.17 §1) | Scopes |
+|--:|---|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|---|---|
+| 1 | `aboutFederationPage` | Governance | • |  | • | • | **+** |  |  | • | **+** | no | — | — | — |
+| 2 | `ageCategories` | Athletics | • | • | **+** | • | **+** |  |  |  |  | no | — | — | — |
+| 3 | `albums` | Media | • | • | • | • | **+** |  |  | • |  | no | — | — | own · all |
+| 4 | `albumsPage` | Media |  |  | • |  |  |  |  | • |  | no | — | — | — |
+| 5 | `articles` | Comms | • | • | • | • | **+** |  |  | • | **+** | no | — | — | own · all |
+| 6 | `athleteClubHistory` | People | • | • | • | • | **+** |  |  |  |  | no | — | — | — |
+| 7 | `athleteCoachHistory` | People | • | • | **+** | • | **+** |  |  |  |  | no | — | — | — |
+| 8 | `athleteGuardianRelationships` | People | • | • | **+** | • | **+** | **+** | **+** |  |  | yes | — | R guardianContact.{phone,email} | — |
+| 9 | `athleteNationalTeamHistory` | People | • | • | **+** | • | **+** |  |  |  |  | no | — | — | — |
+| 10 | `athleteProfiles` | People | • | • | **+** | • | **+** | **+** | **+** |  |  | yes | — | M restricted.{emiratesIdOrPassport,address,phone,email} | — |
+| 11 | `athletes` | People | • | • | **+** | • | **+** | **+** | **+** |  |  | yes | — | M dateOfBirth; R residencyType | — |
+| 12 | `athletesPage` | CMS |  |  | • |  |  |  |  | • |  | no | — | — | — |
+| 13 | `auditLogs` | Workflow | • |  |  |  |  |  |  |  |  | no | — | — | — |
+| 14 | `boardMembersPage` | Governance |  |  | • |  |  |  |  | • |  | no | — | — | — |
+| 15 | `clubTeams` | People | • | • | **+** | • | **+** |  |  |  |  | no | — | — | — |
+| 16 | `clubs` | People | • | • | **+** | • | **+** |  |  |  |  | no | — | — | — |
+| 17 | `clubsPage` | CMS |  |  | • |  |  |  |  | • |  | no | — | — | — |
+| 18 | `coachClubHistory` | People | • | • | • | • | **+** |  |  |  |  | no | — | — | — |
+| 19 | `coaches` | People | • | • | **+** | • | **+** | **+** |  |  |  | yes | — | — | — |
+| 20 | `coachesPage` | CMS |  |  | • |  |  |  |  | • |  | no | — | — | — |
+| 21 | `committees` | Governance | • | • | **+** | • | **+** |  |  | **+** | **+** | no | — | — | — |
+| 22 | `committeesPage` | Governance |  |  | • |  |  |  |  | • |  | no | — | — | — |
+| 23 | `contactMessages` | Comms | • |  | • | • | **+** | **+** | **+** |  |  | yes | — | ? submitter contact | — |
+| 24 | `contactUsPage` | Governance |  |  | • |  |  |  |  | • |  | no | — | — | — |
+| 25 | `countries` | People | • | • | **+** | • | **+** |  |  |  |  | no | — | — | — |
+| 26 | `disciplines` | Athletics | • | • | **+** | • | **+** |  |  |  |  | no | — | — | — |
+| 27 | `disciplinesPage` | CMS |  |  | • |  |  |  |  | • |  | no | — | — | — |
+| 28 | `documents` | Documents | • | • | **+** | • | **+** |  |  | **+** | **+** | no | — | — | — |
+| 29 | `electionCycles` | Governance | • | • | **+** | • | **+** |  |  |  |  | no | — | — | — |
+| 30 | `federation` | Governance | • | • | **+** | • | **+** |  |  |  |  | no | — | — | — |
+| 31 | `federationAppointments` | Governance | • | • | **+** | • | **+** |  |  |  |  | no | — | — | — |
+| 32 | `federationPersonnel` | Governance | • | • | **+** | • | **+** | **+** | **+** |  |  | yes | — | R internalContact.{personalEmail,idNumber} | — |
+| 33 | `governanceDocuments` | Governance | • | • | **+** | • | **+** |  |  | **+** | **+** | no | — | — | — |
+| 34 | `heroSlides` | CMS | • | • | • | • | **+** |  |  |  |  | no | — | — | own · all |
+| 35 | `mediaAssets` | Media | • | • | **+** | • | **+** | **+** |  |  |  | yes | — | — | — |
+| 36 | `memberships` | Sponsorship | • | • | • | • | **+** |  |  |  |  | no | — | — | — |
+| 37 | `navigationItems` | CMS | • | • | • | • | **+** |  |  |  |  | no | — | — | — |
+| 38 | `navigationMenus` | CMS | • | • | **+** | • | **+** |  |  |  |  | no | — | — | — |
+| 39 | `newsPage` | CMS |  |  | • |  |  |  |  | • |  | no | — | — | — |
+| 40 | `notifications` | Workflow |  | • | **+** |  |  |  |  |  |  | no | — | — | — |
+| 41 | `officialAssignments` | People | • | • | **+** | • | **+** |  |  |  |  | no | — | — | — |
+| 42 | `officialClubHistory` | People | • | • | • | • | **+** |  |  |  |  | no | — | — | — |
+| 43 | `officialProfiles` | People | • | • | **+** | • | **+** | **+** |  |  |  | yes | — | — | — |
+| 44 | `officials` | People | • | • | **+** | • | **+** | **+** | **+** |  |  | yes | — | R residencyType | — |
+| 45 | `organizationalStructure` | Governance | • | • | • | • | **+** |  |  | **+** | **+** | no | — | — | — |
+| 46 | `pageSections` | CMS | • | • | • | • | **+** |  |  |  |  | no | — | — | — |
+| 47 | `pages` | CMS | • | • | **+** | • | **+** |  |  |  |  | no | — | — | — |
+| 48 | `partnerships` | Sponsorship | • | • | • | • | **+** |  |  |  |  | no | — | — | — |
+| 49 | `permissions` | Platform | • | • | **+** |  |  |  |  |  |  | no | — | — | — |
+| 50 | `presidentMessagePage` | Governance | • | • | • | • | **+** |  |  | • | **+** | no | — | — | — |
+| 51 | `publications` | Workflow | • |  |  |  |  |  |  | • |  | no | — | — | — |
+| 52 | `recordsPage` | CMS |  |  | • |  |  |  |  | • |  | no | — | — | — |
+| 53 | `resultsRankingsPage` | CMS |  |  | • |  |  |  |  | • |  | no | — | — | — |
+| 54 | `revisions` | Workflow | • | • | **+** |  |  |  |  |  |  | no | — | — | — |
+| 55 | `roles` | Platform | • | • | • | • | **+** |  |  |  |  | no | **ManageRoles** | — | — |
+| 56 | `siteSettings` | CMS | • |  | • |  |  |  | **+** |  |  | no | — | R googleAnalyticsId, metaPixelId, isMaintenanceMode, systemEmailSender | — |
+| 57 | `sponsors` | Sponsorship | • | • | • | • | **+** |  |  |  |  | no | — | — | — |
+| 58 | `sponsorships` | Sponsorship | • | • | • | • | **+** |  |  |  |  | no | — | — | — |
+| 59 | `strategicPlansPage` | Governance | • | • | • | • | **+** |  |  | • | **+** | no | — | — | — |
+| 60 | `users` | Platform | • | • | • |  |  | **+** | **+** |  |  | yes | **Create, Update, AssignRoles** | ? email | — |
+| 61 | `venues` | People | • | • | **+** | • | **+** |  |  |  |  | no | — | — | — |
+| 62 | `videos` | Media | • | • | • | • | **+** |  |  |  |  | no | — | — | own · all |
+| 63 | `videosPage` | Media |  |  | • |  |  |  |  | • |  | no | — | — | — |
+| 64 | `visionMissionPage` | Governance | • | • | • | • | **+** |  |  | • | **+** | no | — | — | — |
+| 65 | `workflowActionHistory` | Workflow | • |  |  |  |  |  |  |  |  | no | — | — | — |
+| 66 | `workflowDefinitions` | Workflow | • | • | **+** | • | **+** |  |  |  |  | no | — | — | — |
+| 67 | `workflowInstances` | Workflow | • | • | • |  |  |  |  |  | • | no | — | — | — |
+| 68 | `workflowPolicies` | Workflow | • | • | • |  |  |  |  |  |  | no | — | — | — |
+| 69 | `workflowSteps` | Workflow | • | • | **+** | • | **+** |  |  |  |  | no | — | — | — |
 
-**Legend.** `•` the resource already declares this pair today · `**+**` new pair this map introduces · `**?**` unclear, listed as a question in §12.
+**Legend.** `•` the resource already declares this pair today · `**+**` new pair this map introduces · **SA-only** verbs are declared un-grantable (owner decision 4) — no role may hold them, the sync gives them to the Super Admin alone.
 
-**Totals.** 69 resources. New pairs introduced: Update **+30**, Export **+47**, Print **+52**, ViewSensitive **+8**, Publish **+4**, Approve **+9**, Restore **+47**. purgeable: 9 yes, 6 unclear, 54 no.
+**Totals.** 69 resources. New pairs introduced: Update **+30**, Restore **+47**, ViewSensitive **+8**, Publish **+4**, Approve **+9**, PermanentDelete **+10**. purgeable: 10 yes, 59 no. Un-grantable (Super Admin only): 5 pairs.
 
-### 2.6 Objection: the map's scale (brief §7 invites this)
+### The group table — `ViewReports`, `Export`, `Print`
 
-Applied as written, the map grows the catalogue from **215 pairs to ~412**. The
-two verbs that cause most of it are `Export` (+47) and `Print` (+52), already
-narrowed here to resources an operator both lists and creates — a blanket reading
-of A3 gave +107. Every one of those 99 pairs needs a route to exist, or the
+Ten group pseudo-resources join `PERMISSION_RESOURCES`, each carrying three verbs. **30 pairs total**, replacing the 99 per-resource `Export`/`Print` pairs (owner decision, Q4 option 2).
+
+| Group pseudo-resource | Covers the resources of | ViewReports | Export | Print |
+|---|---|:-:|:-:|:-:|
+| `governanceReports` | Governance (14) | **+** | **+** | **+** |
+| `peopleReports` | People (16) | **+** | **+** | **+** |
+| `athleticsReports` | Athletics (2) | **+** | **+** | **+** |
+| `mediaReports` | Media (5) | **+** | **+** | **+** |
+| `documentsReports` | Documents (1) | **+** | **+** | **+** |
+| `workflowReports` | Workflow (9) | **+** | **+** | **+** |
+| `platformReports` | Platform (3) | **+** | **+** | **+** |
+| `sponsorshipReports` | Sponsorship (4) | **+** | **+** | **+** |
+| `commsReports` | Comms (2) | **+** | **+** | **+** |
+| `cmsReports` | CMS (13) | **+** | **+** | **+** |
+
+An export or print request names the resource; the service checks the **group** pair for it, intersects the column allow-list with the actor’s `ViewSensitive` on that resource, and audits the call. So sensitive-field visibility stays per resource while the permission to extract is per group.
+
+### 2.6 The map's scale — resolved
+
+The objection raised in Batch 0 was that a per-resource reading of A3 grows the
+catalogue from **215 pairs to ~412**, with `Export` (+47) and `Print` (+52)
+causing half of it and each of those 99 pairs needing a route to exist or the
 catalogue test fails.
 
-For a platform of 10–20 roles, a 412-checkbox role screen is a worse instrument
-than the 215-checkbox one it replaces. The template matrix (§5) is the mitigation
-the brief already provides — an administrator starts from a template rather than
-the matrix. **A cheaper alternative is offered in §13 Q4** (group-level
-`Export`/`Print`, 10 pairs instead of 99). The recommendation is there; the
-decision is the owner's, and if A3 is reaffirmed as written it is built as
-written.
+**Decided (owner, 2026-09-26): Q4 option 2 — `Export` and `Print` are held per
+group.** Thirty pairs on the ten group pseudo-resources replace the ninety-nine.
+The catalogue lands at roughly **313 pairs**, and the role screen gains three
+group columns instead of two columns on every row.
+
+What did **not** change: `ViewSensitive` stays **per resource**, so an actor who
+may export from the media centre still cannot see a sensitive field of a resource
+they lack it on; the export's column allow-list is intersected with that
+per-resource visibility; and every export and print is audited. The permission to
+*extract* is coarse; the visibility of *what* is extracted stays fine-grained.
 
 ---
 
@@ -367,7 +415,53 @@ Today `assertEditable` already refuses rename/archive/re-permission
 a system role by anyone who is not already a Super Admin, closing the P0's
 shortest path.
 
-### 3.4 Super Admin protection (A9)
+### 3.4 Account administration is Super Admin only (owner decision 4)
+
+Creating, editing, suspending and role-assigning accounts, and managing roles
+themselves, are **exclusive to the Super Admin**, exactly like
+`ManageSecuritySettings`. Five pairs are declared **un-grantable** in the
+capability map:
+
+`users:Create` · `users:Update` · `users:AssignRoles` · `roles:ManageRoles` ·
+`securitySettings:ManageSecuritySettings`
+
+**Enforcement, three layers:**
+
+1. **The map** marks them `superAdminOnly: true`, and `PERMISSION_CATALOGUE`
+   carries them so the guard still resolves them normally for the Super Admin.
+2. **The API refuses** any role that asks for them — on role creation and on
+   permission update, before the superset check, with `code: 'ungrantableCapability'`.
+   A permission row for them exists (the Super Admin holds it); what is refused
+   is putting it on any other role.
+3. **`sync-permission-catalogue.ts`** grants them to the Super Admin alone, which
+   it already does for every pair — no special case is added.
+
+The role screen draws them locked, with the reason, rather than hiding them: an
+administrator looking for "who can create accounts" must find the answer, not an
+absence.
+
+**Why.** The superset rule (§3.1) and the stronger-user rule (§3.2) together mean
+a delegated account administrator could assign almost nothing — they may only
+hand out roles whose every capability they already hold, so a non-Super-Admin
+holding `AssignRoles` would be able to grant roles weaker than themselves and
+nothing else. The capability looked useful and was nearly inert. Operationally
+NoTime creates the accounts. Making that explicit is more honest than a grant
+that quietly refuses most of what its name promises.
+
+**`ViewAuditLog` is deliberately NOT on this list** — it is grantable by decision,
+so the federation can give an auditor read access without making them a Super Admin.
+
+**What this does not relax.** §3.1 and §3.2 stay in the code, with their tests.
+They are no longer the only thing standing between `users:Create` and Super
+Admin, but "defence that is currently unreachable" is exactly the defence that
+matters when a later change makes it reachable again. Additionally: **nobody,
+including a Super Admin, may change the roles on their own account** — the
+existing self-assignment refusal is kept for that reason.
+
+**Consequence for the templates:** the "Staff Administrator" template is removed.
+Six templates remain (§5).
+
+### 3.5 Super Admin protection (A9)
 
 - The role: not deletable, archivable, renamable, or manually re-permissioned.
 - **The last active Super Admin**: their account cannot be suspended or
@@ -380,7 +474,7 @@ shortest path.
   what a concurrent demotion defeats.
 - The dashboard shows a standing warning while the count is `< 2`.
 
-### 3.5 Break-glass (A10)
+### 3.6 Break-glass (A10)
 
 `npm run recover:super-admin` — a server command, never a route or a screen.
 
@@ -392,7 +486,7 @@ password**; revokes all that account's sessions; writes an audit row with
 other Super Admins. Separate file from `bootstrap/seed-admin.ts`, whose behaviour
 is unchanged (brief §8).
 
-### 3.6 Account creation never knows the password (A11)
+### 3.7 Account creation never knows the password (A11)
 
 `POST /users` **drops `password`**. A new account gets a setup token: 32 random
 bytes, stored as a SHA-256 hash, single use, 72-hour expiry, consumed by
@@ -441,29 +535,40 @@ Today `Approve` exists on one resource and scoping comes only from `assigneeIds`
 
 ---
 
-## 5. Role templates (E2) — the seven
+## 5. Role templates (E2) — the six
 
 Seeded once, idempotent, as **ordinary** roles (`isSystemRole: false`) that an
 administrator may edit, copy or delete. Re-running never overwrites an edit
 (`$setOnInsert` on everything but the name key, the `seedPermissions` precedent).
 `PermanentDelete` appears in **no** template.
 
+**There is no account-administration template.** Owner decision 4 (§3.4) reserves
+`users:Create`, `users:Update`, `AssignRoles` and `ManageRoles` to the Super
+Admin, so the "Staff Administrator" template proposed in Batch 0 has been removed.
+
+`E` and `P` are now **group** grants (§2.6), so they appear as a group name rather
+than beside a resource.
+
 `R`=Read `C`=Create `U`=Update `A`=Archive `Rs`=Restore `E`=Export `P`=Print
 `VS`=ViewSensitive `Pb`=Publish `Ap`=Approve `VR`=ViewReports
 
 | # | Template | Groups it reaches | Capabilities | Scope | Deliberately absent |
 |---|---|---|---|---|---|
-| 1 | **مسؤول المحتوى**<br>Content Manager | Comms, Media, CMS | `R C U A Rs E P` on `articles`, `albums`, `videos`, `heroSlides`, `mediaAssets`, the CMS page resources; `VR` on Comms + Media | `all` | `Pb` · `Ap` · `VS` · `PermanentDelete` |
-| 2 | **محرر**<br>Editor | Comms, Media | `R C U A` on `articles`, `albums`, `videos` | **`own`** | `Pb` · `Ap` · `Rs` · `E` · `VS` — and `own` already bars editing a published record |
-| 3 | **مراجع ومعتمد**<br>Reviewer & Approver | Comms, Governance, Documents, Workflow | `R` on the 9 reviewable types; `Ap` on them; `R` on `workflowInstances`, `revisions`, `workflowActionHistory` | — | every `C`/`U`/`A` on content — this is what makes it a reviewer and not an editor · `Pb` |
-| 4 | **مسؤول البيانات الرياضية**<br>Sports Data Officer | People, Athletics | `R C U A Rs E P` on `athletes`, `athleteProfiles`, `coaches`, `officials`, `officialProfiles`, `clubs`, `clubTeams`, `disciplines`, `ageCategories`, `venues`, `countries`, the history resources; **`VS` on `athletes` + `athleteProfiles` + `athleteGuardianRelationships`**; `VR` on People + Athletics | `all` | `Pb` · `Ap` · `PermanentDelete` |
-| 5 | **مسؤول الحوكمة**<br>Governance Officer | Governance, Documents | `R C U A Rs E P` on `committees`, `federationPersonnel`, `federationAppointments`, `electionCycles`, `governanceDocuments`, `documents`, the governance pages; `Pb` on those; **`VS` on `federationPersonnel`**; `VR` on Governance | `all` | **`PermanentDelete`** (brief: explicitly) · `Ap` |
-| 6 | **مسؤول موظفي الاتحاد**<br>Staff Administrator | Platform | `users:R C U E`, **`users:AssignRoles`**, `roles:R`, `federationPersonnel:R` | — | **`roles:ManageRoles`** (brief: explicitly) — so they hand out existing roles and cannot invent one. Under §3.1 they still cannot assign a role exceeding their own set, which is what makes this template safe at all |
-| 7 | **مشاهد الإدارة العليا**<br>Executive Viewer | all ten | `VR` on all ten groups; `R` on nothing by default | — | every write · `E` · `P` · `VS` — aggregate numbers only (A4) |
+| 1 | **مسؤول المحتوى**<br>Content Manager | Comms, Media, CMS | `R C U A Rs` on `articles`, `albums`, `videos`, `heroSlides`, `mediaAssets`, the CMS page resources; `VR E P` on `commsReports` + `mediaReports` + `cmsReports` | `all` | `Pb` · `Ap` · `VS` · `PermanentDelete` |
+| 2 | **محرر**<br>Editor | Comms, Media | `R C U A` on `articles`, `albums`, `videos` | **`own`** | `Pb` · `Ap` · `Rs` · every group grant · `VS` — and `own` already bars editing a published record |
+| 3 | **مراجع ومعتمد**<br>Reviewer & Approver | Comms, Governance, Documents, Workflow | `R` on the 9 reviewable types; `Ap` on them; `R` on `workflowInstances`, `revisions`, `workflowActionHistory` | — | every `C`/`U`/`A` on content — this is what makes it a reviewer and not an editor · `Pb` · every group grant |
+| 4 | **مسؤول البيانات الرياضية**<br>Sports Data Officer | People, Athletics | `R C U A Rs` on `athletes`, `athleteProfiles`, `coaches`, `officials`, `officialProfiles`, `clubs`, `clubTeams`, `disciplines`, `ageCategories`, `venues`, `countries`, the history resources; **`VS` on `athletes` + `athleteProfiles` + `athleteGuardianRelationships`**; `VR E P` on `peopleReports` + `athleticsReports` | `all` | `Pb` · `Ap` · `PermanentDelete` |
+| 5 | **مسؤول الحوكمة**<br>Governance Officer | Governance, Documents | `R C U A Rs` on `committees`, `federationPersonnel`, `federationAppointments`, `electionCycles`, `governanceDocuments`, `documents`, the governance pages; `Pb` on those; **`VS` on `federationPersonnel`**; `VR E P` on `governanceReports` + `documentsReports` | `all` | **`PermanentDelete`** (brief: explicitly) · `Ap` |
+| 6 | **مشاهد الإدارة العليا**<br>Executive Viewer | all ten | `VR` on all ten group resources; `R` on nothing by default | — | every write · `E` · `P` · `VS` — aggregate numbers only (A4) |
 
-**Template 6 is the P0's blast radius made visible.** Before §3.1 it is
-equivalent to Super Admin. After it, it is what its name says. It is seeded only
-in Batch 3, which lands after the Batch 1 fix.
+**Template 6 holds `ViewReports` without `Export`.** A board member sees the
+federation's numbers and cannot pull them into a file — which is the distinction
+A4 draws, and the reason `Export` is a separate verb rather than something `Read`
+implies.
+
+**Template 4 is the only one holding `ViewSensitive`,** and only on the three
+athlete resources. Every other template sees a person's record with the
+`Restricted` and `Sensitive/Minor` fields absent.
 
 ---
 
@@ -485,11 +590,22 @@ the actor holds `<resource>:ViewSensitive`. Applied in both directions:
 - `toPublicResponse` allow-lists are untouched (brief §8) — public responses
   never had these fields.
 
-### 6.2 Export and print audit (A3)
+### 6.2 Export and print — a group grant, a per-resource file (A3, Q4 option 2)
 
-Every export and print writes one audit row carrying actor, timestamp, resource,
-**the filters applied**, and the record count. A new audit action `Export` joins
-`AUDIT_ACTIONS`, and per §0.2 a new `SensitiveRead` action joins it too.
+The **permission** is per group: `<group>Reports:Export` and `:Print`. The
+**file** is still per resource and still filtered per actor:
+
+1. The request names a resource. The service resolves its group from the
+   capability map and checks the group pair.
+2. The column allow-list for that resource is intersected with the actor's
+   `ViewSensitive` **on that resource** — so an actor with `mediaReports:Export`
+   and no `ViewSensitive` on `athletes` exports athletes without the sensitive
+   columns, never with them.
+3. One audit row: actor, timestamp, resource, **the filters applied**, and the
+   record count.
+
+A new audit action `Export` joins `AUDIT_ACTIONS`, and per §0.2 a new
+`SensitiveRead` joins it too.
 
 ### 6.3 Sensitive reads (Chapter 17 §7)
 
@@ -497,15 +613,22 @@ A read that actually returns at least one sensitive field writes a
 `SensitiveRead` row naming the record. Debounced per (actor, record, minute) so
 opening one record ten times in a minute is one row, not ten — a defensible
 reading of "which specific record was accessed" that does not turn a list screen
-into a thousand writes. Cost and the alternative are in §13 Q2.
+into a thousand writes.
+
+**Decided (owner, Q2 option 1).** The debounce key is (actor, record, minute) —
+not (actor, resource, minute), which would collapse a hundred distinct records
+read in one minute into one row and lose the "which specific record" the chapter
+requires.
 
 ### 6.4 Reports (A4)
 
 - Aggregate counts per group behind `<group>Reports:ViewReports` alone.
 - Drilling into records inside a report additionally requires `Read` on the
   resource; sensitive columns additionally require `ViewSensitive`.
-- Exporting a report is `Export` on the underlying resource, and is audited.
+- Exporting a report is `<group>Reports:Export`, and is audited.
 - The dashboard home shows only the groups the actor may report on.
+- `ViewReports` **never** implies `Export`: template 6 holds the first and not
+  the second, deliberately.
 
 ---
 
@@ -528,6 +651,17 @@ authenticator app supports.
 
 Kept behind ADR-0029's abstraction: an `MfaProvider` interface with one TOTP
 implementation, so adding UAE PASS later does not restructure the flow.
+
+**Dependencies (owner decision, Q7).** The TOTP algorithm itself uses Node's
+built-in `crypto` — no package — and is tested against RFC 6238's published
+vectors. **`qrcode` is approved** for rendering the enrolment QR; the version and
+the reason are recorded in ADR-0108.
+
+**Mail (owner decision, Q7).** No provider is chosen yet, so delivery goes behind
+a port: a `MailPort` interface with one `LogMailAdapter` that writes the setup
+link to a dedicated admin-only log and **nothing else** — no secrets, no codes,
+no tokens beyond the link itself. The real provider is chosen before Batch 5 and
+arrives as a second adapter with nothing else changing.
 
 ### 7.2 Trusted device (B2)
 
@@ -609,11 +743,12 @@ list committed to the repo (no network call, ever), and any password containing
 the account's name or email local-part. Forced change only on suspected
 compromise or first sign-in.
 
-**Current hash:** `bcryptjs@3.0.3` at **10 rounds** (`users.service.ts:38`).
-bcrypt is an acceptable NIST verifier. 10 rounds is below the 12 commonly
-recommended in 2026. Raising it is a one-line change plus transparent rehash on
-next successful login. Offered as §13 Q5 — **not changed without approval**
-(brief §7).
+**Hash: `bcryptjs@3.0.3` at 12 rounds** (owner decision, Q5 — raised from the
+current 10 at `users.service.ts:38`). Existing hashes stay valid and are
+**rehashed transparently on the next successful login**: verify against the
+stored hash, and when its cost factor is below the current one, re-hash the
+plaintext already in hand and store it. No forced reset, no user-visible step,
+and no migration script — the rehash happens as people sign in.
 
 ---
 
@@ -669,7 +804,8 @@ Exporting the log is itself audited. Retention per §0.1 / §13 Q1.
 | `federationPersonnel` | **+ five CV arrays** (F7) · **+ `slug`** unique partial · **+ `showPublicContact` default `false`** (F6) · **+ index `{status}`** (F2) |
 | `federationAppointments` | **+ indexes** `{personId,status}`, `{committeeId,status}`, `{electionCycleId}`, `{roleType,status}` (F2) |
 | `workflowSteps` | (no shape change; `blockedAssignees` is computed, not stored) |
-| `siteSettings` | `sessionTimeoutMinutes`, `maxLoginAttempts` deprecated → `securitySettings` (§0.3) |
+| `siteSettings` | `sessionTimeoutMinutes` and `maxLoginAttempts` **removed** after migration into `securitySettings` (§0.3, Q3) — not left deprecated in place |
+| `permissions` | **+ `superAdminOnly: boolean`** (decision 4, §3.4) — the five un-grantable pairs |
 | `auditLogs` | `AUDIT_ACTIONS` **+ `Export`, `SensitiveRead`** |
 | `PUBLICATION_ENTITY_TYPES` | **+ `federationPersonnel`** (F9) — which forces a `PUBLISH_REQUIREMENTS` row by compile error, the mechanical gate noted in the roles review |
 
@@ -744,8 +880,8 @@ it.
 | GET/DELETE | `/auth/devices` · `/devices/:id` | self | — | | |
 | GET/DELETE | `/auth/sessions` · `/sessions/:id` | self | — | | |
 | GET | `/me/permissions` | authenticated | — | | |
-| POST | `/users` | `users:Create` + §3.1 | — | ✔ | |
-| PATCH | `/users/:id/roles` | `users:AssignRoles` + §3.1 + §3.2 | — | ✔ | |
+| POST | `/users` | `users:Create` **(SA only)** + §3.1 | — | ✔ | |
+| PATCH | `/users/:id/roles` | `users:AssignRoles` **(SA only)** + §3.1 + §3.2 | — | ✔ | |
 | PATCH | `/users/:id/status` | `users:Update` + §3.2 + §3.4 | — | | |
 | PATCH | `/users/:id/person` | `users:Update` + §3.2 | — | | |
 | POST | `/users/:id/mfa/reset` · `/setup-link` | `users:Update` + §3.2 | — | ✔ | |
@@ -757,7 +893,7 @@ it.
 | PATCH | `/<resource>/:id` | `<r>:Update` | own·all | | |
 | POST | `/<resource>/:id/restore` | `<r>:Restore` | — | | |
 | DELETE | `/<resource>/:id/permanent` | `<r>:PermanentDelete` | — | ✔ | |
-| GET | `/<resource>/export` · `/print` | `<r>:Export` · `:Print` | — | ✔ if sensitive | |
+| GET | `/<resource>/export` · `/print` | `<group>Reports:Export` · `:Print` (Q4) | — | ✔ if sensitive | |
 | GET | `/reports/<group>` | `<group>Reports:ViewReports` | — | | |
 | PUT | `/workflow-policies/:entityType/approval` | `workflowPolicies:Update` | — | ✔ | |
 | PATCH | `/federation-appointments/:id/close` | `federationAppointments:Update` | — | | |
@@ -788,69 +924,38 @@ administrator something to assign.
 
 ---
 
-## 13. Questions needing the owner's decision
+## 13. Decisions taken (owner, 2026-09-26)
 
-**Q1 — Audit retention vs Chapter 17 §3 (§0.1).**
-1. Retain without deletion, and name a review cadence in the ADR (annual review
-   recorded, nothing deleted). Cost: ~0. **Recommended** — satisfies the chapter's
-   "explicitly defined" requirement and the brief's "never delete" intent at once.
-2. Retain indefinitely with no review clause. Cost: 0, but knowingly contradicts an
-   Accepted ADR backed by the PDPL.
-3. Define a finite period with archival to cold storage. Cost: 2-3 days, and it
-   creates a second store to secure.
+Batch 0 raised four conflicts and eight questions. All are decided. The table is
+the record; each row's detail lives in the section named.
 
-**Q2 — Sensitive-read auditing (§0.2, Chapter 17 §7).**
-1. Audit every read that returns a sensitive field, debounced per actor/record/minute.
-   Cost: ~1 day, plus one write on sensitive read paths. **Recommended** — it is what
-   the approved chapter requires, and the debounce keeps the cost bounded.
-2. Audit only exports (the brief as written). Cost: 0, but narrower than Chapter 17 §7.
-3. Audit reads without debounce. Cost: same build, materially higher write volume on
-   list screens.
-
-**Q3 — Where the security numbers live (§0.3).**
-1. New `securitySettings` is the single home; migrate and deprecate the two
-   `siteSettings` fields; `auth.config.ts` keeps only bounds. Cost: ~0.5 day including
-   the migration. **Recommended** — it removes a duplication the schema comment has
-   already been flagging.
-2. Extend `siteSettings` instead of a new singleton. Cost: ~0.25 day. Mixes
-   security policy into public site settings, whose screen has a different audience.
-3. Build the new singleton and leave `siteSettings` as-is. Cost: 0 now. Three homes
-   for one number; the next reader cannot tell which wins.
-
-**Q4 — `Export`/`Print` granularity (§2.6).**
-1. Per resource as A3 states: +99 pairs, catalogue 215 → ~412, and 99 routes.
-   Cost: ~4-5 days of the plan's Batch 6.
-2. **Per group**: `<group>Reports:Export` / `:Print`, 20 pairs, one export service
-   dispatching by resource. Cost: ~1.5 days. **Recommended** — an administrator
-   grants "may export from the media centre", which is how the permission is
-   actually reasoned about, and the role screen stays readable.
-3. One platform-wide `Export` and `Print`. Cost: ~0.5 day. Too coarse: it cannot
-   express "may export athletes but not users".
-
-**Q5 — bcrypt cost factor (§7.6).**
-1. Raise 10 → 12 with transparent rehash on next login. Cost: ~2 h. **Recommended** —
-   current hardware makes 10 cheap to attack offline, and the rehash is invisible.
-2. Leave at 10. Cost: 0. Acceptable under NIST, weaker than current practice.
-3. Move to argon2id. Cost: ~0.5 day **plus a new native dependency** — needs Q7.
-
-**Q6 — Six resources whose `purgeable` status is genuinely unclear** (brief
-stop-point: collected, not guessed). For each: may a row ever be destroyed rather
-than archived?
-`contactMessages` (citizen personal data, but also the record of a request) ·
-`documents` · `governanceDocuments` (may embed personal data) · `memberships` ·
-`partnerships` · `sponsors` (organizational, not personal — PDPL may not reach them).
-Recommendation: `contactMessages` **yes** (PDPL erasure plainly applies to a
-citizen's own submission), the other five **no** until a case appears.
-
-**Q7 — Dependencies (brief §7 — nothing added without approval).**
-
-| Need | Option A | Option B | Recommendation |
+| # | Question | Decision | Detail |
 |---|---|---|---|
-| TOTP | Node's built-in `crypto` — HMAC-SHA1 + base32; ~80 lines, no dependency, fully testable against RFC 6238 vectors | `otplib` (~250 kB, actively maintained) | **A.** The algorithm is small and the RFC publishes test vectors, so correctness is provable without trusting a package. |
-| QR | Return the `otpauth://` URI and render the QR **client-side** in the dashboard with an existing-stack `<canvas>` implementation | `qrcode` (~400 kB) | **A**, with the caveat that it needs ~120 lines of QR encoding. If that is unwelcome, `qrcode` is a small, stable package and B is reasonable. |
-| Email | **None exists in the repo** (`nodemailer`/SES/SendGrid: zero hits) | — | Until a provider is chosen, setup links and break-glass notices are **printed to the command's output / admin log only**, per the brief. A provider is a separate decision. |
+| **Q1** | Audit-log retention vs Chapter 17 §3 | **Option 1.** No deletion and **no deletion mechanism built**. An annual review by a Super Admin **together with** the federation's data officer, recorded as an `auditLogs` row of its own. | §0.1, ADR-0028, ADR-0112 |
+| **Q2** | Sensitive-read auditing | **Option 1.** Implement Chapter 17 §7, not the narrower A3. Debounced once per **(actor, record, minute)**. | §0.2, §6.3, ADR-0111 |
+| **Q3** | Where the security numbers live | **Option 1.** `securitySettings` is the single source. The two `siteSettings` fields are migrated and then **removed from the schema**. `auth.config.ts` keeps only the bounds. | §0.3, §7.5, ADR-0109 |
+| **Q4** | `Export`/`Print` granularity | **Option 2 — per group.** 30 pairs on the ten group pseudo-resources, not 99 per-resource. `ViewSensitive` stays per resource and still filters the file. | §2.6, §6.2, ADR-0111 |
+| **Q5** | bcrypt cost factor | **Yes, 10 → 12**, with transparent rehash on next successful login. | §7.6, ADR-0110 |
+| **Q6** | The six unclear `purgeable` resources | `contactMessages` **yes**; `documents`, `governanceDocuments`, `memberships`, `partnerships`, `sponsors` **no**. | §2.5, ADR-0103 |
+| **Q7** | Dependencies | TOTP with built-in `crypto`, tested against RFC 6238 vectors. **`qrcode` approved.** Mail behind a `MailPort` with a `LogMailAdapter` until a provider is chosen. | §7.1, ADR-0108 |
+| **Q8** | Batch 6's size | **Split into 6a and 6b.** | plan roadmap |
 
-**Q8 — Batch 6's size.** With Q2=1 and Q4=1, Batch 6 is roughly 6-7 days on its
-own. If Q4=2 it is ~3. Should Batch 6 be split into 6a (sensitive fields +
-reports) and 6b (export/print + audit-log screens) so each lands reviewable?
-Recommendation: **yes**, split — a batch that large is hard to review in one pass.
+### 13.1 Decision 4 — account administration is Super Admin only
+
+Raised by the owner after Batch 0, not by a question in it. Five pairs become
+un-grantable, the "Staff Administrator" template is removed, and the templates go
+from seven to six. The superset and stronger-user rules stay in the code with
+their tests. Full reasoning in **§3.4**; recorded in **ADR-0104**.
+
+### 13.2 What is still open
+
+| Item | Needed by | Owner note |
+|---|---|---|
+| **Mail provider** — SMTP on `uaeaf.ae`, or a hosted service | **before Batch 5** | Until then `LogMailAdapter`. The plan stops and asks at Batch 5 if still undecided; "continue with the log" is an acceptable answer. |
+| **Parental consent for minors** (ADR-0028 §2) | before any athlete data is published publicly | Marked a **mandatory compliance gap** in the backlog. Not built in this work. |
+| **Committees dashboard screen** | — | Out of scope until its design is ready. |
+
+### 13.3 New conflicts found after Batch 0
+
+None yet. Any found while implementing is recorded here in §0's format and asked
+before it is resolved — never guessed (brief §7).

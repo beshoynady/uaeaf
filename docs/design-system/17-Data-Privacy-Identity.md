@@ -93,6 +93,32 @@ Internal archival for legitimate legal or audit purposes **MAY** be permitted wh
 
 However, public visibility **MUST** cease immediately upon a verified and valid deletion request where deletion rights apply.
 
+### 3a. Audit-log retention — amendment, owner decision 2026-09-26
+
+Added by owner decision alongside ADR-0112, to satisfy §3's requirement that
+every data category have an **explicitly defined** retention period. It defines
+that period for `auditLogs` and for nothing else.
+
+The audit log is retained **without deletion**, and **no deletion mechanism is
+built** — there is no route, no script and no repository method that can remove a
+row, so there is nothing to misuse or to get wrong. `AuditLogsRepository` remains
+append-only.
+
+The period is made explicit by a **named annual review** rather than by an expiry:
+
+| | |
+| --- | --- |
+| **Who** | a Super Admin **and** the Federation's data officer, together. Neither alone. |
+| **Frequency** | annually. |
+| **What is examined** | the period covered, the row count, which data categories appear, and whether anything requires escalation under §4. |
+| **What is recorded** | an `auditLogs` entry of its own naming the reviewers, the date, the period covered and the outcome — so the review of the log lives inside the log. |
+| **What it may change** | nothing about the stored rows. The review is an examination, not a purge. |
+
+This is deliberately narrower than a retention **limit**: §3 forbids indefinite
+retention *as a default without periodic review*, and the review is what this
+supplies. An audit trail that can be shortened is an audit trail that can be
+shortened by whoever needs it shortened.
+
 ## 4. Data Subject Rights — PDPL
 
 The platform **MUST** provide a mechanism for each applicable fundamental right under the PDPL, including:

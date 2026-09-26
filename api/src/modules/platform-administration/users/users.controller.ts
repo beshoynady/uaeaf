@@ -25,10 +25,16 @@ export class UsersController {
   // was just created in-memory (create() below), so the allowlist mapping
   // is applied everywhere a User ever leaves this controller.
 
+  /** The actor is passed through so `UsersService` can refuse a role that
+   *  grants more than the caller holds (ADR-0104 rule 1). `users:Create` alone
+   *  was a complete path to Super Admin until that rule reached this route. */
   @Post()
   @RequirePermission('users', 'Create')
-  async create(@Body() dto: CreateUserDto): Promise<UserResponseDto> {
-    const user = await this.usersService.create(dto);
+  async create(
+    @Body() dto: CreateUserDto,
+    @CurrentUser() actor: AuthenticatedUser,
+  ): Promise<UserResponseDto> {
+    const user = await this.usersService.create(dto, actor);
     return this.usersService.toResponse(user);
   }
 
@@ -124,6 +130,7 @@ export class UsersController {
     const updated = await this.usersService.assignRoles(
       id,
       dto.roleIds.map((roleId) => new Types.ObjectId(roleId)),
+      actor,
     );
     return this.usersService.toResponse(updated);
   }

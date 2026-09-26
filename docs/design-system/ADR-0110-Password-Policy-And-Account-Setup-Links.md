@@ -15,17 +15,20 @@
 
 ---
 
-## D1 — The current hash, and why it is not changed here
+## D1 — The hash: bcrypt at 12 rounds, rehashed as people sign in
 
-`bcryptjs@3.0.3` at **10 rounds** (`users.service.ts:38`). bcrypt is an acceptable
-NIST verifier, so nothing is broken. Ten rounds is below the twelve commonly
-recommended in 2026.
+`bcryptjs@3.0.3`, raised from **10 to 12 rounds** by owner decision 2026-09-26
+(Q5). bcrypt remains an acceptable NIST verifier; ten rounds was below the twelve
+commonly recommended in 2026.
 
-Raising it is one constant plus a transparent rehash on the next successful login.
-Moving to argon2id would be stronger still and needs a new native dependency. The
-brief requires dependency and hash changes to be presented rather than taken, so
-both are offered as questions in the spec and **neither is implemented by this
-ADR**.
+Existing hashes are not invalidated and nobody is forced to reset. On a successful
+login the stored hash's cost factor is read, and when it is below the current one
+the plaintext — already in hand, having just been verified — is re-hashed at the
+new cost and stored. The upgrade happens as people sign in, needs no migration
+script, and is invisible.
+
+argon2id would be stronger still and needs a new native dependency; it was not
+taken, and is left in the backlog rather than pursued here.
 
 ## D2 — Why a collection rather than two fields
 

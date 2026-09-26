@@ -40,6 +40,15 @@ describe('UsersService — lifecycle', () => {
       ...over,
     }) as never;
 
+  /** ADR-0104 rule 1 needs the acting caller. These specs are about other
+   *  behaviour, so the role being assigned resolves to no grants at all and the
+   *  superset check passes on an empty list. */
+  const actor = {
+    userId: new Types.ObjectId().toString(),
+    roleIds: [],
+    permissions: [],
+  } as never;
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -48,7 +57,14 @@ describe('UsersService — lifecycle', () => {
           provide: UsersRepository,
           useValue: { create: jest.fn(), findByEmail: jest.fn(), updateById: jest.fn() },
         },
-        { provide: RolesService, useValue: { assertAssignable: jest.fn() } },
+        {
+          provide: RolesService,
+          useValue: {
+            assertAssignable: jest.fn(),
+            resolvePermissionsForRoles: jest.fn(),
+            isSystemRole: jest.fn(),
+          },
+        },
         { provide: AuthSessionsService, useValue: { revokeAllForUser: jest.fn() } },
         { provide: FederationPersonnelsService, useValue: { findById: jest.fn() } },
       ],
@@ -57,6 +73,8 @@ describe('UsersService — lifecycle', () => {
     service = module.get(UsersService);
     repository = module.get(UsersRepository);
     rolesService = module.get(RolesService);
+    rolesService.resolvePermissionsForRoles.mockResolvedValue([] as never);
+    rolesService.isSystemRole.mockResolvedValue(false as never);
     authSessions = module.get(AuthSessionsService);
   });
 
@@ -68,7 +86,7 @@ describe('UsersService — lifecycle', () => {
       repository.create.mockRejectedValue({ code: 11000, keyValue: { email: 'noor@uaeaf.ae' } } as never);
 
       const error = await service
-        .create({ name, email: 'noor@uaeaf.ae', password: 'a-long-enough-password' })
+        .create({ name, email: 'noor@uaeaf.ae', password: 'a-long-enough-password' }, actor)
         .catch((caught: unknown) => caught);
 
       expect(error).toBeInstanceOf(ConflictException);
@@ -82,7 +100,7 @@ describe('UsersService — lifecycle', () => {
       repository.create.mockRejectedValue(outage as never);
 
       await expect(
-        service.create({ name, email: 'noor@uaeaf.ae', password: 'a-long-enough-password' }),
+        service.create({ name, email: 'noor@uaeaf.ae', password: 'a-long-enough-password' }, actor),
       ).rejects.toBe(outage);
     });
   });
@@ -92,7 +110,7 @@ describe('UsersService — lifecycle', () => {
       rolesService.assertAssignable.mockRejectedValue(new Error('unknown role') as never);
       const roleIds = [new Types.ObjectId()];
 
-      await expect(service.assignRoles(id, roleIds)).rejects.toThrow('unknown role');
+      await expect(service.assignRoles(id, roleIds, actor)).rejects.toThrow('unknown role');
       expect(repository.updateById).not.toHaveBeenCalled();
     });
 
@@ -101,7 +119,7 @@ describe('UsersService — lifecycle', () => {
       rolesService.assertAssignable.mockResolvedValue(undefined as never);
       repository.updateById.mockResolvedValue(stored({ roleIds }));
 
-      await service.assignRoles(id, roleIds);
+      await service.assignRoles(id, roleIds, actor);
 
       expect(rolesService.assertAssignable).toHaveBeenCalledWith(roleIds.map(String));
       expect(repository.updateById).toHaveBeenCalledWith(id, { roleIds });
@@ -111,7 +129,7 @@ describe('UsersService — lifecycle', () => {
       rolesService.assertAssignable.mockResolvedValue(undefined as never);
       repository.updateById.mockResolvedValue(null);
 
-      await expect(service.assignRoles(id, [])).rejects.toBeInstanceOf(NotFoundException);
+      await expect(service.assignRoles(id, [], actor)).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 

@@ -11,6 +11,7 @@
 | **Alternatives Considered** | **(A) Keep the hand-written catalogue and just add the missing pairs.** Rejected: it fixes the 34 pairs found this month and not the mechanism that lost them. Nothing would declare that a resource with `Create` ought to have `Update`. **(B) Generate the full cross product (69 × 15 = 1035).** Rejected for the reason the catalogue's own header already gives: it fills the role screen with rows that gate nothing. **(C) Encode scopes as extra verbs (`UpdateOwn`, `UpdateAll`).** Rejected: it doubles the verb list for four resources, and it puts a row-level data question inside a request-level guard. **(D) Adopt an external RBAC/ABAC library (CASL, Casbin).** Rejected: the brief forbids a new dependency for this, and the existing two-indexed-read resolution is both faster and easier to reason about than a policy engine for a platform of 10–20 roles. **(E) Leave `Delete` meaning archival and add `Purge`.** Rejected: the lie stays. An administrator reading "Delete" on the role screen must be able to believe it. |
 | **Why This Decision** | It moves the question from "which pairs happen to exist" to "what can this resource be asked to do", and makes the answer a single declaration that a test can hold the code to. The three judgement columns are the point: `purgeable`, sensitive fields and scopes are decisions that were previously nowhere, and a resource that gains a field or a route now has one place to record what that means. And it costs no change to the hot path — the guard still compares two strings. |
 | **Risks** | **The catalogue grows from 215 pairs to roughly 412, and the role screen becomes unreadable.** **Mitigation:** the seven templates of ADR-0113 are the instrument an administrator actually uses; the matrix is the fallback. The `Export`/`Print` granularity that causes half the growth is raised as an open question rather than assumed. **A verb is declared with no route to guard it, and the catalogue test fails the build.** **Mitigation:** this is the desired failure, and the plan pairs every new verb with its route in the same task. **`Delete` → `Archive` renames a permission administrators have already granted.** **Mitigation:** the rename is on the `action` value, and `sync-permission-catalogue.ts` upserts on the `(resourceType, action)` pair — so the migration must rewrite existing rows, not rely on the sync, and that is a named script step. |
+| **Amended 2026-09-26 (owner, Q4 + Q6 + decision 4)** | **Q4:** `Export` and `Print` leave the per-resource map and become **group** grants on the ten group pseudo-resources (30 pairs, not 99) — so the catalogue lands near **313 pairs**, not 412, and the risk below about an unreadable role screen is largely answered. **Q6:** `contactMessages` is **purgeable** (a citizen's own submission is plainly within a PDPL erasure right); `documents`, `governanceDocuments`, `memberships`, `partnerships` and `sponsors` are not, until a case appears. Ten resources are purgeable, fifty-nine are not, **and none is left unclear**. **Decision 4:** the map gains `superAdminOnly`, marking five pairs no role may hold — `users:Create`, `users:Update`, `users:AssignRoles`, `roles:ManageRoles`, `securitySettings:ManageSecuritySettings` (see ADR-0104 as amended). |
 | **Consequences** | `api/src/common/authz/capability-map.ts` is new and becomes the source for `PERMISSION_CATALOGUE`. `permissions` gains `scope`. `RolesService.resolvePermissions` returns scope with each pair. `permission-catalogue.spec.ts` gains a third assertion (the map covers every resource). 30 resources gain `Update`, 47 gain `Restore`, 9 gain per-type `Approve`, 4 gain `Publish`. Ten group pseudo-resources join `PERMISSION_RESOURCES` for `ViewReports`. A migration rewrites `Delete` rows to `Archive`. |
 
 ---
@@ -48,8 +49,14 @@ data subject's own personal data under a PDPL erasure right, or media whose
 subject has withdrawn consent under §2, where the chapter requires the actual
 image to go rather than be hidden later.
 
-That yields nine: `athletes`, `athleteProfiles`, `athleteGuardianRelationships`,
-`coaches`, `officials`, `officialProfiles`, `federationPersonnel`, `users`,
-`mediaAssets`. Fifty-four are false. Six are genuinely unclear and are recorded as
-an open question in the spec rather than guessed, because a wrong `true` here is
-an irreversible capability.
+That yields **ten**: `athletes`, `athleteProfiles`,
+`athleteGuardianRelationships`, `coaches`, `officials`, `officialProfiles`,
+`federationPersonnel`, `users`, `mediaAssets`, and — after the owner's 2026-09-26
+decision on the six that were unclear — `contactMessages`, because a citizen's own
+submission is plainly within a PDPL erasure right.
+
+The other five of those six stay archival-only: `documents`,
+`governanceDocuments`, `memberships`, `partnerships`, `sponsors`. Fifty-nine
+resources are false in total. They were asked rather than guessed because a wrong
+`true` here grants an irreversible capability, and the cost of asking was one
+round trip.

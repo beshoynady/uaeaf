@@ -132,6 +132,23 @@ export const API_ERROR_CODES = [
   // the fix is neither a field correction nor a retry: the same request
   // belongs on another route, and the body names it.
   'writtenElsewhere',
+  // The three refusals that make account administration safe (ADR-0104,
+  // ADR-0105). Separate codes because they are three different situations for
+  // the same administrator, and as one `forbidden` all three read "you lack
+  // permission" — which is wrong for every one of them:
+  //
+  //  - `ungrantableRole`: the actor may assign roles, just not THIS one, and
+  //    the body names the exact pairs they would be handing over without
+  //    holding. The dashboard lists them so the gap is fixable.
+  //  - `targetStronger`: nothing is wrong with the role or the request; the
+  //    account being edited holds capabilities the actor does not, so someone
+  //    else has to make the change.
+  //  - `lastSuperAdmin`: the change is legitimate and the platform would be
+  //    left with nobody who can sign in to undo it. The fix is to appoint a
+  //    second Super Admin first, which no other refusal implies.
+  'ungrantableRole',
+  'targetStronger',
+  'lastSuperAdmin',
 ] as const;
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

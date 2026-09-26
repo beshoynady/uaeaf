@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>حسابي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800;900&amp;display=swap">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0B0B0B}
+.th-dark{--bg:#0B0B0B;--side:#111111;--sf:#141414;--sf2:#1C1C1C;--sf3:#232629;--tx:#F2F2F2;--tx2:#E4E6E8;--mu:#A8ADB2;--bd:#2A2D30;--bd2:#4B5157;--grt:#4CC27E;--ink:#FFFFFF;--on:#0F1A13;--ok-bg:#0F2A1B;--ok:#4CC27E;--warn-bg:#2E2410;--warn:#E3B341;--err-bg:#2A1015;--err:#FF8A99;--info-bg:#122236;--info:#8CB8F0;--inp:#0F0F0F}
+.th-light{--bg:#F4F4F4;--side:#FFFFFF;--sf:#FFFFFF;--sf2:#F6F7F6;--sf3:#ECEEEC;--tx:#0B0B0B;--tx2:#1F2328;--mu:#50565C;--bd:#D5D8D4;--bd2:#8F9590;--grt:#006B32;--ink:#0B0B0B;--on:#E7F3EC;--ok-bg:#E7F3EC;--ok:#006B32;--warn-bg:#FFF4D6;--warn:#7A5300;--err-bg:#FBE9EC;--err:#A30D26;--info-bg:#E6EEF9;--info:#1F4E8C;--inp:#FFFFFF}
+.root{background:var(--bg);color:var(--tx);font-family:Alexandria,Tahoma,sans-serif}
+a{color:var(--grt)}a:hover{color:var(--tx)}
+a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.tri{background:linear-gradient(90deg,#00843D 0 33%,var(--ink) 33% 66%,#C8102E 66%)}
+.side-h{font-size:12px;font-weight:700;color:var(--mu);padding:14px 14px 6px}
+.side-link{display:flex;align-items:center;gap:12px;height:40px;padding:0 14px;border-radius:10px;color:var(--tx2);text-decoration:none;font-size:14px}
+.side-link:hover{background:var(--sf2);color:var(--tx)}
+.side-on{background:var(--on);color:var(--tx);font-weight:700;box-shadow:inset -3px 0 0 #00843D}
+[dir=ltr] .side-on{box-shadow:inset 3px 0 0 #00843D}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 18px;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn-pri{background:#00843D;color:#FFFFFF;border:none}
+.btn-pri:hover{background:#006B32;color:#FFFFFF}
+.btn-sec{background:transparent;color:var(--tx);border:1px solid var(--bd2)}
+.btn-sec:hover{border-color:#00843D;color:var(--tx)}
+.btn-sm{height:36px;padding:0 12px;font-size:13px}
+.btn-danger{background:transparent;color:var(--err);border:1px solid var(--err)}
+.btn-danger:hover{background:var(--err-bg);color:var(--err)}
+.chip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+.c-ok{background:var(--ok-bg);color:var(--ok)}
+.c-warn{background:var(--warn-bg);color:var(--warn)}
+.c-err{background:var(--err-bg);color:var(--err)}
+.c-info{background:var(--info-bg);color:var(--info)}
+.c-muted{background:var(--sf3);color:var(--mu)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--bd)}
+.tab{position:relative;display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 18px;border:none;background:transparent;font-family:inherit;font-size:15px;font-weight:600;color:var(--mu);cursor:pointer}
+.tab:hover{color:var(--tx)}
+.tab-on{color:var(--tx);font-weight:800}
+.tab-on::after{content:"";position:absolute;inset:auto 12px -1px 12px;height:3px;border-radius:3px 3px 0 0;background:linear-gradient(90deg,#00843D 0 33%,var(--ink) 33% 66%,#C8102E 66%)}
+.count{min-width:22px;height:22px;padding:0 6px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:var(--sf3);color:var(--tx2)}
+.seg{display:inline-flex;padding:4px;border-radius:12px;background:var(--sf3);gap:4px}
+.seg-b{height:38px;padding:0 16px;border-radius:9px;border:none;background:transparent;font-family:inherit;font-size:14px;font-weight:600;color:var(--mu);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.seg-b:hover{color:var(--tx)}
+.seg-on{background:var(--sf);color:var(--tx);box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:16px}
+.lbl{font-size:13px;font-weight:700;color:var(--tx2)}
+.hint{font-size:12px;color:var(--mu);line-height:1.7}
+.lang{font-size:11px;font-weight:800;padding:2px 7px;border-radius:6px;background:var(--sf3);color:var(--mu)}
+.inp{height:44px;border-radius:10px;border:1px solid var(--bd2);padding:0 14px;font-family:inherit;font-size:14px;color:var(--tx);background:var(--inp);width:100%}
+.inp:hover{border-color:var(--mu)}
+.ta{height:auto;min-height:104px;padding:10px 14px;line-height:1.8;resize:vertical}
+.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.fld{display:flex;flex-direction:column;gap:8px}
+.fld-h{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.row{display:grid;grid-template-columns:20px 26px 44px minmax(0,1fr) auto 40px;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--bd);background:var(--sf);font-family:inherit;font-size:14px;color:var(--tx);text-align:start;cursor:pointer;transition:border-color .15s,background .15s}
+.row:hover{border-color:var(--bd2)}
+.row-on{border-color:#00843D;background:var(--on)}
+.num{width:26px;height:26px;border-radius:8px;background:var(--sf3);color:var(--mu);font-size:12px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+.av{width:44px;height:44px;border-radius:999px;background:var(--sf3);color:var(--mu);display:inline-flex;align-items:center;justify-content:center}
+.sw{width:40px;height:24px;border-radius:999px;border:none;padding:3px;background:var(--bd2);display:inline-flex;cursor:pointer;flex-shrink:0}
+.sw span{width:18px;height:18px;border-radius:999px;background:#FFFFFF}
+.sw-on{background:#00843D;justify-content:flex-end}
+.drop{display:flex;align-items:center;gap:18px;padding:18px;border-radius:14px;border:2px dashed var(--bd2);background:var(--sf2)}
+.ph{width:112px;height:140px;border-radius:12px;background:var(--sf3);color:var(--mu);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ro{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;padding:10px 14px;border-radius:12px;background:var(--sf2);border:1px solid var(--bd);font-size:14px}
+.meter{height:8px;border-radius:999px;background:var(--sf3);overflow:hidden}
+.meter span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#C8102E,#E3B341)}
+.step{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;text-align:center;font-size:13px;color:var(--mu)}
+.step-dot{width:36px;height:36px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;background:var(--sf3);color:var(--mu)}
+.step-on .step-dot{background:#00843D;color:#FFFFFF}
+.step-on{color:var(--tx);font-weight:700}
+.issue{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:12px;background:var(--sf);border:1px solid var(--bd);color:var(--tx2);font-size:14px;line-height:1.7;text-decoration:none}
+.issue:hover{border-color:var(--bd2);color:var(--tx)}
+.sec-row{display:grid;grid-template-columns:28px minmax(0,1fr) auto 40px;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1px solid var(--bd);background:var(--sf)}
+.lock{color:var(--mu)}
+.gprev{padding:18px;border-radius:12px;background:#FFFFFF;border:1px solid #D5D8D4;font-family:Arial,sans-serif;color:#1F2328}
+.onode{padding:10px 14px;border-radius:12px;border:1px solid var(--bd2);background:var(--sf);font-size:13px;font-weight:700;text-align:center;color:var(--tx)}
+.oline{width:2px;height:18px;background:#00843D;align-self:center}
+.search{display:flex;align-items:center;gap:10px;height:40px;width:340px;padding:0 12px;border-radius:10px;border:1px solid var(--bd);background:var(--sf2);color:var(--mu);font-size:13px}
+.kbd{margin-inline-start:auto;font-size:11px;font-weight:700;padding:2px 6px;border-radius:6px;border:1px solid var(--bd2);color:var(--mu)}
+.ib{width:40px;height:40px;border-radius:10px;border:1px solid var(--bd);background:var(--sf);color:var(--tx2);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700}
+.ib:hover{border-color:#00843D}
+.ver{display:grid;grid-template-columns:90px minmax(0,1fr) 200px 160px 150px;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--bd);font-size:14px;color:var(--tx2)}
+.side-g{display:flex;align-items:center;justify-content:space-between}
+.rp{display:flex;align-items:center;gap:8px;height:40px;padding:0 6px 0 12px;border-radius:10px;border:1px dashed var(--bd2);font-size:12px;color:var(--mu)}
+.rp select{height:32px;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:700;color:var(--tx);cursor:pointer}
+.ro-banner{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;background:var(--info-bg);color:var(--info);font-size:13px;font-weight:600}
+.subtabs{display:flex;gap:4px;flex-wrap:wrap;padding:4px;border-radius:12px;background:var(--sf3)}
+.st{height:36px;padding:0 14px;border-radius:9px;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:600;color:var(--mu);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.st:hover{color:var(--tx)}
+.st-on{background:var(--sf);color:var(--tx);box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.prow{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:12px;width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--bd);background:var(--sf);font-family:inherit;color:var(--tx);text-align:start;cursor:pointer}
+.prow:hover{border-color:var(--bd2)}
+.prow-on{border-color:#00843D;background:var(--on)}
+.pos-chip{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:999px;background:var(--sf3);color:var(--tx2);font-size:11px;font-weight:700;white-space:nowrap}
+.acc{border:1px solid var(--bd);border-radius:14px;background:var(--sf)}
+.acc-h{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:14px 16px;border:none;background:transparent;font-family:inherit;color:var(--tx);cursor:pointer;text-align:start}
+.acc-b{padding:0 16px 16px;display:flex;flex-direction:column;gap:14px}
+.empty{display:flex;flex-direction:column;align-items:center;gap:6px;padding:18px;border-radius:12px;border:1px dashed var(--bd2);color:var(--mu);font-size:13px;text-align:center}
+.mask{display:flex;align-items:center;gap:10px;height:44px;padding:0 14px;border-radius:10px;border:1px dashed var(--bd2);background:var(--sf2);color:var(--mu);font-size:13px}
+.tl-row{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:14px;align-items:start;padding:14px 0;border-bottom:1px solid var(--bd)}
+.tl-dot{width:12px;height:12px;border-radius:999px;background:#00843D;margin-top:6px}
+.tl-dot-past{background:var(--bd2)}
+.overlay{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:5}
+.dlg{width:520px;border-radius:18px;background:var(--sf);border:1px solid var(--bd);box-shadow:0 30px 60px rgba(0,0,0,.4);padding:24px;display:flex;flex-direction:column;gap:16px}
+.pick{display:grid;grid-template-columns:40px minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;border:1px solid var(--bd);background:var(--sf)}
+.lnk-card{display:flex;align-items:center;gap:14px;padding:16px;border-radius:14px;border:1px solid var(--bd);background:var(--sf2)}
+.av-link{width:40px;height:40px;border-radius:999px;background:var(--sf3);color:var(--tx);display:inline-flex;align-items:center;justify-content:center;border:2px solid transparent}
+.av-link:hover{border-color:#00843D;color:var(--tx)}
+.av-on{border-color:#00843D}
+.otp{display:flex;gap:8px;align-items:center}
+.otp-c{width:52px;height:60px;border-radius:12px;border:1px solid var(--bd2);background:var(--inp);color:var(--tx);font-family:inherit;font-size:24px;font-weight:800;text-align:center}
+.otp-gap{width:8px}
+.banner{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-radius:14px;font-size:13px;line-height:1.8}
+.b-warn{background:var(--warn-bg);color:var(--warn)}
+.b-err{background:var(--err-bg);color:var(--err)}
+.b-info{background:var(--info-bg);color:var(--info)}
+.b-ok{background:var(--ok-bg);color:var(--ok)}
+.banner strong{display:block;font-size:14px;color:inherit}
+.banner span{color:var(--tx2)}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{font-size:12px;font-weight:700;color:var(--mu);text-align:start;padding:10px 12px;border-bottom:1px solid var(--bd);white-space:nowrap}
+.tbl td{padding:12px;border-bottom:1px solid var(--bd);vertical-align:middle;color:var(--tx2)}
+.tr{cursor:pointer}
+.tr:hover td{background:var(--sf2)}
+.tr-on td{background:var(--on)}
+.mx{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+.mx th{position:relative;font-size:11px;font-weight:700;color:var(--mu);padding:10px 4px;text-align:center;border-bottom:1px solid var(--bd);white-space:nowrap}
+.mx th:first-child{text-align:start;padding-inline-start:12px}
+.mx td{padding:6px 4px;text-align:center;border-bottom:1px solid var(--bd)}
+.mx td:first-child{text-align:start;padding-inline-start:12px;color:var(--tx);font-weight:600}
+.mx-g td{background:var(--sf2);font-size:12px;font-weight:800;color:var(--tx2);padding:10px 12px}
+.ck{width:26px;height:26px;border-radius:7px;border:1.5px solid var(--bd2);background:transparent;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:#FFFFFF;padding:0}
+.ck-on{background:#00843D;border-color:#00843D}
+.ck-danger.ck-on{background:#C8102E;border-color:#C8102E}
+.ck-lock{cursor:not-allowed;opacity:.55}
+.ck svg{display:none}
+.ck-on svg{display:block}
+.na{color:var(--bd2);font-size:14px}
+.scope{height:26px;border-radius:7px;border:1px solid var(--bd2);background:var(--inp);color:var(--tx);font-family:inherit;font-size:11px;font-weight:700;padding:0 4px;margin-inline-start:4px}
+.kv{display:grid;grid-template-columns:160px minmax(0,1fr);gap:10px;padding:10px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.kv span:first-child{color:var(--mu)}
+.code{font-family:ui-monospace,Menlo,Consolas,monospace;direction:ltr;text-align:start}
+.rc{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.rc span{height:44px;border-radius:10px;background:var(--sf2);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:15px;font-weight:700;letter-spacing:.06em;direction:ltr}
+.bound{display:grid;grid-template-columns:minmax(0,1fr) 150px 150px 150px;gap:12px;align-items:center;padding:14px 0;border-bottom:1px solid var(--bd)}
+.unit{display:flex;align-items:center;gap:8px}
+.unit .inp{width:90px}
+.demo{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:6px;border-radius:12px;border:1px dashed var(--bd2)}
+.demo-l{font-size:11px;font-weight:700;color:var(--mu);padding:0 6px}
+.dj{height:30px;padding:0 12px;border-radius:8px;border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:700;color:var(--mu);cursor:pointer}
+.dj-on{background:var(--sf3);color:var(--tx)}
+.toast{position:absolute;inset-inline-end:32px;bottom:32px;width:420px;display:flex;gap:12px;align-items:flex-start;padding:16px;border-radius:14px;background:var(--sf);border:1px solid var(--warn);box-shadow:0 20px 40px rgba(0,0,0,.35);z-index:4}
+.deny{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:80px 24px;text-align:center}
+.diff-o{background:var(--err-bg);color:var(--err);border-radius:6px;padding:2px 8px;text-decoration:line-through}
+.diff-n{background:var(--ok-bg);color:var(--ok);border-radius:6px;padding:2px 8px}
+.pick-lock{opacity:.6}
+.pick-lock .lbl{color:var(--mu)}
+.mx{display:flex;flex-direction:column;font-size:13px}
+.mx-r{display:grid;grid-template-columns:minmax(170px,1.6fr) repeat(9,minmax(0,1fr));align-items:center;border-bottom:1px solid var(--bd);min-height:46px}
+.mx-r>span{display:flex;align-items:center;justify-content:center;padding:6px 2px}
+.mx-r>span:first-child{justify-content:flex-start;padding-inline-start:14px;color:var(--tx);font-weight:600}
+.mx-h>span{font-size:11px;font-weight:700;color:var(--mu);text-align:center}
+.mx-h>span:first-child{color:var(--mu);font-weight:700}
+.mx-g{background:var(--sf2);border-bottom:1px solid var(--bd);padding:10px 14px;font-size:12px;font-weight:800;color:var(--tx2)}
+.ut{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1.2fr) 110px 100px;gap:10px;align-items:center;width:100%;padding:12px;border:none;border-bottom:1px solid var(--bd);background:transparent;font-family:inherit;font-size:13px;color:var(--tx2);text-align:start}
+.ut-h{font-size:12px;font-weight:700;color:var(--mu);padding:10px 12px}
+.tr{cursor:pointer}
+.tr:hover{background:var(--sf2)}
+.tr-on{background:var(--on)}
+.inp-err{border-color:var(--err);box-shadow:0 0 0 1px var(--err)}
+.btn-dis{opacity:.45;cursor:not-allowed}
+.qr{display:grid;grid-template-columns:repeat(21,6px);grid-auto-rows:6px;padding:10px;background:#FFFFFF;border-radius:10px;flex-shrink:0}
+.q{width:6px;height:6px}
+.q1{background:#0B0B0B}
+.rl{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mu)}
+.rl-ok{color:var(--ok)}
+.at{display:grid;grid-template-columns:130px 190px minmax(0,1fr) 80px;gap:12px;align-items:center;width:100%;padding:12px 4px;border:none;border-bottom:1px solid var(--bd);background:transparent;font-family:inherit;font-size:13px;color:var(--tx2);text-align:start}
+.seg-lock{opacity:.5;pointer-events:none}
+</style>
+</helmet>
+<div class="{{rootClass}}" dir="{{dir}}" lang="{{lang}}" style="position: relative; width: 1440px; height: 1000px; display: flex; overflow: hidden">
+
+<aside style="width: 248px; flex-shrink: 0; background: var(--side); border-inline-end: 1px solid var(--bd); display: flex; flex-direction: column">
+<div class="tri" style="height: 3px"></div>
+<div style="height: 64px; display: flex; align-items: center; gap: 10px; padding: 0 20px">
+<svg width="36" height="30" viewBox="0 0 240 200" aria-hidden="true"><path d="M20 170 L75.05 105.05 A7 7 0 0 1 84.95 114.95 Z" fill="#C8102E"></path><path d="M40 190 L142.2 72.2 A11 11 0 0 1 157.8 87.8 Z" fill="#00843D"></path><path d="M95 190 L182.9 87.9 A10 10 0 0 1 197.1 102.1 Z" style="fill: var(--ink)"></path><path d="M150 190 L200.05 130.05 A7 7 0 0 1 209.95 139.95 Z" fill="#C8102E"></path></svg>
+<span style="font-size: 16px; font-weight: 800">UAEAF</span>
+</div>
+<nav aria-label="{{s.navAria}}" style="padding: 4px 12px; display: flex; flex-direction: column; gap: 2px">
+<span class="side-h">{{s.gHome}}</span>
+<a class="side-link" href="#">{{s.overview}}</a>
+<span class="side-h">{{s.gContent}}</span>
+<a class="side-link" href="#">{{s.news}}</a>
+<a class="side-link" href="#">{{s.videos}}</a>
+<a class="side-link" href="#">{{s.albums}}</a>
+<span class="side-h">{{s.gGov}}</span>
+<a class="side-link" href="#">{{s.people}}</a>
+<a class="side-link" href="#">{{s.board}}</a>
+<a class="side-link" href="#">{{s.coms}}</a>
+<span class="side-h">{{s.gPages}}</span>
+<a class="side-link" href="#">{{s.about}}</a>
+<a class="side-link" href="#">{{s.msg}}</a>
+<a class="side-link" href="#">{{s.pol}}</a>
+<span class="side-h">{{s.gData}}</span>
+<a class="side-link" href="#">{{s.clubs}}</a>
+<a class="side-link" href="#">{{s.athletes}}</a>
+<sc-if value="{{hasAccess}}" hint-placeholder-val="{{ true }}">
+<span class="side-h">{{s.gAccess}}</span>
+<sc-if value="{{p.usersRead}}" hint-placeholder-val="{{ true }}"><a class="{{nav.users}}" href="Users.dc.html">{{s.users}}</a></sc-if>
+<sc-if value="{{p.rolesRead}}" hint-placeholder-val="{{ true }}"><a class="{{nav.roles}}" href="Roles.dc.html">{{s.roles}}</a></sc-if>
+<sc-if value="{{p.policies}}" hint-placeholder-val="{{ true }}"><a class="{{nav.policies}}" href="Policies.dc.html">{{s.policies}}</a></sc-if>
+<sc-if value="{{p.security}}" hint-placeholder-val="{{ true }}"><a class="{{nav.security}}" href="Security.dc.html">{{s.security}}</a></sc-if>
+<sc-if value="{{p.audit}}" hint-placeholder-val="{{ true }}"><a class="{{nav.audit}}" href="Audit.dc.html">{{s.audit}}</a></sc-if>
+</sc-if>
+</nav>
+</aside>
+
+<div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column">
+<div style="height: 64px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 32px; border-bottom: 1px solid var(--bd); background: var(--side)">
+<div class="search" role="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg><span>{{s.search}}</span><span class="kbd">⌘K</span></div>
+<div style="display: flex; align-items: center; gap: 8px">
+<label class="rp"><span>{{s.previewAs}}</span><select value="{{role}}" onChange="{{pickRole}}" aria-label="{{s.previewAs}}"><option value="sa">Super Admin</option><option value="gov">{{s.rGov}}</option><option value="viewer">{{s.rViewer}}</option></select></label>
+<button class="ib" aria-label="{{s.themeAria}}" onClick="{{toggleTheme}}">
+<sc-if value="{{isLight}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg></sc-if>
+<sc-if value="{{isDark}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg></sc-if>
+</button>
+<button class="ib" aria-label="{{s.langAria}}" onClick="{{toggleLang}}">{{s.langLabel}}</button>
+<a class="{{nav.me}}" href="Account.dc.html" aria-label="{{s.me}}" style="width: 40px; height: 40px; font-size: 13px; font-weight: 800; text-decoration: none">BS</a>
+</div>
+</div>
+
+<div style="flex-grow: 1; padding: 28px 32px 32px; display: flex; flex-direction: column; gap: 18px; min-height: 0">
+<sc-if value="{{readOnly}}" hint-placeholder-val="{{ false }}"><div class="ro-banner" role="status"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>{{s.readOnly}}</div></sc-if>
+<div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 24px">
+<div style="display: flex; flex-direction: column; gap: 8px; max-width: 760px">
+<h1 style="margin: 0; font-size: 28px; font-weight: 800">{{t.title}}</h1>
+<p style="margin: 0; font-size: 14px; line-height: 1.8; color: var(--mu)">{{t.lead}}</p>
+</div>
+<div class="demo"><button class="dj" onClick="{{showToast}}">{{t.demoToast}}</button></div>
+</div>
+
+<div style="display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 20px; align-items: start">
+<div class="card" style="padding: 22px; display: flex; flex-direction: column; gap: 14px">
+<span class="av-link" style="width: 72px; height: 72px; font-size: 20px; font-weight: 800" aria-hidden="true">BS</span>
+<span style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 18px; font-weight: 800">{{meName}}</span><span class="code hint">{{meEmail}}</span></span>
+<div class="kv" style="grid-template-columns: 110px minmax(0, 1fr)"><span>{{t.type}}</span><span><span class="{{tierCls}}">{{tierL}}</span></span></div>
+<span class="hint">{{tierX}}</span>
+</div>
+
+<div class="card" style="padding: 22px; display: flex; flex-direction: column; gap: 20px">
+<div class="subtabs" role="tablist" aria-label="{{t.title}}">
+<sc-for list="{{subs}}" as="sb" hint-placeholder-count="3"><button class="{{sb.cls}}" role="tab" aria-selected="{{sb.sel}}" onClick="{{sb.go}}">{{sb.label}}</button></sc-for>
+</div>
+
+<sc-if value="{{isSecT}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding-bottom: 18px; border-bottom: 1px solid var(--bd)">
+<span style="display: flex; flex-direction: column; gap: 6px"><span style="display: flex; align-items: center; gap: 10px"><span class="lbl">{{t.tfaT}}</span><span class="chip c-ok">{{t.tfaOn}}</span></span><span class="hint">{{t.tfaX}}</span></span>
+<button class="btn btn-sec btn-sm">{{t.newApp}}</button>
+</div>
+<div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding-bottom: 18px; border-bottom: 1px solid var(--bd)">
+<span style="display: flex; flex-direction: column; gap: 6px"><span class="lbl">{{t.rcT}}</span><span class="hint">{{t.rcX}}</span><span class="hint" style="color: var(--warn)">{{t.regenX}}</span></span>
+<button class="btn btn-sec btn-sm" onClick="{{regen}}">{{t.regen}}</button>
+</div>
+<div style="display: flex; flex-direction: column; gap: 14px">
+<span class="lbl">{{t.pwT}}</span>
+<div class="pair">
+<div class="fld"><label class="lbl" for="pc">{{t.cur}}</label><input id="pc" class="inp" dir="ltr" type="password" autocomplete="current-password" value="" onChange="{{noop}}"></div>
+<div class="fld"><label class="lbl" for="pn">{{t.nw}}</label><input id="pn" class="inp" dir="ltr" type="password" autocomplete="new-password" value="" onChange="{{noop}}"></div>
+</div>
+<span class="hint">{{t.rules}}</span>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px"><span class="hint">{{t.pwAfter}}</span><button class="btn btn-pri" onClick="{{changePw}}">{{t.change}}</button></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isSess}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: center; justify-content: space-between"><span class="lbl">{{t.sessT}}</span><button class="btn btn-sec btn-sm">{{t.revokeAll}}</button></div>
+<sc-for list="{{sessions}}" as="se" hint-placeholder-count="3"><div class="pick" style="grid-template-columns: minmax(0, 1fr) auto"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 700; font-size: 14px">{{se.dev}}</span><span class="hint">{{se.loc}} · {{se.last}}</span></span><sc-if value="{{se.now}}" hint-placeholder-val="{{ false }}"><span class="chip c-ok">{{se.last}}</span></sc-if><sc-if value="{{se.other}}" hint-placeholder-val="{{ true }}"><button class="btn btn-sec btn-sm">{{t.revoke}}</button></sc-if></div></sc-for>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<span class="lbl">{{t.devT}}</span><span class="hint">{{t.devX}}</span>
+<sc-if value="{{hasDevices}}" hint-placeholder-val="{{ true }}"><sc-for list="{{devices}}" as="dv" hint-placeholder-count="1"><div class="pick" style="grid-template-columns: minmax(0, 1fr) auto"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 700; font-size: 14px">{{dv.dev}}</span><span class="hint">{{dv.until}}</span></span><button class="btn btn-sec btn-sm">{{t.remove}}</button></div></sc-for></sc-if>
+<sc-if value="{{noDevices}}" hint-placeholder-val="{{ false }}"><div class="empty">{{t.noDev}}</div></sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isProf}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<div class="kv"><span>{{t.name}}</span><span>{{meName}}</span></div>
+<div class="kv"><span>{{t.email}}</span><span style="display: flex; flex-direction: column; gap: 2px"><span class="code">{{meEmail}}</span><span class="hint">{{t.emailX}}</span></span></div>
+<div class="kv"><span>{{t.roles}}</span><span style="display: flex; flex-direction: column; gap: 6px"><span class="pos-chip" style="align-self: flex-start">{{meRole}}</span><span class="hint">{{t.rolesX}}</span></span></div>
+<div class="kv"><span>{{t.person}}</span><span>{{t.noPerson}}</span></div>
+</div>
+</sc-if>
+</div>
+</div>
+
+</div>
+</div>
+<sc-if value="{{toast}}" hint-placeholder-val="{{ false }}">
+<div class="toast" role="alertdialog" aria-labelledby="toT">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="flex-shrink: 0; color: var(--warn)"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<span id="toT" style="font-size: 15px; font-weight: 800">{{t.toastT}}</span>
+<span class="hint">{{t.toastX}}</span>
+<span style="display: flex; gap: 8px"><button class="btn btn-pri btn-sm" onClick="{{hideToast}}">{{t.stay}}</button><button class="btn btn-sec btn-sm" onClick="{{hideToast}}">{{t.out}}</button></span>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{su.open}}" hint-placeholder-val="{{ false }}">
+<div class="overlay">
+<div class="dlg" role="dialog" aria-modal="true" aria-labelledby="suT" style="width: 460px">
+<div style="display: flex; align-items: center; gap: 12px"><span class="av" style="background: var(--info-bg); color: var(--info)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"></path></svg></span><h2 id="suT" style="margin: 0; font-size: 20px; font-weight: 800">{{s.suTitle}}</h2></div>
+<p class="hint" style="margin: 0; font-size: 13px">{{s.suLead}}</p>
+<div class="ro"><span class="lbl">{{s.suAction}}</span><span style="font-weight: 700">{{su.action}}</span></div>
+<div class="fld"><label class="lbl" for="suC">{{s.suCode}}</label><div class="otp" dir="ltr"><input id="suC" class="otp-c" inputmode="numeric" maxlength="1" aria-label="{{s.suCode}} 1" value="" onChange="{{noop}}"><input class="otp-c" inputmode="numeric" maxlength="1" aria-label="2" value="" onChange="{{noop}}"><input class="otp-c" inputmode="numeric" maxlength="1" aria-label="3" value="" onChange="{{noop}}"><span class="otp-gap"></span><input class="otp-c" inputmode="numeric" maxlength="1" aria-label="4" value="" onChange="{{noop}}"><input class="otp-c" inputmode="numeric" maxlength="1" aria-label="5" value="" onChange="{{noop}}"><input class="otp-c" inputmode="numeric" maxlength="1" aria-label="6" value="" onChange="{{noop}}"></div><span class="hint">{{s.suHint}}</span></div>
+<a href="#" style="font-size: 13px; font-weight: 700">{{s.suRecovery}}</a>
+<div style="display: flex; justify-content: flex-end; gap: 10px"><button class="btn btn-sec" onClick="{{su.close}}">{{s.cancel}}</button><button class="btn btn-pri" onClick="{{su.close}}">{{s.suConfirm}}</button></div>
+</div>
+</div>
+</sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme": {"editor": "enum", "options": ["dark", "light"], "default": "dark"}, "lang": {"editor": "enum", "options": ["ar", "en"], "default": "ar"}, "role": {"editor": "enum", "options": ["sa", "gov", "viewer"], "default": "sa"}, "$preview": {"width": 1440, "height": 1000}}'>
+class Component extends DCLogic {
+  shellVals(T, theme, lang, role, page, readOnlyWhen) {
+    const ar = lang === 'ar';
+    const st = this.state || {};
+    const P = {
+      sa: { usersRead: true, usersCreate: true, usersUpdate: true, assign: true, rolesRead: true, rolesManage: true, policies: true, security: true, audit: true, exp: true, sensitive: true },
+      gov: { usersRead: false, usersCreate: false, usersUpdate: false, assign: false, rolesRead: false, rolesManage: false, policies: false, security: false, audit: false, exp: true, sensitive: false },
+      viewer: { usersRead: false, usersCreate: false, usersUpdate: false, assign: false, rolesRead: false, rolesManage: false, policies: false, security: false, audit: false, exp: false, sensitive: false }
+    }[role] || {};
+    const hasAccess = P.usersRead || P.rolesRead || P.policies || P.security || P.audit;
+    const on = (k) => (k === page ? 'side-link side-on' : 'side-link');
+    const suAction = st.stepUp || '';
+    return {
+      rootClass: 'root th-' + theme,
+      dir: ar ? 'rtl' : 'ltr',
+      lang, role,
+      isDark: theme === 'dark', isLight: theme !== 'dark',
+      isSA: role === 'sa', isGov: role === 'gov', isViewer: role === 'viewer',
+      notSA: role !== 'sa',
+      p: P, hasAccess,
+      readOnly: !!readOnlyWhen,
+      nav: { users: on('users'), roles: on('roles'), policies: on('policies'), security: on('security'), audit: on('audit'), me: page === 'me' ? 'av-link av-on' : 'av-link' },
+      su: { open: !!suAction, action: suAction, close: () => this.setState({ stepUp: '' }) },
+      stepUp: (label) => () => this.setState({ stepUp: label }),
+      toggleTheme: () => this.setState({ theme: theme === 'dark' ? 'light' : 'dark' }),
+      toggleLang: () => this.setState({ lang: ar ? 'en' : 'ar' }),
+      pickRole: (e) => this.setState({ role: e && e.target ? e.target.value : 'sa' }),
+      noop: () => {},
+      s: {
+        navAria: T('قائمة لوحة التحكم', 'Dashboard menu'),
+        gHome: T('الرئيسية', 'Home'), overview: T('نظرة عامة', 'Overview'),
+        gContent: T('المحتوى', 'Content'), news: T('الأخبار', 'News'), videos: T('الفيديوهات', 'Videos'), albums: T('ألبومات الصور', 'Photo albums'),
+        gGov: T('الحوكمة', 'Governance'), people: T('الأشخاص', 'People'), board: T('مجلس الإدارة', 'Board of Directors'), coms: T('اللجان', 'Committees'),
+        gPages: T('صفحات الاتحاد', 'Federation pages'), about: T('نبذة عن الاتحاد', 'About'), msg: T('كلمة الرئيس', "Chairman's message"), pol: T('اللوائح والسياسات', 'Policies'),
+        gData: T('قواعد البيانات', 'Databases'), clubs: T('الأندية', 'Clubs'), athletes: T('اللاعبون', 'Athletes'),
+        gAccess: T('المستخدمون والوصول', 'Users & access'), users: T('المستخدمون', 'Users'), roles: T('الأدوار والصلاحيات', 'Roles & permissions'), policies: T('سياسات الموافقة', 'Approval policies'), security: T('إعدادات الأمان', 'Security settings'), audit: T('سجل التدقيق', 'Audit log'),
+        search: T('ابحث في لوحة التحكم…', 'Search the dashboard…'),
+        previewAs: T('معاينة كـ', 'Preview as'),
+        rGov: T('مسؤول الحوكمة', 'Governance Officer'),
+        rViewer: T('مشاهد الإدارة العليا', 'Executive Viewer'),
+        me: T('حسابي', 'My account'),
+        themeAria: theme === 'dark' ? T('تفعيل الوضع الفاتح', 'Switch to light mode') : T('تفعيل الوضع الداكن', 'Switch to dark mode'),
+        langLabel: ar ? 'EN' : 'ع', langAria: T('Switch to English', 'التبديل إلى العربية'),
+        readOnly: T('عرض فقط — دورك يسمح بالقراءة بدون تعديل', 'View only — your role can read but not edit'),
+        cancel: T('إلغاء', 'Cancel'),
+        suTitle: T('أكّد إنه انت', 'Confirm it’s you'),
+        suLead: T('العملية دي حساسة، وآخر تحقق ليك فات عليه أكتر من 15 دقيقة. اكتب الكود من تطبيق المصادقة.', 'This action is sensitive and your last verification was over 15 minutes ago. Enter the code from your authenticator app.'),
+        suAction: T('العملية', 'Action'), suCode: T('كود التحقق', 'Verification code'),
+        suHint: T('بعد التأكيد العملية بتكمل لوحدها من غير ما تعيد أي حاجة', 'Once confirmed, the action completes on its own'),
+        suRecovery: T('مش معاك الموبايل؟ استخدم كود استرجاع', 'No phone? Use a recovery code'),
+        suConfirm: T('تأكيد', 'Confirm'),
+        denyT: T('مالكش صلاحية على الصفحة دي', 'You don’t have access to this page'),
+        denyTxt: T('الصفحة مش ظاهرة في القائمة عندك. لو محتاجها، إدارة الحسابات والأدوار والأمان للـSuper Admin بس.', 'This page isn’t in your menu. If you need it, account, role and security management is for Super Admins only.'),
+        denyBack: T('الرجوع للرئيسية', 'Back to overview')
+      }
+    };
+  }
+  renderVals() {
+    const st = this.state || {};
+    const theme = st.theme || this.props.theme || 'dark';
+    const lang = st.lang || this.props.lang || 'ar';
+    const role = st.role || this.props.role || 'sa';
+    const sub = st.sub || 'security';
+    const toast = !!st.toast;
+    const ar = lang === 'ar';
+    const T = (a, e) => (ar ? a : e);
+    const sh = this.shellVals(T, theme, lang, role, 'me', false);
+    const tier = role === 'sa' ? 'sa' : role === 'gov' ? 'sensitive' : 'normal';
+    const TIER = {
+      sa: ['Super Admin', 'c-err', T('خمول 30 دقيقة · أقصى مدة يوم · بلا تذكّر للجهاز', '30 min idle · 1 day max · no trusted devices'), false],
+      sensitive: [T('حساس', 'Sensitive'), 'c-warn', T('خمول ساعة · أقصى مدة يوم · تذكّر الجهاز 7 أيام', '1 h idle · 1 day max · trusted device 7 days'), true],
+      normal: [T('عادي', 'Standard'), 'c-muted', T('خمول ساعتين · أقصى مدة 7 أيام · تذكّر الجهاز 30 يوم', '2 h idle · 7 days max · trusted device 30 days'), true]
+    }[tier];
+    const who = { sa: ['بيشوي (NoTime)', 'Bishoy (NoTime)', 'bishoy@notime.agency', 'Super Admin'], gov: ['حساب الحوكمة', 'Governance desk', 'gov@uaeaf.ae', T('مسؤول الحوكمة', 'Governance Officer')], viewer: ['حساب الإدارة العليا', 'Executive desk', 'exec@uaeaf.ae', T('مشاهد الإدارة العليا', 'Executive Viewer')] }[role];
+    const subs = [['security', T('الأمان', 'Security')], ['sessions', T('الجلسات والأجهزة', 'Sessions & devices')], ['profile', T('بياناتي', 'My details')]]
+      .map((d) => ({ label: d[1], cls: d[0] === sub ? 'st st-on' : 'st', sel: d[0] === sub ? 'true' : 'false', go: () => this.setState({ sub: d[0] }) }));
+    const sessions = [
+      [T('Chrome على macOS', 'Chrome on macOS'), T('دبي، الإمارات', 'Dubai, UAE'), T('الجلسة دي', 'This session'), true],
+      [T('Safari على iPhone', 'Safari on iPhone'), T('دبي، الإمارات', 'Dubai, UAE'), T('منذ 5 ساعات', '5 h ago'), false],
+      [T('Edge على Windows', 'Edge on Windows'), T('القاهرة، مصر', 'Cairo, Egypt'), T('منذ يومين', '2 days ago'), false]
+    ].map((x) => ({ dev: x[0], loc: x[1], last: x[2], now: x[3], other: !x[3] }));
+    const devices = TIER[3] ? [[T('Chrome على macOS', 'Chrome on macOS'), tier === 'sensitive' ? T('موثوق حتى 3 أكتوبر', 'Trusted until 3 Oct') : T('موثوق حتى 26 أكتوبر', 'Trusted until 26 Oct')]].map((x) => ({ dev: x[0], until: x[1] })) : [];
+    return Object.assign(sh, {
+      subs, sessions, devices, hasDevices: devices.length > 0, noDevices: devices.length === 0,
+      isSecT: sub === 'security', isSess: sub === 'sessions', isProf: sub === 'profile',
+      tierL: TIER[0], tierCls: 'chip ' + TIER[1], tierX: TIER[2],
+      meName: T(who[0], who[1]), meEmail: who[2], meRole: who[3],
+      toast, showToast: () => this.setState({ toast: !toast }), hideToast: () => this.setState({ toast: false }),
+      regen: sh.stepUp(T('توليد أكواد استرجاع جديدة', 'Generate new recovery codes')),
+      changePw: sh.stepUp(T('تغيير كلمة المرور', 'Change password')),
+      t: {
+        title: T('حسابي', 'My account'),
+        lead: T('إعدادات دخولك انت. الأرقام الخاصة بالجلسة بيحددها الـSuper Admin حسب نوع حسابك.', 'Your own sign-in settings. Session limits are set by a Super Admin for your account type.'),
+        type: T('نوع الحساب', 'Account type'),
+        demoToast: T('عرض تنبيه انتهاء الجلسة', 'Show session-expiry warning'),
+        tfaT: T('التحقق الثنائي', 'Two-factor authentication'), tfaOn: T('مفعّل', 'On'),
+        tfaX: T('من تطبيق مصادقة (Google Authenticator أو Microsoft Authenticator أو 1Password). مايتقفلش — إجباري لكل الحسابات.', 'Via an authenticator app (Google Authenticator, Microsoft Authenticator, 1Password). It can’t be turned off — it’s mandatory for everyone.'),
+        newApp: T('نقل لتطبيق أو موبايل جديد', 'Move to a new app or phone'),
+        rcT: T('أكواد الاسترجاع', 'Recovery codes'), rcX: T('8 من 10 متبقية. كل كود بيشتغل مرة واحدة لو الموبايل مش معاك.', '8 of 10 left. Each code works once if you don’t have your phone.'),
+        regen: T('توليد أكواد جديدة', 'Generate new codes'), regenX: T('الأكواد القديمة بتبطل فورًا', 'Old codes stop working immediately'),
+        pwT: T('كلمة المرور', 'Password'), cur: T('كلمة المرور الحالية', 'Current password'), nw: T('كلمة المرور الجديدة', 'New password'),
+        rules: T('12 حرف على الأقل · مسموح بالجمل الطويلة · مرفوضة لو شائعة أو مسرّبة أو فيها اسمك أو بريدك', 'At least 12 characters · passphrases welcome · rejected if common, breached, or containing your name or email'),
+        pwAfter: T('بعد التغيير، كل جلساتك التانية وأجهزتك الموثوقة بتتلغي', 'Changing it signs out your other sessions and trusted devices'),
+        change: T('تغيير كلمة المرور', 'Change password'),
+        sessT: T('الجلسات المفتوحة', 'Open sessions'), revoke: T('تسجيل خروج', 'Sign out'), revokeAll: T('تسجيل خروج من كل الأجهزة التانية', 'Sign out everywhere else'),
+        devT: T('الأجهزة الموثوقة', 'Trusted devices'), devX: T('الجهاز الموثوق مابيطلبش كود التحقق لحد ما مدته تخلص.', 'A trusted device skips the code until it expires.'),
+        noDev: T('حسابات Super Admin مالهاش أجهزة موثوقة — الكود مطلوب في كل دخول.', 'Super Admin accounts have no trusted devices — the code is required at every sign-in.'),
+        remove: T('إزالة', 'Remove'),
+        name: T('الاسم', 'Name'), email: T('البريد الإلكتروني', 'Email'), roles: T('الأدوار', 'Roles'),
+        rolesX: T('الأدوار بيحددها الـSuper Admin. ماينفعش حد يغيّر أدوار حسابه هو.', 'Roles are set by a Super Admin. Nobody can change their own roles.'),
+        person: T('الشخص المرتبط', 'Linked person'), noPerson: T('غير مرتبط', 'Not linked'),
+        emailX: T('تغيير البريد من الـSuper Admin', 'Email changes go through a Super Admin'),
+        toastT: T('جلستك هتنتهي خلال دقيقتين', 'Your session ends in 2 minutes'),
+        toastX: T('مفيش نشاط من فترة. لو بتكتب في فورم، المسودة محفوظة على الجهاز وهترجعلك بعد الدخول.', 'No activity for a while. If you’re filling a form, your draft is saved on this device and restored after sign-in.'),
+        stay: T('كمّل الجلسة', 'Stay signed in'), out: T('تسجيل خروج', 'Sign out')
+      }
+    });
+  }
+}
+
+</script>
+</body>
+</html>

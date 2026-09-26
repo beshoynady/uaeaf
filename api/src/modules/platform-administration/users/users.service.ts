@@ -1,4 +1,10 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import bcrypt from 'bcryptjs';
 import { Types } from 'mongoose';
 import { UsersRepository } from './users.repository.js';
@@ -14,6 +20,8 @@ import { AuthSessionsService } from '../auth-sessions/auth-sessions.service.js';
 import { FederationPersonnelsService } from '../../federation-governance/federation-personnel/federation-personnel.service.js';
 import { duplicateKeyField, isDuplicateKeyError } from '../../../common/utils/mongo-errors.util.js';
 import { toCsv, type CsvColumn } from '../../../common/utils/csv.util.js';
+import { missingPairs } from './user-authority.js';
+import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 
 /**
  * Column order for `users:Export`.
@@ -69,12 +77,13 @@ export class UsersService {
    *  untouched, so a database outage is never reported as a naming clash.
    *
    *  @throws ConflictException when the email is already registered. */
-  async create(dto: CreateUserDto): Promise<UserDocument> {
+  async create(dto: CreateUserDto, actor: AuthenticatedUser): Promise<UserDocument> {
     const roleIds = dto.roleIds ?? [];
-    // Both checks run before anything is written. An account created and
+    // Every check runs before anything is written. An account created and
     // then found to name a role that does not exist would have to be undone,
     // and a half-provisioned account looks provisioned.
     await this.rolesService.assertAssignable(roleIds);
+    await this.assertAssignableByActor(roleIds, actor);
     const personId = await this.resolvePersonId(dto.personId);
 
     const passwordHash = await bcrypt.hash(dto.password, PASSWORD_HASH_ROUNDS);
@@ -93,6 +102,57 @@ export class UsersService {
         throw new ConflictException(`An account with this ${field} already exists.`);
       }
       throw error;
+    }
+  }
+
+  /**
+   * "You cannot hand out what you do not hold yourself" — ADR-0104 rule 1.
+   *
+   * The rule `RolesService.assertGrantable` enforces when a role is BUILT,
+   * applied where a role actually reaches a person. Its absence here was a
+   * complete privilege escalation, proved in
+   * `docs/reviews/roles-permissions-review.md` §2: the coherence rule forces any
+   * role holding `users:Create` to also hold `users:Read`, `GET /users` reveals
+   * the Super Admin role's id, and `POST /users` accepted both that id and a
+   * caller-chosen password — so two calls produced an account holding every
+   * permission on the platform, and the actor signed in as it.
+   *
+   * Scope is compared, not just the pair: an actor holding `articles:Update` at
+   * `own` may not grant it at `all`. See `holdsPair`.
+   *
+   * @throws ForbiddenException naming every pair the actor lacks.
+   */
+  private async assertAssignableByActor(
+    roleIds: readonly string[],
+    actor: AuthenticatedUser,
+  ): Promise<void> {
+    if (roleIds.length === 0) {
+      // A bare account, or one being stripped of every role, hands over nothing.
+      return;
+    }
+
+    // A seeded role is refused outright rather than compared. Its whole purpose
+    // is to hold the entire catalogue, so only an existing holder could ever
+    // pass the comparison — and stating the rule is clearer to read, and to
+    // audit, than relying on that arithmetic.
+    for (const roleId of roleIds) {
+      if (await this.rolesService.isSystemRole(roleId)) {
+        throw new ForbiddenException({
+          code: 'ungrantableRole',
+          message: 'A system role cannot be assigned through the API.',
+          missing: [],
+        });
+      }
+    }
+
+    const granted = await this.rolesService.resolvePermissionsForRoles(roleIds);
+    const missing = missingPairs(actor.permissions, granted);
+    if (missing.length > 0) {
+      throw new ForbiddenException({
+        code: 'ungrantableRole',
+        message: 'You cannot assign a role that grants more than you hold yourself.',
+        missing: missing.map((pair) => `${pair.resourceType}:${pair.action}`),
+      });
     }
   }
 
@@ -154,8 +214,14 @@ export class UsersService {
    * @throws BadRequestException when an id resolves to no live role.
    * @throws NotFoundException when the account itself does not exist.
    */
-  async assignRoles(id: string, roleIds: Types.ObjectId[]): Promise<UserDocument> {
-    await this.rolesService.assertAssignable(roleIds.map((roleId) => roleId.toString()));
+  async assignRoles(
+    id: string,
+    roleIds: Types.ObjectId[],
+    actor: AuthenticatedUser,
+  ): Promise<UserDocument> {
+    const asStrings = roleIds.map((roleId) => roleId.toString());
+    await this.rolesService.assertAssignable(asStrings);
+    await this.assertAssignableByActor(asStrings, actor);
     const updated = await this.repository.updateById(id, { roleIds });
     if (!updated) {
       throw new NotFoundException('User not found.');

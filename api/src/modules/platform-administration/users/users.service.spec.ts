@@ -14,6 +14,15 @@ describe('UsersService', () => {
   let repository: jest.Mocked<UsersRepository>;
   let rolesService: jest.Mocked<RolesService>;
 
+  /** ADR-0104 rule 1 needs the acting caller. These specs are about other
+   *  behaviour, so the role being assigned resolves to no grants at all and the
+   *  superset check passes on an empty list. */
+  const actor = {
+    userId: new Types.ObjectId().toString(),
+    roleIds: [],
+    permissions: [],
+  } as never;
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -26,7 +35,14 @@ describe('UsersService', () => {
             updateById: jest.fn(),
           },
         },
-        { provide: RolesService, useValue: { assertAssignable: jest.fn() } },
+        {
+          provide: RolesService,
+          useValue: {
+            assertAssignable: jest.fn(),
+            resolvePermissionsForRoles: jest.fn(),
+            isSystemRole: jest.fn(),
+          },
+        },
         { provide: AuthSessionsService, useValue: { revokeAllForUser: jest.fn() } },
         { provide: FederationPersonnelsService, useValue: { findById: jest.fn() } },
       ],
@@ -35,6 +51,8 @@ describe('UsersService', () => {
     service = module.get(UsersService);
     repository = module.get(UsersRepository);
     rolesService = module.get(RolesService);
+    rolesService.resolvePermissionsForRoles.mockResolvedValue([] as never);
+    rolesService.isSystemRole.mockResolvedValue(false as never);
     rolesService.assertAssignable.mockResolvedValue(undefined as never);
   });
 
@@ -43,7 +61,7 @@ describe('UsersService', () => {
       const name = { en: 'Sara', ar: 'سارة' };
       repository.create.mockResolvedValue({ name, email: 'sara@uaeaf.ae' } as never);
 
-      await service.create({ name, email: 'sara@uaeaf.ae', password: 'correct horse battery staple' });
+      await service.create({ name, email: 'sara@uaeaf.ae', password: 'correct horse battery staple' }, actor);
 
       expect(repository.create).toHaveBeenCalledTimes(1);
       const [created] = repository.create.mock.calls[0] as [Record<string, unknown>];
@@ -64,7 +82,7 @@ describe('UsersService', () => {
       const roleIds = [new Types.ObjectId(), new Types.ObjectId()];
       repository.updateById.mockResolvedValue({ roleIds } as never);
 
-      await service.assignRoles(id, roleIds);
+      await service.assignRoles(id, roleIds, actor);
 
 
       expect(repository.updateById).toHaveBeenCalledWith(id, { roleIds });
