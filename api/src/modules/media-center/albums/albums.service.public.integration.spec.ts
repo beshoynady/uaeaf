@@ -109,19 +109,20 @@ describe('AlbumsService.getPublicBySlug (integration)', () => {
     ]);
   });
 
-  it('includes other Published albums sharing an association target, excluding itself', async () => {
+  it('includes other Published albums of the same championship, excluding itself', async () => {
     const championshipId = new Types.ObjectId();
-    const association = { ownerType: 'championships' as const, ownerId: championshipId, role: 'Related' as const, displayOrder: 0 };
     const current = await albumModel.create({
       ...baseAlbum,
       publicationState: 'Published',
-      associations: [association],
+      eventDate: new Date('2026-03-14'),
+      championshipId,
     });
     const sharing = await albumModel.create({
       ...baseAlbum,
       slug: 'sharing',
       publicationState: 'Published',
-      associations: [association],
+      eventDate: new Date('2026-03-14'),
+      championshipId,
     });
 
     const result = await albumsService.getPublicBySlug(current.slug);
@@ -145,7 +146,7 @@ describe('AlbumsService.getPublicBySlug (integration)', () => {
     expect(resultWithoutName!.album.championshipName).toBeNull();
   });
 
-  it('returns an empty related-albums list, without error, when the album has no associations', async () => {
+  it('returns an empty related-albums list, without error, when the album has no affiliation', async () => {
     const album = await albumModel.create({ ...baseAlbum, publicationState: 'Published' });
 
     const result = await albumsService.getPublicBySlug(album.slug);
@@ -155,21 +156,71 @@ describe('AlbumsService.getPublicBySlug (integration)', () => {
 
   it('excludes a Draft album from another album’s related list even when it shares a target', async () => {
     const championshipId = new Types.ObjectId();
-    const association = { ownerType: 'championships' as const, ownerId: championshipId, role: 'Related' as const, displayOrder: 0 };
     const current = await albumModel.create({
       ...baseAlbum,
       publicationState: 'Published',
-      associations: [association],
+      eventDate: new Date('2026-03-14'),
+      championshipId,
     });
     await albumModel.create({
       ...baseAlbum,
       slug: 'draft-sharing',
       publicationState: 'Draft',
-      associations: [association],
+      eventDate: new Date('2026-03-14'),
+      championshipId,
     });
 
     const result = await albumsService.getPublicBySlug(current.slug);
 
     expect(result!.relatedAlbums).toEqual([]);
+  });
+  describe('photo paging', () => {
+    /** Forty is the page the album viewer asks for. An album with more than
+     *  that must not send them all: a championship album of 400 photographs
+     *  is several megabytes of JSON before the first one is drawn. */
+    it('sends at most one page of photos, and reports how many there are', async () => {
+      const album = await albumModel.create({ ...baseAlbum, publicationState: 'Published' });
+      for (let i = 0; i < 45; i += 1) {
+        await mediaAssetModel.create(makeAsset(album._id, i));
+      }
+
+      const result = await albumsService.getPublicBySlug(album.slug);
+
+      expect(result!.mediaAssets).toHaveLength(40);
+      expect(result!.photoTotal).toBe(45);
+    });
+
+    it('sends the next page from an offset, in display order', async () => {
+      const album = await albumModel.create({ ...baseAlbum, publicationState: 'Published' });
+      for (let i = 0; i < 45; i += 1) {
+        await mediaAssetModel.create(makeAsset(album._id, i));
+      }
+
+      const second = await albumsService.getPublicBySlug(album.slug, 40);
+
+      expect(second!.mediaAssets).toHaveLength(5);
+      expect(second!.mediaAssets.map((photo) => photo.displayOrder)).toEqual([40, 41, 42, 43, 44]);
+    });
+
+    it('reports the total even when the album fits in one page', async () => {
+      const album = await albumModel.create({ ...baseAlbum, publicationState: 'Published' });
+      await mediaAssetModel.create(makeAsset(album._id, 0));
+
+      const result = await albumsService.getPublicBySlug(album.slug);
+
+      expect(result!.mediaAssets).toHaveLength(1);
+      expect(result!.photoTotal).toBe(1);
+    });
+
+    it('counts only visible photos, the same ones it sends', async () => {
+      const album = await albumModel.create({ ...baseAlbum, publicationState: 'Published' });
+      await mediaAssetModel.create(makeAsset(album._id, 0));
+      await mediaAssetModel.create(makeAsset(album._id, 1, false));
+
+      const result = await albumsService.getPublicBySlug(album.slug);
+
+      expect(result!.mediaAssets).toHaveLength(1);
+      expect(result!.photoTotal).toBe(1);
+    });
   });
 });

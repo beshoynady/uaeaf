@@ -200,6 +200,39 @@ export class MediaAssetsService {
     return this.repository.find();
   }
 
+  /** The album's first photo by display order — what becomes the cover when
+   *  the current one is removed. Visible only: a hidden photo is one the
+   *  editor chose not to show, and promoting it would show it. */
+  async findFirstInAlbum(albumId: Types.ObjectId): Promise<MediaAssetDocument | null> {
+    const [first] = await this.repository.findVisibleByAlbum(albumId);
+    return first ?? null;
+  }
+
+  /** One page of an album's visible photos in display order, with the total.
+   *  The album page asks for a page at a time because an album of several
+   *  hundred photographs is megabytes of JSON before the first one is drawn. */
+  async findPublicPageByAlbum(
+    albumId: Types.ObjectId,
+    skip: number,
+    limit: number,
+  ): Promise<{ items: MediaAssetPublicResponseDto[]; total: number }> {
+    const { items, total } = await this.repository.findVisiblePageByAlbum(albumId, skip, limit);
+    return { items: items.map((asset) => this.toPublicResponse(asset)), total };
+  }
+
+  /** Every photo of an album, hidden ones included: the CMS grid arranges all
+   *  of them, which is why this is not `findVisibleByAlbum`. */
+  async findAllInAlbum(albumId: Types.ObjectId): Promise<MediaAssetDocument[]> {
+    return this.repository.find({ albumId });
+  }
+
+  /** Writes `displayOrder` from the position of each id in the list, in one
+   *  round trip. A loop of saves would leave the grid half-reordered if it
+   *  failed partway, and the editor would see an arrangement nobody chose. */
+  async applyOrder(photoIds: readonly string[]): Promise<void> {
+    await this.repository.applyOrder(photoIds);
+  }
+
   async findById(id: string): Promise<MediaAssetDocument | null> {
     return this.repository.findById(id);
   }

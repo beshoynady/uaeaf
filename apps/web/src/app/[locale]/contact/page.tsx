@@ -18,6 +18,7 @@ import type { ContactUsPage } from "@/lib/api/types";
 import { findPublicPage } from "@/lib/pages/public-pages";
 import { isIndexable } from "@/lib/pages/indexability";
 import type { AppLocale } from "@/i18n/routing";
+import { withheldPage } from "@/components/pages/page-inactive-screen";
 
 const KEY = "contact-us";
 
@@ -48,6 +49,11 @@ export const generateMetadata = async ({
 const ContactPage = async ({ params }: { params: Promise<{ locale: AppLocale }> }) => {
   const { locale } = await params;
   setRequestLocale(locale);
+
+  // Switched off by the federation: the address stays, the content does not
+  // (ADR-0102 §D2).
+  const withheld = await withheldPage(KEY, locale);
+  if (withheld) return withheld;
 
   const { page, record, title, subtitle } = await loadStaticPage<ContactUsPage>(KEY, locale);
   const t = await getTranslations({ locale, namespace: "Contact" });

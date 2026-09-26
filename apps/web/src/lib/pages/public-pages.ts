@@ -170,9 +170,9 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
     register: "neutral",
     registerBasis: "§3.34.2 Media Centre — 'Neutral background... large imagery'.",
     schemaType: "CollectionPage",
-    // `GET /albums/public/:slug` is public, but it resolves one album by slug;
-    // there is no public list to build an index from.
-    listEndpoint: null,
+    // The archive's list; each album resolves by slug at
+    // `GET /albums/public/:slug`.
+    listEndpoint: "/albums/public",
   },
   {
     key: "videos",
@@ -288,6 +288,24 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
     schemaType: "AboutPage",
     listEndpoint: null,
   },
+  {
+    // Its own workflow-governed entity (ADR-0101). Moved here from
+    // `PREPARING_PAGES` the day its full page was built, under the same route,
+    // so no link changed.
+    //
+    // Its API read answers `{ isActive: false }` and nothing else while the
+    // page is switched off, and the route then draws the same in-preparation
+    // screen it carried before — so the entry is correct in both states.
+    key: "about",
+    route: "/about",
+    apiPath: "/about-federation-page/current/public",
+    messageKey: "about",
+    register: "green",
+    registerBasis:
+      "Derived (CLAUDE.md §1a): §3.34.2 files the About section's pages it names (board, committees, policies, strategic plan) under Quiet/Institutional, 'White + Green only'. Carried over unchanged from this page's PREPARING_PAGES entry.",
+    schemaType: "AboutPage",
+    listEndpoint: null,
+  },
 ];
 
 export function findPublicPage(key: string): PublicPage | undefined {
@@ -327,14 +345,6 @@ export interface PreparingPage {
 }
 
 export const PREPARING_PAGES: readonly PreparingPage[] = [
-  {
-    key: "about",
-    route: "/about",
-    titleKey: "Nav.aboutOverview",
-    register: "green",
-    registerBasis:
-      "Derived (CLAUDE.md §1a): §3.34.2 files the About section's pages it names (board, committees, policies, strategic plan) under Quiet/Institutional, 'White + Green only'.",
-  },
   {
     key: "organisational-structure",
     route: "/about/organisational-structure",

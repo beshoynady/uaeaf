@@ -1,0 +1,4 @@
+{
+  "comment": "Athletics photographs for `npm run seed:albums:dev`, each under a licence permitting commercial use (Unsplash or Pexels). EMPTY BY DESIGN: attribution cannot be invented. Every entry must name the photographer who took the picture, because `MediaFile.photographer` is shown to visitors as a credit, and a credit naming the wrong person is worse than no picture. Fill this from Unsplash or Pexels — each entry needs `url` (a direct image URL), `photographer` (the real name) and `source` (the page the picture came from). While this list is empty the seed reuses the media assets already in the local database instead, and says so on stdout.",
+  "photos": []
+}

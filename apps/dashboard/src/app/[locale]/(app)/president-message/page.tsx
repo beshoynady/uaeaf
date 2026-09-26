@@ -4,6 +4,8 @@ import { BrandGround } from "@/components/ui/brand-ground";
 import { EditorialScreenNotice } from "@/components/admin/editorial-editor/editorial-screen-notice";
 import { PresidentMessageEditor } from "@/components/admin/president-message/editor";
 import { loadEditorialScreen } from "@/lib/admin/editorial-screen";
+import { readGrants } from "@/lib/auth/session";
+import { hasPermission } from "@/lib/auth/permissions";
 import type { PresidentMessageResponse } from "@/lib/admin/president-message";
 import { resolveLocale } from "@/i18n/params";
 
@@ -56,16 +58,22 @@ const PresidentMessagePage = async ({
     messageBody: t("blockerField.messageBody"),
   };
 
+  // The publish grant decides whether the activation bar offers a control or
+  // only states the page's condition: editing the page and deciding when the
+  // public sees it are different jobs (ADR-0102 §D2).
+  const grants = await readGrants(locale);
+
   return (
     <BrandGround>
-      {header}
-      {/* The editor owns the screen's two columns, not this page: the version
-          panel's unsaved-changes guard needs the draft, and the draft lives
-          in there. */}
+      {/* The editor owns the frame, not this page: it draws the shared shell,
+          whose header replaces `PageHeader` here (ADR-0102 §D1) so the screen
+          has one `h1`, and whose version panel needs the draft this component
+          holds. */}
       <PresidentMessageEditor
         record={screen.record}
         images={screen.images}
         canEdit={screen.canEdit}
+        canPublish={hasPermission(grants, "presidentMessagePage", "Publish")}
         canReadMedia={screen.canReadMedia}
         locale={locale}
         editorial={screen.editorial}

@@ -71,7 +71,18 @@ export function BilingualField({
           its input and its footer — stays over that language's column. The
           two inputs used to be direct children of this grid, which left a
           caller no way to put anything under just one of them. */}
-      <div className="grid gap-4 sm:grid-cols-2">
+      {/* Side by side from a **content** width of 1024px, stacked below it
+          (owner brief §4). `sm:grid-cols-2` alone was a screen breakpoint, and
+          on the editor screens the screen is not what decides: at 1280 the
+          signed-in sidebar takes 240 and the section rail 290, leaving the
+          fields about 660 — two columns of 287 each, which is a field nobody
+          can read a headline in.
+
+          `@max-5xl/editor` matches only inside the editor shell's declared
+          container (`@container/editor`), so every other screen keeps the
+          behaviour it had. 5xl is Tailwind's 64rem — 1024px, the width the
+          brief names. */}
+      <div className="grid gap-4 sm:grid-cols-2 @max-5xl/editor:grid-cols-1">
         <div className="flex min-w-0 flex-col gap-1.5">
           {multiline ? (
             <TextArea

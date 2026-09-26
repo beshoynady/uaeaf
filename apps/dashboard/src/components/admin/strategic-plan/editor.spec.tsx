@@ -1,4 +1,5 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
+import { navigation } from "@/test/next-navigation";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithIntl } from "@/test/render";
@@ -14,7 +15,17 @@ import { StrategicPlanEditor } from "./editor";
  * page rules guard the composition and an editor cannot be asked to.
  */
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
+// `EditorShell` reads the selected tab from the URL and writes it back, so a
+// screen on the shell needs `useSearchParams` and `replace` as well as
+// `refresh` (ADR-0102 §D1). The three come from one helper.
+vi.mock("next/navigation", () => import("@/test/next-navigation"));
+
+beforeEach(() => {
+  // The mocked router holds the URL in module state, so a test that opened a
+  // tab would otherwise leave the next one on it.
+  navigation.reset();
+});
+
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -70,7 +81,7 @@ const RECORD: StrategicPlanResponse = {
 const mount = () =>
   renderWithIntl(
     <ToastProvider>
-      <StrategicPlanEditor record={RECORD} images={[]} canEdit canReadMedia={false} locale="ar" editorial={null} />
+      <StrategicPlanEditor record={RECORD} images={[]} canEdit canPublish={false} canReadMedia={false} locale="ar" editorial={null} />
     </ToastProvider>,
   );
 
@@ -89,10 +100,12 @@ const pillar = (number: number, total = 2) => screen.getByRole("group", { name: 
 const saveStatus = () => screen.getAllByRole("status").find((node) => node.hasAttribute("data-dirty"))!;
 
 describe("StrategicPlanEditor", () => {
-  it("draws the nine sections in the order the page prints them", () => {
+  it("draws the content sections in the order the page prints them", () => {
     stubFetch();
     mount();
 
+    // Eight, not nine: search and sharing moved to the SEO tab (ADR-0102 §D1).
+    // `editor-tab.spec.ts` pins that it is offered, and `seo-panel.tsx` draws it.
     expect(screen.getAllByRole("heading", { level: 3 }).map((heading) => heading.textContent)).toEqual([
       "الواجهة",
       "النظرة العامة",
@@ -102,7 +115,6 @@ describe("StrategicPlanEditor", () => {
       "المؤشرات",
       "مسار التنفيذ",
       "الدعوة",
-      "البحث والمشاركة",
     ]);
   });
 
@@ -110,7 +122,7 @@ describe("StrategicPlanEditor", () => {
     stubFetch();
     mount();
 
-    expect(screen.getByRole("status")).toHaveTextContent("كل التغييرات محفوظة");
+    expect(saveStatus()).toHaveTextContent("كل التغييرات محفوظة");
     expect(screen.getByRole("button", { name: "حفظ المسودة" })).toBeDisabled();
   });
 
@@ -176,6 +188,7 @@ describe("StrategicPlanEditor", () => {
           record={{ ...RECORD, executionSteps: [STEP, SECOND_STEP] }}
           images={[]}
           canEdit
+          canPublish={false}
           canReadMedia={false}
           locale="ar"
           editorial={null}
@@ -216,7 +229,7 @@ describe("StrategicPlanEditor", () => {
     };
     view.rerender(
       <ToastProvider>
-        <StrategicPlanEditor record={saved} images={[]} canEdit canReadMedia={false} locale="ar" editorial={null} />
+        <StrategicPlanEditor record={saved} images={[]} canEdit canPublish={false} canReadMedia={false} locale="ar" editorial={null} />
       </ToastProvider>,
     );
 
@@ -245,7 +258,7 @@ describe("StrategicPlanEditor", () => {
     };
     view.rerender(
       <ToastProvider>
-        <StrategicPlanEditor record={saved} images={[]} canEdit canReadMedia={false} locale="ar" editorial={null} />
+        <StrategicPlanEditor record={saved} images={[]} canEdit canPublish={false} canReadMedia={false} locale="ar" editorial={null} />
       </ToastProvider>,
     );
 

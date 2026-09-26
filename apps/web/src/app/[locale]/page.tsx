@@ -8,6 +8,8 @@ import { SponsorStrip } from "@/components/pages/home/sponsors/sponsor-strip";
 import { HomeNewsSection } from "@/components/pages/home/news-section";
 import { MediaCoverageSection } from "@/components/pages/home/media-coverage-section";
 import { HomeVideoSection } from "@/components/pages/home/video-section";
+import { HomeAlbumsSection } from "@/components/pages/home/albums-section/albums-section";
+import { loadAlbumsSection } from "@/components/pages/home/albums-section/load";
 import { SponsorsSection } from "@/components/pages/home/sponsors/sponsors-section";
 import { STRIP_DEFAULTS } from "@uaeaf/content/sponsors";
 import { loadHomepage, readNextEvent, readPlayback } from "@/lib/pages/homepage";
@@ -106,12 +108,15 @@ const HomePage = async ({ params }: { params: Promise<{ locale: AppLocale }> }) 
   // section included: a homepage composed without a VIDEO_LIBRARY row makes
   // neither of its two reads.
   const hasVideoSection = sections.some((section) => section.sectionType === "VIDEO_LIBRARY");
-  const [relations, news, videoSection] = await Promise.all([
+  const hasAlbumsSection = sections.some((section) => section.sectionType === "PHOTO_GALLERY");
+  const [relations, news, videoSection, albumsSection] = await Promise.all([
     loadSponsorRelations(sections),
     loadHomepageNews(sections),
     // One read that already knows whether a broadcast is running, which is why
     // the section needs no second request and no client-side check.
     hasVideoSection ? loadVideoSection() : null,
+    // One read carrying the lead album and the cards, already de-duplicated.
+    hasAlbumsSection ? loadAlbumsSection() : null,
   ]);
   // The broadcast rides along in the same read: it carries a `thumbnailId`
   // like any video, and a second request for one picture would be a second
@@ -168,6 +173,12 @@ const HomePage = async ({ params }: { params: Promise<{ locale: AppLocale }> }) 
       {videoSection ? (
         <HomeVideoSection section={videoSection} thumbnails={videoThumbnails} locale={locale} />
       ) : null}
+
+      {/* The photographs, directly after the video stage: together they are
+          the Media Centre, and neither sits next to "UAEAF in the Media"
+          (§11b keeps the two "media" sections apart). It draws nothing when
+          the editor switched it off or no album is published. */}
+      <HomeAlbumsSection section={albumsSection} locale={locale} />
 
       {relations.sections.map((section) =>
         section.sectionType === "SPONSORS" ? (

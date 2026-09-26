@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsDateString,
   IsIn,
   IsInt,
   IsMongoId,
@@ -13,7 +14,6 @@ import {
 import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
 import { ALBUM_PUBLICATION_STATES } from '../schemas/album.schema.js';
 import type { AlbumPublicationState } from '../schemas/album.schema.js';
-import { ContentAssociationDto } from './content-association.dto.js';
 
 /** `publicationState` values creatable directly via POST /albums —
  *  `'Published'` is deliberately excluded: it is reachable only through
@@ -44,16 +44,50 @@ export class CreateAlbumDto {
   @Type(() => LocalizedTextDto)
   description?: LocalizedTextDto;
 
-  @ApiProperty()
+  @ApiProperty({
+    description:
+      'The championship. An album’s season is derived from `eventDate`, so there is no season to set.',
+    required: false,
+  })
+  @IsOptional()
   @IsMongoId()
-  contentCategoryId: string;
+  championshipId?: string;
 
-  @ApiProperty({ type: [ContentAssociationDto], required: false })
+  @ApiProperty({ description: 'One competition inside the championship. Requires championshipId.', required: false })
+  @IsOptional()
+  @IsMongoId()
+  competitionId?: string;
+
+  @ApiProperty({
+    description: 'A conference, honouring or other institutional occasion. Excludes championshipId.',
+    required: false,
+  })
+  @IsOptional()
+  @IsMongoId()
+  publicEventId?: string;
+
+  @ApiProperty({ description: 'Athletes appearing in this album.', type: [String], required: false })
   @IsOptional()
   @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => ContentAssociationDto)
-  associations?: ContentAssociationDto[];
+  @IsMongoId({ each: true })
+  athleteIds?: string[];
+
+  @ApiProperty({ description: 'Clubs appearing in this album.', type: [String], required: false })
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  clubIds?: string[];
+
+  @ApiProperty({ description: 'When the occasion happened.', required: false })
+  @IsOptional()
+  @IsDateString()
+  eventDate?: string;
+
+  @ApiProperty({ description: 'Where the occasion happened.', type: LocalizedTextDto, required: false })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => LocalizedTextDto)
+  location?: LocalizedTextDto;
 
   @ApiProperty({
     description:

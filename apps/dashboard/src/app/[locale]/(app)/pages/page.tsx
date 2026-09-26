@@ -51,6 +51,10 @@ const SitePagesScreen = async ({
     key: page.key,
     record: records[index] ?? null,
     canEdit: hasPermission(grants, page.resourceType, "Update"),
+    // Two grants, two jobs: `Update` rewrites the page, `Publish` decides when
+    // the public sees it (ADR-0102 §D2). A page's editor is often not its
+    // publisher, so the activation bar is resolved separately.
+    canPublish: hasPermission(grants, page.resourceType, "Publish"),
   }));
 
   const editable = entries.filter((entry) => entry.canEdit).length;

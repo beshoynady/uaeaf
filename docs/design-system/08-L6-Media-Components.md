@@ -187,9 +187,9 @@ Either:
 
 **Purpose:** A 3D coverflow presentation of album covers, used to show that a featured album belongs to a body of work rather than standing alone.
 
-**Behavior:** Built on `CMP-CAROUSEL-001`, inheriting all three of its behavioural MUSTs unchanged. **MAY** rotate continuously without user initiation — the only component in the system permitted to do so — but **only** while all six conditions of **ADR-0099 D1** hold together: a visible pause control, a stop on hover and on `:focus-within`, a stop when off-screen and when the tab is hidden, full cancellation under `prefers-reduced-motion`, compositor-only properties, and one such rotation per view. Any one condition absent is a defect, not a degraded state.
+**Behavior:** Built on `CMP-CAROUSEL-001`, inheriting all three of its behavioural MUSTs unchanged. **MAY** rotate continuously without user initiation, like any component on the public site, but **only** while all six conditions of **ADR-0099 D1** hold together: a visible pause control, a stop on hover and on `:focus-within`, a stop when off-screen and when the tab is hidden, full cancellation under `prefers-reduced-motion`, compositor-only properties, and one such rotation per view. Any one condition absent is a defect, not a degraded state.
 
-**Related Governance:** **ADR-0099 D1, D3, D4, D5** (Media Showcase Motion — the narrowly scoped exception that authorises this component's continuous rotation; do not generalise it to any other component), `CMP-CAROUSEL-001`, Chapter 3 §3.14, Chapter 5 §5.8–§5.9, Chapter 6 (WCAG 2.2.2), ADR-0098 D5.
+**Related Governance:** **ADR-0099 D1, D3, D3a, D4, D5** (Ambient Motion Policy — the site-wide conditions that authorise unprompted motion; this component reads them through `useAmbientMotion` rather than restating them), `CMP-CAROUSEL-001`, Chapter 3 §3.14, Chapter 5 §5.8–§5.9, Chapter 6 (WCAG 2.2.2), ADR-0098 D5.
 
 # CMP-PHOTOSTACK-001 — Photo Stack
 
@@ -197,7 +197,7 @@ Either:
 
 **Behavior:** Built on `CMP-GALLERY-001` and `CMP-IMAGE-001`, inheriting §M.5's lazy-loading rule. **MUST NOT** self-animate: it animates on `:hover` and on `:focus-within` only (**ADR-0099 D2**), and the keyboard path produces the same composition as the pointer path, not a reduced one. Under `prefers-reduced-motion: reduce` the animation does not play and the resting composition stands.
 
-**Related Governance:** **ADR-0099 D2, D3, D4, D5**, `CMP-GALLERY-001`, `CMP-IMAGE-001` (§M.5), Chapter 5 §5.8.
+**Related Governance:** **ADR-0099 D1a, D2, D3, D4, D5** (interaction-bound motion, which needs no pause control), `CMP-GALLERY-001`, `CMP-IMAGE-001` (§M.5), Chapter 5 §5.8.
 
 ---
 

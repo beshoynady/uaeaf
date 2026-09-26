@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>إدارة نبذة عن الاتحاد — تبويبات</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0;background:#0B0B0B}
+a{color:#4CC27E}a:hover{color:#7AD9A0}
+*{box-sizing:border-box}
+a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid #FFFFFF;outline-offset:2px}
+.side-link{display:flex;align-items:center;gap:12px;height:42px;padding:0 14px;border-radius:10px;color:#C4C8CC;text-decoration:none;font-size:14px}
+.side-link:hover{background:#1E1E1E;color:#FFFFFF}
+.side-on{background:#1E1E1E;color:#FFFFFF;font-weight:700;box-shadow:inset -3px 0 0 #00843D}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 18px;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn-pri{background:#00843D;color:#FFFFFF;border:none}
+.btn-pri:hover{background:#1A9448;color:#FFFFFF}
+.btn-sec{background:transparent;color:#F2F2F2;border:1px solid #3A3F44}
+.btn-sec:hover{border-color:#4CC27E;color:#FFFFFF}
+.btn-sm{height:36px;padding:0 12px;font-size:13px}
+.btn-danger{background:transparent;color:#FF8A99;border:1px solid #6B2530}
+.btn-danger:hover{background:#2A1015;color:#FFB3BD}
+.chip{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+.c-live{background:#0F2A1B;color:#4CC27E}
+.c-draft{background:#2E2410;color:#E3B341}
+.c-err{background:#2A1015;color:#FF8A99}
+.c-auto{background:#122236;color:#8CB8F0}
+.c-muted{background:#1E1E1E;color:#C4C8CC}
+.tabs{display:flex;gap:4px;border-bottom:1px solid #2A2D30}
+.tab{position:relative;display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 18px;border:none;background:transparent;font-family:inherit;font-size:15px;font-weight:600;color:#A8ADB2;cursor:pointer}
+.tab:hover{color:#FFFFFF}
+.tab-on{color:#FFFFFF;font-weight:800}
+.tab-on::after{content:"";position:absolute;inset:auto 12px -1px 12px;height:3px;border-radius:3px 3px 0 0;background:linear-gradient(to left,#00843D 0 33%,#FFFFFF 33% 66%,#C8102E 66%)}
+.count{min-width:22px;height:22px;padding:0 6px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+.vt{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:12px;border:1px solid transparent;background:transparent;font-family:inherit;color:#F2F2F2;text-align:start;cursor:pointer}
+.vt:hover{background:#181818;border-color:#2A2D30}
+.vt-on{background:#161616;border-color:transparent;box-shadow:inset -3px 0 0 #00843D}
+.num{width:26px;height:26px;flex-shrink:0;border-radius:8px;background:#232629;color:#C4C8CC;font-size:12px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+.dot{width:8px;height:8px;border-radius:999px;flex-shrink:0}
+.sw{width:40px;height:24px;border-radius:999px;border:none;padding:3px;background:#4B5157;display:inline-flex;cursor:pointer;flex-shrink:0}
+.sw span{width:18px;height:18px;border-radius:999px;background:#FFFFFF}
+.sw-on{background:#00843D;justify-content:flex-end}
+.card{background:#141414;border:1px solid #2A2D30;border-radius:16px}
+.lbl{font-size:13px;font-weight:700;color:#E4E6E8}
+.hint{font-size:12px;color:#A8ADB2;line-height:1.6}
+.lang{font-size:11px;font-weight:800;padding:2px 7px;border-radius:6px;background:#232629;color:#C4C8CC}
+.inp{height:44px;border-radius:10px;border:1px solid #4B5157;padding:0 14px;font-family:inherit;font-size:14px;color:#F2F2F2;background:#0F0F0F;width:100%}
+.inp:hover{border-color:#8F9590}
+.ta{height:auto;min-height:96px;padding:10px 14px;line-height:1.75;resize:vertical}
+.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.row{display:grid;grid-template-columns:32px 84px 110px minmax(0,1fr) 128px 84px;align-items:center;gap:10px;padding:8px 12px;border-radius:12px;border:1px solid #2A2D30;background:#141414;font-size:14px;color:#F2F2F2}
+.row-on{border-color:#00843D;background:#0F1A13}
+.ib{width:36px;height:36px;border-radius:9px;border:none;background:transparent;color:#C4C8CC;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.ib:hover{background:#232629;color:#FFFFFF}
+.ib:disabled{color:#4B5157}
+.seg{display:inline-flex;padding:4px;border-radius:12px;background:#1E1E1E;gap:4px}
+.seg button{height:34px;padding:0 14px;border-radius:9px;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:600;color:#C4C8CC;cursor:pointer}
+.seg .seg-on{background:#2E3236;color:#FFFFFF}
+.step{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;text-align:center;font-size:13px;color:#A8ADB2}
+.step-dot{width:34px;height:34px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px}
+.issue{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:12px;background:#141414;border:1px solid #2A2D30;text-decoration:none;color:#E4E6E8;font-size:14px;line-height:1.6}
+.issue:hover{border-color:#4B5157;color:#FFFFFF}
+.ver{display:grid;grid-template-columns:90px minmax(0,1fr) 190px 150px 170px;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #22252A;font-size:14px;color:#E4E6E8}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1480px; display: flex; background: #0B0B0B; font-family: Alexandria, Tahoma, sans-serif; color: #F2F2F2; direction: rtl; overflow: hidden">
+
+<aside style="width: 240px; flex-shrink: 0; background: #111111; border-left: 1px solid #22252A; display: flex; flex-direction: column">
+<div style="height: 3px; background: linear-gradient(to left, #00843D 0 33%, #FFFFFF 33% 66%, #C8102E 66%)"></div>
+<div style="height: 68px; display: flex; align-items: center; gap: 10px; padding: 0 20px">
+<svg width="36" height="30" viewBox="0 0 240 200" aria-hidden="true"><path d="M20 170 L75.05 105.05 A7 7 0 0 1 84.95 114.95 Z" fill="#C8102E"></path><path d="M40 190 L142.2 72.2 A11 11 0 0 1 157.8 87.8 Z" fill="#00843D"></path><path d="M95 190 L182.9 87.9 A10 10 0 0 1 197.1 102.1 Z" fill="#FFFFFF"></path><path d="M150 190 L200.05 130.05 A7 7 0 0 1 209.95 139.95 Z" fill="#C8102E"></path></svg>
+<span style="font-size: 16px; font-weight: 800">UAEAF</span>
+</div>
+<nav aria-label="قائمة لوحة التحكم" style="padding: 8px 12px; display: flex; flex-direction: column; gap: 2px">
+<a class="side-link" href="#">نظرة عامة</a>
+<a class="side-link" href="#">الصفحات</a>
+<a class="side-link side-on" href="#" aria-current="page">نبذة عن الاتحاد</a>
+<a class="side-link" href="#">كلمة الرئيس</a>
+<a class="side-link" href="#">الرؤية والرسالة</a>
+<a class="side-link" href="#">الخطة الاستراتيجية</a>
+<a class="side-link" href="#">الرسائل</a>
+<a class="side-link" href="#">الأخبار</a>
+<a class="side-link" href="#">ألبومات الصور</a>
+</nav>
+</aside>
+
+<div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column">
+
+<header style="flex-shrink: 0; padding: 18px 32px 0; background: #0B0B0B; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 24px">
+<div style="display: flex; flex-direction: column; gap: 8px; min-width: 0">
+<nav aria-label="مسار التنقل"><ol style="list-style: none; margin: 0; padding: 0; display: flex; gap: 8px; font-size: 13px; color: #A8ADB2"><li><a href="#" style="color: #A8ADB2; text-decoration: none">الصفحات</a></li><li aria-hidden="true">/</li><li aria-current="page" style="color: #F2F2F2">نبذة عن الاتحاد</li></ol></nav>
+<div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+<h1 style="margin: 0; font-size: 26px; font-weight: 800">نبذة عن الاتحاد</h1>
+<span class="chip c-live"><span class="dot" style="background: #4CC27E"></span>على الموقع · الإصدار 21</span>
+<span class="chip c-draft"><span class="dot" style="background: #E3B341"></span>مسودة · 3 تغييرات غير منشورة</span>
+<span class="hint">حُفظت منذ دقيقتين</span>
+</div>
+</div>
+<div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0">
+<a class="btn btn-sec" href="#">معاينة المسودة</a>
+<button class="btn btn-sec">حفظ المسودة</button>
+<button class="btn btn-pri" onClick="{{goReview}}">إرسال للموافقة <span class="count" style="background: rgba(255,255,255,0.22)">1</span></button>
+</div>
+</div>
+
+<div role="status" style="display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-radius: 12px; background: #0F1A13; border: 1px solid #1F4A30">
+<span class="dot" style="background: #4CC27E; width: 10px; height: 10px"></span>
+<span style="font-size: 14px; font-weight: 700; color: #4CC27E">الصفحة نشطة على الموقع</span>
+<span class="hint" style="flex-grow: 1">الزوار بيشوفوا آخر نسخة منشورة. الإيقاف فوري ومش بيعدّي على الموافقة.</span>
+<button class="btn btn-danger btn-sm">إيقاف الصفحة…</button>
+</div>
+
+<div class="tabs" role="tablist" aria-label="أقسام الإدارة">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="4">
+<button class="{{t.cls}}" role="tab" aria-selected="{{t.sel}}" onClick="{{t.pick}}">{{t.label}}<sc-if value="{{t.hasCount}}" hint-placeholder-val="{{ false }}"><span class="count" style="{{t.countStyle}}">{{t.count}}</span></sc-if></button>
+</sc-for>
+</div>
+</header>
+
+<main style="flex-grow: 1; min-height: 0; padding: 24px 32px 32px">
+
+<sc-if value="{{isContent}}" hint-placeholder-val="{{ true }}">
+<div style="display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 24px; align-items: start">
+
+<div style="display: flex; flex-direction: column; gap: 6px; position: sticky; top: 0">
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 0 4px 8px"><span class="lbl">أقسام الصفحة</span><span class="hint">ترتيب ثابت</span></div>
+<div role="tablist" aria-orientation="vertical" aria-label="أقسام الصفحة" style="display: flex; flex-direction: column; gap: 2px">
+<sc-for list="{{sections}}" as="s" hint-placeholder-count="10">
+<div class="{{s.cls}}" style="cursor: default">
+<span class="num" style="{{s.numStyle}}">{{s.n}}</span>
+<button role="tab" aria-selected="{{s.sel}}" onClick="{{s.pick}}" style="flex-grow: 1; min-width: 0; border: none; background: transparent; font-family: inherit; color: inherit; text-align: start; cursor: pointer; padding: 0; display: flex; flex-direction: column; gap: 3px">
+<span style="font-size: 14px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{s.name}}</span>
+<span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: {{s.stateColor}}"><span class="dot" style="background: {{s.stateColor}}"></span>{{s.state}}</span>
+</button>
+<sc-if value="{{s.hasSwitch}}" hint-placeholder-val="{{ true }}"><button class="sw sw-on" role="switch" aria-checked="true" aria-label="{{s.swLabel}}"><span></span></button></sc-if>
+<sc-if value="{{s.isAuto}}" hint-placeholder-val="{{ false }}"><span class="chip c-auto" style="height: 24px">تلقائي</span></sc-if>
+<sc-if value="{{s.isLocked}}" hint-placeholder-val="{{ false }}"><span class="chip c-muted" style="height: 24px">دائمًا</span></sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+
+<section class="card" aria-labelledby="ed-title" style="display: flex; flex-direction: column; overflow: hidden">
+<div style="padding: 18px 24px; border-bottom: 1px solid #22252A; display: flex; align-items: center; justify-content: space-between; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px"><h2 id="ed-title" style="margin: 0; font-size: 20px; font-weight: 800">4 · الخط الزمني</h2><span class="hint">5 محطات ظاهرة · 1 مخفية لأن تاريخها غير معروف</span></div>
+<div style="display: flex; gap: 8px"><a class="btn btn-sec btn-sm" href="#">معاينة القسم</a></div>
+</div>
+
+<div style="padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; border-bottom: 1px solid #22252A">
+<div style="display: flex; flex-direction: column; gap: 6px"><span class="lbl">عنوان القسم</span><div class="pair"><label style="display: flex; flex-direction: column; gap: 4px"><span class="lang" style="align-self: flex-start">عربي</span><input class="inp" value="محطات صنعت تاريخ الاتحاد"></label><label style="display: flex; flex-direction: column; gap: 4px"><span class="lang" style="align-self: flex-start" lang="en">EN</span><input class="inp" dir="ltr" lang="en" value="Milestones that shaped the Federation"></label></div></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><span class="lbl">السطر الصغير فوق العنوان</span><div class="pair"><label style="display: flex; flex-direction: column; gap: 4px"><span class="lang" style="align-self: flex-start">عربي</span><input class="inp" value="سنوات التأسيس · 1974–1977"></label><label style="display: flex; flex-direction: column; gap: 4px"><span class="lang" style="align-self: flex-start" lang="en">EN</span><input class="inp" dir="ltr" lang="en" value="The founding years · 1974–1977"></label></div></div>
+</div>
+
+<div style="padding: 20px 24px; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px"><h3 style="margin: 0; font-size: 15px; font-weight: 800">المحطات (6)</h3><button class="btn btn-sec btn-sm">+ إضافة محطة</button></div>
+<div class="row"><span class="num">1</span><span style="display: flex"><button class="ib" aria-label="لأعلى" disabled>▲</button><button class="ib" aria-label="لأسفل">▼</button></span><span style="font-weight: 700">أبريل 1974</span><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">مرسوم إشهار جمعية الإمارات لألعاب القوى</span><span class="chip c-live" style="height: 24px">ظاهرة</span><button class="btn btn-sec btn-sm">تعديل</button></div>
+<div class="row"><span class="num">2</span><span style="display: flex"><button class="ib" aria-label="لأعلى">▲</button><button class="ib" aria-label="لأسفل">▼</button></span><span style="font-weight: 700">1974</span><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">أول رئيس للجمعية</span><span class="chip c-live" style="height: 24px">ظاهرة</span><button class="btn btn-sec btn-sm">تعديل</button></div>
+<div class="row row-on"><span class="num" style="background: #00843D; color: #FFFFFF">3</span><span style="display: flex"><button class="ib" aria-label="لأعلى">▲</button><button class="ib" aria-label="لأسفل">▼</button></span><span style="font-weight: 700; color: #E3B341">غير معروف</span><span style="font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">بطولة الخليج — البصرة</span><span class="chip c-muted" style="height: 24px">مخفية تلقائيًا</span><button class="btn btn-sec btn-sm" aria-expanded="true">إغلاق</button></div>
+
+<div style="margin-bottom: 8px; padding: 20px; border-radius: 14px; background: #0F1A13; border: 1px solid #1F4A30; display: flex; flex-direction: column; gap: 16px">
+<div style="display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 16px; align-items: end">
+<div style="display: flex; flex-direction: column; gap: 6px"><span class="lbl">التاريخ</span><div class="seg" role="radiogroup" aria-label="دقة التاريخ" style="align-self: flex-start"><button role="radio" aria-checked="false">سنة</button><button role="radio" aria-checked="false">شهر وسنة</button><button role="radio" aria-checked="false">تاريخ كامل</button><button role="radio" aria-checked="true" class="seg-on">غير معروف</button></div></div>
+<label style="display: flex; flex-direction: column; gap: 6px"><span class="lbl">التصنيف</span><select class="inp"><option>أول مشاركة</option></select></label>
+</div>
+<div class="hint" style="padding: 10px 14px; border-radius: 10px; background: #122236; color: #BCD6F5; font-size: 13px">مخفية تلقائيًا من الموقع لحد ما تحدد تاريخها وتنشر.</div>
+<div style="display: flex; flex-direction: column; gap: 6px"><span class="lbl">العنوان</span><div class="pair"><label style="display: flex; flex-direction: column; gap: 4px"><span class="lang" style="align-self: flex-start">عربي</span><input class="inp" value="بطولة الخليج — البصرة"></label><label style="display: flex; flex-direction: column; gap: 4px"><span class="lang" style="align-self: flex-start" lang="en">EN</span><input class="inp" dir="ltr" lang="en" value="Gulf Championship — Basra"></label></div></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><span class="lbl">الوصف</span><div class="pair"><label style="display: flex; flex-direction: column; gap: 4px"><span class="lang" style="align-self: flex-start">عربي</span><textarea class="inp ta">أول مشاركة خارجية للجمعية، ومثّلها السيد علي حميد عضو مجلس إدارة الجمعية.</textarea></label><label style="display: flex; flex-direction: column; gap: 4px"><span class="lang" style="align-self: flex-start" lang="en">EN</span><textarea class="inp ta" dir="ltr" lang="en">The Association’s first external participation, represented by board member Mr. Ali Humaid.</textarea></label></div></div>
+<div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap; padding-top: 12px; border-top: 1px solid #1F4A30">
+<div style="width: 140px; height: 84px; border-radius: 10px; border: 1px dashed #4B5157; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #A8ADB2">بلا صورة</div>
+<button class="btn btn-sec btn-sm">اختيار صورة</button>
+<label style="display: flex; align-items: center; gap: 8px; font-size: 14px"><button class="sw" role="switch" aria-checked="false" aria-label="محطة مميّزة"><span></span></button>مميّزة</label>
+<label style="display: flex; align-items: center; gap: 8px; font-size: 14px"><button class="sw" role="switch" aria-checked="false" aria-label="إخفاء يدويًا"><span></span></button>إخفاء يدويًا</label>
+<button class="btn btn-danger btn-sm" style="margin-inline-start: auto">حذف…</button>
+</div>
+</div>
+
+<div class="row"><span class="num">4</span><span style="display: flex"><button class="ib" aria-label="لأعلى">▲</button><button class="ib" aria-label="لأسفل">▼</button></span><span style="font-weight: 700">يناير 1976</span><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">تأسيس اتحاد الإمارات لألعاب القوى</span><span class="chip c-live" style="height: 24px">ظاهرة</span><button class="btn btn-sec btn-sm">تعديل</button></div>
+<div class="row"><span class="num">5</span><span style="display: flex"><button class="ib" aria-label="لأعلى">▲</button><button class="ib" aria-label="لأسفل">▼</button></span><span style="font-weight: 700">1976</span><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">الانضمام إلى الاتحاد الدولي لألعاب القوى</span><span class="chip c-live" style="height: 24px">ظاهرة</span><button class="btn btn-sec btn-sm">تعديل</button></div>
+<div class="row"><span class="num">6</span><span style="display: flex"><button class="ib" aria-label="لأعلى">▲</button><button class="ib" aria-label="لأسفل" disabled>▼</button></span><span style="font-weight: 700">1977</span><span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">الانضمام إلى الاتحاد الآسيوي لألعاب القوى</span><span class="chip c-live" style="height: 24px">ظاهرة</span><button class="btn btn-sec btn-sm">تعديل</button></div>
+</div>
+</section>
+</div>
+</sc-if>
+
+<sc-if value="{{isReview}}" hint-placeholder-val="{{ false }}">
+<div style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 24px; align-items: start">
+<section class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 24px">
+<h2 style="margin: 0; font-size: 18px; font-weight: 800">مسار النشر</h2>
+<div style="display: flex; align-items: flex-start; gap: 8px">
+<div class="step"><span class="step-dot" style="background: #00843D; color: #FFFFFF">✓</span><span style="color: #F2F2F2; font-weight: 700">مسودة</span><span>3 تغييرات</span></div>
+<div aria-hidden="true" style="flex: 1; height: 2px; margin-top: 17px; background: #2E3236"></div>
+<div class="step"><span class="step-dot" style="border: 2px solid #E3B341; color: #E3B341">2</span><span style="color: #F2F2F2; font-weight: 700">إرسال للموافقة</span><span>الخطوة الجاية</span></div>
+<div aria-hidden="true" style="flex: 1; height: 2px; margin-top: 17px; background: #2E3236"></div>
+<div class="step"><span class="step-dot" style="border: 2px solid #3A3F44">3</span><span>موافقة</span><span>مدير المحتوى</span></div>
+<div aria-hidden="true" style="flex: 1; height: 2px; margin-top: 17px; background: #2E3236"></div>
+<div class="step"><span class="step-dot" style="border: 2px solid #3A3F44">4</span><span>نشر</span><span>على الموقع</span></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<h3 style="margin: 0; font-size: 15px; font-weight: 800">قبل الإرسال (5)</h3>
+<a class="issue" href="#"><span class="chip c-err" style="height: 24px">مطلوب</span><span>القصة — الفقرة 2 ناقصها الترجمة الإنجليزية. <strong>بيمنع الإرسال.</strong></span></a>
+<a class="issue" href="#"><span class="chip c-draft" style="height: 24px">تنبيه</span><span>الهيرو والقصة — صورتين فاضيين، هيتعرضوا بخلفية الهوية.</span></a>
+<a class="issue" href="#"><span class="chip c-draft" style="height: 24px">تنبيه</span><span>الإنجازات والروّاد — 7 خانات صور فاضية.</span></a>
+<a class="issue" href="#"><span class="chip c-muted" style="height: 24px">معلومة</span><span>الخط الزمني — محطة «البصرة» مخفية لأن تاريخها غير معروف.</span></a>
+</div>
+</section>
+<section class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 16px">
+<h2 style="margin: 0; font-size: 18px; font-weight: 800">القرارات الأخيرة</h2>
+<ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px">
+<li style="display: flex; gap: 12px"><span class="dot" style="background: #4CC27E; margin-top: 7px"></span><div><div style="font-size: 14px; font-weight: 700">نُشر الإصدار 21 على الموقع</div><div class="hint">مسؤول المنصة · 26/09/2026، 3:07 ص</div></div></li>
+<li style="display: flex; gap: 12px"><span class="dot" style="background: #8CB8F0; margin-top: 7px"></span><div><div style="font-size: 14px; font-weight: 700">تفعيل الصفحة</div><div class="hint">مسؤول المنصة · 26/09/2026، 3:05 ص</div></div></li>
+<li style="display: flex; gap: 12px"><span class="dot" style="background: #E3B341; margin-top: 7px"></span><div><div style="font-size: 14px; font-weight: 700">أُرسلت للموافقة</div><div class="hint">مسؤول المنصة · 26/09/2026، 3:04 ص</div></div></li>
+</ol>
+<button class="btn btn-sec btn-sm" style="align-self: flex-start" onClick="{{goHistory}}">كل السجل</button>
+</section>
+</div>
+</sc-if>
+
+<sc-if value="{{isHistory}}" hint-placeholder-val="{{ false }}">
+<section class="card" style="overflow: hidden">
+<div class="ver" style="font-size: 12px; font-weight: 700; color: #A8ADB2; background: #111111"><span>الإصدار</span><span>الحالة</span><span>بواسطة</span><span>التاريخ</span><span></span></div>
+<div class="ver"><span style="font-weight: 800">21</span><span><span class="chip c-live">المنشور الآن</span></span><span>مسؤول المنصة</span><span>26/09 · 3:07 ص</span><span style="display: flex; gap: 8px"><button class="btn btn-sec btn-sm">قراءة</button></span></div>
+<div class="ver"><span style="font-weight: 800">20</span><span><span class="chip c-muted">مؤرشف</span></span><span>مسؤول المنصة</span><span>26/09 · 3:06 ص</span><span style="display: flex; gap: 8px"><button class="btn btn-sec btn-sm">قراءة</button><button class="btn btn-sec btn-sm">استرجاع…</button></span></div>
+<div class="ver"><span style="font-weight: 800">19</span><span><span class="chip c-muted">مؤرشف</span></span><span>مسؤول المنصة</span><span>26/09 · 3:05 ص</span><span style="display: flex; gap: 8px"><button class="btn btn-sec btn-sm">قراءة</button><button class="btn btn-sec btn-sm">استرجاع…</button></span></div>
+<div class="ver"><span style="font-weight: 800">18</span><span><span class="chip c-muted">مؤرشف</span></span><span>مسؤول المنصة</span><span>26/09 · 3:04 ص</span><span style="display: flex; gap: 8px"><button class="btn btn-sec btn-sm">قراءة</button><button class="btn btn-sec btn-sm">استرجاع…</button></span></div>
+<div style="padding: 14px 16px; display: flex; justify-content: space-between; align-items: center"><span class="hint">عرض 4 من 21</span><button class="btn btn-sec btn-sm">تحميل المزيد</button></div>
+</section>
+</sc-if>
+
+<sc-if value="{{isSeo}}" hint-placeholder-val="{{ false }}">
+<div style="display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 24px; align-items: start">
+<section class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; flex-direction: column; gap: 6px"><span class="lbl">عنوان الصفحة في البحث</span><div class="pair"><label style="display: flex; flex-direction: column; gap: 4px"><span class="lang" style="align-self: flex-start">عربي</span><input class="inp" value="نبذة عن الاتحاد | اتحاد الإمارات لألعاب القوى"><span class="hint">45 / 60 حرف</span></label><label style="display: flex; flex-direction: column; gap: 4px"><span class="lang" style="align-self: flex-start" lang="en">EN</span><input class="inp" dir="ltr" lang="en" value="About the Federation | UAE Athletics Federation"><span class="hint">47 / 60</span></label></div></div>
+<div style="display: flex; flex-direction: column; gap: 6px"><span class="lbl">الوصف</span><div class="pair"><label style="display: flex; flex-direction: column; gap: 4px"><span class="lang" style="align-self: flex-start">عربي</span><textarea class="inp ta">تاريخ اتحاد الإمارات لألعاب القوى منذ إشهار الجمعية عام 1974، وتأسيس الاتحاد 1976، وعضويته الدولية والآسيوية وأبرز إنجازاته.</textarea><span class="hint">124 / 160</span></label><label style="display: flex; flex-direction: column; gap: 4px"><span class="lang" style="align-self: flex-start" lang="en">EN</span><textarea class="inp ta" dir="ltr" lang="en">The history of the UAE Athletics Federation since 1974, its founding in 1976, memberships and key achievements.</textarea><span class="hint">112 / 160</span></label></div></div>
+<div style="display: flex; align-items: center; gap: 16px"><div style="width: 200px; height: 105px; border-radius: 10px; border: 1px dashed #4B5157; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #A8ADB2">صورة المشاركة 1200×630</div><button class="btn btn-sec btn-sm">اختيار صورة</button></div>
+</section>
+<section class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 10px">
+<span class="lbl">معاينة نتيجة البحث</span>
+<div style="padding: 16px; border-radius: 12px; background: #FFFFFF; color: #1F2328; display: flex; flex-direction: column; gap: 4px; direction: rtl"><span style="font-size: 12px; color: #4B5157" lang="en">uaeaf.ae › ar › about</span><span style="font-size: 18px; color: #1A0DAB">نبذة عن الاتحاد | اتحاد الإمارات لألعاب القوى</span><span style="font-size: 13px; line-height: 1.6; color: #4B5157">تاريخ اتحاد الإمارات لألعاب القوى منذ إشهار الجمعية عام 1974، وتأسيس الاتحاد 1976، وعضويته الدولية والآسيوية وأبرز إنجازاته.</span></div>
+</section>
+</div>
+</sc-if>
+
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1480}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const tab = st.tab || 'content';
+    const sec = st.sec || 4;
+    const T = [
+      { id: 'content', label: 'المحتوى', count: null },
+      { id: 'review', label: 'المراجعة والنشر', count: 5, tone: 'warn' },
+      { id: 'history', label: 'الإصدارات والسجل', count: 21, tone: 'muted' },
+      { id: 'seo', label: 'SEO والمشاركة', count: null }
+    ];
+    const tabs = T.map((t) => ({
+      ...t,
+      cls: t.id === tab ? 'tab tab-on' : 'tab',
+      sel: t.id === tab ? 'true' : 'false',
+      hasCount: t.count !== null,
+      countStyle: t.tone === 'warn' ? 'background:#2E2410;color:#E3B341' : 'background:#232629;color:#C4C8CC',
+      pick: () => this.setState({ tab: t.id })
+    }));
+    const OK = '#4CC27E', WARN = '#E3B341', ERR = '#FF8A99', AUTO = '#8CB8F0';
+    const S = [
+      { n: 1, name: 'الهيرو', state: 'صورة ناقصة', c: WARN, kind: 'lock' },
+      { n: 2, name: 'الأرقام الرئيسية', state: 'مكتمل', c: OK },
+      { n: 3, name: 'القصة', state: 'ترجمة ناقصة', c: ERR },
+      { n: 4, name: 'الخط الزمني', state: '5 ظاهرة · 1 مخفية', c: WARN },
+      { n: 5, name: 'الإنجازات', state: '5 صور ناقصة', c: WARN },
+      { n: 6, name: 'روّاد البدايات', state: '2 صور ناقصة', c: WARN },
+      { n: 7, name: 'القيادة', state: 'من المجلس · 7 أشخاص', c: AUTO, kind: 'auto' },
+      { n: 8, name: 'الحوكمة والشفافية', state: 'مكتمل', c: OK },
+      { n: 9, name: 'المنظومة والإحصائيات', state: 'من القاعدة · 3 أرقام', c: AUTO, kind: 'auto' },
+      { n: 10, name: 'دعوة للتواصل', state: 'مكتمل', c: OK }
+    ];
+    const sections = S.map((s) => ({
+      ...s,
+      stateColor: s.c,
+      cls: s.n === sec ? 'vt vt-on' : 'vt',
+      sel: s.n === sec ? 'true' : 'false',
+      numStyle: s.n === sec ? 'background:#00843D;color:#FFFFFF' : '',
+      hasSwitch: !s.kind,
+      isAuto: s.kind === 'auto',
+      isLocked: s.kind === 'lock',
+      swLabel: 'إظهار ' + s.name,
+      pick: () => this.setState({ sec: s.n })
+    }));
+    return {
+      tabs, sections,
+      isContent: tab === 'content', isReview: tab === 'review', isHistory: tab === 'history', isSeo: tab === 'seo',
+      goReview: () => this.setState({ tab: 'review' }),
+      goHistory: () => this.setState({ tab: 'history' })
+    };
+  }
+}
+</script>
+</body>
+</html>

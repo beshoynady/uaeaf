@@ -45,6 +45,42 @@ export class MediaAssetsRepository extends BaseRepository<MediaAssetDocument> {
     return outcome.deletedCount === 1;
   }
 
+  /** One page of an album's visible photos, plus how many there are.
+   *
+   *  The page and the count are two queries issued together, not one: they can
+   *  in principle observe different moments, and a photo hidden between them
+   *  would leave the caller one short of the total it was told. That window is
+   *  microseconds wide against an album an editor edits by hand, and closing
+   *  it would mean a transaction for a read — so the risk is accepted, and
+   *  named here rather than hidden behind a claim of atomicity. */
+  async findVisiblePageByAlbum(
+    albumId: Types.ObjectId,
+    skip: number,
+    limit: number,
+  ): Promise<{ items: MediaAssetDocument[]; total: number }> {
+    const filter = { albumId, isVisible: true, archivedAt: null };
+    const [items, total] = await Promise.all([
+      this.model.find(filter).sort({ displayOrder: 1 }).skip(skip).limit(limit).exec(),
+      this.model.countDocuments(filter).exec(),
+    ]);
+    return { items, total };
+  }
+
+  /** Writes `displayOrder` from each id's position, in one round trip.
+   *  A loop of saves would leave the grid half-reordered on a failure
+   *  partway, and the editor would be looking at an arrangement nobody
+   *  chose. */
+  async applyOrder(photoIds: readonly string[]): Promise<void> {
+    if (photoIds.length === 0) {
+      return;
+    }
+    await this.model.bulkWrite(
+      photoIds.map((id, index) => ({
+        updateOne: { filter: { _id: new Types.ObjectId(id) }, update: { $set: { displayOrder: index } } },
+      })),
+    );
+  }
+
   async findVisibleByIds(ids: Types.ObjectId[]): Promise<MediaAssetDocument[]> {
     if (ids.length === 0) {
       return [];

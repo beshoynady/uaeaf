@@ -1,5 +1,4 @@
 import type { AboutFederationCounts } from './about-federation-stats.service.js';
-import { ABOUT_SECTION_KEYS } from './schemas/about-sections.schema.js';
 import type { AboutSectionKey } from './schemas/about-sections.schema.js';
 
 /**
@@ -172,15 +171,13 @@ export const projectAboutPage = (
   // quote with no one to attribute it to is not a section.
   const leadership = asRecord(snapshot.leadership);
   if (leadership && context.leaders.length > 0) {
-    // Sorted by `displayOrder`, then printed without it: the board's chosen
-    // order is the array's order from here on, and the integer itself is the
-    // board module's bookkeeping, not something a visitor is told.
-    const people = [...context.leaders]
-      .sort((a, b) => a.displayOrder - b.displayOrder)
-      .map(({ displayOrder, ...person }) => {
-        void displayOrder;
-        return person;
-      });
+    // Already ordered by the module that owns the order; printed without the
+    // integer, which is that module's bookkeeping and not something a visitor
+    // is told.
+    const people = context.leaders.map(({ displayOrder, ...person }) => {
+      void displayOrder;
+      return person;
+    });
     page.leadership = { ...clean(leadership), people };
   }
 
@@ -219,7 +216,3 @@ export const projectAboutPage = (
 
   return page;
 };
-
-/** The order the page prints, for any reader that needs it without importing
- *  the schema. Exported here so the response and the page agree on one list. */
-export const PUBLIC_SECTION_ORDER = ABOUT_SECTION_KEYS;

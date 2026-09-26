@@ -36,10 +36,6 @@ export interface TextRun {
 const EMPHASIS = /\*\*([^*]+?)\*\*/g;
 
 export const splitEmphasis = (text: string): TextRun[] => {
-  if (text.length === 0) {
-    return [];
-  }
-
   const runs: TextRun[] = [];
   let cursor = 0;
 

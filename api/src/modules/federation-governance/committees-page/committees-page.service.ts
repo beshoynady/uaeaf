@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { SingletonPageService } from '../../../common/services/singleton-page.service.js';
+import { ActivatableSingletonPageService } from '../../../common/services/singleton-page.service.js';
 import { MediaAssetsService } from '../../media-center/media-assets/media-assets.service.js';
 import { CommitteesPagesRepository } from './committees-page.repository.js';
 import type { CommitteesPageDocument } from './schemas/committees-page.schema.js';
@@ -9,7 +9,7 @@ import { UpsertCommitteesPageDto } from './dto/upsert-committees-page.dto.js';
 /** Implements: committeesPage collection, Domain 1 — Federation &
  *  Governance. Singleton (decision #8) — see `SingletonPageService`. */
 @Injectable()
-export class CommitteesPagesService extends SingletonPageService<CommitteesPageDocument> {
+export class CommitteesPagesService extends ActivatableSingletonPageService<CommitteesPageDocument> {
   constructor(
     repository: CommitteesPagesRepository,
     private readonly mediaAssetsService: MediaAssetsService,

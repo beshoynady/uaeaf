@@ -4,6 +4,8 @@ import { BrandGround } from "@/components/ui/brand-ground";
 import { EditorialScreenNotice } from "@/components/admin/editorial-editor/editorial-screen-notice";
 import { StrategicPlanEditor } from "@/components/admin/strategic-plan/editor";
 import { loadEditorialScreen } from "@/lib/admin/editorial-screen";
+import { readGrants } from "@/lib/auth/session";
+import { hasPermission } from "@/lib/auth/permissions";
 import type { StrategicPlanResponse } from "@/lib/admin/strategic-plan";
 import { resolveLocale } from "@/i18n/params";
 
@@ -40,10 +42,17 @@ const StrategicPlanAdminPage = async ({
     introText: t("blockerField.introText"),
   };
 
+  // The publish grant decides whether the activation bar offers a control or
+  // only states the page's condition: editing the page and deciding when the
+  // public sees it are different jobs (ADR-0102 §D2).
+  const grants = await readGrants(locale);
+
+  // No `PageHeader` on this branch: the editor's own shell draws the header
+  // (ADR-0102 §D1), and two headers would be two `h1`s on one screen.
   return (
     <BrandGround>
-      {header}
       <StrategicPlanEditor
+        canPublish={hasPermission(grants, "strategicPlansPage", "Publish")}
         record={screen.record}
         images={screen.images}
         canEdit={screen.canEdit}

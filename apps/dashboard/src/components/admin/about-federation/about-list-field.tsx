@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { BUTTON_ICON, BUTTON_SECONDARY } from "@/components/ui/interactive";
+import { BUTTON_ICON, BUTTON_SECONDARY, FOCUS_RING, TRANSITION } from "@/components/ui/interactive";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 /**
@@ -59,9 +59,17 @@ export interface AboutListLabels {
   /** Asked before a row is deleted. */
   removeTitle: string;
   removeBody: string;
+  /** Why nothing more can be added, for a list the approved composition draws
+   *  in one row. Required whenever `maxItems` is given. */
+  limitReached?: string;
 }
 
 export type ItemState = "visible" | "hidden" | "autoHidden";
+
+/** The destructive button inside an opened row. It carries the focus ring and
+ *  the pressed response, which a hand-written copy of it did not — a keyboard
+ *  reached it and nothing on screen said so. */
+const REMOVE_BUTTON = `inline-flex min-h-11 items-center gap-2 rounded-[var(--radius-md)] px-3 text-label font-semibold text-[color:var(--color-semantic-error-text)] hover:bg-[color-mix(in_srgb,var(--color-semantic-error)_10%,transparent)] active:bg-[color-mix(in_srgb,var(--color-semantic-error)_18%,transparent)] ${TRANSITION} ${FOCUS_RING} disabled:cursor-not-allowed disabled:text-[color:var(--color-text-disabled)] disabled:hover:bg-transparent`;
 
 export const AboutListField = <T extends AboutListItem>({
   id,
@@ -73,12 +81,23 @@ export const AboutListField = <T extends AboutListItem>({
   stateOf,
   children,
   makeItem,
+  maxItems,
 }: {
   id: string;
   items: readonly T[];
   onChange: (items: T[]) => void;
   disabled: boolean;
   labels: AboutListLabels;
+  /**
+   * How many the approved composition can draw, hidden items counted — they
+   * take their place back the moment an editor shows them again.
+   *
+   * At the cap the add button is disabled and says why, rather than staying
+   * lit and doing nothing: a control that looks available and is not is read
+   * as a bug in the screen. Deleting stays available, because deleting is how
+   * an editor makes room.
+   */
+  maxItems?: number;
   summaryOf: (item: T) => RowSummary;
   /** Whether the item prints, and if not, whether the editor chose that. */
   stateOf: (item: T) => ItemState;
@@ -116,6 +135,10 @@ export const AboutListField = <T extends AboutListItem>({
     onChange(next);
   };
 
+  /** At the cap. Hidden items count: they take their place back the moment an
+   *  editor shows them again. */
+  const full = maxItems !== undefined && items.length >= maxItems;
+
   const patchAt = (index: number) => (change: Partial<T>) =>
     onChange(items.map((item, position) => (position === index ? { ...item, ...change } : item)));
 
@@ -127,6 +150,13 @@ export const AboutListField = <T extends AboutListItem>({
   };
 
   const add = () => {
+    // Checked here, against the list as it stands now, rather than from a
+    // value captured when the button was drawn (CLAUDE.md §31.1): the list can
+    // have grown since, and the disabled button is the structure, this is the
+    // backstop.
+    if (maxItems !== undefined && items.length >= maxItems) {
+      return;
+    }
     onChange([...items, makeItem()]);
     // The new row opens on its own: an editor who just pressed "add" wants to
     // fill it in, and a collapsed empty row reads as nothing having happened.
@@ -172,8 +202,8 @@ export const AboutListField = <T extends AboutListItem>({
               <div
                 className={`flex items-center gap-3 rounded-[var(--radius-md)] border px-3 py-2 ${
                   open
-                    ? "border-[color:var(--color-brand-green)] bg-[color:var(--color-surface-sunken)]"
-                    : "border-[color:var(--color-border-default)] bg-[color:var(--color-surface-default)]"
+                    ? "border-[color:var(--color-brand-primary)] bg-[color:var(--color-surface-sunken)]"
+                    : "border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)]"
                 }`}
               >
                 <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-[color:var(--color-surface-sunken)] text-label font-bold text-[color:var(--color-text-secondary)]">
@@ -232,7 +262,7 @@ export const AboutListField = <T extends AboutListItem>({
                 <span
                   className={`w-24 shrink-0 text-label font-semibold ${
                     summary.leadUnconfirmed
-                      ? "text-[color:var(--color-text-warning)]"
+                      ? "text-[color:var(--color-semantic-warning-text)]"
                       : "text-[color:var(--color-text-primary)]"
                   }`}
                 >
@@ -267,7 +297,7 @@ export const AboutListField = <T extends AboutListItem>({
                   <div className="flex justify-end border-t border-[color:var(--color-border-subtle)] pt-4">
                     <button
                       type="button"
-                      className="inline-flex h-11 items-center gap-2 rounded-[var(--radius-md)] px-3 text-label font-semibold text-[color:var(--color-text-danger)] hover:bg-[color:var(--color-surface-danger-subtle)]"
+                      className={REMOVE_BUTTON}
                       disabled={disabled}
                       onClick={() => setPendingRemoval(index)}
                     >
@@ -281,10 +311,22 @@ export const AboutListField = <T extends AboutListItem>({
         })}
       </ol>
 
-      <div>
-        <button type="button" className={BUTTON_SECONDARY} disabled={disabled} onClick={add}>
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          className={BUTTON_SECONDARY}
+          disabled={disabled || full}
+          aria-describedby={full ? `${id}-limit` : undefined}
+          onClick={add}
+        >
           {labels.addItem}
         </button>
+
+        {full && labels.limitReached ? (
+          <p id={`${id}-limit`} className="text-label text-[color:var(--color-text-muted)]">
+            {labels.limitReached}
+          </p>
+        ) : null}
       </div>
 
       <p aria-live="polite" className="sr-only">
@@ -323,7 +365,7 @@ const ItemStateBadge = ({ state }: { state: ItemState }) => {
 
   const tone =
     state === "visible"
-      ? "bg-[color:var(--color-surface-success-subtle)] text-[color:var(--color-text-success)]"
+      ? "bg-[color-mix(in_srgb,var(--color-semantic-success)_10%,transparent)] text-[color:var(--color-semantic-success-text)]"
       : "bg-[color:var(--color-surface-sunken)] text-[color:var(--color-text-secondary)]";
 
   return (

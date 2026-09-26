@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { navigation } from "@/test/next-navigation";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithIntl } from "@/test/render";
@@ -6,8 +7,11 @@ import { ToastProvider } from "@/components/ui/toast";
 import type { PresidentMessageResponse } from "@/lib/admin/president-message";
 import { PresidentMessageEditor } from "./editor";
 
-const refresh = vi.fn();
-vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
+// `EditorShell` reads the selected tab from the URL and writes it back, so a
+// screen on the shell needs `useSearchParams` and `replace` as well as
+// `refresh` (ADR-0102 §D1). The three come from one helper.
+vi.mock("next/navigation", () => import("@/test/next-navigation"));
+
 
 /**
  * The long form as an author works it.
@@ -52,6 +56,7 @@ function renderEditor(canEdit = true) {
         record={RECORD}
         images={[]}
         canEdit={canEdit}
+        canPublish={false}
         canReadMedia
         locale="ar"
       />
@@ -61,7 +66,9 @@ function renderEditor(canEdit = true) {
 }
 
 beforeEach(() => {
-  refresh.mockReset();
+  // The mocked router holds the URL in module state, so a test that opened a
+  // tab would otherwise leave the next one on it.
+  navigation.reset();
 });
 
 afterEach(() => {
@@ -173,10 +180,33 @@ describe("the date under the message", () => {
   });
 });
 
+/** The header's own saved-state line. The activation bar is a second
+ *  `role="status"` on the screen since ADR-0102 §D2, so the one this file means
+ *  is named by the attribute the shell puts on it. */
+const saveStatus = () => screen.getAllByRole("status").find((node) => node.hasAttribute("data-dirty"))!;
+
+/** Opens the SEO tab, where the search-result fields now live (ADR-0102 §D1).
+ *  Pressed rather than set through the URL, so the tab strip is exercised on the
+ *  way in. */
+const openSeo = async (user: ReturnType<typeof userEvent.setup>) =>
+  user.click(screen.getByRole("tab", { name: /SEO/ }));
+
+/** Opens the versions tab, where the version panel now lives (ADR-0102 §D1),
+ *  and waits for its list. */
+const openVersions = async (user: ReturnType<typeof userEvent.setup>) => {
+  await user.click(screen.getByRole("tab", { name: /الإصدارات/ }));
+  await screen.findByRole("list", { name: "إصدارات هذا السجل" });
+};
+
+/** Back to the fields. */
+const openContent = async (user: ReturnType<typeof userEvent.setup>) =>
+  user.click(screen.getByRole("tab", { name: "المحتوى" }));
+
 describe("the search-result counters", () => {
   it("counts both languages, not only the one being edited in", async () => {
     const user = userEvent.setup();
     renderEditor();
+    await openSeo(user);
 
     await user.type(screen.getByLabelText("عنوان الصفحة — بالإنجليزية"), "Hello");
 
@@ -191,6 +221,7 @@ describe("the search-result counters", () => {
   it("accepts a title past the guidance and says what will be shown", async () => {
     const user = userEvent.setup();
     renderEditor();
+    await openSeo(user);
 
     const field = screen.getByLabelText("عنوان الصفحة — بالإنجليزية");
     await user.click(field);
@@ -205,7 +236,7 @@ describe("unsaved work", () => {
   it("starts clean and says so", () => {
     renderEditor();
 
-    expect(screen.getByRole("status")).toHaveTextContent("كل التغييرات محفوظة");
+    expect(saveStatus()).toHaveTextContent("كل التغييرات محفوظة");
     expect(screen.getByRole("button", { name: "حفظ المسودة" })).toBeDisabled();
   });
 
@@ -215,7 +246,7 @@ describe("unsaved work", () => {
 
     await user.type(heroTitle(), "!");
 
-    expect(screen.getByRole("status")).toHaveTextContent("تغييرات غير محفوظة");
+    expect(saveStatus()).toHaveTextContent("تغييرات غير محفوظة");
     expect(screen.getByRole("button", { name: "حفظ المسودة" })).toBeEnabled();
   });
 
@@ -291,7 +322,9 @@ describe("a reviewer who may decide but not rewrite", () => {
   it("gets the message to read, with nothing to change it with", () => {
     renderEditor(false);
 
-    expect(screen.getByText("تستطيع قراءة هذه الكلمة لا تغييرها.")).toBeInTheDocument();
+    expect(// The shell's own sentence since this screen moved onto it (ADR-0102 §D1):
+      // one wording for every editor, rather than one per screen.
+      screen.getByText("تستطيع قراءة هذه الصفحة لا تغييرها.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "حفظ المسودة" })).toBeNull();
     expect(heroTitle()).toBeDisabled();
     expect(screen.getByRole("button", { name: "إضافة قيمة" })).toBeDisabled();
@@ -345,8 +378,11 @@ describe("the version panel, wired to this form", () => {
     const calls = stub();
     renderEditor();
 
-    await screen.findByRole("list", { name: "إصدارات هذا السجل" });
+    // Typed on the content tab, restored from the versions tab — the draft
+    // survives the switch, which is what makes the guard's question meaningful
+    // at all (ADR-0102 §D1).
     await user.type(heroTitle(), "!");
+    await openVersions(user);
     await user.click(screen.getByRole("button", { name: "استرجاع" }));
 
     expect(await screen.findByText("لديك تغييرات غير محفوظة")).toBeInTheDocument();
@@ -358,7 +394,7 @@ describe("the version panel, wired to this form", () => {
     stub();
     renderEditor();
 
-    await screen.findByRole("list", { name: "إصدارات هذا السجل" });
+    await openVersions(user);
     await user.click(screen.getByRole("button", { name: "استرجاع" }));
 
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
@@ -373,15 +409,19 @@ describe("the version panel, wired to this form", () => {
     stub();
     renderEditor();
 
-    await screen.findByRole("list", { name: "إصدارات هذا السجل" });
     await user.type(heroTitle(), "!");
     expect(heroTitle()).toHaveValue("hero-ع!");
 
+    await openVersions(user);
     await user.click(screen.getByRole("button", { name: "استرجاع" }));
     await user.click(await screen.findByRole("button", { name: "تجاهل تغييراتي واسترجع" }));
 
-    expect(heroTitle()).toHaveValue("hero-ع");
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
+
+    // Back on the fields: the discard has to have actually emptied them, or
+    // "discard and restore" restores over work the form still holds.
+    await openContent(user);
+    expect(heroTitle()).toHaveValue("hero-ع");
   });
 });
 

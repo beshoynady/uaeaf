@@ -18,6 +18,7 @@ import { isIndexable } from "@/lib/pages/indexability";
 import { findPublicPage } from "@/lib/pages/public-pages";
 import { AboutPageJsonLd, BreadcrumbJsonLd } from "@/lib/seo/json-ld";
 import { buildMetadata } from "@/lib/seo/metadata";
+import { withheldPage } from "@/components/pages/page-inactive-screen";
 
 /**
  * `/about/governance/strategic-plan` — the Strategic Plan (ADR-0075).
@@ -46,7 +47,8 @@ export const dynamic = "force-dynamic";
 /** ...with the data still cached for `fetchPublic`'s window (Chapter 14 §7). */
 export const fetchCache = "default-cache";
 
-const PAGE = findPublicPage("strategic-plan")!;
+const KEY = "strategic-plan";
+const PAGE = findPublicPage(KEY)!;
 
 const loadRecord = () => fetchPublic<StrategicPlanPublic>(PAGE.apiPath);
 
@@ -116,6 +118,12 @@ const StrategicPlanPage = async ({ params }: { params: Promise<{ locale: AppLoca
 
   const record = await loadRecord();
   if (!record) notFound();
+
+  // Switched off by the federation: the API answers with the switch and no
+  // content at all, so there is nothing here to render and nothing to leak
+  // (ADR-0102 §D2). The address stays, and answers 200.
+  const withheld = await withheldPage(KEY, locale);
+  if (withheld) return withheld;
 
   const nav = await getTranslations({ locale, namespace: "Nav" });
   const copy = await getTranslations({ locale, namespace: "StrategicPlan" });

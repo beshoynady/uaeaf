@@ -15,12 +15,21 @@ export class AlbumDetailPageResponseDto {
   @ApiProperty({ type: AlbumPublicResponseDto })
   album: AlbumPublicResponseDto;
 
-  @ApiProperty({ type: [MediaAssetPublicResponseDto], description: 'Visible photos, in display order.' })
+  @ApiProperty({
+    type: [MediaAssetPublicResponseDto],
+    description: 'One page of visible photos, in display order. At most 40.',
+  })
   mediaAssets: MediaAssetPublicResponseDto[];
+
+  @ApiProperty({ description: 'Visible photos in this album, across every page.' })
+  photoTotal: number;
+
+  @ApiProperty({ description: 'How many photos were skipped to produce this page.' })
+  photoSkip: number;
 
   @ApiProperty({
     type: [RelatedAlbumSummaryDto],
-    description: 'Other Published albums sharing an association target, excluding this one.',
+    description: 'Other Published albums related to this one, closest relationship first.',
   })
   relatedAlbums: RelatedAlbumSummaryDto[];
 }

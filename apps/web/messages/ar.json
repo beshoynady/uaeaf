@@ -5,7 +5,7 @@
   },
   "Nav": {
     "home": "الرئيسية",
-    "about": "عن الاتحاد",
+    "about": "نبذة عن الاتحاد",
     "aboutOverview": "نبذة عن الاتحاد",
     "presidentMessage": "كلمة الرئيس",
     "boardMembers": "مجلس الإدارة",
@@ -69,6 +69,7 @@
     "description": "الهيكل العام للموقع (الترويسة والتذييل) جاهز. أقسام الصفحة الرئيسية قيد التنفيذ."
   },
   "Pages": {
+    "about": "نبذة عن الاتحاد",
     "news": "الأخبار",
     "athletes": "الرياضيون",
     "clubs": "الأندية",
@@ -450,6 +451,178 @@
       "Form": "نموذج",
       "Guide": "دليل",
       "Decision": "قرار"
+    }
+  },
+  "About": {
+    "achievements": {
+      "previous": "الإنجاز السابق",
+      "next": "الإنجاز التالي",
+      "medal": {
+        "gold": "ذهبية",
+        "silver": "فضية",
+        "bronze": "برونزية",
+        "other": "إنجاز"
+      }
+    },
+    "timeline": {
+      "category": {
+        "association": "الجمعية",
+        "firstLeadership": "القيادة الأولى",
+        "firstParticipation": "أول مشاركة",
+        "federation": "الاتحاد",
+        "globalMembership": "عضوية دولية",
+        "continentalMembership": "عضوية قارية"
+      }
+    },
+    "ecosystem": {
+      "source": {
+        "clubs": "الأندية",
+        "athletes": "الرياضيون",
+        "officials": "الحكام",
+        "championships": "البطولات"
+      },
+      "unit": {
+        "clubs": "نادٍ عضو في المنظومة",
+        "athletes": "رياضي مسجَّل",
+        "officials": "حكم معتمد",
+        "championships": "بطولة ضمن الروزنامة"
+      }
+    }
+  },
+  "albums": {
+    "card": {
+      "browse": "تصفح الألبوم",
+      "photoCount": "{count, plural, zero {لا صور} one {صورة واحدة} two {صورتان} few {# صور} other {# صورة}}",
+      "dateLabel": "التاريخ",
+      "placeLabel": "المكان"
+    },
+    "chips": {
+      "label": "الانتساب",
+      "kind_championship": "بطولة",
+      "kind_competition": "منافسة",
+      "kind_publicEvent": "فعالية"
+    },
+    "deck": {
+      "label": "أغلفة الألبوم المميز",
+      "pause": "إيقاف العرض مؤقتًا",
+      "play": "تشغيل العرض",
+      "motionOff": "العرض ثابت لأن جهازك يطلب تقليل الحركة"
+    },
+    "filters": {
+      "label": "تصفية الألبومات",
+      "season": "الموسم الرياضي",
+      "seasonAll": "كل المواسم",
+      "occasion": "البطولة / الفعالية",
+      "occasionAll": "كل البطولات والفعاليات",
+      "occasionChampionships": "البطولات",
+      "occasionEvents": "الفعاليات",
+      "competition": "المنافسة",
+      "competitionAll": "كل المنافسات",
+      "athlete": "اللاعب",
+      "athleteAll": "كل اللاعبين",
+      "club": "النادي",
+      "clubAll": "كل الأندية",
+      "period": "الفترة الزمنية",
+      "period_any": "كل الأوقات",
+      "period_last30": "آخر 30 يومًا",
+      "period_last90": "آخر 3 أشهر",
+      "period_thisYear": "هذه السنة",
+      "period_custom": "مخصص",
+      "from": "من",
+      "to": "إلى",
+      "rangeBackwards": "تاريخ النهاية قبل تاريخ البداية، فلم يُطبَّق.",
+      "search": "بحث",
+      "searchPlaceholder": "اسم الألبوم",
+      "searchClear": "مسح البحث",
+      "clear": "مسح الفلاتر",
+      "count": "{shown} من {total} ألبوم",
+      "hiddenHint": "فلاتر الموسم والحدث واللاعب تظهر فقط عند توفر بيانات مرتبطة.",
+      "activeLabel": "الفلاتر المطبّقة",
+      "remove": "إزالة",
+      "searchChip": "بحث: «{text}»",
+      "rangeChip": "<from></from> – <to></to>",
+      "rangeFromChip": "من <from></from>",
+      "rangeToChip": "حتى <to></to>"
+    },
+    "viewer": {
+      "heading": "صور الألبوم",
+      "viewSwitch": "طريقة العرض",
+      "viewSlider": "شريط العرض",
+      "viewIndex": "الفهرس",
+      "play": "تشغيل العرض التلقائي",
+      "pause": "إيقاف العرض التلقائي",
+      "playUnavailable": "العرض التلقائي متوقف لأن جهازك يطلب حركة أقل",
+      "carousel": "شريط صور",
+      "slide": "صورة",
+      "stage": "صور الألبوم في شريط العرض",
+      "previous": "الصورة السابقة",
+      "next": "الصورة التالية",
+      "position": "الصورة {current} من {total}",
+      "credit": "تصوير: {credit}",
+      "creditWithSource": "تصوير: {credit} · {source}",
+      "photoLink": "رابط الصورة",
+      "photoLinkCopied": "تم نسخ رابط الصورة",
+      "thumbnails": "مصغّرات الصور",
+      "indexLabel": "فهرس صور الألبوم",
+      "indexHint": "اختر أي صورة لفتحها في شريط العرض.",
+      "photoLinkManual": "انسخ رابط هذه الصفحة، فهو يفتح هذه الصورة."
+    },
+    "page": {
+      "stats": {
+        "label": "المعرض بالأرقام",
+        "albums": "ألبوم",
+        "photos": "صورة",
+        "occasions": "بطولة وفعالية"
+      },
+      "featured": {
+        "badge": "الألبوم المميز",
+        "open": "عرض الألبوم",
+        "date": "التاريخ",
+        "place": "المكان",
+        "photos": "عدد الصور"
+      },
+      "archive": {
+        "title": "ألبومات البطولات والفعاليات",
+        "description": "أرشيف مرئي شامل يوثّق مسيرة الاتحاد في البطولات والفعاليات المحلية والدولية."
+      },
+      "pagination": {
+        "label": "صفحات الألبومات",
+        "previous": "الصفحة السابقة",
+        "next": "الصفحة التالية",
+        "goTo": "الصفحة {page}"
+      },
+      "showMore": "عرض المزيد من الألبومات",
+      "empty": {
+        "archiveTitle": "لم تُنشر ألبومات بعد",
+        "archiveBody": "ستظهر هنا ألبومات البطولات والفعاليات فور نشرها.",
+        "filteredTitle": "لا توجد ألبومات تطابق هذه الفلاتر",
+        "filteredBody": "جرّب فترة زمنية أوسع، أو أزل أحد الفلاتر المطبّقة لرؤية ألبومات أكثر.",
+        "clearFilters": "عرض كل الألبومات",
+        "pageTitle": "لا توجد ألبومات في هذه الصفحة",
+        "pageBody": "عدد صفحات الأرشيف أقل من رقم هذه الصفحة.",
+        "firstPage": "العودة إلى الصفحة الأولى"
+      },
+      "album": {
+        "metaLabel": "تفاصيل الألبوم",
+        "date": "التاريخ",
+        "place": "المكان",
+        "photos": "عدد الصور",
+        "play": "تشغيل العرض",
+        "copyLink": "نسخ رابط الألبوم",
+        "linkCopied": "تم نسخ رابط الألبوم",
+        "related": "ألبومات ذات صلة",
+        "allAlbums": "كل الألبومات"
+      }
+    },
+    "seo": {
+      "albumDescription": "ألبوم صور «{title}» من المركز الإعلامي للاتحاد الإماراتي لألعاب القوى."
+    }
+  },
+  "home": {
+    "albums": {
+      "title": "ألبومات الصور",
+      "allAlbums": "كل الألبومات",
+      "openAlbum": "عرض الألبوم"
     }
   }
 }

@@ -69,6 +69,7 @@
     "description": "The site shell (header and footer) is ready. Homepage sections are in progress."
   },
   "Pages": {
+    "about": "About the Federation",
     "news": "News",
     "athletes": "Athletes",
     "clubs": "Clubs",
@@ -450,6 +451,178 @@
       "Form": "Form",
       "Guide": "Guide",
       "Decision": "Decision"
+    }
+  },
+  "About": {
+    "achievements": {
+      "previous": "Previous achievement",
+      "next": "Next achievement",
+      "medal": {
+        "gold": "Gold",
+        "silver": "Silver",
+        "bronze": "Bronze",
+        "other": "Achievement"
+      }
+    },
+    "timeline": {
+      "category": {
+        "association": "The Association",
+        "firstLeadership": "First leadership",
+        "firstParticipation": "First participation",
+        "federation": "The Federation",
+        "globalMembership": "Global membership",
+        "continentalMembership": "Continental membership"
+      }
+    },
+    "ecosystem": {
+      "source": {
+        "clubs": "Clubs",
+        "athletes": "Athletes",
+        "officials": "Officials",
+        "championships": "Championships"
+      },
+      "unit": {
+        "clubs": "member clubs",
+        "athletes": "registered athletes",
+        "officials": "certified officials",
+        "championships": "championships on the calendar"
+      }
+    }
+  },
+  "albums": {
+    "card": {
+      "browse": "Browse album",
+      "photoCount": "{count, plural, one {# photo} other {# photos}}",
+      "dateLabel": "Date",
+      "placeLabel": "Place"
+    },
+    "chips": {
+      "label": "Affiliation",
+      "kind_championship": "Championship",
+      "kind_competition": "Competition",
+      "kind_publicEvent": "Event"
+    },
+    "deck": {
+      "label": "Featured album covers",
+      "pause": "Pause slideshow",
+      "play": "Play slideshow",
+      "motionOff": "Slideshow is still because your device asks for reduced motion"
+    },
+    "filters": {
+      "label": "Filter albums",
+      "season": "Season",
+      "seasonAll": "All seasons",
+      "occasion": "Championship / Event",
+      "occasionAll": "All championships and events",
+      "occasionChampionships": "Championships",
+      "occasionEvents": "Events",
+      "competition": "Competition",
+      "competitionAll": "All competitions",
+      "athlete": "Athlete",
+      "athleteAll": "All athletes",
+      "club": "Club",
+      "clubAll": "All clubs",
+      "period": "Period",
+      "period_any": "All time",
+      "period_last30": "Last 30 days",
+      "period_last90": "Last 3 months",
+      "period_thisYear": "This year",
+      "period_custom": "Custom",
+      "from": "From",
+      "to": "To",
+      "rangeBackwards": "The end date is before the start date, so it was not applied.",
+      "search": "Search",
+      "searchPlaceholder": "Album name",
+      "searchClear": "Clear search",
+      "clear": "Clear filters",
+      "count": "{shown} of {total, plural, one {# album} other {# albums}}",
+      "hiddenHint": "Season, event and athlete filters appear only when related data exists.",
+      "activeLabel": "Applied filters",
+      "remove": "Remove",
+      "searchChip": "Search: “{text}”",
+      "rangeChip": "<from></from> – <to></to>",
+      "rangeFromChip": "From <from></from>",
+      "rangeToChip": "Until <to></to>"
+    },
+    "viewer": {
+      "heading": "Album photos",
+      "viewSwitch": "View",
+      "viewSlider": "Slider",
+      "viewIndex": "Index",
+      "play": "Play slideshow",
+      "pause": "Pause slideshow",
+      "playUnavailable": "Slideshow is off because your device asks for reduced motion",
+      "carousel": "carousel",
+      "slide": "slide",
+      "stage": "Album photos slider",
+      "previous": "Previous photo",
+      "next": "Next photo",
+      "position": "Photo {current} of {total}",
+      "credit": "Photo: {credit}",
+      "creditWithSource": "Photo: {credit} · {source}",
+      "photoLink": "Photo link",
+      "photoLinkCopied": "Photo link copied",
+      "thumbnails": "Photo thumbnails",
+      "indexLabel": "Album photo index",
+      "indexHint": "Choose any photo to open it in the slider.",
+      "photoLinkManual": "Copy this page's link — it opens this photo."
+    },
+    "page": {
+      "stats": {
+        "label": "The gallery in numbers",
+        "albums": "Albums",
+        "photos": "Photos",
+        "occasions": "Championships & events"
+      },
+      "featured": {
+        "badge": "Featured album",
+        "open": "View album",
+        "date": "Date",
+        "place": "Place",
+        "photos": "Photos"
+      },
+      "archive": {
+        "title": "Championship and event albums",
+        "description": "A complete visual archive of the federation's journey through local and international championships and events."
+      },
+      "pagination": {
+        "label": "Album pages",
+        "previous": "Previous page",
+        "next": "Next page",
+        "goTo": "Page {page}"
+      },
+      "showMore": "Show more albums",
+      "empty": {
+        "archiveTitle": "No albums published yet",
+        "archiveBody": "Championship and event albums will appear here as soon as they are published.",
+        "filteredTitle": "No albums match these filters",
+        "filteredBody": "Try a wider period, or remove one of the applied filters to see more albums.",
+        "clearFilters": "Show all albums",
+        "pageTitle": "There are no albums on this page",
+        "pageBody": "The archive has fewer pages than this page number.",
+        "firstPage": "Back to the first page"
+      },
+      "album": {
+        "metaLabel": "Album details",
+        "date": "Date",
+        "place": "Place",
+        "photos": "Photos",
+        "play": "Play slideshow",
+        "copyLink": "Copy album link",
+        "linkCopied": "Album link copied",
+        "related": "Related albums",
+        "allAlbums": "All albums"
+      }
+    },
+    "seo": {
+      "albumDescription": "“{title}” — a photo album from the UAE Athletics Federation media centre."
+    }
+  },
+  "home": {
+    "albums": {
+      "title": "Photo albums",
+      "allAlbums": "All albums",
+      "openAlbum": "View album"
     }
   }
 }

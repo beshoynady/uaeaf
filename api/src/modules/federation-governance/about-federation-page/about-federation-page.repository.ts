@@ -12,11 +12,8 @@ export class AboutFederationPagesRepository extends BaseRepository<AboutFederati
     super(model);
   }
 
-  /** The row including `isActive`, which the schema keeps out of ordinary
-   *  reads so it can never be frozen into a revision. The two callers that
-   *  genuinely need it — the public read, which must know whether to serve the
-   *  page, and the dashboard, which draws the switch — ask for it here. */
-  async findByIdWithActivation(id: string): Promise<AboutFederationPageDocument | null> {
-    return this.model.findOne({ _id: id, archivedAt: null }).select('+isActive').exec();
-  }
+  // `findByIdWithActivation` and `findAllWithActivation` are inherited. They
+  // were written here first, for this page, and moved to `BaseRepository` when
+  // fifteen more pages needed them (ADR-0102 §D2) — the reasoning is on the
+  // base methods, beside the schema comment that makes them necessary.
 }

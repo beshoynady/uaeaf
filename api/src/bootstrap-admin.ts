@@ -9,12 +9,23 @@ import { Role } from './modules/platform-administration/roles/schemas/role.schem
 import { User } from './modules/platform-administration/users/schemas/user.schema.js';
 import { readBootstrapAdminInput, runBootstrap } from './bootstrap/seed-admin.js';
 import { seedVideoSection, type VideoSectionSeedResult } from './bootstrap/seed-video-section.js';
+import {
+  seedPhotoGallerySection,
+  type PhotoGallerySectionSeedResult,
+} from './bootstrap/seed-photo-gallery-section.js';
 
 /** What the operator reads for each outcome of the video-section seed. */
 const VIDEO_SECTION_REPORT: Record<VideoSectionSeedResult, string> = {
   created: 'homepage VIDEO_LIBRARY section created',
   exists: 'homepage VIDEO_LIBRARY section already existed (left untouched)',
   noHomepage: 'no homepage page row yet, so no VIDEO_LIBRARY section was created',
+};
+
+/** The same three outcomes, for the albums section. */
+const PHOTO_GALLERY_REPORT: Record<PhotoGallerySectionSeedResult, string> = {
+  created: 'homepage PHOTO_GALLERY section created',
+  exists: 'homepage PHOTO_GALLERY section already existed (left untouched)',
+  noHomepage: 'no homepage page row yet, so no PHOTO_GALLERY section was created',
 };
 
 const log = (message: string): void => {
@@ -75,13 +86,18 @@ const main = async (): Promise<void> => {
         : `administrator already existed: ${admin.email} (left untouched)`,
     );
 
-    // The homepage's video section. Create-if-absent, so re-running a deploy
-    // never resets settings an editor has since changed.
-    const videoSection = await seedVideoSection({
+    // The homepage's composed sections. Both create-if-absent, so re-running a
+    // deploy never resets settings an editor has since changed.
+    const models = {
       pages: app.get<Model<Page>>(getModelToken(Page.name)),
       pageSections: app.get<Model<PageSection>>(getModelToken(PageSection.name)),
-    });
+    };
+
+    const videoSection = await seedVideoSection(models);
     log(VIDEO_SECTION_REPORT[videoSection]);
+
+    const photoGallery = await seedPhotoGallerySection(models);
+    log(PHOTO_GALLERY_REPORT[photoGallery]);
   } finally {
     await app.close();
   }

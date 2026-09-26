@@ -4,6 +4,7 @@ import { DisciplinesScreen } from "@/components/pages/disciplines/disciplines-sc
 import { buildStaticPageMetadata } from "@/components/pages/static-page-screen";
 import { findPublicPage } from "@/lib/pages/public-pages";
 import { isIndexable } from "@/lib/pages/indexability";
+import { withheldPage } from "@/components/pages/page-inactive-screen";
 import type { AppLocale } from "@/i18n/routing";
 
 const KEY = "disciplines";
@@ -38,6 +39,12 @@ export const generateMetadata = async ({
 const DisciplinesPage = async ({ params }: { params: Promise<{ locale: AppLocale }> }) => {
   const { locale } = await params;
   setRequestLocale(locale);
+
+  // Switched off by the federation: the address stays, the content does not
+  // (ADR-0102 §D2).
+  const withheld = await withheldPage(KEY, locale);
+  if (withheld) return withheld;
+
   return <DisciplinesScreen locale={locale} />;
 };
 

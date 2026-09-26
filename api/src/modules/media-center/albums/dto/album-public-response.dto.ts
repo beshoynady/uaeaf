@@ -14,7 +14,24 @@ export class AlbumPublicResponseDto {
   @ApiProperty({ type: LocalizedTextDto }) title: LocalizedTextDto;
   @ApiProperty() slug: string;
   @ApiProperty({ type: LocalizedTextDto, required: false, nullable: true }) description: LocalizedTextDto | null;
-  @ApiProperty() contentCategoryId: string;
+  @ApiProperty({ required: false, nullable: true }) championshipId: string | null;
+  @ApiProperty({ required: false, nullable: true }) competitionId: string | null;
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    description: 'A conference, honouring or other institutional occasion.',
+  })
+  publicEventId: string | null;
+  @ApiProperty({ type: [String], description: 'Athletes appearing in this album.' }) athleteIds: string[];
+  @ApiProperty({ type: [String], description: 'Clubs appearing in this album.' }) clubIds: string[];
+  @ApiProperty({
+    required: false,
+    nullable: true,
+    description: 'When the occasion happened — not when it was published.',
+  })
+  eventDate: Date | null;
+  @ApiProperty({ type: LocalizedTextDto, required: false, nullable: true }) location: LocalizedTextDto | null;
+  @ApiProperty({ description: 'At most one published album carries this at a time.' }) isFeatured: boolean;
   @ApiProperty({
     type: LocalizedTextDto,
     required: false,

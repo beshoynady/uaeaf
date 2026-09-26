@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { SingletonPageService } from '../../../common/services/singleton-page.service.js';
+import { ActivatableSingletonPageService } from '../../../common/services/singleton-page.service.js';
 import { MediaAssetsService } from '../../media-center/media-assets/media-assets.service.js';
 import { AthletesPageRepository } from './athletes-page.repository.js';
 import type { AthletesPageDocument } from './schemas/athletes-page.schema.js';
@@ -10,7 +10,7 @@ import { UpsertAthletesPageDto } from './dto/upsert-athletes-page.dto.js';
  *  Singleton (decision #8): `upsert()` updates the single row rather than
  *  ever inserting a second one — see `SingletonPageService`. */
 @Injectable()
-export class AthletesPageService extends SingletonPageService<AthletesPageDocument> {
+export class AthletesPageService extends ActivatableSingletonPageService<AthletesPageDocument> {
   constructor(
     repository: AthletesPageRepository,
     private readonly mediaAssetsService: MediaAssetsService,

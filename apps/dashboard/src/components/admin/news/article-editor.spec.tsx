@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { navigation } from "@/test/next-navigation";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithIntl } from "@/test/render";
@@ -8,7 +9,6 @@ import { ArticleEditor } from "./article-editor";
 import type { ArticleEditorResponse } from "@/lib/admin/article-editor";
 
 const replace = vi.fn();
-const refresh = vi.fn();
 
 // `Link` too, since the create screen gained a way back to the list and a
 // cancel: the real one needs the router context this test does not mount.
@@ -20,7 +20,11 @@ vi.mock("@/i18n/navigation", () => ({
     </a>
   ),
 }));
-vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
+// `EditorShell` reads the selected tab from the URL and writes it back, so a
+// screen on the shell needs `useSearchParams` and `replace` as well as
+// `refresh` (ADR-0102 §D1). The three come from one helper.
+vi.mock("next/navigation", () => import("@/test/next-navigation"));
+
 
 /**
  * The form as an author works it.
@@ -48,14 +52,26 @@ vi.mock("@/components/admin/editorial-editor/editor-shell", () => ({
     dirty,
     body,
     children,
+    seo,
   }: {
     dirty: boolean;
     body: () => Record<string, unknown>;
     children: (state: { disabled: boolean; clearFailure: () => void }) => React.ReactNode;
+    seo?: (state: { disabled: boolean; clearFailure: () => void }) => React.ReactNode;
   }) => {
     shell.body = body;
     shell.dirty = dirty;
-    return <div data-testid="shell">{children({ disabled: false, clearFailure: () => {} })}</div>;
+    const state = { disabled: false, clearFailure: () => {} };
+    // Both panels, because the real shell offers both and the address field
+    // moved into the SEO one (ADR-0102 §D1). A stub that rendered only the
+    // content tab would have these tests looking for a field nothing drew — and
+    // reporting it as a missing label rather than as a stub that is out of date.
+    return (
+      <div data-testid="shell">
+        {children(state)}
+        {seo ? seo(state) : null}
+      </div>
+    );
   },
 }));
 
@@ -102,6 +118,9 @@ const renderEditor = (props: Partial<Parameters<typeof ArticleEditor>[0]> = {}) 
 const fetchMock = vi.fn();
 
 beforeEach(() => {
+  // The mocked router holds the URL in module state, so a test that opened a
+  // tab would otherwise leave the next one on it.
+  navigation.reset();
   shell.body = null;
   shell.dirty = false;
   replace.mockClear();

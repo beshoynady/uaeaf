@@ -3,6 +3,10 @@ import { Types } from 'mongoose';
 import { ClubsRepository } from './clubs.repository.js';
 import type { ClubDocument } from './schemas/club.schema.js';
 import { CreateClubDto } from './dto/create-club.dto.js';
+import {
+  ClubPublicListResponseDto,
+  ClubPublicResponseDto,
+} from './dto/club-public-response.dto.js';
 import { isDuplicateKeyError, duplicateKeyField } from '../../../common/utils/mongo-errors.util.js';
 import { toCsv, type CsvColumn } from '../../../common/utils/csv.util.js';
 
@@ -68,6 +72,27 @@ export class ClubsService {
       }
       throw error;
     }
+  }
+
+  /** Public club listing — active clubs only, in the public-safe shape.
+   *  Added 2026-09-25 for the albums club filter: the album records a
+   *  `clubIds[]`, and without a public route a visitor could be offered a
+   *  filter whose options nothing could name. */
+  async findAllPublic(page = 1, limit = 200): Promise<ClubPublicListResponseDto> {
+    const skip = (page - 1) * limit;
+    const { items, total } = await this.repository.findPaginated(skip, limit, { status: 'Active' });
+    return { items: items.map((club) => this.toPublicResponse(club)), total, page, limit };
+  }
+
+  /** Maps a full `Club` document to its public-safe shape. Field by field on
+   *  purpose — see `ClubPublicResponseDto`. */
+  toPublicResponse(club: ClubDocument): ClubPublicResponseDto {
+    return {
+      id: club._id.toString(),
+      name: club.name,
+      slug: club.slug,
+      logoId: club.logoId ? club.logoId.toString() : null,
+    };
   }
 
   async findAll(): Promise<ClubDocument[]> {

@@ -321,18 +321,21 @@ describe('projectAboutPage — the two automatic sections', () => {
     expect(result.leadership).toBeUndefined();
   });
 
-  it('prints the leadership with the people its own module holds, in their order', () => {
+  /** The order is the board module's, and is applied there — this only has to
+   *  keep it, and to stop the ordering integer reaching a visitor. */
+  it('prints the leadership in the order its own module handed over', () => {
     const result = project(
       {},
       {
         leaders: [
-          leader({ fullName: pair('Second'), roleType: 'BoardMember', displayOrder: 2 }),
           leader({ fullName: pair('First'), roleType: 'President', displayOrder: 1 }),
+          leader({ fullName: pair('Second'), roleType: 'BoardMember', displayOrder: 2 }),
         ],
       },
     );
 
     expect(result.leadership?.people.map((person) => person.fullName.en)).toEqual(['First', 'Second']);
+    expect(JSON.stringify(result.leadership)).not.toContain('displayOrder');
   });
 
   it('drops the ecosystem when no source could be counted', () => {

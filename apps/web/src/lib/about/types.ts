@@ -1,4 +1,4 @@
-import type { LocalizedText } from "@/lib/api/types";
+import type { LocalizedText, PublicImage } from "@/lib/api/types";
 
 /**
  * The About page as the API hands it over.
@@ -14,13 +14,15 @@ import type { LocalizedText } from "@/lib/api/types";
  * component must never assume its neighbour exists.
  */
 
-export interface AboutImage {
-  id: string;
-  url: string;
-  width: number;
-  height: number;
-  alt: LocalizedText | null;
-}
+/**
+ * A picture on this page is the same `PublicImage` every other page receives:
+ * `MediaAssetsService.resolvePublicImages` fills all of them.
+ *
+ * Aliased rather than restated. A hand-written copy of this shape is how the
+ * page came to read `alt` while the API sends `altText` — which cost every
+ * picture on the page its alternative text, silently, with the suite green.
+ */
+export type AboutImage = PublicImage;
 
 export type FactTone = "green" | "black" | "red" | "tri";
 export type CardTone = "green" | "black" | "red";
@@ -82,7 +84,7 @@ export interface AboutLeader {
   fullName: LocalizedText;
   positionTitle: LocalizedText;
   roleType: string;
-  photoId: string | null;
+  photo: AboutImage | null;
 }
 
 export interface AboutGovernanceCard {
@@ -183,16 +185,5 @@ export const ABOUT_SECTION_ORDER = [
 
 export type AboutSectionKey = (typeof ABOUT_SECTION_ORDER)[number];
 
-/** Each section's anchor id, used by the hero's scroll cue and by the
- *  dashboard's "preview this section" links. */
+/** Each section's anchor id, so a section can be linked to directly. */
 export const sectionAnchor = (key: AboutSectionKey): string => `about-${key}`;
-
-/**
- * The first section after the hero that the response actually carries.
- *
- * The scroll cue points here. Hard-coding it at the facts row would leave the
- * cue pointing at nothing the moment an editor switches that row off — a
- * silent dead link on the one control inviting the reader onward.
- */
-export const firstSectionAfterHero = (page: AboutPage): AboutSectionKey | null =>
-  ABOUT_SECTION_ORDER.slice(1).find((key) => page[key] !== undefined) ?? null;

@@ -1,4 +1,5 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
+import { navigation } from "@/test/next-navigation";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithIntl } from "@/test/render";
@@ -13,7 +14,17 @@ import { VisionMissionEditor } from "./editor";
  * the values list does.
  */
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
+// `EditorShell` reads the selected tab from the URL and writes it back, so a
+// screen on the shell needs `useSearchParams` and `replace` as well as
+// `refresh` (ADR-0102 §D1). The three come from one helper.
+vi.mock("next/navigation", () => import("@/test/next-navigation"));
+
+beforeEach(() => {
+  // The mocked router holds the URL in module state, so a test that opened a
+  // tab would otherwise leave the next one on it.
+  navigation.reset();
+});
+
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -59,7 +70,7 @@ const RECORD: VisionMissionResponse = {
 const mount = () =>
   renderWithIntl(
     <ToastProvider>
-      <VisionMissionEditor record={RECORD} images={[]} canEdit canReadMedia={false} locale="ar" editorial={null} />
+      <VisionMissionEditor record={RECORD} images={[]} canEdit canPublish={false} canReadMedia={false} locale="ar" editorial={null} />
     </ToastProvider>,
   );
 

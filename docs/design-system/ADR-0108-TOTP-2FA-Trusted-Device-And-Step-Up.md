@@ -1,0 +1,36 @@
+# ADR-0108 — Every account carries TOTP, devices may be remembered for a while, and dangerous acts re-ask
+
+| Field | Details |
+| --- | --- |
+| **Status** | Accepted. Recorded 2026-09-26. |
+| **Authority** | Product Owner brief, 2026-09-26 (decisions B1, B2, B3). Standard: RFC 6238. |
+| **Amends** | The login flow: a correct password no longer opens a session. |
+| **Does not amend** | **ADR-0029 (Identity Provider Abstraction)** — TOTP is implemented behind an `MfaProvider` interface so business logic stays free of provider detail, which is what that ADR requires. · The lockout counter and its reasoning. · The access/refresh `type` claim checks in both directions. |
+| **Context** | The platform authenticates with email and password alone. Accounts that can rewrite the federation's public site, read minors' personal data and hand out permissions are protected by one secret that can be phished, reused or leaked. ADR-0029 fixed the initial release as internal IdP with email/password and promised the technical detail in Chapter 21, which turned out to cover frontend architecture only — so no approved chapter describes the authentication implementation, and this is the first record of it. |
+| **Decision** | **TOTP** (RFC 6238, SHA-1, 6 digits, 30-second step — the interoperable default every authenticator supports) is mandatory for every account, enforced at the first sign-in after release. Enrolment offers a QR and the manual key, takes effect only after one correct code, and issues **10 single-use recovery codes shown once and stored hashed**. The secret is encrypted at rest with **AES-256-GCM**, key from the environment, per-record IV, auth tag stored, never logged. Verification allows ±1 step, **records the consumed step so it cannot be replayed**, and counts failures against the lockout threshold. A correct password returns a **5-minute MFA ticket, not a session**. **Trusted device:** a hashed token in an `httpOnly` `Secure` `SameSite=Strict` cookie — 30 days ordinary, 7 days sensitive, **0 for Super Admin** — invalidated by password change, role change or suspension. **Step-up:** a fresh code is required when the last verification is older than the window (default 15 minutes) for role changes and assignment, `PermanentDelete`, exports containing sensitive fields, approval-policy changes, security settings, and resetting another user's 2FA; refused as `401` with `mfa_step_up_required`. |
+| **Alternatives Considered** | **(A) WebAuthn/passkeys instead of TOTP.** Stronger, and rejected for this release: it needs per-device registration, a recovery story for a lost device, and browser support assumptions, and the brief scopes authentication to B1–B6. Worth revisiting; recorded in the backlog. **(B) Email or SMS codes.** Rejected by the brief (§6) and on merit: there is no email service in the repository, and SMS is the weakest of the common second factors. **(C) 2FA for privileged accounts only.** Rejected: the sensitive/ordinary line moves whenever a role is edited, so an account would silently fall out of protection at the moment it gained power. **(D) Store the TOTP secret as a plain string.** Rejected: a database dump would then be a complete bypass of the second factor for every account at once. **(E) No replay protection, relying on the 30-second window.** Rejected: a code observed in transit or over a shoulder is valid for the rest of its step for anyone, and recording the consumed step costs one field. **(F) Trust Super Admin devices for a short period.** Rejected per the brief, and it is the right call: the account that can do everything is the one where a stolen laptop must not be enough. |
+| **Why This Decision** | TOTP is the second factor with the widest client support and no external dependency at all — the algorithm is HMAC-SHA1 over a counter, which Node's `crypto` already provides, and RFC 6238 publishes test vectors so correctness is demonstrable rather than trusted. Mandatory everywhere avoids a classification that goes stale. The MFA ticket rather than a session is what makes the second factor real: a session issued on the password alone and "upgraded" later is a session an attacker already has. |
+| **Risks** | **Every user is locked out on release day** because enrolment is forced and nobody has enrolled. **Mitigation:** the forced-enrolment flow *is* the first sign-in — the user enrols and continues in the same visit; no pre-provisioning is needed. **A user loses their device and their recovery codes.** **Mitigation:** an administrator may reset another's 2FA under ADR-0104's stronger-user rule plus step-up plus audit; for a sole Super Admin, ADR-0105's break-glass command. **Clock drift rejects valid codes.** **Mitigation:** the ±1 step window, which is the RFC's own recommendation; a wider window is refused because it multiplies the replay surface. **The encryption key is lost and every secret becomes unreadable.** **Mitigation:** it is documented in `.env.example` as a value that must be backed up, and losing it degrades to mass re-enrolment rather than data loss. **A code reaches a log.** **Mitigation:** the brief forbids it and the plan carries a test that asserts no TOTP code, token or secret appears in any log call on these paths. |
+| **Consequences** | New collections `mfaSecrets`, `mfaRecoveryCodes`, `trustedDevices`. `authSessions` gains `lastVerifiedAt`. New env vars `MFA_SECRET_ENCRYPTION_KEY` and the step-up window's default. New routes under `/auth/mfa/*` and `/auth/devices`. New refusal code `mfa_step_up_required`. An `MfaProvider` interface with one TOTP implementation, per ADR-0029. The dashboard gains enrolment, a code dialog, and a device list. |
+
+---
+
+## D1 — "Sensitive account" is computed, not stored
+
+An account is sensitive when its **resolved** set holds any of `ManageRoles`,
+`AssignRoles`, `ViewSensitive`, `Export`, `PermanentDelete`.
+
+Computed from the live resolution, so it follows a role edit in the same request
+rather than at the next login. A stored flag would let an account keep a 30-day
+trusted device for the rest of that device's life after being handed
+`ManageRoles` — the exact window the shorter period exists to close.
+
+## D2 — Why the consumed step is recorded
+
+A TOTP code is valid for its whole 30-second step, and with a ±1 window, for
+three steps' worth of wall clock. Within that period the same digits authenticate
+anyone who has them.
+
+So each successful verification stores the step it consumed, and that step is
+refused thereafter for that account. This turns an observed code from a reusable
+credential into a spent one.

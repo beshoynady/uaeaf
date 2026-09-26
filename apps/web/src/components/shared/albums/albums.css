@@ -1,0 +1,869 @@
+/*
+ * The shared album components: AlbumCard, PhotoStack, AssociationChips,
+ * FeaturedAlbumDeck and AlbumFilterBar.
+ *
+ * Imported by each component that uses it, so a page that renders one of them
+ * gets the rules without having to know this file exists. Every colour is a
+ * token or a surface variable; every duration is a motion token or one of the
+ * two component-local cycle periods ADR-0099 D3 permits below.
+ */
+
+/* ------------------------------------------------------------------ *
+ * Direction.
+ *
+ * The deck and the stack turn their back layers towards the inline end, so
+ * both need two values that have no logical form: a sign for `translateX` and
+ * `rotateY`, and the physical edge a card pivots on. The system resolves its
+ * own two such values (gradient angles) in `surfaces.css`; these are scoped to
+ * the two components that read them rather than published on `:root`, because
+ * nothing else in the product turns in 3D.
+ *
+ * The pivot is the card's inline-start edge: a back layer folds away from the
+ * front card, so the edge nearest the front card is the one that stays put.
+ * ------------------------------------------------------------------ */
+.photo-stack,
+.album-deck {
+  --dirx: 1;
+  --deck-origin: left;
+}
+
+[dir="rtl"] .photo-stack,
+[dir="rtl"] .album-deck {
+  --dirx: -1;
+  --deck-origin: right;
+}
+
+/* ------------------------------------------------------------------ *
+ * AssociationChips.
+ * ------------------------------------------------------------------ */
+.album-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.album-chip {
+  display: inline-flex;
+  align-items: center;
+  max-inline-size: 100%;
+  min-block-size: var(--space-6);
+  padding-inline: var(--space-3);
+  border-radius: var(--radius-full);
+  font-weight: var(--font-weight-bold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The kind word and the name as one line, the chip's only flex item: it may
+   shrink, so the ellipsis falls on the end of the name and the kind word in
+   front of it always shows. */
+.album-chip__text {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/*
+ * Over a photograph the chip is an opaque plate, because the photograph behind
+ * it is uncontrolled.
+ *
+ * ADR-0063 D1: an identity colour is a fill, never a text colour. So the
+ * occasion's identity colour is the plate, and the words on it take
+ * `--color-text-on-brand`, the text role `pairings.json` records against both
+ * identity fills and `token-lists-contract.spec.ts` measures in every theme
+ * (ADR-0098: text on green or red is pure white). Every value here is the same
+ * in all three themes, so each pair is one measurement: white on Federation
+ * Green 4.81:1, white on Federation Red 5.88:1, white on ink 19.68:1 — all
+ * above 4.5:1 for the chip's bold caption. `album-card.spec.tsx` measures them.
+ */
+.album-chips[data-placement="media"] .album-chip[data-kind="championship"] {
+  background-color: var(--color-brand-primary);
+  color: var(--color-text-on-brand);
+}
+
+.album-chips[data-placement="media"] .album-chip[data-kind="publicEvent"] {
+  background-color: var(--color-brand-secondary);
+  color: var(--color-text-on-brand);
+}
+
+.album-chips[data-placement="media"] .album-chip[data-kind="competition"] {
+  background-color: var(--color-brand-surface-ink-surface);
+  color: var(--color-brand-surface-ink-text);
+}
+
+/* On a hero the occasion leads in green and the rest step back to the tile
+   fill the surface publishes, so the row reads as one occasion plus detail. */
+.album-chips[data-placement="hero"] .album-chip {
+  border: var(--border-width-default) solid var(--surface-tile-edge);
+  background-color: var(--surface-tile-fill);
+  color: var(--surface-text);
+}
+
+.album-chips[data-placement="hero"] .album-chip[data-kind="championship"],
+.album-chips[data-placement="hero"] .album-chip[data-kind="publicEvent"] {
+  border-color: var(--color-brand-primary);
+  background-color: var(--color-brand-primary);
+  color: var(--color-text-on-brand);
+}
+
+/* A linked chip must still be a 44px target (WCAG 2.5.5), whatever its plate. */
+.album-chips a.album-chip {
+  min-block-size: 44px;
+  text-decoration: none;
+}
+
+/* ------------------------------------------------------------------ *
+ * PhotoStack.
+ *
+ * Geometry is the approved canvas's: a 190px stage, each layer inset 6px on
+ * the block axis and 34px from the inline end — the room the folded layers
+ * behind it show in.
+ * ------------------------------------------------------------------ */
+.photo-stack {
+  /*
+   * ADR-0099 D3: a component-local period, not a token. Three layers take the
+   * front in turn, 1.5s each: 1.125s held, then a 0.375s swap (the 25% and
+   * 33.3% keyframes below). 3 x 1.5s = 4.5s. It is a consequence of the
+   * three-layer geometry and means nothing to any other composition.
+   */
+  --photo-stack-period: 4.5s;
+
+  position: relative;
+  block-size: 190px;
+}
+
+.photo-stack__layer {
+  position: absolute;
+  inset-block: 6px;
+  inset-inline-start: 0;
+  inset-inline-end: 34px;
+  overflow: hidden;
+  /* DESIGN SYSTEM GAP: the canvas draws 10px; the scale has 8 and 12. */
+  border-radius: var(--radius-md);
+  border: var(--border-width-thick) solid var(--color-brand-white);
+  box-shadow: var(--elevation-3);
+  background-color: var(--color-surface-sunken);
+  transform-origin: var(--deck-origin) 50%;
+  transform: perspective(600px) translateX(0) rotateY(0) scale(1);
+}
+
+/* The folded position every layer but the front one rests in. */
+.photo-stack__layer[data-slot="1"],
+.photo-stack__layer[data-slot="2"] {
+  transform: perspective(600px) translateX(calc(var(--dirx) * calc(100% - 8px)))
+    rotateY(calc(var(--dirx) * 78deg)) scale(0.9);
+}
+
+/* Child-qualified: `.brand-surface` sets `position: relative` at the same
+   specificity, and which stylesheet loads last is not this file's to decide. */
+.photo-stack > .photo-stack__empty {
+  position: absolute;
+  inset-block: 6px;
+  inset-inline: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  color: var(--surface-icon);
+}
+
+.photo-stack__empty svg {
+  inline-size: var(--space-10);
+  block-size: var(--space-10);
+}
+
+.photo-stack__overlay {
+  position: absolute;
+  inset-block-start: calc(6px + var(--space-2));
+  inset-inline-start: var(--space-2);
+  inset-inline-end: calc(34px + var(--space-2));
+  display: flex;
+  pointer-events: none;
+}
+
+/*
+ * ADR-0099 D2: the stack moves on hover and on focus inside it, and at no
+ * other time. The animation is only attached while one of the two holds, so
+ * there is no running-but-paused state to leak, and releasing it returns the
+ * layers to the resting composition above rather than freezing one mid-fold.
+ *
+ * `.photo-stack-host` is the card around the stack: a reader tabbing to the
+ * card's link is engaging the stack exactly as a pointer over it is, and the
+ * link is a sibling of the stack, not inside it.
+ *
+ * Only under `no-preference`: under reduced motion the resting composition is
+ * the whole of it (ADR-0099 D1.4).
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .photo-stack[data-layers="3"]:hover .photo-stack__layer,
+  .photo-stack[data-layers="3"]:focus-within .photo-stack__layer,
+  .photo-stack-host:hover .photo-stack[data-layers="3"] .photo-stack__layer,
+  .photo-stack-host:focus-within .photo-stack[data-layers="3"] .photo-stack__layer {
+    animation: photo-stack-trio var(--photo-stack-period) var(--motion-easing-standard) infinite;
+  }
+
+  .photo-stack[data-layers="2"]:hover .photo-stack__layer,
+  .photo-stack[data-layers="2"]:focus-within .photo-stack__layer,
+  .photo-stack-host:hover .photo-stack[data-layers="2"] .photo-stack__layer,
+  .photo-stack-host:focus-within .photo-stack[data-layers="2"] .photo-stack__layer {
+    /* Two layers keep the three-layer turn of 1.5s each, so the pair runs at
+       two thirds of the period rather than stretching each turn by half. */
+    animation: photo-stack-pair calc(var(--photo-stack-period) * 2 / 3)
+      var(--motion-easing-standard) infinite;
+  }
+
+  /* The canvas's offsets, as fractions of the period: 0s, -3s and -1.53s of
+     4.5s. Each layer starts exactly where it rests, so the hover begins
+     without a jump. */
+  .photo-stack[data-layers="3"] .photo-stack__layer[data-slot="1"] {
+    animation-delay: calc(var(--photo-stack-period) * -2 / 3);
+  }
+
+  .photo-stack[data-layers="3"] .photo-stack__layer[data-slot="2"] {
+    animation-delay: calc(var(--photo-stack-period) * -0.34);
+  }
+
+  .photo-stack[data-layers="2"] .photo-stack__layer[data-slot="1"] {
+    animation-delay: calc(var(--photo-stack-period) * -1 / 3);
+  }
+}
+
+@keyframes photo-stack-trio {
+  0%,
+  25% {
+    transform: perspective(600px) translateX(0) rotateY(0) scale(1);
+  }
+  33.333%,
+  91.667% {
+    transform: perspective(600px) translateX(calc(var(--dirx) * calc(100% - 8px)))
+      rotateY(calc(var(--dirx) * 78deg)) scale(0.9);
+  }
+  100% {
+    transform: perspective(600px) translateX(0) rotateY(0) scale(1);
+  }
+}
+
+@keyframes photo-stack-pair {
+  0%,
+  37.5% {
+    transform: perspective(600px) translateX(0) rotateY(0) scale(1);
+  }
+  50%,
+  87.5% {
+    transform: perspective(600px) translateX(calc(var(--dirx) * calc(100% - 8px)))
+      rotateY(calc(var(--dirx) * 78deg)) scale(0.9);
+  }
+  100% {
+    transform: perspective(600px) translateX(0) rotateY(0) scale(1);
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * AlbumCard.
+ * ------------------------------------------------------------------ */
+.album-card {
+  block-size: 100%;
+}
+
+/*
+ * The ring's inner wrapper clips to round the card, and the card's link sits
+ * inside it — so the link's focus ring, drawn outside the link's box, would be
+ * clipped away. The plate below does its own rounding and clipping instead,
+ * which leaves the ring whole.
+ */
+.album-card > .brand-border__inner {
+  overflow: visible;
+}
+
+.album-card__link {
+  display: block;
+  block-size: 100%;
+  border-radius: inherit;
+  color: inherit;
+  text-decoration: none;
+}
+
+.album-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  block-size: 100%;
+  padding: var(--space-4);
+  border-radius: inherit;
+  overflow: clip;
+}
+
+.album-card__title {
+  margin: 0;
+  color: var(--surface-text);
+  font-weight: var(--font-weight-bold);
+  /* Two lines, clamped: a third would push this card's footer out of line
+     with its neighbours'. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.album-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-4);
+  margin: 0;
+  color: var(--surface-text-muted);
+}
+
+.album-card__meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.album-card__icon {
+  inline-size: var(--space-4);
+  block-size: var(--space-4);
+  flex: none;
+  color: var(--surface-icon);
+}
+
+.album-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-block-start: auto;
+  padding-block-start: var(--space-3);
+  border-block-start: var(--border-width-default) solid var(--surface-border);
+}
+
+/* On a raised plate `--surface-link` is `--color-text-link`; reading it through
+   the surface keeps the card right if it is ever set on another ground. */
+.album-card__browse {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--surface-link);
+}
+
+.album-card__arrow {
+  inline-size: var(--space-4);
+  block-size: var(--space-4);
+}
+
+/* The arrow points forward in the reading direction. */
+[dir="rtl"] .album-card__arrow {
+  transform: scaleX(-1);
+}
+
+.album-card__count {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-block-size: var(--space-6);
+  padding-inline: var(--space-3);
+  border-radius: var(--radius-full);
+  background-color: color-mix(
+    in srgb,
+    var(--color-brand-primary) calc(var(--opacity-tile-fill) * 100%),
+    transparent
+  );
+  color: var(--surface-link);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------------ *
+ * FeaturedAlbumDeck.
+ *
+ * Five covers on a 400x250 stage. The front one faces the reader; the other
+ * four are folded at 78 degrees behind it towards the inline end, each a step
+ * further, smaller and darker. Every card runs the same cycle, offset.
+ * ------------------------------------------------------------------ */
+.album-deck {
+  /*
+   * ADR-0099 D3: a component-local period, not a token. Five slots, 3s each:
+   * 2.1s held and 0.9s moving (the 14% and 20% keyframes below).
+   * 5 x 3s = 15s. It is a consequence of the five-slot geometry; a deck with a
+   * different slot count would need its own arithmetic, not this number.
+   */
+  --album-deck-period: 15s;
+  --album-deck-scale: 1;
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  /* The folded covers reach past the stage towards the inline end; they may
+     be cut at the deck's edge but must never widen the page. `clip` rather
+     than `hidden`, so the deck does not become a scroll container. */
+  overflow-x: clip;
+}
+
+/*
+ * Chapter 5 §5.2: below `md` (768px) the grid is the four-column phone layout,
+ * and the canvas draws the deck at half size there. The viewport box shrinks
+ * with it, because a transform alone would leave a 400px layout box on a
+ * 390px screen.
+ */
+@media (max-width: 767.98px) {
+  .album-deck {
+    --album-deck-scale: 0.5;
+  }
+}
+
+.album-deck__viewport {
+  position: relative;
+  inline-size: calc(400px * var(--album-deck-scale));
+  block-size: calc(250px * var(--album-deck-scale));
+}
+
+.album-deck__stage {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: 400px;
+  block-size: 250px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  transform: scale(var(--album-deck-scale));
+  transform-origin: var(--deck-origin) 0;
+  /* One 3D space for the five cards, so the front card is drawn over the
+     folded edges beside it by depth rather than by DOM order — which changes
+     every three seconds while the DOM does not. */
+  transform-style: preserve-3d;
+}
+
+.album-deck__card {
+  --album-deck-offset: 0;
+
+  position: absolute;
+  inset: 0;
+  transform-origin: var(--deck-origin) 50%;
+  transform: perspective(900px) translateX(0) rotateY(0) scale(1);
+}
+
+/* The canvas's offsets, as fractions of the period: 0s, -12s, -9s, -6s and
+   -3.6s of 15s. Every animated part of one card shares its card's offset. */
+.album-deck__card[data-slot="1"] {
+  --album-deck-offset: 0.8;
+  transform: perspective(900px) translateX(calc(var(--dirx) * 386px))
+    rotateY(calc(var(--dirx) * 78deg)) scale(0.9);
+}
+
+.album-deck__card[data-slot="2"] {
+  --album-deck-offset: 0.6;
+  transform: perspective(900px) translateX(calc(var(--dirx) * 416px))
+    rotateY(calc(var(--dirx) * 78deg)) scale(0.81);
+}
+
+.album-deck__card[data-slot="3"] {
+  --album-deck-offset: 0.4;
+  transform: perspective(900px) translateX(calc(var(--dirx) * 446px))
+    rotateY(calc(var(--dirx) * 78deg)) scale(0.729);
+}
+
+.album-deck__card[data-slot="4"] {
+  --album-deck-offset: 0.24;
+  transform: perspective(900px) translateX(calc(var(--dirx) * 476px))
+    rotateY(calc(var(--dirx) * 78deg)) scale(0.656);
+}
+
+.album-deck__frame {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* DESIGN SYSTEM GAP: the canvas draws 14px; the scale has 12 and 16. */
+  border-radius: var(--radius-lg);
+  border: var(--border-width-thick) solid
+    color-mix(in srgb, var(--color-brand-white) 75%, transparent);
+  background-color: var(--color-surface-sunken);
+  box-shadow: var(--elevation-4);
+}
+
+/*
+ * The canvas dims each folded cover with `brightness()`. ADR-0009 and the
+ * motion contract allow only transform and opacity in a keyframe, so the same
+ * darkening is drawn as a black layer whose opacity is 1 minus that
+ * brightness — which is exactly what `brightness(b)` does to each channel.
+ */
+.album-deck__shade {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface-overlay);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.album-deck__card[data-slot="1"] .album-deck__shade {
+  opacity: 0.18;
+}
+
+.album-deck__card[data-slot="2"] .album-deck__shade {
+  opacity: 0.28;
+}
+
+.album-deck__card[data-slot="3"] .album-deck__shade {
+  opacity: 0.38;
+}
+
+.album-deck__card[data-slot="4"] .album-deck__shade {
+  opacity: 0.46;
+}
+
+.album-deck__controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.album-deck__dots {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* A fixed 24px slot per dot, so the wide active mark is a transform on the
+   mark rather than a width change that would move its neighbours. */
+.album-deck__dot {
+  position: relative;
+  inline-size: var(--space-6);
+  block-size: var(--space-2);
+}
+
+.album-deck__dot::before,
+.album-deck__dot::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  border-radius: var(--radius-full);
+}
+
+.album-deck__dot::before {
+  inset-inline-start: calc(50% - var(--space-1));
+  inline-size: var(--space-2);
+  background-color: var(--surface-text-muted);
+}
+
+.album-deck__dot::after {
+  inset-inline: 0;
+  background-color: var(--surface-accent, var(--surface-text));
+  opacity: 0;
+  transform: scaleX(0.333);
+}
+
+.album-deck__dot[data-slot="0"]::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.album-deck__dot[data-slot="1"] {
+  --album-deck-offset: 0.8;
+}
+
+.album-deck__dot[data-slot="2"] {
+  --album-deck-offset: 0.6;
+}
+
+.album-deck__dot[data-slot="3"] {
+  --album-deck-offset: 0.4;
+}
+
+.album-deck__dot[data-slot="4"] {
+  --album-deck-offset: 0.24;
+}
+
+/*
+ * ADR-0099 D1: the deck turns only while `useAmbientMotion` says so. The
+ * animation is attached under `no-preference` only (D1.4), and it is held on
+ * its first frame — the resting composition above — until `data-running` is
+ * set, which the hook withholds on hover, on focus inside, off screen, in a
+ * hidden tab and after the reader presses pause (D1.2, D1.3, D1.1).
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .album-deck[data-slots="5"] .album-deck__card {
+    animation: album-deck-cycle var(--album-deck-period) var(--motion-easing-standard) infinite;
+    animation-delay: calc(var(--album-deck-period) * var(--album-deck-offset) * -1);
+    animation-play-state: paused;
+  }
+
+  .album-deck[data-slots="5"] .album-deck__shade {
+    animation: album-deck-shade var(--album-deck-period) var(--motion-easing-standard) infinite;
+    animation-delay: calc(var(--album-deck-period) * var(--album-deck-offset) * -1);
+    animation-play-state: paused;
+  }
+
+  .album-deck[data-slots="5"] .album-deck__dot::after {
+    animation: album-deck-dot var(--album-deck-period) var(--motion-easing-standard) infinite;
+    animation-delay: calc(var(--album-deck-period) * var(--album-deck-offset) * -1);
+    animation-play-state: paused;
+  }
+
+  .album-deck[data-running="true"] .album-deck__card,
+  .album-deck[data-running="true"] .album-deck__shade,
+  .album-deck[data-running="true"] .album-deck__dot::after {
+    animation-play-state: running;
+  }
+}
+
+@keyframes album-deck-cycle {
+  0%,
+  14% {
+    opacity: 1;
+    transform: perspective(900px) translateX(0) rotateY(0) scale(1);
+  }
+  20% {
+    opacity: 0;
+    transform: perspective(900px) translateX(calc(var(--dirx) * -120px))
+      rotateY(calc(var(--dirx) * -10deg)) scale(1.02);
+  }
+  21% {
+    opacity: 0;
+    transform: perspective(900px) translateX(calc(var(--dirx) * 476px))
+      rotateY(calc(var(--dirx) * 78deg)) scale(0.656);
+  }
+  24%,
+  34% {
+    opacity: 1;
+    transform: perspective(900px) translateX(calc(var(--dirx) * 476px))
+      rotateY(calc(var(--dirx) * 78deg)) scale(0.656);
+  }
+  40%,
+  54% {
+    opacity: 1;
+    transform: perspective(900px) translateX(calc(var(--dirx) * 446px))
+      rotateY(calc(var(--dirx) * 78deg)) scale(0.729);
+  }
+  60%,
+  74% {
+    opacity: 1;
+    transform: perspective(900px) translateX(calc(var(--dirx) * 416px))
+      rotateY(calc(var(--dirx) * 78deg)) scale(0.81);
+  }
+  80%,
+  94% {
+    opacity: 1;
+    transform: perspective(900px) translateX(calc(var(--dirx) * 386px))
+      rotateY(calc(var(--dirx) * 78deg)) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(900px) translateX(0) rotateY(0) scale(1);
+  }
+}
+
+@keyframes album-deck-shade {
+  0%,
+  20% {
+    opacity: 0;
+  }
+  21%,
+  34% {
+    opacity: 0.46;
+  }
+  40%,
+  54% {
+    opacity: 0.38;
+  }
+  60%,
+  74% {
+    opacity: 0.28;
+  }
+  80%,
+  94% {
+    opacity: 0.18;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes album-deck-dot {
+  0%,
+  14% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+  20%,
+  94% {
+    opacity: 0;
+    transform: scaleX(0.333);
+  }
+  100% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * AlbumFilterBar.
+ * ------------------------------------------------------------------ */
+:root {
+  /* Written by the bar while it is mounted and sticky, read by the scroll
+     padding below. Zero when there is no bar. */
+  --album-filter-bar-block: 0px;
+}
+
+.album-filter-bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.album-filter-bar__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5) var(--space-3);
+}
+
+/*
+ * Chapter 5 §5.2: `lg` (1024px) is where the grid becomes the twelve-column
+ * desktop layout, and the only width at which the canvas pins the bar. It
+ * stops below the sticky header (`--header-height`), never under it.
+ *
+ * z-index 40 is one step under the header's 50, so the bar passes beneath the
+ * header's shadow rather than over it.
+ */
+@media (min-width: 1024px) {
+  .album-filter-bar {
+    position: sticky;
+    inset-block-start: calc(var(--header-height) + var(--space-4));
+    z-index: 40;
+  }
+
+  /*
+   * WCAG 2.4.11: a pinned bar must not hide the element that has focus. The
+   * browser scrolls a focused element clear of the root's scroll padding, so
+   * while this bar exists the padding covers the header and the bar. `:has`
+   * scopes it to the pages that render the bar.
+   */
+  :root:has(.album-filter-bar) {
+    scroll-padding-block-start: calc(
+      var(--header-height) + var(--album-filter-bar-block) + var(--space-8)
+    );
+  }
+}
+
+.album-filter-bar__fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3) var(--space-4);
+  margin: 0;
+}
+
+/* One field per row on a phone, two from `sm`, and at most five per row from
+   `lg` — a sixth wraps to a second row rather than squeezing the first. */
+.album-filter-bar__field {
+  display: flex;
+  flex: 1 1 100%;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-inline-size: 0;
+}
+
+@media (min-width: 640px) {
+  .album-filter-bar__field {
+    flex-basis: calc((100% - var(--space-4)) / 2);
+  }
+}
+
+@media (min-width: 1024px) {
+  .album-filter-bar__field {
+    flex-basis: calc((100% - 4 * var(--space-4)) / 5);
+  }
+
+  .album-filter-bar__field[data-wide] {
+    flex-grow: 2;
+  }
+}
+
+.album-filter-bar__label {
+  color: var(--surface-text);
+  font-weight: var(--font-weight-bold);
+}
+
+/*
+ * The field's own neutral plate and tricolour edge — the same two things the
+ * kit's `SearchField` draws around its input, so a select and the search box
+ * in one row are one kind of control. Chapter 27 §20: a field never sits on a
+ * coloured ground, which on ink means it brings its own.
+ *
+ * DESIGN SYSTEM GAP, recorded: the kit has no select control.
+ */
+.album-filter-bar__control {
+  display: flex;
+  align-items: center;
+  padding: var(--border-width-thick);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface-raised);
+}
+
+.album-filter-bar__input {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  min-block-size: var(--space-12);
+  padding-inline: var(--space-4);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background-color: transparent;
+  color: var(--color-text-primary);
+  font: inherit;
+}
+
+.album-filter-bar__clear {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-end;
+}
+
+.album-filter-bar__range-error {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--surface-text);
+}
+
+.album-filter-bar__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding-block-start: var(--space-3);
+  border-block-start: var(--border-width-default) solid var(--surface-divider, var(--surface-border));
+}
+
+.album-filter-bar__hint {
+  margin: 0;
+  color: var(--surface-text-muted);
+}
+
+.album-filter-bar__count {
+  margin: 0;
+  margin-inline-start: auto;
+  color: var(--surface-text);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.album-filter-bar__active {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.album-filter-bar__remove-glyph {
+  font-size: var(--font-size-title-desktop);
+  line-height: 1;
+}

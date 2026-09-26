@@ -102,7 +102,7 @@ export const HOMEPAGE_SECTIONS: readonly HomepageSectionMeta[] = [
   { sectionType: "PARTNERS", messageKey: "partners", href: "/homepage/partners" },
   { sectionType: "MEMBERSHIPS", messageKey: "memberships", href: "/homepage/memberships" },
   { sectionType: "VIDEO_LIBRARY", messageKey: "video", href: "/homepage/video" },
-  { sectionType: "PHOTO_GALLERY", messageKey: "photoGallery", href: null },
+  { sectionType: "PHOTO_GALLERY", messageKey: "photoGallery", href: "/homepage/albums" },
   { sectionType: "NEWSLETTER_CTA", messageKey: "newsletterCta", href: null },
 ];
 
@@ -131,6 +131,7 @@ export const HOMEPAGE_RAIL_ORDER: readonly string[] = [
   "LATEST_NEWS",
   "LATEST_NEWS:coverage",
   "VIDEO_LIBRARY",
+  "PHOTO_GALLERY",
   "SPONSORS",
   "PARTNERS",
   "MEMBERSHIPS",

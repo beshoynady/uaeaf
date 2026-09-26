@@ -5,6 +5,7 @@ import { fetchPublic } from "@/lib/api/public-client";
 import { fetchPublicMedia } from "@/lib/api/media";
 import type { HeroPage, LocalizedText, MediaAssetPublic } from "@/lib/api/types";
 import { findPublicPage, type PublicPage } from "@/lib/pages/public-pages";
+import { isServed } from "@/lib/pages/activation";
 import { buildMetadata } from "@/lib/seo/metadata";
 import {
   AboutPageJsonLd,
@@ -43,6 +44,18 @@ export async function loadStaticPage<T extends HeroPage = HeroPage>(
   title: string;
   subtitle: string | null;
   heroImage: MediaAssetPublic | undefined;
+  /**
+   * Whether this page is being served at all (ADR-0102 §D2).
+   *
+   * Resolved here rather than in each of the twelve routes for the reason the
+   * rest of this module exists: twelve copies of one condition is twelve places
+   * for one of them to be forgotten, and the one that was forgotten would be a
+   * page still showing content the federation had switched off.
+   *
+   * Each route still has to act on it — a hook cannot return a component in
+   * place of the caller's — but the reading is made once.
+   */
+  isActive: boolean;
 }> {
   const page = findPublicPage(key);
   if (!page) throw new Error(`No public page registered for "${key}"`);
@@ -59,6 +72,7 @@ export async function loadStaticPage<T extends HeroPage = HeroPage>(
   return {
     page,
     record,
+    isActive: isServed(record),
     heroImage: record?.heroImageId ? media.get(record.heroImageId) : undefined,
     // The record's own heading wins. Where the singleton has never been
     // saved — which is every one of the twelve on a fresh database — the
@@ -85,7 +99,7 @@ export async function buildStaticPageMetadata(
    *  knows whether its body rendered anything. */
   indexable: boolean,
 ): Promise<Metadata> {
-  const { page, title, subtitle } = await loadStaticPage(key, locale);
+  const { page, title, subtitle, isActive } = await loadStaticPage(key, locale);
   const t = await getTranslations({ locale, namespace: "Metadata" });
 
   return buildMetadata({
@@ -96,7 +110,11 @@ export async function buildStaticPageMetadata(
     // page's own summary and is the right one; the site description is the
     // fallback, not a generic string written for this purpose.
     description: subtitle ?? t("description"),
-    indexable,
+    // A withheld page shows a title and one status line, which Chapter 14 §11
+    // puts below the threshold whatever the caller decided about its content.
+    // `&&` rather than a second parameter: there is no page for which "switched
+    // off but indexable" is a state worth expressing.
+    indexable: indexable && isActive,
   });
 }
 

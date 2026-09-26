@@ -318,6 +318,9 @@ export const NAV_ITEMS: readonly NavItem[] = [
    * affordance to a reader who holds none.
    */
   { key: "videos", href: "/videos", requires: [{ resourceType: "videos", action: "Read" }] },
+  /** The photo albums, beside the videos: the media centre's other library.
+   *  `albums:Read` opens it, for the reason `videos:Read` opens that one. */
+  { key: "albums", href: "/albums", requires: [{ resourceType: "albums", action: "Read" }] },
   /**
    * The homepage: one entry, no nested menu (owner decision 2026-09-24).
    *

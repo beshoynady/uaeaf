@@ -4,7 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { BilingualField } from "@/components/admin/bilingual-field";
 import { EditorShell } from "@/components/admin/editorial-editor/editor-shell";
-import { SeoFields } from "@/components/admin/editorial-editor/seo-fields";
+import { PageActivationBar } from "@/components/admin/activation/page-activation-bar";
+import { SeoPanel } from "@/components/admin/editorial-editor/seo-panel";
 import { MediaPicker, type MediaAssetOption } from "@/components/admin/pages/media-picker";
 import { FormSection } from "@/components/ui/form-section";
 import { PlanListField, type PlanListLabels } from "@/components/admin/strategic-plan/plan-list-field";
@@ -52,6 +53,7 @@ export const StrategicPlanEditor = ({
   record,
   images,
   canEdit,
+  canPublish,
   canReadMedia,
   locale,
   editorial,
@@ -60,6 +62,9 @@ export const StrategicPlanEditor = ({
   record: StrategicPlanResponse;
   images: readonly MediaAssetOption[];
   canEdit: boolean;
+  /** `strategicPlansPage:Publish` — the activation bar's control, not the
+   *  form's. */
+  canPublish: boolean;
   canReadMedia: boolean;
   locale: AppLocale;
   editorial?: EditorialState | null;
@@ -67,6 +72,7 @@ export const StrategicPlanEditor = ({
 }) => {
   const t = useTranslations("StrategicPlan");
   const e = useTranslations("EditorialEditor");
+  const p = useTranslations("AboutFederation");
 
   // Built once per record: the baseline every keystroke is compared against.
   const original = useMemo(() => toDraft(record), [record]);
@@ -139,6 +145,30 @@ export const StrategicPlanEditor = ({
     <EditorShell
       entityType={ENTITY_TYPE}
       entityId={record._id}
+      heading={{ trail: [{ label: p("trailPages"), href: "/pages" }, { label: t("title") }], title: t("title") }}
+      previewHref="/about/governance/strategic-plan"
+      activation={
+        <PageActivationBar
+          entity={ENTITY_TYPE}
+          pageName={t("title")}
+          recordId={record._id}
+          isActive={record.isActive === true}
+          canPublish={canPublish}
+        />
+      }
+      seo={({ disabled, clearFailure }) => (
+        <SeoPanel
+          seo={draft.seo}
+          onChange={(seo) => {
+            clearFailure();
+            setDraft((current) => ({ ...current, seo }));
+          }}
+          disabled={disabled}
+          images={library}
+          canReadMedia={canReadMedia}
+          onUploaded={onUploaded}
+        />
+      )}
       dirty={dirty}
       body={() => {
         sent.current = draft;
@@ -275,17 +305,6 @@ export const StrategicPlanEditor = ({
               <p className="text-caption text-[color:var(--color-text-muted)]">{t("ctaNote")}</p>
             </FormSection>
 
-            <FormSection number={9} title={t("sectionSeo")}>
-              <SeoFields
-                seo={draft.seo}
-                onChange={(seo) => change({ seo })}
-                disabled={disabled}
-                images={library}
-                canReadMedia={canReadMedia}
-                locale={locale}
-                onUploaded={onUploaded}
-              />
-            </FormSection>
           </>
         );
       }}

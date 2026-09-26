@@ -1,0 +1,651 @@
+/**
+ * The album viewer: slider, filmstrip, lane and index grid.
+ *
+ * -- Colour --------------------------------------------------------------
+ *
+ * Nothing here names a colour. The viewer stands on `Surface kind="ink"`, and
+ * every paint below reads the variables that surface publishes
+ * (`packages/design-tokens/css/surfaces.css`): the green tier is
+ * `--surface-accent` (green.300, measured against ink only), the veil is the
+ * ink ground itself, the finish line is the surface's own three tricolour
+ * stops. Moved to another surface, the viewer recolours with it.
+ *
+ * -- Geometry ------------------------------------------------------------
+ *
+ * The slider's sizes are the approved canvas's (`albumview-desktop-slider`,
+ * `albumview-mobile-slider-1`), declared once as properties on the root so the
+ * track's arithmetic and the slides' boxes read the same numbers. Desktop
+ * applies from the `lg` breakpoint (1024px, Chapter 5): the first width at
+ * which the 820px image plus two visible side slides fits the container
+ * (1024 - 2 x 48 padding = 928 = 820 + 2 x 54). Below it the canvas's mobile
+ * sizes apply. Tablet has no frame of its own — PENDING FIGMA BACK-SYNC.
+ *
+ * -- Motion --------------------------------------------------------------
+ *
+ * Every transition and animation sits inside a `no-preference` block, so a
+ * reader who asked for less motion gets none by construction rather than by a
+ * reset: the slider cuts, there is no finish line and no Ken Burns. Only
+ * `transform` and `opacity` move (ADR-0009, ADR-0099 D1.5).
+ *
+ * The timings are the canvas's and are component-local properties, not
+ * tokens, on ADR-0099 D3's pattern: the closed duration scale has no 800ms,
+ * 1000ms, 120ms, 20ms or 5.2s rung, and each value below is a consequence of
+ * this one composition, with its derivation written beside it. DESIGN SYSTEM
+ * GAP, recorded in the report — named once here so adopting a token later is
+ * one edit.
+ */
+
+.av-root {
+  /* +1 in English, -1 in Arabic: every horizontal translation below is
+     multiplied by it, so one rule serves both reading directions. */
+  --dirx: 1;
+
+  /* Per-render positions, written inline by the components (current index,
+     slides before the render window, lane fill, reveal step). Declared here
+     at rest so an element the script never reaches sits at zero rather than
+     at an unresolved var(). */
+  --av-i: 0;
+  --av-lead: 0;
+  --av-progress: 0;
+  --av-cell-step: 0;
+
+  /* Mobile geometry (canvas: 300x200 image, 12 gap, 240 stage). The image is
+     capped at the viewport minus the 16px gutters so a 320px phone does not
+     overflow: 100vw - 2 x 16 = 288. */
+  --av-w: min(300px, 100vw - var(--space-8));
+  --av-ratio: 3 / 2;
+  --av-g: var(--space-3);
+  --av-stage: 240px;
+  --av-thumb-w: 56px;
+  --av-thumb-h: 40px;
+  --av-numeral: 44px;
+
+  /*
+   * The slide's travel: the canvas's `transform .8s cubic-bezier(.16,1,.3,1)`.
+   * On that ease-out-expo curve the photo is 90% of the way across at 264ms
+   * and 95% at 341ms, about as quickly as the `slow` rung (320ms); the other
+   * ~460ms is the settle that makes a one-slide move (852px on desktop,
+   * 820 + 32) read as a glide rather than a jump. No rung holds the whole:
+   * 720ms `entrance` is for rows arriving below the fold (ADR-0087 D1) and
+   * 1200ms `ambient` for one background plane (ADR-0069 D9).
+   */
+  --av-slide-duration: 800ms;
+  --av-slide-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  /*
+   * The veil lifts 120ms into the move (the canvas's `.12s`): 15% of the
+   * 800ms travel, by which point the ease-out-expo track has carried the new
+   * photo 65% of the way across. The reader sees it arrive under the veil and
+   * brighten as it lands, not brighten before it has moved.
+   */
+  --av-veil-delay: 120ms;
+  /*
+   * The finish line crosses the new photo in one second (the canvas's
+   * `1s cubic-bezier(.65,0,.35,1)`), starting after `--motion-duration-instant`
+   * (100ms, the canvas's `.1s`). Its symmetric ease-in-out does 86% of the
+   * crossing between 250ms and 750ms of its run, 350-850ms after the move
+   * began, when the slide is already 95% or more in place: the line sweeps a
+   * photo that has stopped rather than racing one that has not.
+   */
+  --av-finish-duration: 1000ms;
+  --av-finish-ease: cubic-bezier(0.65, 0, 0.35, 1);
+  /*
+   * One photo's turn under autoplay: the canvas advances every 5.2 seconds,
+   * which is the 800ms travel plus 4.4s at rest. The Ken Burns push-in runs
+   * exactly this long, and `album-viewer.tsx` advances on the same number
+   * (DWELL_MS, held equal by a test), so the push-in ends as the next photo
+   * arrives.
+   */
+  --av-dwell: 5200ms;
+  /*
+   * The index grid's per-cell reveal step. Thirty cells stagger (REVEAL_CAP in
+   * `photo-window.ts`), so the thirtieth starts 29 steps in, and Chapter 5
+   * §5.7 caps a total stagger at 600ms: 600 / 29 = 20.7, so 20ms is the
+   * largest whole step that fits, and 29 x 20ms = 580ms. §5.7's 40-80ms per
+   * step is a SHOULD written for a handful of elements; at 40ms, thirty cells
+   * would end at 1160ms, so the 600ms MUST governs the step.
+   */
+  --av-cell-stagger: 20ms;
+}
+
+[dir="rtl"] .av-root {
+  --dirx: -1;
+}
+
+@media (min-width: 1024px) {
+  .av-root {
+    --av-w: 820px;
+    --av-ratio: 820 / 520;
+    --av-g: var(--space-8);
+    --av-stage: 560px;
+    --av-thumb-w: 96px;
+    --av-thumb-h: 64px;
+    --av-numeral: 72px;
+  }
+}
+
+/* -- Header ---------------------------------------------------------------- */
+
+/* The kit's divider carries a top margin for its usual place under a heading;
+   here it sits beside the heading, centred on the line. */
+.av-heading .brand-tricolor-divider {
+  margin-block-start: 0;
+}
+
+.av-toggle {
+  display: inline-flex;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border: var(--border-width-default) solid var(--surface-border);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+}
+
+.av-toggle__option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-block-size: 44px;
+  padding-inline: var(--space-4);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--surface-text-muted);
+  cursor: pointer;
+}
+
+.av-toggle__option:hover {
+  color: var(--surface-text);
+}
+
+/* The pressed option is the surface inverted: its text colour as the fill, its
+   ground as the ink. Same pair, same measured contrast. */
+.av-toggle__option[aria-pressed="true"] {
+  background: var(--surface-text);
+  color: var(--surface-gradient-from);
+}
+
+.av-toggle__option:focus-visible,
+.av-play:focus-visible,
+.av-cell:focus-visible,
+.av-thumb:focus-visible {
+  outline: var(--a11y-focus-ring-width) solid var(--surface-focus-ring);
+  outline-offset: var(--a11y-focus-offset-width);
+}
+
+.av-play {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--space-12);
+  block-size: var(--space-12);
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--surface-btn-primary-bg);
+  color: var(--surface-btn-primary-ink);
+  cursor: pointer;
+}
+
+.av-play:hover {
+  opacity: var(--opacity-hover);
+}
+
+.av-play[aria-disabled="true"] {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.av-icon {
+  inline-size: var(--space-5);
+  block-size: var(--space-5);
+}
+
+/* -- Stage ----------------------------------------------------------------- */
+
+.av-stage-wrap {
+  position: relative;
+}
+
+.av-stage {
+  position: relative;
+  block-size: var(--av-stage);
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+}
+
+.av-track {
+  display: flex;
+  align-items: center;
+  gap: var(--av-g);
+  block-size: 100%;
+  /* The current slide is centred by starting the row half a stage minus half
+     a slide in, then moving the row by whole slides. */
+  padding-inline-start: calc((100% - var(--av-w)) / 2);
+  transform: translateX(calc(var(--dirx) * -1 * var(--av-i) * (var(--av-w) + var(--av-g))));
+}
+
+/* Stands in for the slides before the render window, so the arithmetic above
+   holds without mounting them. Its width plus the gap after it is exactly
+   `lead` slides. */
+.av-spacer {
+  flex: none;
+  inline-size: calc(var(--av-lead) * (var(--av-w) + var(--av-g)) - var(--av-g));
+  block-size: 1px;
+}
+
+.av-slide {
+  position: relative;
+  flex: none;
+  inline-size: var(--av-w);
+  aspect-ratio: var(--av-ratio);
+  transform: scale(0.86);
+}
+
+.av-slide[data-current] {
+  transform: scale(1);
+}
+
+/* The current slide's shadow is its own layer so it can fade on `opacity`
+   rather than transitioning `box-shadow`, which repaints every frame. */
+.av-slide::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-modal);
+  opacity: 0;
+}
+
+.av-slide[data-current]::before {
+  opacity: 1;
+}
+
+.av-slide__frame {
+  position: relative;
+  block-size: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--surface-raised);
+}
+
+.av-slide__img {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+/* A portrait photo in a landscape frame would lose its subject to `cover`, so
+   it is shown whole on the raised ink instead. */
+.av-slide__frame[data-fit="contain"] .av-slide__img {
+  object-fit: contain;
+}
+
+.av-slide__veil {
+  position: absolute;
+  inset: 0;
+  background: var(--surface-bg);
+  opacity: var(--opacity-overlay);
+  pointer-events: none;
+}
+
+.av-slide[data-current] .av-slide__veil {
+  opacity: 0;
+}
+
+/*
+ * The finish line — this page's signature.
+ *
+ * A 5px bar across the height of the new photo: green, the white middle,
+ * red, from the surface's own tricolour stops (on ink: brand primary, white,
+ * brand secondary). It starts at the photo's leading edge and crosses to the
+ * far one in the reading direction. Hidden unless motion is allowed, because
+ * a static bar at the photo's edge would read as a defect.
+ */
+.av-finish {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 5px;
+  display: none;
+  background: linear-gradient(
+    to bottom,
+    var(--surface-tricolor-start) 0%,
+    var(--surface-tricolor-start) 30%,
+    var(--surface-tricolor-mid) 42%,
+    var(--surface-tricolor-mid) 58%,
+    var(--surface-tricolor-end) 70%,
+    var(--surface-tricolor-end) 100%
+  );
+  filter: drop-shadow(0 0 var(--space-2) var(--surface-tricolor-mid));
+  pointer-events: none;
+}
+
+/* -- Controls under (mobile) or over (desktop) the stage ------------------- */
+
+.av-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-block-start: var(--space-4);
+}
+
+@media (min-width: 1024px) {
+  /* Over the stage's two edges, vertically centred without a transform: the
+     site-wide press moves a button with `transform`, which would replace a
+     centring translate and make the arrow jump when pressed. */
+  .av-controls {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 0;
+    block-size: var(--av-stage);
+    margin-block-start: 0;
+    padding-inline: var(--space-6);
+    pointer-events: none;
+  }
+
+  .av-controls > * {
+    pointer-events: auto;
+  }
+
+  .av-controls .av-counter {
+    display: none;
+  }
+}
+
+.av-counter {
+  font-variant-numeric: tabular-nums;
+}
+
+/* -- Caption row ----------------------------------------------------------- */
+
+.av-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+@media (min-width: 1024px) {
+  .av-meta {
+    inline-size: var(--av-w);
+    margin-inline: auto;
+  }
+}
+
+.av-meta__end {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+/* Below `lg` the counter already stands between the arrows under the stage
+   (`.av-controls`), so the copy beside the photo link would say it twice. */
+@media (max-width: 1023.98px) {
+  .av-meta__end .av-counter {
+    display: none;
+  }
+}
+
+/* -- Photo link ------------------------------------------------------------ */
+
+/*
+ * One control at every width, drawn two ways: the kit's `IconButton` below
+ * `lg` (44x44, ADR-0068 D2.2 and D3.3), where the caption row has no room for
+ * a labelled button, and the labelled secondary `Button` from `lg`, as the
+ * desktop canvas draws it. Only one is displayed at a time, so a screen reader
+ * meets one control. The wrappers carry the display rule because the kit's
+ * classes set `display` themselves, and a layered utility would lose to them.
+ */
+.av-share {
+  position: relative;
+  display: inline-flex;
+}
+
+.av-share__full {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .av-share__compact {
+    display: none;
+  }
+
+  .av-share__full {
+    display: inline-flex;
+  }
+}
+
+/*
+ * The confirmation. Placed absolutely under the control, so appearing and
+ * clearing moves nothing on the page (Chapter 5 §5.9), and inert to the
+ * pointer, so the thumbnails it passes over stay pressable. Painted as the
+ * surface inverted, the pressed toggle's pair: its text colour as the fill,
+ * its ground as the ink (19.68:1 on ink). Empty, it has no padding and no
+ * fill, so it paints nothing while it stays in the page as a live region.
+ */
+.av-share__status {
+  position: absolute;
+  inset-block-start: calc(100% + var(--space-2));
+  inset-inline-end: 0;
+  /* Over the lane's scaled fill, which paints in the same layer later in the
+     document. Every surface isolates its own stacking context, so this never
+     rises over the header or anything outside the viewer. */
+  z-index: var(--zIndex-toast);
+  inline-size: max-content;
+  max-inline-size: calc(100vw - var(--space-8));
+  margin: 0;
+  pointer-events: none;
+}
+
+.av-share__status:not(:empty) {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--surface-text);
+  color: var(--surface-gradient-from);
+  box-shadow: var(--elevation-dropdown);
+}
+
+/* The outlined photo number. Its size is the canvas's (72 / 44) and has no
+   rung in the type scale: DESIGN SYSTEM GAP, recorded in the report. */
+.av-numeral {
+  flex: none;
+  font-size: var(--av-numeral);
+  line-height: 1;
+  font-weight: var(--font-weight-medium);
+  font-variant-numeric: tabular-nums;
+  color: transparent;
+  -webkit-text-stroke: var(--border-width-default) var(--surface-text-muted);
+}
+
+/* -- Lane ------------------------------------------------------------------ */
+
+.av-lane {
+  block-size: var(--space-1);
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--surface-divider);
+}
+
+.av-lane__fill {
+  block-size: 100%;
+  background: var(--brand-tricolor);
+  transform: scaleX(var(--av-progress));
+  /* Grows from the reading start: left in English, right in Arabic. The
+     origin has no logical keyword, so it is derived from --dirx. */
+  transform-origin: calc(50% - 50% * var(--dirx)) 50%;
+}
+
+/* -- Filmstrip ------------------------------------------------------------- */
+
+.av-strip {
+  display: flex;
+  gap: var(--space-3);
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-block: var(--space-1);
+}
+
+.av-thumb {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  inline-size: var(--av-thumb-w);
+  /* The mobile thumbnail is 40px tall; the control around it keeps the 44px
+     touch floor (Chapter 6 §6.9) without changing what the reader sees. */
+  block-size: max(44px, var(--av-thumb-h));
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.av-thumb__img {
+  display: block;
+  inline-size: 100%;
+  block-size: var(--av-thumb-h);
+  object-fit: cover;
+  border: var(--border-width-thick) solid transparent;
+  border-radius: var(--radius-sm);
+}
+
+.av-thumb[aria-current="true"] .av-thumb__img {
+  border-color: var(--surface-accent);
+}
+
+/* -- Index grid ------------------------------------------------------------ */
+
+.av-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+@media (min-width: 1024px) {
+  .av-grid {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: var(--space-3);
+  }
+}
+
+.av-cell {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 2;
+  padding: 0;
+  overflow: hidden;
+  border: var(--border-width-thick) solid transparent;
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+  cursor: pointer;
+}
+
+.av-cell[aria-current="true"] {
+  border-color: var(--surface-accent);
+}
+
+.av-cell__img {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+/* The number sits on a patch of the ink veil, not on the bare photograph:
+   white text over an arbitrary picture has no contrast it can promise. */
+.av-cell__num {
+  position: absolute;
+  inset-block-start: var(--space-1);
+  inset-inline-start: var(--space-1);
+  padding-inline: var(--space-1);
+  border-radius: var(--radius-xs);
+  background: color-mix(in srgb, var(--surface-bg) calc(var(--opacity-overlay) * 100%), transparent);
+  color: var(--surface-text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* -- Motion, only for a reader who has not asked for less ------------------ */
+
+@media (prefers-reduced-motion: no-preference) {
+  .av-track {
+    transition: transform var(--av-slide-duration) var(--av-slide-ease);
+  }
+
+  /* A jump of more than the render window, or the first placement, cuts:
+     sliding past slides that are not mounted would sweep empty space. */
+  .av-track[data-instant] {
+    transition: none;
+  }
+
+  .av-slide,
+  .av-slide::before,
+  .av-slide__veil,
+  .av-lane__fill {
+    transition-property: transform, opacity;
+    transition-duration: var(--av-slide-duration);
+    transition-timing-function: var(--av-slide-ease);
+  }
+
+  .av-slide[data-current] .av-slide__veil {
+    transition-delay: var(--av-veil-delay);
+  }
+
+  .av-finish {
+    display: block;
+    animation: av-finish var(--av-finish-duration) var(--av-finish-ease) var(--motion-duration-instant) both;
+  }
+
+  .av-slide[data-kenburns] .av-slide__img {
+    animation: av-kenburns var(--av-dwell) linear both;
+  }
+
+  /* Playing, but held by hover, focus, an off-screen stage or a hidden tab:
+     the push-in waits where it is instead of snapping back. */
+  .av-region[data-held] .av-slide__img {
+    animation-play-state: paused;
+  }
+
+  .av-cell {
+    animation: av-cell-in var(--motion-duration-slow) var(--motion-easing-decelerate) both;
+    animation-delay: calc(var(--av-cell-step) * var(--av-cell-stagger));
+  }
+}
+
+@keyframes av-finish {
+  0% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(calc(var(--dirx) * var(--av-w)));
+    opacity: 0;
+  }
+}
+
+@keyframes av-kenburns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.07);
+  }
+}
+
+@keyframes av-cell-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-2));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

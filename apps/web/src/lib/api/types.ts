@@ -28,6 +28,15 @@ export interface HeroPage {
   heroImageId: string | null;
   heroTitle: LocalizedText;
   heroSubtitle: LocalizedText;
+  /**
+   * Whether the federation is serving this page at its URL (ADR-0102 §D2).
+   *
+   * Optional, and absence means served: the field is `select: false` upstream,
+   * so only the reads that ask for it carry it, and a row written before it
+   * existed has no such key. `isServed` in `lib/pages/activation.ts` is the one
+   * place that reading is made.
+   */
+  isActive?: boolean;
 }
 
 /** `UpsertCommitteesPageDto` adds two fields to the hero trio. */

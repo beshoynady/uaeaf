@@ -14,6 +14,7 @@ import { isIndexable } from "@/lib/pages/indexability";
 import { findPublicPage } from "@/lib/pages/public-pages";
 import { AboutPageJsonLd, BreadcrumbJsonLd } from "@/lib/seo/json-ld";
 import { buildMetadata } from "@/lib/seo/metadata";
+import { withheldPage } from "@/components/pages/page-inactive-screen";
 
 /**
  * `/about/president` — the President's Message.
@@ -24,7 +25,8 @@ import { buildMetadata } from "@/lib/seo/metadata";
  * (`indexability.ts`).
  */
 
-const PAGE = findPublicPage("president-message")!;
+const KEY = "president-message";
+const PAGE = findPublicPage(KEY)!;
 
 const loadRecord = () => fetchPublic<PresidentMessagePublic>(PAGE.apiPath);
 
@@ -80,6 +82,12 @@ const PresidentMessagePage = async ({ params }: { params: Promise<{ locale: AppL
 
   const record = await loadRecord();
   if (!record) notFound();
+
+  // Switched off by the federation: the API answers with the switch and no
+  // content at all, so there is nothing here to render and nothing to leak
+  // (ADR-0102 §D2). The address stays, and answers 200.
+  const withheld = await withheldPage(KEY, locale);
+  if (withheld) return withheld;
 
   const nav = await getTranslations({ locale, namespace: "Nav" });
   const { title, description } = await describe(record, locale);

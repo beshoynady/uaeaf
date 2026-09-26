@@ -136,12 +136,34 @@
 }
 
 /*
- * secondary — a tricolour edge that fills on hover.
+ * secondary — a tricolour edge, and a fill on hover that stops short of the
+ * label.
  *
  * The fill is a `::before` whose opacity animates, not a `background-image`
  * swap: a gradient cannot be transitioned, so fading a second layer in is the
  * only way to get a continuous change rather than a jump. `opacity` is also
  * one of the two properties ADR-0009 permits for repeated motion.
+ *
+ * ── Why it no longer fills the whole face (owner report 2026-09-26) ───────
+ *
+ * It did, with `--brand-tricolor`, and the label was recoloured to
+ * `--surface-tricolor-ink` to suit it. That works in light, where the ramp's
+ * middle stop is black, and **fails in dark, where the middle stop is white**
+ * (`--color-tricolor-mid`: `#000000` light, `#FFFFFF` dark) while the ink
+ * stays white. White on white: the middle of every secondary button's label
+ * disappeared on hover and on focus.
+ *
+ * No ink fixes it, which is why the fill had to change rather than the colour.
+ * Measured against the three stops on the dark canvas:
+ *
+ *   white ink  — green 4.60:1 · white 1.00:1 ✗ · red 7.44:1
+ *   black ink  — green 4.57:1 · white 21.0:1 · red 2.82:1 ✗
+ *
+ * Every candidate fails on one of the three. A three-colour ramp containing
+ * both extremes cannot carry text, so the text is taken off it: the fill is
+ * now the ramp inset behind the label's own clear area, and the label keeps the
+ * surface ink it has at rest. The tricolour edge — the variant's actual
+ * identity mark — is untouched.
  */
 .brand-button[data-variant="secondary"] {
   --brand-ring-paint: var(--brand-tricolor);
@@ -159,7 +181,10 @@
 .brand-button[data-variant="secondary"]::before {
   content: "";
   position: absolute;
-  inset: 0;
+  /* Inset to a band along the block-end edge rather than the whole face: the
+     identity arrives, and nothing lands behind the words. */
+  inset: auto 0 0 0;
+  block-size: var(--border-width-ring);
   background: var(--brand-tricolor);
   opacity: 0;
   transition: opacity var(--motion-transition-fast);
@@ -171,17 +196,16 @@
 }
 
 /*
- * The filled state takes the ink that suits the fill, and the fill is not the
- * same everywhere: on most grounds it is the three-colour ramp, whose lightest
- * stop is green at 4.81:1 for white, so white it is. On the two identity
- * grounds the ramp collapses to white (Guide §6.1), and white ink on a white
- * fill is an invisible button — so there `--surface-tricolor-ink` resolves to
- * the ground's own dark step instead. One variable, both cases.
+ * The label keeps the surface's own ink on hover.
+ *
+ * It used to switch to `--surface-tricolor-ink`, which existed because the fill
+ * covered it. Nothing covers it now, so the ink that was measured against the
+ * ground at rest is the ink that is still correct — and there is no state in
+ * which this button's words change colour under the reader.
+ *
+ * `--surface-tricolor-ink` is left in the token set: it is the right answer for
+ * anything that genuinely fills with the ramp, which this no longer does.
  */
-.brand-button[data-variant="secondary"]:hover .brand-button__label,
-.brand-button[data-variant="secondary"]:focus-visible .brand-button__label {
-  color: var(--surface-tricolor-ink);
-}
 
 .brand-button[data-variant="ghost"] {
   background-color: transparent;

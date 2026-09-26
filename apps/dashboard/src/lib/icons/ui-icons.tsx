@@ -257,6 +257,7 @@ export const NAV_ICON: Record<string, UiIconName> = {
   users: "users",
   roles: "key-round",
   pages: "files",
+  aboutFederation: "building-2",
   presidentMessage: "message-square-quote",
   visionMission: "target",
   strategicPlan: "map",
@@ -272,6 +273,7 @@ export const NAV_ICON: Record<string, UiIconName> = {
   homepageFooter: "panel-bottom",
   homepageVideo: "video",
   videos: "video",
+  albums: "image",
   homepage: "layout-dashboard",
 };
 

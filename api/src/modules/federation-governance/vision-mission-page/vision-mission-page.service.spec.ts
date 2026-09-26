@@ -1,6 +1,23 @@
 import { jest } from '@jest/globals';
 import { Types } from 'mongoose';
 import { VisionMissionPagesService } from './vision-mission-page.service.js';
+import type { WithheldPageDto } from '../../../common/dto/withheld-page.dto.js';
+/**
+ * The page as a served page.
+ *
+ * `getCurrentPublic` and `getPublicSnapshot` now answer the switch alone for a
+ * page that has been taken off the site (ADR-0102 §D2), so their type is a
+ * union. Every test below is about a *served* page, and narrowing once here is
+ * clearer than narrowing at each assertion — and it fails loudly if the gate
+ * ever withholds a page these tests expect to be served.
+ */
+const served = <T>(page: T | WithheldPageDto | null): T => {
+  if (page === null || (page as { isActive?: unknown }).isActive === false) {
+    throw new Error('expected a served page, got the activation switch alone');
+  }
+  return page as T;
+};
+
 
 /**
  * Every picture the page prints is content with a field on the record, the
@@ -31,7 +48,14 @@ const text = (value: string) => ({ ar: value, en: value });
 const mock = () => jest.fn<(...args: unknown[]) => Promise<unknown>>();
 
 const make = () => {
-  const repository = { find: mock(), updateById: mock() };
+  // Served, so `getCurrentPublic` answers the page rather than the switch
+  // alone. The switch is read from the row, never the snapshot (ADR-0102 §D4),
+  // so every spec about a published page has to say the row is switched on.
+  const repository = {
+    find: mock(),
+    findByIdWithActivation: mock().mockResolvedValue({ isActive: true }),
+    updateById: mock(),
+  };
   const publications = { findLive: mock(), getPublicSnapshot: mock() };
   const revisions = {};
   const media = { resolvePublicImages: mock(), assertUsableImage: mock() };
@@ -158,7 +182,7 @@ describe('VisionMissionPagesService — strategic goals', () => {
 
     const page = await service.getCurrentPublic();
 
-    expect(page?.strategicGoals).toEqual([
+    expect(served(page).strategicGoals).toEqual([
       { title: text('first'), description: text('a'), iconKey: 'star', displayOrder: 1 },
       { title: text('second'), description: text('b'), iconKey: 'trophy', displayOrder: 2 },
     ]);

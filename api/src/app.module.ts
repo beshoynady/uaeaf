@@ -43,6 +43,7 @@ import { AlbumsModule } from './modules/media-center/albums/albums.module.js';
 import { VideosModule } from './modules/media-center/videos/videos.module.js';
 import { LiveStreamsModule } from './modules/media-center/live-streams/live-streams.module.js';
 import { VideoSectionModule } from './modules/media-center/video-section/video-section.module.js';
+import { PhotoGallerySectionModule } from './modules/media-center/photo-gallery-section/photo-gallery-section.module.js';
 import { DocumentsModule } from './modules/documents/documents/documents.module.js';
 import { FederationsModule } from './modules/federation-governance/federation/federation.module.js';
 import { ElectionCyclesModule } from './modules/federation-governance/election-cycles/election-cycles.module.js';
@@ -133,6 +134,7 @@ import { AppController } from './app.controller.js';
     VideosModule,
     LiveStreamsModule,
     VideoSectionModule,
+    PhotoGallerySectionModule,
     DocumentsModule,
     // Week 4 — Domain 1 Federation & Governance
     FederationsModule,

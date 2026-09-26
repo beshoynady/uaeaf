@@ -9,6 +9,10 @@ import { editorialDraft, type PageSeo, type SeoDraft, type ValueBlock } from "@/
 
 export interface VisionMissionResponse {
   _id: string;
+  /** Whether the page is served at its URL. `select: false` upstream, so only
+   *  the admin listing and the public read carry it (ADR-0102 §D4); absent
+   *  reads as served, matching the schema default. */
+  isActive?: boolean;
   heroImageId: string | null;
   heroTitle: LocalizedText;
   heroSubtitle: LocalizedText;

@@ -232,6 +232,73 @@ export const ArticleEditor = ({
     }
   };
 
+  /**
+   * How the article is found: its address, and what a search result shows.
+   *
+   * Its own renderer since ADR-0102 §D1, because the edit screen draws it in the
+   * SEO tab while the create screen still draws it inline — there is no record
+   * yet on that screen, so there is no shell and no tabs either. One renderer,
+   * two callers, so the create and edit screens cannot drift apart.
+   */
+  const seoFields = ({ disabled, clearFailure }: { disabled: boolean; clearFailure: () => void }) => {
+    const change = (patch: Partial<ArticleDraft>) => {
+      clearFailure();
+      setDraft((current) => ({ ...current, ...patch }));
+    };
+
+    /** Held back until the address has been seen: "invalid" over a field an
+     *  author has not looked at is a complaint about a suggestion this screen
+     *  made itself. */
+    const slugSeen = slugTouched || draft.slug !== "";
+    const slugMessage = !slugSeen
+      ? null
+      : errors.slug === "taken"
+        ? t("errorSlugTaken")
+        : errors.slug === "invalid"
+          ? t("errorSlugInvalid")
+          : null;
+
+    return (
+      <FormSection
+        number={3}
+        title={t("sectionSeo")}
+        completeLabel={t("sectionComplete")}
+        complete={!errors.slug}
+      >
+        {/* The address belongs with the search fields, not with the story:
+            it is what a search result and a shared link are addressed by,
+            and it is generated from the English headline rather than typed.
+            Section 1 is what the story IS; this is how it is found. */}
+        <TextField
+          id="article-slug"
+          label={t("fieldSlug")}
+          // The address is Latin-only in both languages, so the field reads
+          // left to right whichever way the page does.
+          dir="ltr"
+          value={draft.slug}
+          disabled={disabled}
+          required
+          onChange={(event) => {
+            setSlugTouched(true);
+            change({ slug: event.target.value });
+          }}
+          hint={t("hintSlug")}
+          error={slugMessage}
+        />
+
+        <SeoFields
+          seo={draft.seo}
+          onChange={(seo) => change({ seo })}
+          disabled={disabled}
+          images={library}
+          canReadMedia={canReadMedia}
+          locale={locale}
+          onUploaded={onUploaded}
+        />
+      </FormSection>
+    );
+  };
+
   const fields = ({ disabled, clearFailure }: { disabled: boolean; clearFailure: () => void }) => {
     const change = (patch: Partial<ArticleDraft>) => {
       clearFailure();
@@ -254,15 +321,6 @@ export const ArticleEditor = ({
         title: next,
         ...(slugTouched ? {} : { slug: suggestSlug(next.en) }),
       });
-
-    const slugSeen = slugTouched || draft.slug !== "";
-    const slugMessage = !slugSeen
-      ? null
-      : errors.slug === "taken"
-        ? t("errorSlugTaken")
-        : errors.slug === "invalid"
-          ? t("errorSlugInvalid")
-          : null;
 
     return (
       <>
@@ -457,46 +515,10 @@ export const ArticleEditor = ({
           ) : null}
         </FormSection>
 
-        <FormSection
-          number={3}
-          title={t("sectionSeo")}
-          completeLabel={t("sectionComplete")}
-          complete={!errors.slug}
-        >
-          {/* The address belongs with the search fields, not with the story:
-              it is what a search result and a shared link are addressed by,
-              and it is generated from the English headline rather than typed.
-              Section 1 is what the story IS; this is how it is found. */}
-          <TextField
-            id="article-slug"
-            label={t("fieldSlug")}
-            // The address is Latin-only in both languages, so the field reads
-            // left to right whichever way the page does.
-            dir="ltr"
-            value={draft.slug}
-            disabled={disabled}
-            required
-            onChange={(event) => {
-              setSlugTouched(true);
-              change({ slug: event.target.value });
-            }}
-            hint={t("hintSlug")}
-            error={slugMessage}
-          />
-
-          <SeoFields
-            seo={draft.seo}
-            onChange={(seo) => change({ seo })}
-            disabled={disabled}
-            images={library}
-            canReadMedia={canReadMedia}
-            locale={locale}
-            onUploaded={onUploaded}
-          />
-        </FormSection>
       </>
     );
   };
+
 
   if (record === null) {
     // No shell: there is no record to review, no version to restore and no
@@ -579,6 +601,7 @@ export const ArticleEditor = ({
         ) : null}
 
         {fields({ disabled: creating || !canEdit, clearFailure: () => setCreateFailure(null) })}
+        {seoFields({ disabled: creating || !canEdit, clearFailure: () => setCreateFailure(null) })}
 
         {/* The pause before the one action on this screen that cannot be taken
             back: there is no record yet, so leaving discards the article
@@ -605,12 +628,20 @@ export const ArticleEditor = ({
     <EditorShell
       entityType={ENTITY_TYPE}
       entityId={record._id}
+      heading={{
+        // The article's own headline, in the reader's language. An untitled
+        // draft takes the screen's name rather than an empty `h1`.
+        trail: [{ label: t("title"), href: "/news" }, { label: draft.title[locale] || t("title") }],
+        title: draft.title[locale] || t("title"),
+      }}
+      previewHref={draft.slug ? `/news/${draft.slug}` : undefined}
       dirty={dirty}
       body={() => toPatchBody(original, draft)}
       onDiscard={() => setDraft(original)}
       canEdit={canEdit}
       editorial={editorial}
       fieldLabels={fieldLabels}
+      seo={seoFields}
     >
       {fields}
     </EditorShell>

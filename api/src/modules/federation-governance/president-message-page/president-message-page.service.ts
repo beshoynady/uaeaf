@@ -5,6 +5,7 @@ import { PresidentMessagePagesRepository } from './president-message-page.reposi
 import type { PresidentMessagePageDocument } from './schemas/president-message-page.schema.js';
 import { CreatePresidentMessagePageDto } from './dto/create-president-message-page.dto.js';
 import { UpdatePresidentMessagePageDto } from './dto/update-president-message-page.dto.js';
+import { WITHHELD_PAGE, type WithheldPageDto } from '../../../common/dto/withheld-page.dto.js';
 import { PublicationsService } from '../../workflow/publications/publications.service.js';
 import { RevisionsService } from '../../workflow/revisions/revisions.service.js';
 import { MediaAssetsService } from '../../media-center/media-assets/media-assets.service.js';
@@ -115,8 +116,48 @@ export class PresidentMessagePagesService {
     return updated;
   }
 
+  /** The admin listing. Carries `isActive`, which the dashboard draws as the
+   *  page's live state beside the row it opens — an ordinary read excludes it
+   *  (ADR-0102 §D4). */
   async findAll(): Promise<PresidentMessagePageDocument[]> {
-    return this.repository.find();
+    return this.repository.findAllWithActivation();
+  }
+
+  /**
+   * Switches the finished page on or off for visitors, at once.
+   *
+   * Three things make this write unlike every other one here, each deliberate
+   * (ADR-0102 §D2):
+   *
+   * - It does not go through the review cycle. Taking a live page down is an
+   *   operational act that cannot wait for an approval, and putting one up is a
+   *   decision made after the words were already approved.
+   * - Its route is gated on `Publish`, not `Update`. Deciding what the public
+   *   sees is a publishing decision; an editor who may rewrite the page still may
+   *   not decide the moment it appears.
+   * - It is allowed while a review holds the draft. The switch governs the
+   *   version already live; a review in progress concerns the next one, and
+   *   blocking the switch on it would mean a page could not be taken down
+   *   because someone happened to be editing it.
+   *
+   * It writes nothing but the switch and who threw it, so it cannot become a way
+   * to change the page's words without going through the ordinary save. The
+   * returned document carries `_id`: the audit-log interceptor records a write
+   * only when it can name the record.
+   */
+  async setActive(
+    id: string,
+    isActive: boolean,
+    updatedBy: Types.ObjectId,
+  ): Promise<PresidentMessagePageDocument> {
+    const updated = await this.repository.updateById(id, {
+      $set: { isActive, updatedBy },
+    } as UpdateQuery<PresidentMessagePageDocument>);
+
+    if (!updated) {
+      throw new NotFoundException('President message page not found.');
+    }
+    return updated;
   }
 
   async findById(id: string): Promise<PresidentMessagePageDocument | null> {
@@ -143,7 +184,7 @@ export class PresidentMessagePagesService {
    * Returns `null` — HTTP 200 with a null body, the convention
    * `AlbumsService` set — when no such message is Live.
    */
-  async getCurrentPublic(): Promise<PresidentMessagePublicResponseDto | null> {
+  async getCurrentPublic(): Promise<PresidentMessagePublicResponseDto | WithheldPageDto | null> {
     const appointments = await this.appointmentsService.findActiveByRole('President');
     if (appointments.length === 0) {
       return null;
@@ -163,7 +204,7 @@ export class PresidentMessagePagesService {
           'presidentMessagePage',
           entityId,
         );
-        return snapshot ? { snapshot, publishedAt: publication.publishedAt } : null;
+        return snapshot ? { entityId, snapshot, publishedAt: publication.publishedAt } : null;
       }),
     );
 
@@ -171,7 +212,31 @@ export class PresidentMessagePagesService {
       .filter((candidate): candidate is NonNullable<typeof candidate> => candidate !== null)
       .sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime())[0];
 
-    return live ? this.toPublicResponse(live.snapshot, live.publishedAt) : null;
+    return live ? this.servedOrWithheld(live) : null;
+  }
+
+  /**
+   * The published page, or the switch alone when the page is switched off.
+   *
+   * `isActive` is read from the row rather than the snapshot, because it is
+   * deliberately never frozen into one (see the schema). So the switch reflects
+   * the federation's decision right now, while the words reflect the version
+   * they approved.
+   *
+   * A withheld page answers with the switch and nothing else — not a full
+   * response the caller is expected not to render. The draft may be mid-review,
+   * so there must be nothing in the body to leak (ADR-0102 §D2).
+   */
+  private async servedOrWithheld(live: {
+    entityId: Types.ObjectId;
+    snapshot: Record<string, unknown>;
+    publishedAt: Date;
+  }): Promise<PresidentMessagePublicResponseDto | WithheldPageDto> {
+    const record = await this.repository.findByIdWithActivation(live.entityId.toString());
+    if (record?.isActive !== true) {
+      return WITHHELD_PAGE;
+    }
+    return this.toPublicResponse(live.snapshot, live.publishedAt);
   }
 
   /**

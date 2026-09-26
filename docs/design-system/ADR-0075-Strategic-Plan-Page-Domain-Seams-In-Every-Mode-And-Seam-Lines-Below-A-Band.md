@@ -13,6 +13,8 @@
 
 **Companions:** `docs/engineering/plans/strategic-plan-page-plan.md` (the plan), `docs/engineering/how-strategic-plan-page-works.md` (the explainer, written with the page).
 
+**Amended by:** ADR-0102 §D1 — the *dashboard* editor's layout only: the status, review, versions and SEO panels leave the page's vertical flow and become sibling panels under one tablist. The composition lock on the public page, and the ordering prohibition, are untouched.
+
 ---
 
 ## M0-A — Rule 3 in high contrast: a register change counts only with a drawn edge

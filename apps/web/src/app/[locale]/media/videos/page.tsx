@@ -10,6 +10,7 @@ import { findPublicPage } from "@/lib/pages/public-pages";
 import { JsonLd } from "@/lib/seo/json-ld";
 import { buildMetadata, SITE_ORIGIN } from "@/lib/seo/metadata";
 import type { AppLocale } from "@/i18n/routing";
+import { withheldPage } from "@/components/pages/page-inactive-screen";
 
 /**
  * The video library.
@@ -67,6 +68,11 @@ const VideosPage = async ({
 }) => {
   const { locale } = await params;
   setRequestLocale(locale);
+
+  // Switched off by the federation: the address stays, the content does not
+  // (ADR-0102 §D2).
+  const withheld = await withheldPage(KEY, locale);
+  if (withheld) return withheld;
 
   const search = await searchParams;
   const query = readLibraryQuery(search);

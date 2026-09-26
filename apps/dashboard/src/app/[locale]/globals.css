@@ -75,6 +75,34 @@
  */
 html {
   color-scheme: light;
+
+  /*
+   * Room at the top of the scroll for whatever is stuck there.
+   *
+   * The editor screens carry a sticky header — breadcrumb, title, activation
+   * bar and tab strip (ADR-0102 §D1). When Tab reaches a control that is off
+   * screen the browser scrolls it to the top of the scrollport, and the top of
+   * the scrollport is exactly where that header is. Measured on
+   * `/ar/about-federation` at 1280×560 before this line: **65% of a focused
+   * switch covered**.
+   *
+   * That is above the WCAG 2.2 AA floor — 2.4.11 asks only that the control is
+   * not entirely hidden — and below AAA (2.4.12, fully visible). It is fixed
+   * here because a third of a field is not a field anyone can work in,
+   * whichever line it falls on.
+   *
+   * `scroll-padding-block-start` is the documented remedy: it tells the browser
+   * the top of the scrollport is lower than it looks, so every scroll-into-view
+   * stops short of the header — including the one the browser performs on Tab,
+   * which no component can intercept for itself.
+   *
+   * 14rem = 224px, the editor header's measured height (219px) plus air. It is
+   * global rather than per screen because a scroll padding present on four
+   * screens and missing on the fifth is the one nobody notices; on the screens
+   * whose only sticky element is the app shell's own bar it merely reserves
+   * more room than they need, which costs nothing and hides nothing.
+   */
+  scroll-padding-block-start: 14rem;
 }
 html[data-theme="dark"] {
   color-scheme: dark;

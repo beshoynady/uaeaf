@@ -5,7 +5,8 @@ import { useTranslations } from "next-intl";
 import { BilingualField } from "@/components/admin/bilingual-field";
 import { BlockListField } from "@/components/admin/editorial-editor/block-list-field";
 import { EditorShell } from "@/components/admin/editorial-editor/editor-shell";
-import { SeoFields } from "@/components/admin/editorial-editor/seo-fields";
+import { PageActivationBar } from "@/components/admin/activation/page-activation-bar";
+import { SeoPanel } from "@/components/admin/editorial-editor/seo-panel";
 import { MediaPicker, type MediaAssetOption } from "@/components/admin/pages/media-picker";
 import { FormSection } from "@/components/ui/form-section";
 import type { EditorialState } from "@/lib/admin/editorial-state";
@@ -36,6 +37,7 @@ export const VisionMissionEditor = ({
   record,
   images,
   canEdit,
+  canPublish,
   canReadMedia,
   locale,
   editorial,
@@ -44,6 +46,9 @@ export const VisionMissionEditor = ({
   record: VisionMissionResponse;
   images: readonly MediaAssetOption[];
   canEdit: boolean;
+  /** `visionMissionPage:Publish` — the activation bar's control, not the
+   *  form's. */
+  canPublish: boolean;
   canReadMedia: boolean;
   locale: AppLocale;
   editorial?: EditorialState | null;
@@ -51,6 +56,7 @@ export const VisionMissionEditor = ({
 }) => {
   const t = useTranslations("VisionMission");
   const e = useTranslations("EditorialEditor");
+  const p = useTranslations("AboutFederation");
 
   // Built once per record: the baseline every keystroke is compared against.
   const original = useMemo(() => toDraft(record), [record]);
@@ -64,6 +70,30 @@ export const VisionMissionEditor = ({
     <EditorShell
       entityType={ENTITY_TYPE}
       entityId={record._id}
+      heading={{ trail: [{ label: p("trailPages"), href: "/pages" }, { label: t("title") }], title: t("title") }}
+      previewHref="/about/governance/vision-mission"
+      activation={
+        <PageActivationBar
+          entity={ENTITY_TYPE}
+          pageName={t("title")}
+          recordId={record._id}
+          isActive={record.isActive === true}
+          canPublish={canPublish}
+        />
+      }
+      seo={({ disabled, clearFailure }) => (
+        <SeoPanel
+          seo={draft.seo}
+          onChange={(seo) => {
+            clearFailure();
+            setDraft((current) => ({ ...current, seo }));
+          }}
+          disabled={disabled}
+          images={library}
+          canReadMedia={canReadMedia}
+          onUploaded={onUploaded}
+        />
+      )}
       dirty={dirty}
       body={() => toPatchBody(original, draft)}
       onDiscard={() => setDraft(original)}
@@ -168,17 +198,6 @@ export const VisionMissionEditor = ({
               <p className="text-caption text-[color:var(--color-text-muted)]">{t("ctaNote")}</p>
             </FormSection>
 
-            <FormSection number={7} title={t("sectionSeo")}>
-              <SeoFields
-                seo={draft.seo}
-                onChange={(seo) => change({ seo })}
-                disabled={disabled}
-                images={library}
-                canReadMedia={canReadMedia}
-                locale={locale}
-                onUploaded={onUploaded}
-              />
-            </FormSection>
           </>
         );
       }}

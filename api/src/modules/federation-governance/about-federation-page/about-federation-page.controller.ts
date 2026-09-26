@@ -9,7 +9,7 @@ import { extractRequestContext } from '../../../common/utils/request-context.uti
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 import { AboutFederationPagesService } from './about-federation-page.service.js';
 import { UpdateAboutFederationPageDto } from './dto/update-about-federation-page.dto.js';
-import { ToggleAboutActiveDto } from './dto/toggle-about-active.dto.js';
+import { ToggleActiveDto } from '../../../common/dto/toggle-active.dto.js';
 import { PublishingService } from '../../workflow/publishing/publishing.service.js';
 import { EditorialStateDto } from '../../workflow/publishing/editorial-state.dto.js';
 import { PublishEditorialDto, RestoreEditorialDto } from '../../workflow/publishing/editorial-actions.dto.js';
@@ -45,6 +45,16 @@ export class AboutFederationPagesController {
   @Public()
   getCurrentPublic() {
     return this.service.getCurrentPublic();
+  }
+
+  /** What the two automatic sections would print right now — the board's
+   *  serving members and the record counts — for the badges the editor sees
+   *  beside the sections they cannot switch off. Declared ahead of `GET :id`
+   *  so `sources` is never read as an id. */
+  @Get('sources')
+  @RequirePermission('aboutFederationPage', 'Read')
+  sourceCounts() {
+    return this.service.sourceCounts();
   }
 
   /** The whole draft as the dashboard edits it, hidden items included, with
@@ -103,7 +113,7 @@ export class AboutFederationPagesController {
   @RequirePermission('aboutFederationPage', 'Publish')
   setActive(
     @Param('id') id: string,
-    @Body() dto: ToggleAboutActiveDto,
+    @Body() dto: ToggleActiveDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.service.setActive(id, dto.isActive, new Types.ObjectId(user.userId));

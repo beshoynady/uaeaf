@@ -85,12 +85,10 @@ export class AboutFederationPagesService {
     private readonly appointmentsService: FederationAppointmentsService,
   ) {}
 
+  /** The admin listing. Carries `isActive`, which the dashboard draws as the
+   *  page's live state beside the row it opens. */
   async findAll(): Promise<AboutFederationPageDocument[]> {
-    return this.repository.find();
-  }
-
-  async findById(id: string): Promise<AboutFederationPageDocument | null> {
-    return this.repository.findById(id);
+    return this.repository.findAllWithActivation();
   }
 
   /** The row as the dashboard edits it: the whole draft, hidden items and
@@ -116,9 +114,7 @@ export class AboutFederationPagesService {
     dto: UpdateAboutFederationPageDto,
     updatedBy: Types.ObjectId,
   ): Promise<AboutFederationPageDocument> {
-    await this.assertUsableImages(dto);
-
-    const current = await this.repository.findById(id);
+    const [, current] = await Promise.all([this.assertUsableImages(dto), this.repository.findById(id)]);
     if (!current) {
       throw new NotFoundException('About page not found.');
     }
@@ -205,6 +201,38 @@ export class AboutFederationPagesService {
     return live ? this.toPublicResponse(entityId, live.snapshot, live.publishedAt) : null;
   }
 
+  /**
+   * What the two automatic sections would print right now.
+   *
+   * The dashboard draws these beside the sections an editor cannot switch off,
+   * so that a section about to vanish for want of a source is visible before
+   * publishing rather than after. The screen has no way to know either number,
+   * and a guess would defeat the badge.
+   *
+   * `stats` counts the tiles that will be drawn, not the sources that exist: a
+   * source answering `null` prints nothing. `figures` names them all anyway,
+   * including the empty ones, because the read-only panel has to say *which*
+   * source is missing, not only that one is.
+   */
+  async sourceCounts(): Promise<{
+    leaders: number;
+    stats: number;
+    figures: { key: string; value: number | null }[];
+  }> {
+    const [counts, leaders] = await Promise.all([
+      this.statsService.counts(),
+      this.appointmentsService.currentLeadership(),
+    ]);
+
+    const figures = Object.entries(counts).map(([key, value]) => ({ key, value }));
+
+    return {
+      leaders: leaders.length,
+      stats: figures.filter((figure) => figure.value !== null).length,
+      figures: figures.some((figure) => figure.value !== null) ? figures : [],
+    };
+  }
+
   async remove(id: string, archivedBy: Types.ObjectId): Promise<AboutFederationPageDocument | null> {
     return this.repository.softDelete(id, archivedBy);
   }
@@ -227,6 +255,17 @@ export class AboutFederationPagesService {
     const merged: Record<string, unknown> = { ...stored };
 
     for (const [field, value] of Object.entries(incoming)) {
+      // A field the caller did not send is `undefined` and must be left alone.
+      //
+      // This is not defensive: a validated DTO is a class instance, and at this
+      // project's compile target a declared-but-unset field is an own property
+      // holding `undefined`. So `Object.entries` on a body that named only
+      // `hero.eyebrow` also yields `title` and `description` as `undefined`,
+      // and writing those through erased them — one saved field silently blanked
+      // the rest of its section.
+      if (value === undefined) {
+        continue;
+      }
       if (field === listKey) {
         const current = Array.isArray(stored[listKey]) ? (stored[listKey] as { _id?: unknown }[]) : [];
         merged[listKey] = normaliseList((value ?? []) as ListItemInput[], current);
@@ -291,10 +330,13 @@ export class AboutFederationPagesService {
    *  anything is written — a save that half-applies is worse than one that
    *  refuses. */
   private async assertUsableImages(dto: UpdateAboutFederationPageDto): Promise<void> {
+    // Together, not one after another: the dashboard sends a whole list
+    // whenever any item in it changes, so a timeline of six milestones was six
+    // sequential round trips on every save of that section.
+    //
+    // `collectImageIds` already reaches the share image through the `seo` slot,
+    // so there is nothing to append — doing so checked the same asset twice.
     const ids = collectImageIds(dto as unknown as Record<string, unknown>);
-    const ogImageId = dto.seo?.ogImageId;
-    for (const id of ogImageId ? [...ids, ogImageId] : ids) {
-      await this.mediaAssetsService.assertUsableImage(id);
-    }
+    await Promise.all(ids.map((id) => this.mediaAssetsService.assertUsableImage(id)));
   }
 }

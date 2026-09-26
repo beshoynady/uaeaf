@@ -1,0 +1,38 @@
+# ADR-0111 — Sensitive fields need their own grant, and every extraction is recorded
+
+| Field | Details |
+| --- | --- |
+| **Status** | Accepted. Recorded 2026-09-26. |
+| **Authority** | Product Owner brief, 2026-09-26 (decisions A3, A4). Inherits **Chapter 17 §1** (data classification), **§7** (audit of access to Restricted / Sensitive-Minor data) and **ADR-0028**. |
+| **Amends** | `AUDIT_ACTIONS` gains `Export` and `SensitiveRead`. Response serialization gains a visibility pass. |
+| **Does not amend** | The `[PUBLIC]`/`[RESTRICTED]` split or the rule that every `toPublicResponse` is an allow-list (brief §8) — public responses never carried these fields. · `USER_EXPORT_COLUMNS`, which is the allow-list precedent this generalises. |
+| **Context** | Chapter 17 §1 classifies personal data as Public, Restricted (contact and health details — administration panel only) or Sensitive/Minor (minors' data and images, governed by ADR-0028 under Federal Decree-Law 26/2025). The schemas already carry these markers — `federationPersonnel.internalContact` is `[RESTRICTED]`, `athleteProfiles.restricted` and `athletes.dateOfBirth` are `[SENSITIVE-MINOR]` — and they are honoured on the **public** boundary by distinct response classes. They are **not** honoured inside the dashboard: any holder of `<resource>:Read` sees every field, so "may list athletes" and "may read a minor's identity document number" are the same grant. Chapter 17 §7 additionally requires that every **access to** such data generate an audit record naming who, when and which record, and states that a generic log is not sufficient. Nothing audits reads today. |
+| **Decision** | **`ViewSensitive` per resource.** One serialization layer, driven by the capability map's `sensitiveFields`, strips every declared path from a response unless the actor holds `<resource>:ViewSensitive`. The field is **omitted, not nulled** — an absent key and a null value read differently, and null claims the record has no value. The same visibility is intersected with export columns, so a file can never carry a column the screen hid. **Audit:** every export and print writes a row carrying actor, time, resource, **the filters applied** and the record count; and, per Chapter 17 §7, a read that actually returns a sensitive field writes a `SensitiveRead` row naming the record, debounced per actor/record/minute. **Reports:** aggregate counts per product group behind `<group>Reports:ViewReports` alone; drilling into records additionally needs `Read`; sensitive columns additionally need `ViewSensitive`; exporting a report is `Export` on the underlying resource and is audited. |
+| **Alternatives Considered** | **(A) Per-controller filtering.** Rejected: 69 resources means 69 chances to forget, and the field that gets forgotten is by definition the sensitive one. **(B) Null the field instead of omitting it.** Rejected: a client cannot distinguish "you may not see this" from "this is empty", and a form would happily save the null back. **(C) `select: false` on the schema and widen where needed.** Rejected as the primary mechanism: it is per-query rather than per-actor, so the same query serves both audiences and the decision moves to whichever caller ran it. It stays in use where it already is. **(D) One platform-wide `ViewSensitive`.** Rejected: "may see an athlete's ID number" and "may see a staff member's personal email" are different trusts, and the review's own finding was that platform-wide verbs cannot express the model. **(E) Audit exports only, as the brief states.** Narrower than Chapter 17 §7, which requires access too. Raised as an explicit question in the spec rather than silently chosen either way; this ADR implements the chapter, with the debounce as the cost control. **(F) Audit every read with no debounce.** Rejected: opening one record ten times in a minute is one act of access, and ten rows make the log harder to read while making the write volume on list screens materially worse. |
+| **Why This Decision** | The classification already exists and is already enforced at the one boundary somebody remembered. Making it a capability turns it from a property of the endpoint into a property of the person, which is what the operating model asks for — a sports data officer who may see an athlete's identity document, and a content manager who may not. Driving it from the capability map means adding a sensitive field is one declaration rather than an audit of every serializer. |
+| **Risks** | **The `SensitiveRead` write lands on a hot read path.** **Mitigation:** the debounce, and it fires only when a sensitive field is actually returned — a list screen that does not select them writes nothing. Quantified in the spec with a sampling alternative offered. **An export route is added later and forgets the intersection.** **Mitigation:** the export runs through one service, and the visibility intersection happens there, not in the caller. **A field is sensitive in the schema and absent from the map.** **Mitigation:** a test asserts every existing `[RESTRICTED]` / `[SENSITIVE-MINOR]` marker in the schemas has a matching entry in the map. **The audit row's filter record leaks the sensitive value it filtered on.** **Mitigation:** filters are recorded as field names and operators; a filter's literal value is recorded only for non-sensitive fields. |
+| **Consequences** | A `SensitiveFieldsService` applied on dashboard responses. `AUDIT_ACTIONS` gains `Export` and `SensitiveRead`. Export and print routes per the capability map, each audited. Ten group report endpoints. Eight resources declare sensitive fields; `users.email` and `contactMessages`' submitter contact are raised as open questions rather than classified unilaterally, since gating them would change screens that legitimately depend on them today. |
+
+---
+
+## D1 — Why `users.email` is a question and not a decision
+
+By Chapter 17 §1, an email address is contact information, which reads as
+Restricted. But `users.email` is also the login identifier, it is shown in the
+users directory to every `users:Read` holder, and it is step 2 of ADR-0104's
+escalation chain.
+
+Gating it behind `ViewSensitive` would break the directory for the administrators
+who need it. Leaving it ungated is the status quo. The two readings have different
+consequences and the choice is the owner's, so it is recorded as a question with a
+recommendation rather than settled here.
+
+## D2 — Reports show numbers before they show people
+
+`ViewReports` alone yields counts and aggregates — how many athletes, how many
+articles published this month. It yields no rows.
+
+This is what makes template 7 (Executive Viewer) coherent: a board member sees the
+federation's numbers across all ten groups and holds `Read` on nothing. Drilling
+from a number to the records behind it crosses into `Read`, and a sensitive column
+in that drill-down crosses again into `ViewSensitive`.

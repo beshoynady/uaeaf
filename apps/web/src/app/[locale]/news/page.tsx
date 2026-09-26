@@ -12,6 +12,7 @@ import { isIndexable } from "@/lib/pages/indexability";
 import { ARTICLE_CATEGORIES, ARTICLE_TOPICS } from "@/lib/api/types";
 import type { ArticleCategory, ArticleTopic } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
+import { withheldPage } from "@/components/pages/page-inactive-screen";
 
 const KEY = "news";
 
@@ -67,6 +68,11 @@ const NewsPage = async ({
   const range = rangeIsPossible(askedRange.from, askedRange.to) ? askedRange : {};
   const tag = one(search.tag);
   const page = clampPage(one(search.page));
+
+  // Switched off by the federation: the address stays, the content does not
+  // (ADR-0102 §D2).
+  const withheld = await withheldPage(KEY, locale);
+  if (withheld) return withheld;
 
   const [{ title, subtitle, heroImage }, feed] = await Promise.all([
     loadStaticPage(KEY, locale),

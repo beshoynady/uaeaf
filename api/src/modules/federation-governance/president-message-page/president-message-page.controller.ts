@@ -14,6 +14,7 @@ import {
   PublishPresidentMessagePageDto,
   RestorePresidentMessagePageDto,
 } from './dto/publish-president-message-page.dto.js';
+import { ToggleActiveDto } from '../../../common/dto/toggle-active.dto.js';
 import { PublishingService } from '../../workflow/publishing/publishing.service.js';
 import { EditorialStateDto } from '../../workflow/publishing/editorial-state.dto.js';
 
@@ -133,6 +134,37 @@ export class PresidentMessagePagesController {
 
   /** Copies a past revision back over the draft. Publishes nothing — the
    *  restored draft re-enters the ordinary submit/publish path. */
+  /**
+   * Switches the finished page on or off for visitors, at once.
+   *
+   * Three things make this route unlike every other write here, each deliberate
+   * (ADR-0102 §D2):
+   *
+   * - It does not go through the review cycle. Taking a live page down is an
+   *   operational act that cannot wait for an approval, and putting one up is a
+   *   decision made after the words were already approved.
+   * - It is gated on `Publish`, not `Update`. Deciding what the public sees is a
+   *   publishing decision; an editor who may rewrite the page still may not
+   *   decide the moment it appears.
+   * - It is allowed while a review holds the draft. The switch governs the
+   *   version already live; a review in progress concerns the next one, and
+   *   blocking the switch on it would mean a page could not be taken down
+   *   because someone happened to be editing it.
+   *
+   * The response carries the document, and so `_id`: the audit-log interceptor
+   * records a write only when it can name the record, so a response without one
+   * would leave this change untraceable.
+   */
+  @Patch(':id/active')
+  @RequirePermission('presidentMessagePage', 'Publish')
+  setActive(
+    @Param('id') id: string,
+    @Body() dto: ToggleActiveDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.service.setActive(id, dto.isActive, new Types.ObjectId(user.userId));
+  }
+
   @Post(':id/restore')
   @RequirePermission('presidentMessagePage', 'Update')
   restore(

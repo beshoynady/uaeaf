@@ -97,7 +97,20 @@ const EDITORIAL: EditorialState = {
  *  by that line rather than by `role="status"`: the status panel beside it is
  *  a live region too, and a query that matches either would pass on the wrong
  *  one. */
-const editorIsOpen = () => screen.queryByText(arabic.PresidentMessage.allSaved);
+/** The editor drew: its saved-state line is there.
+ *
+ *  `EditorialEditor.allSaved`, not `PresidentMessage.allSaved` — this screen
+ *  moved onto the shared shell (ADR-0102 §D1), so the sentence is the one every
+ *  editor shows. */
+/** The editor drew.
+ *
+ *  Its saved-state line says either "all saved" or when it was last saved,
+ *  depending on whether the record carries an `updatedAt` — so the test asks for
+ *  the region rather than for one of the two sentences (ADR-0102 §D1). */
+const editorIsOpen = () =>
+  // `queryAll`, not `getAll`: half these tests are about the editor NOT drawing,
+  // and `getAll` throws instead of answering.
+  screen.queryAllByRole("status").find((node) => node.hasAttribute("data-dirty")) ?? null;
 
 async function open(grants: PermissionGrant[], search: Record<string, string> = {}) {
   readGrants.mockResolvedValue(grants);
@@ -287,13 +300,16 @@ describe("the image library", () => {
 });
 
 describe("the status panel", () => {
-  it("is drawn beside the editor, reading the record's own state", async () => {
+  it("reads the record's own state, and is offered as a tab", async () => {
     await open([{ resourceType: "presidentMessagePage", action: "Update" }]);
 
     expect(fetchAsUser).toHaveBeenCalledWith("/president-message-page/msg-1/editorial-state");
-    expect(
-      screen.getByRole("complementary", { name: arabic.Editorial.panelTitle }),
-    ).toBeInTheDocument();
+    // Since ADR-0102 §D1 the panel is the review tab's content rather than a
+    // column beside the form, so what this route test can assert is that the
+    // state was read and the tab offered. What the panel draws is
+    // `status-panel.spec.tsx`, and that the tab opens it is
+    // `editor-tabs.spec.tsx`.
+    expect(screen.getByRole("tab", { name: /المراجعة/ })).toBeInTheDocument();
   });
 
   /** Losing the panel is losing a panel, not the screen. An editor whose
@@ -307,6 +323,7 @@ describe("the status panel", () => {
     await open([{ resourceType: "presidentMessagePage", action: "Update" }]);
 
     expect(editorIsOpen()).toBeInTheDocument();
-    expect(screen.queryByRole("complementary")).toBeNull();
+    // No state, no review tab — and still the whole form.
+    expect(screen.queryByRole("tab", { name: /المراجعة/ })).toBeNull();
   });
 });

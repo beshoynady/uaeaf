@@ -14,8 +14,6 @@ import type { AboutDraft, AboutSectionKey } from "./about-readiness";
  * shape is checked field by field. Declared twice it would have drifted.
  */
 
-export type { AboutDraft, AboutSectionKey };
-
 type StoredItem = { _id?: string; isVisible?: boolean; displayOrder?: number };
 
 /** The record as the API returns it to the dashboard. Sections are nullable:
@@ -35,7 +33,7 @@ export interface AboutFederationResponse {
   governance: AboutDraft["governance"] | null;
   ecosystem: AboutDraft["ecosystem"] | null;
   cta: AboutDraft["cta"] | null;
-  seo: AboutDraft["seo"] | null;
+  seo: { metaTitle: LocalizedText | null; metaDescription: LocalizedText | null; ogImageId: string | null } | null;
   publicationState: string;
   /** Read only to order the collection when the URL names no record. */
   createdAt: string;
@@ -136,11 +134,33 @@ export const toDraft = (record: AboutFederationResponse): AboutDraft => ({
     secondary: link(record.cta?.secondary),
   },
   seo: {
-    metaTitle: record.seo?.metaTitle ? text(record.seo.metaTitle) : null,
-    metaDescription: record.seo?.metaDescription ? text(record.seo.metaDescription) : null,
-    ogImageId: record.seo?.ogImageId ?? null,
+    metaTitle: text(record.seo?.metaTitle),
+    metaDescription: text(record.seo?.metaDescription),
+    ogImageId: record.seo?.ogImageId ?? "",
   },
 });
+
+/**
+ * The SEO block as the API takes it.
+ *
+ * Every field of `PageSeoDto` is optional and each half of a bilingual pair
+ * must be non-empty, so a field the editor has left blank is left out of the
+ * body rather than sent as two empty strings — which the API would refuse,
+ * failing the whole save over a field nobody filled in.
+ */
+const seoForWire = (seo: AboutDraft["seo"]): Record<string, unknown> => {
+  const body: Record<string, unknown> = {};
+  if (seo.metaTitle.ar.trim() && seo.metaTitle.en.trim()) {
+    body.metaTitle = seo.metaTitle;
+  }
+  if (seo.metaDescription.ar.trim() && seo.metaDescription.en.trim()) {
+    body.metaDescription = seo.metaDescription;
+  }
+  if (seo.ogImageId) {
+    body.ogImageId = seo.ogImageId;
+  }
+  return body;
+};
 
 /** Structural comparison. Order matters inside a list, which is why this is a
  *  serialisation rather than a key-by-key diff: a reordered list is a changed
@@ -187,7 +207,7 @@ export const toPatchBody = (original: AboutDraft, draft: AboutDraft): Record<str
   }
 
   if (!same(original.seo, draft.seo)) {
-    body.seo = draft.seo;
+    body.seo = seoForWire(draft.seo);
   }
 
   return body;

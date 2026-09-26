@@ -1,4 +1,5 @@
 import type { LocalizedText } from "@/lib/api/types";
+import type { SeoDraft } from "@/lib/admin/editorial-draft";
 
 /**
  * What the About page's editor is told before they send the page for approval.
@@ -91,12 +92,67 @@ export interface Readiness {
   notices: Notice[];
 }
 
-type Item = { _id?: string; isVisible?: boolean; imageId?: string | null };
+/** What every list item carries, whatever list it is in. */
+type Item = { _id?: string; isVisible?: boolean };
 
+export type FactTone = "green" | "black" | "red" | "tri";
+export type CardTone = "green" | "black" | "red";
+export type MedalKind = "gold" | "silver" | "bronze" | "other";
+export type DatePrecision = "year" | "monthYear" | "fullDate" | "unknown";
+export type MilestoneCategory =
+  | "association"
+  | "firstLeadership"
+  | "firstParticipation"
+  | "federation"
+  | "globalMembership"
+  | "continentalMembership";
+
+export type FactDraft = { value: string; badge: LocalizedText; label: LocalizedText; tone: FactTone } & Item;
+
+export type MilestoneDraft = {
+  datePrecision: DatePrecision;
+  year: number | null;
+  month: number | null;
+  day: number | null;
+  category: MilestoneCategory;
+  title: LocalizedText;
+  description: LocalizedText;
+  featured: boolean;
+  imageId: string | null;
+} & Item;
+
+export type AchievementDraft = {
+  year: number | null;
+  place: LocalizedText;
+  medalKind: MedalKind;
+  medalLabel: LocalizedText | null;
+  title: LocalizedText;
+  description: LocalizedText;
+  athleteId: string | null;
+  imageId: string | null;
+} & Item;
+
+export type PioneerDraft = {
+  name: LocalizedText;
+  badge: LocalizedText;
+  description: LocalizedText;
+  imageId: string | null;
+  featured: boolean;
+} & Item;
+
+export type GovernanceCardDraft = { title: LocalizedText; text: LocalizedText; tone: CardTone } & Item;
+
+/**
+ * The record as the form holds it.
+ *
+ * Every field the editor can reach is declared, not only the ones this file's
+ * own readiness pass reads: this is the shape the section components are
+ * written against, and a field missing from it is a field they cannot edit.
+ */
 export interface AboutDraft {
   hiddenSections: AboutSectionKey[];
   hero: { eyebrow: LocalizedText; title: LocalizedText; description: LocalizedText; imageId: string | null };
-  facts: { items: ({ value: string; badge: LocalizedText; label: LocalizedText } & Item)[] };
+  facts: { items: FactDraft[] };
   story: {
     eyebrow: LocalizedText;
     title: LocalizedText;
@@ -108,25 +164,21 @@ export interface AboutDraft {
     eyebrow: LocalizedText;
     title: LocalizedText;
     description: LocalizedText;
-    items: ({ datePrecision: string; title: LocalizedText; description: LocalizedText } & Item)[];
+    items: MilestoneDraft[];
   };
   achievements: {
     eyebrow: LocalizedText;
     title: LocalizedText;
     description: LocalizedText;
-    items: ({ place: LocalizedText; title: LocalizedText; description: LocalizedText; medalLabel: LocalizedText | null } & Item)[];
+    items: AchievementDraft[];
   };
-  pioneers: {
-    eyebrow: LocalizedText;
-    title: LocalizedText;
-    items: ({ name: LocalizedText; badge: LocalizedText; description: LocalizedText } & Item)[];
-  };
+  pioneers: { eyebrow: LocalizedText; title: LocalizedText; items: PioneerDraft[] };
   leadership: { eyebrow: LocalizedText; title: LocalizedText; quote: LocalizedText; priorities: LocalizedText[] };
   governance: {
     eyebrow: LocalizedText;
     title: LocalizedText;
     description: LocalizedText;
-    cards: ({ title: LocalizedText; text: LocalizedText } & Item)[];
+    cards: GovernanceCardDraft[];
     link: { label: LocalizedText; href: string };
   };
   ecosystem: { eyebrow: LocalizedText; title: LocalizedText };
@@ -136,7 +188,9 @@ export interface AboutDraft {
     primary: { label: LocalizedText; href: string };
     secondary: { label: LocalizedText; href: string };
   };
-  seo: { metaTitle: LocalizedText | null; metaDescription: LocalizedText | null; ogImageId: string | null };
+  /** The draft form: an absent value is an empty one, never `null`, so every
+   *  field has somewhere to put a keystroke. */
+  seo: SeoDraft;
 }
 
 /** What the sections' figures are counted from, which the draft does not

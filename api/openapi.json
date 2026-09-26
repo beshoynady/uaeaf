@@ -2178,6 +2178,48 @@
         ]
       }
     },
+    "/api/v1/clubs/public": {
+      "get": {
+        "operationId": "ClubsController_findAllPublic_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "1-indexed page number.",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Items per page (max 200).",
+            "schema": {
+              "default": 50,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClubPublicListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "clubs"
+        ]
+      }
+    },
     "/api/v1/clubs/export": {
       "get": {
         "operationId": "ClubsController_exportCsv_v1",
@@ -3587,6 +3629,199 @@
         ]
       }
     },
+    "/api/v1/albums/public": {
+      "get": {
+        "operationId": "AlbumsController_listPublic_v1",
+        "parameters": [
+          {
+            "name": "season",
+            "required": false,
+            "in": "query",
+            "description": "Sporting season id.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "championship",
+            "required": false,
+            "in": "query",
+            "description": "Championship id. Also returns its competitions albums.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "competition",
+            "required": false,
+            "in": "query",
+            "description": "Competition id.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "publicEvent",
+            "required": false,
+            "in": "query",
+            "description": "Public event id — a conference, an honouring.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "athlete",
+            "required": false,
+            "in": "query",
+            "description": "Athlete id.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "club",
+            "required": false,
+            "in": "query",
+            "description": "Club id.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "Start of the period, inclusive (ISO date).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "End of the period, inclusive (ISO date).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "description": "Free-text search over title and location, both languages.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "1-indexed page number.",
+            "schema": {
+              "default": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Albums per page (max 48).",
+            "schema": {
+              "default": 8,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlbumListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "albums"
+        ]
+      }
+    },
+    "/api/v1/albums/public/facets": {
+      "get": {
+        "operationId": "AlbumsController_facets_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlbumFacetsDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "albums"
+        ]
+      }
+    },
+    "/api/v1/albums/public/featured": {
+      "get": {
+        "operationId": "AlbumsController_featured_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/AlbumPublicResponseDto"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "albums"
+        ]
+      }
+    },
+    "/api/v1/albums/public/stats": {
+      "get": {
+        "operationId": "AlbumsController_stats_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AlbumStatsDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "albums"
+        ]
+      }
+    },
     "/api/v1/albums/public/{slug}": {
       "get": {
         "operationId": "AlbumsController_getPublicBySlug_v1",
@@ -3595,6 +3830,15 @@
             "name": "slug",
             "required": true,
             "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "description": "How many photos to skip, for the viewer’s next page. Photos come 40 at a time; the response carries `photoTotal` so the caller knows when it has them all. A malformed value is read as 0, because a stale link must not turn a public page into an error.",
             "schema": {
               "type": "string"
             }
@@ -3646,8 +3890,159 @@
           "albums"
         ]
       },
+      "patch": {
+        "operationId": "AlbumsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAlbumDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "albums"
+        ]
+      },
       "delete": {
         "operationId": "AlbumsController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "albums"
+        ]
+      }
+    },
+    "/api/v1/albums/{id}/photos/order": {
+      "patch": {
+        "operationId": "AlbumsController_reorderPhotos_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlbumPhotoOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "albums"
+        ]
+      }
+    },
+    "/api/v1/albums/{id}/photos/{photoId}": {
+      "delete": {
+        "operationId": "AlbumsController_removePhoto_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "photoId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "albums"
+        ]
+      }
+    },
+    "/api/v1/albums/{id}/cover": {
+      "patch": {
+        "operationId": "AlbumsController_setCover_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlbumCoverDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "albums"
+        ]
+      }
+    },
+    "/api/v1/albums/{id}/featured": {
+      "patch": {
+        "operationId": "AlbumsController_setFeatured_v1",
         "parameters": [
           {
             "name": "id",
@@ -4263,6 +4658,20 @@
         },
         "tags": [
           "page-sections"
+        ]
+      }
+    },
+    "/api/v1/photo-gallery-section/public": {
+      "get": {
+        "operationId": "PhotoGallerySectionController_findPublic_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "photo-gallery-section"
         ]
       }
     },
@@ -5658,6 +6067,20 @@
     "/api/v1/about-federation-page/current/public": {
       "get": {
         "operationId": "AboutFederationPagesController_getCurrentPublic_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "about-federation-page"
+        ]
+      }
+    },
+    "/api/v1/about-federation-page/sources": {
+      "get": {
+        "operationId": "AboutFederationPagesController_sourceCounts_v1",
         "parameters": [],
         "responses": {
           "200": {
@@ -10124,6 +10547,56 @@
           "status"
         ]
       },
+      "ClubPublicResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "logoId": {
+            "type": "object",
+            "nullable": true,
+            "description": "MediaAsset id of the club crest."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug"
+        ]
+      },
+      "ClubPublicListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ClubPublicResponseDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "page": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit"
+        ]
+      },
       "CreateAthleteDto": {
         "type": "object",
         "properties": {
@@ -10702,39 +11175,6 @@
           "isActive"
         ]
       },
-      "ContentAssociationDto": {
-        "type": "object",
-        "properties": {
-          "ownerType": {
-            "type": "string",
-            "enum": [
-              "championships",
-              "sportsEvents",
-              "publicEvents",
-              "athletes",
-              "clubs"
-            ]
-          },
-          "ownerId": {
-            "type": "string"
-          },
-          "role": {
-            "type": "string",
-            "enum": [
-              "Primary",
-              "Featured",
-              "Related"
-            ]
-          },
-          "displayOrder": {
-            "type": "number"
-          }
-        },
-        "required": [
-          "ownerType",
-          "ownerId"
-        ]
-      },
       "CreateAlbumDto": {
         "type": "object",
         "properties": {
@@ -10758,14 +11198,47 @@
               }
             ]
           },
-          "contentCategoryId": {
-            "type": "string"
+          "seasonId": {
+            "type": "string",
+            "description": "The sporting season this album sits in. Omit it for an administrative activity."
           },
-          "associations": {
+          "championshipId": {
+            "type": "string",
+            "description": "The championship. Requires seasonId."
+          },
+          "competitionId": {
+            "type": "string",
+            "description": "One competition inside the championship. Requires championshipId."
+          },
+          "publicEventId": {
+            "type": "string",
+            "description": "A conference, honouring or other institutional occasion. Requires seasonId, excludes championshipId."
+          },
+          "athleteIds": {
+            "description": "Athletes appearing in this album.",
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ContentAssociationDto"
+              "type": "string"
             }
+          },
+          "clubIds": {
+            "description": "Clubs appearing in this album.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "eventDate": {
+            "type": "string",
+            "description": "When the occasion happened."
+          },
+          "location": {
+            "description": "Where the occasion happened.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
           },
           "championshipName": {
             "description": "Bilingual championship/tournament display name, captured directly since the championships collection doesn't exist yet — independent of `associations[]`. Supply both if this album is also associated with a 'championships' owner.",
@@ -10798,9 +11271,218 @@
         "required": [
           "title",
           "slug",
-          "contentCategoryId",
           "displayOrder",
           "publicationState"
+        ]
+      },
+      "AlbumListItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "description": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "seasonId": {
+            "type": "object",
+            "nullable": true,
+            "description": "The sporting season this album sits in."
+          },
+          "championshipId": {
+            "type": "object",
+            "nullable": true
+          },
+          "competitionId": {
+            "type": "object",
+            "nullable": true
+          },
+          "publicEventId": {
+            "type": "object",
+            "nullable": true,
+            "description": "A conference, honouring or other institutional occasion."
+          },
+          "athleteIds": {
+            "description": "Athletes appearing in this album.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "clubIds": {
+            "description": "Clubs appearing in this album.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "eventDate": {
+            "type": "object",
+            "nullable": true,
+            "description": "When the occasion happened — not when it was published."
+          },
+          "location": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "isFeatured": {
+            "type": "boolean",
+            "description": "At most one published album carries this at a time."
+          },
+          "championshipName": {
+            "nullable": true,
+            "description": "Denormalized championship/tournament name, captured at album-creation time — not a live join (the championships collection does not exist yet). [REVIEW WHEN THE CHAMPIONSHIPS MODULE IS BUILT].",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "coverImageId": {
+            "type": "object",
+            "nullable": true
+          },
+          "publishedAt": {
+            "type": "object",
+            "nullable": true
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "assetCount": {
+            "type": "number",
+            "description": "Denormalized visible-photo count."
+          },
+          "previewPhotos": {
+            "description": "At most three photos, the cover first. Empty for an album with no photos yet.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MediaAssetPublicResponseDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "slug",
+          "athleteIds",
+          "clubIds",
+          "isFeatured",
+          "tags",
+          "assetCount",
+          "previewPhotos"
+        ]
+      },
+      "AlbumListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlbumListItemDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Albums matching the filter, across every page."
+          },
+          "page": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "page",
+          "limit"
+        ]
+      },
+      "AlbumFacetEntryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "count"
+        ]
+      },
+      "AlbumFacetsDto": {
+        "type": "object",
+        "properties": {
+          "seasons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlbumFacetEntryDto"
+            }
+          },
+          "championships": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlbumFacetEntryDto"
+            }
+          },
+          "competitions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlbumFacetEntryDto"
+            }
+          },
+          "publicEvents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlbumFacetEntryDto"
+            }
+          },
+          "athletes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlbumFacetEntryDto"
+            }
+          },
+          "clubs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AlbumFacetEntryDto"
+            }
+          }
+        },
+        "required": [
+          "seasons",
+          "championships",
+          "competitions",
+          "publicEvents",
+          "athletes",
+          "clubs"
         ]
       },
       "AlbumPublicResponseDto": {
@@ -10824,8 +11506,55 @@
               }
             ]
           },
-          "contentCategoryId": {
-            "type": "string"
+          "seasonId": {
+            "type": "object",
+            "nullable": true,
+            "description": "The sporting season this album sits in."
+          },
+          "championshipId": {
+            "type": "object",
+            "nullable": true
+          },
+          "competitionId": {
+            "type": "object",
+            "nullable": true
+          },
+          "publicEventId": {
+            "type": "object",
+            "nullable": true,
+            "description": "A conference, honouring or other institutional occasion."
+          },
+          "athleteIds": {
+            "description": "Athletes appearing in this album.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "clubIds": {
+            "description": "Clubs appearing in this album.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "eventDate": {
+            "type": "object",
+            "nullable": true,
+            "description": "When the occasion happened — not when it was published."
+          },
+          "location": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "isFeatured": {
+            "type": "boolean",
+            "description": "At most one published album carries this at a time."
           },
           "championshipName": {
             "nullable": true,
@@ -10860,9 +11589,33 @@
           "id",
           "title",
           "slug",
-          "contentCategoryId",
+          "athleteIds",
+          "clubIds",
+          "isFeatured",
           "tags",
           "assetCount"
+        ]
+      },
+      "AlbumStatsDto": {
+        "type": "object",
+        "properties": {
+          "albums": {
+            "type": "number",
+            "description": "Published albums."
+          },
+          "photos": {
+            "type": "number",
+            "description": "Visible photos across every published album."
+          },
+          "occasions": {
+            "type": "number",
+            "description": "Distinct championships and public events with a published album."
+          }
+        },
+        "required": [
+          "albums",
+          "photos",
+          "occasions"
         ]
       },
       "RelatedAlbumSummaryDto": {
@@ -10899,14 +11652,22 @@
             "$ref": "#/components/schemas/AlbumPublicResponseDto"
           },
           "mediaAssets": {
-            "description": "Visible photos, in display order.",
+            "description": "One page of visible photos, in display order. At most 40.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/MediaAssetPublicResponseDto"
             }
           },
+          "photoTotal": {
+            "type": "number",
+            "description": "Visible photos in this album, across every page."
+          },
+          "photoSkip": {
+            "type": "number",
+            "description": "How many photos were skipped to produce this page."
+          },
           "relatedAlbums": {
-            "description": "Other Published albums sharing an association target, excluding this one.",
+            "description": "Other Published albums related to this one, closest relationship first.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/RelatedAlbumSummaryDto"
@@ -10916,7 +11677,126 @@
         "required": [
           "album",
           "mediaAssets",
+          "photoTotal",
+          "photoSkip",
           "relatedAlbums"
+        ]
+      },
+      "UpdateAlbumDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "description": "Bilingual album title.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "description": {
+            "description": "Bilingual album description.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "championshipName": {
+            "description": "Bilingual championship/tournament display name, captured directly since the championships collection doesn't exist yet — independent of `associations[]`. Supply both if this album is also associated with a 'championships' owner.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "displayOrder": {
+            "type": "number"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "seasonId": {
+            "type": "object",
+            "nullable": true,
+            "description": "Pass null to clear."
+          },
+          "championshipId": {
+            "type": "object",
+            "nullable": true,
+            "description": "Pass null to clear."
+          },
+          "competitionId": {
+            "type": "object",
+            "nullable": true,
+            "description": "Pass null to clear."
+          },
+          "publicEventId": {
+            "type": "object",
+            "nullable": true,
+            "description": "Pass null to clear."
+          },
+          "location": {
+            "nullable": true,
+            "description": "Pass null to clear.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "eventDate": {
+            "type": "object",
+            "nullable": true,
+            "description": "Pass null to clear."
+          },
+          "coverImageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "Pass null to clear."
+          },
+          "athleteIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "clubIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "AlbumPhotoOrderDto": {
+        "type": "object",
+        "properties": {
+          "photoIds": {
+            "description": "Every photo of the album, exactly once, in the order they should appear.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "photoIds"
+        ]
+      },
+      "AlbumCoverDto": {
+        "type": "object",
+        "properties": {
+          "photoId": {
+            "type": "string",
+            "description": "A photo of this album."
+          }
+        },
+        "required": [
+          "photoId"
         ]
       },
       "VideoPublicResponseDto": {
@@ -10993,6 +11873,39 @@
           "url",
           "externalId",
           "tags"
+        ]
+      },
+      "ContentAssociationDto": {
+        "type": "object",
+        "properties": {
+          "ownerType": {
+            "type": "string",
+            "enum": [
+              "championships",
+              "sportsEvents",
+              "publicEvents",
+              "athletes",
+              "clubs"
+            ]
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "Primary",
+              "Featured",
+              "Related"
+            ]
+          },
+          "displayOrder": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "ownerType",
+          "ownerId"
         ]
       },
       "CreateVideoDto": {

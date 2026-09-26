@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { STATIC_PAGES, type StaticPage } from "@/lib/admin/static-pages";
+import { PageActivationBar } from "@/components/admin/activation/page-activation-bar";
+import { findActivatablePage } from "@/lib/admin/activatable-pages";
 import { PageEditor, type PageRecord } from "./page-editor";
 import type { MediaAssetOption } from "./media-picker";
 import type { AppLocale } from "@/i18n/routing";
@@ -13,6 +15,9 @@ export interface PageEntry {
   key: string;
   record: PageRecord;
   canEdit: boolean;
+  /** `<resource>Page:Publish` — the activation bar's grant, separate from the
+   *  `Update` that lets someone rewrite the page. */
+  canPublish: boolean;
 }
 
 /**
@@ -62,6 +67,10 @@ export function PageWorkbench({
 
   const page = STATIC_PAGES.find((candidate) => candidate.key === selectedKey) ?? null;
   const entry = page ? byKey.get(page.key) : undefined;
+  // Resolved from the registry rather than assumed: the registry is what the
+  // activation route validates against, so a page missing from it gets no bar
+  // instead of a bar whose request is refused.
+  const activation = page ? findActivatablePage(page.resourceType) : undefined;
 
   return (
     <div className="grid items-start gap-4 xl:grid-cols-[300px_minmax(0,1fr)]">
@@ -143,7 +152,7 @@ export function PageWorkbench({
           </p>
         ) : (
           <>
-            <header className="flex flex-col gap-2 border-b border-[color:var(--color-border-default)] px-5 py-4">
+            <header className="flex flex-col gap-3 border-b border-[color:var(--color-border-default)] px-5 py-4">
               <h3 className="text-h4 font-bold text-[color:var(--color-text-primary)]">
                 {t(`page_${page.key}`)}
               </h3>
@@ -154,6 +163,25 @@ export function PageWorkbench({
                 <p className="text-body-sm text-[color:var(--color-text-secondary)]">
                   {t("emptyHint")}
                 </p>
+              ) : null}
+
+              {/* The same bar every page screen carries (ADR-0102 §D2). It sits in
+                  the header rather than in the form below because switching the
+                  page on is not a save: it is a different act, with a different
+                  grant, that takes effect at once.
+
+                  `recordId` is null because these twelve are singletons — one
+                  row, and a route that takes no id. An absent `isActive` reads
+                  as served, matching the schema default. */}
+              {activation ? (
+                <PageActivationBar
+                  entity={activation.entity}
+                  pageName={t(`page_${page.key}`)}
+                  recordId={null}
+                  isActive={(entry?.record as { isActive?: boolean } | null)?.isActive !== false}
+                  canPublish={entry?.canPublish ?? false}
+                  saved={entry?.record != null}
+                />
               ) : null}
             </header>
 

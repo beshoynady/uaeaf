@@ -2,6 +2,23 @@ import { jest } from '@jest/globals';
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { StrategicPlansPagesService } from './strategic-plans-page.service.js';
+import type { WithheldPageDto } from '../../../common/dto/withheld-page.dto.js';
+/**
+ * The page as a served page.
+ *
+ * `getCurrentPublic` and `getPublicSnapshot` now answer the switch alone for a
+ * page that has been taken off the site (ADR-0102 §D2), so their type is a
+ * union. Every test below is about a *served* page, and narrowing once here is
+ * clearer than narrowing at each assertion — and it fails loudly if the gate
+ * ever withholds a page these tests expect to be served.
+ */
+const served = <T>(page: T | WithheldPageDto | null): T => {
+  if (page === null || (page as { isActive?: unknown }).isActive === false) {
+    throw new Error('expected a served page, got the activation switch alone');
+  }
+  return page as T;
+};
+
 
 /**
  * The service keeps three promises the page and the dashboard rely on: the
@@ -61,7 +78,17 @@ const baseSnapshot = () => ({
 const mock = () => jest.fn<(...args: unknown[]) => Promise<unknown>>();
 
 const make = () => {
-  const repository = { find: mock(), findById: mock(), updateById: mock(), updateIfUnchanged: mock(), create: mock() };
+  // Served, so `getCurrentPublic` answers the page rather than the switch
+  // alone. The switch is read from the row, never the snapshot (ADR-0102 §D4),
+  // so every spec about a published page has to say the row is switched on.
+  const repository = {
+    find: mock(),
+    findById: mock(),
+    findByIdWithActivation: mock().mockResolvedValue({ isActive: true }),
+    updateById: mock(),
+    updateIfUnchanged: mock(),
+    create: mock(),
+  };
   const publications = { findLive: mock(), getPublicSnapshot: mock() };
   const revisions = {};
   const media = { resolvePublicImages: mock(), assertUsableImage: mock() };
@@ -171,14 +198,14 @@ describe('StrategicPlansPagesService — public projection', () => {
 
     const page = await made.service.getCurrentPublic();
 
-    expect(page?.phases).toEqual([
+    expect(served(page).phases).toEqual([
       { id: String(first._id), title: first.title, description: first.description, iconKey: 'layers', displayOrder: 1 },
       { id: String(second._id), title: second.title, description: second.description, iconKey: 'trophy', displayOrder: 2 },
     ]);
-    expect(page?.pillars.map((pillar) => pillar.id)).toEqual([String(pillarA._id), String(pillarB._id)]);
-    expect(page?.objectives).toEqual([]);
-    expect(page?.metrics).toEqual([{ id: String(metric._id), value: '+30%', label: text('l'), displayOrder: 1 }]);
-    expect(page?.executionSteps).toEqual([{ id: String(step._id), title: text('s'), description: null, displayOrder: 1 }]);
+    expect(served(page).pillars.map((pillar) => pillar.id)).toEqual([String(pillarA._id), String(pillarB._id)]);
+    expect(served(page).objectives).toEqual([]);
+    expect(served(page).metrics).toEqual([{ id: String(metric._id), value: '+30%', label: text('l'), displayOrder: 1 }]);
+    expect(served(page).executionSteps).toEqual([{ id: String(step._id), title: text('s'), description: null, displayOrder: 1 }]);
     expect(JSON.stringify(page)).not.toContain('isVisible');
   });
 
@@ -189,7 +216,7 @@ describe('StrategicPlansPagesService — public projection', () => {
 
     const page = await made.service.getCurrentPublic();
 
-    expect(page?.pillars).toHaveLength(1);
+    expect(served(page).pillars).toHaveLength(1);
   });
 
   it('picks the newest Live publication among the rows, and null when none is Live', async () => {
@@ -209,7 +236,7 @@ describe('StrategicPlansPagesService — public projection', () => {
     }));
     made.media.resolvePublicImages.mockResolvedValue(new Map());
 
-    expect((await made.service.getCurrentPublic())?.heroTitle).toEqual(text('newer'));
+    expect(served(await made.service.getCurrentPublic()).heroTitle).toEqual(text('newer'));
 
     made.publications.findLive.mockResolvedValue(null);
     expect(await made.service.getCurrentPublic()).toBeNull();
@@ -232,9 +259,9 @@ describe('StrategicPlansPagesService — public projection', () => {
 
     expect(page).not.toBeNull();
     expect(page).not.toHaveProperty('federationId');
-    expect((page?.pillars ?? []).map((pillar) => pillar.id)).toEqual([String(shown._id)]);
+    expect(served(page).pillars.map((pillar) => pillar.id)).toEqual([String(shown._id)]);
     expect(JSON.stringify(page)).not.toContain(String(hidden._id));
-    expect(page?.publishedAt).toBe(publishedAt.toISOString());
+    expect(served(page).publishedAt).toBe(publishedAt.toISOString());
     expect(String(made.publications.findLive.mock.calls[0][1])).toBe(String(entityId));
   });
 

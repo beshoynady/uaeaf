@@ -1,4 +1,5 @@
 import { fetchPublic } from "@/lib/api/public-client";
+import type { AboutPage } from "@/lib/about/types";
 import type {
   ArticlePublic,
   AthletePublic,
@@ -10,6 +11,7 @@ import type {
   VisionMissionPublic,
 } from "@/lib/api/types";
 import type { PublicPage } from "./public-pages";
+import { isServed } from "./activation";
 
 /**
  * Chapter 14 §11 — the Minimum Content Threshold — decided in one place.
@@ -30,6 +32,19 @@ import type { PublicPage } from "./public-pages";
  * identical requests within a render, so asking twice costs nothing.
  */
 export async function isIndexable(page: PublicPage): Promise<boolean> {
+  // A page the federation has switched off is §11's case by definition: a title
+  // and a status line (ADR-0102 §D2). Checked ahead of every per-page rule
+  // because there is no page for which "withheld but indexable" is a state, and
+  // because this is also what keeps it out of the sitemap — §13 forbids a page
+  // being `noindex` in its head and present in the sitemap at the same time.
+  //
+  // `page.apiPath` is the record the page itself reads, and Next.js dedupes
+  // identical requests within a render, so this costs nothing extra.
+  const record = await fetchPublic<{ isActive?: boolean }>(page.apiPath);
+  if (!isServed(record)) {
+    return false;
+  }
+
   switch (page.key) {
     case "contact-us": {
       // The record itself is the content: email, phones, address, hours.
@@ -57,6 +72,16 @@ export async function isIndexable(page: PublicPage): Promise<boolean> {
       // overview in both languages.
       const record = await fetchPublic<StrategicPlanPublic>(page.apiPath);
       return Boolean(record?.introText);
+    }
+    case "about": {
+      // Two conditions, because this page has two ways of having no content.
+      // The read answers `{ isActive: false }` and nothing else while the page
+      // is switched off, which is exactly §11's case — a title and a status
+      // line — and it is also what the route's own `robots` directive says.
+      // The hero is the one section that always prints, so its title standing
+      // is the same test as "a version is Live and complete".
+      const record = await fetchPublic<AboutPage>(page.apiPath);
+      return record?.isActive === true && Boolean(record.hero?.title);
     }
     case "board-members": {
       const members = await fetchPublic<unknown[]>("/federation-personnel/public");

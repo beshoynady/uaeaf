@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useRef, type KeyboardEvent } from "react";
 import { useTranslations } from "next-intl";
+import { FOCUS_RING } from "@/components/ui/interactive";
 import { SwitchField } from "@/components/ui/switch-field";
 import { AUTOMATIC_SECTIONS, HIDEABLE_SECTIONS, SECTION_ORDER } from "@/lib/admin/about-readiness";
 import type { AboutSectionKey, SectionReadiness } from "@/lib/admin/about-readiness";
@@ -30,6 +31,19 @@ import type { AboutSectionKey, SectionReadiness } from "@/lib/admin/about-readin
  *
  * Every row also carries a readiness badge, which is the same computation the
  * pre-submission panel reads, so the two can never disagree.
+ *
+ * ── Why it is a vertical tablist ──────────────────────────────────────────
+ *
+ * One section is edited at a time (ADR-0102 §D1), so the rail is a set of tabs
+ * and the editor beside it is their panel — not a list of links, which would
+ * have a keyboard reader tab through ten rows to reach the eleventh control.
+ * `aria-orientation="vertical"` is what tells them the arrows are up and down.
+ *
+ * The row wrapper carries `role="presentation"`, so each tab stays an effective
+ * child of the tablist while still having the switch as a visual sibling. The
+ * switch is deliberately NOT inside the tab: a control inside a control is one
+ * click with two meanings, and toggling a section must not move the editor away
+ * from the section they are working in.
  */
 export const SectionList = ({
   sections,
@@ -56,31 +70,75 @@ export const SectionList = ({
     [onToggle],
   );
 
+  const rail = useRef<HTMLDivElement>(null);
+
+  /** The tabs pattern's vertical keys. Up and down rather than left and right,
+   *  and wrapping at both ends, so the rail is a ring — which is what
+   *  `aria-orientation="vertical"` has already told the reader to expect.
+   *  Unaffected by the writing direction: down is down in both. */
+  const move = (event: KeyboardEvent<HTMLDivElement>) => {
+    const index = SECTION_ORDER.indexOf(selected);
+    if (index === -1) return;
+
+    const step = (delta: number) => {
+      event.preventDefault();
+      onSelect(SECTION_ORDER[(index + delta + SECTION_ORDER.length) % SECTION_ORDER.length]);
+    };
+
+    switch (event.key) {
+      case "ArrowDown":
+        return step(1);
+      case "ArrowUp":
+        return step(-1);
+      case "Home":
+        event.preventDefault();
+        return onSelect(SECTION_ORDER[0]);
+      case "End":
+        event.preventDefault();
+        return onSelect(SECTION_ORDER[SECTION_ORDER.length - 1]);
+      default:
+        return undefined;
+    }
+  };
+
   return (
-    <ol className="flex flex-col gap-2">
+    <div
+      ref={rail}
+      role="tablist"
+      aria-orientation="vertical"
+      aria-label={t("sections.title")}
+      onKeyDown={move}
+      className="flex flex-col gap-2"
+    >
       {SECTION_ORDER.map((key, index) => {
         const readiness = sections.find((section) => section.key === key);
         const isSelected = key === selected;
 
         return (
-          <li key={key}>
-            <div
-              className={`flex items-center gap-3 rounded-[var(--radius-md)] border px-3 py-2 ${
-                isSelected
-                  ? "border-[color:var(--color-brand-green)] bg-[color:var(--color-surface-sunken)]"
-                  : "border-[color:var(--color-border-default)] bg-[color:var(--color-surface-default)]"
-              }`}
-            >
+          <div
+            key={key}
+            role="presentation"
+            data-section={key}
+            className={`flex items-center gap-3 rounded-[var(--radius-md)] border px-3 py-2 ${
+              isSelected
+                ? "border-[color:var(--color-brand-primary)] bg-[color:var(--color-surface-sunken)]"
+                : "border-[color:var(--color-border-default)] bg-[color:var(--color-surface-raised)]"
+            }`}
+          >
               <button
                 type="button"
-                className="flex min-w-0 grow items-center gap-3 text-start"
-                aria-current={isSelected ? "true" : undefined}
+                id={`about-section-tab-${key}`}
+                role="tab"
+                aria-selected={isSelected}
+                aria-controls="about-section-panel"
+                tabIndex={isSelected ? 0 : -1}
+                className={`flex min-w-0 grow items-center gap-3 rounded-[var(--radius-sm)] text-start ${FOCUS_RING}`}
                 onClick={() => onSelect(key)}
               >
                 <span
                   className={`inline-flex size-[26px] shrink-0 items-center justify-center rounded-[var(--radius-sm)] text-label font-bold ${
                     isSelected
-                      ? "bg-[color:var(--color-brand-green)] text-[color:var(--color-text-on-brand)]"
+                      ? "bg-[color:var(--color-brand-primary)] text-[color:var(--color-text-on-brand)]"
                       : "bg-[color:var(--color-surface-sunken)] text-[color:var(--color-text-secondary)]"
                   }`}
                 >
@@ -106,11 +164,10 @@ export const SectionList = ({
                   onChange={handleToggle(key)}
                 />
               ) : null}
-            </div>
-          </li>
+          </div>
         );
       })}
-    </ol>
+    </div>
   );
 };
 
@@ -164,10 +221,10 @@ const LockedBadge = () => {
 };
 
 const TONES = {
-  success: "bg-[color:var(--color-surface-success-subtle)] text-[color:var(--color-text-success)]",
-  warning: "bg-[color:var(--color-surface-warning-subtle)] text-[color:var(--color-text-warning)]",
-  danger: "bg-[color:var(--color-surface-danger-subtle)] text-[color:var(--color-text-danger)]",
-  info: "bg-[color:var(--color-surface-info-subtle)] text-[color:var(--color-text-info)]",
+  success: "bg-[color-mix(in_srgb,var(--color-semantic-success)_10%,transparent)] text-[color:var(--color-semantic-success-text)]",
+  warning: "bg-[color-mix(in_srgb,var(--color-semantic-warning)_10%,transparent)] text-[color:var(--color-semantic-warning-text)]",
+  danger: "bg-[color-mix(in_srgb,var(--color-semantic-error)_10%,transparent)] text-[color:var(--color-semantic-error-text)]",
+  info: "bg-[color-mix(in_srgb,var(--color-semantic-info)_10%,transparent)] text-[color:var(--color-semantic-info-text)]",
   muted: "bg-[color:var(--color-surface-sunken)] text-[color:var(--color-text-secondary)]",
 } as const;
 

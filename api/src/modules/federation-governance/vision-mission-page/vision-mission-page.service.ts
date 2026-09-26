@@ -7,6 +7,7 @@ import { CreateVisionMissionPageDto } from './dto/create-vision-mission-page.dto
 import { UpdateVisionMissionPageDto } from './dto/update-vision-mission-page.dto.js';
 import type { VisionMissionPublicResponseDto } from './dto/vision-mission-public-response.dto.js';
 import type { PublicValueDto } from '../../../common/dto/public-page.dto.js';
+import { WITHHELD_PAGE, type WithheldPageDto } from '../../../common/dto/withheld-page.dto.js';
 import { PublicationsService } from '../../workflow/publications/publications.service.js';
 import { RevisionsService } from '../../workflow/revisions/revisions.service.js';
 import { MediaAssetsService } from '../../media-center/media-assets/media-assets.service.js';
@@ -121,8 +122,48 @@ export class VisionMissionPagesService {
     return updated;
   }
 
+  /** The admin listing. Carries `isActive`, which the dashboard draws as the
+   *  page's live state beside the row it opens — an ordinary read excludes it
+   *  (ADR-0102 §D4). */
   async findAll(): Promise<VisionMissionPageDocument[]> {
-    return this.repository.find();
+    return this.repository.findAllWithActivation();
+  }
+
+  /**
+   * Switches the finished page on or off for visitors, at once.
+   *
+   * Three things make this write unlike every other one here, each deliberate
+   * (ADR-0102 §D2):
+   *
+   * - It does not go through the review cycle. Taking a live page down is an
+   *   operational act that cannot wait for an approval, and putting one up is a
+   *   decision made after the words were already approved.
+   * - Its route is gated on `Publish`, not `Update`. Deciding what the public
+   *   sees is a publishing decision; an editor who may rewrite the page still may
+   *   not decide the moment it appears.
+   * - It is allowed while a review holds the draft. The switch governs the
+   *   version already live; a review in progress concerns the next one, and
+   *   blocking the switch on it would mean a page could not be taken down
+   *   because someone happened to be editing it.
+   *
+   * It writes nothing but the switch and who threw it, so it cannot become a way
+   * to change the page's words without going through the ordinary save. The
+   * returned document carries `_id`: the audit-log interceptor records a write
+   * only when it can name the record.
+   */
+  async setActive(
+    id: string,
+    isActive: boolean,
+    updatedBy: Types.ObjectId,
+  ): Promise<VisionMissionPageDocument> {
+    const updated = await this.repository.updateById(id, {
+      $set: { isActive, updatedBy },
+    } as UpdateQuery<VisionMissionPageDocument>);
+
+    if (!updated) {
+      throw new NotFoundException('Vision & mission page not found.');
+    }
+    return updated;
   }
 
   async findById(id: string): Promise<VisionMissionPageDocument | null> {
@@ -142,7 +183,7 @@ export class VisionMissionPagesService {
    * vision, so the newest publication is the current statement. Returns
    * `null` — HTTP 200 with a null body — when nothing is Live.
    */
-  async getCurrentPublic(): Promise<VisionMissionPublicResponseDto | null> {
+  async getCurrentPublic(): Promise<VisionMissionPublicResponseDto | WithheldPageDto | null> {
     const records = await this.repository.find();
 
     const candidates = await Promise.all(
@@ -153,7 +194,7 @@ export class VisionMissionPagesService {
           return null;
         }
         const snapshot = await this.publicationsService.getPublicSnapshot(ENTITY_TYPE, entityId);
-        return snapshot ? { snapshot, publishedAt: publication.publishedAt } : null;
+        return snapshot ? { entityId, snapshot, publishedAt: publication.publishedAt } : null;
       }),
     );
 
@@ -161,7 +202,31 @@ export class VisionMissionPagesService {
       .filter((candidate): candidate is NonNullable<typeof candidate> => candidate !== null)
       .sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime())[0];
 
-    return live ? this.toPublicResponse(live.snapshot, live.publishedAt) : null;
+    return live ? this.servedOrWithheld(live) : null;
+  }
+
+  /**
+   * The published page, or the switch alone when the page is switched off.
+   *
+   * `isActive` is read from the row rather than the snapshot, because it is
+   * deliberately never frozen into one (see the schema). So the switch reflects
+   * the federation's decision right now, while the words reflect the version
+   * they approved.
+   *
+   * A withheld page answers with the switch and nothing else — not a full
+   * response the caller is expected not to render. The draft may be mid-review,
+   * so there must be nothing in the body to leak (ADR-0102 §D2).
+   */
+  private async servedOrWithheld(live: {
+    entityId: Types.ObjectId;
+    snapshot: Record<string, unknown>;
+    publishedAt: Date;
+  }): Promise<VisionMissionPublicResponseDto | WithheldPageDto> {
+    const record = await this.repository.findByIdWithActivation(live.entityId.toString());
+    if (record?.isActive !== true) {
+      return WITHHELD_PAGE;
+    }
+    return this.toPublicResponse(live.snapshot, live.publishedAt);
   }
 
   /** Builds the public shape field by field. Anything the snapshot carries
