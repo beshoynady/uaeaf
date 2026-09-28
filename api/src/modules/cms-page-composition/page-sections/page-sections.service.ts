@@ -8,7 +8,7 @@ import type { PageSectionPublicResponseDto } from './dto/page-section-public-res
 import { selectVisibleInWindow } from '../../../common/utils/visibility-window.util.js';
 import { assertHeroSettings } from './hero-settings.js';
 import { assertSponsorsSectionSettings } from './sponsors-settings.js';
-import { wasSent } from '../../../common/utils/partial-update.util.js';
+import { wasSent, setDateField, setObjectIdArrayField } from '../../../common/utils/partial-update.util.js';
 
 /** Implements: pageSections collection, Domain 11 — CMS & Page
  *  Composition. */
@@ -70,12 +70,24 @@ export class PageSectionsService {
     // Sent means not undefined (`wasSent`): an own-key test is true for every
     // field the pipeline's DTO instance declares, sent or not.
     const has = (key: keyof UpdatePageSectionDto) => wasSent(dto, key);
-    const visibleFrom = has('visibleFrom')
-      ? (dto.visibleFrom ? new Date(dto.visibleFrom) : null)
-      : current.visibleFrom;
-    const visibleUntil = has('visibleUntil')
-      ? (dto.visibleUntil ? new Date(dto.visibleUntil) : null)
-      : current.visibleUntil;
+
+    // `visibleFrom`/`visibleUntil` are nullable (`default: null`); `items`
+    // (`Types.ObjectId[]`) is not — it has no schema-level "cleared" state,
+    // so `setObjectIdArrayField` refuses an explicit `null` rather than
+    // crashing on `null.map` (Fix round 4: this crashed as a bare 500 before
+    // this fix — the same class as the `workflowSteps.assigneeIds` bug Fix
+    // round 2 closed).
+    const update: Record<string, unknown> = {};
+    setDateField(update, dto, 'visibleFrom', { nullable: true });
+    setDateField(update, dto, 'visibleUntil', { nullable: true });
+    setObjectIdArrayField(update, dto, 'items');
+
+    // Merged state for the window-order check below, read back from `update`
+    // rather than re-deriving the cast — there is exactly one place
+    // `dto.visibleFrom`/`dto.visibleUntil` become a `Date` (the setters
+    // above), not a second one here.
+    const visibleFrom = 'visibleFrom' in update ? (update.visibleFrom as Date | null) : current.visibleFrom;
+    const visibleUntil = 'visibleUntil' in update ? (update.visibleUntil as Date | null) : current.visibleUntil;
     if (visibleFrom && visibleUntil && visibleUntil < visibleFrom) {
       throw new BadRequestException('visibleUntil must not be earlier than visibleFrom.');
     }
@@ -91,19 +103,15 @@ export class PageSectionsService {
       });
     }
 
-    const update: Record<string, unknown> = {};
     if (has('sectionTitle')) update.sectionTitle = dto.sectionTitle ?? null;
     if (has('sectionSubtitle')) update.sectionSubtitle = dto.sectionSubtitle ?? null;
     if (has('itemLimit')) update.itemLimit = dto.itemLimit ?? null;
     if (has('ctaText')) update.ctaText = dto.ctaText ?? null;
     if (has('ctaUrl')) update.ctaUrl = dto.ctaUrl ?? null;
-    if (has('visibleFrom')) update.visibleFrom = visibleFrom;
-    if (has('visibleUntil')) update.visibleUntil = visibleUntil;
     if (dto.displayOrder !== undefined) update.displayOrder = dto.displayOrder;
     if (dto.enabled !== undefined) update.enabled = dto.enabled;
     if (dto.visibility !== undefined) update.visibility = dto.visibility;
     if (dto.selectionMode !== undefined) update.selectionMode = dto.selectionMode;
-    if (dto.items !== undefined) update.items = dto.items.map((itemId) => new Types.ObjectId(itemId));
     if (has('filters')) update.filters = dto.filters ?? null;
     if (has('configuration')) update.configuration = dto.configuration ?? null;
 
@@ -168,5 +176,9 @@ export class PageSectionsService {
 
   async remove(id: string, archivedBy: Types.ObjectId): Promise<PageSectionDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  async unarchive(id: string): Promise<PageSectionDocument | null> {
+    return this.repository.restore(id);
   }
 }

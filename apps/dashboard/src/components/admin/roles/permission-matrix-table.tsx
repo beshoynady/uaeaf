@@ -40,10 +40,10 @@ export function PermissionMatrixTable({
   rows: readonly MatrixRow[];
   /** Which columns to draw. Computed from the UNFILTERED matrix by the
    *  workbench, never from `rows` — deriving it here would make columns
-   *  appear and disappear as the reader types in the search box. Two of the
-   *  API's nine actions (`HardDelete`, `EditProtectedData`) guard no route
-   *  at all, so drawing all nine unconditionally puts an em dash in 128
-   *  cells of a table that already carries 165 real checkboxes. */
+   *  appear and disappear as the reader types in the search box. One of the
+   *  API's sixteen actions (`ViewSensitive`) has no catalogue pair at all, so
+   *  drawing every column unconditionally puts an em dash in a whole column
+   *  of a table that already carries hundreds of real checkboxes. */
   actions: readonly PermissionAction[];
   locale: AppLocale;
   /** True for a system role, where nothing may be changed. */

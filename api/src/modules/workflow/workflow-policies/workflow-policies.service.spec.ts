@@ -4,6 +4,7 @@ import { WorkflowPoliciesService } from './workflow-policies.service.js';
 import { WorkflowPoliciesRepository } from './workflow-policies.repository.js';
 import { WorkflowDefinitionsService } from '../workflow-definitions/workflow-definitions.service.js';
 import { WorkflowStepsService } from '../workflow-steps/workflow-steps.service.js';
+import { WorkflowInstancesService } from '../workflow-instances/workflow-instances.service.js';
 import type { WorkflowPolicyDocument } from './schemas/workflow-policy.schema.js';
 import type { WorkflowDefinitionDocument } from '../workflow-definitions/schemas/workflow-definition.schema.js';
 
@@ -14,6 +15,15 @@ import type { WorkflowDefinitionDocument } from '../workflow-definitions/schemas
  * These tests fix the three answers it may give and, most importantly, fix
  * which way it fails.
  */
+/** Nothing unapproved, so ADR-0107's change lock never fires in this file — it is
+ *  tested on its own in `workflow-policies.lock.spec.ts`. Shared by both describes
+ *  below, which each construct the service directly. */
+const makeInstances = () =>
+  ({
+    countUnapprovedForEntityType: jest.fn<() => Promise<number>>().mockResolvedValue(0),
+    findUnapprovedForEntityType: jest.fn<() => Promise<unknown[]>>().mockResolvedValue([]),
+  }) as unknown as jest.Mocked<WorkflowInstancesService>;
+
 describe('WorkflowPoliciesService.resolve', () => {
   const definitionId = new Types.ObjectId();
 
@@ -37,6 +47,9 @@ describe('WorkflowPoliciesService.resolve', () => {
       // `resolve` reads no step — it answers what the policy SAYS, and whether
       // the workflow has anybody on it is checked when the policy is stored.
       { findByDefinition: jest.fn<() => Promise<unknown>>().mockResolvedValue([]) } as unknown as jest.Mocked<WorkflowStepsService>,
+      // `resolve` reads no instance either — the change lock (ADR-0107) guards
+      // `upsert`, not the read.
+      makeInstances(),
     ).resolve('presidentMessagePage', 'Edit');
 
   it('resolves workflow when required with an active definition of the same type', async () => {
@@ -152,7 +165,7 @@ describe('WorkflowPoliciesService.upsert — the deadlock it must refuse', () =>
 
     return {
       repository,
-      service: new WorkflowPoliciesService(repository, definitions, stepsService),
+      service: new WorkflowPoliciesService(repository, definitions, stepsService, makeInstances()),
     };
   };
 

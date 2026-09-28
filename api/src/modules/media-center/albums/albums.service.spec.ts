@@ -2,14 +2,24 @@ import { jest } from '@jest/globals';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { ALBUM_PAGE_SIZE, AlbumsService } from './albums.service.js';
+import type { AlbumPhotoReferrerScan } from './albums.service.js';
 import { AlbumsRepository } from './albums.repository.js';
 import { MediaAssetsService } from '../media-assets/media-assets.service.js';
+import type { MediaAssetDocument } from '../media-assets/schemas/media-asset.schema.js';
+import type { AlbumDocument } from './schemas/album.schema.js';
 
 describe('AlbumsService', () => {
   const makeRepository = () =>
-    ({ create: jest.fn(), updateById: jest.fn() }) as unknown as jest.Mocked<AlbumsRepository>;
+    ({ create: jest.fn(), updateById: jest.fn(), findById: jest.fn() }) as unknown as jest.Mocked<AlbumsRepository>;
   const makeMediaAssetsService = () =>
-    ({ assertUsableImage: jest.fn() }) as unknown as jest.Mocked<MediaAssetsService>;
+    ({
+      assertUsableImage: jest.fn(),
+      findById: jest.fn(),
+      remove: jest.fn(),
+      detachFromAlbum: jest.fn(),
+      findFirstInAlbum: jest.fn(),
+    }) as unknown as jest.Mocked<MediaAssetsService>;
+  const makeReferrerScan = () => jest.fn<AlbumPhotoReferrerScan>();
 
 
   const baseDto = {
@@ -343,6 +353,80 @@ describe('AlbumsService', () => {
         publishedAt: expect.any(Date),
         publishedBy,
       });
+    });
+  });
+
+  /**
+   * Detaching a photo from an album and archiving it are different acts
+   * (owner D3): this never refuses and never asks for confirmation. One test
+   * per row of the decision table.
+   */
+  describe('removePhoto', () => {
+    const albumId = new Types.ObjectId();
+    const photoId = new Types.ObjectId();
+
+    const album = () =>
+      ({ _id: albumId, coverImageId: null }) as unknown as AlbumDocument;
+    const photo = () =>
+      ({ _id: photoId, albumId }) as unknown as MediaAssetDocument;
+
+    it('archives the photo when nothing else references it', async () => {
+      const repository = makeRepository();
+      const mediaAssetsService = makeMediaAssetsService();
+      const referrerScan = makeReferrerScan();
+      referrerScan.mockResolvedValue([]);
+      repository.findById.mockResolvedValue(album());
+      mediaAssetsService.findById.mockResolvedValue(photo());
+      const archivedBy = new Types.ObjectId();
+      const service = new AlbumsService(repository, mediaAssetsService, referrerScan);
+
+      await service.removePhoto(albumId.toString(), photoId.toString(), archivedBy);
+
+      expect(referrerScan).toHaveBeenCalledWith(photoId.toString(), [
+        { collection: 'albums', documentId: albumId.toString() },
+      ]);
+      expect(mediaAssetsService.remove).toHaveBeenCalledWith(photoId.toString(), archivedBy);
+      expect(mediaAssetsService.detachFromAlbum).not.toHaveBeenCalled();
+      // The cover is untouched (fixture's coverImageId is null) and nothing
+      // else in this branch writes the album directly — archiving owns the
+      // count on this path, via MediaAssetsService.remove().
+      expect(repository.updateById).not.toHaveBeenCalled();
+    });
+
+    it('detaches only, without archiving, when the photo is referenced elsewhere', async () => {
+      const repository = makeRepository();
+      const mediaAssetsService = makeMediaAssetsService();
+      const referrerScan = makeReferrerScan();
+      referrerScan.mockResolvedValue([
+        { collection: 'articles', path: 'coverMediaId', documentId: new Types.ObjectId().toString(), kind: 'ref' },
+      ]);
+      repository.findById.mockResolvedValue(album());
+      mediaAssetsService.findById.mockResolvedValue(photo());
+      const archivedBy = new Types.ObjectId();
+      const service = new AlbumsService(repository, mediaAssetsService, referrerScan);
+
+      await service.removePhoto(albumId.toString(), photoId.toString(), archivedBy);
+
+      expect(mediaAssetsService.detachFromAlbum).toHaveBeenCalledWith(photoId.toString());
+      expect(mediaAssetsService.remove).not.toHaveBeenCalled();
+      expect(repository.updateById).toHaveBeenCalledWith(albumId.toString(), { $inc: { assetCount: -1 } });
+    });
+
+    it('detaches only, without archiving, when the reference check fails', async () => {
+      const repository = makeRepository();
+      const mediaAssetsService = makeMediaAssetsService();
+      const referrerScan = makeReferrerScan();
+      referrerScan.mockRejectedValue(new Error('down'));
+      repository.findById.mockResolvedValue(album());
+      mediaAssetsService.findById.mockResolvedValue(photo());
+      const archivedBy = new Types.ObjectId();
+      const service = new AlbumsService(repository, mediaAssetsService, referrerScan);
+
+      await service.removePhoto(albumId.toString(), photoId.toString(), archivedBy);
+
+      expect(mediaAssetsService.detachFromAlbum).toHaveBeenCalledWith(photoId.toString());
+      expect(mediaAssetsService.remove).not.toHaveBeenCalled();
+      expect(repository.updateById).toHaveBeenCalledWith(albumId.toString(), { $inc: { assetCount: -1 } });
     });
   });
 });

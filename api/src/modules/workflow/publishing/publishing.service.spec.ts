@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 import { ConflictException, ForbiddenException } from '@nestjs/common';
 import { Types } from 'mongoose';
+import type { Model } from 'mongoose';
 import { PublishingService } from './publishing.service.js';
 import { WorkflowPoliciesService } from '../workflow-policies/workflow-policies.service.js';
 import { WorkflowInstancesService } from '../workflow-instances/workflow-instances.service.js';
@@ -11,6 +12,11 @@ import { RevisionsService } from '../revisions/revisions.service.js';
 import { PublicationsService } from '../publications/publications.service.js';
 import { AuditLogsService } from '../audit-logs/audit-logs.service.js';
 import { UsersService } from '../../platform-administration/users/users.service.js';
+import { MediaAssetsService } from '../../media-center/media-assets/media-assets.service.js';
+import { MediaAssetsRepository } from '../../media-center/media-assets/media-assets.repository.js';
+import type { MediaAssetDocument } from '../../media-center/media-assets/schemas/media-asset.schema.js';
+import type { AlbumDocument } from '../../media-center/albums/schemas/album.schema.js';
+import { ArticleSchema } from '../../public-communication/articles/schemas/article.schema.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 
 /**
@@ -107,6 +113,8 @@ describe('PublishingService.publishApproved', () => {
       deps.publicationsService,
       deps.auditLogsService,
       deps.usersService,
+      // Unused by this describe block's cases: none of them restore a revision.
+      { unarchive: jest.fn() } as unknown as MediaAssetsService,
       deps.connection as never,
     );
 
@@ -413,5 +421,162 @@ describe('PublishingService.publishApproved', () => {
       expect(state.availableActions).not.toContain('publish');
       expect(state.availableActions).not.toContain('publishApproved');
     });
+  });
+});
+
+/**
+ * Restoring a past version brings its images back with it.
+ *
+ * The opposite of the save-side suggestion (`ArticlesService` et al.): a
+ * restore must never be best-effort, or a restored record can publish with
+ * its picture silently missing — `GET /media-assets/public` omits an
+ * archived asset and no consumer renders a placeholder for it.
+ */
+describe('PublishingService.restore', () => {
+  const entityType = 'articles' as const;
+  const entityId = new Types.ObjectId();
+  const revisionId = new Types.ObjectId();
+  const actor = {
+    userId: new Types.ObjectId().toString(),
+    permissions: [{ resourceType: 'articles', action: 'Update' }],
+  } as unknown as AuthenticatedUser;
+
+  /** A fake `MediaAssetsRepository`: only the two methods `unarchive` calls. */
+  const makeMediaAssetsRepository = () =>
+    ({
+      restoreIfArchived: jest.fn(),
+      findIncludingArchived: jest.fn(),
+    }) as unknown as jest.Mocked<MediaAssetsRepository>;
+
+  const makeAlbumModel = () => {
+    const exec = jest.fn(async () => ({ acknowledged: true }));
+    const updateOne = jest.fn(() => ({ exec }));
+    return { updateOne, exec };
+  };
+
+  const makeDeps = (snapshotData: Record<string, unknown>) => {
+    const revisionsService = {
+      findById: jest.fn(async () => ({
+        _id: revisionId,
+        entityType,
+        entityId: { equals: (other: unknown) => String(other) === entityId.toString() },
+        versionNumber: 3,
+        snapshotData,
+      })),
+    } as unknown as jest.Mocked<RevisionsService>;
+    const instancesService = { findActive: jest.fn(async () => null) } as unknown as jest.Mocked<WorkflowInstancesService>;
+    const auditLogsService = { write: jest.fn() } as unknown as jest.Mocked<AuditLogsService>;
+
+    const updateOne = jest.fn(() => ({ exec: jest.fn(async () => undefined) }));
+    const articleModel = {
+      collection: { collectionName: 'articles' },
+      schema: ArticleSchema,
+      updateOne,
+    };
+    const find = jest.fn(() => ({ lean: () => ({ exec: jest.fn(async () => []) }) }));
+    const mediaAssetsModel = { collection: { collectionName: 'mediaAssets' }, find };
+    const connection = { models: { Article: articleModel, MediaAsset: mediaAssetsModel } };
+
+    // The real service, not a mock of it, so `restore` is proven to go
+    // through the one place that also fixes `Album.assetCount`.
+    const mediaAssetsRepository = makeMediaAssetsRepository();
+    const albumModel = makeAlbumModel();
+    const mediaAssetsService = new MediaAssetsService(
+      mediaAssetsRepository,
+      albumModel as unknown as Model<AlbumDocument>,
+      {} as never,
+    );
+
+    return {
+      revisionsService,
+      instancesService,
+      auditLogsService,
+      connection,
+      articleModel,
+      find,
+      mediaAssetsRepository,
+      albumModel,
+      mediaAssetsService,
+    };
+  };
+
+  const makeService = (deps: ReturnType<typeof makeDeps>) =>
+    new PublishingService(
+      {} as unknown as WorkflowPoliciesService,
+      deps.instancesService,
+      {} as unknown as WorkflowStepsService,
+      {} as unknown as WorkflowDefinitionsService,
+      {} as unknown as WorkflowActionHistoryService,
+      deps.revisionsService,
+      {} as unknown as PublicationsService,
+      deps.auditLogsService,
+      {} as unknown as UsersService,
+      deps.mediaAssetsService,
+      deps.connection as never,
+    );
+
+  it('unarchives an image the restored content points at, through MediaAssetsService, and reports which one', async () => {
+    const coverId = new Types.ObjectId();
+    const deps = makeDeps({ coverMediaId: coverId });
+    deps.find.mockReturnValue({ lean: () => ({ exec: async () => [{ _id: coverId }] }) } as never);
+    deps.mediaAssetsRepository.restoreIfArchived.mockResolvedValue({
+      _id: coverId,
+      albumId: null,
+    } as unknown as MediaAssetDocument);
+    const service = makeService(deps);
+
+    await service.restore({ entityType, entityId, revisionId: revisionId.toString(), actor });
+
+    expect(deps.mediaAssetsRepository.restoreIfArchived).toHaveBeenCalledWith(coverId.toString());
+  });
+
+  // A raw `updateMany` from `PublishingService` restored the asset but left
+  // `assetCount` short by one; `unarchive` is what corrects it.
+  it('leaves the owning album\'s assetCount correct when the restored image belongs to one', async () => {
+    const coverId = new Types.ObjectId();
+    const albumId = new Types.ObjectId();
+    const deps = makeDeps({ coverMediaId: coverId });
+    deps.find.mockReturnValue({ lean: () => ({ exec: async () => [{ _id: coverId }] }) } as never);
+    deps.mediaAssetsRepository.restoreIfArchived.mockResolvedValue({
+      _id: coverId,
+      albumId,
+    } as unknown as MediaAssetDocument);
+    const service = makeService(deps);
+
+    await service.restore({ entityType, entityId, revisionId: revisionId.toString(), actor });
+
+    expect(deps.albumModel.updateOne).toHaveBeenCalledWith({ _id: albumId }, { $inc: { assetCount: 1 } });
+  });
+
+  it('writes an audit row naming the image it brought back', async () => {
+    const coverId = new Types.ObjectId();
+    const deps = makeDeps({ coverMediaId: coverId });
+    deps.find.mockReturnValue({ lean: () => ({ exec: async () => [{ _id: coverId }] }) } as never);
+    deps.mediaAssetsRepository.restoreIfArchived.mockResolvedValue({
+      _id: coverId,
+      albumId: null,
+    } as unknown as MediaAssetDocument);
+    const service = makeService(deps);
+
+    await service.restore({ entityType, entityId, revisionId: revisionId.toString(), actor });
+
+    expect(deps.auditLogsService.write).toHaveBeenCalledWith(
+      expect.objectContaining({ entityType: 'mediaAssets', action: 'Update', entityId: coverId }),
+    );
+  });
+
+  it('leaves an image alone, and writes no mediaAssets audit row, when it was never archived', async () => {
+    const coverId = new Types.ObjectId();
+    const deps = makeDeps({ coverMediaId: coverId });
+    // The mediaAssets `find` (filtered on `archivedAt: { $ne: null }`) matches
+    // nothing: the image is already live.
+    const service = makeService(deps);
+
+    await service.restore({ entityType, entityId, revisionId: revisionId.toString(), actor });
+
+    expect(deps.mediaAssetsRepository.restoreIfArchived).not.toHaveBeenCalled();
+    expect(deps.auditLogsService.write).not.toHaveBeenCalledWith(
+      expect.objectContaining({ entityType: 'mediaAssets' }),
+    );
   });
 });

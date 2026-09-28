@@ -49,7 +49,10 @@ describe('ArticlesService', () => {
       updateById: jest.fn(async () => stored()),
       softDelete: jest.fn(async () => stored()),
     } as unknown as jest.Mocked<ArticlesRepository>;
-    const mediaAssetsService = { assertUsableImage: jest.fn() } as unknown as jest.Mocked<MediaAssetsService>;
+    const mediaAssetsService = {
+      assertUsableImage: jest.fn(),
+      orphanedMediaCandidates: jest.fn(async () => []),
+    } as unknown as jest.Mocked<MediaAssetsService>;
     const publicationsService = {
       getPublicSnapshot: jest.fn(async () => null),
     } as unknown as jest.Mocked<PublicationsService>;
@@ -127,6 +130,25 @@ describe('ArticlesService', () => {
         }),
       );
     });
+
+    /**
+     * `remove()` is guarded by `articles:Archive` (the controller) and calls
+     * `repository.softDelete` — reversible, not a destruction. It used to
+     * write the literal `'Delete'`, stale since the platform-wide
+     * Delete→Archive rename: every OTHER archive route's row now says
+     * `Archive` (`AuditLogInterceptor.auditActionFor`), because this route
+     * self-audits (`@SkipAuditLog()`) and so never went through that fix.
+     */
+    it('writes Archive, not Delete, for the soft-delete route', async () => {
+      const deps = makeDeps();
+      const service = makeService(deps);
+
+      await service.remove(articleId.toString(), actor, context);
+
+      expect(deps.auditLogsService.write).toHaveBeenCalledWith(
+        expect.objectContaining({ action: 'Archive', entityType: 'articles', entityId: articleId }),
+      );
+    });
   });
 
   describe('archiving', () => {
@@ -158,6 +180,53 @@ describe('ArticlesService', () => {
           newValue: { publicationState: 'Live', archived: true },
         }),
       );
+    });
+  });
+
+  describe('orphaned media candidates', () => {
+    it('asks about the cover image a save just replaced, and carries the answer back', async () => {
+      const oldCoverId = new Types.ObjectId();
+      const newCoverId = new Types.ObjectId();
+      const deps = makeDeps();
+      deps.repository.findById.mockResolvedValue(stored({ coverMediaId: oldCoverId }));
+      deps.repository.updateById.mockResolvedValue(stored({ coverMediaId: newCoverId }));
+      deps.mediaAssetsService.orphanedMediaCandidates.mockResolvedValue([oldCoverId.toString()]);
+      const service = makeService(deps);
+
+      const saved = await service.update(articleId.toString(), { coverMediaId: newCoverId.toString() } as never, actor, context);
+
+      expect(deps.mediaAssetsService.orphanedMediaCandidates).toHaveBeenCalledWith([oldCoverId.toString()]);
+      expect(saved.orphanedMediaCandidates).toEqual([oldCoverId.toString()]);
+    });
+
+    it('still saves, with an empty list, when the candidate check answers nothing', async () => {
+      const oldCoverId = new Types.ObjectId();
+      const newCoverId = new Types.ObjectId();
+      const deps = makeDeps();
+      deps.repository.findById.mockResolvedValue(stored({ coverMediaId: oldCoverId }));
+      deps.repository.updateById.mockResolvedValue(stored({ coverMediaId: newCoverId }));
+      // What the free function itself answers when its scan fails — proven
+      // in `orphaned-media.spec.ts`. This proves the service surfaces that
+      // answer rather than failing the save over it.
+      deps.mediaAssetsService.orphanedMediaCandidates.mockResolvedValue([]);
+      const service = makeService(deps);
+
+      const saved = await service.update(articleId.toString(), { coverMediaId: newCoverId.toString() } as never, actor, context);
+
+      expect(saved.orphanedMediaCandidates).toEqual([]);
+      expect((saved as unknown as { _id: Types.ObjectId })._id).toEqual(articleId);
+    });
+
+    it('asks about nothing when the cover image is untouched', async () => {
+      const coverId = new Types.ObjectId();
+      const deps = makeDeps();
+      deps.repository.findById.mockResolvedValue(stored({ coverMediaId: coverId }));
+      deps.repository.updateById.mockResolvedValue(stored({ coverMediaId: coverId }));
+      const service = makeService(deps);
+
+      await service.update(articleId.toString(), { title: { ar: 'عنوان', en: 'Title' } } as never, actor, context);
+
+      expect(deps.mediaAssetsService.orphanedMediaCandidates).toHaveBeenCalledWith([]);
     });
   });
 

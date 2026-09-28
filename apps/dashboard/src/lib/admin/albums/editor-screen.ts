@@ -49,7 +49,7 @@ export const loadAlbumEditor = async (locale: AppLocale, id: string | null): Pro
   const permissions: AlbumPermissions = {
     canUpdate: id === null ? hasPermission(grants, "albums", "Create") : hasPermission(grants, "albums", "Update"),
     canPublish: hasPermission(grants, "albums", "Publish"),
-    canDelete: hasPermission(grants, "albums", "Delete"),
+    canDelete: hasPermission(grants, "albums", "Archive"),
     canUpload: hasPermission(grants, "mediaAssets", "Create"),
   };
 

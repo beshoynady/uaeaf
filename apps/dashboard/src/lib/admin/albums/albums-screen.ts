@@ -87,7 +87,7 @@ export const loadAlbumsScreen = async (locale: AppLocale): Promise<AlbumsScreen>
       covers: await readCovers(albums, locale),
       canCreate: hasPermission(grants, "albums", "Create"),
       canUpdate: hasPermission(grants, "albums", "Update"),
-      canDelete: hasPermission(grants, "albums", "Delete"),
+      canDelete: hasPermission(grants, "albums", "Archive"),
       canPublish: hasPermission(grants, "albums", "Publish"),
     },
   };

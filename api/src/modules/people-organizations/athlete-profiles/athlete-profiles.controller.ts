@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
@@ -7,6 +7,7 @@ import { Public } from '../../../common/decorators/public.decorator.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 import { AthleteProfilesService } from './athlete-profiles.service.js';
 import { CreateAthleteProfileDto } from './dto/create-athlete-profile.dto.js';
+import { UpdateAthleteProfileDto } from './dto/update-athlete-profile.dto.js';
 
 /** Implements: athleteProfiles collection, Domain 2 — People & Organizations. */
 @ApiTags('athlete-profiles')
@@ -42,9 +43,22 @@ export class AthleteProfilesController {
     return this.service.findById(id);
   }
 
+  @Patch(':id')
+  @RequirePermission('athleteProfiles', 'Update')
+  update(@Param('id') id: string, @Body() dto: UpdateAthleteProfileDto) {
+    return this.service.update(id, dto);
+  }
+
   @Delete(':id')
-  @RequirePermission('athleteProfiles', 'Delete')
+  @RequirePermission('athleteProfiles', 'Archive')
   remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.service.remove(id, new Types.ObjectId(user.userId));
+  }
+
+  /** See ADR-0120: not `:id/restore`, which is the revision restore. */
+  @Post(':id/unarchive')
+  @RequirePermission('athleteProfiles', 'Restore')
+  unarchive(@Param('id') id: string) {
+    return this.service.unarchive(id);
   }
 }

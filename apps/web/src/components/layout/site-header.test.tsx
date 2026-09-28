@@ -2,7 +2,7 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { SiteHeader } from "./site-header";
-import { PRIMARY_NAV, navDestinations } from "@/lib/navigation";
+import { PRIMARY_NAV, type NavItem } from "@/lib/navigation";
 import { renderWithIntl } from "@/test/render-with-intl";
 import { LOCALE_ENDONYM, type AppLocale } from "@/i18n/routing";
 import arMessages from "../../../messages/ar.json";
@@ -13,9 +13,12 @@ const messagesByLocale = { ar: arMessages, en: enMessages } as const;
 const groups = PRIMARY_NAV.filter((item) => item.children);
 const topLevelLinks = PRIMARY_NAV.filter((item) => !item.children);
 
-function escapeRegExp(value: string) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/** Every leaf `href` in the tree, undeduped — unlike `navDestinations()`,
+ *  which folds an anchor into its page for the footer's use. */
+const leafHrefs = (items: readonly NavItem[]): string[] =>
+  items.flatMap((item) => (item.children ? leafHrefs(item.children) : [item.href!]));
 
 describe.each<AppLocale>(["ar", "en"])("SiteHeader (%s)", (locale) => {
   const messages = messagesByLocale[locale];
@@ -32,7 +35,7 @@ describe.each<AppLocale>(["ar", "en"])("SiteHeader (%s)", (locale) => {
 
   it("renders each grouping item as a collapsed disclosure button, not a link", () => {
     renderWithIntl(<SiteHeader />, locale);
-    expect(groups).toHaveLength(3);
+    expect(groups).toHaveLength(5);
     for (const group of groups) {
       const trigger = screen.getByRole("button", {
         name: new RegExp(escapeRegExp(label(group.key))),
@@ -47,7 +50,7 @@ describe.each<AppLocale>(["ar", "en"])("SiteHeader (%s)", (locale) => {
 
   it("renders each top-level destination as a real link to its own route", () => {
     renderWithIntl(<SiteHeader />, locale);
-    expect(topLevelLinks).toHaveLength(5);
+    expect(topLevelLinks).toHaveLength(1);
     for (const item of topLevelLinks) {
       expect(screen.getByRole("link", { name: label(item.key) })).toHaveAttribute(
         "href",
@@ -59,11 +62,12 @@ describe.each<AppLocale>(["ar", "en"])("SiteHeader (%s)", (locale) => {
   it("carries every destination exactly once, so the tab order is not doubled", () => {
     const { container } = renderWithIntl(<SiteHeader />, locale);
     const nav = container.querySelector("#primary-nav") as HTMLElement;
-    // Read from the DOM rather than by role: a closed panel's links are
-    // correctly absent from the accessibility tree, and what this rule is
-    // about is that no destination exists TWICE in the markup.
+    // Read from the DOM, not the accessibility tree, since a closed panel's
+    // links are absent from screen-reader queries; `PRIMARY_NAV` itself,
+    // undeduped, is the expected set — each anchor fragment is a real destination.
     const hrefs = [...nav.querySelectorAll("a[href]")].map((a) => a.getAttribute("href"));
-    const expected = navDestinations().map((leaf) => localePath(leaf.href));
+    expect(new Set(hrefs).size).toBe(hrefs.length);
+    const expected = leafHrefs(PRIMARY_NAV).map((href) => localePath(href));
     expect([...hrefs].sort()).toEqual([...expected].sort());
   });
 
@@ -82,12 +86,14 @@ describe("SiteHeader disclosure behaviour", () => {
   it("opens a panel on click and reveals its children", async () => {
     const user = userEvent.setup();
     renderWithIntl(<SiteHeader />, "en");
-    const trigger = screen.getByRole("button", { name: /About the Federation/ });
+    const trigger = screen.getByRole("button", { name: /^About$/ });
 
     expect(screen.queryByRole("link", { name: "Board of Directors" })).toBeNull();
     await user.click(trigger);
-
     expect(trigger).toHaveAttribute("aria-expanded", "true");
+
+    // "Board of Directors" sits one column deeper, under "The Federation".
+    await user.click(screen.getByRole("button", { name: /^The Federation$/ }));
     expect(screen.getByRole("link", { name: "Board of Directors" })).toHaveAttribute(
       "href",
       "/en/about/board-members",
@@ -97,7 +103,7 @@ describe("SiteHeader disclosure behaviour", () => {
   it("closes on Escape and returns focus to the trigger it came from", async () => {
     const user = userEvent.setup();
     renderWithIntl(<SiteHeader />, "en");
-    const trigger = screen.getByRole("button", { name: /About the Federation/ });
+    const trigger = screen.getByRole("button", { name: /^About$/ });
 
     await user.click(trigger);
     expect(trigger).toHaveAttribute("aria-expanded", "true");
@@ -111,7 +117,7 @@ describe("SiteHeader disclosure behaviour", () => {
   it("opens with ArrowDown and lands focus on the first child", async () => {
     const user = userEvent.setup();
     renderWithIntl(<SiteHeader />, "en");
-    const trigger = screen.getByRole("button", { name: /^Members/ });
+    const trigger = screen.getByRole("button", { name: /^Athletics$/ });
 
     trigger.focus();
     await user.keyboard("{ArrowDown}");
@@ -119,13 +125,14 @@ describe("SiteHeader disclosure behaviour", () => {
 
     // `requestAnimationFrame` defers the focus move by a frame.
     await new Promise((resolve) => setTimeout(resolve, 40));
-    expect(screen.getByRole("link", { name: /Clubs/ })).toHaveFocus();
+    expect(screen.getByRole("button", { name: /Discover the Sport/ })).toHaveFocus();
   });
 
   it("moves between a panel's items with the arrow keys", async () => {
     const user = userEvent.setup();
     renderWithIntl(<SiteHeader />, "en");
-    await user.click(screen.getByRole("button", { name: /^Members/ }));
+    await user.click(screen.getByRole("button", { name: /^Athletics$/ }));
+    await user.click(screen.getByRole("button", { name: /Athletics Community/ }));
 
     const clubs = screen.getByRole("link", { name: /Clubs/ });
     clubs.focus();
@@ -140,37 +147,43 @@ describe("SiteHeader disclosure behaviour", () => {
     const user = userEvent.setup();
     renderWithIntl(<SiteHeader />, "en");
 
-    await user.click(screen.getByRole("button", { name: /About the Federation/ }));
-    const nested = screen.getByRole("button", { name: /Governance & Strategy/ });
+    await user.click(screen.getByRole("button", { name: /^About$/ }));
+    const nested = screen.getByRole("button", { name: /^Governance$/ });
     expect(nested).toHaveAttribute("aria-expanded", "false");
     expect(screen.queryByRole("link", { name: "Strategic Plan" })).toBeNull();
 
     await user.click(nested);
     expect(nested).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("link", { name: "Vision & Mission" })).toBeInTheDocument();
-    // Renamed 2026-09-24 (ADR-0098 Phase F): the page leads with what it
-    // mostly holds, and the Arabic and English labels now agree on the order.
-    expect(screen.getByRole("link", { name: "Regulations & Policies" })).toBeInTheDocument();
+    // `policies` carries `policiesDescription`, so its accessible name is the
+    // label plus the caption text, not the label alone.
+    expect(screen.getByRole("link", { name: /^Regulations & Policies/ })).toBeInTheDocument();
   });
 
   it("opens only one panel at a time", async () => {
     const user = userEvent.setup();
     renderWithIntl(<SiteHeader />, "en");
-    const about = screen.getByRole("button", { name: /About the Federation/ });
-    const members = screen.getByRole("button", { name: /^Members/ });
+    const about = screen.getByRole("button", { name: /^About$/ });
+    const athletics = screen.getByRole("button", { name: /^Athletics$/ });
 
     await user.click(about);
-    await user.click(members);
+    await user.click(athletics);
 
     expect(about).toHaveAttribute("aria-expanded", "false");
-    expect(members).toHaveAttribute("aria-expanded", "true");
+    expect(athletics).toHaveAttribute("aria-expanded", "true");
   });
 
-  it("keeps the meaning Clubs lost when it stopped being top-level", () => {
+  it("keeps the meaning Clubs lost when it stopped being a top-level item", async () => {
+    const user = userEvent.setup();
     renderWithIntl(<SiteHeader />, "en");
-    // IA §8.1 kept Clubs at top level because it *is* the General Assembly
-    // membership listing. Moving it under Members must not drop that.
-    expect(screen.getByText(enMessages.Nav.clubsDescription)).toBeInTheDocument();
+    // "Clubs IS the General Assembly membership listing" is why IA §8.1 gave it
+    // top level; carried on the description since it moved inside a panel
+    // (ADR-0062).
+    await user.click(screen.getByRole("button", { name: /^Athletics$/ }));
+    await user.click(screen.getByRole("button", { name: /Athletics Community/ }));
+    const clubs = screen.getByRole("link", { name: /^Clubs/ });
+    expect(clubs).toHaveAttribute("href", "/en/clubs");
+    expect(clubs).toHaveTextContent(enMessages.Nav.clubsDescription);
   });
 });
 
@@ -178,12 +191,13 @@ describe("SiteHeader current-page state", () => {
   it("marks the current page, and its ancestor group without claiming to be it", async () => {
     const user = userEvent.setup();
     const { container } = renderWithIntl(<SiteHeader activePath="/clubs" />, "en");
-    await user.click(screen.getByRole("button", { name: /^Members/ }));
+    await user.click(screen.getByRole("button", { name: /^Athletics$/ }));
+    await user.click(screen.getByRole("button", { name: /Athletics Community/ }));
 
     expect(screen.getByRole("link", { name: /Clubs/ })).toHaveAttribute("aria-current", "page");
     // `aria-current="page"` on the ancestor would announce the group as the
     // page the reader is on, which it is not.
-    expect(screen.getByRole("button", { name: /^Members/ })).not.toHaveAttribute("aria-current");
+    expect(screen.getByRole("button", { name: /^Athletics$/ })).not.toHaveAttribute("aria-current");
     expect(container.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
   });
 });

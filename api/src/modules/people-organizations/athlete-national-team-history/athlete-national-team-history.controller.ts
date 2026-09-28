@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
@@ -6,6 +6,7 @@ import { CurrentUser } from '../../../common/decorators/current-user.decorator.j
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 import { AthleteNationalTeamHistoryService } from './athlete-national-team-history.service.js';
 import { CreateAthleteNationalTeamHistoryDto } from './dto/create-athlete-national-team-history.dto.js';
+import { UpdateAthleteNationalTeamHistoryDto } from './dto/update-athlete-national-team-history.dto.js';
 
 /** Implements: athleteNationalTeamHistory collection, Domain 2 — People & Organizations. */
 @ApiTags('athlete-national-team-history')
@@ -37,9 +38,22 @@ export class AthleteNationalTeamHistoryController {
     return this.service.findById(id);
   }
 
+  @Patch(':id')
+  @RequirePermission('athleteNationalTeamHistory', 'Update')
+  update(@Param('id') id: string, @Body() dto: UpdateAthleteNationalTeamHistoryDto) {
+    return this.service.update(id, dto);
+  }
+
   @Delete(':id')
-  @RequirePermission('athleteNationalTeamHistory', 'Delete')
+  @RequirePermission('athleteNationalTeamHistory', 'Archive')
   remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.service.remove(id, new Types.ObjectId(user.userId));
+  }
+
+  /** See ADR-0120: not `:id/restore`, which is the revision restore. */
+  @Post(':id/unarchive')
+  @RequirePermission('athleteNationalTeamHistory', 'Restore')
+  unarchive(@Param('id') id: string) {
+    return this.service.unarchive(id);
   }
 }

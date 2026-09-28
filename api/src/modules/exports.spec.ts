@@ -11,6 +11,7 @@ import { UsersRepository } from './platform-administration/users/users.repositor
 import { RolesService } from './platform-administration/roles/roles.service.js';
 import { AuthSessionsService } from './platform-administration/auth-sessions/auth-sessions.service.js';
 import { FederationPersonnelsService } from './federation-governance/federation-personnel/federation-personnel.service.js';
+import { STEP_UP_VERIFIER } from '../common/authz/archive-restore.js';
 
 /**
  * The `Export` surface, in one place.
@@ -52,6 +53,7 @@ describe('CSV exports', () => {
         { provide: RolesService, useValue: {} },
         { provide: AuthSessionsService, useValue: {} },
         { provide: FederationPersonnelsService, useValue: {} },
+        { provide: AuditLogsService, useValue: {} },
       ]);
       repository.find.mockResolvedValue([
         {
@@ -154,6 +156,10 @@ describe('CSV exports', () => {
       const { service, repository } = await build(
         ContactMessagesService,
         ContactMessagesRepository,
+        [
+          { provide: AuditLogsService, useValue: {} },
+          { provide: STEP_UP_VERIFIER, useValue: {} },
+        ],
       );
       repository.find.mockResolvedValue([
         {

@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { AthleteCoachHistoryRepository } from './athlete-coach-history.repository.js';
 import type { AthleteCoachHistoryDocument } from './schemas/athlete-coach-history.schema.js';
 import { CreateAthleteCoachHistoryDto } from './dto/create-athlete-coach-history.dto.js';
+import { UpdateAthleteCoachHistoryDto } from './dto/update-athlete-coach-history.dto.js';
+import { partialUpdate } from '../../../common/utils/partial-update.util.js';
 
 /** Implements: athleteCoachHistory collection, Domain 2 — People &
  *  Organizations (FigJam node `559:8223`). */
@@ -34,7 +36,20 @@ export class AthleteCoachHistoryService {
     return this.repository.findCurrent(new Types.ObjectId(athleteId));
   }
 
+  /** @throws NotFoundException when no such row exists. */
+  async update(id: string, dto: UpdateAthleteCoachHistoryDto): Promise<AthleteCoachHistoryDocument> {
+    const updated = await this.repository.updateById(id, partialUpdate(dto));
+    if (!updated) {
+      throw new NotFoundException(`Athlete coach history ${id} not found.`);
+    }
+    return updated;
+  }
+
   async remove(id: string, archivedBy: Types.ObjectId): Promise<AthleteCoachHistoryDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  async unarchive(id: string): Promise<AthleteCoachHistoryDocument | null> {
+    return this.repository.restore(id);
   }
 }

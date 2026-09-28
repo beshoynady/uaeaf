@@ -3,8 +3,10 @@ import { Types } from 'mongoose';
 import { OfficialsRepository } from './officials.repository.js';
 import type { OfficialDocument } from './schemas/official.schema.js';
 import { CreateOfficialDto } from './dto/create-official.dto.js';
+import { UpdateOfficialDto } from './dto/update-official.dto.js';
 import { OfficialPublicResponseDto } from './dto/official-public-response.dto.js';
 import type { OfficialPublicListResponseDto } from './dto/official-public-list-response.dto.js';
+import { partialUpdate } from '../../../common/utils/partial-update.util.js';
 
 /** Implements: officials collection, Domain 2 — People & Organizations
  *  (FigJam node `80:6182`). Plain CRUD — the Local/Guest profile-linkage
@@ -65,7 +67,20 @@ export class OfficialsService {
     };
   }
 
+  /** @throws NotFoundException when no such official exists. */
+  async update(id: string, dto: UpdateOfficialDto): Promise<OfficialDocument> {
+    const updated = await this.repository.updateById(id, partialUpdate(dto));
+    if (!updated) {
+      throw new NotFoundException(`Official ${id} not found.`);
+    }
+    return updated;
+  }
+
   async remove(id: string, archivedBy: Types.ObjectId): Promise<OfficialDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  async unarchive(id: string): Promise<OfficialDocument | null> {
+    return this.repository.restore(id);
   }
 }

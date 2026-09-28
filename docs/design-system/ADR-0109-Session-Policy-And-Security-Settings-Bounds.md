@@ -26,6 +26,23 @@ Refusing with the permitted range named is longer to read and impossible to
 misunderstand. It is the same principle as the coherence refusal on roles, which
 returns the exact pairs that would fix the grant rather than quietly adding them.
 
+## D3 — "Attempts before lockout" means per (account + IP), not per account
+
+Owner decision 2026-09-27, recorded here because it changes what one of this
+ADR's own settings means. The bound keeps its range — 3 to 10 — and its subject
+changes.
+
+Counting failures per account alone let anyone who knew a login address lock its
+owner out by guessing five times from anywhere, which against the last Super Admin
+is an unauthenticated denial of administration (ADR-0105 D4). Counting per
+(account + IP) with escalating delay, per NIST 800-63B §5.2.2, means a guess from
+elsewhere delays the guesser and not the account holder.
+
+A much higher account-wide ceiling still exists so a distributed attempt is not
+unbounded; reaching it is a security event and notifies the other Super Admins.
+The full arrangement, and why exempting privileged accounts from the lockout was
+rejected, is in **ADR-0105 D4**. Implementation is Batch 5, with the lockout.
+
 ## D2 — The Super Admin ceilings are separate from the general maxima
 
 The table carries a third column because a setting sane for an editor is not sane

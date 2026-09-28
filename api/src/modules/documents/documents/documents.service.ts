@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { DocumentsRepository } from './documents.repository.js';
 import type { DocumentDocument, DocumentOwnerType } from './schemas/document.schema.js';
 import { CreateDocumentDto } from './dto/create-document.dto.js';
+import { UpdateDocumentDto } from './dto/update-document.dto.js';
 import { PublicationsService } from '../../workflow/publications/publications.service.js';
 import { RevisionsService } from '../../workflow/revisions/revisions.service.js';
+import { partialUpdate, setObjectIdField, setDateField } from '../../../common/utils/partial-update.util.js';
 
 /**
  * Implements: documents collection, Domain 6 (FigJam node `94:7374`).
@@ -44,6 +46,29 @@ export class DocumentsService {
     return this.repository.findById(id);
   }
 
+  /**
+   * Saves the row directly — same as `ArticlesService.update()`. `documents`
+   * is workflow-governed, but a revision is a snapshot `RevisionsService`
+   * freezes at submit/publish time, not something this plain field edit
+   * creates.
+   *
+   * @throws NotFoundException when no such document exists.
+   */
+  async update(id: string, dto: UpdateDocumentDto): Promise<DocumentDocument> {
+    const update = partialUpdate(dto);
+    // Schema nullability (Fix round 2 — read from `document.schema.ts`, not
+    // inferred from the DTO): `ownerId`/`expiryDate` default to `null`;
+    // `effectiveDate` is `required: true` and has no valid "no value" state.
+    setObjectIdField(update, dto, 'ownerId', { nullable: true });
+    setDateField(update, dto, 'effectiveDate', { nullable: false });
+    setDateField(update, dto, 'expiryDate', { nullable: true });
+    const updated = await this.repository.updateById(id, update);
+    if (!updated) {
+      throw new NotFoundException(`Document ${id} not found.`);
+    }
+    return updated;
+  }
+
   /** Mode (b): generic attachment lookup — e.g. every document attached to
    *  one club. */
   async findByOwner(ownerType: DocumentOwnerType, ownerId: string): Promise<DocumentDocument[]> {
@@ -68,5 +93,9 @@ export class DocumentsService {
 
   async remove(id: string, archivedBy: Types.ObjectId): Promise<DocumentDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  async unarchive(id: string): Promise<DocumentDocument | null> {
+    return this.repository.restore(id);
   }
 }

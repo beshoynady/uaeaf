@@ -109,6 +109,10 @@ export class OrganizationalStructureNodesService {
     return this.repository.softDelete(id, archivedBy);
   }
 
+  async unarchive(id: string): Promise<OrganizationalStructureNodeDocument | null> {
+    return this.repository.restore(id);
+  }
+
   private async assertNodeExists(id: string): Promise<OrganizationalStructureNodeDocument> {
     const node = await this.repository.findById(id);
     if (!node) {

@@ -78,4 +78,56 @@ describe('NotificationsRepository', () => {
 
     expect(indexKeys).toContainEqual({ recipientId: 1, readState: 1, timestamp: -1 });
   });
+
+  /**
+   * The own-scope rule (owner decision 2026-09-27, Q-C): marking a
+   * notification read needs no `notifications:Update` permission, because it
+   * is an act on the caller's own record, verified by the notification
+   * belonging to them — scoped in this repository query, not in the service
+   * (`NotificationsController`'s `PATCH :id/read` carries no
+   * `@RequirePermission` at all). Task 6 batch: the scoping itself already
+   * existed; these two tests (positive and the negative one this rule
+   * depends on) did not.
+   */
+  describe('markReadForRecipient() — the own scope', () => {
+    it("marks the caller's own notification read", async () => {
+      const recipientId = new Types.ObjectId();
+      const triggerId = new Types.ObjectId();
+      const created = await repository.create({
+        type: 'General',
+        recipientId,
+        triggerType: 'ContactMessage',
+        triggerId,
+        channel: 'In-App',
+        timestamp: new Date(),
+      });
+
+      const updated = await repository.markReadForRecipient(created._id.toString(), recipientId);
+
+      expect(updated?.readState).toBe(true);
+    });
+
+    // Run against the real query, not a mock: a mock only proves the test
+    // calls the right method, never that the filter actually excludes
+    // another recipient's row.
+    it("cannot mark another recipient's notification read", async () => {
+      const recipientId = new Types.ObjectId();
+      const otherRecipientId = new Types.ObjectId();
+      const triggerId = new Types.ObjectId();
+      const created = await repository.create({
+        type: 'General',
+        recipientId,
+        triggerType: 'ContactMessage',
+        triggerId,
+        channel: 'In-App',
+        timestamp: new Date(),
+      });
+
+      const result = await repository.markReadForRecipient(created._id.toString(), otherRecipientId);
+
+      expect(result).toBeNull();
+      const stillUnread = await repository.findById(created._id.toString());
+      expect(stillUnread?.readState).toBe(false);
+    });
+  });
 });

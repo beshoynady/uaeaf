@@ -58,4 +58,4 @@ export class CreateSponsorshipDto {
 }
 
 /** Request body for PATCH /sponsorships/:id. */
-export class UpdateSponsorshipDto extends PartialType(CreateSponsorshipDto) {}
+export class UpdateSponsorshipDto extends PartialType(CreateSponsorshipDto, { skipNullProperties: false }) {}

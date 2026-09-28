@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import type { UpdateQuery } from 'mongoose';
 import { AboutFederationPagesRepository } from './about-federation-page.repository.js';
+import { AboutFederationPageSchema } from './schemas/about-federation-page.schema.js';
 import type { AboutFederationPageDocument } from './schemas/about-federation-page.schema.js';
 import { UpdateAboutFederationPageDto } from './dto/update-about-federation-page.dto.js';
 import { AboutFederationStatsService } from './about-federation-stats.service.js';
@@ -12,6 +13,7 @@ import { PublicationsService } from '../../workflow/publications/publications.se
 import { MediaAssetsService } from '../../media-center/media-assets/media-assets.service.js';
 import { FederationAppointmentsService } from '../federation-appointments/federation-appointments.service.js';
 import { toPageSeo } from '../../../common/dto/page-seo.dto.js';
+import { removedMediaAssetIds } from '../../../common/authz/orphaned-media.js';
 
 const ENTITY_TYPE = 'aboutFederationPage' as const;
 
@@ -113,7 +115,7 @@ export class AboutFederationPagesService {
     id: string,
     dto: UpdateAboutFederationPageDto,
     updatedBy: Types.ObjectId,
-  ): Promise<AboutFederationPageDocument> {
+  ): Promise<AboutFederationPageDocument & { orphanedMediaCandidates: string[] }> {
     const [, current] = await Promise.all([this.assertUsableImages(dto), this.repository.findById(id)]);
     if (!current) {
       throw new NotFoundException('About page not found.');
@@ -141,7 +143,15 @@ export class AboutFederationPagesService {
     if (!updated) {
       throw new NotFoundException('About page not found.');
     }
-    return updated;
+
+    const removedIds = removedMediaAssetIds(AboutFederationPageSchema, current, updated);
+    const orphanedMediaCandidates = await this.mediaAssetsService.orphanedMediaCandidates(removedIds);
+
+    // `plain(updated)`, not `Object.assign(updated, …)`: `toObject()`/
+    // `toJSON()` silently drop a field assigned straight onto a document.
+    return { ...plain(updated), orphanedMediaCandidates } as AboutFederationPageDocument & {
+      orphanedMediaCandidates: string[];
+    };
   }
 
   /**
@@ -235,6 +245,10 @@ export class AboutFederationPagesService {
 
   async remove(id: string, archivedBy: Types.ObjectId): Promise<AboutFederationPageDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  async unarchive(id: string): Promise<AboutFederationPageDocument | null> {
+    return this.repository.restore(id);
   }
 
   /**

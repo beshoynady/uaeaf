@@ -60,3 +60,52 @@ The other five of those six stay archival-only: `documents`,
 resources are false in total. They were asked rather than guessed because a wrong
 `true` here grants an irreversible capability, and the cost of asking was one
 round trip.
+
+## D4 — The audit vocabulary now derives from this one, and does not correct history
+
+Owner decision, 2026-09-27. Measured before it was written: `AuditLogInterceptor`
+derived the `auditLogs.action` it wrote from the HTTP method alone
+(`POST→Create`, `PATCH/PUT→Update`, `DELETE→Delete`), never from the route's own
+permission. That predates this ADR's `Delete`→`Archive` rename, and the rename
+left it behind — every one of the 48 archive routes still logged `Delete`, the
+one real destruction (`DELETE /media-assets/:id/object`) logged the same value
+as a reversible archive, and `@Post(':id/restore')` logged `Create`, a restore
+reading as a brand-new record.
+
+`AUDIT_ACTIONS` (`audit-log.schema.ts`) gains `Archive`, `Restore` and
+`PermanentDelete` — the same three names this ADR's own vocabulary already
+uses — plus `SuperAdminGranted`/`SuperAdminRevoked` for ADR-0104/0105's own
+security events. `AuditLogInterceptor.auditActionFor` derives its value from
+the route's `@RequirePermission` action when that action is one of the first
+three (and only when the HTTP method is itself one the interceptor audits at
+all — a GET is never audited, whatever the permission says), falling back to
+the HTTP-method mapping otherwise. A new archive route logs `Archive` because
+of the permission it already declares — nothing else for its author to
+remember, and nothing new to forget across 48 routes.
+
+**Corrected 2026-09-27 (independent review, round 4).** The sentence this
+paragraph originally carried — *"`@AuditEntity`'s `action` override stays for
+genuine special cases only"* — described a field that did not exist: fix
+round 2 had been asked to add it, checked, found no genuine special case, and
+correctly declined. One arrived in the same task, in this ADR's own re-point
+of `DELETE /roles/:id` to `roles:ManageRoles`: that verb also guards renaming
+a role and editing its permissions, so it cannot say which act `DELETE
+/roles/:id` specifically performs, and the route logged `Delete` —
+indistinguishable from the one true destruction — until this was found.
+`AuditEntityOptions` now carries `action?: AuditAction`, overriding
+`auditActionFor` outright, used on exactly two routes today: `DELETE
+/roles/:id` (`Archive`) and `DELETE /albums/:id/photos/:photoId` (`Update` —
+the album itself is only modified, not deleted). Each carries a comment
+naming why its own permission verb cannot express the act, and
+`audit-route-coverage.spec.ts` holds both to their declared value.
+
+**`Delete` is not removed, and no migration rewrites a stored row.** The
+collection is append-only; a row written before this decision is read exactly
+as it was written, forever. `Delete` and `HardDelete` (already dead — no
+resource has offered the permission verb since this ADR's own D-numbered
+table row) both stay in the closed enum for that reason: a value a stored row
+might reference cannot be removed as a cleanup, only retired from being
+written. `HardDelete` is marked `@deprecated` in `audit-log.schema.ts`, with a
+test asserting nothing writes it; the act it used to name now writes
+`PermanentDelete`, matching the permission verb this ADR already defined for
+it.

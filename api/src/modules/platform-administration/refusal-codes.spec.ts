@@ -69,6 +69,11 @@ describe('403 refusals carry distinguishable codes', () => {
 
       service = module.get(RolesService);
       repository = module.get(RolesRepository);
+      // ADR-0104: `assertRemovable` runs before `assertGrantable`, because "you
+      // may not touch this role at all" is the broader refusal and the detail of
+      // what you tried to add is moot once it applies. Resolving the role to
+      // nothing lets it pass, so the narrower refusal is the one under test.
+      repository.findByIds.mockResolvedValue([]);
       permissionsService = module.get(PermissionsService);
     });
 
@@ -79,7 +84,7 @@ describe('403 refusals carry distinguishable codes', () => {
         archivedAt: null,
       } as never);
 
-      expect(await refusalCode(() => service.remove(id, new Types.ObjectId()))).toBe(
+      expect(await refusalCode(() => service.remove(id, new Types.ObjectId(), []))).toBe(
         'systemRole',
       );
     });
@@ -129,7 +134,9 @@ describe('403 refusals carry distinguishable codes', () => {
 
     it('marks a self role-assignment refusal `selfAssignment`', async () => {
       expect(
-        await refusalCode(() => controller.assignRoles(userId, { roleIds: [] } as never, actor)),
+        await refusalCode(() =>
+          controller.assignRoles(userId, { roleIds: [] } as never, actor, { headers: {} } as never),
+        ),
       ).toBe('selfAssignment');
     });
 

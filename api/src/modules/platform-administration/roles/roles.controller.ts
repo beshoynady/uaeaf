@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post } 
 import { ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
+import { AuditEntity } from '../../../common/decorators/audit-entity.decorator.js';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 import { RolesService } from './roles.service.js';
@@ -21,7 +22,7 @@ export class RolesController {
   // their JWT, so this reads it from the request context rather than
   // re-deriving it insecurely.
   @Post()
-  @RequirePermission('roles', 'Create')
+  @RequirePermission('roles', 'ManageRoles')
   create(@Body() dto: CreateRoleDto, @CurrentUser() user: AuthenticatedUser) {
     return this.rolesService.create(dto, user.permissions);
   }
@@ -47,13 +48,13 @@ export class RolesController {
   /** Renames the role and, when the body carries one, rewrites its
    *  description. Rejected by RolesService if isSystemRole=true. */
   @Patch(':id/name')
-  @RequirePermission('roles', 'Update')
+  @RequirePermission('roles', 'ManageRoles')
   rename(@Param('id') id: string, @Body() dto: RenameRoleDto) {
     return this.rolesService.rename(id, dto.name, dto.description);
   }
 
   @Patch(':id/permissions')
-  @RequirePermission('roles', 'Update')
+  @RequirePermission('roles', 'ManageRoles')
   updatePermissions(
     @Param('id') id: string,
     @Body() dto: UpdateRolePermissionsDto,
@@ -67,10 +68,19 @@ export class RolesController {
   }
 
   /** Archives the role and clears it from every account holding it.
-   *  Rejected if the role is a system role, unknown, or already archived. */
+   *  Rejected if the role is a system role, unknown, or already archived.
+   *
+   *  `@AuditEntity({ action: 'Archive' })`: `roles:ManageRoles` also guards
+   *  renaming a role and editing its permissions, so the permission verb
+   *  alone cannot say which of those this specific route is (independent
+   *  review, round 4) — without it, `auditActionFor` falls back to the
+   *  HTTP method and logs `Delete`, indistinguishable from an irreversible
+   *  destruction, for an act that is reversible and merely detaches the
+   *  role from its holders. */
   @Delete(':id')
-  @RequirePermission('roles', 'Delete')
+  @RequirePermission('roles', 'ManageRoles')
+  @AuditEntity({ action: 'Archive' })
   remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.rolesService.remove(id, new Types.ObjectId(user.userId));
+    return this.rolesService.remove(id, new Types.ObjectId(user.userId), user.permissions);
   }
 }

@@ -30,12 +30,12 @@ describe('PermissionsGuard', () => {
   });
 
   it('allows the request when the resolved permission set contains a match', async () => {
-    const reflector = makeReflector({ resourceType: 'roles', action: 'Delete' });
+    const reflector = makeReflector({ resourceType: 'roles', action: 'ManageRoles' });
     const guard = new PermissionsGuard(reflector, makeAuditLogsService());
     const user: AuthenticatedUser = {
       userId: 'u1',
       roleIds: ['507f1f77bcf86cd799439012'],
-      permissions: [{ resourceType: 'roles', action: 'Delete' }],
+      permissions: [{ resourceType: 'roles', action: 'ManageRoles' }],
     };
 
     await expect(guard.canActivate(makeContext(user))).resolves.toBe(true);
@@ -43,7 +43,7 @@ describe('PermissionsGuard', () => {
   });
 
   it('denies and writes an AccessDenied row to auditLogs when a concrete entity id is known', async () => {
-    const reflector = makeReflector({ resourceType: 'roles', action: 'Delete' });
+    const reflector = makeReflector({ resourceType: 'roles', action: 'ManageRoles' });
     const auditLogsService = makeAuditLogsService();
     const guard = new PermissionsGuard(reflector, auditLogsService);
     const user: AuthenticatedUser = {
@@ -62,7 +62,7 @@ describe('PermissionsGuard', () => {
     expect(entry.entityType).toBe('roles');
     expect((entry.entityId as { toString(): string }).toString()).toBe('507f1f77bcf86cd799439099');
     expect((entry.actorId as { toString(): string }).toString()).toBe('507f1f77bcf86cd799439011');
-    expect(entry.reason).toBe('Delete on roles');
+    expect(entry.reason).toBe('ManageRoles on roles');
   });
 
   it('writes an AccessDenied row with entityId: null for a collection-level route with no :id', async () => {
@@ -87,7 +87,7 @@ describe('PermissionsGuard', () => {
 
   it('falls back to Logger (does not write auditLogs) when there is no authenticated user at all', async () => {
     const warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation(() => undefined);
-    const reflector = makeReflector({ resourceType: 'roles', action: 'Delete' });
+    const reflector = makeReflector({ resourceType: 'roles', action: 'ManageRoles' });
     const auditLogsService = makeAuditLogsService();
     const guard = new PermissionsGuard(reflector, auditLogsService);
 

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Header, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
@@ -8,6 +8,7 @@ import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.i
 import { PaginationQueryDto } from '../../../common/dto/pagination-query.dto.js';
 import { ClubsService } from './clubs.service.js';
 import { CreateClubDto } from './dto/create-club.dto.js';
+import { UpdateClubDto } from './dto/update-club.dto.js';
 import { ClubPublicListResponseDto } from './dto/club-public-response.dto.js';
 
 /** Implements: clubs collection, Domain 2 — People & Organizations. */
@@ -57,9 +58,22 @@ export class ClubsController {
     return this.service.findById(id);
   }
 
+  @Patch(':id')
+  @RequirePermission('clubs', 'Update')
+  update(@Param('id') id: string, @Body() dto: UpdateClubDto) {
+    return this.service.update(id, dto);
+  }
+
   @Delete(':id')
-  @RequirePermission('clubs', 'Delete')
+  @RequirePermission('clubs', 'Archive')
   remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.service.remove(id, new Types.ObjectId(user.userId));
+  }
+
+  /** See ADR-0120: not `:id/restore`, which is the revision restore. */
+  @Post(':id/unarchive')
+  @RequirePermission('clubs', 'Restore')
+  unarchive(@Param('id') id: string) {
+    return this.service.unarchive(id);
   }
 }

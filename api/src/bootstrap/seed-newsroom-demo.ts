@@ -53,7 +53,7 @@ export const DEMO_PEOPLE: DemoPerson[] = [
     _id: new Types.ObjectId('000000000000000000de0001'),
     email: 'editor.demo@uaeaf.ae',
     name: { ar: 'محرر تجريبي', en: 'Demo Editor' },
-    grants: [...NEWSROOM_READS, ['articles', 'Create'], ['articles', 'Update'], ['articles', 'Delete']],
+    grants: [...NEWSROOM_READS, ['articles', 'Create'], ['articles', 'Update'], ['articles', 'Archive']],
   },
   {
     _id: new Types.ObjectId('000000000000000000de0002'),

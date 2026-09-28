@@ -60,7 +60,10 @@ const serviceWith = () => {
   const service = new AboutFederationPagesService(
     repository,
     {} as unknown as PublicationsService,
-    { assertUsableImage: jest.fn(async () => undefined) } as unknown as MediaAssetsService,
+    {
+      assertUsableImage: jest.fn(async () => undefined),
+      orphanedMediaCandidates: jest.fn(async () => []),
+    } as unknown as MediaAssetsService,
     {} as unknown as AboutFederationStatsService,
     {} as unknown as FederationAppointmentsService,
   );
@@ -86,6 +89,35 @@ describe('a partial save of one section', () => {
     expect(hero.eyebrow).toEqual(pair('since April 1974 — updated'));
     expect(hero.title).toEqual(pair('About the Federation'));
     expect(hero.description).toEqual(pair('More than half a century'));
+  });
+
+  it('asks about a hero image a save just replaced, and carries the answer back', async () => {
+    const oldImageId = new Types.ObjectId();
+    const newImageId = new Types.ObjectId();
+    const before = { ...stored, hero: { ...stored.hero, imageId: oldImageId } };
+    const after = { ...stored, hero: { ...stored.hero, imageId: newImageId } };
+    const updateById = jest.fn(async () => after);
+    const repository = {
+      findById: jest.fn(async () => before),
+      updateById,
+    } as unknown as AboutFederationPagesRepository;
+    const orphanedMediaCandidates = jest.fn(async () => [oldImageId.toString()]);
+    const service = new AboutFederationPagesService(
+      repository,
+      {} as unknown as PublicationsService,
+      { assertUsableImage: jest.fn(async () => undefined), orphanedMediaCandidates } as unknown as MediaAssetsService,
+      {} as unknown as AboutFederationStatsService,
+      {} as unknown as FederationAppointmentsService,
+    );
+
+    const saved = await service.update(
+      stored._id.toString(),
+      asBody({ hero: { imageId: newImageId.toString() } }),
+      new Types.ObjectId(),
+    );
+
+    expect(orphanedMediaCandidates).toHaveBeenCalledWith([oldImageId.toString()]);
+    expect(saved.orphanedMediaCandidates).toEqual([oldImageId.toString()]);
   });
 
   it('writes no key as undefined, which is what erased them', async () => {

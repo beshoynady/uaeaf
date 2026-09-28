@@ -58,8 +58,22 @@
                 "Delete",
                 "HardDelete",
                 "StatusChange",
-                "AccessDenied"
+                "AccessDenied",
+                "Archive",
+                "Restore",
+                "PermanentDelete",
+                "SuperAdminGranted",
+                "SuperAdminRevoked"
               ]
+            }
+          },
+          {
+            "name": "securityEventsOnly",
+            "required": false,
+            "in": "query",
+            "description": "AccessDenied, SuperAdminGranted, SuperAdminRevoked, PermanentDelete only.",
+            "schema": {
+              "type": "boolean"
             }
           },
           {
@@ -137,8 +151,22 @@
                 "Delete",
                 "HardDelete",
                 "StatusChange",
-                "AccessDenied"
+                "AccessDenied",
+                "Archive",
+                "Restore",
+                "PermanentDelete",
+                "SuperAdminGranted",
+                "SuperAdminRevoked"
               ]
+            }
+          },
+          {
+            "name": "securityEventsOnly",
+            "required": false,
+            "in": "query",
+            "description": "AccessDenied, SuperAdminGranted, SuperAdminRevoked, PermanentDelete only.",
+            "schema": {
+              "type": "boolean"
             }
           },
           {
@@ -181,34 +209,22 @@
       }
     },
     "/api/v1/permissions": {
-      "post": {
-        "operationId": "PermissionsController_create_v1",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreatePermissionDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "permissions"
-        ]
-      },
       "get": {
         "operationId": "PermissionsController_findAll_v1",
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PermissionResponseDto"
+                  }
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -231,7 +247,14 @@
         ],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermissionResponseDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -487,6 +510,40 @@
         ]
       }
     },
+    "/api/v1/users/names": {
+      "get": {
+        "operationId": "UsersController_namesByIds_v1",
+        "parameters": [
+          {
+            "name": "ids",
+            "required": false,
+            "in": "query",
+            "description": "Comma-separated user ids, at most 100. More than the cap, or an id that is not a valid ObjectId, is rejected with 400 — malformed input is rejected at the boundary. An id that does not resolve (unknown or archived) is dropped from the response without a trace, so the response can never be used to tell the two apart.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserNameDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "users"
+        ]
+      }
+    },
     "/api/v1/users/{id}": {
       "get": {
         "operationId": "UsersController_findOne_v1",
@@ -503,6 +560,34 @@
         "responses": {
           "200": {
             "description": ""
+          }
+        },
+        "tags": [
+          "users"
+        ]
+      },
+      "delete": {
+        "operationId": "UsersController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserRefDto"
+                }
+              }
+            }
           }
         },
         "tags": [
@@ -573,6 +658,36 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/api/v1/users/{id}/unarchive": {
+      "post": {
+        "operationId": "UsersController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserRefDto"
                 }
               }
             }
@@ -655,6 +770,37 @@
           "federation-personnel"
         ]
       },
+      "patch": {
+        "operationId": "FederationPersonnelsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFederationPersonnelDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "federation-personnel"
+        ]
+      },
       "delete": {
         "operationId": "FederationPersonnelsController_remove_v1",
         "parameters": [
@@ -669,6 +815,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "federation-personnel"
+        ]
+      }
+    },
+    "/api/v1/federation-personnel/{id}/unarchive": {
+      "post": {
+        "operationId": "FederationPersonnelsController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -793,6 +962,46 @@
         ]
       }
     },
+    "/api/v1/media-assets/unused": {
+      "get": {
+        "operationId": "MediaAssetsController_unused_v1",
+        "parameters": [
+          {
+            "name": "skip",
+            "required": false,
+            "in": "query",
+            "description": "How many rows to skip. Malformed or negative reads as 0.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Rows per page, capped at 100. Malformed, zero or negative reads as the default, 50.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnusedMediaReportDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "media-assets"
+        ]
+      }
+    },
     "/api/v1/media-assets/{id}": {
       "get": {
         "operationId": "MediaAssetsController_findOne_v1",
@@ -806,6 +1015,37 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "media-assets"
+        ]
+      },
+      "patch": {
+        "operationId": "MediaAssetsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMediaAssetDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": ""
@@ -829,6 +1069,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "media-assets"
+        ]
+      }
+    },
+    "/api/v1/media-assets/{id}/unarchive": {
+      "post": {
+        "operationId": "MediaAssetsController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -946,6 +1209,384 @@
         ]
       }
     },
+    "/api/v1/reports/governance": {
+      "get": {
+        "operationId": "ReportsController_viewGovernance_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/governance/export": {
+      "get": {
+        "operationId": "ReportsController_exportGovernance_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/governance/print": {
+      "get": {
+        "operationId": "ReportsController_printGovernance_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/people": {
+      "get": {
+        "operationId": "ReportsController_viewPeople_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/people/export": {
+      "get": {
+        "operationId": "ReportsController_exportPeople_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/people/print": {
+      "get": {
+        "operationId": "ReportsController_printPeople_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/athletics": {
+      "get": {
+        "operationId": "ReportsController_viewAthletics_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/athletics/export": {
+      "get": {
+        "operationId": "ReportsController_exportAthletics_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/athletics/print": {
+      "get": {
+        "operationId": "ReportsController_printAthletics_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/media": {
+      "get": {
+        "operationId": "ReportsController_viewMedia_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/media/export": {
+      "get": {
+        "operationId": "ReportsController_exportMedia_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/media/print": {
+      "get": {
+        "operationId": "ReportsController_printMedia_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/documents": {
+      "get": {
+        "operationId": "ReportsController_viewDocuments_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/documents/export": {
+      "get": {
+        "operationId": "ReportsController_exportDocuments_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/documents/print": {
+      "get": {
+        "operationId": "ReportsController_printDocuments_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/workflow": {
+      "get": {
+        "operationId": "ReportsController_viewWorkflow_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/workflow/export": {
+      "get": {
+        "operationId": "ReportsController_exportWorkflow_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/workflow/print": {
+      "get": {
+        "operationId": "ReportsController_printWorkflow_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/sponsorship": {
+      "get": {
+        "operationId": "ReportsController_viewSponsorship_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/sponsorship/export": {
+      "get": {
+        "operationId": "ReportsController_exportSponsorship_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/sponsorship/print": {
+      "get": {
+        "operationId": "ReportsController_printSponsorship_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/comms": {
+      "get": {
+        "operationId": "ReportsController_viewComms_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/comms/export": {
+      "get": {
+        "operationId": "ReportsController_exportComms_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/comms/print": {
+      "get": {
+        "operationId": "ReportsController_printComms_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/cms": {
+      "get": {
+        "operationId": "ReportsController_viewCms_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/cms/export": {
+      "get": {
+        "operationId": "ReportsController_exportCms_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/cms/print": {
+      "get": {
+        "operationId": "ReportsController_printCms_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "reports"
+        ]
+      }
+    },
     "/api/v1/workflow-definitions": {
       "post": {
         "operationId": "WorkflowDefinitionsController_create_v1",
@@ -1004,6 +1645,37 @@
           "workflow-definitions"
         ]
       },
+      "patch": {
+        "operationId": "WorkflowDefinitionsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWorkflowDefinitionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "workflow-definitions"
+        ]
+      },
       "delete": {
         "operationId": "WorkflowDefinitionsController_remove_v1",
         "parameters": [
@@ -1018,6 +1690,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "workflow-definitions"
+        ]
+      }
+    },
+    "/api/v1/workflow-definitions/{id}/unarchive": {
+      "post": {
+        "operationId": "WorkflowDefinitionsController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -1093,6 +1788,37 @@
           "workflow-steps"
         ]
       },
+      "patch": {
+        "operationId": "WorkflowStepsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWorkflowStepDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "workflow-steps"
+        ]
+      },
       "delete": {
         "operationId": "WorkflowStepsController_remove_v1",
         "parameters": [
@@ -1107,6 +1833,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "workflow-steps"
+        ]
+      }
+    },
+    "/api/v1/workflow-steps/{id}/unarchive": {
+      "post": {
+        "operationId": "WorkflowStepsController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -1880,6 +2629,37 @@
           "countries"
         ]
       },
+      "patch": {
+        "operationId": "CountriesController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCountryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "countries"
+        ]
+      },
       "delete": {
         "operationId": "CountriesController_remove_v1",
         "parameters": [
@@ -1894,6 +2674,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "countries"
+        ]
+      }
+    },
+    "/api/v1/countries/{id}/unarchive": {
+      "post": {
+        "operationId": "CountriesController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -1960,6 +2763,37 @@
           "age-categories"
         ]
       },
+      "patch": {
+        "operationId": "AgeCategoriesController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAgeCategoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "age-categories"
+        ]
+      },
       "delete": {
         "operationId": "AgeCategoriesController_remove_v1",
         "parameters": [
@@ -1974,6 +2808,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "age-categories"
+        ]
+      }
+    },
+    "/api/v1/age-categories/{id}/unarchive": {
+      "post": {
+        "operationId": "AgeCategoriesController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -2040,6 +2897,37 @@
           "disciplines"
         ]
       },
+      "patch": {
+        "operationId": "DisciplinesController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDisciplineDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "disciplines"
+        ]
+      },
       "delete": {
         "operationId": "DisciplinesController_remove_v1",
         "parameters": [
@@ -2054,6 +2942,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "disciplines"
+        ]
+      }
+    },
+    "/api/v1/disciplines/{id}/unarchive": {
+      "post": {
+        "operationId": "DisciplinesController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -2120,6 +3031,37 @@
           "venues"
         ]
       },
+      "patch": {
+        "operationId": "VenuesController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVenueDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "venues"
+        ]
+      },
       "delete": {
         "operationId": "VenuesController_remove_v1",
         "parameters": [
@@ -2134,6 +3076,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "venues"
+        ]
+      }
+    },
+    "/api/v1/venues/{id}/unarchive": {
+      "post": {
+        "operationId": "VenuesController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -2256,6 +3221,37 @@
           "clubs"
         ]
       },
+      "patch": {
+        "operationId": "ClubsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateClubDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "clubs"
+        ]
+      },
       "delete": {
         "operationId": "ClubsController_remove_v1",
         "parameters": [
@@ -2270,6 +3266,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "clubs"
+        ]
+      }
+    },
+    "/api/v1/clubs/{id}/unarchive": {
+      "post": {
+        "operationId": "ClubsController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -2385,6 +3404,37 @@
           "athletes"
         ]
       },
+      "patch": {
+        "operationId": "AthletesController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAthleteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "athletes"
+        ]
+      },
       "delete": {
         "operationId": "AthletesController_remove_v1",
         "parameters": [
@@ -2399,6 +3449,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "athletes"
+        ]
+      }
+    },
+    "/api/v1/athletes/{id}/unarchive": {
+      "post": {
+        "operationId": "AthletesController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -2465,6 +3538,37 @@
           "coaches"
         ]
       },
+      "patch": {
+        "operationId": "CoachesController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCoachDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "coaches"
+        ]
+      },
       "delete": {
         "operationId": "CoachesController_remove_v1",
         "parameters": [
@@ -2479,6 +3583,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "coaches"
+        ]
+      }
+    },
+    "/api/v1/coaches/{id}/unarchive": {
+      "post": {
+        "operationId": "CoachesController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -2580,6 +3707,37 @@
           "officials"
         ]
       },
+      "patch": {
+        "operationId": "OfficialsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOfficialDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "officials"
+        ]
+      },
       "delete": {
         "operationId": "OfficialsController_remove_v1",
         "parameters": [
@@ -2594,6 +3752,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "officials"
+        ]
+      }
+    },
+    "/api/v1/officials/{id}/unarchive": {
+      "post": {
+        "operationId": "OfficialsController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -2683,6 +3864,37 @@
           "athlete-profiles"
         ]
       },
+      "patch": {
+        "operationId": "AthleteProfilesController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAthleteProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "athlete-profiles"
+        ]
+      },
       "delete": {
         "operationId": "AthleteProfilesController_remove_v1",
         "parameters": [
@@ -2697,6 +3909,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "athlete-profiles"
+        ]
+      }
+    },
+    "/api/v1/athlete-profiles/{id}/unarchive": {
+      "post": {
+        "operationId": "AthleteProfilesController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -2786,6 +4021,37 @@
           "official-profiles"
         ]
       },
+      "patch": {
+        "operationId": "OfficialProfilesController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOfficialProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "official-profiles"
+        ]
+      },
       "delete": {
         "operationId": "OfficialProfilesController_remove_v1",
         "parameters": [
@@ -2800,6 +4066,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "official-profiles"
+        ]
+      }
+    },
+    "/api/v1/official-profiles/{id}/unarchive": {
+      "post": {
+        "operationId": "OfficialProfilesController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -2921,6 +4210,29 @@
         ]
       }
     },
+    "/api/v1/athlete-club-history/{id}/unarchive": {
+      "post": {
+        "operationId": "AthleteClubHistoryController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "athlete-club-history"
+        ]
+      }
+    },
     "/api/v1/coach-club-history": {
       "post": {
         "operationId": "CoachClubHistoryController_create_v1",
@@ -3026,6 +4338,29 @@
         },
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "coach-club-history"
+        ]
+      }
+    },
+    "/api/v1/coach-club-history/{id}/unarchive": {
+      "post": {
+        "operationId": "CoachClubHistoryController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -3147,6 +4482,29 @@
         ]
       }
     },
+    "/api/v1/official-club-history/{id}/unarchive": {
+      "post": {
+        "operationId": "OfficialClubHistoryController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "official-club-history"
+        ]
+      }
+    },
     "/api/v1/athlete-coach-history": {
       "post": {
         "operationId": "AthleteCoachHistoryController_create_v1",
@@ -3228,6 +4586,37 @@
           "athlete-coach-history"
         ]
       },
+      "patch": {
+        "operationId": "AthleteCoachHistoryController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAthleteCoachHistoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "athlete-coach-history"
+        ]
+      },
       "delete": {
         "operationId": "AthleteCoachHistoryController_remove_v1",
         "parameters": [
@@ -3242,6 +4631,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "athlete-coach-history"
+        ]
+      }
+    },
+    "/api/v1/athlete-coach-history/{id}/unarchive": {
+      "post": {
+        "operationId": "AthleteCoachHistoryController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -3331,6 +4743,37 @@
           "athlete-national-team-history"
         ]
       },
+      "patch": {
+        "operationId": "AthleteNationalTeamHistoryController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAthleteNationalTeamHistoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "athlete-national-team-history"
+        ]
+      },
       "delete": {
         "operationId": "AthleteNationalTeamHistoryController_remove_v1",
         "parameters": [
@@ -3345,6 +4788,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "athlete-national-team-history"
+        ]
+      }
+    },
+    "/api/v1/athlete-national-team-history/{id}/unarchive": {
+      "post": {
+        "operationId": "AthleteNationalTeamHistoryController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -3411,6 +4877,37 @@
           "official-assignments"
         ]
       },
+      "patch": {
+        "operationId": "OfficialAssignmentsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOfficialAssignmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "official-assignments"
+        ]
+      },
       "delete": {
         "operationId": "OfficialAssignmentsController_remove_v1",
         "parameters": [
@@ -3425,6 +4922,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "official-assignments"
+        ]
+      }
+    },
+    "/api/v1/official-assignments/{id}/unarchive": {
+      "post": {
+        "operationId": "OfficialAssignmentsController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -3491,6 +5011,37 @@
           "club-teams"
         ]
       },
+      "patch": {
+        "operationId": "ClubTeamsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateClubTeamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "club-teams"
+        ]
+      },
       "delete": {
         "operationId": "ClubTeamsController_remove_v1",
         "parameters": [
@@ -3505,6 +5056,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "club-teams"
+        ]
+      }
+    },
+    "/api/v1/club-teams/{id}/unarchive": {
+      "post": {
+        "operationId": "ClubTeamsController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -3571,6 +5145,37 @@
           "athlete-guardian-relationships"
         ]
       },
+      "patch": {
+        "operationId": "AthleteGuardianRelationshipsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAthleteGuardianRelationshipDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "athlete-guardian-relationships"
+        ]
+      },
       "delete": {
         "operationId": "AthleteGuardianRelationshipsController_remove_v1",
         "parameters": [
@@ -3585,6 +5190,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "athlete-guardian-relationships"
+        ]
+      }
+    },
+    "/api/v1/athlete-guardian-relationships/{id}/unarchive": {
+      "post": {
+        "operationId": "AthleteGuardianRelationshipsController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -3637,7 +5265,7 @@
             "name": "season",
             "required": false,
             "in": "query",
-            "description": "Sporting season id.",
+            "description": "A season label such as `2025–2026`. Not an id: a season is derived from the album’s date, the same as the video library.",
             "schema": {
               "type": "string"
             }
@@ -4086,6 +5714,29 @@
         ]
       }
     },
+    "/api/v1/albums/{id}/unarchive": {
+      "post": {
+        "operationId": "AlbumsController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "albums"
+        ]
+      }
+    },
     "/api/v1/videos/public": {
       "get": {
         "operationId": "VideosController_findPublic_v1",
@@ -4343,6 +5994,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "videos"
+        ]
+      }
+    },
+    "/api/v1/videos/{id}/unarchive": {
+      "post": {
+        "operationId": "VideosController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -4661,6 +6335,29 @@
         ]
       }
     },
+    "/api/v1/page-sections/{id}/unarchive": {
+      "post": {
+        "operationId": "PageSectionsController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "page-sections"
+        ]
+      }
+    },
     "/api/v1/photo-gallery-section/public": {
       "get": {
         "operationId": "PhotoGallerySectionController_findPublic_v1",
@@ -4750,6 +6447,37 @@
           "documents"
         ]
       },
+      "patch": {
+        "operationId": "DocumentsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDocumentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "documents"
+        ]
+      },
       "delete": {
         "operationId": "DocumentsController_remove_v1",
         "parameters": [
@@ -4787,6 +6515,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "documents"
+        ]
+      }
+    },
+    "/api/v1/documents/{id}/unarchive": {
+      "post": {
+        "operationId": "DocumentsController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -4853,6 +6604,37 @@
           "federation"
         ]
       },
+      "patch": {
+        "operationId": "FederationsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFederationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "federation"
+        ]
+      },
       "delete": {
         "operationId": "FederationsController_remove_v1",
         "parameters": [
@@ -4867,6 +6649,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "federation"
+        ]
+      }
+    },
+    "/api/v1/federation/{id}/unarchive": {
+      "post": {
+        "operationId": "FederationsController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -4933,6 +6738,37 @@
           "election-cycles"
         ]
       },
+      "patch": {
+        "operationId": "ElectionCyclesController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateElectionCycleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "election-cycles"
+        ]
+      },
       "delete": {
         "operationId": "ElectionCyclesController_remove_v1",
         "parameters": [
@@ -4947,6 +6783,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "election-cycles"
+        ]
+      }
+    },
+    "/api/v1/election-cycles/{id}/unarchive": {
+      "post": {
+        "operationId": "ElectionCyclesController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -5037,6 +6896,37 @@
           "federation-appointments"
         ]
       },
+      "patch": {
+        "operationId": "FederationAppointmentsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFederationAppointmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "federation-appointments"
+        ]
+      },
       "delete": {
         "operationId": "FederationAppointmentsController_remove_v1",
         "parameters": [
@@ -5051,6 +6941,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "federation-appointments"
+        ]
+      }
+    },
+    "/api/v1/federation-appointments/{id}/unarchive": {
+      "post": {
+        "operationId": "FederationAppointmentsController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -5117,6 +7030,37 @@
           "committees"
         ]
       },
+      "patch": {
+        "operationId": "CommitteesController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCommitteeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "committees"
+        ]
+      },
       "delete": {
         "operationId": "CommitteesController_remove_v1",
         "parameters": [
@@ -5154,6 +7098,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "committees"
+        ]
+      }
+    },
+    "/api/v1/committees/{id}/unarchive": {
+      "post": {
+        "operationId": "CommitteesController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -5298,6 +7265,29 @@
         ]
       }
     },
+    "/api/v1/organizational-structure/{id}/unarchive": {
+      "post": {
+        "operationId": "OrganizationalStructureNodesController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "organizational-structure"
+        ]
+      }
+    },
     "/api/v1/governance-documents": {
       "post": {
         "operationId": "GovernanceDocumentsController_create_v1",
@@ -5356,6 +7346,37 @@
           "governance-documents"
         ]
       },
+      "patch": {
+        "operationId": "GovernanceDocumentsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGovernanceDocumentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "governance-documents"
+        ]
+      },
       "delete": {
         "operationId": "GovernanceDocumentsController_remove_v1",
         "parameters": [
@@ -5393,6 +7414,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "governance-documents"
+        ]
+      }
+    },
+    "/api/v1/governance-documents/{id}/unarchive": {
+      "post": {
+        "operationId": "GovernanceDocumentsController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -5642,6 +7686,39 @@
         ]
       }
     },
+    "/api/v1/vision-mission-page/{id}/active": {
+      "patch": {
+        "operationId": "VisionMissionPagesController_setActive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToggleActiveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "vision-mission-page"
+        ]
+      }
+    },
     "/api/v1/vision-mission-page/{id}/restore": {
       "post": {
         "operationId": "VisionMissionPagesController_restore_v1",
@@ -5690,6 +7767,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "vision-mission-page"
+        ]
+      }
+    },
+    "/api/v1/vision-mission-page/{id}/unarchive": {
+      "post": {
+        "operationId": "VisionMissionPagesController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -5987,6 +8087,39 @@
         ]
       }
     },
+    "/api/v1/strategic-plans-page/{id}/active": {
+      "patch": {
+        "operationId": "StrategicPlansPagesController_setActive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToggleActiveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "strategic-plans-page"
+        ]
+      }
+    },
     "/api/v1/strategic-plans-page/{id}/restore": {
       "post": {
         "operationId": "StrategicPlansPagesController_restore_v1",
@@ -6043,6 +8176,29 @@
                 }
               }
             }
+          }
+        },
+        "tags": [
+          "strategic-plans-page"
+        ]
+      }
+    },
+    "/api/v1/strategic-plans-page/{id}/unarchive": {
+      "post": {
+        "operationId": "StrategicPlansPagesController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
           }
         },
         "tags": [
@@ -6215,7 +8371,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ToggleAboutActiveDto"
+                "$ref": "#/components/schemas/ToggleActiveDto"
               }
             }
           }
@@ -6357,6 +8513,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "about-federation-page"
+        ]
+      }
+    },
+    "/api/v1/about-federation-page/{id}/unarchive": {
+      "post": {
+        "operationId": "AboutFederationPagesController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -6599,6 +8778,39 @@
         ]
       }
     },
+    "/api/v1/president-message-page/{id}/active": {
+      "patch": {
+        "operationId": "PresidentMessagePagesController_setActive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToggleActiveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "president-message-page"
+        ]
+      }
+    },
     "/api/v1/president-message-page/{id}/restore": {
       "post": {
         "operationId": "PresidentMessagePagesController_restore_v1",
@@ -6655,6 +8867,29 @@
         ]
       }
     },
+    "/api/v1/president-message-page/{id}/unarchive": {
+      "post": {
+        "operationId": "PresidentMessagePagesController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "president-message-page"
+        ]
+      }
+    },
     "/api/v1/committees-page": {
       "get": {
         "operationId": "CommitteesPagesController_get_v1",
@@ -6677,6 +8912,30 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/UpsertCommitteesPageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "committees-page"
+        ]
+      }
+    },
+    "/api/v1/committees-page/active": {
+      "patch": {
+        "operationId": "CommitteesPagesController_setActive_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToggleActiveDto"
               }
             }
           }
@@ -6727,6 +8986,30 @@
         ]
       }
     },
+    "/api/v1/board-members-page/active": {
+      "patch": {
+        "operationId": "BoardMembersPageController_setActive_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToggleActiveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "board-members-page"
+        ]
+      }
+    },
     "/api/v1/contact-us-page": {
       "get": {
         "operationId": "ContactUsPagesController_get_v1",
@@ -6749,6 +9032,30 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/UpsertContactUsPageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "contact-us-page"
+        ]
+      }
+    },
+    "/api/v1/contact-us-page/active": {
+      "patch": {
+        "operationId": "ContactUsPagesController_setActive_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToggleActiveDto"
               }
             }
           }
@@ -6942,6 +9249,37 @@
           "navigation-menus"
         ]
       },
+      "patch": {
+        "operationId": "NavigationMenusController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateNavigationMenuDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "navigation-menus"
+        ]
+      },
       "delete": {
         "operationId": "NavigationMenusController_remove_v1",
         "parameters": [
@@ -6956,6 +9294,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "navigation-menus"
+        ]
+      }
+    },
+    "/api/v1/navigation-menus/{id}/unarchive": {
+      "post": {
+        "operationId": "NavigationMenusController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -7100,6 +9461,29 @@
         ]
       }
     },
+    "/api/v1/navigation-items/{id}/unarchive": {
+      "post": {
+        "operationId": "NavigationItemsController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "navigation-items"
+        ]
+      }
+    },
     "/api/v1/pages": {
       "post": {
         "operationId": "PagesController_create_v1",
@@ -7195,6 +9579,37 @@
           "pages"
         ]
       },
+      "patch": {
+        "operationId": "PagesController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "pages"
+        ]
+      },
       "delete": {
         "operationId": "PagesController_remove_v1",
         "parameters": [
@@ -7209,6 +9624,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "pages"
+        ]
+      }
+    },
+    "/api/v1/pages/{id}/unarchive": {
+      "post": {
+        "operationId": "PagesController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -7398,6 +9836,29 @@
         ]
       }
     },
+    "/api/v1/hero-slides/{id}/unarchive": {
+      "post": {
+        "operationId": "HeroSlidesController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "hero-slides"
+        ]
+      }
+    },
     "/api/v1/sponsors": {
       "post": {
         "operationId": "SponsorsController_create_v1",
@@ -7501,6 +9962,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "sponsors"
+        ]
+      }
+    },
+    "/api/v1/sponsors/{id}/unarchive": {
+      "post": {
+        "operationId": "SponsorsController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -7634,6 +10118,29 @@
         ]
       }
     },
+    "/api/v1/sponsorships/{id}/unarchive": {
+      "post": {
+        "operationId": "SponsorshipsController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "sponsorships"
+        ]
+      }
+    },
     "/api/v1/partnerships": {
       "post": {
         "operationId": "PartnershipsController_create_v1",
@@ -7751,6 +10258,29 @@
         ],
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "partnerships"
+        ]
+      }
+    },
+    "/api/v1/partnerships/{id}/unarchive": {
+      "post": {
+        "operationId": "PartnershipsController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
             "description": ""
           }
         },
@@ -7884,6 +10414,29 @@
         ]
       }
     },
+    "/api/v1/memberships/{id}/unarchive": {
+      "post": {
+        "operationId": "MembershipsController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "memberships"
+        ]
+      }
+    },
     "/api/v1/athletes-page": {
       "get": {
         "operationId": "AthletesPageController_get_v1",
@@ -7906,6 +10459,30 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/UpsertAthletesPageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "athletes-page"
+        ]
+      }
+    },
+    "/api/v1/athletes-page/active": {
+      "patch": {
+        "operationId": "AthletesPageController_setActive_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToggleActiveDto"
               }
             }
           }
@@ -7956,6 +10533,30 @@
         ]
       }
     },
+    "/api/v1/coaches-page/active": {
+      "patch": {
+        "operationId": "CoachesPageController_setActive_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToggleActiveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "coaches-page"
+        ]
+      }
+    },
     "/api/v1/results-rankings-page": {
       "get": {
         "operationId": "ResultsRankingsPageController_get_v1",
@@ -7978,6 +10579,30 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/UpsertResultsRankingsPageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "results-rankings-page"
+        ]
+      }
+    },
+    "/api/v1/results-rankings-page/active": {
+      "patch": {
+        "operationId": "ResultsRankingsPageController_setActive_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToggleActiveDto"
               }
             }
           }
@@ -8028,6 +10653,30 @@
         ]
       }
     },
+    "/api/v1/records-page/active": {
+      "patch": {
+        "operationId": "RecordsPageController_setActive_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToggleActiveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "records-page"
+        ]
+      }
+    },
     "/api/v1/news-page": {
       "get": {
         "operationId": "NewsPageController_get_v1",
@@ -8050,6 +10699,30 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/UpsertNewsPageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "news-page"
+        ]
+      }
+    },
+    "/api/v1/news-page/active": {
+      "patch": {
+        "operationId": "NewsPageController_setActive_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToggleActiveDto"
               }
             }
           }
@@ -8100,6 +10773,30 @@
         ]
       }
     },
+    "/api/v1/clubs-page/active": {
+      "patch": {
+        "operationId": "ClubsPageController_setActive_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToggleActiveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "clubs-page"
+        ]
+      }
+    },
     "/api/v1/disciplines-page": {
       "get": {
         "operationId": "DisciplinesPageController_get_v1",
@@ -8122,6 +10819,30 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/UpsertDisciplinesPageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "disciplines-page"
+        ]
+      }
+    },
+    "/api/v1/disciplines-page/active": {
+      "patch": {
+        "operationId": "DisciplinesPageController_setActive_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToggleActiveDto"
               }
             }
           }
@@ -8172,6 +10893,30 @@
         ]
       }
     },
+    "/api/v1/albums-page/active": {
+      "patch": {
+        "operationId": "AlbumsPageController_setActive_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToggleActiveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "albums-page"
+        ]
+      }
+    },
     "/api/v1/videos-page": {
       "get": {
         "operationId": "VideosPageController_get_v1",
@@ -8194,6 +10939,30 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/UpsertVideosPageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "videos-page"
+        ]
+      }
+    },
+    "/api/v1/videos-page/active": {
+      "patch": {
+        "operationId": "VideosPageController_setActive_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ToggleActiveDto"
               }
             }
           }
@@ -8374,6 +11143,52 @@
         },
         "responses": {
           "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "contact-messages"
+        ]
+      }
+    },
+    "/api/v1/contact-messages/{id}/unarchive": {
+      "post": {
+        "operationId": "ContactMessagesController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "contact-messages"
+        ]
+      }
+    },
+    "/api/v1/contact-messages/{id}/record": {
+      "delete": {
+        "operationId": "ContactMessagesController_permanentDelete_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
             "description": ""
           }
         },
@@ -8904,6 +11719,29 @@
           "articles"
         ]
       }
+    },
+    "/api/v1/articles/{id}/unarchive": {
+      "post": {
+        "operationId": "ArticlesController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "articles"
+        ]
+      }
     }
   },
   "info": {
@@ -8941,7 +11779,12 @@
               "Delete",
               "HardDelete",
               "StatusChange",
-              "AccessDenied"
+              "AccessDenied",
+              "Archive",
+              "Restore",
+              "PermanentDelete",
+              "SuperAdminGranted",
+              "SuperAdminRevoked"
             ]
           },
           "entityType": {
@@ -9028,20 +11871,17 @@
           "ar"
         ]
       },
-      "CreatePermissionDto": {
+      "PermissionResponseDto": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string"
+          },
           "name": {
-            "description": "Bilingual human-readable permission label, e.g. { en: \"View users\", ar: \"عرض المستخدمين\" }.",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LocalizedTextDto"
-              }
-            ]
+            "$ref": "#/components/schemas/LocalizedTextDto"
           },
           "resourceType": {
             "type": "string",
-            "description": "The collection this permission gates. Must be a known guarded resource.",
             "enum": [
               "aboutFederationPage",
               "ageCategories",
@@ -9111,29 +11951,54 @@
               "workflowDefinitions",
               "workflowInstances",
               "workflowPolicies",
-              "workflowSteps"
+              "workflowSteps",
+              "governanceReports",
+              "peopleReports",
+              "athleticsReports",
+              "mediaReports",
+              "documentsReports",
+              "workflowReports",
+              "sponsorshipReports",
+              "commsReports",
+              "cmsReports"
             ]
           },
           "action": {
             "type": "string",
-            "description": "The action this permission grants.",
             "enum": [
-              "Create",
               "Read",
+              "Create",
               "Update",
-              "Delete",
-              "HardDelete",
-              "Approve",
+              "Archive",
+              "Restore",
+              "PermanentDelete",
+              "Export",
+              "Print",
+              "ViewSensitive",
               "Publish",
-              "EditProtectedData",
-              "Export"
+              "Approve",
+              "ViewReports",
+              "ManageRoles",
+              "AssignRoles",
+              "ViewAuditLog",
+              "ManageSecuritySettings"
             ]
+          },
+          "scope": {
+            "type": "object",
+            "nullable": true
+          },
+          "superAdminOnly": {
+            "type": "boolean",
+            "description": "Whether Decision 4 reserves this pair to the Super Admin role — never grantable."
           }
         },
         "required": [
+          "id",
           "name",
           "resourceType",
-          "action"
+          "action",
+          "superAdminOnly"
         ]
       },
       "CreateRoleDto": {
@@ -9321,21 +12186,37 @@
               "workflowDefinitions",
               "workflowInstances",
               "workflowPolicies",
-              "workflowSteps"
+              "workflowSteps",
+              "governanceReports",
+              "peopleReports",
+              "athleticsReports",
+              "mediaReports",
+              "documentsReports",
+              "workflowReports",
+              "sponsorshipReports",
+              "commsReports",
+              "cmsReports"
             ]
           },
           "action": {
             "type": "string",
             "enum": [
-              "Create",
               "Read",
+              "Create",
               "Update",
-              "Delete",
-              "HardDelete",
-              "Approve",
+              "Archive",
+              "Restore",
+              "PermanentDelete",
+              "Export",
+              "Print",
+              "ViewSensitive",
               "Publish",
-              "EditProtectedData",
-              "Export"
+              "Approve",
+              "ViewReports",
+              "ManageRoles",
+              "AssignRoles",
+              "ViewAuditLog",
+              "ManageSecuritySettings"
             ]
           }
         },
@@ -9500,6 +12381,21 @@
           "accountStatus"
         ]
       },
+      "UserNameDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "displayName": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          }
+        },
+        "required": [
+          "id",
+          "displayName"
+        ]
+      },
       "AssignRolesDto": {
         "type": "object",
         "properties": {
@@ -9530,6 +12426,17 @@
         },
         "required": [
           "accountStatus"
+        ]
+      },
+      "UserRefDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
         ]
       },
       "PersonnelPublicContactDto": {
@@ -9614,6 +12521,46 @@
           "nationalityId",
           "status"
         ]
+      },
+      "UpdateFederationPersonnelDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "photoId": {
+            "type": "string",
+            "description": "ref → mediaAssets, must be an image."
+          },
+          "shortBio": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "biography": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "nationalityId": {
+            "type": "string"
+          },
+          "publicContact": {
+            "$ref": "#/components/schemas/PersonnelPublicContactDto"
+          },
+          "internalContact": {
+            "$ref": "#/components/schemas/PersonnelInternalContactDto"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Active",
+              "Inactive"
+            ]
+          },
+          "socialLinks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SocialLinkDto"
+            }
+          }
+        }
       },
       "MediaFileDto": {
         "type": "object",
@@ -9823,6 +12770,108 @@
           "isFeatured"
         ]
       },
+      "UnusedMediaRowDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "originalName": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "description": "MediaFile.mimeType."
+          },
+          "size": {
+            "type": "number",
+            "description": "MediaFile.size, in bytes."
+          },
+          "archivedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "archivedBy": {
+            "type": "object",
+            "nullable": true,
+            "description": "The user id who archived it; resolve via GET /users/names."
+          },
+          "thumbnailUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "originalName",
+          "type",
+          "size",
+          "archivedAt",
+          "archivedBy",
+          "thumbnailUrl"
+        ]
+      },
+      "UnusedMediaReportDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UnusedMediaRowDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Count across the whole set, not the page."
+          },
+          "totalSize": {
+            "type": "number",
+            "description": "Sum of `size` across the whole set, in bytes."
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "totalSize"
+        ]
+      },
+      "UpdateMediaAssetDto": {
+        "type": "object",
+        "properties": {
+          "caption": {
+            "description": "Bilingual caption.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "altText": {
+            "description": "Bilingual accessibility alt text.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "displayOrder": {
+            "type": "number",
+            "description": "Manual sort position within the parent album."
+          },
+          "isVisible": {
+            "type": "boolean",
+            "default": true
+          },
+          "isFeatured": {
+            "type": "boolean",
+            "default": false
+          },
+          "isAiGenerated": {
+            "type": "boolean",
+            "default": false,
+            "description": "Internal provenance mark: the picture was generated rather than photographed. Shown only in the dashboard, as a \"temporary\" chip and a filter; never returned on a public route."
+          }
+        }
+      },
       "LoginDto": {
         "type": "object",
         "properties": {
@@ -9890,6 +12939,43 @@
           "entityType"
         ]
       },
+      "UpdateWorkflowDefinitionDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Bilingual definition name.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "entityType": {
+            "type": "string",
+            "description": "The entity type this definition governs (closed 13-type list).",
+            "enum": [
+              "articles",
+              "staticPages",
+              "externalMediaCoverage",
+              "governanceDocuments",
+              "strategicPlansPage",
+              "visionMissionPage",
+              "aboutFederationPage",
+              "presidentMessagePage",
+              "organizationalStructure",
+              "committees",
+              "documents",
+              "contactMessages",
+              "publicEvents"
+            ]
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Whether this definition is usable.",
+            "default": true
+          }
+        }
+      },
       "CreateWorkflowStepDto": {
         "type": "object",
         "properties": {
@@ -9928,6 +13014,38 @@
           "assigneeIds",
           "requiredApprovals"
         ]
+      },
+      "UpdateWorkflowStepDto": {
+        "type": "object",
+        "properties": {
+          "workflowDefinitionId": {
+            "type": "string",
+            "description": "Owning workflow definition id."
+          },
+          "sequenceOrder": {
+            "type": "number",
+            "description": "Ordering within the definition, ascending."
+          },
+          "stepType": {
+            "type": "string",
+            "description": "Sequential (ordered chain) or Parallel (multi-approver).",
+            "enum": [
+              "Sequential",
+              "Parallel"
+            ]
+          },
+          "assigneeIds": {
+            "description": "Named user ids assigned to this step.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "requiredApprovals": {
+            "type": "number",
+            "description": "1 for Sequential or \"any one approver\"; assigneeIds.length for \"all\"; any N for \"N of M\"."
+          }
+        }
       },
       "CreateRevisionDto": {
         "type": "object",
@@ -10353,6 +13471,27 @@
           "type"
         ]
       },
+      "UpdateCountryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Bilingual country/emirate name.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "type": {
+            "type": "string",
+            "description": "Whether this is a sovereign country or a UAE emirate.",
+            "enum": [
+              "Country",
+              "Emirate"
+            ]
+          }
+        }
+      },
       "CreateAgeCategoryDto": {
         "type": "object",
         "properties": {
@@ -10378,6 +13517,27 @@
           "minAge",
           "maxAge"
         ]
+      },
+      "UpdateAgeCategoryDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Bilingual age-category name, e.g. { en: \"U18\", ar: \"تحت 18\" }.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "minAge": {
+            "type": "number",
+            "description": "Minimum age (inclusive)."
+          },
+          "maxAge": {
+            "type": "number",
+            "description": "Maximum age (inclusive)."
+          }
+        }
       },
       "CreateDisciplineDto": {
         "type": "object",
@@ -10423,6 +13583,43 @@
           "iconKey"
         ]
       },
+      "UpdateDisciplineDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Bilingual discipline name, e.g. { en: \"Jumps\", ar: \"القفز\" }.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "slug": {
+            "type": "string",
+            "description": "Unique slug for the category detail page."
+          },
+          "coverImage": {
+            "type": "string",
+            "description": "Hero background image for the category detail page."
+          },
+          "description": {
+            "description": "Bilingual educational overview text.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "isInternationallyCertified": {
+            "type": "boolean",
+            "description": "Drives the \"internationally certified\" badge on the category page."
+          },
+          "iconKey": {
+            "type": "string",
+            "description": "Client-resolved icon token."
+          }
+        }
+      },
       "CreateVenueDto": {
         "type": "object",
         "properties": {
@@ -10453,6 +13650,33 @@
           "name",
           "countryId"
         ]
+      },
+      "UpdateVenueDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Bilingual venue name.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "countryId": {
+            "type": "string",
+            "description": "Country (or UAE emirate) this venue is in."
+          },
+          "ownerClubId": {
+            "type": "string",
+            "description": "Set when this venue is a specific club's home facility."
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          }
+        }
       },
       "CreateClubDto": {
         "type": "object",
@@ -10597,6 +13821,90 @@
           "limit"
         ]
       },
+      "UpdateClubDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Bilingual club name.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "slug": {
+            "type": "string",
+            "description": "Unique slug for the club detail page."
+          },
+          "logoId": {
+            "type": "string"
+          },
+          "foundingDate": {
+            "type": "string"
+          },
+          "emirateId": {
+            "type": "string",
+            "description": "The emirate this club is registered in."
+          },
+          "registrationNumber": {
+            "type": "string"
+          },
+          "clubType": {
+            "type": "string",
+            "enum": [
+              "SportsClub",
+              "School",
+              "University",
+              "Academy",
+              "Other"
+            ]
+          },
+          "coverImage": {
+            "type": "string"
+          },
+          "description": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "email": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "address": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "website": {
+            "type": "string"
+          },
+          "socialLinks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SocialLinkDto"
+            }
+          },
+          "venueId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Active",
+              "Inactive"
+            ]
+          },
+          "introVideoId": {
+            "type": "string",
+            "description": "References `videos`, not `mediaAssets`."
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          }
+        }
+      },
       "CreateAthleteDto": {
         "type": "object",
         "properties": {
@@ -10650,6 +13958,53 @@
           "gender",
           "residencyType"
         ]
+      },
+      "UpdateAthleteDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Bilingual athlete name.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "dateOfBirth": {
+            "type": "string"
+          },
+          "nationalityId": {
+            "type": "string"
+          },
+          "disciplineIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "Male",
+              "Female"
+            ]
+          },
+          "residencyType": {
+            "type": "string",
+            "enum": [
+              "Local",
+              "Guest"
+            ]
+          },
+          "federationName": {
+            "description": "Home national federation display name — populated only when residencyType=Guest.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          }
+        }
       },
       "CreateCoachDto": {
         "type": "object",
@@ -10725,6 +14080,71 @@
           "status"
         ]
       },
+      "UpdateCoachDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "description": "Bilingual full name.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "slug": {
+            "type": "string",
+            "description": "Unique slug for the detail page."
+          },
+          "photoId": {
+            "type": "string"
+          },
+          "licenseLevel": {
+            "type": "string",
+            "enum": [
+              "Level1",
+              "Level2",
+              "Level3",
+              "Level4",
+              "International"
+            ]
+          },
+          "registrationNumber": {
+            "type": "string"
+          },
+          "clubId": {
+            "type": "string"
+          },
+          "disciplineIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "nationalityId": {
+            "type": "string"
+          },
+          "bio": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "Male",
+              "Female"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Active",
+              "Inactive"
+            ]
+          },
+          "startDate": {
+            "type": "string"
+          }
+        }
+      },
       "CreateOfficialDto": {
         "type": "object",
         "properties": {
@@ -10789,6 +14209,64 @@
           "nationalityId",
           "residencyType"
         ]
+      },
+      "UpdateOfficialDto": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "description": "Bilingual full name.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "roleType": {
+            "type": "string",
+            "enum": [
+              "Referee",
+              "Judge",
+              "Starter",
+              "Timekeeper",
+              "TechnicalDelegate",
+              "Other"
+            ]
+          },
+          "licenseLevel": {
+            "type": "string",
+            "enum": [
+              "Level1",
+              "Level2",
+              "Level3",
+              "Level4",
+              "International"
+            ]
+          },
+          "disciplineIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "nationalityId": {
+            "type": "string"
+          },
+          "residencyType": {
+            "type": "string",
+            "enum": [
+              "Local",
+              "Guest"
+            ]
+          },
+          "federationName": {
+            "description": "Home national federation display name — populated only when residencyType=Guest.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          }
+        }
       },
       "RestrictedProfileInfoDto": {
         "type": "object",
@@ -10857,6 +14335,45 @@
           "status"
         ]
       },
+      "UpdateAthleteProfileDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Unique slug for the athlete's public profile page."
+          },
+          "clubId": {
+            "type": "string"
+          },
+          "registrationNumber": {
+            "type": "string"
+          },
+          "restricted": {
+            "$ref": "#/components/schemas/RestrictedProfileInfoDto"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Active",
+              "Inactive",
+              "Suspended",
+              "Retired"
+            ]
+          },
+          "photoId": {
+            "type": "string"
+          },
+          "bio": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "socialLinks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SocialLinkDto"
+            }
+          }
+        }
+      },
       "CreateOfficialProfileDto": {
         "type": "object",
         "properties": {
@@ -10902,6 +14419,41 @@
           "gender",
           "status"
         ]
+      },
+      "UpdateOfficialProfileDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Unique slug for the official's public profile page."
+          },
+          "clubId": {
+            "type": "string"
+          },
+          "registrationNumber": {
+            "type": "string"
+          },
+          "photoId": {
+            "type": "string"
+          },
+          "bio": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "Male",
+              "Female"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Active",
+              "Inactive"
+            ]
+          }
+        }
       },
       "CreateAthleteClubHistoryDto": {
         "type": "object",
@@ -11017,6 +14569,28 @@
           "startDate"
         ]
       },
+      "UpdateAthleteCoachHistoryDto": {
+        "type": "object",
+        "properties": {
+          "athleteId": {
+            "type": "string"
+          },
+          "coachId": {
+            "type": "string"
+          },
+          "disciplineId": {
+            "type": "string",
+            "description": "Set when the coach is discipline-specific."
+          },
+          "startDate": {
+            "type": "string"
+          },
+          "endDate": {
+            "type": "string",
+            "description": "Omit to mean this is the current coach."
+          }
+        }
+      },
       "CreateAthleteNationalTeamHistoryDto": {
         "type": "object",
         "properties": {
@@ -11040,6 +14614,25 @@
           "ageCategoryId",
           "startDate"
         ]
+      },
+      "UpdateAthleteNationalTeamHistoryDto": {
+        "type": "object",
+        "properties": {
+          "athleteId": {
+            "type": "string"
+          },
+          "ageCategoryId": {
+            "type": "string",
+            "description": "Which national-team tier (Youth, Junior, Senior, ...)."
+          },
+          "startDate": {
+            "type": "string"
+          },
+          "endDate": {
+            "type": "string",
+            "description": "Omit to mean the athlete is currently on this roster."
+          }
+        }
       },
       "CreateOfficialAssignmentDto": {
         "type": "object",
@@ -11077,6 +14670,37 @@
           "targetType",
           "targetId"
         ]
+      },
+      "UpdateOfficialAssignmentDto": {
+        "type": "object",
+        "properties": {
+          "officialId": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "Referee",
+              "Judge",
+              "Starter",
+              "Timekeeper",
+              "TechnicalDelegate",
+              "Other"
+            ],
+            "description": "The specific role for this assignment — independent of the official's general officials.roleType."
+          },
+          "targetType": {
+            "type": "string",
+            "enum": [
+              "Championship",
+              "ChampionshipEvent"
+            ]
+          },
+          "targetId": {
+            "type": "string",
+            "description": "A championship or championshipEvent id, matching targetType."
+          }
+        }
       },
       "CreateClubTeamDto": {
         "type": "object",
@@ -11116,6 +14740,39 @@
           "ageCategoryId",
           "gender"
         ]
+      },
+      "UpdateClubTeamDto": {
+        "type": "object",
+        "properties": {
+          "clubId": {
+            "type": "string"
+          },
+          "name": {
+            "description": "Bilingual squad name, e.g. { en: \"First Team (Men)\", ar: \"الفريق الأول (رجال)\" }.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "ageCategoryId": {
+            "type": "string"
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "Male",
+              "Female",
+              "Mixed"
+            ]
+          },
+          "athleteIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
       },
       "GuardianContactDto": {
         "type": "object",
@@ -11175,6 +14832,42 @@
           "isActive"
         ]
       },
+      "UpdateAthleteGuardianRelationshipDto": {
+        "type": "object",
+        "properties": {
+          "athleteId": {
+            "type": "string"
+          },
+          "guardianName": {
+            "description": "Bilingual guardian name.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "relationshipType": {
+            "type": "string",
+            "enum": [
+              "Parent",
+              "LegalGuardian",
+              "Other"
+            ]
+          },
+          "guardianContact": {
+            "$ref": "#/components/schemas/GuardianContactDto"
+          },
+          "consentDocId": {
+            "type": "string"
+          },
+          "consentDate": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
       "CreateAlbumDto": {
         "type": "object",
         "properties": {
@@ -11198,13 +14891,9 @@
               }
             ]
           },
-          "seasonId": {
-            "type": "string",
-            "description": "The sporting season this album sits in. Omit it for an administrative activity."
-          },
           "championshipId": {
             "type": "string",
-            "description": "The championship. Requires seasonId."
+            "description": "The championship. An album’s season is derived from `eventDate`, so there is no season to set."
           },
           "competitionId": {
             "type": "string",
@@ -11212,7 +14901,7 @@
           },
           "publicEventId": {
             "type": "string",
-            "description": "A conference, honouring or other institutional occasion. Requires seasonId, excludes championshipId."
+            "description": "A conference, honouring or other institutional occasion. Excludes championshipId."
           },
           "athleteIds": {
             "description": "Athletes appearing in this album.",
@@ -11295,11 +14984,6 @@
                 "$ref": "#/components/schemas/LocalizedTextDto"
               }
             ]
-          },
-          "seasonId": {
-            "type": "object",
-            "nullable": true,
-            "description": "The sporting season this album sits in."
           },
           "championshipId": {
             "type": "object",
@@ -11505,11 +15189,6 @@
                 "$ref": "#/components/schemas/LocalizedTextDto"
               }
             ]
-          },
-          "seasonId": {
-            "type": "object",
-            "nullable": true,
-            "description": "The sporting season this album sits in."
           },
           "championshipId": {
             "type": "object",
@@ -11717,11 +15396,6 @@
             "items": {
               "type": "string"
             }
-          },
-          "seasonId": {
-            "type": "object",
-            "nullable": true,
-            "description": "Pass null to clear."
           },
           "championshipId": {
             "type": "object",
@@ -12584,6 +16258,58 @@
           "publicationState"
         ]
       },
+      "UpdateDocumentDto": {
+        "type": "object",
+        "properties": {
+          "file": {
+            "$ref": "#/components/schemas/DocumentFileDto"
+          },
+          "documentType": {
+            "type": "string",
+            "enum": [
+              "GovernancePolicy",
+              "Regulation",
+              "ConsentForm",
+              "Contract",
+              "Certificate",
+              "MeetingMinutes",
+              "Other"
+            ]
+          },
+          "ownerType": {
+            "type": "string",
+            "description": "Set together with ownerId when this document is a generic attachment (mode b).",
+            "enum": [
+              "Club",
+              "Athlete",
+              "Coach",
+              "Official",
+              "Championship",
+              "Membership",
+              "Sponsorship"
+            ]
+          },
+          "ownerId": {
+            "type": "string"
+          },
+          "effectiveDate": {
+            "type": "string"
+          },
+          "expiryDate": {
+            "type": "string",
+            "description": "Descriptive only — has no effect on public visibility."
+          },
+          "publicationState": {
+            "type": "string",
+            "enum": [
+              "Draft",
+              "Live",
+              "Unpublished",
+              "Archived"
+            ]
+          }
+        }
+      },
       "CreateFederationDto": {
         "type": "object",
         "properties": {
@@ -12635,6 +16361,52 @@
           "status"
         ]
       },
+      "UpdateFederationDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Full official name.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "shortName": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "acronym": {
+            "type": "string",
+            "description": "Plain (non-bilingual) string, e.g. \"UAEAF\"."
+          },
+          "logoId": {
+            "type": "string",
+            "description": "ref → mediaAssets, must be an image."
+          },
+          "address": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "registrationNumber": {
+            "type": "string"
+          },
+          "registrationAuthority": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "archived"
+            ]
+          }
+        }
+      },
       "CreateElectionCycleDto": {
         "type": "object",
         "properties": {
@@ -12680,6 +16452,44 @@
           "cycleName",
           "status"
         ]
+      },
+      "UpdateElectionCycleDto": {
+        "type": "object",
+        "properties": {
+          "federationId": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string"
+          },
+          "endDate": {
+            "type": "string"
+          },
+          "cycleNumber": {
+            "type": "number",
+            "description": "Sequential cycle number (1, 2, 3...)."
+          },
+          "cycleName": {
+            "description": "e.g. \"الدورة 2024-2028\".",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Planned",
+              "Active",
+              "Completed",
+              "Cancelled"
+            ]
+          },
+          "notes": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          }
+        }
       },
       "CreateFederationAppointmentDto": {
         "type": "object",
@@ -12793,6 +16603,67 @@
           "displayOrder"
         ]
       },
+      "UpdateFederationAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "personId": {
+            "type": "string"
+          },
+          "supersedesAppointmentId": {
+            "type": "string",
+            "description": "The specific prior appointment this one succeeds. When set, that appointment is closed (termEnd = this appointment's termStart, status = Completed). Explicit admin choice — no roleType-based auto-close happens without it."
+          },
+          "roleType": {
+            "type": "string",
+            "enum": [
+              "President",
+              "BoardMember",
+              "CommitteeChair",
+              "CommitteeMember",
+              "ExecutiveDirector",
+              "Manager",
+              "Other"
+            ]
+          },
+          "positionTitle": {
+            "description": "e.g. \"نائب الرئيس\".",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "committeeId": {
+            "type": "string",
+            "description": "For CommitteeChair/CommitteeMember roleTypes."
+          },
+          "electionCycleId": {
+            "type": "string",
+            "description": "For President/BoardMember roleTypes."
+          },
+          "termStart": {
+            "type": "string"
+          },
+          "termEnd": {
+            "type": "string",
+            "description": "Omit while the appointment is ongoing."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Active",
+              "Completed",
+              "Resigned",
+              "Removed",
+              "Transitioned",
+              "Deceased"
+            ]
+          },
+          "displayOrder": {
+            "type": "number"
+          }
+        }
+      },
       "CreateCommitteeDto": {
         "type": "object",
         "properties": {
@@ -12844,6 +16715,50 @@
           "committeeGroup",
           "publicationState"
         ]
+      },
+      "UpdateCommitteeDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "description": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "displayOrder": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Descriptive badge only — has no effect on public visibility and is never auto-synced with publicationState or archivedAt."
+          },
+          "committeeType": {
+            "type": "string",
+            "enum": [
+              "Technical",
+              "Administrative",
+              "Disciplinary",
+              "Judging",
+              "Other"
+            ]
+          },
+          "committeeGroup": {
+            "type": "string",
+            "enum": [
+              "Leadership",
+              "Specialized"
+            ]
+          },
+          "publicationState": {
+            "type": "string",
+            "enum": [
+              "Draft",
+              "Live",
+              "Unpublished",
+              "Archived"
+            ]
+          }
+        }
       },
       "CreateOrganizationalStructureNodeDto": {
         "type": "object",
@@ -12944,6 +16859,40 @@
           "documentVersion",
           "publicationState"
         ]
+      },
+      "UpdateGovernanceDocumentDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "description": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Regulation",
+              "Policy",
+              "Form",
+              "Guide",
+              "Decision"
+            ]
+          },
+          "documentVersion": {
+            "type": "string",
+            "description": "e.g. \"1.0\"."
+          },
+          "publicationState": {
+            "type": "string",
+            "enum": [
+              "Draft",
+              "Live",
+              "Unpublished",
+              "Archived"
+            ]
+          }
+        }
       },
       "IconKeyedContentBlockDto": {
         "type": "object",
@@ -13680,6 +17629,18 @@
         },
         "required": [
           "expectedUpdatedAt"
+        ]
+      },
+      "ToggleActiveDto": {
+        "type": "object",
+        "properties": {
+          "isActive": {
+            "type": "boolean",
+            "description": "True serves the page; false shows visitors the \"in preparation\" page at the same URL."
+          }
+        },
+        "required": [
+          "isActive"
         ]
       },
       "RestoreEditorialDto": {
@@ -14941,18 +18902,6 @@
           }
         }
       },
-      "ToggleAboutActiveDto": {
-        "type": "object",
-        "properties": {
-          "isActive": {
-            "type": "boolean",
-            "description": "True serves the page; false shows visitors the \"in preparation\" screen."
-          }
-        },
-        "required": [
-          "isActive"
-        ]
-      },
       "LocalizedRichTextDto": {
         "type": "object",
         "properties": {
@@ -15631,6 +19580,22 @@
           "location"
         ]
       },
+      "UpdateNavigationMenuDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Unique technical key, e.g. \"main-nav\"."
+          },
+          "location": {
+            "type": "string",
+            "enum": [
+              "Header",
+              "Footer"
+            ]
+          }
+        }
+      },
       "CreateNavigationItemDto": {
         "type": "object",
         "properties": {
@@ -15754,6 +19719,29 @@
           "title",
           "status"
         ]
+      },
+      "UpdatePageDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Unique route slug."
+          },
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "Draft",
+              "Published"
+            ],
+            "description": "Structural routing status, not publicationState."
+          },
+          "seo": {
+            "$ref": "#/components/schemas/PageSeoDto"
+          }
+        }
       },
       "FocalPointDto": {
         "type": "object",

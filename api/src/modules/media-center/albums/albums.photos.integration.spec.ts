@@ -7,6 +7,7 @@ import { MediaAssetSchema } from '../media-assets/schemas/media-asset.schema.js'
 import type { MediaAssetDocument } from '../media-assets/schemas/media-asset.schema.js';
 import { AlbumsRepository } from './albums.repository.js';
 import { AlbumsService } from './albums.service.js';
+import type { AlbumPhotoReferrerScan } from './albums.service.js';
 import { MediaAssetsRepository } from '../media-assets/media-assets.repository.js';
 import { MediaAssetsService } from '../media-assets/media-assets.service.js';
 import {
@@ -33,6 +34,14 @@ describe('AlbumsService photo management', () => {
 
   const actor = new Types.ObjectId();
 
+  // Stubbed to "nothing else references it": what the scan itself returns is
+  // `media-references.spec.ts`'s and the two service unit suites' territory,
+  // and wiring the real scan here would need every one of its 71 collections
+  // registered on this connection for it to answer at all. This file's job
+  // is the album/asset agreement, not the scan's own correctness. Untyped and
+  // parameter-less so it satisfies both scan shapes this file wires.
+  const noReferrers = async () => [];
+
   beforeAll(async () => {
     server = await connectTestDatabase();
     albumModel = registerTestModel<AlbumDocument>('Album', AlbumSchema);
@@ -43,8 +52,11 @@ describe('AlbumsService photo management', () => {
       new MediaAssetsRepository(assetModel),
       albumModel,
       storage as never,
+      undefined,
+      noReferrers,
+      { write: async () => ({}) as never } as never,
     );
-    service = new AlbumsService(new AlbumsRepository(albumModel), mediaAssetsService);
+    service = new AlbumsService(new AlbumsRepository(albumModel), mediaAssetsService, noReferrers);
   });
 
   afterEach(async () => {
@@ -92,7 +104,7 @@ describe('AlbumsService photo management', () => {
   };
 
   describe('removePhoto', () => {
-    it('promotes the next photo when the cover is removed', async () => {
+    it('promotes the next photo when the cover is removed, and archives it since nothing else uses it', async () => {
       const { album, photos } = await albumWithPhotos();
 
       await service.removePhoto(album._id.toString(), photos[0]._id.toString(), actor);
@@ -100,6 +112,31 @@ describe('AlbumsService photo management', () => {
       const updated = await albumModel.findById(album._id);
       expect(updated!.coverImageId!.toString()).toBe(photos[1]._id.toString());
       expect(updated!.assetCount).toBe(2);
+      // Not merely detached: the archive branch is what should run when the
+      // reference check finds nothing else pointing at the photo (owner D3).
+      const removed = await assetModel.findById(photos[0]._id);
+      expect(removed!.archivedAt).not.toBeNull();
+    });
+
+    it('detaches without archiving when the photo is still used outside this album', async () => {
+      const { album, photos } = await albumWithPhotos();
+      const usedElsewhere: AlbumPhotoReferrerScan = async () => [
+        { collection: 'articles', path: 'coverMediaId', documentId: new Types.ObjectId().toString(), kind: 'ref' },
+      ];
+      const referencedService = new AlbumsService(
+        new AlbumsRepository(albumModel),
+        mediaAssetsService,
+        usedElsewhere,
+      );
+
+      await referencedService.removePhoto(album._id.toString(), photos[0]._id.toString(), actor);
+
+      const updated = await albumModel.findById(album._id);
+      expect(updated!.assetCount).toBe(2);
+      const removed = await assetModel.findById(photos[0]._id);
+      // Live and out of the album: neither archived nor still counted as its photo.
+      expect(removed!.archivedAt).toBeNull();
+      expect(removed!.albumId).toBeNull();
     });
 
     it('leaves the cover alone when a different photo is removed', async () => {

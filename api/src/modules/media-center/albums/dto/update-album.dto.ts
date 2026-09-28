@@ -36,6 +36,7 @@ export class UpdateAlbumDto extends PartialType(
     'athleteIds',
     'clubIds',
   ] as const),
+  { skipNullProperties: false },
 ) {
   /** Explicitly nullable, unlike the create DTO's optional form: `undefined`
    *  means "leave it alone" and `null` means "clear it", and a PATCH needs

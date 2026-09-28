@@ -3,7 +3,9 @@ import { Types } from 'mongoose';
 import { AthleteProfilesRepository } from './athlete-profiles.repository.js';
 import type { AthleteProfileDocument } from './schemas/athlete-profile.schema.js';
 import { CreateAthleteProfileDto } from './dto/create-athlete-profile.dto.js';
+import { UpdateAthleteProfileDto } from './dto/update-athlete-profile.dto.js';
 import { AthleteProfilePublicResponseDto } from './dto/athlete-profile-public-response.dto.js';
+import { partialUpdate } from '../../../common/utils/partial-update.util.js';
 import type { SocialLinkDto } from '../clubs/dto/social-link.dto.js';
 import { AthletesService } from '../athletes/athletes.service.js';
 import type { AthletePublicResponseDto } from '../athletes/dto/athlete-public-response.dto.js';
@@ -89,6 +91,49 @@ export class AthleteProfilesService {
     return this.repository.findById(id);
   }
 
+  /**
+   * `athleteId` is not on `UpdateAthleteProfileDto` at all (Fix round 1,
+   * CLAUDE.md §31) — no filtering is needed here to keep it out; see that
+   * DTO for why. `photoId` IS legitimately editable, and unlike the relink
+   * fields its validity does not depend on anything this row itself
+   * remembers — the same "exists, not archived, actually an image" check
+   * `create()` runs is re-run here when it changes, mirroring
+   * `HeroSlidesService.update()`'s established convention for image
+   * references ("only images arriving in this request are checked").
+   *
+   * @throws NotFoundException when no such profile exists, or when
+   *   `photoId` is sent and doesn't reference an existing, non-archived
+   *   `MediaAsset`.
+   * @throws ConflictException when the patch's `slug`/`registrationNumber`
+   *   is already taken by another profile, or `photoId` isn't an image type.
+   * @throws BadRequestException when `socialLinks` is sent and violates the
+   *   allowed-platform/https-only/count-cap rules.
+   */
+  async update(id: string, dto: UpdateAthleteProfileDto): Promise<AthleteProfileDocument> {
+    if (dto.photoId) {
+      await this.mediaAssetsService.assertUsableImage(dto.photoId);
+    }
+
+    const update = partialUpdate(dto);
+    if (dto.socialLinks !== undefined) {
+      update.socialLinks = this.assertValidSocialLinks(dto.socialLinks);
+    }
+
+    let updated: AthleteProfileDocument | null;
+    try {
+      updated = await this.repository.updateById(id, update);
+    } catch (error) {
+      if (isDuplicateKeyError(error)) {
+        throw new ConflictException(`Duplicate value for ${duplicateKeyField(error) ?? 'field'}.`);
+      }
+      throw error;
+    }
+    if (!updated) {
+      throw new NotFoundException(`Athlete profile ${id} not found.`);
+    }
+    return updated;
+  }
+
   /** Public routing resolution: `/athletes/:slug` →
    *  `athleteProfiles.slug` → `athleteId` → `athletes`. Returns `null`
    *  (not a thrown error) when nothing matches, mirroring
@@ -131,6 +176,10 @@ export class AthleteProfilesService {
 
   async remove(id: string, archivedBy: Types.ObjectId): Promise<AthleteProfileDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  async unarchive(id: string): Promise<AthleteProfileDocument | null> {
+    return this.repository.restore(id);
   }
 
   /** Validates + dedupes `socialLinks[]`: allowed platform, https-only

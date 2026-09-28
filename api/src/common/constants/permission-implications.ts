@@ -1,11 +1,13 @@
 import { PERMISSION_CATALOGUE } from './permission-catalogue.js';
 import type { PermissionCatalogueEntry } from './permission-catalogue.js';
 import type { PermissionResource } from './permission-resources.js';
+import { capabilityFor, isSuperAdminOnly } from '../authz/capability-map.js';
+import type { PermissionAction } from '../../modules/platform-administration/permissions/schemas/permission.schema.js';
 
 /**
  * "Whoever may change a resource must be able to read it."
  *
- * Owner decision, 2026-09-08. A role holding `athletes:Delete` and not
+ * Owner decision, 2026-09-08. A role holding `athletes:Archive` and not
  * `athletes:Read` could delete an athlete it could never list — the delete
  * is issued from the screen the read populates, so the grant is incoherent
  * rather than narrower.
@@ -23,9 +25,22 @@ import type { PermissionResource } from './permission-resources.js';
  * cannot. `RESOURCES_WITH_READ` is derived from the catalogue rather than
  * listed, so a resource that gains or loses a guarded read is covered
  * without editing this file.
+ *
+ * The rule keys on each resource's OWN read verb, not the literal string
+ * `Read` (owner decision 2026-09-27, B3): `auditLogs` declares `ViewAuditLog`
+ * instead, because reading the record of who touched a thing is not the same
+ * act as reading the thing. Keying on the literal `Read` left `auditLogs`
+ * with no `Read` pair to find, so `auditLogs:Export` implied nothing and a
+ * role could hold the CSV without the screen it exports from — exactly the
+ * incoherence this rule exists to refuse. `readVerbFor` reads the verb off
+ * `CAPABILITY_MAP` rather than naming `auditLogs` here, so the exception
+ * lives in one place.
  */
+const readVerbFor = (resourceType: PermissionResource): PermissionAction =>
+  capabilityFor(resourceType)?.readVerb ?? 'Read';
+
 const RESOURCES_WITH_READ: ReadonlySet<PermissionResource> = new Set(
-  PERMISSION_CATALOGUE.filter((entry) => entry.action === 'Read').map(
+  PERMISSION_CATALOGUE.filter((entry) => entry.action === readVerbFor(entry.resourceType)).map(
     (entry) => entry.resourceType,
   ),
 );
@@ -38,21 +53,38 @@ const RESOURCES_WITH_READ: ReadonlySet<PermissionResource> = new Set(
  *   empty when the grant is already coherent. Never throws: a pair naming a
  *   resource the catalogue does not define is ignored rather than guessed
  *   at, so an unknown resource implies nothing at all.
+ *
+ * SILENT ON A RESERVED READ VERB (independent review, round 4, I7). Without
+ * this, a role built with a non-reserved action whose implied read IS
+ * reserved was told to add that read (`400 impliedReadMissing`), and adding
+ * it was itself refused (`403 ungrantableCapability`): the exact
+ * unfollowable-advice shape fix round 1 removed from the assign path,
+ * reappearing here on the build path. The rule's own reason — "whoever may
+ * change a resource must be able to read it" — is not violated by staying
+ * silent here: nobody CAN hold the reserved read either, so demanding it
+ * adds nothing a real coherence check would catch. `users:Archive`/`Restore`
+ * were the case this closed for; both joined the reserved set outright on
+ * 2026-09-28 (ADR-0104), so this branch is unexercised by any resource
+ * today — kept for the next resource shaped the same way.
  */
-export function missingImpliedReads(
+export const missingImpliedReads = (
   granted: readonly PermissionCatalogueEntry[],
-): PermissionCatalogueEntry[] {
+): PermissionCatalogueEntry[] => {
   const held = new Set(granted.map((entry) => `${entry.resourceType}:${entry.action}`));
 
   const incomplete = new Set<PermissionResource>();
   for (const entry of granted) {
-    if (entry.action === 'Read') {
+    const readVerb = readVerbFor(entry.resourceType);
+    if (entry.action === readVerb) {
       continue;
     }
     if (!RESOURCES_WITH_READ.has(entry.resourceType)) {
       continue;
     }
-    if (held.has(`${entry.resourceType}:Read`)) {
+    if (isSuperAdminOnly(entry.resourceType, readVerb)) {
+      continue;
+    }
+    if (held.has(`${entry.resourceType}:${readVerb}`)) {
       continue;
     }
     incomplete.add(entry.resourceType);
@@ -60,5 +92,5 @@ export function missingImpliedReads(
 
   return [...incomplete]
     .sort((a, b) => a.localeCompare(b))
-    .map((resourceType) => ({ resourceType, action: 'Read' as const }));
-}
+    .map((resourceType) => ({ resourceType, action: readVerbFor(resourceType) }));
+};

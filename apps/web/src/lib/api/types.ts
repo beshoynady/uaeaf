@@ -279,6 +279,26 @@ export interface MediaAssetPublic {
   isFeatured: boolean;
 }
 
+/**
+ * `AppointmentPublicResponseDto` from `GET /federation-appointments/public` — one
+ * serving officer, already filtered to the posts the board itself holds and to
+ * terms that have not run out.
+ *
+ * Five fields and no contact details, deliberately: the personnel record carries
+ * `internalContact` (`[RESTRICTED]`), a biography and contact details, none of
+ * which a board card prints. There is no id, because the response is assembled
+ * from an appointment and a person rather than serialised from one record.
+ */
+export interface AppointmentPublic {
+  fullName: LocalizedText;
+  /** The specific title within the role, e.g. "نائب الرئيس". */
+  positionTitle: LocalizedText;
+  roleType: string;
+  /** The order the board set for its own listing. */
+  displayOrder: number;
+  photoId: string | null;
+}
+
 /** `FederationPersonnelPublicResponseDto` from `GET /federation-personnel/public`.
  *  Structurally excludes `internalContact` upstream — this is the public-safe
  *  class, not a filtered view of the full record. */

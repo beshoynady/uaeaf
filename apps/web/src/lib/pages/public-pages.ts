@@ -346,14 +346,6 @@ export interface PreparingPage {
 
 export const PREPARING_PAGES: readonly PreparingPage[] = [
   {
-    key: "organisational-structure",
-    route: "/about/organisational-structure",
-    titleKey: "Nav.organisationalStructure",
-    register: "green",
-    registerBasis:
-      "Derived (CLAUDE.md §1a): guide §3.3 gives administration green; the structure is the board's and committees' own subject, §3.34.2 Quiet/Institutional.",
-  },
-  {
     key: "officials",
     route: "/officials",
     titleKey: "Nav.officials",
@@ -369,12 +361,41 @@ export const PREPARING_PAGES: readonly PreparingPage[] = [
       "Guide §4.3 onward — every local championship garment is red; the basis records and results-rankings take.",
   },
   {
-    key: "federation-events",
-    route: "/events/federation-events",
-    titleKey: "Nav.events",
+    key: "athletics",
+    route: "/athletics",
+    titleKey: "Nav.discoverAthletics",
     register: "neutral",
     registerBasis:
-      "DESIGN DECISION REQUIRED: §3.34.2's Dynamic/Athletic row names championships and 'live/major events', and IA §8.1 keeps Events distinct from Championships (CLAUDE.md §11). The neutral base surface commits to neither until the page's register is decided.",
+      "Precedent: /disciplines carries the same basis — reference content explaining the sport, nearest documented personality is Chapter 3 §3.34.2 Quiet/Institutional, 'Typography-led, minimal color'.",
+  },
+  {
+    key: "national-teams",
+    route: "/national-teams",
+    titleKey: "Nav.nationalTeams",
+    register: "neutral",
+    registerBasis:
+      "Chapter 3 §3.34.2 Clubs row — 'White + Green; club identity marks', a directory of teams; and guide §1.3, athletes in international context wear white, which is the national-team context itself.",
+  },
+  {
+    key: "events",
+    route: "/events",
+    titleKey: "Nav.allEvents",
+    register: "neutral",
+    registerBasis: "صفحة مؤقتة؛ التصنيف النهائي يتحدد في spec المشروع الذي يبني الصفحة الحقيقية.",
+  },
+  {
+    key: "seasons",
+    route: "/seasons",
+    titleKey: "Nav.seasonsArchive",
+    register: "neutral",
+    registerBasis: "صفحة مؤقتة؛ التصنيف النهائي يتحدد في spec المشروع الذي يبني الصفحة الحقيقية.",
+  },
+  {
+    key: "current-season",
+    route: "/seasons/current",
+    titleKey: "Nav.currentSeason",
+    register: "neutral",
+    registerBasis: "صفحة مؤقتة؛ التصنيف النهائي يتحدد في spec المشروع الذي يبني الصفحة الحقيقية.",
   },
   {
     key: "help",

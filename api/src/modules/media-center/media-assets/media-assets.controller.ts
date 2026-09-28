@@ -6,20 +6,30 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Query,
+  Req,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator.js';
+import { SkipAuditLog } from '../../../common/decorators/skip-audit-log.decorator.js';
+import { extractRequestContext } from '../../../common/utils/request-context.util.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 import { MediaAssetsService } from './media-assets.service.js';
+import { MediaAssetPurgeService } from './media-asset-purge.service.js';
+import { UnusedMediaService } from './unused-media.service.js';
 import { CreateMediaAssetDto } from './dto/create-media-asset.dto.js';
+import { UpdateMediaAssetDto } from './dto/update-media-asset.dto.js';
+import { ArchiveMediaAssetDto } from './dto/archive-media-asset.dto.js';
 import { MediaAssetPublicResponseDto } from './dto/media-asset-public-response.dto.js';
+import { UnusedMediaReportDto } from './dto/unused-media-response.dto.js';
 import { Public } from '../../../common/decorators/public.decorator.js';
 import { ParseJsonFieldsInterceptor } from '../../../common/interceptors/parse-json-fields.interceptor.js';
 import { UploadMediaAssetDto } from './dto/upload-media-asset.dto.js';
@@ -30,7 +40,11 @@ import { STORAGE_FOLDERS } from '../storage/storage-provider.js';
 @ApiTags('media-assets')
 @Controller('media-assets')
 export class MediaAssetsController {
-  constructor(private readonly service: MediaAssetsService) {}
+  constructor(
+    private readonly service: MediaAssetsService,
+    private readonly purgeService: MediaAssetPurgeService,
+    private readonly unusedMediaService: UnusedMediaService,
+  ) {}
 
   @Post()
   @RequirePermission('mediaAssets', 'Create')
@@ -136,34 +150,90 @@ export class MediaAssetsController {
     return this.service.findPublicByIds(requested);
   }
 
+  /**
+   * Archived media nothing references any more, and how much space purging
+   * it would recover — the report that informs `mediaAssets:PermanentDelete`,
+   * which is why it carries the same authority rather than `Read`.
+   *
+   * Declared ahead of `GET :id`, or `:id` would swallow `unused` as an id
+   * lookup — the same route-ordering convention as `GET 'public'` above.
+   *
+   * Ships inert in this batch: the row's only action is the purge, and every
+   * `PermanentDelete` refuses with the step-up code until step-up exists
+   * (ADR-0120).
+   */
+  @Get('unused')
+  @RequirePermission('mediaAssets', 'PermanentDelete')
+  @ApiQuery({ name: 'skip', required: false, description: 'How many rows to skip. Malformed or negative reads as 0.' })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Rows per page, capped at 100. Malformed, zero or negative reads as the default, 50.',
+  })
+  @ApiOkResponse({ type: UnusedMediaReportDto })
+  unused(@Query('skip') skip?: string, @Query('limit') limit?: string): Promise<UnusedMediaReportDto> {
+    const parsedSkip = Number.parseInt(skip ?? '', 10);
+    const parsedLimit = Number.parseInt(limit ?? '', 10);
+    return this.unusedMediaService.report({
+      skip: Number.isFinite(parsedSkip) && parsedSkip > 0 ? parsedSkip : 0,
+      limit: Number.isFinite(parsedLimit) && parsedLimit > 0 ? Math.min(parsedLimit, 100) : 50,
+    });
+  }
+
   @Get(':id')
   @RequirePermission('mediaAssets', 'Read')
   findOne(@Param('id') id: string) {
     return this.service.findById(id);
   }
 
-  /** Archives the asset. The stored object is deliberately left in place:
-   *  an archive whose file has been destroyed is not an archive. Use
-   *  `DELETE :id/object` to end it. */
+  @Patch(':id')
+  @RequirePermission('mediaAssets', 'Update')
+  update(@Param('id') id: string, @Body() dto: UpdateMediaAssetDto) {
+    return this.service.update(id, dto);
+  }
+
+  /**
+   * Archives the asset. The stored object is deliberately left in place:
+   * an archive whose file has been destroyed is not an archive. Use
+   * `DELETE :id/object` to end it.
+   *
+   * Refuses `409 mediaInUse`, naming every place the image is still used,
+   * unless the body carries `acknowledgeReferences: true` — see
+   * `MediaAssetsService.remove`.
+   */
   @Delete(':id')
-  @RequirePermission('mediaAssets', 'Delete')
-  remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.service.remove(id, new Types.ObjectId(user.userId));
+  @RequirePermission('mediaAssets', 'Archive')
+  remove(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: ArchiveMediaAssetDto,
+  ) {
+    return this.service.remove(id, new Types.ObjectId(user.userId), dto);
+  }
+
+  /** Brings an archived asset back, and restores its album's photo count with
+   *  it. Not `:id/restore`: that path is the revision restore elsewhere in this
+   *  API (ADR-0120). */
+  @Post(':id/unarchive')
+  @RequirePermission('mediaAssets', 'Restore')
+  unarchive(@Param('id') id: string) {
+    return this.service.unarchive(id);
   }
 
   /**
    * Destroys the stored object and removes the record permanently.
    *
-   * The deliberate second step. It refuses an asset that has not been
-   * archived first, so no single request can take the image out from under
-   * a published page, and it destroys the object before deleting the row —
-   * reversed, a provider failure would leave a file nothing points at,
-   * consuming quota unseen.
+   * The deliberate second step, and the only irreversible one on this platform.
+   * Its four conditions are in ADR-0120 and every one of them is checked in the
+   * service, which is what makes them unskippable: the third, step-up
+   * verification, has nothing to verify against in this API, so every request
+   * here is refused before anything is read or destroyed.
    */
   @Delete(':id/object')
-  @RequirePermission('mediaAssets', 'Delete')
+  @RequirePermission('mediaAssets', 'PermanentDelete')
+  @SkipAuditLog()
   @HttpCode(HttpStatus.NO_CONTENT)
-  purge(@Param('id') id: string) {
-    return this.service.purge(id);
+  purge(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser, @Req() req: Request) {
+    return this.purgeService.permanentDelete(id, user, extractRequestContext(req));
   }
 }

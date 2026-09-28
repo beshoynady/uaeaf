@@ -84,6 +84,26 @@ export const PERMISSION_RESOURCES = [
   'workflowInstances',
   'workflowPolicies',
   'workflowSteps',
+  // The group report resources (ADR-0103 D1). `ViewReports` is held per product
+  // group rather than per resource, and the guard compares a flat pair — so
+  // rather than teach it a second shape, each group is a resource carrying that
+  // verb. The groups are not invented here: they are the ten domains already
+  // derived mechanically in `apps/dashboard/src/lib/admin/resource-domains.ts`,
+  // so the reports grouping and the role screen's grouping cannot drift apart.
+  //
+  // NINE, not ten. Users & Access is excluded from reports entirely (owner
+  // decision 2026-09-27): the users list carries staff email addresses, reading
+  // it is Super-Admin-only, and there is no aggregate of it anyone else needs.
+  // That exclusion is also what keeps `users:Export` a per-resource pair.
+  'governanceReports',
+  'peopleReports',
+  'athleticsReports',
+  'mediaReports',
+  'documentsReports',
+  'workflowReports',
+  'sponsorshipReports',
+  'commsReports',
+  'cmsReports',
 ] as const;
 
 export type PermissionResource = (typeof PERMISSION_RESOURCES)[number];

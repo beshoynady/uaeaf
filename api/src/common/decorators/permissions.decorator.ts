@@ -1,5 +1,6 @@
 import { SetMetadata } from '@nestjs/common';
 import type { PermissionResource } from '../constants/permission-resources.js';
+import type { PermissionAction } from '../../modules/platform-administration/permissions/schemas/permission.schema.js';
 
 /** Metadata key PermissionsGuard reads via Reflector — shared between the
  *  @RequirePermission() decorator that sets it and the guard that reads it. */
@@ -16,16 +17,13 @@ export const REQUIRED_PERMISSION_KEY = 'requiredPermission';
  *  at `POST /permissions`. */
 export interface RequiredPermission {
   resourceType: PermissionResource;
-  action:
-    | 'Create'
-    | 'Read'
-    | 'Update'
-    | 'Delete'
-    | 'HardDelete'
-    | 'Approve'
-    | 'Publish'
-    | 'EditProtectedData'
-    | 'Export';
+  /** Imported rather than restated. The two lists were written out separately
+   *  and had already drifted: this one still named `HardDelete` and
+   *  `EditProtectedData`, which no resource has ever used. */
+  action: PermissionAction;
+  /** A5 — set only on the four editorial resources that declare scopes; `null`
+   *  or absent everywhere else, where it compares as equal on both sides. */
+  scope?: 'own' | 'all' | null;
 }
 
 /** Declares the (resourceType, action) pair PermissionsGuard checks for this route. */

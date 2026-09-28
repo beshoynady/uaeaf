@@ -1,16 +1,38 @@
-import { Body, Controller, ForbiddenException, Get, Header, NotFoundException, Param, Patch, Post } from '@nestjs/common';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { BadRequestException, Body, Controller, Delete, ForbiddenException, Get, Header, NotFoundException, Param, Patch, Post, Query, Req } from '@nestjs/common';
+import type { Request } from 'express';
+import { ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator.js';
+import { extractRequestContext } from '../../../common/utils/request-context.util.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
-import { UsersService } from './users.service.js';
+import { UsersService, MAX_NAME_LOOKUP_IDS } from './users.service.js';
 import { CreateUserDto } from './dto/create-user.dto.js';
 import { AssignRolesDto } from './dto/assign-roles.dto.js';
 import { UpdateAccountStatusDto } from './dto/update-account-status.dto.js';
 import { UpdatePreferencesDto } from './dto/update-preferences.dto.js';
 import { UserResponseDto } from './dto/user-response.dto.js';
+import { UserNameDto } from './dto/user-name.dto.js';
+import { UserRefDto } from './dto/user-ref.dto.js';
 import { MeResponseDto } from './dto/me-response.dto.js';
+
+/**
+ * Whether a path id names the caller's own account.
+ *
+ * Not `===`. `ObjectId.isValid` accepts any 24 hex characters in either case and
+ * Mongoose casts them to the same document, while `toString()` canonicalises to
+ * lowercase — so an upper-cased hex id failed a string compare and reached the
+ * same record. That let an administrator suspend themselves or strip their own
+ * roles, which is exactly what the self-refusals exist to prevent (found by
+ * independent review, 2026-09-27).
+ *
+ * Falls back to the string compare for an id that is not a valid ObjectId: it
+ * cannot name a record, so the only thing left to do is compare what was sent.
+ */
+const isSelf = (pathId: string, actorId: string): boolean =>
+  Types.ObjectId.isValid(pathId) && Types.ObjectId.isValid(actorId)
+    ? new Types.ObjectId(pathId).equals(new Types.ObjectId(actorId))
+    : pathId === actorId;
 
 /** Implements: users collection, Domain 8 — Platform Administration. */
 @ApiTags('users')
@@ -95,6 +117,49 @@ export class UsersController {
     return this.usersService.exportCsv();
   }
 
+  /**
+   * Colleague name resolution — ADR-0104 §D4.
+   *
+   * Carries no `@RequirePermission`, deliberately: `users:Read` is now
+   * Super-Admin-only, and a byline, an audit row's actor, and a workflow
+   * step's approver all need to show a name regardless of who is looking.
+   * Still not public — this route is not `@Public()`, so `JwtAuthGuard`
+   * still runs and an unauthenticated caller gets 401.
+   *
+   * Declared ahead of `:id`, same reason as `export` above — Nest matches
+   * path segments in declaration order, and `names` would otherwise be read
+   * as an id.
+   */
+  @Get('names')
+  @ApiQuery({
+    name: 'ids',
+    required: false,
+    description:
+      `Comma-separated user ids, at most ${MAX_NAME_LOOKUP_IDS}. More than the cap, or an id ` +
+      'that is not a valid ObjectId, is rejected with 400 — malformed input is rejected at the ' +
+      "boundary. An id that does not resolve (unknown or archived) is dropped from the response " +
+      'without a trace, so the response can never be used to tell the two apart.',
+  })
+  @ApiOkResponse({ type: [UserNameDto] })
+  async namesByIds(@Query('ids') ids?: string): Promise<UserNameDto[]> {
+    const requested = [
+      ...new Set(
+        (ids ?? '')
+          .split(',')
+          .map((id) => id.trim())
+          .filter(Boolean),
+      ),
+    ];
+    if (requested.length > MAX_NAME_LOOKUP_IDS) {
+      throw new BadRequestException(`At most ${MAX_NAME_LOOKUP_IDS} ids may be requested at once.`);
+    }
+    const invalid = requested.filter((id) => !Types.ObjectId.isValid(id));
+    if (invalid.length > 0) {
+      throw new BadRequestException(`Not a valid id: ${invalid.join(', ')}.`);
+    }
+    return this.usersService.displayNamesFor(requested);
+  }
+
   @Get(':id')
   @RequirePermission('users', 'Read')
   async findOne(@Param('id') id: string): Promise<UserResponseDto> {
@@ -106,22 +171,26 @@ export class UsersController {
   }
 
   @Patch(':id/roles')
-  @RequirePermission('users', 'Update')
+  @RequirePermission('users', 'AssignRoles')
   async assignRoles(
     @Param('id') id: string,
     @Body() dto: AssignRolesDto,
     @CurrentUser() actor: AuthenticatedUser,
+    @Req() req: Request,
   ): Promise<UserResponseDto> {
     // Blocks the second step of the escalation chain in
     // auth-security-audit-2026-09-05.md §16: create a role with every
     // permission (now rejected by RolesService, see roles.service.ts),
-    // then self-assign it via this endpoint. `users:Update` is a general
-    // "edit a user" permission, not one scoped for granting yourself power
-    // — self-assignment is refused outright rather than gated behind that
-    // same general permission. A dedicated roles:Assign permission that
-    // deliberately allows self-assignment is a separate, later decision
-    // (audit Change 5, not part of this P0 fix).
-    if (id === actor.userId) {
+    // then self-assign it via this endpoint. `users:AssignRoles` is its own
+    // dedicated grant for handing out authority — re-pointed here from the
+    // general `users:Update` (independent review, round 4, I6): the route
+    // that hands out every other permission on the platform should not be
+    // guarded by the same verb as an ordinary profile edit, which is what
+    // the comment below already argued for before the permission existed to
+    // say it with. Self-assignment is refused unconditionally regardless of
+    // which permission guards the route — that is a separate rule, not a
+    // consequence of this one.
+    if (isSelf(id, actor.userId)) {
       throw new ForbiddenException({
         code: 'selfAssignment',
         message: 'You cannot assign roles to yourself.',
@@ -131,6 +200,7 @@ export class UsersController {
       id,
       dto.roleIds.map((roleId) => new Types.ObjectId(roleId)),
       actor,
+      extractRequestContext(req),
     );
     return this.usersService.toResponse(updated);
   }
@@ -155,12 +225,63 @@ export class UsersController {
     @Body() dto: UpdateAccountStatusDto,
     @CurrentUser() actor: AuthenticatedUser,
   ): Promise<UserResponseDto> {
-    if (id === actor.userId) {
+    if (isSelf(id, actor.userId)) {
       throw new ForbiddenException({
         code: 'selfAssignment',
         message: 'You cannot change the status of your own account.',
       });
     }
-    return this.usersService.updateAccountStatus(id, dto.accountStatus);
+    return this.usersService.updateAccountStatus(id, dto.accountStatus, actor);
+  }
+
+  /**
+   * Archives the account — reversible, and distinct from suspending it:
+   * `accountStatus` says whether someone may sign in, this says whether the
+   * account is still part of the directory.
+   *
+   * Self-exclusion is the same rule and the same reasoning as role assignment
+   * and status above: an administrator who archives their own account has locked
+   * themselves out of undoing it, and someone else with the permission does it.
+   *
+   * **Answers the id and nothing else.** `users:Archive` is grantable while
+   * `users:Read` is reserved, and `missingImpliedReads` is deliberately silent
+   * about a reserved read — so a holder of this pair need not hold the read, and
+   * a `UserResponseDto` here would hand them the email, the roles, the status and
+   * the last login by archiving. Every other resource's `Restore` route may
+   * answer its record, because for those the implication rule requires the read
+   * (ADR-0120 §D12).
+   */
+  @Delete(':id')
+  @RequirePermission('users', 'Archive')
+  @ApiOkResponse({ type: UserRefDto })
+  async remove(
+    @Param('id') id: string,
+    @CurrentUser() actor: AuthenticatedUser,
+  ): Promise<UserRefDto> {
+    if (isSelf(id, actor.userId)) {
+      throw new ForbiddenException({
+        code: 'selfAssignment',
+        message: 'You cannot archive your own account.',
+      });
+    }
+    const archived = await this.usersService.remove(id, actor);
+    if (!archived) {
+      throw new NotFoundException('User not found.');
+    }
+    return { id: archived._id.toString() };
+  }
+
+  /** See ADR-0120: not `:id/restore`, which is the revision restore. No
+   *  self-exclusion — an archived account cannot make the request. Answers the
+   *  id and nothing else, for the reason `remove` above gives. */
+  @Post(':id/unarchive')
+  @RequirePermission('users', 'Restore')
+  @ApiOkResponse({ type: UserRefDto })
+  async unarchive(@Param('id') id: string): Promise<UserRefDto> {
+    const restored = await this.usersService.unarchive(id);
+    if (!restored) {
+      throw new NotFoundException('User not found.');
+    }
+    return { id: restored._id.toString() };
   }
 }

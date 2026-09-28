@@ -5,7 +5,7 @@ import { summariseDirectory, roleUsage } from "./directory-stats";
 const PERMISSIONS: PermissionResponse[] = [
   { _id: "p-read", name: { en: "Read users", ar: "" }, resourceType: "users", action: "Read" },
   { _id: "p-create", name: { en: "Create users", ar: "" }, resourceType: "users", action: "Create" },
-  { _id: "p-delete", name: { en: "Delete roles", ar: "" }, resourceType: "roles", action: "Delete" },
+  { _id: "p-archive", name: { en: "Archive roles", ar: "" }, resourceType: "roles", action: "Archive" },
 ];
 
 const ROLES: RoleResponse[] = [
@@ -13,7 +13,7 @@ const ROLES: RoleResponse[] = [
     _id: "r-admin",
     name: { en: "Admin", ar: "" },
     description: null,
-    permissionIds: ["p-read", "p-delete"],
+    permissionIds: ["p-read", "p-archive"],
     isSystemRole: true,
   },
   {

@@ -51,6 +51,10 @@ describe('RolesService — lifecycle guards', () => {
 
     service = module.get(RolesService);
     repository = module.get(RolesRepository);
+    // ADR-0104: remove and updatePermissions now compare the role’s current
+    // grants against the actor’s. An empty resolution means the role grants
+    // nothing, so these specs keep testing what they were written for.
+    repository.findByIds.mockResolvedValue([]);
     assignments = module.get(RoleAssignmentsRepository);
     permissionsService = module.get(PermissionsService);
   });
@@ -125,14 +129,14 @@ describe('RolesService — lifecycle guards', () => {
     it('reports an unknown id as not found', async () => {
       repository.findByIdIncludingArchived.mockResolvedValue(null);
 
-      await expect(service.remove(id, actor)).rejects.toBeInstanceOf(NotFoundException);
+      await expect(service.remove(id, actor, [])).rejects.toBeInstanceOf(NotFoundException);
       expect(repository.softDelete).not.toHaveBeenCalled();
     });
 
     it('refuses to re-archive an already archived role', async () => {
       repository.findByIdIncludingArchived.mockResolvedValue(stored({ archivedAt: new Date() }));
 
-      await expect(service.remove(id, actor)).rejects.toBeInstanceOf(NotFoundException);
+      await expect(service.remove(id, actor, [])).rejects.toBeInstanceOf(NotFoundException);
     });
 
     it('clears the role from everyone holding it, after archiving it', async () => {
@@ -144,7 +148,7 @@ describe('RolesService — lifecycle guards', () => {
       repository.softDelete.mockResolvedValue(stored({ archivedAt: new Date() }));
       assignments.detachRole.mockResolvedValue(3);
 
-      const result = await service.remove(id, actor);
+      const result = await service.remove(id, actor, []);
 
       expect(repository.softDelete).toHaveBeenCalledWith(id, actor);
       expect(assignments.detachRole).toHaveBeenCalledWith(id);
@@ -157,7 +161,7 @@ describe('RolesService — lifecycle guards', () => {
       repository.findByIdIncludingArchived.mockResolvedValue(stored());
       repository.softDelete.mockResolvedValue(null);
 
-      await expect(service.remove(id, actor)).rejects.toBeInstanceOf(NotFoundException);
+      await expect(service.remove(id, actor, [])).rejects.toBeInstanceOf(NotFoundException);
       expect(assignments.detachRole).not.toHaveBeenCalled();
     });
   });

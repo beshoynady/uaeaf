@@ -7,7 +7,8 @@ import { InjectConnection } from '@nestjs/mongoose';
 import type { Connection } from 'mongoose';
 import { PermissionsRepository } from './permissions.repository.js';
 import type { PermissionDocument } from './schemas/permission.schema.js';
-import { CreatePermissionDto } from './dto/create-permission.dto.js';
+import type { PermissionResponseDto } from './dto/permission-response.dto.js';
+import { isSuperAdminOnly } from '../../../common/authz/capability-map.js';
 
 /** Implements: permissions collection, Domain 8 — Platform Administration
  *  (FigJam node 103:7901). */
@@ -67,10 +68,6 @@ export class PermissionsService implements OnApplicationBootstrap {
     }
   }
 
-  async create(dto: CreatePermissionDto): Promise<PermissionDocument> {
-    return this.repository.create(dto);
-  }
-
   async findAll(): Promise<PermissionDocument[]> {
     return this.repository.find();
   }
@@ -86,5 +83,19 @@ export class PermissionsService implements OnApplicationBootstrap {
    *  very next request. */
   async findByIds(ids: readonly string[]): Promise<PermissionDocument[]> {
     return this.repository.findByIds(ids);
+  }
+
+  /** Adds the one derived field the role-building screen needs to grey out a
+   *  reserved pair — read off `CAPABILITY_MAP` via `isSuperAdminOnly`, never
+   *  stored, so it cannot drift from the map that actually enforces it. */
+  toResponse(permission: PermissionDocument): PermissionResponseDto {
+    return {
+      id: permission._id.toString(),
+      name: permission.name,
+      resourceType: permission.resourceType,
+      action: permission.action,
+      scope: permission.scope,
+      superAdminOnly: isSuperAdminOnly(permission.resourceType, permission.action),
+    };
   }
 }

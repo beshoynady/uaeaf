@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { Types } from 'mongoose';
 import type { QueryFilter } from 'mongoose';
 import { ArticlesRepository } from './articles.repository.js';
+import { ArticleSchema } from './schemas/article.schema.js';
 import type { ArticleDocument } from './schemas/article.schema.js';
 import { CreateArticleDto } from './dto/create-article.dto.js';
 import { UpdateArticleDto } from './dto/update-article.dto.js';
@@ -10,8 +11,10 @@ import { ArticlePublicDto, toPublicDto } from './dto/article-public-response.dto
 import { MediaAssetsService } from '../../media-center/media-assets/media-assets.service.js';
 import { PublicationsService } from '../../workflow/publications/publications.service.js';
 import { AuditLogsService } from '../../workflow/audit-logs/audit-logs.service.js';
+import { auditActionFor } from '../../workflow/audit-logs/audit-action.util.js';
 import { toPageSeo } from '../../../common/dto/page-seo.dto.js';
 import { isDuplicateKeyError } from '../../../common/utils/mongo-errors.util.js';
+import { asPlainObject, removedMediaAssetIds } from '../../../common/authz/orphaned-media.js';
 import { ARTICLE_CATEGORIES, ARTICLE_PUBLICATION_STATES } from './schemas/article.schema.js';
 import type { ArticleCategory, ArticlePublicationState, ArticleTopic } from './schemas/article.schema.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
@@ -206,7 +209,9 @@ export class ArticlesService {
     });
 
     await this.writeArticleAudit({
-      action: 'Create',
+      // POST /articles — articles:Create.
+      method: 'POST',
+      permissionAction: 'Create',
       entityId: created._id as Types.ObjectId,
       actorId,
       previous: null,
@@ -230,7 +235,7 @@ export class ArticlesService {
     dto: UpdateArticleDto,
     actor: AuthenticatedUser,
     context: RequestContext = {},
-  ): Promise<ArticleDocument> => {
+  ): Promise<ArticleDocument & { orphanedMediaCandidates: string[] }> => {
     const existing = await this.load(id);
 
     if (dto.slug !== undefined) {
@@ -267,7 +272,9 @@ export class ArticlesService {
 
     const state = this.stateOf(existing);
     await this.writeArticleAudit({
-      action: 'Update',
+      // PATCH /articles/:id — articles:Update.
+      method: 'PATCH',
+      permissionAction: 'Update',
       entityId: existing._id as Types.ObjectId,
       actorId,
       previous: state,
@@ -279,7 +286,17 @@ export class ArticlesService {
       context,
     });
 
-    return updated;
+    // What this save just stopped pointing at, offered for archiving — never
+    // a reason for the save above to have failed.
+    const removedIds = removedMediaAssetIds(ArticleSchema, existing, updated);
+    const orphanedMediaCandidates = await this.mediaAssetsService.orphanedMediaCandidates(removedIds);
+
+    // A plain object, never `Object.assign(updated, …)`: `toObject()`/
+    // `toJSON()` silently drop a field merely assigned onto a document,
+    // so it would never reach the response.
+    return { ...asPlainObject(updated), orphanedMediaCandidates } as ArticleDocument & {
+      orphanedMediaCandidates: string[];
+    };
   };
 
   /**
@@ -301,7 +318,12 @@ export class ArticlesService {
     const updated = await this.updateOrConflict(id, { $set: { archived, updatedBy: actorId } });
 
     await this.writeArticleAudit({
-      action: 'Update',
+      // PATCH /articles/:id/archived — articles:Update. A visibility flag
+      // over a published item, not the lifecycle Archive verb: the article
+      // stays Live and keeps answering at its own URL (see the doc comment
+      // above), so its own route is guarded by Update, not Archive.
+      method: 'PATCH',
+      permissionAction: 'Update',
       entityId: existing._id as Types.ObjectId,
       actorId,
       previous: this.stateOf(existing),
@@ -329,7 +351,14 @@ export class ArticlesService {
     }
 
     await this.writeArticleAudit({
-      action: 'Delete',
+      // DELETE /articles/:id — articles:Archive (ADR-0103's Delete→Archive
+      // rename) and `repository.softDelete` is exactly that — reversible,
+      // not a destruction. This used to hand-write the literal `'Delete'`,
+      // stale since the rename: the same value the generic interceptor
+      // stopped writing for every other archive route once it was fixed
+      // there, which this route's own `@SkipAuditLog()` never saw.
+      method: 'DELETE',
+      permissionAction: 'Archive',
       entityId: existing._id as Types.ObjectId,
       actorId,
       previous: this.stateOf(existing),
@@ -339,6 +368,37 @@ export class ArticlesService {
     });
 
     return deleted;
+  };
+
+  /**
+   * Brings an archived article back. Its publication state is untouched: what
+   * was archived as a draft comes back a draft, and a slug another article has
+   * taken since is refused by the partial unique index rather than silently
+   * duplicated.
+   */
+  unarchive = async (
+    id: string,
+    actor: AuthenticatedUser,
+    context: RequestContext = {},
+  ): Promise<ArticleDocument> => {
+    const restored = await this.repository.restore(id);
+    if (!restored) {
+      throw new NotFoundException(`Article ${id} not found.`);
+    }
+    const actorId = new Types.ObjectId(actor.userId);
+
+    await this.writeArticleAudit({
+      method: 'POST',
+      permissionAction: 'Restore',
+      entityId: restored._id as Types.ObjectId,
+      actorId,
+      previous: this.stateOf(restored),
+      next: this.stateOf(restored),
+      reason: 'Article restored from the archive',
+      context,
+    });
+
+    return restored;
   };
 
   /** The newsroom's own listing: every state, newest first. */
@@ -566,9 +626,21 @@ export class ArticlesService {
    *
    * What is recorded is who, when, which article, and the state either side.
    * What is not recorded is a single word of the article.
+   *
+   * Outside `AuditLogInterceptor`, so its route never reaches
+   * `auditActionFor` on its own — every write route here carries
+   * `@SkipAuditLog()`. Each call site below passes its OWN route's
+   * `(method, permissionAction)` pair rather than a literal action string,
+   * and this method calls the same `auditActionFor` the interceptor calls,
+   * so the two can never drift apart the way they did before this round:
+   * `remove` used to hand-write `'Delete'` for a route guarded by
+   * `articles:Archive`, unnoticed for as long as the generic interceptor's
+   * own mapping said the same wrong thing and past the point it was fixed
+   * there.
    */
   private writeArticleAudit = async (input: {
-    action: 'Create' | 'Update' | 'Delete';
+    method: string;
+    permissionAction: string;
     entityId: Types.ObjectId;
     actorId: Types.ObjectId;
     previous: ArticleState | null;
@@ -576,9 +648,18 @@ export class ArticlesService {
     reason: string;
     context: RequestContext;
   }): Promise<void> => {
+    const action = auditActionFor(input.method, input.permissionAction);
+    if (!action) {
+      // Never reachable from the four call sites below — each names a real
+      // route's own (method, permission) pair. Thrown rather than cast past,
+      // because a silent `undefined` here is exactly how the interceptor's
+      // own mapping went unnoticed for as long as it did.
+      throw new Error(`No audit action for ${input.method} ${input.permissionAction}.`);
+    }
+
     await this.auditLogsService.write({
       actorId: input.actorId,
-      action: input.action,
+      action,
       entityType: 'articles',
       entityId: input.entityId,
       previousValue: input.previous,

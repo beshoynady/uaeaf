@@ -4,7 +4,7 @@ import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { plainToInstance } from 'class-transformer';
 import { IsOptional, IsString } from 'class-validator';
-import { presenceByOwnKey, wasSent } from './partial-update.util.js';
+import { partialUpdate, presenceByOwnKey, wasSent } from './partial-update.util.js';
 
 /**
  * Which fields a partial update carries.
@@ -43,6 +43,33 @@ describe('wasSent', () => {
 
   it('reports a field sent as null as sent, so it still clears', () => {
     expect(wasSent(delivered({ title: null }), 'title')).toBe(true);
+  });
+});
+
+/**
+ * The shared builder's own contract (Task 6, Batch 2) — tested directly and
+ * once here. Whether every one of the 27 Task 6 services actually CALLS this
+ * function, rather than re-deriving the same merge inline, is a different
+ * question and is answered 27 times over in
+ * `common/authz/partial-update.spec.ts`; repeating these three cases there
+ * as well would test this same pure function 27 times without covering any
+ * new risk.
+ */
+describe('partialUpdate', () => {
+  it('leaves a field the request never mentioned untouched', () => {
+    const dto = delivered({ title: 'Kept' });
+
+    expect(partialUpdate(dto)).toEqual({ title: 'Kept' });
+  });
+
+  it('applies an explicit null, which is how a value is cleared', () => {
+    const dto = delivered({ title: null });
+
+    expect(partialUpdate(dto)).toEqual({ title: null });
+  });
+
+  it('writes nothing at all for an empty body', () => {
+    expect(partialUpdate(delivered({}))).toEqual({});
   });
 });
 

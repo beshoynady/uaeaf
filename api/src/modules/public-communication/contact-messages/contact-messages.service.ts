@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { ContactMessagesRepository } from './contact-messages.repository.js';
 import type { ContactMessageDocument, ContactMessageStatus } from './schemas/contact-messages.schema.js';
@@ -7,6 +7,14 @@ import {
   ReplyToContactMessageDto,
 } from './dto/create-contact-messages.dto.js';
 import { toCsv, type CsvColumn } from '../../../common/utils/csv.util.js';
+import { AuditLogsService } from '../../workflow/audit-logs/audit-logs.service.js';
+import { auditActionFor } from '../../workflow/audit-logs/audit-action.util.js';
+import {
+  assertArchivedFirst,
+  STEP_UP_VERIFIER,
+  type StepUpVerifier,
+} from '../../../common/authz/archive-restore.js';
+import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 
 /** Column order for `contactMessages:Export`. Assignment and workflow ids
  *  are omitted — they are internal plumbing, not answers. */
@@ -33,7 +41,11 @@ const CONTACT_MESSAGE_EXPORT_COLUMNS: readonly CsvColumn[] = [
  *  Workflow participation is via `workflowInstanceId` only. */
 @Injectable()
 export class ContactMessagesService {
-  constructor(private readonly repository: ContactMessagesRepository) {}
+  constructor(
+    private readonly repository: ContactMessagesRepository,
+    @Inject(STEP_UP_VERIFIER) private readonly stepUp: StepUpVerifier,
+    private readonly auditLogsService: AuditLogsService,
+  ) {}
 
   /** The inbox as a spreadsheet, behind `contactMessages:Export` — the
    *  reporting need the owner recorded as requirement #11 (periodic reply
@@ -56,7 +68,6 @@ export class ContactMessagesService {
       subject: dto.subject ?? null,
       messageBody: dto.messageBody,
       status: 'New',
-      hardDeleteEligibleAt: null,
       assignedToId: null,
       assignedToType: null,
       workflowInstanceId: null,
@@ -116,33 +127,85 @@ export class ContactMessagesService {
     });
   }
 
-  /** The entity-specific HardDelete gate (board note, 2026-09-02).
+  /**
+   * Erases the message for good.
    *
-   *  Unlike the other twelve workflow-eligible entities, this one can never
-   *  be protected by the "blocked while revisions reference it" rule — it
-   *  has no revisions. Permanent erasure of a citizen's PII is instead
-   *  gated on `hardDeleteEligibleAt` being both SET and PASSED, giving a
-   *  deliberate review/cooldown window.
-   *  @throws NotFoundException when the message doesn't exist.
-   *  @throws ForbiddenException while the cooldown is unset or unexpired. */
-  async assertHardDeletable(id: string, now: Date = new Date()): Promise<void> {
-    const message = await this.repository.findById(id);
+   * Three conditions, in this order (ADR-0120 §D5): step-up verification,
+   * archived first, and an audit row written before the removal. No reference
+   * check — a message is linked to nothing, and it produces no revisions either,
+   * so the "blocked while revisions reference it" rule the other twelve
+   * workflow-eligible entities rely on has nothing to look at here.
+   *
+   * The read is `findIncludingArchived`: a read filtering `archivedAt: null`
+   * finds only the messages archive-first refuses.
+   *
+   * @throws ForbiddenException when step-up verification cannot be presented —
+   *   which is every caller today, so nothing below it is reachable.
+   * @throws NotFoundException when the message doesn't exist.
+   * @throws ConflictException while the message is still live.
+   */
+  permanentDelete = async (
+    id: string,
+    actor: AuthenticatedUser,
+    context: { ipAddress?: string; userAgent?: string } = {},
+  ): Promise<void> => {
+    await this.stepUp.assertVerified(`contact message ${id}`);
+
+    const message = await this.repository.findIncludingArchived(id);
     if (!message) {
       throw new NotFoundException(`Contact message ${id} not found.`);
     }
-    if (!message.hardDeleteEligibleAt) {
-      throw new ForbiddenException(
-        `Contact message ${id} cannot be hard-deleted: hardDeleteEligibleAt is not set.`,
-      );
+    assertArchivedFirst(message, `Contact message ${id}`);
+
+    // Derived from this route's own (method, permission) pair, never typed in:
+    // `audit-action-literal-scan.spec.ts` forbids the literal.
+    const action = auditActionFor('DELETE', 'PermanentDelete');
+    if (!action) {
+      throw new Error('No audit action for DELETE PermanentDelete.');
     }
-    if (message.hardDeleteEligibleAt > now) {
-      throw new ForbiddenException(
-        `Contact message ${id} cannot be hard-deleted before ${message.hardDeleteEligibleAt.toISOString()}.`,
-      );
+
+    const subject = {
+      actorId: new Types.ObjectId(actor.userId),
+      action,
+      entityType: 'contactMessages',
+      entityId: message._id as Types.ObjectId,
+      ipAddress: context.ipAddress ?? '',
+      userAgent: context.userAgent ?? '',
+      previousValue: null,
+      // The sender, the subject and the body are deliberately absent: erasing a
+      // citizen's submission while copying it into a collection that is readable
+      // over HTTP would not be an erasure.
+      newValue: {
+        messageType: message.messageType,
+        status: message.status,
+        archivedAt: message.archivedAt,
+      },
+    };
+
+    // Recorded before the removal: written afterwards, a failing audit write
+    // would leave an irreversible erasure with no trace. The log is append-only,
+    // so a failure is a second row rather than an edit to this one.
+    await this.auditLogsService.write({
+      ...subject,
+      reason: 'Permanent erasure authorised; removing the record',
+    });
+
+    try {
+      await this.repository.hardDelete(id);
+    } catch (cause) {
+      await this.auditLogsService.write({
+        ...subject,
+        reason: 'The record could not be removed',
+      });
+      throw cause;
     }
-  }
+  };
 
   async remove(id: string, archivedBy: Types.ObjectId): Promise<ContactMessageDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  async unarchive(id: string): Promise<ContactMessageDocument | null> {
+    return this.repository.restore(id);
   }
 }

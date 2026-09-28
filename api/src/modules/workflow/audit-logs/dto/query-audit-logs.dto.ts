@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsMongoId, IsOptional, IsString, Max, Min } from 'class-validator';
-import { AUDIT_ACTIONS } from '../schemas/audit-log.schema.js';
+import { Transform, Type } from 'class-transformer';
+import { IsBoolean, IsIn, IsInt, IsMongoId, IsOptional, IsString, Max, Min } from 'class-validator';
+import { AUDIT_ACTIONS, SECURITY_AUDIT_ACTIONS } from '../schemas/audit-log.schema.js';
 import type { AuditAction } from '../schemas/audit-log.schema.js';
 
 /**
@@ -32,6 +32,23 @@ export class QueryAuditLogsDto {
   @IsOptional()
   @IsIn(AUDIT_ACTIONS)
   action?: AuditAction;
+
+  /** Security-relevant rows only — `SECURITY_AUDIT_ACTIONS`, derived from
+   *  one named list rather than repeated here, so a fifth security action
+   *  cannot be added to the vocabulary without this filter changing too.
+   *  Takes precedence over `action` when both are sent — asking for the
+   *  security view and one specific ordinary action at once is not a
+   *  request this endpoint tries to reconcile.
+   *
+   *  The Swagger description is built from `SECURITY_AUDIT_ACTIONS` itself
+   *  (independent review, round 4, M7) rather than hand-listed: the
+   *  hand-listed version already went stale once, still naming three kinds
+   *  the round `PermanentDelete` joined the set in the same task. */
+  @ApiPropertyOptional({ description: `${SECURITY_AUDIT_ACTIONS.join(', ')} only.` })
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  @IsBoolean()
+  securityEventsOnly?: boolean;
 
   @ApiPropertyOptional({ default: 0, minimum: 0 })
   @IsOptional()

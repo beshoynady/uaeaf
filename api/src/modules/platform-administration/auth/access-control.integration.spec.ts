@@ -129,14 +129,14 @@ describe('Access control resolution (integration)', () => {
   });
 
   it('grants a permission added to the role without re-issuing the token', async () => {
-    expect(await authorityFor(token)).toEqual([{ resourceType: 'users', action: 'Read' }]);
+    expect(await authorityFor(token)).toEqual([{ resourceType: 'users', action: 'Read', scope: null }]);
 
     await rolesRepository.updateById(roleId.toString(), {
       permissionIds: [readPermissionId, updatePermissionId],
     });
 
     const after = await authorityFor(token);
-    expect(after).toContainEqual({ resourceType: 'users', action: 'Update' });
+    expect(after).toContainEqual({ resourceType: 'users', action: 'Update', scope: null });
     expect(after).toHaveLength(2);
   });
 
@@ -173,6 +173,6 @@ describe('Access control resolution (integration)', () => {
       permissionIds: [updatePermissionId],
     });
 
-    expect(await authorityFor(token)).toEqual([{ resourceType: 'users', action: 'Update' }]);
+    expect(await authorityFor(token)).toEqual([{ resourceType: 'users', action: 'Update', scope: null }]);
   });
 });

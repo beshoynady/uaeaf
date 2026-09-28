@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import type { UpdateQuery } from 'mongoose';
 import { PresidentMessagePagesRepository } from './president-message-page.repository.js';
+import { PresidentMessagePageSchema } from './schemas/president-message-page.schema.js';
 import type { PresidentMessagePageDocument } from './schemas/president-message-page.schema.js';
 import { CreatePresidentMessagePageDto } from './dto/create-president-message-page.dto.js';
 import { UpdatePresidentMessagePageDto } from './dto/update-president-message-page.dto.js';
@@ -11,6 +12,7 @@ import { RevisionsService } from '../../workflow/revisions/revisions.service.js'
 import { MediaAssetsService } from '../../media-center/media-assets/media-assets.service.js';
 import { toPageSeo } from '../../../common/dto/page-seo.dto.js';
 import { FederationAppointmentsService } from '../federation-appointments/federation-appointments.service.js';
+import { asPlainObject, removedMediaAssetIds } from '../../../common/authz/orphaned-media.js';
 import type { LocalizedTextDto } from '../../../common/dto/localized-text.dto.js';
 import type { PresidentMessagePublicResponseDto } from './dto/president-message-public-response.dto.js';
 
@@ -69,8 +71,13 @@ export class PresidentMessagePagesService {
     id: string,
     dto: UpdatePresidentMessagePageDto,
     updatedBy: Types.ObjectId,
-  ): Promise<PresidentMessagePageDocument> {
+  ): Promise<PresidentMessagePageDocument & { orphanedMediaCandidates: string[] }> {
     await this.assertUsableImages(dto);
+
+    const current = await this.repository.findById(id);
+    if (!current) {
+      throw new NotFoundException('President message page not found.');
+    }
 
     const set: Record<string, unknown> = { updatedBy };
 
@@ -113,7 +120,14 @@ export class PresidentMessagePagesService {
       throw new NotFoundException('President message page not found.');
     }
 
-    return updated;
+    const removedIds = removedMediaAssetIds(PresidentMessagePageSchema, current, updated);
+    const orphanedMediaCandidates = await this.mediaAssetsService.orphanedMediaCandidates(removedIds);
+
+    // A plain object, not `Object.assign(updated, …)`: `toObject()`/`toJSON()`
+    // silently drop a field assigned straight onto a Mongoose document.
+    return { ...asPlainObject(updated), orphanedMediaCandidates } as PresidentMessagePageDocument & {
+      orphanedMediaCandidates: string[];
+    };
   }
 
   /** The admin listing. Carries `isActive`, which the dashboard draws as the
@@ -299,6 +313,10 @@ export class PresidentMessagePagesService {
     archivedBy: Types.ObjectId,
   ): Promise<PresidentMessagePageDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  async unarchive(id: string): Promise<PresidentMessagePageDocument | null> {
+    return this.repository.restore(id);
   }
 
   private async assertUsableImages(

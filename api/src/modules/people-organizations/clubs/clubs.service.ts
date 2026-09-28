@@ -1,13 +1,15 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { ClubsRepository } from './clubs.repository.js';
 import type { ClubDocument } from './schemas/club.schema.js';
 import { CreateClubDto } from './dto/create-club.dto.js';
+import { UpdateClubDto } from './dto/update-club.dto.js';
 import {
   ClubPublicListResponseDto,
   ClubPublicResponseDto,
 } from './dto/club-public-response.dto.js';
 import { isDuplicateKeyError, duplicateKeyField } from '../../../common/utils/mongo-errors.util.js';
+import { partialUpdate } from '../../../common/utils/partial-update.util.js';
 import { toCsv, type CsvColumn } from '../../../common/utils/csv.util.js';
 
 /** Column order for `clubs:Export`. */
@@ -103,7 +105,30 @@ export class ClubsService {
     return this.repository.findById(id);
   }
 
+  /** @throws NotFoundException when no such club exists.
+   *  @throws ConflictException when the patch's `slug`/`registrationNumber`
+   *  is already taken by another club. */
+  async update(id: string, dto: UpdateClubDto): Promise<ClubDocument> {
+    let updated: ClubDocument | null;
+    try {
+      updated = await this.repository.updateById(id, partialUpdate(dto));
+    } catch (error) {
+      if (isDuplicateKeyError(error)) {
+        throw new ConflictException(`Duplicate value for ${duplicateKeyField(error) ?? 'field'}.`);
+      }
+      throw error;
+    }
+    if (!updated) {
+      throw new NotFoundException(`Club ${id} not found.`);
+    }
+    return updated;
+  }
+
   async remove(id: string, archivedBy: Types.ObjectId): Promise<ClubDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  async unarchive(id: string): Promise<ClubDocument | null> {
+    return this.repository.restore(id);
   }
 }

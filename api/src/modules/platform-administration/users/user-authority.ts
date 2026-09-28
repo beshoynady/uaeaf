@@ -1,20 +1,29 @@
 /**
  * The comparison behind "you cannot hand out what you do not hold".
  *
- * Pure functions with no Nest and no I/O, because two services need the same
- * rule for different reasons: `UsersService.create`/`assignRoles` compare a
- * role's grants against the actor's (ADR-0104 rule 1), and the stronger-user
- * guard compares a target account's grants against the same actor's (rule 2).
- * A shared helper is what keeps those two answers from drifting apart.
+ * Pure functions with no Nest and no I/O. Independent review finding F7 was
+ * that this comparison existed three times, each slightly different, so a
+ * rule tightened in one stayed loose in the others. It is now the one place
+ * every grant-vs-grant permission check in the codebase runs through:
+ * `RolesService.assertGrantable` (building a role) and `assertRemovable`
+ * (shrinking or archiving one), plus `UsersService.assertAssignableByActor`
+ * (ADR-0104 rule 1) and `assertNotStronger` (rule 2, comparing a target
+ * account's grants against the same actor's). A shared helper is what keeps
+ * those answers from drifting apart.
+ *
+ * Not in scope here: `PermissionsGuard`'s flat check of a single required
+ * pair against the actor's own list, and the same shape in
+ * `PublishingService.hasPermission` — neither compares one grant against
+ * another, which is what this file exists to do consistently.
  */
 
 /** A capability as `RolesService.resolvePermissions` returns it.
  *
- *  `scope` is optional because `RequiredPermission` does not carry one yet —
- *  scopes arrive with the capability map (ADR-0103 D2), and until then every
- *  pair compares at width 0 on both sides. Declaring it now means the rule is
- *  already correct when the field appears, rather than silently permitting a
- *  widened scope on the day it does. */
+ *  `scope` is optional because most resources declare none. Only the four
+ *  scoped resources named in `CAPABILITY_MAP` (`albums`, `articles`,
+ *  `heroSlides`, `videos`) ever carry `'own'` or `'all'`; every other
+ *  resource carries `null`, which compares as width 0 on both sides and is
+ *  a no-op in `holdsPair`. */
 export interface Grant {
   resourceType: string;
   action: string;
@@ -23,8 +32,13 @@ export interface Grant {
 
 /** Scope as a number, so "at least as wide as" is a comparison rather than a
  *  table of cases. A resource that declares no scopes is 0 on both sides and
- *  therefore compares equal. */
-const width = (scope: Grant['scope']): number => (scope === 'all' ? 2 : scope === 'own' ? 1 : 0);
+ *  therefore compares equal.
+ *
+ *  Exported — this is the one place scope ordering is defined (finding F7).
+ *  `RolesService.resolvePermissions` reuses it to pick the widest scope when
+ *  a role holds the same pair more than once, rather than re-implementing
+ *  the ordering a second time. */
+export const width = (scope: Grant['scope']): number => (scope === 'all' ? 2 : scope === 'own' ? 1 : 0);
 
 /**
  * Whether `held` covers `wanted`: the same (resourceType, action), at a scope

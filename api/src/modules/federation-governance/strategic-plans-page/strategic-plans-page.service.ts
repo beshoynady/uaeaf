@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { Types } from 'mongoose';
 import type { UpdateQuery } from 'mongoose';
 import { StrategicPlansPagesRepository } from './strategic-plans-page.repository.js';
+import { StrategicPlansPageSchema } from './schemas/strategic-plans-page.schema.js';
 import type { StrategicPlansPageDocument } from './schemas/strategic-plans-page.schema.js';
 import { CreateStrategicPlansPageDto } from './dto/create-strategic-plans-page.dto.js';
 import { UpdateStrategicPlansPageDto } from './dto/update-strategic-plans-page.dto.js';
@@ -18,6 +19,7 @@ import { RevisionsService } from '../../workflow/revisions/revisions.service.js'
 import { MediaAssetsService } from '../../media-center/media-assets/media-assets.service.js';
 import { MAX_PLAN_ROW_ITEMS, PLAN_ROW_LIST_KEYS } from '../../../common/constants/plan-row-limit.js';
 import { toPageSeo } from '../../../common/dto/page-seo.dto.js';
+import { asPlainObject, removedMediaAssetIds } from '../../../common/authz/orphaned-media.js';
 import type { LocalizedTextDto } from '../../../common/dto/localized-text.dto.js';
 
 const ENTITY_TYPE = 'strategicPlansPage' as const;
@@ -218,7 +220,7 @@ export class StrategicPlansPagesService {
     id: string,
     dto: UpdateStrategicPlansPageDto,
     updatedBy: Types.ObjectId,
-  ): Promise<StrategicPlansPageDocument> {
+  ): Promise<StrategicPlansPageDocument & { orphanedMediaCandidates: string[] }> {
     assertEverySectionShows(dto);
     assertRowFits(dto);
     await this.assertUsableImages(dto);
@@ -261,7 +263,14 @@ export class StrategicPlansPagesService {
       throw new NotFoundException('Strategic plan page not found.');
     }
 
-    return updated;
+    const removedIds = removedMediaAssetIds(StrategicPlansPageSchema, current, updated);
+    const orphanedMediaCandidates = await this.mediaAssetsService.orphanedMediaCandidates(removedIds);
+
+    // A plain object, not `Object.assign(updated, …)`: `toObject()`/`toJSON()`
+    // silently drop a field assigned straight onto a Mongoose document.
+    return { ...asPlainObject(updated), orphanedMediaCandidates } as StrategicPlansPageDocument & {
+      orphanedMediaCandidates: string[];
+    };
   }
 
   /**
@@ -535,6 +544,10 @@ export class StrategicPlansPagesService {
 
   async remove(id: string, archivedBy: Types.ObjectId): Promise<StrategicPlansPageDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  async unarchive(id: string): Promise<StrategicPlansPageDocument | null> {
+    return this.repository.restore(id);
   }
 
   private async assertUsableImages(

@@ -87,4 +87,12 @@ export class MediaAssetsRepository extends BaseRepository<MediaAssetDocument> {
     }
     return this.model.find({ _id: { $in: ids }, isVisible: true, archivedAt: null }).exec();
   }
+
+  /** Every archived asset whose archive predates `cutoff` — the unused-media
+   *  report's candidate set, before the reference scan narrows it further.
+   *  Reads past the live scope on purpose: an archived asset is exactly what
+   *  a report about recoverable storage looks for. */
+  async findArchivedOlderThan(cutoff: Date): Promise<MediaAssetDocument[]> {
+    return this.model.find({ archivedAt: { $ne: null, $lte: cutoff } }).exec();
+  }
 }

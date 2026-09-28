@@ -9,6 +9,7 @@ import { DatabaseModule } from './database/database.module.js';
 import { UsersModule } from './modules/platform-administration/users/users.module.js';
 import { RolesModule } from './modules/platform-administration/roles/roles.module.js';
 import { PermissionsModule } from './modules/platform-administration/permissions/permissions.module.js';
+import { ReportsModule } from './modules/platform-administration/reports/reports.module.js';
 import { AuditLogsModule } from './modules/workflow/audit-logs/audit-logs.module.js';
 import { AuthModule } from './modules/platform-administration/auth/auth.module.js';
 import { WorkflowDefinitionsModule } from './modules/workflow/workflow-definitions/workflow-definitions.module.js';
@@ -99,6 +100,7 @@ import { AppController } from './app.controller.js';
     RolesModule,
     UsersModule,
     AuthModule,
+    ReportsModule,
     WorkflowDefinitionsModule,
     WorkflowStepsModule,
     RevisionsModule,

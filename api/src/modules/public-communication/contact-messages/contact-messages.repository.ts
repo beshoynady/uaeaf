@@ -20,4 +20,20 @@ export class ContactMessagesRepository extends BaseRepository<ContactMessageDocu
   async countByStatus(status: ContactMessageStatus): Promise<number> {
     return this.model.countDocuments({ status, archivedAt: null }).exec();
   }
+
+  /** The one read that ignores the soft-delete scope, because a message is
+   *  archived before it can be erased — `findById` filters `archivedAt: null`
+   *  and would report every erasable message as missing. */
+  async findIncludingArchived(id: string): Promise<ContactMessageDocument | null> {
+    return this.model.findById(id).exec();
+  }
+
+  /** Irreversible removal of the row, behind the three conditions in
+   *  `ContactMessagesService.permanentDelete`. Everything else on this platform
+   *  soft-deletes; a citizen's own submission is within a PDPL erasure right,
+   *  which an archive does not satisfy (ADR-0120 §D5). */
+  async hardDelete(id: string): Promise<boolean> {
+    const outcome = await this.model.deleteOne({ _id: id }).exec();
+    return outcome.deletedCount === 1;
+  }
 }

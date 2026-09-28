@@ -176,9 +176,11 @@ export class Album extends BaseSchema {
    *  `albumId` points here — NOT the source of truth (`mediaAssets` is).
    *  Maintained by `MediaAssetsService.create()`/`remove()` via atomic
    *  `$inc`, not recomputed by a scheduled job (2026-09-04 media-gallery
-   *  hardening pass). If an update path that moves an asset between
-   *  albums is added later, it must decrement the old album and increment
-   *  the new one — no such path exists yet, so it isn't handled today. */
+   *  hardening pass); `AlbumsService.removePhoto()` decrements it the same
+   *  way when a photo is only detached rather than archived (owner D3). If
+   *  an update path that moves an asset between albums is added later, it
+   *  must decrement the old album and increment the new one — no such path
+   *  exists yet, so it isn't handled today. */
   @Prop({ type: Number, default: 0 })
   assetCount: number;
 }

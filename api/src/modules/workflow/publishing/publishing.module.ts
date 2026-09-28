@@ -8,6 +8,7 @@ import { RevisionsModule } from '../revisions/revisions.module.js';
 import { PublicationsModule } from '../publications/publications.module.js';
 import { AuditLogsModule } from '../audit-logs/audit-logs.module.js';
 import { UsersModule } from '../../platform-administration/users/users.module.js';
+import { MediaAssetsModule } from '../../media-center/media-assets/media-assets.module.js';
 import { PublishingService } from './publishing.service.js';
 import { RevisionsController } from './revisions.controller.js';
 
@@ -43,6 +44,9 @@ import { RevisionsController } from './revisions.controller.js';
     AuditLogsModule,
     // Version history names who saved each version.
     UsersModule,
+    // Restoring a revision that points at an archived image restores it
+    // through here, so the owning album's `assetCount` stays correct.
+    MediaAssetsModule,
   ],
   controllers: [RevisionsController],
   providers: [PublishingService],

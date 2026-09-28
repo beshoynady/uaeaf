@@ -15,8 +15,8 @@ import type {
 /** Request body for the PUBLIC contact form (POST /contact-messages).
  *
  *  Deliberately accepts ONLY what a citizen legitimately supplies. Every
- *  operational field — `status`, `hardDeleteEligibleAt`, `assignedToId`,
- *  `assignedToType`, `workflowInstanceId`, and all four reply fields — is
+ *  operational field — `status`, `assignedToId`, `assignedToType`,
+ *  `workflowInstanceId`, and all four reply fields — is
  *  server- or staff-controlled and is NOT accepted here, so an anonymous
  *  submitter can never pre-set triage state or forge a reply record.
  *

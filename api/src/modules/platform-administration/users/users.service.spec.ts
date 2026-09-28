@@ -8,6 +8,7 @@ import { UpdatePreferencesDto } from './dto/update-preferences.dto.js';
 import { RolesService } from '../roles/roles.service.js';
 import { AuthSessionsService } from '../auth-sessions/auth-sessions.service.js';
 import { FederationPersonnelsService } from '../../federation-governance/federation-personnel/federation-personnel.service.js';
+import { AuditLogsService } from '../../workflow/audit-logs/audit-logs.service.js';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -33,6 +34,7 @@ describe('UsersService', () => {
             create: jest.fn(),
             findByEmail: jest.fn(),
             updateById: jest.fn(),
+            findById: jest.fn(),
           },
         },
         {
@@ -45,11 +47,18 @@ describe('UsersService', () => {
         },
         { provide: AuthSessionsService, useValue: { revokeAllForUser: jest.fn() } },
         { provide: FederationPersonnelsService, useValue: { findById: jest.fn() } },
+        { provide: AuditLogsService, useValue: { write: jest.fn() } },
       ],
     }).compile();
 
     service = module.get(UsersService);
     repository = module.get(UsersRepository);
+    // ADR-0104 rule 2 reads the target before a role or status change. These
+    // specs are about other behaviour, so the target exists and holds nothing.
+    repository.findById.mockResolvedValue({
+      _id: new Types.ObjectId(),
+      roleIds: [],
+    } as never);
     rolesService = module.get(RolesService);
     rolesService.resolvePermissionsForRoles.mockResolvedValue([] as never);
     rolesService.isSystemRole.mockResolvedValue(false as never);

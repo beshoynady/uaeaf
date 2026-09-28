@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { VenuesRepository } from './venues.repository.js';
 import type { VenueDocument } from './schemas/venue.schema.js';
 import { CreateVenueDto } from './dto/create-venue.dto.js';
+import { UpdateVenueDto } from './dto/update-venue.dto.js';
+import { partialUpdate, setObjectIdField } from '../../../common/utils/partial-update.util.js';
 
 /** Implements: venues collection, Domain 2 — People & Organizations
  *  (FigJam node `80:6372`). Plain CRUD. */
@@ -28,7 +30,25 @@ export class VenuesService {
     return this.repository.findById(id);
   }
 
+  /** `countryId` is `required: true` in the schema; `ownerClubId` defaults
+   *  to `null` (Fix round 2 — read from `venue.schema.ts`).
+   *  @throws NotFoundException when no such venue exists. */
+  async update(id: string, dto: UpdateVenueDto): Promise<VenueDocument> {
+    const update = partialUpdate(dto);
+    setObjectIdField(update, dto, 'countryId', { nullable: false });
+    setObjectIdField(update, dto, 'ownerClubId', { nullable: true });
+    const updated = await this.repository.updateById(id, update);
+    if (!updated) {
+      throw new NotFoundException(`Venue ${id} not found.`);
+    }
+    return updated;
+  }
+
   async remove(id: string, archivedBy: Types.ObjectId): Promise<VenueDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  async unarchive(id: string): Promise<VenueDocument | null> {
+    return this.repository.restore(id);
   }
 }

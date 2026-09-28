@@ -1,16 +1,47 @@
 import { ConflictException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import type { Connection } from 'mongoose';
 import { MediaAssetsRepository } from './media-assets.repository.js';
 import type { MediaAssetDocument } from './schemas/media-asset.schema.js';
 import { CreateMediaAssetDto } from './dto/create-media-asset.dto.js';
+import { UpdateMediaAssetDto } from './dto/update-media-asset.dto.js';
 import { UploadMediaAssetDto } from './dto/upload-media-asset.dto.js';
+import { ArchiveMediaAssetDto } from './dto/archive-media-asset.dto.js';
+import { partialUpdate } from '../../../common/utils/partial-update.util.js';
 import { assertUploadable, type UploadCandidate, type UploadPurpose } from './upload/upload-constraints.js';
 import { STORAGE_PROVIDER, type StorageFolder, type StorageProvider } from '../storage/storage-provider.js';
 import { MediaAssetPublicResponseDto } from './dto/media-asset-public-response.dto.js';
 import type { PublicImageDto } from '../../../common/dto/public-page.dto.js';
 import { Album } from '../albums/schemas/album.schema.js';
 import type { AlbumDocument } from '../albums/schemas/album.schema.js';
+import { orphanedMediaCandidates } from '../../../common/authz/orphaned-media.js';
+import type { MediaAssetReferrer } from '../../../common/authz/media-references.js';
+import { AuditLogsService } from '../../workflow/audit-logs/audit-logs.service.js';
+import { auditActionFor } from '../../workflow/audit-logs/audit-action.util.js';
+
+/**
+ * The live-references scan `remove()` needs before an archive, bound to the
+ * connection so the caller decides only what it is entitled to: whether to
+ * count revisions. `ignore` is deliberately not part of this shape — nothing
+ * here ever needs to suppress a referrer, unlike the album path, which gets
+ * its own token in `albums.service.ts`.
+ */
+export type MediaAssetLiveReferrerScan = (
+  id: string,
+  options?: { includeRevisions?: boolean },
+) => Promise<MediaAssetReferrer[]>;
+
+/** Injection token for `MediaAssetLiveReferrerScan`. */
+export const MEDIA_ASSET_LIVE_REFERRER_SCAN = Symbol('MEDIA_ASSET_LIVE_REFERRER_SCAN');
+
+/** What `remove()` learned before archiving: either a real list of live
+ *  referrers, or a scan that could not complete — never both meanings folded
+ *  into one empty list. */
+interface LiveReferenceCheck {
+  referrers: MediaAssetReferrer[];
+  scanIncomplete: boolean;
+}
 
 /** Implements: mediaAssets collection, Domain 5 — Media Center (FigJam
  *  node `92:7269`). Plain CRUD, plus maintaining the parent album's
@@ -38,6 +69,12 @@ export class MediaAssetsService {
     private readonly repository: MediaAssetsRepository,
     @InjectModel(Album.name) private readonly albumModel: Model<AlbumDocument>,
     @Inject(STORAGE_PROVIDER) private readonly storage: StorageProvider,
+    // Optional: the many unit tests across this module construct this class
+    // directly with three arguments, and `orphanedMediaCandidates` below is
+    // the only method that needs a connection at all.
+    @InjectConnection() private readonly connection?: Connection,
+    @Inject(MEDIA_ASSET_LIVE_REFERRER_SCAN) private readonly findLiveReferrers?: MediaAssetLiveReferrerScan,
+    private readonly auditLogsService?: AuditLogsService,
   ) {}
 
   /** Shared validation for every consumer that references a `MediaAsset`
@@ -55,6 +92,16 @@ export class MediaAssetsService {
     if (!asset.file.mimeType.startsWith('image/')) {
       throw new ConflictException(`MediaAsset ${id} is not a valid image type.`);
     }
+  }
+
+  /** Which of these ids an editorial save just stopped using, and nothing
+   *  else references any more — see `orphaned-media.ts` for why this never
+   *  fails the save it is called from. */
+  async orphanedMediaCandidates(removedIds: readonly (Types.ObjectId | string)[]): Promise<string[]> {
+    if (!this.connection) {
+      return [];
+    }
+    return orphanedMediaCandidates(this.connection, removedIds);
   }
 
   async create(dto: CreateMediaAssetDto): Promise<MediaAssetDocument> {
@@ -165,35 +212,19 @@ export class MediaAssetsService {
   }
 
   /**
-   * Destroys the stored object, then removes the record permanently.
+   * Metadata edit only — caption, alt text, display order, and the
+   * featured/visible/AI-generated flags. Never `albumId` or `file`: see
+   * `UpdateMediaAssetDto`'s doc comment for why both are excluded rather
+   * than merely optional.
    *
-   * The second half of a two-step: `remove()` archives, and this ends it.
-   * Splitting them is what lets an archive stay restorable while still
-   * giving an operator a way to stop paying for a file nothing will ever
-   * use again — the alternative, destroying on archive, means the archive
-   * holds records whose images are gone.
-   *
-   * Order matters and is asserted in the tests: destroy first, delete
-   * second. Reversed, a failure at the provider would leave an object with
-   * nothing pointing at it — the orphan this path exists to prevent.
-   *
-   * @throws NotFoundException when `id` references nothing.
-   * @throws ConflictException when the asset has not been archived first;
-   * a live asset may still be rendered by a published page.
+   * @throws NotFoundException when no such asset exists.
    */
-  async purge(id: string): Promise<void> {
-    const asset = await this.repository.findIncludingArchived(id);
-    if (!asset) {
+  async update(id: string, dto: UpdateMediaAssetDto): Promise<MediaAssetDocument> {
+    const updated = await this.repository.updateById(id, partialUpdate(dto));
+    if (!updated) {
       throw new NotFoundException(`MediaAsset ${id} not found.`);
     }
-    if (!asset.archivedAt) {
-      throw new ConflictException(
-        `MediaAsset ${id} is still live. Archive it before purging, so nothing published loses its image without warning.`,
-      );
-    }
-
-    await this.storage.destroy(asset.file.storageKey);
-    await this.repository.hardDelete(id);
+    return updated;
   }
 
   async findAll(): Promise<MediaAssetDocument[]> {
@@ -237,12 +268,117 @@ export class MediaAssetsService {
     return this.repository.findById(id);
   }
 
-  async remove(id: string, archivedBy: Types.ObjectId): Promise<MediaAssetDocument | null> {
-    const asset = await this.repository.softDelete(id, archivedBy);
-    if (asset?.albumId) {
-      await this.albumModel.updateOne({ _id: asset.albumId }, { $inc: { assetCount: -1 } }).exec();
+  /**
+   * Archives the asset and takes it out of its album's count.
+   *
+   * Through `archiveIfLive` rather than `softDelete`, because the count must
+   * move exactly once: an asset archived twice is archived once, and only the
+   * call that did it may decrement.
+   *
+   * Informed consent, not prevention (owner decision 2026-09-27, Batch 2 §C):
+   * archiving a still-used image is allowed, but never silently. The first
+   * attempt checks live references only (a revision is history, not use) and
+   * refuses, naming every place the image would vanish from; a second attempt
+   * carrying `acknowledgeReferences: true` archives anyway, and the audit row
+   * records what was known at the time. A scan that cannot complete is
+   * treated the same as "may be in use" — refusing outright would let an
+   * outage block a legal takedown, and answering "nothing references it"
+   * would be the exact silent failure this exists to prevent.
+   *
+   * @throws ConflictException `mediaInUse` when the image is still referenced
+   *   and `dto.acknowledgeReferences` is not `true`, or when the reference
+   *   check itself could not complete (flagged `scanIncomplete`).
+   */
+  async remove(
+    id: string,
+    archivedBy: Types.ObjectId,
+    dto: ArchiveMediaAssetDto = {},
+  ): Promise<MediaAssetDocument | null> {
+    const { referrers, scanIncomplete } = await this.checkLiveReferences(id);
+
+    if ((referrers.length > 0 || scanIncomplete) && !dto.acknowledgeReferences) {
+      throw new ConflictException({
+        code: 'mediaInUse',
+        message: scanIncomplete
+          ? `The reference check for MediaAsset ${id} could not complete. It may still be in use.`
+          : `MediaAsset ${id} is still used in ${referrers.length} place(s).`,
+        referrers,
+        scanIncomplete,
+      });
     }
-    return asset;
+
+    const archived = await this.repository.archiveIfLive(id, archivedBy);
+    if (archived?.albumId) {
+      await this.albumModel.updateOne({ _id: archived.albumId }, { $inc: { assetCount: -1 } }).exec();
+    }
+    if (archived) {
+      await this.writeArchiveAudit(archived, archivedBy, referrers, scanIncomplete);
+    }
+    return archived ?? this.repository.findIncludingArchived(id);
+  }
+
+  /** Live references only (revisions excluded): a frozen snapshot is
+   *  permanent history and archiving is reversible, so counting a revision
+   *  would demand a confirmation the operator could never clear. Any failure
+   *  — the scan's own, or one it does not own — is reported as `scanIncomplete`
+   *  rather than "nothing references it". */
+  private async checkLiveReferences(id: string): Promise<LiveReferenceCheck> {
+    try {
+      const referrers = await this.findLiveReferrers!(id, { includeRevisions: false });
+      return { referrers, scanIncomplete: false };
+    } catch {
+      return { referrers: [], scanIncomplete: true };
+    }
+  }
+
+  /** Records the archive with what the reference check found, so the trail
+   *  shows exactly what the operator acknowledged (or that nothing could be
+   *  checked) rather than a bare "archived". */
+  private async writeArchiveAudit(
+    asset: MediaAssetDocument,
+    archivedBy: Types.ObjectId,
+    referrers: MediaAssetReferrer[],
+    scanIncomplete: boolean,
+  ): Promise<void> {
+    const action = auditActionFor('DELETE', 'Archive');
+    if (!action) {
+      return;
+    }
+    await this.auditLogsService!.write({
+      actorId: archivedBy,
+      action,
+      entityType: 'mediaAssets',
+      entityId: asset._id as Types.ObjectId,
+      ipAddress: '',
+      userAgent: '',
+      previousValue: null,
+      newValue: { referrersCount: referrers.length, referrers, scanIncomplete },
+      reason:
+        referrers.length > 0
+          ? `Archived while still referenced in ${referrers.length} place(s); acknowledged.`
+          : scanIncomplete
+            ? 'Archived; the reference check could not complete and was acknowledged.'
+            : 'Archived with no live references found.',
+    });
+  }
+
+  /** Removes a photo from its album without archiving it: the file stays live
+   *  and keeps showing wherever else it is used. For a photo still referenced
+   *  outside the album it is leaving, or one the check could not clear — see
+   *  `AlbumsService.removePhoto` (owner D3). The album's own `assetCount` is
+   *  the caller's to adjust, unlike `remove()`, which owns it end to end. */
+  async detachFromAlbum(id: string): Promise<MediaAssetDocument | null> {
+    return this.repository.updateById(id, { albumId: null });
+  }
+
+  /** The inverse of `remove`, down to the album's count: a photo that comes back
+   *  is in its album's grid again. Same once-only rule. */
+  async unarchive(id: string): Promise<MediaAssetDocument | null> {
+    const restored = await this.repository.restoreIfArchived(id);
+    if (restored?.albumId) {
+      await this.albumModel.updateOne({ _id: restored.albumId }, { $inc: { assetCount: 1 } }).exec();
+    }
+    return restored ?? this.repository.findIncludingArchived(id);
   }
 
   /** The individual public album page's photo grid: visible assets only,

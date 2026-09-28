@@ -8,6 +8,7 @@ import { WorkflowStepsModule } from '../workflow-steps/workflow-steps.module.js'
 import { WorkflowPoliciesController } from './workflow-policies.controller.js';
 import { WorkflowDefinitionsModule } from '../workflow-definitions/workflow-definitions.module.js';
 import { WorkflowInstancesModule } from '../workflow-instances/workflow-instances.module.js';
+import { AuditLogsModule } from '../audit-logs/audit-logs.module.js';
 
 @Module({
   imports: [
@@ -21,6 +22,9 @@ import { WorkflowInstancesModule } from '../workflow-instances/workflow-instance
     // archive. The dependency runs one way only: the engine never reads a
     // policy back, which is what keeps this from being a cycle.
     WorkflowInstancesModule,
+    // ADR-0107: the configuration service writes its own audit row, because the
+    // interceptor can name neither this route's record nor its previous value.
+    AuditLogsModule,
   ],
   controllers: [WorkflowPoliciesController],
   providers: [WorkflowPoliciesRepository, WorkflowPoliciesService, ApprovalConfigurationService],

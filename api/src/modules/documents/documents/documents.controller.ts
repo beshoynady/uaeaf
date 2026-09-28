@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
@@ -6,6 +6,7 @@ import { CurrentUser } from '../../../common/decorators/current-user.decorator.j
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 import { DocumentsService } from './documents.service.js';
 import { CreateDocumentDto } from './dto/create-document.dto.js';
+import { UpdateDocumentDto } from './dto/update-document.dto.js';
 import type { DocumentOwnerType } from './schemas/document.schema.js';
 
 /** Implements: documents collection, Domain 6. */
@@ -41,9 +42,22 @@ export class DocumentsController {
     return this.service.getPublicSnapshot(id);
   }
 
+  @Patch(':id')
+  @RequirePermission('documents', 'Update')
+  update(@Param('id') id: string, @Body() dto: UpdateDocumentDto) {
+    return this.service.update(id, dto);
+  }
+
   @Delete(':id')
-  @RequirePermission('documents', 'Delete')
+  @RequirePermission('documents', 'Archive')
   remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.service.remove(id, new Types.ObjectId(user.userId));
+  }
+
+  /** See ADR-0120: not `:id/restore`, which is the revision restore. */
+  @Post(':id/unarchive')
+  @RequirePermission('documents', 'Restore')
+  unarchive(@Param('id') id: string) {
+    return this.service.unarchive(id);
   }
 }

@@ -91,7 +91,11 @@ const make = () => {
   };
   const publications = { findLive: mock(), getPublicSnapshot: mock() };
   const revisions = {};
-  const media = { resolvePublicImages: mock(), assertUsableImage: mock() };
+  const media = {
+    resolvePublicImages: mock(),
+    assertUsableImage: mock(),
+    orphanedMediaCandidates: mock().mockResolvedValue([]),
+  };
   const service = new StrategicPlansPagesService(
     repository as never,
     publications as never,
@@ -425,6 +429,22 @@ describe('StrategicPlansPagesService — saving', () => {
       [text('second'), 2],
       [text('third'), 3],
     ]);
+  });
+
+  it('asks about a cover image a save just replaced, and carries the answer back', async () => {
+    const made = make();
+    made.repository.findById.mockResolvedValue({ heroImageId: ids.hero, pillars: [] });
+    made.repository.updateById.mockResolvedValue({ heroImageId: ids.intro });
+    made.media.orphanedMediaCandidates.mockResolvedValue([ids.hero.toString()]);
+
+    const saved = await made.service.update(
+      String(new Types.ObjectId()),
+      { heroImageId: String(ids.intro) } as never,
+      new Types.ObjectId(),
+    );
+
+    expect(made.media.orphanedMediaCandidates).toHaveBeenCalledWith([ids.hero.toString()]);
+    expect(saved.orphanedMediaCandidates).toEqual([ids.hero.toString()]);
   });
 });
 

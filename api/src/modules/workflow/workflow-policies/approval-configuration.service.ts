@@ -4,6 +4,9 @@ import { WorkflowPoliciesService } from './workflow-policies.service.js';
 import { WorkflowDefinitionsService } from '../workflow-definitions/workflow-definitions.service.js';
 import { WorkflowStepsService } from '../workflow-steps/workflow-steps.service.js';
 import { WorkflowInstancesService } from '../workflow-instances/workflow-instances.service.js';
+import { AuditLogsService } from '../audit-logs/audit-logs.service.js';
+import type { RequestContext } from '../workflow-instances/workflow-instances.service.js';
+import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 import { arrangementShape, buildSteps } from '../../../bootstrap/seed-news-approval.js';
 import type { ApprovalMode } from '../../../bootstrap/seed-news-approval.js';
 import { PERMISSION_RESOURCES } from '../../../common/constants/permission-resources.js';
@@ -66,6 +69,10 @@ export class ApprovalConfigurationService {
     private readonly definitionsService: WorkflowDefinitionsService,
     private readonly stepsService: WorkflowStepsService,
     private readonly instancesService: WorkflowInstancesService,
+    // ADR-0107: this service writes its own audit row. The interceptor cannot —
+    // `configure` returns no `_id` and the route's parameter is `entityType`, so
+    // it had no way to name what changed and wrote nothing at all.
+    private readonly auditLogsService: AuditLogsService,
   ) {}
 
   /** The types an administrator may govern, with each one's current state. */
@@ -82,11 +89,21 @@ export class ApprovalConfigurationService {
    *   approvals required than there are distinct approvers — or when reviews
    *   are running that changing the arrangement would strand.
    */
-  async configure(entityType: string, choice: ApprovalConfiguration): Promise<GovernableEntity> {
+  async configure(
+    entityType: string,
+    choice: ApprovalConfiguration,
+    actor: AuthenticatedUser,
+    context: RequestContext = {},
+  ): Promise<GovernableEntity> {
     const governed = this.assertGovernable(entityType);
 
+    // Read before anything is written. This is the half the audit interceptor
+    // cannot supply even after ADR-0112 removes its silent skip: its pre-read
+    // needs a path `:id`, and this route's parameter is the entity type.
+    const before = await this.describe(governed);
+
     if (!choice.enabled) {
-      return this.disable(governed);
+      return this.disable(governed, actor, before, context);
     }
 
     const approverIds = (choice.approverIds ?? []).map((id) => new Types.ObjectId(id));
@@ -118,7 +135,57 @@ export class ApprovalConfigurationService {
       workflowDefinitionId: definitionId.toString(),
     });
 
-    return this.describe(governed);
+    const after = await this.describe(governed);
+    await this.recordChange(governed, actor, before, after, context);
+    return after;
+  }
+
+  /**
+   * One audit row per policy change, carrying both sides.
+   *
+   * Written here rather than left to the interceptor because this is the one
+   * write where a generic mechanism has nothing to work with — and it is the
+   * most governance-sensitive write on the platform. `StatusChange` rather than
+   * `Update`: what changed is whether a whole content type requires review, not
+   * a field on a record.
+   *
+   * Called only after the write has landed. A refused change altered nothing,
+   * and a row for it would read as a change that happened.
+   */
+  private async recordChange(
+    entityType: WorkflowEntityType,
+    actor: AuthenticatedUser,
+    before: GovernableEntity,
+    after: GovernableEntity,
+    context: RequestContext,
+  ): Promise<void> {
+    await this.auditLogsService.write({
+      actorId: new Types.ObjectId(actor.userId),
+      action: 'StatusChange',
+      entityType: 'workflowPolicies',
+      // The policy is identified by the entity type it governs, which is a
+      // string, not an ObjectId — so the row carries it in the values instead
+      // of pretending to an id it does not have.
+      entityId: null,
+      ipAddress: context.ipAddress ?? '',
+      userAgent: context.userAgent ?? '',
+      previousValue: this.arrangementFor(before),
+      newValue: this.arrangementFor(after),
+      reason: `Approval policy for ${entityType} changed`,
+    });
+  }
+
+  /** The audited shape of an arrangement: what an administrator chose, without
+   *  the in-flight count, which is a fact about the moment rather than a
+   *  setting. */
+  private arrangementFor(state: GovernableEntity): Record<string, unknown> {
+    return {
+      entityType: state.entityType,
+      enabled: state.enabled,
+      mode: state.mode,
+      approverIds: state.approverIds,
+      threshold: state.threshold,
+    };
   }
 
   /**
@@ -128,8 +195,27 @@ export class ApprovalConfigurationService {
    * a week and back on expects the same people, and rebuilding the list from
    * memory is how an approver quietly stops being one.
    */
-  private async disable(entityType: WorkflowEntityType): Promise<GovernableEntity> {
-    const existing = await this.definitionsService.findByEntityType(entityType);
+  private async disable(
+    entityType: WorkflowEntityType,
+    actor: AuthenticatedUser,
+    before: GovernableEntity,
+    context: RequestContext,
+  ): Promise<GovernableEntity> {
+    // The definition and its steps are deliberately left alone: an administrator
+    // turning approvals off for a week and back on expects the same approvers,
+    // and rebuilding that list from memory is how somebody quietly stops being
+    // one. Nothing here needs to read it.
+    //
+    // ADR-0107. `WorkflowPoliciesService.upsert` enforces this too — it has to,
+    // because it is the writer every route shares. This early check exists for
+    // the refusal's shape rather than for the rule: it names the pending records
+    // so the administrator can chase or wait, which is the only decision they
+    // are making, and it refuses before `upsert` is called at all.
+    //
+    // Same predicate as the writer's, deliberately. A narrower one here would
+    // let this pass and `upsert` refuse, which reads to the administrator as the
+    // screen disagreeing with itself.
+    await this.assertNothingStranded(entityType);
 
     await this.policiesService.upsert(entityType, 'Edit', {
       workflowRequired: false,
@@ -138,8 +224,9 @@ export class ApprovalConfigurationService {
       workflowDefinitionId: null,
     });
 
-    void existing;
-    return this.describe(entityType);
+    const after = await this.describe(entityType);
+    await this.recordChange(entityType, actor, before, after, context);
+    return after;
   }
 
   /**
@@ -175,16 +262,62 @@ export class ApprovalConfigurationService {
    *
    * @throws ConflictException when any review is running.
    */
+  /**
+   * Refuses to turn approvals off while anything of this type is unapproved,
+   * naming what is in the way.
+   *
+   * Distinct from `assertNothingRunning`, and the two predicates differ on
+   * purpose. That one guards an ARRANGEMENT change and matches
+   * `['InProgress','Returned']`, because replacing the steps does not strand a
+   * `Rejected` review — `resubmit` restarts it from the first step. This one
+   * guards turning approvals OFF, where the query that blocks the publish is
+   * `findActive` (`status !== 'Approved'`), so a `Rejected` review IS stranded:
+   * `publishDirect` refuses because a review is open on the record, and
+   * `publishApproved` refuses because the type no longer requires one.
+   *
+   * @throws ConflictException carrying the count and the pending records.
+   */
+  private async assertNothingStranded(entityType: WorkflowEntityType): Promise<void> {
+    const inFlightReviews = await this.instancesService.countUnapprovedForEntityType(entityType);
+    if (inFlightReviews === 0) return;
+
+    const open = await this.instancesService.findUnapprovedForEntityType(entityType);
+    throw new ConflictException({
+      code: 'reviewsInFlight',
+      inFlightReviews,
+      pending: open.map((instance) => ({
+        entityId: (instance.entityId as Types.ObjectId).toString(),
+        currentStepId: instance.currentStepId ? (instance.currentStepId as Types.ObjectId).toString() : null,
+        status: instance.status,
+      })),
+      message:
+        `${inFlightReviews} review(s) of ${entityType} have not been approved. ` +
+        'Turning approvals off would leave each of them unpublishable both ways. ' +
+        'Finish or cancel them first.',
+    });
+  }
+
   private async assertNothingRunning(definitionId: Types.ObjectId): Promise<void> {
     const inFlightReviews = await this.instancesService.countOpenForDefinition(definitionId);
     if (inFlightReviews === 0) return;
 
+    // The rows behind the number. A refusal that says only "there are three
+    // reviews" leaves the administrator no way to judge whether to wait ten
+    // minutes or chase somebody, which is the only decision they are making
+    // here (ADR-0107 D1).
+    const open = await this.instancesService.findOpenForDefinition(definitionId);
+    const pending = open.map((instance) => ({
+      entityId: (instance.entityId as Types.ObjectId).toString(),
+      currentStepId: instance.currentStepId ? (instance.currentStepId as Types.ObjectId).toString() : null,
+    }));
+
     throw new ConflictException({
       code: 'reviewsInFlight',
       inFlightReviews,
+      pending,
       message:
         `${inFlightReviews} review(s) are running under this arrangement. ` +
-        'Changing who approves would leave each of them pointing at a step that no longer exists, ' +
+        'Changing it would leave each of them pointing at a step that no longer exists, ' +
         'so they could never be decided. Finish or cancel them first.',
     });
   }

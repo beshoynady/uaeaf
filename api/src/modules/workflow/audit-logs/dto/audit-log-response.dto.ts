@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { AUDIT_ACTIONS } from '../schemas/audit-log.schema.js';
 import type { AuditAction } from '../schemas/audit-log.schema.js';
 
 /**
@@ -17,7 +18,11 @@ export class AuditLogResponseDto {
   @ApiProperty({ description: 'The user who performed the action.' })
   actorId: string;
 
-  @ApiProperty({ enum: ['Create', 'Update', 'Delete', 'HardDelete', 'StatusChange', 'AccessDenied'] })
+  // Derived from the vocabulary rather than hand-listed — a hand-listed copy
+  // is exactly how this fell three values behind (Archive/Restore/
+  // PermanentDelete, SuperAdminGranted/SuperAdminRevoked) with nothing
+  // failing.
+  @ApiProperty({ enum: AUDIT_ACTIONS })
   action: AuditAction;
 
   @ApiProperty({ description: 'Collection the action concerned, in camelCase.' })

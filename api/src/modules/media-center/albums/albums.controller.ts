@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestj
 import { ApiExtraModels, ApiOkResponse, ApiQuery, ApiTags, getSchemaPath } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
+import { AuditEntity } from '../../../common/decorators/audit-entity.decorator.js';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator.js';
 import { Public } from '../../../common/decorators/public.decorator.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
@@ -143,9 +144,19 @@ export class AlbumsController {
   }
 
   /** Archives one photo of this album, promoting the next one to cover when
-   *  the removed photo held it. */
+   *  the removed photo held it.
+   *
+   *  `@AuditEntity({ action: 'Update' })`: this route's own entity is the
+   *  ALBUM (`entityType: 'albums'`), and the album itself is neither deleted
+   *  nor archived — one photo reference is removed from its list, which is
+   *  an update to the album's content, matching its own `albums:Update`
+   *  permission. Without the override `auditActionFor` falls back to the
+   *  HTTP method and logs `Delete`, which would misreport the album as
+   *  destroyed (independent review, round 4). The photo's own archiving, if
+   *  any, is `MediaAssetsService`'s concern, on the `mediaAssets` entity. */
   @Delete(':id/photos/:photoId')
   @RequirePermission('albums', 'Update')
+  @AuditEntity({ action: 'Update' })
   removePhoto(
     @Param('id') id: string,
     @Param('photoId') photoId: string,
@@ -177,8 +188,15 @@ export class AlbumsController {
   }
 
   @Delete(':id')
-  @RequirePermission('albums', 'Delete')
+  @RequirePermission('albums', 'Archive')
   remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.service.remove(id, new Types.ObjectId(user.userId));
+  }
+
+  /** See ADR-0120: not `:id/restore`, which is the revision restore. */
+  @Post(':id/unarchive')
+  @RequirePermission('albums', 'Restore')
+  unarchive(@Param('id') id: string) {
+    return this.service.unarchive(id);
   }
 }

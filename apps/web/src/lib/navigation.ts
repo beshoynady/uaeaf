@@ -2,59 +2,17 @@
  * Site navigation model.
  *
  * Source of truth for CONTENT STRUCTURE is `docs/product/01-Information-Architecture.md`
- * §8.1 (Product Owner ruling, resolves Master Spec §52 OPEN-004), as amended by
- * the owner's decisions of 2026-09-09 recorded in ADR-0062. Display text lives
- * in `messages/{locale}.json` under `Nav` — `key` points into it, so this file
- * stays locale-agnostic.
+ * §8.1 (Product Owner ruling, resolves Master Spec §52 OPEN-004). Display text
+ * lives in `messages/{locale}.json` under `Nav` — `key` points into it, so
+ * this file stays locale-agnostic.
  *
  * Held as data rather than JSX so the eventual swap to the backend's
  * `GET /api/v1/navigation-menus` public endpoint is a data-source change, not
  * a component rewrite. The tree shape below is what that endpoint would have
  * to return.
  *
- * ── The 2026-09-09 regrouping ──────────────────────────────────────────────
- *
- * Nine flat top-level items became eight, three of them carrying a disclosure
- * panel. The reason was measured, not stylistic: nine English labels wanted
- * 1098px of row and the widest laptop band offers 1070px, so the row overlapped
- * the utility cluster at 1280, 1366 and 1440 (ADR-0061 §D6). Grouping reduces
- * the row instead of shortening approved copy.
- *
- * Three owner decisions depart from §8.1 as written, each recorded in ADR-0062
- * rather than applied silently:
- *
- *  - **Clubs sits inside Members** (§8.1 has it top-level). §8.1's own note is
- *    that Clubs *is* the General Assembly membership listing, so the meaning
- *    that made it top-level is preserved as a description line on the child
- *    (`descriptionKey`) instead of by position.
- *  - **News is a plain link** (§8.1 has it as a two-item dropdown). Its second
- *    item, "الاتحاد في الإعلام / UAEAF in the Media", becomes a section OF the
- *    news page rather than a destination of its own — so nothing is orphaned,
- *    but ADR-0042 and IA §15.1a now describe a page that will not exist and
- *    need amending.
- *  - **"فعاليات الاتحاد / Federation Events" is shortened to "الفعاليات /
- *    Events"**, in both languages together. This is not a rename away from the
- *    approved term — §8.1 already calls the item "الفاعليات / Events"; the
- *    build was the thing that had drifted. CLAUDE.md §11 protects the
- *    *distinction* between Events and Championships, which §8.1 restates
- *    explicitly and this change does not touch.
- *
- * Not shortened: "الأخبار والمقالات / News & Articles" and "البطولات /
- * Championships". The owner named exactly one label to shorten; CLAUDE.md §12
- * forbids rewriting approved terminology for the sake of it, so the other two
- * keep the words the product documentation uses. (§8.1 writes the second as
- * "Championships" — a discrepancy with the build's "Tournaments" that predates
- * this work and is flagged in ADR-0062, not resolved here.)
- *
- * ── URLs ───────────────────────────────────────────────────────────────────
- *
- * Every existing route is unchanged, per the owner's constraint — including
- * `/events/federation-events`, which keeps its path behind the shorter label.
- * The destinations whose full pages are not built yet take paths derived from
- * the pattern already in use (`/about/board-members`, `/about/committees`): a
- * section segment then a clean slug, per Chapter 14 §5. Each is served as a
- * page in preparation (`PREPARING_PAGES` in `lib/pages/public-pages.ts`) until
- * its full page replaces it at the same path.
+ * A panel's children are columns; a column's children are the links it lays
+ * out. One nested level below a column, maximum (IA §8.1).
  */
 
 export interface NavItem {
@@ -66,7 +24,7 @@ export interface NavItem {
    * children are buttons and never links (WAI-ARIA APG, Disclosure Navigation).
    */
   href?: string;
-  /** One nested level, maximum. Two is the documented ceiling (IA §8.1). */
+  /** Columns on a top-level item, links on a column. Two levels, maximum (IA §8.1). */
   children?: readonly NavItem[];
   /**
    * Optional supporting line, shown only inside a panel. Carries meaning that
@@ -74,6 +32,12 @@ export interface NavItem {
    * reason §8.1 had Clubs at top level.
    */
   descriptionKey?: string;
+  /**
+   * A standing label on the destination itself, not a state of the link.
+   * Only `/national-teams` carries one: every other unbuilt page in this tree
+   * is built by a later project in the same series, and its own page says so.
+   */
+  badge?: "soon";
 }
 
 /**
@@ -87,56 +51,133 @@ export interface NavLeaf extends NavItem {
 }
 
 /**
- * Header primary navigation — 8 top-level items, 3 with panels, 1 nested level.
+ * Header primary navigation — 6 top-level items, 5 of them panels.
+ *
+ * A panel's children are COLUMNS, never links: the column is what the mega
+ * panel lays out and what a screen reader announces as a heading, so it exists
+ * in the tree rather than being inferred from position.
  */
 export const PRIMARY_NAV: readonly NavItem[] = [
-  { key: "home", href: "/" },
   {
     key: "about",
     children: [
-      { key: "aboutOverview", href: "/about" },
-      { key: "presidentMessage", href: "/about/president" },
-      { key: "boardMembers", href: "/about/board-members" },
-      { key: "committees", href: "/about/committees" },
-      { key: "organisationalStructure", href: "/about/organisational-structure" },
+      {
+        key: "aboutFederationColumn",
+        children: [
+          { key: "aboutOverview", href: "/about", descriptionKey: "aboutOverviewDescription" },
+          { key: "presidentMessage", href: "/about/president" },
+          { key: "boardMembers", href: "/about/board-members" },
+          { key: "committees", href: "/about/committees" },
+        ],
+      },
       {
         key: "governance",
         children: [
           { key: "visionMission", href: "/about/governance/vision-mission" },
           { key: "strategicPlan", href: "/about/governance/strategic-plan" },
-          { key: "policies", href: "/about/governance/policies" },
+          { key: "policies", href: "/about/governance/policies", descriptionKey: "policiesDescription" },
         ],
       },
     ],
   },
   {
-    key: "members",
+    key: "athletics",
     children: [
-      { key: "clubs", href: "/clubs", descriptionKey: "clubsDescription" },
-      { key: "athletes", href: "/athletes" },
-      { key: "coaches", href: "/coaches" },
-      { key: "officials", href: "/officials" },
+      {
+        key: "discoverSport",
+        children: [
+          { key: "discoverAthletics", href: "/athletics", descriptionKey: "discoverAthleticsDescription" },
+          { key: "disciplinesEvents", href: "/athletics#disciplines" },
+          { key: "ageCategories", href: "/athletics#ages", descriptionKey: "ageCategoriesDescription" },
+          { key: "startTraining", href: "/athletics#start" },
+        ],
+      },
+      {
+        key: "athleticsCommunity",
+        children: [
+          { key: "clubs", href: "/clubs", descriptionKey: "clubsDescription" },
+          { key: "athletes", href: "/athletes" },
+          {
+            key: "nationalTeams",
+            href: "/national-teams",
+            descriptionKey: "nationalTeamsDescription",
+            badge: "soon",
+          },
+          { key: "coaches", href: "/coaches" },
+          { key: "officials", href: "/officials" },
+        ],
+      },
     ],
   },
-  { key: "championships", href: "/championships" },
-  { key: "events", href: "/events/federation-events" },
-  { key: "news", href: "/news" },
+  {
+    key: "championshipsResults",
+    children: [
+      {
+        key: "competitions",
+        children: [
+          { key: "championships", href: "/championships", descriptionKey: "championshipsDescription" },
+          { key: "resultsRankings", href: "/results-rankings" },
+          { key: "records", href: "/records", descriptionKey: "recordsDescription" },
+        ],
+      },
+    ],
+  },
+  {
+    key: "eventsSeasons",
+    children: [
+      {
+        key: "eventsColumn",
+        children: [
+          { key: "allEvents", href: "/events", descriptionKey: "allEventsDescription" },
+          { key: "seasonAgenda", href: "/events?view=calendar" },
+          { key: "currentSeason", href: "/seasons/current" },
+          { key: "seasonsArchive", href: "/seasons" },
+        ],
+      },
+    ],
+  },
   {
     key: "media",
     children: [
-      { key: "photoAlbums", href: "/media/albums" },
-      { key: "videos", href: "/media/videos" },
+      {
+        key: "contentColumn",
+        children: [
+          { key: "news", href: "/news", descriptionKey: "newsDescription" },
+          { key: "photoAlbums", href: "/media/albums" },
+          { key: "videos", href: "/media/videos" },
+          { key: "liveStream", href: "/media/videos#live" },
+        ],
+      },
     ],
   },
   { key: "contact", href: "/contact" },
 ];
 
-/** Every leaf destination in the tree, in reading order. */
-export function navDestinations(items: readonly NavItem[] = PRIMARY_NAV): NavLeaf[] {
-  return items.flatMap((item) =>
-    item.children ? navDestinations(item.children) : [item as NavLeaf],
-  );
-}
+/** The page part of a destination: everything before `#` or `?`. */
+const pagePart = (href: string): string => href.split(/[#?]/, 1)[0]!;
+
+/**
+ * Every leaf destination in the tree, in reading order.
+ *
+ * A destination is a page. An in-page anchor, and a pre-filtered view of a page
+ * the list already carries, are the same address twice over — the footer would
+ * print both.
+ */
+export const navDestinations = (items: readonly NavItem[] = PRIMARY_NAV): NavLeaf[] => {
+  const seen = new Set<string>();
+  const walk = (nodes: readonly NavItem[]): NavLeaf[] =>
+    nodes.flatMap((item) => {
+      if (item.children) return walk(item.children);
+      const page = pagePart(item.href!);
+      // An anchor is a position inside a page, not a page. The live-stream item
+      // is conditional too, and a footer cannot express "only while a broadcast
+      // is running".
+      if (page !== item.href || seen.has(page)) return [];
+      seen.add(page);
+      return [item as NavLeaf];
+    });
+  return walk(items);
+};
 
 /**
  * True when `path` is this destination, or somewhere beneath it.
@@ -145,9 +186,13 @@ export function navDestinations(items: readonly NavItem[] = PRIMARY_NAV): NavLea
  * NOT current on "/newsletter" — a prefix match on the raw string would make
  * every page whose address merely starts with another's light up its link.
  * The home route matches only itself, or it would be current everywhere.
+ * An `#anchor` or `?query` is stripped before matching: it names a position or
+ * a filtered view of the page, never a different page.
  */
-export const isWithin = (href: string, path: string): boolean =>
-  href === "/" ? path === "/" : path === href || path.startsWith(`${href}/`);
+export const isWithin = (href: string, path: string): boolean => {
+  const page = pagePart(href);
+  return page === "/" ? path === "/" : path === page || path.startsWith(`${page}/`);
+};
 
 /**
  * True when `item` is, or contains at any depth, the given path.
@@ -157,10 +202,10 @@ export const isWithin = (href: string, path: string): boolean =>
  * that says otherwise has lost them. "المركز الإعلامي" therefore stays current
  * across every page under `/media`.
  */
-export function containsPath(item: NavItem, path: string): boolean {
+export const containsPath = (item: NavItem, path: string): boolean => {
   if (item.href && isWithin(item.href, path)) return true;
   return (item.children ?? []).some((child) => containsPath(child, path));
-}
+};
 
 /**
  * Footer quick links.

@@ -149,6 +149,43 @@ export const API_ERROR_CODES = [
   'ungrantableRole',
   'targetStronger',
   'lastSuperAdmin',
+  // Decision 4 / Q-A (2026-09-27): account and role administration, and
+  // reading account data, are reserved to the Super Admin — eight pairs no
+  // role may ever hold. Distinct from `ungrantablePermission` (you do not
+  // hold this) and `ungrantableRole` (this role grants more than you hold):
+  // here holding more would not help, because nobody may grant it to anyone.
+  'ungrantableCapability',
+  // Permanent deletion (ADR-0120). Three refusals, three different things to do,
+  // and as one `forbidden` or `conflict` all three read as "try again" in front
+  // of the only irreversible act on the platform:
+  //
+  //  - `stillReferenced`: something still points at the file, and the body names
+  //    each referrer with its kind, so the administrator knows whether to fix a
+  //    field or edit an article's body.
+  //  - `referenceCheckFailed`: the check could not run, which is not the same
+  //    answer as "nothing references it" and is never turned into it. The body
+  //    names what could not be read.
+  //  - `mfa_step_up_required`: snake_case where everything above is camelCase,
+  //    because it is the owner's own literal. Every permanent delete answers it,
+  //    because nothing in this API verifies a second factor yet.
+  'stillReferenced',
+  'referenceCheckFailed',
+  'mfa_step_up_required',
+  // The in-use archive warning (owner decision 2026-09-27, Batch 2 §C).
+  // Distinct from `stillReferenced`: that one refuses the platform's only
+  // irreversible act outright, while this one is informed consent — the
+  // same refusal on the first attempt, and `acknowledgeReferences: true`
+  // proceeds anyway. Answered too when the reference check itself could not
+  // complete (the body flags `scanIncomplete`), because a scan outage must
+  // neither block a legal takedown nor silently pass as "nothing uses it".
+  'mediaInUse',
+  // A `PATCH` sent `null` for a field the record cannot be without. Its own
+  // code because the fix is neither "correct this value" nor "try again": the
+  // field has no empty state, so the request should have omitted it. Answered
+  // by every partial update — the `Update*Dto`s refuse it at validation, and
+  // `refuseNull` (`partial-update.util.ts`) for the reference and date fields
+  // their `update()` post-processes.
+  'requiredFieldCleared',
 ] as const;
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

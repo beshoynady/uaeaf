@@ -31,14 +31,12 @@ export type ContactMessageReplyChannel = (typeof CONTACT_MESSAGE_REPLY_CHANNELS)
  *  `revisions` or `publications` row. `ContactMessagesService` therefore
  *  exposes no `getPublicSnapshot()` — there is nothing publishable.
  *
- *  HARDDELETE SAFEGUARD (board note, 2026-09-02): because this collection
- *  is structurally excluded from `revisions`, the standard "blocked while
- *  revisions reference it" HardDelete check that protects the other twelve
- *  workflow-eligible entities can never apply. `hardDeleteEligibleAt` is
- *  its entity-specific replacement: HardDelete is permitted only once that
- *  timestamp is set AND has passed — a deliberate review/cooldown window
- *  before a citizen's PII can be permanently erased. Enforced in
- *  `ContactMessagesService.assertHardDeletable()`.
+ *  PERMANENT ERASURE: because this collection is structurally excluded from
+ *  `revisions`, the standard "blocked while revisions reference it" check
+ *  that protects the other twelve workflow-eligible entities can never
+ *  apply here. What protects it instead is ADR-0120's three conditions —
+ *  step-up verification, archived first, and an audit row written before the
+ *  removal — enforced in `ContactMessagesService.permanentDelete()`.
  *
  *  Almost every field is `[RESTRICTED]`: this is a private citizen
  *  submission record, not public data. The board also lists no `createdBy`
@@ -75,11 +73,6 @@ export class ContactMessage extends BaseSchema {
 
   @Prop({ type: String, enum: CONTACT_MESSAGE_STATUSES, required: true, default: 'New' })
   status: ContactMessageStatus;
-
-  /** Null by default; HardDelete stays blocked until this is set and has
-   *  passed — see the HARDDELETE SAFEGUARD note above. */
-  @Prop({ type: Date, default: null })
-  hardDeleteEligibleAt: Date | null;
 
   /** Poly → `users | roles`. Message routing is a platform/dashboard
    *  operational concern, deliberately independent of the federation's own

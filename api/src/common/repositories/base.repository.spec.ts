@@ -83,6 +83,59 @@ describe('BaseRepository', () => {
     expect(archived?.archivedAt).toBeInstanceOf(Date);
     expect(archived?.archivedBy?.toString()).toBe(archivedBy.toString());
   });
+
+  it('softDelete leaves the original archive date and actor alone on a second archive', async () => {
+    const created = await repository.create({ name: 'Golf' });
+    const first = new mongoose.Types.ObjectId();
+    const archived = await repository.softDelete(created._id.toString(), first);
+
+    const again = await repository.softDelete(created._id.toString(), new mongoose.Types.ObjectId());
+
+    expect(again?.archivedAt?.getTime()).toBe(archived?.archivedAt?.getTime());
+    expect(again?.archivedBy?.toString()).toBe(first.toString());
+  });
+
+  it('softDelete still answers the row it left untouched', async () => {
+    const created = await repository.create({ name: 'Hotel' });
+    await repository.softDelete(created._id.toString(), new mongoose.Types.ObjectId());
+
+    const again = await repository.softDelete(created._id.toString(), new mongoose.Types.ObjectId());
+
+    expect(again?._id.toString()).toBe(created._id.toString());
+  });
+
+  it('restore clears archivedAt and archivedBy together', async () => {
+    const created = await repository.create({ name: 'India' });
+    await repository.softDelete(created._id.toString(), new mongoose.Types.ObjectId());
+
+    const restored = await repository.restore(created._id.toString());
+
+    expect(restored?.archivedAt).toBeNull();
+    expect(restored?.archivedBy).toBeNull();
+    expect(await repository.findById(created._id.toString())).not.toBeNull();
+  });
+
+  it('restore answers null for an id that does not exist', async () => {
+    expect(await repository.restore(new mongoose.Types.ObjectId().toString())).toBeNull();
+  });
+
+  /** The two transition primitives: what a caller reads to act exactly once on
+   *  an archive — the denormalized photo count of an album, today. */
+  it('archiveIfLive answers null for a row that is already archived', async () => {
+    const created = await repository.create({ name: 'Juliett' });
+    await repository.softDelete(created._id.toString(), new mongoose.Types.ObjectId());
+
+    expect(
+      await repository.archiveIfLive(created._id.toString(), new mongoose.Types.ObjectId()),
+    ).toBeNull();
+  });
+
+  it('restoreIfArchived answers null for a row that is already live', async () => {
+    const created = await repository.create({ name: 'Kilo' });
+
+    expect(await repository.restoreIfArchived(created._id.toString())).toBeNull();
+  });
+
   describe('findByIds', () => {
     // Added 2026-09-07 alongside the roleIds-only JWT decision: permission
     // resolution moved from login time to every request, so the old

@@ -28,4 +28,4 @@ export class CreateMembershipDto {
 }
 
 /** Request body for PATCH /memberships/:id. */
-export class UpdateMembershipDto extends PartialType(CreateMembershipDto) {}
+export class UpdateMembershipDto extends PartialType(CreateMembershipDto, { skipNullProperties: false }) {}

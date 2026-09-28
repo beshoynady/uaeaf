@@ -1,5 +1,6 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
+import type { IgnoredDocument, MediaAssetReferrer } from '../../../common/authz/media-references.js';
 import { AlbumsRepository } from './albums.repository.js';
 import type { AlbumDocument } from './schemas/album.schema.js';
 import { CreateAlbumDto } from './dto/create-album.dto.js';
@@ -41,6 +42,20 @@ export const ALBUM_MAX_TAG_LENGTH = 40;
  *  computed in the query rather than by sorting in memory. */
 export const ALBUM_RELATED_LIMIT = 8;
 
+/**
+ * What `removePhoto` needs to know before deciding whether a photo may be
+ * archived: is it used anywhere other than the album it is leaving. Bound to
+ * the connection, with the album excluded, so the asset's own row does not
+ * count as the reference keeping it alive (D3's `ignore`).
+ */
+export type AlbumPhotoReferrerScan = (
+  photoId: string,
+  ignore: readonly IgnoredDocument[],
+) => Promise<MediaAssetReferrer[]>;
+
+/** Injection token for `AlbumPhotoReferrerScan`. */
+export const ALBUM_PHOTO_REFERRER_SCAN = Symbol('ALBUM_PHOTO_REFERRER_SCAN');
+
 /** Implements: albums collection, Domain 5 — Media Center (FigJam node
  *  `92:7224`). `publicationState` is self-published by Media Center staff,
  *  with no Domain 7 Workflow gate (see the schema's doc comment). */
@@ -49,6 +64,7 @@ export class AlbumsService {
   constructor(
     private readonly repository: AlbumsRepository,
     private readonly mediaAssetsService: MediaAssetsService,
+    @Inject(ALBUM_PHOTO_REFERRER_SCAN) private readonly referrerScan?: AlbumPhotoReferrerScan,
   ) {}
 
   /** `null` for an absent id, an `ObjectId` for a present one. Written once
@@ -250,14 +266,26 @@ export class AlbumsService {
   /**
    * Removes one photo from an album.
    *
+   * Detaching a photo from an album and archiving it are not the same act:
+   * detaching removes one reference, archiving withdraws the asset from the
+   * whole site. So this never refuses and never asks for confirmation (owner
+   * D3) — it checks whether the photo is used anywhere other than this album
+   * (the album itself excluded from the check, or an asset used nowhere else
+   * could never be archived) and branches: used only here, it is archived
+   * exactly as before; used elsewhere, or the check could not tell, it is only
+   * detached from this album and stays live. The second branch is the safe
+   * direction here, the opposite of the purge's fail-closed rule: an asset
+   * left live can never blank a page that still shows it.
+   *
    * When the removed photo was the cover, the next one by display order takes
    * its place — and when there is no next one, the cover is cleared. Leaving a
-   * published album pointing at an archived photo would break its hero and its
-   * card at once, and the editor who deleted the picture has no reason to
-   * expect that.
+   * published album pointing at an archived or detached photo would break its
+   * hero and its card at once, and the editor who removed the picture has no
+   * reason to expect that.
    *
-   * `assetCount` is maintained by `MediaAssetsService.remove()`, which owns
-   * the `$inc`; doing it here as well would decrement twice.
+   * `assetCount` is maintained by whichever branch runs: `MediaAssetsService.
+   * remove()` owns the `$inc` on the archive path, and this method owns it on
+   * the detach path — doing both on the same branch would decrement twice.
    *
    * @throws NotFoundException when the photo is not in this album — including
    * when it exists but belongs to another one, which is the same answer as far
@@ -270,11 +298,28 @@ export class AlbumsService {
       throw new NotFoundException(`Photo ${photoId} is not in album ${albumId}.`);
     }
 
-    await this.mediaAssetsService.remove(photoId, archivedBy);
+    if (await this.usedOutsideThisAlbum(photoId, albumId)) {
+      await this.mediaAssetsService.detachFromAlbum(photoId);
+      await this.repository.updateById(albumId, { $inc: { assetCount: -1 } });
+    } else {
+      await this.mediaAssetsService.remove(photoId, archivedBy);
+    }
 
     if (album.coverImageId?.toString() === photoId) {
       const next = await this.mediaAssetsService.findFirstInAlbum(album._id);
       await this.repository.updateById(albumId, { coverImageId: next?._id ?? null });
+    }
+  }
+
+  /** Whether the photo is still used somewhere other than the album it is
+   *  leaving — checked with that album excluded. A check that fails counts as
+   *  "yes": not archiving is the side that cannot lose anything here. */
+  private async usedOutsideThisAlbum(photoId: string, albumId: string): Promise<boolean> {
+    try {
+      const referrers = await this.referrerScan!(photoId, [{ collection: 'albums', documentId: albumId }]);
+      return referrers.length > 0;
+    } catch {
+      return true;
     }
   }
 
@@ -360,6 +405,10 @@ export class AlbumsService {
 
   async remove(id: string, archivedBy: Types.ObjectId): Promise<AlbumDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  async unarchive(id: string): Promise<AlbumDocument | null> {
+    return this.repository.restore(id);
   }
 
   /** The individual public album page: `null` (not a thrown error) when

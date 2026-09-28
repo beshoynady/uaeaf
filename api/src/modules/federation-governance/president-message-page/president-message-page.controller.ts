@@ -193,8 +193,15 @@ export class PresidentMessagePagesController {
   }
 
   @Delete(':id')
-  @RequirePermission('presidentMessagePage', 'Delete')
+  @RequirePermission('presidentMessagePage', 'Archive')
   remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.service.remove(id, new Types.ObjectId(user.userId));
+  }
+
+  /** See ADR-0120: not `:id/restore`, which is the revision restore. */
+  @Post(':id/unarchive')
+  @RequirePermission('presidentMessagePage', 'Restore')
+  unarchive(@Param('id') id: string) {
+    return this.service.unarchive(id);
   }
 }

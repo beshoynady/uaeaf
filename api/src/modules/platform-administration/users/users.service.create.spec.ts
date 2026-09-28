@@ -7,6 +7,7 @@ import { UsersRepository } from './users.repository.js';
 import { RolesService } from '../roles/roles.service.js';
 import { AuthSessionsService } from '../auth-sessions/auth-sessions.service.js';
 import { FederationPersonnelsService } from '../../federation-governance/federation-personnel/federation-personnel.service.js';
+import { AuditLogsService } from '../../workflow/audit-logs/audit-logs.service.js';
 
 /**
  * Creating an account in one call.
@@ -59,6 +60,7 @@ describe('UsersService.create — roles and personnel link', () => {
         },
         { provide: AuthSessionsService, useValue: { revokeAllForUser: jest.fn() } },
         { provide: FederationPersonnelsService, useValue: { findById: jest.fn() } },
+        { provide: AuditLogsService, useValue: { write: jest.fn() } },
       ],
     }).compile();
 

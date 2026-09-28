@@ -145,4 +145,8 @@ export class VideosService {
   async remove(id: string, archivedBy: Types.ObjectId): Promise<VideoDocument | null> {
     return this.repository.softDelete(id, archivedBy);
   }
+
+  async unarchive(id: string): Promise<VideoDocument | null> {
+    return this.repository.restore(id);
+  }
 }

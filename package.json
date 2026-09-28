@@ -10,6 +10,8 @@
     "husky": "^9.1.7"
   },
   "scripts": {
-    "prepare": "husky"
+    "prepare": "husky",
+    "test:guards:core": "node scripts/test-guards.mjs core",
+    "test:guards": "node scripts/test-guards.mjs all"
   }
 }

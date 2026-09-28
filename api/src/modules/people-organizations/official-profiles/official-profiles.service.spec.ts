@@ -21,6 +21,7 @@ describe('OfficialProfilesService', () => {
       create: jest.fn(),
       findByOfficial: jest.fn(),
       findBySlug: jest.fn(),
+      updateById: jest.fn(),
     }) as unknown as jest.Mocked<OfficialProfilesRepository>;
 
   const makeOfficialsService = () =>
@@ -117,6 +118,43 @@ describe('OfficialProfilesService', () => {
       const service = new OfficialProfilesService(repository, officialsService, mediaAssetsService);
 
       await expect(service.create(dto)).rejects.toThrow(ConflictException);
+    });
+  });
+
+  /**
+   * Fix round 1 (CLAUDE.md §31): `create()`'s photoId check is re-run on
+   * `update()` when the field is sent, mirroring `HeroSlidesService`'s
+   * established convention. Before this round, `update()` never called
+   * `mediaAssetsService` at all — a patch could set `photoId` to an
+   * archived or non-image asset with nothing to refuse it.
+   */
+  describe('update', () => {
+    const id = new Types.ObjectId().toString();
+
+    it('validates a changed photoId via MediaAssetsService.assertUsableImage before writing', async () => {
+      const repository = makeRepository();
+      const officialsService = makeOfficialsService();
+      const mediaAssetsService = makeMediaAssetsService();
+      mediaAssetsService.assertUsableImage.mockRejectedValue(new ConflictException());
+      const service = new OfficialProfilesService(repository, officialsService, mediaAssetsService);
+      const photoId = new Types.ObjectId().toString();
+
+      await expect(service.update(id, { photoId } as never)).rejects.toThrow(ConflictException);
+      expect(mediaAssetsService.assertUsableImage).toHaveBeenCalledWith(photoId);
+      expect(repository.updateById).not.toHaveBeenCalled();
+    });
+
+    it('writes a patch that does not touch photoId without calling MediaAssetsService', async () => {
+      const repository = makeRepository();
+      const officialsService = makeOfficialsService();
+      const mediaAssetsService = makeMediaAssetsService();
+      repository.updateById.mockResolvedValue({ status: 'Inactive' } as never);
+      const service = new OfficialProfilesService(repository, officialsService, mediaAssetsService);
+
+      await service.update(id, { status: 'Inactive' } as never);
+
+      expect(mediaAssetsService.assertUsableImage).not.toHaveBeenCalled();
+      expect(repository.updateById).toHaveBeenCalledWith(id, { status: 'Inactive' });
     });
   });
 

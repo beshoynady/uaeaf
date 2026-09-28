@@ -213,8 +213,15 @@ export class StrategicPlansPagesController {
   }
 
   @Delete(':id')
-  @RequirePermission('strategicPlansPage', 'Delete')
+  @RequirePermission('strategicPlansPage', 'Archive')
   remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.service.remove(id, new Types.ObjectId(user.userId));
+  }
+
+  /** See ADR-0120: not `:id/restore`, which is the revision restore. */
+  @Post(':id/unarchive')
+  @RequirePermission('strategicPlansPage', 'Restore')
+  unarchive(@Param('id') id: string) {
+    return this.service.unarchive(id);
   }
 }

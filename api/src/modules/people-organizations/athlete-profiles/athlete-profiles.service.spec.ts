@@ -21,6 +21,7 @@ describe('AthleteProfilesService', () => {
       create: jest.fn(),
       findByAthlete: jest.fn(),
       findBySlug: jest.fn(),
+      updateById: jest.fn(),
     }) as unknown as jest.Mocked<AthleteProfilesRepository>;
 
   const makeAthletesService = () =>
@@ -153,6 +154,43 @@ describe('AthleteProfilesService', () => {
       const service = new AthleteProfilesService(repository, athletesService, mediaAssetsService);
 
       await expect(service.create(dto)).rejects.toThrow(ConflictException);
+    });
+  });
+
+  /**
+   * Fix round 1 (CLAUDE.md §31): `create()`'s photoId check is re-run on
+   * `update()` when the field is sent, mirroring `HeroSlidesService`'s
+   * established convention. Before this round, `update()` never called
+   * `mediaAssetsService` at all — a patch could set `photoId` to an
+   * archived or non-image asset with nothing to refuse it.
+   */
+  describe('update', () => {
+    const id = new Types.ObjectId().toString();
+
+    it('validates a changed photoId via MediaAssetsService.assertUsableImage before writing', async () => {
+      const repository = makeRepository();
+      const athletesService = makeAthletesService();
+      const mediaAssetsService = makeMediaAssetsService();
+      mediaAssetsService.assertUsableImage.mockRejectedValue(new NotFoundException());
+      const service = new AthleteProfilesService(repository, athletesService, mediaAssetsService);
+      const photoId = new Types.ObjectId().toString();
+
+      await expect(service.update(id, { photoId } as never)).rejects.toThrow(NotFoundException);
+      expect(mediaAssetsService.assertUsableImage).toHaveBeenCalledWith(photoId);
+      expect(repository.updateById).not.toHaveBeenCalled();
+    });
+
+    it('writes a patch that does not touch photoId without calling MediaAssetsService', async () => {
+      const repository = makeRepository();
+      const athletesService = makeAthletesService();
+      const mediaAssetsService = makeMediaAssetsService();
+      repository.updateById.mockResolvedValue({ status: 'Inactive' } as never);
+      const service = new AthleteProfilesService(repository, athletesService, mediaAssetsService);
+
+      await service.update(id, { status: 'Inactive' } as never);
+
+      expect(mediaAssetsService.assertUsableImage).not.toHaveBeenCalled();
+      expect(repository.updateById).toHaveBeenCalledWith(id, { status: 'Inactive' });
     });
   });
 

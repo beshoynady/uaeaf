@@ -5,9 +5,12 @@ import {
   EDITORIAL_ERROR_CODES,
   HERO_ERROR_CODES,
   NEWSROOM_ERROR_CODES,
+  PARTIAL_UPDATE_ERROR_CODES,
+  PERMANENT_DELETE_ERROR_CODES,
   SPONSOR_RELATION_ERROR_CODES,
   WRITE_ERROR_CODES,
 } from "./admin-write";
+import { ACTION_ORDER } from "@/lib/admin/permission-matrix";
 import { PANEL_ACTIONS } from "@/lib/admin/editorial-state";
 import { REVISION_STATE_KEYS } from "@/lib/admin/revisions";
 
@@ -35,7 +38,7 @@ const SURFACES = [
   // no publishing policy to be missing. Demanding copy for them there would
   // mean writing sentences for cases that cannot occur, which is how a
   // catalogue fills with text nobody ever reads or corrects.
-  { namespace: "WriteErrors", prefix: "", codes: [...WRITE_ERROR_CODES, ...EDITORIAL_ERROR_CODES, ...HERO_ERROR_CODES, ...SPONSOR_RELATION_ERROR_CODES, ...NEWSROOM_ERROR_CODES] },
+  { namespace: "WriteErrors", prefix: "", codes: [...WRITE_ERROR_CODES, ...EDITORIAL_ERROR_CODES, ...HERO_ERROR_CODES, ...SPONSOR_RELATION_ERROR_CODES, ...NEWSROOM_ERROR_CODES, ...PERMANENT_DELETE_ERROR_CODES, ...PARTIAL_UPDATE_ERROR_CODES] },
   { namespace: "UsersDirectory", prefix: "assign_", codes: WRITE_ERROR_CODES },
   { namespace: "UsersDirectory", prefix: "status_", codes: WRITE_ERROR_CODES },
   { namespace: "RolesWorkbench", prefix: "save_", codes: WRITE_ERROR_CODES },
@@ -64,6 +67,12 @@ const GENERATED = [
     ],
   },
   { namespace: "Revisions", keys: Object.values(REVISION_STATE_KEYS) },
+  // The role editor's column headers and checkbox labels are
+  // `t(permission.action)`, so a verb the API declares and this catalogue
+  // does not renders as `PermissionAction.Archive` at the administrator
+  // deciding what a role may do. ADR-0103 renamed four of these nine and
+  // added seven, and nothing here noticed.
+  { namespace: "PermissionAction", keys: ACTION_ORDER },
 ] as const;
 
 // `unknown` at the leaf, not `string`: a namespace may group related keys in

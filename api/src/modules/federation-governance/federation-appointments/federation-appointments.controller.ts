@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
@@ -7,6 +7,7 @@ import { Public } from '../../../common/decorators/public.decorator.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 import { FederationAppointmentsService } from './federation-appointments.service.js';
 import { CreateFederationAppointmentDto } from './dto/create-federation-appointments.dto.js';
+import { UpdateFederationAppointmentDto } from './dto/update-federation-appointments.dto.js';
 import { AppointmentPublicResponseDto } from './dto/appointment-public-response.dto.js';
 
 /** Implements: federationAppointments collection, Domain 1 — Federation & Governance. */
@@ -44,9 +45,22 @@ export class FederationAppointmentsController {
     return this.service.findById(id);
   }
 
+  @Patch(':id')
+  @RequirePermission('federationAppointments', 'Update')
+  update(@Param('id') id: string, @Body() dto: UpdateFederationAppointmentDto) {
+    return this.service.update(id, dto);
+  }
+
   @Delete(':id')
-  @RequirePermission('federationAppointments', 'Delete')
+  @RequirePermission('federationAppointments', 'Archive')
   remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.service.remove(id, new Types.ObjectId(user.userId));
+  }
+
+  /** See ADR-0120: not `:id/restore`, which is the revision restore. */
+  @Post(':id/unarchive')
+  @RequirePermission('federationAppointments', 'Restore')
+  unarchive(@Param('id') id: string) {
+    return this.service.unarchive(id);
   }
 }

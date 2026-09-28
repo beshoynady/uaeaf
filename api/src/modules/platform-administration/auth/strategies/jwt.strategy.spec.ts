@@ -87,4 +87,30 @@ describe('JwtStrategy', () => {
 
     expect(user.permissions).toEqual([]);
   });
+
+  /**
+   * An archived account keeps full authority until its access token expires —
+   * a named gap, not a regression, and Batch 5 owns it (ADR-0120 §D10).
+   *
+   * `validate` reads the token's `roleIds` and nothing else: no account read, no
+   * session read, and the access token carries no `sessionId` to look one up by.
+   * So `UsersService.remove` revoking every session closes the REFRESH half only
+   * — `AuthService` refuses a revoked session on refresh — while an access token
+   * already issued keeps working for the rest of its fifteen minutes with the
+   * archived account's permissions.
+   *
+   * Closing it needs the per-request path: either a `sessionId` claim checked
+   * against the session store, or an account re-read here. Both belong with the
+   * session work, so this stays `it.failing` — red on purpose, so the gap is a
+   * standing item in the suite rather than something rediscovered later.
+   */
+  it.failing('refuses an archived account presenting a still-valid access token', async () => {
+    rolesService.resolvePermissions.mockResolvedValue([
+      { resourceType: 'users', action: 'Read' },
+    ]);
+
+    await expect(strategy.validate(accessPayload([]))).rejects.toBeInstanceOf(
+      UnauthorizedException,
+    );
+  });
 });

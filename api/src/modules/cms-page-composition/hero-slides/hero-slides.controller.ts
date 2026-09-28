@@ -66,8 +66,15 @@ export class HeroSlidesController {
   }
 
   @Delete(':id')
-  @RequirePermission('heroSlides', 'Delete')
+  @RequirePermission('heroSlides', 'Archive')
   remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.service.remove(id, new Types.ObjectId(user.userId));
+  }
+
+  /** See ADR-0120: not `:id/restore`, which is the revision restore. */
+  @Post(':id/unarchive')
+  @RequirePermission('heroSlides', 'Restore')
+  unarchive(@Param('id') id: string) {
+    return this.service.unarchive(id);
   }
 }

@@ -1,4 +1,9 @@
 import { describe, expect, it } from "vitest";
+// The API's own vocabulary, read from the API's own source. A spec may import
+// across the package boundary where the run-time module cannot: the schema
+// module builds a Mongoose schema on load, which must not reach the browser
+// bundle `permission-matrix.ts` is part of.
+import { PERMISSION_ACTIONS } from "../../../../../api/src/modules/platform-administration/permissions/schemas/permission.schema";
 import type { PermissionResponse } from "@/lib/api/types";
 import {
   ACTION_ORDER,
@@ -22,38 +27,51 @@ const CATALOGUE: PermissionResponse[] = [
   permission("users", "Read"),
   permission("users", "Create"),
   permission("roles", "Read"),
-  permission("roles", "Delete"),
+  permission("roles", "Archive"),
   permission("albums", "Publish"),
 ];
 
 describe("ACTION_ORDER", () => {
   it("mirrors PERMISSION_ACTIONS in the API's own order", () => {
-    // api/src/.../permission.schema.ts. The column order is the API's, not a
-    // preference — a reader comparing the screen to the catalogue should not
-    // have to re-sort in their head.
-    expect(ACTION_ORDER).toEqual([
-      "Create",
-      "Read",
-      "Update",
-      "Delete",
-      "HardDelete",
-      "Approve",
-      "Publish",
-      "EditProtectedData",
-      "Export",
+    // Compared against the API's own array, imported — not restated. Restated,
+    // this test stayed green while ADR-0103 renamed `Delete` to `Archive` and
+    // added six verbs, and around 130 of the catalogue's pairs became
+    // ungrantable from the only screen that grants anything.
+    //
+    // `ACTION_ORDER` cannot import this at run time (see its own comment), so
+    // the equality is the whole contract: order included, because the column
+    // order is the API's, not a preference.
+    expect([...ACTION_ORDER]).toEqual([...PERMISSION_ACTIONS]);
+  });
+
+  it("tells the screen apart from the API when they diverge", () => {
+    // Proof the comparison above bites: a verb the API declares and the
+    // dashboard does not is reported, in both directions.
+    const dashboardIsMissing = PERMISSION_ACTIONS.filter(
+      (action) => !(ACTION_ORDER as readonly string[]).includes(action),
+    );
+    const dashboardInvented = ACTION_ORDER.filter(
+      (action) => !(PERMISSION_ACTIONS as readonly string[]).includes(action),
+    );
+
+    expect({ dashboardIsMissing, dashboardInvented }).toEqual({ dashboardIsMissing: [], dashboardInvented: [] });
+    // The same filter applied to a verb the API does not declare answers
+    // non-empty, so an empty result above is a real match and not a scan of
+    // nothing.
+    expect(["Create", "Teleport"].filter((a) => !(PERMISSION_ACTIONS as readonly string[]).includes(a))).toEqual([
+      "Teleport",
     ]);
   });
 });
 
 describe("visibleActions", () => {
   it("drops a column the catalogue never fills", () => {
-    // `HardDelete` and `EditProtectedData` are declared actions that guard
-    // no route, so every one of the sixty-four rows renders an em dash
-    // under them — 128 cells of pure noise in a table already carrying 165
-    // real checkboxes.
+    // `ViewSensitive` is a declared action with no pair in the catalogue, so
+    // every row would render an em dash under it — a column of pure noise in
+    // a table already carrying hundreds of real checkboxes.
     const rows = buildMatrix(CATALOGUE, new Set(), []);
 
-    expect(visibleActions(rows)).toEqual(["Create", "Read", "Delete", "Publish"]);
+    expect(visibleActions(rows)).toEqual(["Read", "Create", "Archive", "Publish"]);
   });
 
   it("keeps the API's own column order", () => {
@@ -76,17 +94,17 @@ describe("toggleWithImpliedRead", () => {
     // The API refuses the incoherent set outright (`impliedReadMissing`).
     // Ticking it here, visibly, is what keeps the screen honest: the
     // administrator sees the grant they are actually making.
-    const result = toggleWithImpliedRead(rows(), new Set(), "roles:Delete");
+    const result = toggleWithImpliedRead(rows(), new Set(), "roles:Archive");
 
-    expect([...result.next].sort()).toEqual(["roles:Delete", "roles:Read"]);
+    expect([...result.next].sort()).toEqual(["roles:Archive", "roles:Read"]);
     expect(result.autoAdded).toEqual(["roles:Read"]);
   });
 
   it("adds nothing extra when the read is already ticked", () => {
-    const result = toggleWithImpliedRead(rows(), new Set(["roles:Read"]), "roles:Delete");
+    const result = toggleWithImpliedRead(rows(), new Set(["roles:Read"]), "roles:Archive");
 
     expect(result.autoAdded).toEqual([]);
-    expect([...result.next].sort()).toEqual(["roles:Delete", "roles:Read"]);
+    expect([...result.next].sort()).toEqual(["roles:Archive", "roles:Read"]);
   });
 
   it("implies nothing from Read itself", () => {
@@ -97,12 +115,12 @@ describe("toggleWithImpliedRead", () => {
   });
 
   it("leaves the read in place when the write is unticked", () => {
-    // Unticking Delete is not a decision to stop reading. Withdrawing the
+    // Unticking Archive is not a decision to stop reading. Withdrawing the
     // read as well would silently take away a grant nobody asked to remove.
     const result = toggleWithImpliedRead(
       rows(),
-      new Set(["roles:Delete", "roles:Read"]),
-      "roles:Delete",
+      new Set(["roles:Archive", "roles:Read"]),
+      "roles:Archive",
     );
 
     expect([...result.next]).toEqual(["roles:Read"]);
@@ -127,12 +145,12 @@ describe("toggleWithImpliedRead", () => {
     // — naming a permission the administrator never chose. Better to leave
     // it off and let `selectionBlockers` explain.
     const partial = buildMatrix(CATALOGUE, new Set(), [
-      { resourceType: "roles", action: "Delete" },
+      { resourceType: "roles", action: "Archive" },
     ]);
 
-    const result = toggleWithImpliedRead(partial, new Set(), "roles:Delete");
+    const result = toggleWithImpliedRead(partial, new Set(), "roles:Archive");
 
-    expect([...result.next]).toEqual(["roles:Delete"]);
+    expect([...result.next]).toEqual(["roles:Archive"]);
     expect(result.autoAdded).toEqual([]);
   });
 });
@@ -141,9 +159,9 @@ describe("incoherentSelections", () => {
   const HOLDS_ALL = CATALOGUE.map((p) => ({ resourceType: p.resourceType, action: p.action }));
 
   it("names a resource that may be written but not read", () => {
-    const rows = buildMatrix(CATALOGUE, new Set(["roles:Delete"]), HOLDS_ALL);
+    const rows = buildMatrix(CATALOGUE, new Set(["roles:Archive"]), HOLDS_ALL);
 
-    expect(incoherentSelections(rows, new Set(["roles:Delete"]))).toEqual([
+    expect(incoherentSelections(rows, new Set(["roles:Archive"]))).toEqual([
       { resourceType: "roles", action: "Read" },
     ]);
   });
@@ -151,12 +169,12 @@ describe("incoherentSelections", () => {
   it("is empty once the read is selected", () => {
     const rows = buildMatrix(CATALOGUE, new Set(), HOLDS_ALL);
 
-    expect(incoherentSelections(rows, new Set(["roles:Delete", "roles:Read"]))).toEqual([]);
+    expect(incoherentSelections(rows, new Set(["roles:Archive", "roles:Read"]))).toEqual([]);
   });
 });
 
 describe("isConsequential", () => {
-  it.each(["Delete", "HardDelete", "Approve", "Publish", "EditProtectedData"])(
+  it.each(["Archive", "PermanentDelete", "Approve", "Publish", "ViewSensitive"])(
     "marks %s as consequential",
     (action) => {
       expect(isConsequential(action)).toBe(true);
@@ -179,7 +197,7 @@ describe("buildMatrix", () => {
     // that would create a permission guarding nothing.
     const [albums] = buildMatrix(CATALOGUE, new Set(), []);
     expect(albums.cells.Publish?.permissionId).toBe("albums:Publish");
-    expect(albums.cells.Delete).toBeUndefined();
+    expect(albums.cells.Archive).toBeUndefined();
   });
 
   it("marks the role's current grants as checked", () => {
@@ -203,9 +221,9 @@ describe("buildMatrix", () => {
   it("keeps an already-granted permission visible even when the actor cannot grant it", () => {
     // Hiding it would misrepresent the role. It stays checked and locked, so
     // the reader sees the truth and cannot silently strip it.
-    const rows = buildMatrix(CATALOGUE, new Set(["roles:Delete"]), []);
+    const rows = buildMatrix(CATALOGUE, new Set(["roles:Archive"]), []);
     const roles = rows.find((row) => row.resourceType === "roles");
-    expect(roles?.cells.Delete).toMatchObject({ granted: true, grantable: false });
+    expect(roles?.cells.Archive).toMatchObject({ granted: true, grantable: false });
   });
 
   it("counts what each row grants against what it could", () => {
@@ -235,7 +253,7 @@ describe("canCheck", () => {
 });
 
 describe("selectionBlockers", () => {
-  const rows = buildMatrix(CATALOGUE, new Set(["roles:Delete", "users:Read"]), [
+  const rows = buildMatrix(CATALOGUE, new Set(["roles:Archive", "users:Read"]), [
     { resourceType: "users", action: "Read" },
   ]);
 
@@ -245,8 +263,8 @@ describe("selectionBlockers", () => {
     // permission the actor lacks cannot be saved at all. Detecting it here
     // is the difference between an explanation and a 403 whose message does
     // not say which permission caused it.
-    expect(selectionBlockers(rows, new Set(["roles:Delete", "users:Read"]))).toEqual([
-      { resourceType: "roles", action: "Delete" },
+    expect(selectionBlockers(rows, new Set(["roles:Archive", "users:Read"]))).toEqual([
+      { resourceType: "roles", action: "Archive" },
     ]);
   });
 

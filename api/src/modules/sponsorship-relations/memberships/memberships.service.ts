@@ -6,7 +6,7 @@ import type { MembershipDocument } from './schemas/membership.schema.js';
 import { CreateMembershipDto, UpdateMembershipDto } from './dto/create-membership.dto.js';
 import { MediaAssetsService } from '../../media-center/media-assets/media-assets.service.js';
 import { normalizeOrganizationName } from '../../../common/schemas/organization-name.schema.js';
-import { wasSent } from '../../../common/utils/partial-update.util.js';
+import { wasSent, setDateField, setObjectIdField } from '../../../common/utils/partial-update.util.js';
 import { assertWindowOrder, dateOrNull, hidesDemoRecords, toOrganizationCard } from '../common/relation-rules.js';
 import type { PublicOrganizationCard } from '../common/relation-rules.js';
 
@@ -41,26 +41,34 @@ export class MembershipsService {
     });
   }
 
-  /** Checks the window on the record the edit produces.
+  /** Checks the window on the record the edit produces. `startDate` is
+   *  `required: true` in the schema (no valid "no value" state); `endDate`/
+   *  `organizationLogoId` default to `null` (Fix round 4 — read from
+   *  `membership.schema.ts`, not inferred from the DTO or the `!` the old
+   *  code used here, which was compile-time only and let
+   *  `{ startDate: null }` silently store the Unix epoch).
    *  @throws NotFoundException when no such membership exists. */
   async update(id: string, dto: UpdateMembershipDto): Promise<MembershipDocument> {
     const current = await this.repository.findById(id);
     if (!current) throw new NotFoundException('Membership not found.');
 
     const has = (key: keyof UpdateMembershipDto) => wasSent(dto, key);
-    const startDate = has('startDate') ? new Date(dto.startDate!) : current.startDate;
-    const endDate = has('endDate') ? dateOrNull(dto.endDate) : (current.endDate ?? null);
-    assertWindowOrder(startDate, endDate);
 
     const update: Record<string, unknown> = {};
+    setDateField(update, dto, 'startDate', { nullable: false });
+    setDateField(update, dto, 'endDate', { nullable: true });
+
+    // Merged state for the window check, read back from `update` rather than
+    // re-deriving the cast — there is exactly one place `dto.startDate`/
+    // `dto.endDate` become a `Date` (the setters above).
+    const startDate = 'startDate' in update ? (update.startDate as Date) : current.startDate;
+    const endDate = 'endDate' in update ? (update.endDate as Date | null) : (current.endDate ?? null);
+    assertWindowOrder(startDate, endDate);
+
     if (has('organizationName')) update.organizationName = normalizeOrganizationName(dto.organizationName, 'organizationName');
-    if (has('organizationLogoId')) {
-      if (dto.organizationLogoId) await this.mediaAssetsService.assertUsableImage(dto.organizationLogoId);
-      update.organizationLogoId = dto.organizationLogoId ? new Types.ObjectId(dto.organizationLogoId) : null;
-    }
+    if (dto.organizationLogoId) await this.mediaAssetsService.assertUsableImage(dto.organizationLogoId);
+    setObjectIdField(update, dto, 'organizationLogoId', { nullable: true });
     if (has('membershipType')) update.membershipType = dto.membershipType;
-    if (has('startDate')) update.startDate = startDate;
-    if (has('endDate')) update.endDate = endDate;
     if (has('status')) update.status = dto.status;
     if (has('displayOrder')) update.displayOrder = dto.displayOrder;
     if (has('isVisible')) update.isVisible = dto.isVisible;
@@ -80,6 +88,10 @@ export class MembershipsService {
 
   async remove(id: string, archivedBy: Types.ObjectId): Promise<MembershipDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  async unarchive(id: string): Promise<MembershipDocument | null> {
+    return this.repository.restore(id);
   }
 
   /** The visible memberships as logo-plus-name cards, in display order; demo

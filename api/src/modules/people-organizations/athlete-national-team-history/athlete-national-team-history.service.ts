@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { AthleteNationalTeamHistoryRepository } from './athlete-national-team-history.repository.js';
 import type { AthleteNationalTeamHistoryDocument } from './schemas/athlete-national-team-history.schema.js';
 import { CreateAthleteNationalTeamHistoryDto } from './dto/create-athlete-national-team-history.dto.js';
+import { UpdateAthleteNationalTeamHistoryDto } from './dto/update-athlete-national-team-history.dto.js';
+import { partialUpdate } from '../../../common/utils/partial-update.util.js';
 
 /** Implements: athleteNationalTeamHistory collection, Domain 2 — People &
  *  Organizations (FigJam node `559:8224`). */
@@ -34,7 +36,23 @@ export class AthleteNationalTeamHistoryService {
     return current !== null;
   }
 
+  /** @throws NotFoundException when no such row exists. */
+  async update(
+    id: string,
+    dto: UpdateAthleteNationalTeamHistoryDto,
+  ): Promise<AthleteNationalTeamHistoryDocument> {
+    const updated = await this.repository.updateById(id, partialUpdate(dto));
+    if (!updated) {
+      throw new NotFoundException(`Athlete national team history ${id} not found.`);
+    }
+    return updated;
+  }
+
   async remove(id: string, archivedBy: Types.ObjectId): Promise<AthleteNationalTeamHistoryDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  async unarchive(id: string): Promise<AthleteNationalTeamHistoryDocument | null> {
+    return this.repository.restore(id);
   }
 }

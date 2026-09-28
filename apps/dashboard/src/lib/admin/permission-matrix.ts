@@ -28,18 +28,38 @@ import type { PermissionGrant } from "@/lib/auth/permissions";
  *      something actionable.
  */
 
-/** The API's own order (`PERMISSION_ACTIONS`, permission.schema.ts). Column
- *  order follows it so the screen and the catalogue read the same way. */
+/**
+ * `PERMISSION_ACTIONS` (api/src/.../permissions/schemas/permission.schema.ts),
+ * verb for verb and in the API's own order, so the screen and the catalogue
+ * read the same way.
+ *
+ * Restated here rather than imported because that module constructs a Mongoose
+ * schema at load time, and this one is pulled into four `"use client"`
+ * components — importing it would put `@nestjs/mongoose` and `mongoose` in the
+ * browser bundle. `permission-matrix.spec.ts` imports the API's list and
+ * asserts exact equality, so the two cannot drift silently.
+ *
+ * A verb missing from this list is not a missing column: `visibleActions`
+ * drops it, no checkbox is rendered, and every pair guarded by it becomes
+ * ungrantable from the only screen that grants anything.
+ */
 export const ACTION_ORDER = [
-  "Create",
   "Read",
+  "Create",
   "Update",
-  "Delete",
-  "HardDelete",
-  "Approve",
-  "Publish",
-  "EditProtectedData",
+  "Archive",
+  "Restore",
+  "PermanentDelete",
   "Export",
+  "Print",
+  "ViewSensitive",
+  "Publish",
+  "Approve",
+  "ViewReports",
+  "ManageRoles",
+  "AssignRoles",
+  "ViewAuditLog",
+  "ManageSecuritySettings",
 ] as const;
 
 export type PermissionAction = (typeof ACTION_ORDER)[number];
@@ -50,14 +70,19 @@ export type PermissionAction = (typeof ACTION_ORDER)[number];
  * say which ones a role carries without the reader auditing 164 boxes.
  *
  * Deliberately derived from the action's own meaning, not from a per-resource
- * judgement — `Delete` on `albums` is as irreversible as on `athletes`.
+ * judgement — `Archive` on `albums` is as consequential as on `athletes`.
+ *
+ * The same five as before ADR-0103 renamed the verbs, carried across one for
+ * one: `Delete` is now `Archive`, `HardDelete` is now `PermanentDelete`, and
+ * `EditProtectedData` is now `ViewSensitive`. `Restore`, `Export`, `Print` and
+ * `ViewReports` are left out, as `Export` was before the rename.
  */
 const CONSEQUENTIAL: ReadonlySet<string> = new Set([
-  "Delete",
-  "HardDelete",
+  "Archive",
+  "PermanentDelete",
   "Approve",
   "Publish",
-  "EditProtectedData",
+  "ViewSensitive",
 ]);
 
 export function isConsequential(action: string): boolean {
@@ -175,9 +200,9 @@ export function toggleSelection(
 /**
  * Only the columns the catalogue actually fills, in the API's order.
  *
- * `HardDelete` and `EditProtectedData` are declared actions that guard no
- * route, so rendering all nine columns unconditionally puts an em dash in
- * 128 cells of a table that already carries 165 real checkboxes. A column
+ * `ViewSensitive` is a declared action with no pair in the catalogue at all,
+ * so rendering every column unconditionally puts an em dash in one column of
+ * every row of a table already carrying hundreds of real checkboxes. A column
  * that is empty for every row tells the reader nothing except that it is
  * empty.
  */

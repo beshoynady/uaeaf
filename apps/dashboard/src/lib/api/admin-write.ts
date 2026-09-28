@@ -56,6 +56,16 @@ export const WRITE_ERROR_CODES = [
   "ungrantableRole",
   "targetStronger",
   "lastSuperAdmin",
+  /** Decision 4 / Q-A (2026-09-27). Eight pairs — account and role
+   *  administration, and reading account data — belong to the Super Admin
+   *  role only; no role may be BUILT holding one, whatever the actor holds
+   *  themselves. Distinct from `ungrantableRole`: there, holding more would
+   *  fix it; here it never would. Corrected 2026-09-27 (independent review,
+   *  round 4, M5): this used to also say "or receive" — fix round 1 removed
+   *  that half from the assign path, so a covering actor (a Super Admin) may
+   *  still hand one of these eight to another holder; only building a new
+   *  role with one is refused. */
+  "ungrantableCapability",
   /** The submitted permission set is not a coherent role: it may change a
    *  resource it cannot read. Not an authorization failure — the actor may
    *  hold the missing read — so it is a 400, and the body names the exact
@@ -178,6 +188,50 @@ export const NEWSROOM_ERROR_CODES = [
   "unsatisfiablePolicy",
 ] as const;
 
+/**
+ * Failures only the media library and the contact inbox can produce — the two
+ * permanent deletions (ADR-0120).
+ *
+ * Apart from the lists above for the reason this file gives throughout: a
+ * permission matrix has no file to still be referenced and no second factor to
+ * present, and copy written for a case that cannot happen is copy nobody will
+ * ever correct.
+ */
+export const PERMANENT_DELETE_ERROR_CODES = [
+  /** Something still points at the file. The refusal names each referrer and
+   *  its kind, so the reader knows whether to fix a field or edit a body. */
+  "stillReferenced",
+  /** The reference check could not run — which is not the same answer as
+   *  "nothing references it", and is never turned into it. Nothing was
+   *  destroyed. */
+  "referenceCheckFailed",
+  /** The deletion needs step-up verification. snake_case, unlike every other
+   *  code here, because it is the API's own literal. */
+  "mfa_step_up_required",
+  /** Archiving this image is refused because it is still shown elsewhere, or
+   *  because that could not be checked. Distinct from `stillReferenced`:
+   *  archiving is reversible, so this is informed consent rather than an
+   *  outright refusal — the same code answers again once acknowledged. */
+  "mediaInUse",
+] as const;
+
+/**
+ * The one failure every record-editing screen can produce, because it comes
+ * from the shared partial-update boundary rather than from any one resource's
+ * rules: a `PATCH` sent `null` for a field the record cannot be without.
+ *
+ * Apart from `WRITE_ERROR_CODES` because that list is also demanded under the
+ * `assign_`/`status_`/`save_` prefixes, and none of those three surfaces can
+ * reach this: roles and users are written through DTOs that are not built
+ * with `PartialType`, so they have no partial field to clear.
+ */
+export const PARTIAL_UPDATE_ERROR_CODES = [
+  /** A field was sent as `null` and the record has no empty state for it. The
+   *  fix is to leave it out of the request or give it a value, which is why
+   *  this is not the generic "check what you typed". */
+  "requiredFieldCleared",
+] as const;
+
 export const SPONSOR_RELATION_ERROR_CODES = [
   "sponsorshipEndsBeforeStart",
   "sponsorshipEndRequired",
@@ -190,7 +244,9 @@ export type WriteErrorCode =
   | (typeof EDITORIAL_ERROR_CODES)[number]
   | (typeof HERO_ERROR_CODES)[number]
   | (typeof SPONSOR_RELATION_ERROR_CODES)[number]
-  | (typeof NEWSROOM_ERROR_CODES)[number];
+  | (typeof NEWSROOM_ERROR_CODES)[number]
+  | (typeof PERMANENT_DELETE_ERROR_CODES)[number]
+  | (typeof PARTIAL_UPDATE_ERROR_CODES)[number];
 
 /** What a refusal says about where it happened, beside its code. */
 export interface FailureDetails {
@@ -315,6 +371,7 @@ const FROM_API_CODE: Record<string, WriteErrorCode> = {
   ungrantableRole: "ungrantableRole",
   targetStronger: "targetStronger",
   lastSuperAdmin: "lastSuperAdmin",
+  ungrantableCapability: "ungrantableCapability",
   impliedReadMissing: "impliedReadMissing",
   // ADR-0069 D4/D5. Each prevents the task, so each carries its own words:
   // "nobody has configured this yet", "someone edited this while you were
@@ -357,6 +414,16 @@ const FROM_API_CODE: Record<string, WriteErrorCode> = {
   nextEventEndsBeforeStart: "nextEventEndsBeforeStart",
   scheduleEndsBeforeStart: "scheduleEndsBeforeStart",
   invalidPlayback: "invalidPlayback",
+  // ADR-0120's refusals. Three different things to do: remove the references,
+  // try again once the check can run, or verify a second factor.
+  stillReferenced: "stillReferenced",
+  referenceCheckFailed: "referenceCheckFailed",
+  mfa_step_up_required: "mfa_step_up_required",
+  mediaInUse: "mediaInUse",
+  // Every partial update answers it: a required field sent as `null`. As the
+  // generic 400 it read "check what you typed", when the thing to do is to
+  // leave the field out.
+  requiredFieldCleared: "requiredFieldCleared",
 };
 
 const fallbackFor = (status: number): WriteErrorCode => {

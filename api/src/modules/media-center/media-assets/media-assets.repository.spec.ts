@@ -74,4 +74,31 @@ describe('MediaAssetsRepository', () => {
     expect(plan).toContain('IXSCAN');
     expect(plan).toContain('albumId_1_isVisible_1_displayOrder_1');
   });
+
+  /** The unused-media report's candidate query: archived, and archived before
+   *  the cutoff. A live asset or one archived too recently must never appear,
+   *  since the report exists to name what is safe to purge. */
+  describe('findArchivedOlderThan', () => {
+    const cutoff = new Date('2026-01-01');
+
+    it('excludes a live asset', async () => {
+      await repository.create({ ...baseAsset, archivedAt: null });
+
+      expect(await repository.findArchivedOlderThan(cutoff)).toHaveLength(0);
+    });
+
+    it('excludes an asset archived after the cutoff', async () => {
+      await repository.create({ ...baseAsset, archivedAt: new Date('2026-02-01') });
+
+      expect(await repository.findArchivedOlderThan(cutoff)).toHaveLength(0);
+    });
+
+    it('includes an asset archived on or before the cutoff', async () => {
+      const created = await repository.create({ ...baseAsset, archivedAt: new Date('2025-06-01') });
+
+      const found = await repository.findArchivedOlderThan(cutoff);
+
+      expect(found.map((asset) => asset._id.toString())).toEqual([created._id.toString()]);
+    });
+  });
 });

@@ -1067,14 +1067,18 @@ diagnosis of code that is not broken.
 
 # 33. GIT — READ ONLY FOR THE AGENT
 
-Owner decision 2026-09-17. It holds in every session unless a task says otherwise
-explicitly.
+Owner decision 2026-09-17, restated 2026-09-27. It holds in every session unless a
+task says otherwise explicitly, and it binds every subagent as well as the session
+that dispatches it.
 
 1. **Allowed, to read state only:** `git status`, `git diff`, `git log`,
-   `git show`, `git ls-files`.
+   `git show`, `git ls-files`. These are positively permitted, not merely
+   tolerated: a reviewer that cannot read the diff reviews nothing.
 2. **Not allowed:** any command that writes or changes state. That includes
-   `add`, `commit`, `push`, `branch`, `checkout`, `switch`, `stash`, `reset`,
-   `restore`, `merge`, `rebase`, `clean`, `rm` and `mv`.
+   `add`, `commit`, `push`, `pull`, `fetch`, `branch`, `checkout`, `switch`,
+   `stash`, `reset`, `restore`, `merge`, `rebase`, `clean`, `rm` and `mv`.
+   `pull` and `fetch` are named explicitly because they look like reads and are
+   not: both write to the repository.
 3. **No direct reads of `.git/`** (for example `logs/HEAD` or `index`). Use the
    allowed commands instead.
 4. **Commits are the owner's.** When work is ready, write the exact commands as

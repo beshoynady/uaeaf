@@ -57,6 +57,7 @@ describe('the About page activation route', () => {
       'restore',
       'setActive',
       'submit',
+      'unarchive',
       'update',
     ]);
 

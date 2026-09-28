@@ -79,6 +79,77 @@ export class WorkflowInstancesRepository extends BaseRepository<WorkflowInstance
   }
 
   /**
+   * How many reviews of this entity TYPE have not reached `Approved`.
+   *
+   * Deliberately a different predicate from `countOpenForDefinition`, and the
+   * difference is the point:
+   *
+   *  - That one matches `['InProgress','Returned']`, because it guards an
+   *    ARRANGEMENT change — replacing the steps archives the ones running
+   *    reviews point at, and a `Rejected` review restarts from the first step,
+   *    so it is not stranded by a replacement.
+   *  - This one matches `status !== 'Approved'`, because it guards turning
+   *    approvals OFF, and the query that then blocks the publish is `findActive`
+   *    — which is exactly `status !== 'Approved'`. A `Rejected` review is
+   *    `findActive`, so it blocks `publishDirect`, while a policy resolving to
+   *    `direct` blocks `publishApproved`. Both paths shut: the deadlock.
+   *
+   * Keyed on the entity type rather than a definition id, because that is what
+   * `findActive` is keyed on. A second definition for the same type would hide
+   * its reviews from a definition-scoped count while still blocking records.
+   */
+  async countUnapprovedForEntityType(entityType: WorkflowEntityType): Promise<number> {
+    return this.model
+      .countDocuments({
+        entityType,
+        status: { $ne: 'Approved' },
+        archivedAt: null,
+      })
+      .exec();
+  }
+
+  /** The unapproved reviews themselves — the same filter as
+   *  `countUnapprovedForEntityType`, so the list and the count cannot disagree.
+   *  Capped: a refusal is a message, and an administrator with forty pending
+   *  records needs the first few and the total, not forty rows. */
+  async findUnapprovedForEntityType(
+    entityType: WorkflowEntityType,
+    limit = 20,
+  ): Promise<WorkflowInstanceDocument[]> {
+    return this.model
+      .find({
+        entityType,
+        status: { $ne: 'Approved' },
+        archivedAt: null,
+      })
+      .limit(limit)
+      .exec();
+  }
+
+  /**
+   * The open reviews themselves, not just how many — the same filter as
+   * `countOpenForDefinition`, so the list and the count can never disagree.
+   *
+   * Exists because a refusal that says only "there are three reviews" leaves the
+   * administrator no way to judge whether to wait or to chase somebody
+   * (ADR-0107 D1). Capped: the refusal is a message, and an administrator who
+   * has forty pending records needs the first few and the total, not forty rows.
+   */
+  async findOpenForDefinition(
+    definitionId: Types.ObjectId,
+    limit = 20,
+  ): Promise<WorkflowInstanceDocument[]> {
+    return this.model
+      .find({
+        workflowDefinitionId: definitionId,
+        status: { $in: ['InProgress', 'Returned'] },
+        archivedAt: null,
+      })
+      .limit(limit)
+      .exec();
+  }
+
+  /**
    * How many records of a type sit at each review status, in one pass.
    *
    * One aggregation rather than a count per status: the newsroom's card row

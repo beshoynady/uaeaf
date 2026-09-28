@@ -38,7 +38,8 @@
     "check:policy-duplicates": "nest build && node --env-file-if-exists=.env dist/check-policy-duplicates.js",
     "migrate:president-message": "nest build && node --env-file-if-exists=.env dist/migrate-president-message-v2.js",
     "seed:about": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/seed-about-federation-page.js",
-    "sync:permissions": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/sync-permission-catalogue.js"
+    "sync:permissions": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/sync-permission-catalogue.js",
+    "report:reserved-pair-holders": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/report-reserved-pair-holders.js"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",

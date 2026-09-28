@@ -79,6 +79,10 @@ export class SponsorsService {
     return this.repository.softDelete(id, archivedBy);
   }
 
+  async unarchive(id: string): Promise<SponsorDocument | null> {
+    return this.repository.restore(id);
+  }
+
   /** The public shape of each sponsor, logos resolved in one query. Written
    *  field by field so `restricted` cannot travel by accident. */
   async toPublicResponses(sponsors: SponsorDocument[]): Promise<SponsorPublicResponseDto[]> {

@@ -13,7 +13,9 @@ import type { LocalizedTextDto } from '../../../common/dto/localized-text.dto.js
 import { PermissionsService } from '../permissions/permissions.service.js';
 import type { RequiredPermission } from '../../../common/decorators/permissions.decorator.js';
 import { missingImpliedReads } from '../../../common/constants/permission-implications.js';
+import { holdsPair, missingPairs, width } from '../users/user-authority.js';
 import type { PermissionCatalogueEntry } from '../../../common/constants/permission-catalogue.js';
+import { isSuperAdminOnly } from '../../../common/authz/capability-map.js';
 
 /** Implements: roles collection, Domain 8 — Platform Administration
  *  (FigJam node 103:7869). */
@@ -76,19 +78,28 @@ export class RolesService {
 
     const permissions = await this.permissionsService.findByIds(permissionIds);
 
-    // Deduplicated on the pair itself, not just on permissionId: two roles
-    // can reach the same grant through different documents, and the guard
-    // compares pairs.
-    const seen = new Set<string>();
-    const resolved: RequiredPermission[] = [];
+    // Deduplicated on the pair, keeping the widest scope held — design spec
+    // §2.4: a role holding the same pair at both `own` and `all` resolves to
+    // `all`, one entry, not two. `width` is reused from `user-authority.ts`
+    // rather than a second ordering written here: that file is the one place
+    // scope ordering is defined (finding F7), and duplicating it is exactly
+    // what F7 closed. Order of first appearance is kept for the pairs
+    // themselves so the result stays stable and readable; only the scope
+    // within a pair is chosen by width, not by which document came first.
+    const order: string[] = [];
+    const widest = new Map<string, RequiredPermission>();
     for (const permission of permissions) {
       const key = `${permission.resourceType}:${permission.action}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        resolved.push({ resourceType: permission.resourceType, action: permission.action });
+      const scope = permission.scope ?? null;
+      const current = widest.get(key);
+      if (!current) {
+        order.push(key);
+        widest.set(key, { resourceType: permission.resourceType, action: permission.action, scope });
+      } else if (width(scope) > width(current.scope)) {
+        widest.set(key, { resourceType: permission.resourceType, action: permission.action, scope });
       }
     }
-    return resolved;
+    return order.map((key) => widest.get(key) as RequiredPermission);
   }
 
   /**
@@ -155,6 +166,7 @@ export class RolesService {
     actorPermissions: RequiredPermission[],
   ): Promise<RoleDocument> {
     await this.assertEditable(id);
+    await this.assertRemovable(id, actorPermissions);
     this.assertCoherent(
       await this.assertGrantable(
         permissionIds.map((permissionId) => permissionId.toString()),
@@ -178,11 +190,50 @@ export class RolesService {
    * @throws NotFoundException when no live role has this id.
    * @throws ForbiddenException when the target is a system role.
    */
-  async remove(id: string, archivedBy: Types.ObjectId): Promise<RoleDocument> {
+  async remove(
+    id: string,
+    archivedBy: Types.ObjectId,
+    actorPermissions: RequiredPermission[],
+  ): Promise<RoleDocument> {
     await this.assertEditable(id);
+    await this.assertRemovable(id, actorPermissions);
     const archived = this.assertUpdated(await this.repository.softDelete(id, archivedBy));
     await this.assignments.detachRole(id);
     return archived;
+  }
+
+  /**
+   * "You cannot take away authority you do not hold" — the other half of
+   * ADR-0104 rule 1, and what makes rule 2 hold.
+   *
+   * Rule 2 refuses acting on an account stronger than you by comparing that
+   * account's CURRENT grants. Without this, the comparison was trivially
+   * defeated in two calls: shrink their role first through a route that only
+   * checked what was being ADDED, then act on them now that they are weak. The
+   * same gap let `DELETE /roles/:id` strip a role from every holder with no
+   * comparison at all.
+   *
+   * It does not escalate the actor's own authority — rule 1 still bounds what
+   * they may grant — but it hands them the power to disable anyone, and it
+   * becomes an account-takeover step as soon as setup links and 2FA reset sit
+   * behind the same guard.
+   *
+   * @throws ForbiddenException naming every pair the role grants that the actor
+   *   does not hold.
+   */
+  private async assertRemovable(
+    roleId: string,
+    actorPermissions: RequiredPermission[],
+  ): Promise<void> {
+    const current = await this.resolvePermissions([roleId]);
+    const beyond = missingPairs(actorPermissions, current);
+    if (beyond.length > 0) {
+      throw new ForbiddenException({
+        code: 'ungrantableRole',
+        message: 'This role grants more than you hold yourself, so you cannot change or remove it.',
+        missing: beyond.map((pair) => `${pair.resourceType}:${pair.action}`),
+      });
+    }
   }
 
   /**
@@ -253,6 +304,15 @@ export class RolesService {
    * without this, roles:Create + users:Update alone was enough to become
    * a de facto Super Admin. Fails closed on an unknown permissionId too
    * (nothing not proven grantable is ever grantable).
+   *
+   * Compares through `holdsPair` (review finding F7) rather than a second,
+   * pair-only comparison of its own: `user-authority.ts` is now the one
+   * place `assertGrantable`, `UsersService.assertNotStronger` and role
+   * assignment all compare a grant, so a rule tightened in one cannot stay
+   * loose in another. The permission document is passed straight to
+   * `holdsPair` — it already carries `scope`, so an actor holding
+   * `articles:Update` at `own` may not grant it at `all` even though the
+   * pair matches.
    * @throws ForbiddenException naming the first ungrantable permission found.
    */
   private async assertGrantable(
@@ -262,12 +322,27 @@ export class RolesService {
     const resolved: PermissionCatalogueEntry[] = [];
     for (const permissionId of permissionIds) {
       const permission = await this.permissionsService.findById(permissionId);
-      const alreadyHeld =
-        permission != null &&
-        actorPermissions.some(
-          (held) => held.resourceType === permission.resourceType && held.action === permission.action,
-        );
-      if (!alreadyHeld) {
+      if (!permission) {
+        throw new ForbiddenException({
+          code: 'ungrantablePermission',
+          message: 'Cannot grant a permission you do not already hold yourself.',
+        });
+      }
+      // Checked BEFORE the superset comparison below, and regardless of what
+      // the actor holds — owner decision 4 / Q-A (2026-09-27) / 2026-09-28.
+      // Account and role administration, and reading account data, are ten
+      // declared pairs (eleven decided; see ADR-0104) the seeded Super Admin
+      // role holds and no role built through this method may ever include,
+      // even for an actor who already holds the whole catalogue: "this can
+      // never be granted" is a stronger, simpler statement than "you do not
+      // hold it".
+      if (isSuperAdminOnly(permission.resourceType, permission.action)) {
+        throw new ForbiddenException({
+          code: 'ungrantableCapability',
+          message: 'That capability is reserved to a Super Admin and cannot be granted to a role.',
+        });
+      }
+      if (!holdsPair(actorPermissions, permission)) {
         throw new ForbiddenException({
           code: 'ungrantablePermission',
           message: 'Cannot grant a permission you do not already hold yourself.',

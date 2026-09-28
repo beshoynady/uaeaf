@@ -1,7 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { WorkflowDefinitionsRepository } from './workflow-definitions.repository.js';
 import type { WorkflowDefinitionDocument } from './schemas/workflow-definition.schema.js';
 import { CreateWorkflowDefinitionDto } from './dto/create-workflow-definition.dto.js';
+import { UpdateWorkflowDefinitionDto } from './dto/update-workflow-definition.dto.js';
+import { partialUpdate } from '../../../common/utils/partial-update.util.js';
 import type { Types } from 'mongoose';
 
 /** Implements: workflowDefinitions collection, Domain 7 (FigJam node
@@ -40,7 +42,20 @@ export class WorkflowDefinitionsService {
     return this.repository.findById(id);
   }
 
+  /** @throws NotFoundException when no such workflow definition exists. */
+  async update(id: string, dto: UpdateWorkflowDefinitionDto): Promise<WorkflowDefinitionDocument> {
+    const updated = await this.repository.updateById(id, partialUpdate(dto));
+    if (!updated) {
+      throw new NotFoundException(`Workflow definition ${id} not found.`);
+    }
+    return updated;
+  }
+
   async remove(id: string, archivedBy: Types.ObjectId): Promise<WorkflowDefinitionDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  async unarchive(id: string): Promise<WorkflowDefinitionDocument | null> {
+    return this.repository.restore(id);
   }
 }

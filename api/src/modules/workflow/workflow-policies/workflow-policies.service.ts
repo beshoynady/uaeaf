@@ -5,6 +5,7 @@ import type { WorkflowPolicyDocument } from './schemas/workflow-policy.schema.js
 import { CreateWorkflowPolicyDto } from './dto/create-workflow-policy.dto.js';
 import { WorkflowDefinitionsService } from '../workflow-definitions/workflow-definitions.service.js';
 import { WorkflowStepsService } from '../workflow-steps/workflow-steps.service.js';
+import { WorkflowInstancesService } from '../workflow-instances/workflow-instances.service.js';
 import { isDuplicateKeyError } from '../../../common/utils/mongo-errors.util.js';
 import type { WorkflowEntityType } from '../../../common/constants/workflow-entity-types.js';
 import type { WorkflowPolicyOperation } from './schemas/workflow-policy.schema.js';
@@ -38,6 +39,11 @@ export class WorkflowPoliciesService {
     // requiring review whose definition has no live step is a publication
     // path that stops at nobody.
     private readonly stepsService: WorkflowStepsService,
+    // ADR-0107's change lock lives here, with the writer, because two routes
+    // write `workflowRequired`: the approval screen's, and `PUT
+    // /:entityType/:operation`. A guard above only one of them is not a guard.
+    // The dependency runs one way only — the engine never reads a policy back.
+    private readonly instancesService: WorkflowInstancesService,
   ) {}
 
   /**
@@ -116,6 +122,53 @@ export class WorkflowPoliciesService {
    * @throws ConflictException when the definition is missing, inactive, or
    *   written for another entity type.
    */
+  /**
+   * Refuses the one policy transition that strands content: `Edit` going from
+   * requires-review to publishes-directly while something is still unapproved.
+   *
+   * ADR-0107, enforced at the writer. Every route that changes
+   * `workflowRequired` comes through `upsert`, so a caller cannot walk around
+   * the refusal by using the other one — which was possible until this moved
+   * here, in one extra call under the same permission.
+   *
+   * Narrow on purpose, because a lock that fires on transitions with no
+   * consequence is a lock administrators learn to route around:
+   *
+   *  - Only `Edit`. No other operation governs the publish path.
+   *  - Only requires-review → direct. Turning approvals ON strands nothing, and
+   *    re-saving "off" over "off" changes nothing at all.
+   *  - Only when a policy already exists. There is nothing to transition from.
+   *
+   * @throws ConflictException when the change would leave unapproved content
+   *   unpublishable by both paths.
+   */
+  private async assertNothingStranded(
+    entityType: WorkflowEntityType,
+    operation: WorkflowPolicyOperation,
+    workflowRequired: boolean,
+    existing: WorkflowPolicyDocument | null,
+  ): Promise<void> {
+    const turnsReviewOff = operation === 'Edit' && !workflowRequired && existing?.workflowRequired === true;
+    if (!turnsReviewOff) {
+      return;
+    }
+
+    const inFlightReviews = await this.instancesService.countUnapprovedForEntityType(entityType);
+    if (inFlightReviews === 0) {
+      return;
+    }
+
+    throw new ConflictException({
+      code: 'reviewsInFlight',
+      inFlightReviews,
+      message:
+        `${inFlightReviews} review(s) of ${entityType} have not been approved. ` +
+        'Turning approvals off would leave each of them unpublishable both ways — directly, ' +
+        'because a review is still open on the record, and as an approved revision, because ' +
+        'the type would no longer require one. Finish or cancel them first.',
+    });
+  }
+
   private async assertDefinitionUsable(
     entityType: WorkflowEntityType,
     workflowRequired: boolean,
@@ -223,6 +276,7 @@ export class WorkflowPoliciesService {
     );
 
     const existing = await this.repository.findByEntityTypeAndOperation(entityType, operation);
+    await this.assertNothingStranded(entityType, operation, input.workflowRequired, existing);
     const workflowDefinitionId = input.workflowDefinitionId
       ? new Types.ObjectId(input.workflowDefinitionId)
       : null;

@@ -1,9 +1,11 @@
-import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { WorkflowStepsRepository } from './workflow-steps.repository.js';
 import type { WorkflowStepDocument } from './schemas/workflow-step.schema.js';
 import { CreateWorkflowStepDto } from './dto/create-workflow-step.dto.js';
+import { UpdateWorkflowStepDto } from './dto/update-workflow-step.dto.js';
 import { isDuplicateKeyError } from '../../../common/utils/mongo-errors.util.js';
+import { partialUpdate, setObjectIdField, setObjectIdArrayField } from '../../../common/utils/partial-update.util.js';
 
 /** Implements: workflowSteps collection, Domain 7 (FigJam node `100:7468`). */
 @Injectable()
@@ -85,6 +87,71 @@ export class WorkflowStepsService {
     }
   }
 
+  /**
+   * `create()`'s `unsatisfiableStep` check (required approvals vs. distinct
+   * assignees) IS re-run here (Fix round 1, CLAUDE.md §31 — the check reads
+   * merged state, at the moment of the write, never a value captured
+   * earlier). `requiredApprovals` and `assigneeIds` are each ordinary edits
+   * on their own; a patch touching only one of them still has to be checked
+   * against the OTHER's current stored value, or a step that raises its
+   * threshold without adding approvers becomes permanently unsatisfiable
+   * with nothing to explain why the workflow stalled.
+   *
+   * Neither field can arrive as `null`: `UpdateWorkflowStepDto` is built with
+   * `PartialType(…, { skipNullProperties: false })`, which refuses a cleared
+   * required field before the controller runs, so the `??` merge below sees
+   * only `undefined`.
+   *
+   * @throws NotFoundException when no such step exists.
+   * @throws BadRequestException when the merged result (patch fields applied
+   *   on top of whatever is not sent) needs more approvals than it names
+   *   distinct assignees.
+   * @throws ConflictException when the patch's `sequenceOrder` collides with
+   *   another step of the same definition.
+   */
+  async update(id: string, dto: UpdateWorkflowStepDto): Promise<WorkflowStepDocument> {
+    const current = await this.repository.findById(id);
+    if (!current) {
+      throw new NotFoundException(`Workflow step ${id} not found.`);
+    }
+
+    // Merged, not "only when both are sent": a patch that raises
+    // `requiredApprovals` alone has to be checked against the assignees
+    // already on the step, or it slips through unsatisfiable.
+    const requiredApprovals = dto.requiredApprovals ?? current.requiredApprovals;
+    const assigneeIds = dto.assigneeIds ?? current.assigneeIds.map((assigneeId) => assigneeId.toString());
+    const distinctAssignees = new Set(assigneeIds).size;
+    if (requiredApprovals > distinctAssignees) {
+      throw new BadRequestException({
+        code: 'unsatisfiableStep',
+        message: `This step needs ${requiredApprovals} approvals but names only ${distinctAssignees} distinct ${
+          distinctAssignees === 1 ? 'approver' : 'approvers'
+        }.`,
+      });
+    }
+
+    const update = partialUpdate(dto);
+    setObjectIdField(update, dto, 'workflowDefinitionId', { nullable: false });
+    setObjectIdArrayField(update, dto, 'assigneeIds');
+
+    let updated: WorkflowStepDocument | null;
+    try {
+      updated = await this.repository.updateById(id, update);
+    } catch (error) {
+      if (!isDuplicateKeyError(error)) {
+        throw error;
+      }
+      throw new ConflictException({
+        code: 'duplicateStepOrder',
+        message: `Another step of this workflow already holds this position.`,
+      });
+    }
+    if (!updated) {
+      throw new NotFoundException(`Workflow step ${id} not found.`);
+    }
+    return updated;
+  }
+
   async findByDefinition(workflowDefinitionId: string): Promise<WorkflowStepDocument[]> {
     return this.repository.findByDefinition(new Types.ObjectId(workflowDefinitionId));
   }
@@ -110,5 +177,9 @@ export class WorkflowStepsService {
 
   async remove(id: string, archivedBy: Types.ObjectId): Promise<WorkflowStepDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  async unarchive(id: string): Promise<WorkflowStepDocument | null> {
+    return this.repository.restore(id);
   }
 }

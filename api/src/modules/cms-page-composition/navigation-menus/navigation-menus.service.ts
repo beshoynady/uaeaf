@@ -1,10 +1,12 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { NavigationMenusRepository } from './navigation-menus.repository.js';
 import type { NavigationMenuDocument } from './schemas/navigation-menus.schema.js';
 import { CreateNavigationMenuDto } from './dto/create-navigation-menus.dto.js';
+import { UpdateNavigationMenuDto } from './dto/update-navigation-menus.dto.js';
 import type { NavigationMenuPublicResponseDto } from './dto/navigation-menu-public-response.dto.js';
 import { isDuplicateKeyError, duplicateKeyField } from '../../../common/utils/mongo-errors.util.js';
+import { partialUpdate } from '../../../common/utils/partial-update.util.js';
 
 /** Implements: navigationMenus collection, Domain 11 — CMS & Page
  *  Composition. */
@@ -32,8 +34,30 @@ export class NavigationMenusService {
     return this.repository.findById(id);
   }
 
+  /** @throws NotFoundException when no such menu exists.
+   *  @throws ConflictException when the patch's `key` is already taken. */
+  async update(id: string, dto: UpdateNavigationMenuDto): Promise<NavigationMenuDocument> {
+    let updated: NavigationMenuDocument | null;
+    try {
+      updated = await this.repository.updateById(id, partialUpdate(dto));
+    } catch (error) {
+      if (isDuplicateKeyError(error)) {
+        throw new ConflictException(`Duplicate value for ${duplicateKeyField(error) ?? 'key'}.`);
+      }
+      throw error;
+    }
+    if (!updated) {
+      throw new NotFoundException(`Navigation menu ${id} not found.`);
+    }
+    return updated;
+  }
+
   async remove(id: string, archivedBy: Types.ObjectId): Promise<NavigationMenuDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  async unarchive(id: string): Promise<NavigationMenuDocument | null> {
+    return this.repository.restore(id);
   }
 
   /** Public lookup by the stable `key` a frontend actually knows (e.g.

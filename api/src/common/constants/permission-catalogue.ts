@@ -1,258 +1,30 @@
 import type { PermissionAction } from '../../modules/platform-administration/permissions/schemas/permission.schema.js';
 import type { PermissionResource } from './permission-resources.js';
+import { CAPABILITY_MAP } from '../authz/capability-map.js';
 
 /**
- * Every (resourceType, action) pair the codebase actually guards, derived
- * from the `@RequirePermission` decorators themselves — not from the
- * 63 x 8 = 504 theoretical combinations, most of which correspond to no
- * route at all.
+ * Every (resourceType, action) pair the platform recognises — one row per pair,
+ * which is the shape the `permissions` collection is seeded in.
  *
- * This is the catalogue the bootstrap script seeds. Seeding the full cross
- * product instead would fill the dashboard's permission list with 340 rows
- * that gate nothing, which is the same "looks granted, guards nothing"
- * failure `PERMISSION_RESOURCES` was introduced to close, only larger.
+ * DERIVED from `CAPABILITY_MAP` rather than maintained beside it (ADR-0103).
+ * The two lists were kept by hand until 2026-09-27 and had drifted in the way
+ * two hand-kept lists always do: nothing declared what a resource *should* be
+ * able to do, so thirty resources carried `Create` and `Archive` with no
+ * `Update`, and four workflow-governed types could be approved and never
+ * published. The map now carries that declaration and this file is one
+ * `flatMap` over it, so there is no second place for the answer to live.
  *
- * `permission-catalogue.spec.ts` re-derives this list from source on every
- * test run and fails if the two disagree in either direction, so adding a
- * new guarded route without updating this file is caught mechanically.
+ * The exported shape is unchanged, so nothing downstream moved: `seed-admin`
+ * and `sync-permission-catalogue` still seed from this, and
+ * `permission-catalogue.spec.ts` still compares it against the
+ * `@RequirePermission` decorators in both directions — a guarded route with no
+ * pair here, and a pair here that guards no route, both fail.
  */
 export interface PermissionCatalogueEntry {
   resourceType: PermissionResource;
   action: PermissionAction;
 }
 
-export const PERMISSION_CATALOGUE: readonly PermissionCatalogueEntry[] = [
-  // Rewritten when the page was actually built. It previously carried the
-  // three rows every collection gets by default, which left the page's own
-  // editor and its publisher with no grant to hold.
-  //
-  // `Create` is gone rather than added to: the About page is one row, put
-  // there by the seed and edited from then on, so no route creates one and a
-  // `Create` grant would gate nothing — which is the drift this file's own
-  // spec exists to catch.
-  //
-  // `Publish` gates the switch that takes the page on and off the site as
-  // well as publishing it: deciding what the public sees is a publishing
-  // decision, not an editing one.
-  { resourceType: 'aboutFederationPage', action: 'Read' },
-  { resourceType: 'aboutFederationPage', action: 'Update' },
-  { resourceType: 'aboutFederationPage', action: 'Publish' },
-  { resourceType: 'aboutFederationPage', action: 'Delete' },
-  { resourceType: 'ageCategories', action: 'Create' },
-  { resourceType: 'ageCategories', action: 'Read' },
-  { resourceType: 'ageCategories', action: 'Delete' },
-  { resourceType: 'albums', action: 'Create' },
-  { resourceType: 'albums', action: 'Read' },
-  { resourceType: 'albums', action: 'Update' },
-  { resourceType: 'albums', action: 'Delete' },
-  { resourceType: 'albums', action: 'Publish' },
-  // `Publish` gates the switch that takes a hero page on and off the site
-  // (ADR-0102 §D2). It gates nothing else on these twelve: they carry no
-  // review cycle, so there is no other publishing act to hold.
-  { resourceType: 'albumsPage', action: 'Update' },
-  { resourceType: 'albumsPage', action: 'Publish' },
-  { resourceType: 'articles', action: 'Create' },
-  { resourceType: 'articles', action: 'Read' },
-  { resourceType: 'articles', action: 'Update' },
-  { resourceType: 'articles', action: 'Delete' },
-  { resourceType: 'articles', action: 'Publish' },
-  { resourceType: 'auditLogs', action: 'Read' },
-  { resourceType: 'auditLogs', action: 'Export' },
-  { resourceType: 'athleteClubHistory', action: 'Create' },
-  { resourceType: 'athleteClubHistory', action: 'Read' },
-  { resourceType: 'athleteClubHistory', action: 'Update' },
-  { resourceType: 'athleteClubHistory', action: 'Delete' },
-  { resourceType: 'athleteCoachHistory', action: 'Create' },
-  { resourceType: 'athleteCoachHistory', action: 'Read' },
-  { resourceType: 'athleteCoachHistory', action: 'Delete' },
-  { resourceType: 'athleteGuardianRelationships', action: 'Create' },
-  { resourceType: 'athleteGuardianRelationships', action: 'Read' },
-  { resourceType: 'athleteGuardianRelationships', action: 'Delete' },
-  { resourceType: 'athleteNationalTeamHistory', action: 'Create' },
-  { resourceType: 'athleteNationalTeamHistory', action: 'Read' },
-  { resourceType: 'athleteNationalTeamHistory', action: 'Delete' },
-  { resourceType: 'athleteProfiles', action: 'Create' },
-  { resourceType: 'athleteProfiles', action: 'Read' },
-  { resourceType: 'athleteProfiles', action: 'Delete' },
-  { resourceType: 'athletes', action: 'Create' },
-  { resourceType: 'athletes', action: 'Read' },
-  { resourceType: 'athletes', action: 'Delete' },
-  { resourceType: 'athletes', action: 'Export' },
-  { resourceType: 'athletesPage', action: 'Update' },
-  { resourceType: 'athletesPage', action: 'Publish' },
-  { resourceType: 'boardMembersPage', action: 'Update' },
-  { resourceType: 'boardMembersPage', action: 'Publish' },
-  { resourceType: 'clubs', action: 'Create' },
-  { resourceType: 'clubs', action: 'Read' },
-  { resourceType: 'clubs', action: 'Delete' },
-  { resourceType: 'clubs', action: 'Export' },
-  { resourceType: 'clubsPage', action: 'Update' },
-  { resourceType: 'clubsPage', action: 'Publish' },
-  { resourceType: 'clubTeams', action: 'Create' },
-  { resourceType: 'clubTeams', action: 'Read' },
-  { resourceType: 'clubTeams', action: 'Delete' },
-  { resourceType: 'coachClubHistory', action: 'Create' },
-  { resourceType: 'coachClubHistory', action: 'Read' },
-  { resourceType: 'coachClubHistory', action: 'Update' },
-  { resourceType: 'coachClubHistory', action: 'Delete' },
-  { resourceType: 'coaches', action: 'Create' },
-  { resourceType: 'coaches', action: 'Read' },
-  { resourceType: 'coaches', action: 'Delete' },
-  { resourceType: 'coachesPage', action: 'Update' },
-  { resourceType: 'coachesPage', action: 'Publish' },
-  { resourceType: 'committees', action: 'Create' },
-  { resourceType: 'committees', action: 'Read' },
-  { resourceType: 'committees', action: 'Delete' },
-  { resourceType: 'committeesPage', action: 'Update' },
-  { resourceType: 'committeesPage', action: 'Publish' },
-  { resourceType: 'contactMessages', action: 'Read' },
-  { resourceType: 'contactMessages', action: 'Update' },
-  { resourceType: 'contactMessages', action: 'Delete' },
-  { resourceType: 'contactMessages', action: 'Export' },
-  { resourceType: 'contactUsPage', action: 'Update' },
-  { resourceType: 'contactUsPage', action: 'Publish' },
-  { resourceType: 'countries', action: 'Create' },
-  { resourceType: 'countries', action: 'Read' },
-  { resourceType: 'countries', action: 'Delete' },
-  { resourceType: 'disciplines', action: 'Create' },
-  { resourceType: 'disciplines', action: 'Read' },
-  { resourceType: 'disciplines', action: 'Delete' },
-  { resourceType: 'disciplinesPage', action: 'Update' },
-  { resourceType: 'disciplinesPage', action: 'Publish' },
-  { resourceType: 'documents', action: 'Create' },
-  { resourceType: 'documents', action: 'Read' },
-  { resourceType: 'documents', action: 'Delete' },
-  { resourceType: 'electionCycles', action: 'Create' },
-  { resourceType: 'electionCycles', action: 'Read' },
-  { resourceType: 'electionCycles', action: 'Delete' },
-  { resourceType: 'federation', action: 'Create' },
-  { resourceType: 'federation', action: 'Read' },
-  { resourceType: 'federation', action: 'Delete' },
-  { resourceType: 'federationAppointments', action: 'Create' },
-  { resourceType: 'federationAppointments', action: 'Read' },
-  { resourceType: 'federationAppointments', action: 'Delete' },
-  { resourceType: 'federationPersonnel', action: 'Create' },
-  { resourceType: 'federationPersonnel', action: 'Read' },
-  { resourceType: 'federationPersonnel', action: 'Delete' },
-  { resourceType: 'governanceDocuments', action: 'Create' },
-  { resourceType: 'governanceDocuments', action: 'Read' },
-  { resourceType: 'governanceDocuments', action: 'Delete' },
-  { resourceType: 'heroSlides', action: 'Create' },
-  { resourceType: 'heroSlides', action: 'Read' },
-  { resourceType: 'heroSlides', action: 'Update' },
-  { resourceType: 'heroSlides', action: 'Delete' },
-  { resourceType: 'mediaAssets', action: 'Create' },
-  { resourceType: 'mediaAssets', action: 'Read' },
-  { resourceType: 'mediaAssets', action: 'Delete' },
-  { resourceType: 'memberships', action: 'Create' },
-  { resourceType: 'memberships', action: 'Read' },
-  { resourceType: 'memberships', action: 'Update' },
-  { resourceType: 'memberships', action: 'Delete' },
-  { resourceType: 'navigationItems', action: 'Create' },
-  { resourceType: 'navigationItems', action: 'Read' },
-  { resourceType: 'navigationItems', action: 'Update' },
-  { resourceType: 'navigationItems', action: 'Delete' },
-  { resourceType: 'navigationMenus', action: 'Create' },
-  { resourceType: 'navigationMenus', action: 'Read' },
-  { resourceType: 'navigationMenus', action: 'Delete' },
-  { resourceType: 'newsPage', action: 'Update' },
-  { resourceType: 'newsPage', action: 'Publish' },
-  { resourceType: 'notifications', action: 'Create' },
-  { resourceType: 'officialAssignments', action: 'Create' },
-  { resourceType: 'officialAssignments', action: 'Read' },
-  { resourceType: 'officialAssignments', action: 'Delete' },
-  { resourceType: 'officialClubHistory', action: 'Create' },
-  { resourceType: 'officialClubHistory', action: 'Read' },
-  { resourceType: 'officialClubHistory', action: 'Update' },
-  { resourceType: 'officialClubHistory', action: 'Delete' },
-  { resourceType: 'officialProfiles', action: 'Create' },
-  { resourceType: 'officialProfiles', action: 'Read' },
-  { resourceType: 'officialProfiles', action: 'Delete' },
-  { resourceType: 'officials', action: 'Create' },
-  { resourceType: 'officials', action: 'Read' },
-  { resourceType: 'officials', action: 'Delete' },
-  { resourceType: 'organizationalStructure', action: 'Create' },
-  { resourceType: 'organizationalStructure', action: 'Read' },
-  { resourceType: 'organizationalStructure', action: 'Update' },
-  { resourceType: 'organizationalStructure', action: 'Delete' },
-  { resourceType: 'pages', action: 'Create' },
-  { resourceType: 'pages', action: 'Read' },
-  { resourceType: 'pages', action: 'Delete' },
-  { resourceType: 'pageSections', action: 'Create' },
-  { resourceType: 'pageSections', action: 'Read' },
-  { resourceType: 'pageSections', action: 'Update' },
-  { resourceType: 'pageSections', action: 'Delete' },
-  { resourceType: 'partnerships', action: 'Create' },
-  { resourceType: 'partnerships', action: 'Read' },
-  { resourceType: 'partnerships', action: 'Update' },
-  { resourceType: 'partnerships', action: 'Delete' },
-  { resourceType: 'permissions', action: 'Create' },
-  { resourceType: 'permissions', action: 'Read' },
-  { resourceType: 'presidentMessagePage', action: 'Create' },
-  { resourceType: 'presidentMessagePage', action: 'Read' },
-  { resourceType: 'presidentMessagePage', action: 'Update' },
-  { resourceType: 'presidentMessagePage', action: 'Publish' },
-  { resourceType: 'presidentMessagePage', action: 'Delete' },
-  { resourceType: 'publications', action: 'Read' },
-  { resourceType: 'publications', action: 'Publish' },
-  { resourceType: 'recordsPage', action: 'Update' },
-  { resourceType: 'recordsPage', action: 'Publish' },
-  { resourceType: 'resultsRankingsPage', action: 'Update' },
-  { resourceType: 'resultsRankingsPage', action: 'Publish' },
-  { resourceType: 'revisions', action: 'Create' },
-  { resourceType: 'revisions', action: 'Read' },
-  { resourceType: 'roles', action: 'Create' },
-  { resourceType: 'roles', action: 'Read' },
-  { resourceType: 'roles', action: 'Update' },
-  { resourceType: 'roles', action: 'Delete' },
-  { resourceType: 'siteSettings', action: 'Read' },
-  { resourceType: 'siteSettings', action: 'Update' },
-  { resourceType: 'sponsors', action: 'Create' },
-  { resourceType: 'sponsors', action: 'Read' },
-  { resourceType: 'sponsors', action: 'Update' },
-  { resourceType: 'sponsors', action: 'Delete' },
-  { resourceType: 'sponsorships', action: 'Create' },
-  { resourceType: 'sponsorships', action: 'Read' },
-  { resourceType: 'sponsorships', action: 'Update' },
-  { resourceType: 'sponsorships', action: 'Delete' },
-  { resourceType: 'strategicPlansPage', action: 'Create' },
-  { resourceType: 'strategicPlansPage', action: 'Read' },
-  { resourceType: 'strategicPlansPage', action: 'Update' },
-  { resourceType: 'strategicPlansPage', action: 'Publish' },
-  { resourceType: 'strategicPlansPage', action: 'Delete' },
-  { resourceType: 'users', action: 'Create' },
-  { resourceType: 'users', action: 'Read' },
-  { resourceType: 'users', action: 'Update' },
-  { resourceType: 'users', action: 'Export' },
-  { resourceType: 'venues', action: 'Create' },
-  { resourceType: 'venues', action: 'Read' },
-  { resourceType: 'venues', action: 'Delete' },
-  { resourceType: 'videos', action: 'Create' },
-  { resourceType: 'videos', action: 'Read' },
-  // Guards PATCH /videos/:id — which is how a video is PUBLISHED, since the
-  // API creates every one as a draft — and the three live-stream routes,
-  // whose permissions ride on this subject rather than a second one.
-  { resourceType: 'videos', action: 'Update' },
-  { resourceType: 'videos', action: 'Delete' },
-  { resourceType: 'videosPage', action: 'Update' },
-  { resourceType: 'videosPage', action: 'Publish' },
-  { resourceType: 'visionMissionPage', action: 'Create' },
-  { resourceType: 'visionMissionPage', action: 'Read' },
-  { resourceType: 'visionMissionPage', action: 'Update' },
-  { resourceType: 'visionMissionPage', action: 'Publish' },
-  { resourceType: 'visionMissionPage', action: 'Delete' },
-  { resourceType: 'workflowActionHistory', action: 'Read' },
-  { resourceType: 'workflowDefinitions', action: 'Create' },
-  { resourceType: 'workflowDefinitions', action: 'Read' },
-  { resourceType: 'workflowDefinitions', action: 'Delete' },
-  { resourceType: 'workflowInstances', action: 'Create' },
-  { resourceType: 'workflowInstances', action: 'Read' },
-  { resourceType: 'workflowInstances', action: 'Update' },
-  { resourceType: 'workflowInstances', action: 'Approve' },
-  { resourceType: 'workflowPolicies', action: 'Create' },
-  { resourceType: 'workflowPolicies', action: 'Read' },
-  { resourceType: 'workflowPolicies', action: 'Update' },
-  { resourceType: 'workflowSteps', action: 'Create' },
-  { resourceType: 'workflowSteps', action: 'Read' },
-  { resourceType: 'workflowSteps', action: 'Delete' },
-];
+export const PERMISSION_CATALOGUE: readonly PermissionCatalogueEntry[] = CAPABILITY_MAP.flatMap(
+  (capability) => capability.actions.map((action) => ({ resourceType: capability.resourceType, action })),
+);

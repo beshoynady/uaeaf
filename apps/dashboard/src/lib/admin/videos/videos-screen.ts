@@ -67,7 +67,7 @@ export const loadVideosScreen = async (locale: AppLocale): Promise<VideosScreen>
       thumbnails: new Map(toMediaOptions(assets).map((asset) => [asset.id, asset.url])),
       canCreate: hasPermission(grants, "videos", "Create"),
       canUpdate: hasPermission(grants, "videos", "Update"),
-      canDelete: hasPermission(grants, "videos", "Delete"),
+      canDelete: hasPermission(grants, "videos", "Archive"),
     },
   };
 };

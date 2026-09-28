@@ -15,7 +15,7 @@ import { AuditLogPageDto } from './dto/audit-log-response.dto.js';
  *
  * Read-only by construction, not by convention: `AuditLogsRepository`
  * exposes no update, no soft delete and no hard delete, and this controller
- * declares no mutating route. `@RequirePermission('auditLogs', 'Read')` is a
+ * declares no mutating route. `@RequirePermission('auditLogs', 'ViewAuditLog')` is a
  * new pair in the catalogue — no existing role holds it until someone grants
  * it deliberately, which is the correct default for a record of who did
  * what.
@@ -34,7 +34,7 @@ export class AuditLogsController {
   }
 
   @Get()
-  @RequirePermission('auditLogs', 'Read')
+  @RequirePermission('auditLogs', 'ViewAuditLog')
   @ApiOkResponse({ type: AuditLogPageDto })
   async findAll(@Query() query: QueryAuditLogsDto): Promise<AuditLogPageDto> {
     return this.auditLogsService.query(query);

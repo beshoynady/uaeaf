@@ -60,4 +60,8 @@ export class OfficialClubHistoryService {
   async remove(id: string, archivedBy: Types.ObjectId): Promise<OfficialClubHistoryDocument | null> {
     return this.repository.softDelete(id, archivedBy);
   }
+
+  async unarchive(id: string): Promise<OfficialClubHistoryDocument | null> {
+    return this.repository.restore(id);
+  }
 }

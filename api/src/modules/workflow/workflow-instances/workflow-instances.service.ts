@@ -540,6 +540,26 @@ export class WorkflowInstancesService {
    * that the rule about *which* statuses are stranded by a step change lives
    * in one place, beside the `resubmit` logic that determines it.
    */
+  /** How many reviews of this entity type have not reached `Approved` — the
+   *  predicate that matches `findActive`, and so the one that decides whether
+   *  turning approvals off would strand anything. See the repository for why it
+   *  differs from `countOpenForDefinition`. */
+  async countUnapprovedForEntityType(entityType: WorkflowEntityType): Promise<number> {
+    return this.repository.countUnapprovedForEntityType(entityType);
+  }
+
+  /** The unapproved reviews of an entity type, for a refusal that names them
+   *  rather than only counting them (ADR-0107 D1). */
+  async findUnapprovedForEntityType(entityType: WorkflowEntityType): Promise<WorkflowInstanceDocument[]> {
+    return this.repository.findUnapprovedForEntityType(entityType);
+  }
+
+  /** The open reviews under a definition, for a refusal that has to name them
+   *  rather than only count them (ADR-0107 D1). */
+  async findOpenForDefinition(definitionId: Types.ObjectId): Promise<WorkflowInstanceDocument[]> {
+    return this.repository.findOpenForDefinition(definitionId);
+  }
+
   async countOpenForDefinition(definitionId: Types.ObjectId): Promise<number> {
     return this.repository.countOpenForDefinition(definitionId);
   }

@@ -323,6 +323,10 @@ export class HeroSlidesService {
     return this.repository.softDelete(id, archivedBy);
   }
 
+  async unarchive(id: string): Promise<HeroSlideDocument | null> {
+    return this.repository.restore(id);
+  }
+
   /** The slides a public visitor should see for one HERO `pageSection`, in
    *  display order: `active` and inside their `scheduledFrom`/`scheduledTo`
    *  window at `now` — mirrors `PageSectionsService.findPublicByPage()`'s

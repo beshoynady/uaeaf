@@ -75,6 +75,10 @@ export class NavigationItemsService {
     return this.repository.softDelete(id, archivedBy);
   }
 
+  async unarchive(id: string): Promise<NavigationItemDocument | null> {
+    return this.repository.restore(id);
+  }
+
   private async assertItemExists(id: string): Promise<NavigationItemDocument> {
     const item = await this.repository.findById(id);
     if (!item) {

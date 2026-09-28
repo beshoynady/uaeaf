@@ -1,10 +1,25 @@
-import { Body, Controller, Delete, Get, Header, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Header,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Req,
+} from '@nestjs/common';
+import type { Request } from 'express';
 import { ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator.js';
 import { Public } from '../../../common/decorators/public.decorator.js';
 import { RateLimit } from '../../../common/decorators/rate-limit.decorator.js';
+import { SkipAuditLog } from '../../../common/decorators/skip-audit-log.decorator.js';
+import { extractRequestContext } from '../../../common/utils/request-context.util.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 import { ContactMessagesService } from './contact-messages.service.js';
 import {
@@ -88,8 +103,37 @@ export class ContactMessagesController {
   }
 
   @Delete(':id')
-  @RequirePermission('contactMessages', 'Delete')
+  @RequirePermission('contactMessages', 'Archive')
   remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.service.remove(id, new Types.ObjectId(user.userId));
+  }
+
+  /** Not `:id/restore`: that path is the revision restore elsewhere in this API
+   *  (ADR-0120). */
+  @Post(':id/unarchive')
+  @RequirePermission('contactMessages', 'Restore')
+  unarchive(@Param('id') id: string) {
+    return this.service.unarchive(id);
+  }
+
+  /**
+   * Erases the message for good — a citizen's own submission, which an archive
+   * does not satisfy under a PDPL erasure request.
+   *
+   * Its three conditions are in ADR-0120 §D5 and every one of them is checked in
+   * the service, which is what makes them unskippable: step-up verification has
+   * nothing to verify against in this API, so every request here is refused
+   * before anything is read or removed.
+   */
+  @Delete(':id/record')
+  @RequirePermission('contactMessages', 'PermanentDelete')
+  @SkipAuditLog()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  permanentDelete(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
+    return this.service.permanentDelete(id, user, extractRequestContext(req));
   }
 }

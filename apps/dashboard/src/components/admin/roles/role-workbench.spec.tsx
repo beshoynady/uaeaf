@@ -15,7 +15,7 @@ afterEach(() => {
 const PERMISSIONS: PermissionResponse[] = [
   { _id: "p1", name: { en: "Read users", ar: "" }, resourceType: "users", action: "Read" },
   { _id: "p2", name: { en: "Create users", ar: "" }, resourceType: "users", action: "Create" },
-  { _id: "p3", name: { en: "Delete albums", ar: "" }, resourceType: "albums", action: "Delete" },
+  { _id: "p3", name: { en: "Archive albums", ar: "" }, resourceType: "albums", action: "Archive" },
 ];
 
 const ROLES: RoleResponse[] = [
@@ -53,7 +53,7 @@ const USERS: UserResponse[] = [
 const ALL_GRANTS = [
   { resourceType: "users", action: "Read" },
   { resourceType: "users", action: "Create" },
-  { resourceType: "albums", action: "Delete" },
+  { resourceType: "albums", action: "Archive" },
 ];
 
 function renderWorkbench(over: Partial<Parameters<typeof RoleWorkbench>[0]> = {}) {
@@ -82,7 +82,7 @@ describe("RoleWorkbench", () => {
   });
 
   it("renders an em dash, not a checkbox, for a pair the catalogue does not define", () => {
-    // albums has only Delete. An unchecked box under Create would invite a
+    // albums has only Archive. An unchecked box under Create would invite a
     // click asking for a permission that guards no route.
     renderWorkbench();
 
@@ -146,12 +146,12 @@ describe("RoleWorkbench", () => {
     });
 
     expect(screen.getByText("لا يمكنك حفظ هذا الدور")).toBeInTheDocument();
-    expect(screen.getByText("albums:Delete")).toBeInTheDocument();
+    expect(screen.getByText("albums:Archive")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "حفظ التغييرات" })).toBeDisabled();
 
     // Unticking is still allowed even though ticking never was — that is the
     // only way out of the state.
-    await user.click(screen.getByRole("checkbox", { name: "حذف — albums" }));
+    await user.click(screen.getByRole("checkbox", { name: "أرشفة — albums" }));
     expect(screen.getByRole("button", { name: "حفظ التغييرات" })).toBeEnabled();
   });
 
@@ -229,6 +229,6 @@ describe("RoleWorkbench", () => {
 
     await user.type(screen.getByPlaceholderText(/ابحث في الموارد/), "albums");
     expect(screen.queryByRole("checkbox", { name: "قراءة — users" })).toBeNull();
-    expect(screen.getByRole("checkbox", { name: "حذف — albums" })).toBeInTheDocument();
+    expect(screen.getByRole("checkbox", { name: "أرشفة — albums" })).toBeInTheDocument();
   });
 });

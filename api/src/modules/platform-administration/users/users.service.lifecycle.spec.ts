@@ -7,6 +7,7 @@ import { UsersRepository } from './users.repository.js';
 import { RolesService } from '../roles/roles.service.js';
 import { AuthSessionsService } from '../auth-sessions/auth-sessions.service.js';
 import { FederationPersonnelsService } from '../../federation-governance/federation-personnel/federation-personnel.service.js';
+import { AuditLogsService } from '../../workflow/audit-logs/audit-logs.service.js';
 
 /**
  * Covers build-plan open items 20, 22 and 24:
@@ -55,7 +56,15 @@ describe('UsersService — lifecycle', () => {
         UsersService,
         {
           provide: UsersRepository,
-          useValue: { create: jest.fn(), findByEmail: jest.fn(), updateById: jest.fn() },
+          useValue: {
+            create: jest.fn(),
+            findByEmail: jest.fn(),
+            updateById: jest.fn(),
+            findById: jest.fn(),
+            softDelete: jest.fn(),
+            restore: jest.fn(),
+            countActiveSuperAdmins: jest.fn(),
+          },
         },
         {
           provide: RolesService,
@@ -67,11 +76,18 @@ describe('UsersService — lifecycle', () => {
         },
         { provide: AuthSessionsService, useValue: { revokeAllForUser: jest.fn() } },
         { provide: FederationPersonnelsService, useValue: { findById: jest.fn() } },
+        { provide: AuditLogsService, useValue: { write: jest.fn() } },
       ],
     }).compile();
 
     service = module.get(UsersService);
     repository = module.get(UsersRepository);
+    // ADR-0104 rule 2 reads the target before a role or status change. These
+    // specs are about other behaviour, so the target exists and holds nothing.
+    repository.findById.mockResolvedValue({
+      _id: new Types.ObjectId(),
+      roleIds: [],
+    } as never);
     rolesService = module.get(RolesService);
     rolesService.resolvePermissionsForRoles.mockResolvedValue([] as never);
     rolesService.isSystemRole.mockResolvedValue(false as never);
@@ -137,7 +153,7 @@ describe('UsersService — lifecycle', () => {
     it('records the new status and returns the public shape', async () => {
       repository.updateById.mockResolvedValue(stored({ accountStatus: 'Suspended' }));
 
-      const result = await service.updateAccountStatus(id, 'Suspended');
+      const result = await service.updateAccountStatus(id, 'Suspended', actor);
 
       expect(repository.updateById).toHaveBeenCalledWith(id, { accountStatus: 'Suspended' });
       expect(result.accountStatus).toBe('Suspended');
@@ -150,7 +166,7 @@ describe('UsersService — lifecycle', () => {
       // effect until it expires is not a suspension.
       repository.updateById.mockResolvedValue(stored({ accountStatus: 'Suspended' }));
 
-      await service.updateAccountStatus(id, 'Suspended');
+      await service.updateAccountStatus(id, 'Suspended', actor);
 
       expect(authSessions.revokeAllForUser).toHaveBeenCalledWith(id);
     });
@@ -158,7 +174,7 @@ describe('UsersService — lifecycle', () => {
     it('revokes on deactivation too', async () => {
       repository.updateById.mockResolvedValue(stored({ accountStatus: 'Deactivated' }));
 
-      await service.updateAccountStatus(id, 'Deactivated');
+      await service.updateAccountStatus(id, 'Deactivated', actor);
 
       expect(authSessions.revokeAllForUser).toHaveBeenCalledWith(id);
     });
@@ -168,7 +184,7 @@ describe('UsersService — lifecycle', () => {
       // a session they do not have would do nothing but cost a write.
       repository.updateById.mockResolvedValue(stored({ accountStatus: 'Active' }));
 
-      await service.updateAccountStatus(id, 'Active');
+      await service.updateAccountStatus(id, 'Active', actor);
 
       expect(authSessions.revokeAllForUser).not.toHaveBeenCalled();
     });
@@ -176,9 +192,67 @@ describe('UsersService — lifecycle', () => {
     it('reports an unknown account as not found, and revokes nothing', async () => {
       repository.updateById.mockResolvedValue(null);
 
-      await expect(service.updateAccountStatus(id, 'Suspended')).rejects.toBeInstanceOf(
+      await expect(service.updateAccountStatus(id, 'Suspended', actor)).rejects.toBeInstanceOf(
         NotFoundException,
       );
+      expect(authSessions.revokeAllForUser).not.toHaveBeenCalled();
+    });
+  });
+
+  /** ADR-0120 §D10. Archiving an account carries the same two refusals as a
+   *  status change, and has to end the sessions itself: `JwtStrategy` resolves
+   *  permissions from the token and never re-reads the account. */
+  describe('remove', () => {
+    it('archives the account and ends every session it holds', async () => {
+      repository.softDelete.mockResolvedValue(stored({ archivedAt: new Date() }));
+
+      await service.remove(id, actor);
+
+      expect(repository.softDelete).toHaveBeenCalledWith(id, expect.any(Types.ObjectId));
+      expect(authSessions.revokeAllForUser).toHaveBeenCalledWith(id);
+    });
+
+    it('refuses an account holding permissions the actor does not, and archives nothing', async () => {
+      rolesService.resolvePermissionsForRoles.mockResolvedValue([
+        { resourceType: 'users', action: 'Create' },
+      ] as never);
+
+      await expect(service.remove(id, actor)).rejects.toMatchObject({
+        response: { code: 'targetStronger' },
+      });
+      expect(repository.softDelete).not.toHaveBeenCalled();
+      expect(authSessions.revokeAllForUser).not.toHaveBeenCalled();
+    });
+
+    it('refuses the last active Super Admin, and archives nothing', async () => {
+      repository.findById.mockResolvedValue({
+        _id: new Types.ObjectId(),
+        roleIds: [new Types.ObjectId()],
+      } as never);
+      rolesService.isSystemRole.mockResolvedValue(true as never);
+      repository.countActiveSuperAdmins.mockResolvedValue(0 as never);
+
+      await expect(service.remove(id, actor)).rejects.toMatchObject({
+        response: { code: 'lastSuperAdmin' },
+      });
+      expect(repository.softDelete).not.toHaveBeenCalled();
+    });
+
+    it('revokes nothing when the id archives nothing', async () => {
+      repository.softDelete.mockResolvedValue(null);
+
+      await expect(service.remove(id, actor)).resolves.toBeNull();
+      expect(authSessions.revokeAllForUser).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('unarchive', () => {
+    it('brings the account back without restoring any session', async () => {
+      repository.restore.mockResolvedValue(stored({ archivedAt: null }));
+
+      await service.unarchive(id);
+
+      expect(repository.restore).toHaveBeenCalledWith(id);
       expect(authSessions.revokeAllForUser).not.toHaveBeenCalled();
     });
   });

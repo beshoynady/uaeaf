@@ -3,9 +3,11 @@ import { Types } from 'mongoose';
 import { GovernanceDocumentsRepository } from './governance-documents.repository.js';
 import type { GovernanceDocumentDocument } from './schemas/governance-documents.schema.js';
 import { CreateGovernanceDocumentDto } from './dto/create-governance-documents.dto.js';
+import { UpdateGovernanceDocumentDto } from './dto/update-governance-documents.dto.js';
 import { PublicationsService } from '../../workflow/publications/publications.service.js';
 import { RevisionsService } from '../../workflow/revisions/revisions.service.js';
 import { DocumentsService } from '../../documents/documents/documents.service.js';
+import { partialUpdate } from '../../../common/utils/partial-update.util.js';
 
 /** Implements: governanceDocuments collection, Domain 1 — Federation &
  *  Governance. Workflow-governed (List A + List B), wired like Week 3's
@@ -51,6 +53,24 @@ export class GovernanceDocumentsService {
     return this.repository.findById(id);
   }
 
+  /**
+   * Saves the row directly — same as `ArticlesService.update()`.
+   * `governanceDocuments` is workflow-governed, but a revision is a
+   * snapshot `RevisionsService` freezes at submit/publish time, not
+   * something this plain field edit creates. `fileId` is not on
+   * `UpdateGovernanceDocumentDto` at all (Fix round 1, CLAUDE.md §31) — no
+   * filtering is needed here to keep it out; see that DTO for why.
+   *
+   * @throws NotFoundException when no such governance document exists.
+   */
+  async update(id: string, dto: UpdateGovernanceDocumentDto): Promise<GovernanceDocumentDocument> {
+    const updated = await this.repository.updateById(id, partialUpdate(dto));
+    if (!updated) {
+      throw new NotFoundException(`Governance document ${id} not found.`);
+    }
+    return updated;
+  }
+
   /** The sole public read path (Week 2 "Approved ≠ Published" rule). */
   async getPublicSnapshot(id: string): Promise<Record<string, unknown> | null> {
     return this.publicationsService.getPublicSnapshot('governanceDocuments', new Types.ObjectId(id));
@@ -63,5 +83,9 @@ export class GovernanceDocumentsService {
 
   async remove(id: string, archivedBy: Types.ObjectId): Promise<GovernanceDocumentDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  async unarchive(id: string): Promise<GovernanceDocumentDocument | null> {
+    return this.repository.restore(id);
   }
 }

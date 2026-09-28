@@ -69,7 +69,7 @@ export const HOMEPAGE_HERO_GRANTS = [
   { resourceType: "heroSlides", action: "Read" },
   { resourceType: "heroSlides", action: "Create" },
   { resourceType: "heroSlides", action: "Update" },
-  { resourceType: "heroSlides", action: "Delete" },
+  { resourceType: "heroSlides", action: "Archive" },
   { resourceType: "pageSections", action: "Read" },
   { resourceType: "pageSections", action: "Update" },
 ] as const satisfies readonly NavRequirement[];
@@ -83,11 +83,11 @@ export const HOMEPAGE_SPONSORS_GRANTS = [
   { resourceType: "sponsors", action: "Read" },
   { resourceType: "sponsors", action: "Create" },
   { resourceType: "sponsors", action: "Update" },
-  { resourceType: "sponsors", action: "Delete" },
+  { resourceType: "sponsors", action: "Archive" },
   { resourceType: "sponsorships", action: "Read" },
   { resourceType: "sponsorships", action: "Create" },
   { resourceType: "sponsorships", action: "Update" },
-  { resourceType: "sponsorships", action: "Delete" },
+  { resourceType: "sponsorships", action: "Archive" },
   { resourceType: "pageSections", action: "Read" },
   { resourceType: "pageSections", action: "Update" },
 ] as const satisfies readonly NavRequirement[];
@@ -97,7 +97,7 @@ export const HOMEPAGE_PARTNERS_GRANTS = [
   { resourceType: "partnerships", action: "Read" },
   { resourceType: "partnerships", action: "Create" },
   { resourceType: "partnerships", action: "Update" },
-  { resourceType: "partnerships", action: "Delete" },
+  { resourceType: "partnerships", action: "Archive" },
 ] as const satisfies readonly NavRequirement[];
 
 /** Every grant the memberships screen uses, for the same reasons. */
@@ -105,7 +105,7 @@ export const HOMEPAGE_MEMBERSHIPS_GRANTS = [
   { resourceType: "memberships", action: "Read" },
   { resourceType: "memberships", action: "Create" },
   { resourceType: "memberships", action: "Update" },
-  { resourceType: "memberships", action: "Delete" },
+  { resourceType: "memberships", action: "Archive" },
 ] as const satisfies readonly NavRequirement[];
 
 /**

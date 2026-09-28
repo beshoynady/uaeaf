@@ -653,3 +653,64 @@ Remaining P2/P3 items (§10, items 10-17) each follow the identical template sha
 ## 12. Final Note
 
 *No files, schemas, or Figma nodes were modified. Awaiting your review and go-ahead before implementing any item above.*
+
+---
+
+# Appendix A — 2026-09-28: C3 / #5 revisited
+
+**Nothing above this line has been edited.** This appendix is appended rather
+than applied to the original text, for the same reason the audit log itself is
+append-only: a document that gets rewritten stops being evidence of what was
+known when it was written. §3.7, §4 and item #5 above record what was true and
+verified on 2026-09-04, and they stay as they are.
+
+**Authority:** Product Owner decision 2026-09-28, recorded in
+`docs/design-system/ADR-0120-Media-Permanent-Delete.md` §D5.
+
+## What this appendix records
+
+This audit closed finding **C3** (and its item **#5**) on the strength of
+`contactMessages.hardDeleteEligibleAt` — a cooldown gate enforced by
+`ContactMessagesService.assertHardDeletable()`, described above as "a stronger
+control than the one it's exempt from, not merely a workaround". The design was
+sound and the code was as described. Two facts found since change the verdict on
+the *control*, not on the reading of the code:
+
+1. **Nothing ever set the field.** `create` wrote `null`; no route, no script and
+   no screen ever changed it. It was `null` for every row in the collection.
+2. **So the gate refused every permanent deletion, without exception** — and its
+   own read made that structural: it fetched the row through `findById`, which
+   scopes `archivedAt: null`, so once an archive-first rule was added the only
+   messages the cooldown could find were the ones archive-first already refused.
+
+The cases it refused are the ones the collection is purgeable *for*: spam, an
+abusive submission, and a citizen's own personal-data erasure request. A gate
+that refuses everything is not a conservative control — it is an absent
+capability with a comment claiming otherwise, which is worse than a named gap
+because nothing looks unfinished.
+
+**The field, its gate and its condition have therefore been removed** (ADR-0120
+§D5), and the finding is closed by controls that can each actually be met.
+
+## What closes C3 / #5 now
+
+| Control | State |
+|---|---|
+| **Step-up verification** before any permanent deletion — a port with one implementation, `UnavailableStepUpVerifier`, asserted at the service entry so no caller can skip it | **built**, and it refuses every caller today: no second factor exists in this API yet, so `contactMessages:PermanentDelete` currently answers `403 mfa_step_up_required` |
+| **Archived first** — the message must have been withdrawn before it can be erased, read off the row that includes archived records | **built** |
+| **An audit row written BEFORE the removal**, recording who, when and which record — and never the sender, the subject or the body, because keeping a copy of what was erased is not an erasure. A failure appends a second row; the log is never amended | **built** |
+| **`messagesPurgeEnabled`, off by default** — the setting that has to be turned on before the capability is available at all | **NOT built here.** Part of the owner's decision, not of this change; recorded so the list is the whole control set rather than only the parts that exist |
+| **For the bulk path: a preview with its matching count**, shown before anything is erased | **NOT built here.** The bulk path itself does not exist — bulk permanent deletion is refused outright for media (ADR-0120 §D8a) and no bulk message path is built |
+
+Stating which of the five exist is the point. Three are in the code and tested;
+two are the owner's decision and are named here so a later reader does not read
+this table as a description of what is running.
+
+## Status of the finding
+
+**C3 / #5 — CLOSED, by ADR-0120's conditions rather than by the cooldown.** The
+2026-09-04 reasoning still holds in the part that matters: this collection is
+List A and not List B, so the standard `revisions`-existence check can never
+protect it, and it does need a control of its own. What it has instead of the
+cooldown is three conditions that a legitimate erasure can satisfy and an
+illegitimate one cannot.

@@ -231,8 +231,17 @@ export class ArticlesController {
 
   @Delete(':id')
   @SkipAuditLog()
-  @RequirePermission('articles', 'Delete')
+  @RequirePermission('articles', 'Archive')
   remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser, @Req() req: Request) {
     return this.service.remove(id, user, extractRequestContext(req));
+  }
+
+  /** See ADR-0120: not `:id/restore`, which is this controller's revision
+   *  restore, guarded by `articles:Update` and a different act entirely. */
+  @Post(':id/unarchive')
+  @SkipAuditLog()
+  @RequirePermission('articles', 'Restore')
+  unarchive(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser, @Req() req: Request) {
+    return this.service.unarchive(id, user, extractRequestContext(req));
   }
 }

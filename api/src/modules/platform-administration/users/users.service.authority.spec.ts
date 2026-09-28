@@ -7,6 +7,7 @@ import { UsersRepository } from './users.repository.js';
 import { RolesService } from '../roles/roles.service.js';
 import { AuthSessionsService } from '../auth-sessions/auth-sessions.service.js';
 import { FederationPersonnelsService } from '../../federation-governance/federation-personnel/federation-personnel.service.js';
+import { AuditLogsService } from '../../workflow/audit-logs/audit-logs.service.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 
 /**
@@ -38,6 +39,11 @@ describe('UsersService — you cannot assign what you do not hold', () => {
     permissions: [
       { resourceType: 'users', action: 'Create' },
       { resourceType: 'users', action: 'Read' },
+      // An ordinary, non-reserved permission — used by the "allows" tests
+      // below. `users:Create`/`users:Read` are both Decision 4 reserved
+      // pairs (2026-09-27) as of this writing, so neither can stand in for
+      // "a permission this actor may pass on" any more; this one can.
+      { resourceType: 'clubs', action: 'Update' },
     ],
   };
 
@@ -68,6 +74,7 @@ describe('UsersService — you cannot assign what you do not hold', () => {
         },
         { provide: AuthSessionsService, useValue: { revokeAllForUser: jest.fn() } },
         { provide: FederationPersonnelsService, useValue: { findById: jest.fn() } },
+        { provide: AuditLogsService, useValue: { write: jest.fn() } },
       ],
     }).compile();
 
@@ -118,9 +125,23 @@ describe('UsersService — you cannot assign what you do not hold', () => {
       });
     });
 
-    it('refuses a system role outright, whatever the actor holds', async () => {
+    /**
+     * A system role is not special-cased — it is refused by the same comparison
+     * as any other role, because it holds the whole catalogue and almost nobody
+     * covers that.
+     *
+     * An earlier version refused every system role outright. That was stricter
+     * than ADR-0104 states ("refused to anyone who does not already hold it")
+     * and it had a consequence nobody wanted: `lastSuperAdmin` tells an
+     * administrator to appoint a second Super Admin first, and with a blanket
+     * refusal no route could. The guard became a one-way ratchet whose own
+     * advice was unfollowable (found by independent review, 2026-09-27).
+     */
+    it('refuses a system role to an actor who does not cover it', async () => {
       rolesService.isSystemRole.mockResolvedValue(true as never);
-      rolesService.resolvePermissionsForRoles.mockResolvedValue([] as never);
+      rolesService.resolvePermissionsForRoles.mockResolvedValue([
+        { resourceType: 'roles', action: 'Update' },
+      ] as never);
 
       await expect(
         service.create({ ...baseDto, roleIds: [superAdminRoleId.toString()] } as never, staffAdmin),
@@ -129,9 +150,72 @@ describe('UsersService — you cannot assign what you do not hold', () => {
       expect(repository.create).not.toHaveBeenCalled();
     });
 
-    it('allows a role whose every grant the actor already holds', async () => {
+    /**
+     * Decision 4 / Q-A (2026-09-27) reserves `users:Create` and `users:Read`
+     * (among six others) to the seeded Super Admin role, but ONLY at the
+     * point a role is BUILT (`RolesService.assertGrantable`) — no custom
+     * role can ever hold one, so the only role that resolves to this grant
+     * is the Super Admin role itself. This path (handing a role to a
+     * person) does not repeat that refusal: it only compares the role's
+     * grants against the actor's own, which is what lets a Super Admin
+     * appoint another — the recovery path ADR-0105's `lastSuperAdmin`
+     * advice depends on staying open. Refusing it here too would be the
+     * same one-way ratchet the blanket system-role refusal was removed for,
+     * two paragraphs above in the source.
+     */
+    it('still lets a fully-covering actor appoint another holder of a reserved role', async () => {
+      rolesService.isSystemRole.mockResolvedValue(true as never);
       rolesService.resolvePermissionsForRoles.mockResolvedValue([
+        { resourceType: 'users', action: 'Create' },
         { resourceType: 'users', action: 'Read' },
+      ] as never);
+
+      await expect(
+        service.create({ ...baseDto, roleIds: [superAdminRoleId.toString()] } as never, staffAdmin),
+      ).resolves.toBeDefined();
+      expect(repository.create).toHaveBeenCalled();
+    });
+
+    /**
+     * The other half of the same boundary: coverage is still required. An
+     * actor who does not hold `users:Create`/`users:Read` themselves is
+     * refused by the ordinary rule 1 comparison (`ungrantableRole`) —
+     * exactly the escalation the review proved and rule 1 already closes.
+     * Nothing about removing the reserved-pair check from this path reopens
+     * it: it was never what closed it.
+     */
+    it('still refuses a non-covering actor the same reserved-pair role, via the ordinary rule', async () => {
+      const nonCoveringActor: AuthenticatedUser = {
+        userId: new Types.ObjectId().toString(),
+        roleIds: [],
+        permissions: [{ resourceType: 'clubs', action: 'Update' }],
+      };
+      rolesService.isSystemRole.mockResolvedValue(true as never);
+      rolesService.resolvePermissionsForRoles.mockResolvedValue([
+        { resourceType: 'users', action: 'Create' },
+        { resourceType: 'users', action: 'Read' },
+      ] as never);
+
+      await expect(
+        service.create({ ...baseDto, roleIds: [superAdminRoleId.toString()] } as never, nonCoveringActor),
+      ).rejects.toMatchObject({
+        response: { code: 'ungrantableRole', missing: ['users:Create', 'users:Read'] },
+      });
+      expect(repository.create).not.toHaveBeenCalled();
+    });
+
+    it('allows a role whose every grant the actor already holds', async () => {
+      // `clubs:Update`, kept distinct from `users:Read` on purpose (corrected
+      // 2026-09-27, independent review round 4, M5): `users:Read` is a
+      // reserved pair, but reserved pairs are refused only when a role is
+      // BUILT (`RolesService.assertGrantable`), not on this path — a
+      // fully-covering actor MAY be handed one, which is exactly what "still
+      // lets a fully-covering actor appoint another holder of a reserved
+      // role" above already proves. This test is about the plain superset
+      // rule on an ordinary pair, kept separate so the two are not
+      // conflated.
+      rolesService.resolvePermissionsForRoles.mockResolvedValue([
+        { resourceType: 'clubs', action: 'Update' },
       ] as never);
 
       await expect(
@@ -154,7 +238,7 @@ describe('UsersService — you cannot assign what you do not hold', () => {
       const ownOnly: AuthenticatedUser = {
         userId: new Types.ObjectId().toString(),
         roleIds: [],
-        permissions: [{ resourceType: 'articles', action: 'Update', scope: 'own' } as never],
+        permissions: [{ resourceType: 'articles', action: 'Update', scope: 'own' }],
       };
       rolesService.resolvePermissionsForRoles.mockResolvedValue([
         { resourceType: 'articles', action: 'Update', scope: 'all' },
@@ -172,8 +256,13 @@ describe('UsersService — you cannot assign what you do not hold', () => {
     });
 
     it('allows assigning a role the actor fully holds', async () => {
+      // `clubs:Update`, an ordinary pair — kept distinct from the reserved
+      // `users:Read` for the same reason as the `create` test above (M5,
+      // independent review round 4): reserved pairs are refused only when a
+      // role is BUILT, not when it is handed out, so this and that are two
+      // different rules and deserve two different fixtures.
       rolesService.resolvePermissionsForRoles.mockResolvedValue([
-        { resourceType: 'users', action: 'Read' },
+        { resourceType: 'clubs', action: 'Update' },
       ] as never);
       repository.findById.mockResolvedValue({
         _id: new Types.ObjectId(targetId),
@@ -190,7 +279,13 @@ describe('UsersService — you cannot assign what you do not hold', () => {
       } as never);
 
       await expect(service.assignRoles(targetId, [], staffAdmin)).resolves.toBeDefined();
-      expect(rolesService.resolvePermissionsForRoles).not.toHaveBeenCalled();
+
+      // Rule 1 resolves nothing, because an empty list grants nothing. Rule 2
+      // still resolves the TARGET's current authority — clearing the roles of
+      // an account stronger than you is exactly the act rule 2 refuses, so the
+      // read happens with the target's ids, never with the empty incoming list.
+      expect(rolesService.resolvePermissionsForRoles).toHaveBeenCalledTimes(1);
+      expect(rolesService.resolvePermissionsForRoles).toHaveBeenCalledWith([]);
     });
   });
 });

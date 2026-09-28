@@ -6,8 +6,10 @@ import type {
   FederationAppointmentDocument,
 } from './schemas/federation-appointments.schema.js';
 import { CreateFederationAppointmentDto } from './dto/create-federation-appointments.dto.js';
+import { UpdateFederationAppointmentDto } from './dto/update-federation-appointments.dto.js';
 import { FederationPersonnelsService } from '../federation-personnel/federation-personnel.service.js';
 import type { LocalizedText } from '../../../common/schemas/localized-text.schema.js';
+import { partialUpdate, setObjectIdField, setDateField } from '../../../common/utils/partial-update.util.js';
 
 /** The roles the federation's own board is made of. Committee posts are the
  *  committees page's subject and are deliberately absent. */
@@ -147,7 +149,32 @@ export class FederationAppointmentsService {
     });
   }
 
+  /** The succession side-effect `create()` runs (closing the superseded
+   *  row) is not re-run here — this edits one appointment's own fields.
+   *  Nullability (Fix round 2 — read from `federation-appointments.schema.ts`):
+   *  `personId`/`termStart` are `required: true`; `supersedesAppointmentId`/
+   *  `committeeId`/`electionCycleId`/`termEnd` all default to `null`.
+   *  @throws NotFoundException when no such appointment exists. */
+  async update(id: string, dto: UpdateFederationAppointmentDto): Promise<FederationAppointmentDocument> {
+    const update = partialUpdate(dto);
+    setObjectIdField(update, dto, 'personId', { nullable: false });
+    setObjectIdField(update, dto, 'supersedesAppointmentId', { nullable: true });
+    setObjectIdField(update, dto, 'committeeId', { nullable: true });
+    setObjectIdField(update, dto, 'electionCycleId', { nullable: true });
+    setDateField(update, dto, 'termStart', { nullable: false });
+    setDateField(update, dto, 'termEnd', { nullable: true });
+    const updated = await this.repository.updateById(id, update);
+    if (!updated) {
+      throw new NotFoundException(`Federation appointment ${id} not found.`);
+    }
+    return updated;
+  }
+
   async remove(id: string, archivedBy: Types.ObjectId): Promise<FederationAppointmentDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  async unarchive(id: string): Promise<FederationAppointmentDocument | null> {
+    return this.repository.restore(id);
   }
 }

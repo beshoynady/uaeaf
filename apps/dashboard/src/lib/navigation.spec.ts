@@ -1,7 +1,5 @@
-import { readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { CAPABILITY_MAP } from "../../../../api/src/common/authz/capability-map";
 import {
   HOMEPAGE_FOOTER_GRANTS,
   HOMEPAGE_HERO_GRANTS,
@@ -210,8 +208,16 @@ describe("the homepage screens' grants and the API catalogue", () => {
   // Every grant the screen checks must be a catalogue row: the seed creates the
   // rows from that list, so a grant missing there is one no administrator of a
   // new environment could ever hold, and the screen would never open.
+  //
+  // Reads `CAPABILITY_MAP` itself (ADR-0103) rather than pattern-matching the
+  // generated `permission-catalogue.ts` as text, which a formatting change
+  // there could satisfy without the pair actually existing.
   it("asks only for grants the API seeds", () => {
-    const catalogue = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..", "api", "src", "common", "constants", "permission-catalogue.ts"), "utf8");
+    const known = new Set(
+      CAPABILITY_MAP.flatMap((capability) =>
+        capability.actions.map((action) => `${capability.resourceType}:${action}`),
+      ),
+    );
     const missing = [
       ...HOMEPAGE_HERO_GRANTS,
       ...HOMEPAGE_SPONSOR_STRIP_GRANTS,
@@ -219,9 +225,7 @@ describe("the homepage screens' grants and the API catalogue", () => {
       ...HOMEPAGE_PARTNERS_GRANTS,
       ...HOMEPAGE_MEMBERSHIPS_GRANTS,
       ...HOMEPAGE_FOOTER_GRANTS,
-    ].filter(
-      ({ resourceType, action }) => !catalogue.includes(`{ resourceType: '${resourceType}', action: '${action}' }`),
-    );
+    ].filter(({ resourceType, action }) => !known.has(`${resourceType}:${action}`));
     expect(missing).toEqual([]);
   });
 });
@@ -242,7 +246,7 @@ describe("the homepage entry", () => {
     { resourceType: "heroSlides", action: "Read" },
     { resourceType: "heroSlides", action: "Create" },
     { resourceType: "heroSlides", action: "Update" },
-    { resourceType: "heroSlides", action: "Delete" },
+    { resourceType: "heroSlides", action: "Archive" },
     { resourceType: "pageSections", action: "Read" },
     { resourceType: "pageSections", action: "Update" },
   ];
@@ -264,7 +268,7 @@ describe("the homepage entry", () => {
       { resourceType: "partnerships", action: "Read" },
       { resourceType: "partnerships", action: "Create" },
       { resourceType: "partnerships", action: "Update" },
-      { resourceType: "partnerships", action: "Delete" },
+      { resourceType: "partnerships", action: "Archive" },
     ];
 
     expect(visibleNavItems(partnersOnly).find((entry) => entry.key === "homepage")?.href).toBe("/homepage/partners");
@@ -284,7 +288,7 @@ describe("the homepage entry", () => {
       { resourceType: "partnerships", action: "Read" },
       { resourceType: "partnerships", action: "Create" },
       { resourceType: "partnerships", action: "Update" },
-      { resourceType: "partnerships", action: "Delete" },
+      { resourceType: "partnerships", action: "Archive" },
     ];
 
     expect(visibleNavItems(partnersOnly).map((entry) => entry.key)).toContain("homepage");

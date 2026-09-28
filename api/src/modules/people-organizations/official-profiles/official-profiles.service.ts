@@ -3,7 +3,9 @@ import { Types } from 'mongoose';
 import { OfficialProfilesRepository } from './official-profiles.repository.js';
 import type { OfficialProfileDocument } from './schemas/official-profile.schema.js';
 import { CreateOfficialProfileDto } from './dto/create-official-profile.dto.js';
+import { UpdateOfficialProfileDto } from './dto/update-official-profile.dto.js';
 import { OfficialProfilePublicResponseDto } from './dto/official-profile-public-response.dto.js';
+import { partialUpdate } from '../../../common/utils/partial-update.util.js';
 import { OfficialsService } from '../officials/officials.service.js';
 import type { OfficialPublicResponseDto } from '../officials/dto/official-public-response.dto.js';
 import { MediaAssetsService } from '../../media-center/media-assets/media-assets.service.js';
@@ -70,6 +72,42 @@ export class OfficialProfilesService {
     return this.repository.findById(id);
   }
 
+  /**
+   * `officialId` is not on `UpdateOfficialProfileDto` at all (Fix round 1,
+   * CLAUDE.md §31) — no filtering is needed here to keep it out; see that
+   * DTO for why. `photoId` IS legitimately editable, and unlike the relink
+   * field its validity does not depend on anything this row itself
+   * remembers — the same "exists, not archived, actually an image" check
+   * `create()` runs is re-run here when it changes, mirroring
+   * `HeroSlidesService.update()`'s established convention for image
+   * references ("only images arriving in this request are checked").
+   *
+   * @throws NotFoundException when no such profile exists, or when
+   *   `photoId` is sent and doesn't reference an existing, non-archived
+   *   `MediaAsset`.
+   * @throws ConflictException when the patch's `slug`/`registrationNumber`
+   *   is already taken by another profile, or `photoId` isn't an image type.
+   */
+  async update(id: string, dto: UpdateOfficialProfileDto): Promise<OfficialProfileDocument> {
+    if (dto.photoId) {
+      await this.mediaAssetsService.assertUsableImage(dto.photoId);
+    }
+
+    let updated: OfficialProfileDocument | null;
+    try {
+      updated = await this.repository.updateById(id, partialUpdate(dto));
+    } catch (error) {
+      if (isDuplicateKeyError(error)) {
+        throw new ConflictException(`Duplicate value for ${duplicateKeyField(error) ?? 'field'}.`);
+      }
+      throw error;
+    }
+    if (!updated) {
+      throw new NotFoundException(`Official profile ${id} not found.`);
+    }
+    return updated;
+  }
+
   /** Public routing resolution: `/officials/:slug` →
    *  `officialProfiles.slug` → `officialId` → `officials`. Mirrors
    *  `AthleteProfilesService.getPublicBySlug()` — see its doc comment. */
@@ -107,5 +145,9 @@ export class OfficialProfilesService {
 
   async remove(id: string, archivedBy: Types.ObjectId): Promise<OfficialProfileDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  async unarchive(id: string): Promise<OfficialProfileDocument | null> {
+    return this.repository.restore(id);
   }
 }

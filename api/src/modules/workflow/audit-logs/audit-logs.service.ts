@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { AuditLogsRepository } from './audit-logs.repository.js';
 import type { AuditLogDocument } from './schemas/audit-log.schema.js';
+import { SECURITY_AUDIT_ACTIONS } from './schemas/audit-log.schema.js';
 import type { WriteAuditLogInput } from './dto/write-audit-log.dto.js';
 import type { QueryAuditLogsDto } from './dto/query-audit-logs.dto.js';
 import type { AuditLogPageDto, AuditLogResponseDto } from './dto/audit-log-response.dto.js';
@@ -99,7 +100,12 @@ export class AuditLogsService {
     if (query.actorId) {
       filter.actorId = new Types.ObjectId(query.actorId);
     }
-    if (query.action) {
+    // Takes precedence over a plain `action`, matching the DTO's own note —
+    // derived from the one named list so a fourth security action cannot be
+    // added to the vocabulary without this filter changing too.
+    if (query.securityEventsOnly) {
+      filter.action = { $in: SECURITY_AUDIT_ACTIONS };
+    } else if (query.action) {
       filter.action = query.action;
     }
     return filter;

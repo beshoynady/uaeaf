@@ -58,7 +58,7 @@ export const loadVideoEditor = async (
 
   const permissions = {
     canPublish: hasPermission(grants, "videos", "Update"),
-    canDelete: hasPermission(grants, "videos", "Delete"),
+    canDelete: hasPermission(grants, "videos", "Archive"),
   };
 
   if (id === null) {

@@ -42,4 +42,4 @@ export class CreateSponsorDto {
 }
 
 /** Request body for PATCH /sponsors/:id — any subset of the create body. */
-export class UpdateSponsorDto extends PartialType(CreateSponsorDto) {}
+export class UpdateSponsorDto extends PartialType(CreateSponsorDto, { skipNullProperties: false }) {}

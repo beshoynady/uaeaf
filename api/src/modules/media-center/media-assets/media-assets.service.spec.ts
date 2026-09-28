@@ -1,16 +1,11 @@
 import { jest } from '@jest/globals';
-import {
-  BadRequestException,
-  ConflictException,
-  NotFoundException,
-  ServiceUnavailableException,
-  UnsupportedMediaTypeException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, UnsupportedMediaTypeException } from '@nestjs/common';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Types } from 'mongoose';
 import type { Model } from 'mongoose';
 import { MediaAssetsService } from './media-assets.service.js';
+import type { MediaAssetLiveReferrerScan } from './media-assets.service.js';
 import { MediaAssetsRepository } from './media-assets.repository.js';
 import type { MediaAssetDocument } from './schemas/media-asset.schema.js';
 import type { AlbumDocument } from '../albums/schemas/album.schema.js';
@@ -19,6 +14,8 @@ import type { StorageProvider } from '../storage/storage-provider.js';
 import { STORAGE_FOLDERS } from '../storage/storage-provider.js';
 import { UploadMediaAssetDto } from './dto/upload-media-asset.dto.js';
 import type { UploadCandidate } from './upload/upload-constraints.js';
+import type { AuditLogsService } from '../../workflow/audit-logs/audit-logs.service.js';
+import type { MediaAssetReferrer } from '../../../common/authz/media-references.js';
 
 describe('MediaAssetsService', () => {
   /** The image store, faked. Nothing in these tests may reach a network:
@@ -41,6 +38,8 @@ describe('MediaAssetsService', () => {
     ({
       create: jest.fn(),
       softDelete: jest.fn(),
+      archiveIfLive: jest.fn(),
+      restoreIfArchived: jest.fn(),
       findIncludingArchived: jest.fn(),
       hardDelete: jest.fn(),
     }) as unknown as jest.Mocked<MediaAssetsRepository>;
@@ -50,6 +49,14 @@ describe('MediaAssetsService', () => {
     const updateOne = jest.fn().mockReturnValue({ exec });
     return { updateOne, exec } as unknown as Model<AlbumDocument> & { updateOne: jest.Mock; exec: jest.Mock };
   };
+
+  /** Resolves to no live referrers by default — the ordinary case an archive
+   *  needs no confirmation for. Individual tests override it. */
+  const makeReferrerScan = () =>
+    jest.fn<MediaAssetLiveReferrerScan>().mockResolvedValue([]) as jest.MockedFunction<MediaAssetLiveReferrerScan>;
+
+  const makeAuditLogsService = () =>
+    ({ write: jest.fn<AuditLogsService['write']>().mockResolvedValue({} as never) }) as unknown as jest.Mocked<AuditLogsService>;
 
   const baseDto: CreateMediaAssetDto = {
     file: {
@@ -171,8 +178,15 @@ describe('MediaAssetsService', () => {
       const repository = makeRepository();
       const albumModel = makeAlbumModel();
       const albumId = new Types.ObjectId();
-      repository.softDelete.mockResolvedValue({ albumId } as unknown as MediaAssetDocument);
-      const service = new MediaAssetsService(repository, albumModel, makeStorage());
+      repository.archiveIfLive.mockResolvedValue({ albumId } as unknown as MediaAssetDocument);
+      const service = new MediaAssetsService(
+        repository,
+        albumModel,
+        makeStorage(),
+        undefined,
+        makeReferrerScan(),
+        makeAuditLogsService(),
+      );
 
       await service.remove(new Types.ObjectId().toString(), new Types.ObjectId());
 
@@ -182,8 +196,15 @@ describe('MediaAssetsService', () => {
     it('does not touch any album when the removed asset had no albumId', async () => {
       const repository = makeRepository();
       const albumModel = makeAlbumModel();
-      repository.softDelete.mockResolvedValue({ albumId: null } as unknown as MediaAssetDocument);
-      const service = new MediaAssetsService(repository, albumModel, makeStorage());
+      repository.archiveIfLive.mockResolvedValue({ albumId: null } as unknown as MediaAssetDocument);
+      const service = new MediaAssetsService(
+        repository,
+        albumModel,
+        makeStorage(),
+        undefined,
+        makeReferrerScan(),
+        makeAuditLogsService(),
+      );
 
       await service.remove(new Types.ObjectId().toString(), new Types.ObjectId());
 
@@ -193,12 +214,229 @@ describe('MediaAssetsService', () => {
     it('does not throw when the asset no longer exists', async () => {
       const repository = makeRepository();
       const albumModel = makeAlbumModel();
-      repository.softDelete.mockResolvedValue(null);
-      const service = new MediaAssetsService(repository, albumModel, makeStorage());
+      repository.archiveIfLive.mockResolvedValue(null);
+      repository.findIncludingArchived.mockResolvedValue(null);
+      const service = new MediaAssetsService(
+        repository,
+        albumModel,
+        makeStorage(),
+        undefined,
+        makeReferrerScan(),
+        makeAuditLogsService(),
+      );
 
       await expect(
         service.remove(new Types.ObjectId().toString(), new Types.ObjectId()),
       ).resolves.toBeNull();
+      expect(albumModel.updateOne).not.toHaveBeenCalled();
+    });
+
+    /** A count that moves twice for one archive is a grid that says it holds
+     *  fewer photographs than it does, and nothing restores it. */
+    it('leaves the album count alone when the asset was already archived', async () => {
+      const repository = makeRepository();
+      const albumModel = makeAlbumModel();
+      const albumId = new Types.ObjectId();
+      repository.archiveIfLive.mockResolvedValue(null);
+      repository.findIncludingArchived.mockResolvedValue({
+        albumId,
+        archivedAt: new Date('2026-02-01'),
+      } as unknown as MediaAssetDocument);
+      const service = new MediaAssetsService(
+        repository,
+        albumModel,
+        makeStorage(),
+        undefined,
+        makeReferrerScan(),
+        makeAuditLogsService(),
+      );
+
+      const answered = await service.remove(new Types.ObjectId().toString(), new Types.ObjectId());
+
+      expect(albumModel.updateOne).not.toHaveBeenCalled();
+      expect(answered?.albumId).toBe(albumId);
+    });
+  });
+
+  /**
+   * Archiving a referenced image used to check nothing and blank it on the
+   * live site with no warning (owner decision 2026-09-27, Batch 2 §C). These
+   * prove the warning: informed consent, not prevention.
+   */
+  describe('remove — the in-use warning', () => {
+    const referrer = (collection: string): MediaAssetReferrer => ({
+      collection,
+      path: 'coverMediaId',
+      documentId: new Types.ObjectId().toString(),
+      kind: 'ref',
+    });
+
+    it('refuses an archive while the image is still referenced, naming where', async () => {
+      const repository = makeRepository();
+      const albumModel = makeAlbumModel();
+      const referrerScan = makeReferrerScan();
+      referrerScan.mockResolvedValue([referrer('articles'), referrer('heroSlides')]);
+      const auditLogsService = makeAuditLogsService();
+      const service = new MediaAssetsService(
+        repository,
+        albumModel,
+        makeStorage(),
+        undefined,
+        referrerScan,
+        auditLogsService,
+      );
+
+      await expect(
+        service.remove(new Types.ObjectId().toString(), new Types.ObjectId()),
+      ).rejects.toMatchObject({
+        response: {
+          code: 'mediaInUse',
+          referrers: [
+            expect.objectContaining({ collection: 'articles' }),
+            expect.objectContaining({ collection: 'heroSlides' }),
+          ],
+        },
+      });
+      expect(repository.archiveIfLive).not.toHaveBeenCalled();
+      expect(auditLogsService.write).not.toHaveBeenCalled();
+    });
+
+    it('archives on acknowledgement, and records the count and the list in the audit row', async () => {
+      const repository = makeRepository();
+      const albumModel = makeAlbumModel();
+      const assetId = new Types.ObjectId();
+      repository.archiveIfLive.mockResolvedValue({ _id: assetId, albumId: null } as unknown as MediaAssetDocument);
+      const referrerScan = makeReferrerScan();
+      const oneReferrer = referrer('articles');
+      referrerScan.mockResolvedValue([oneReferrer]);
+      const auditLogsService = makeAuditLogsService();
+      const service = new MediaAssetsService(
+        repository,
+        albumModel,
+        makeStorage(),
+        undefined,
+        referrerScan,
+        auditLogsService,
+      );
+
+      await service.remove(assetId.toString(), new Types.ObjectId(), { acknowledgeReferences: true });
+
+      expect(repository.archiveIfLive).toHaveBeenCalled();
+      expect(auditLogsService.write).toHaveBeenCalledWith(
+        expect.objectContaining({
+          newValue: expect.objectContaining({
+            referrersCount: 1,
+            referrers: [expect.objectContaining({ collection: 'articles' })],
+          }),
+        }),
+      );
+    });
+
+    /**
+     * Neither fail-closed nor fail-open: the operator is told the check could
+     * not run and confirms anyway, so an outage cannot block a takedown and
+     * cannot hide a live reference either.
+     */
+    it('asks for the same confirmation when the scan itself fails', async () => {
+      const repository = makeRepository();
+      const albumModel = makeAlbumModel();
+      const assetId = new Types.ObjectId();
+      repository.archiveIfLive.mockResolvedValue({ _id: assetId, albumId: null } as unknown as MediaAssetDocument);
+      const referrerScan = makeReferrerScan();
+      referrerScan.mockRejectedValue(new Error('down'));
+      const auditLogsService = makeAuditLogsService();
+      const service = new MediaAssetsService(
+        repository,
+        albumModel,
+        makeStorage(),
+        undefined,
+        referrerScan,
+        auditLogsService,
+      );
+
+      await expect(
+        service.remove(assetId.toString(), new Types.ObjectId()),
+      ).rejects.toMatchObject({ response: { code: 'mediaInUse', scanIncomplete: true } });
+      expect(repository.archiveIfLive).not.toHaveBeenCalled();
+
+      await service.remove(assetId.toString(), new Types.ObjectId(), { acknowledgeReferences: true });
+      expect(repository.archiveIfLive).toHaveBeenCalled();
+    });
+
+    it('archives an unreferenced image with no confirmation at all', async () => {
+      const repository = makeRepository();
+      const albumModel = makeAlbumModel();
+      const assetId = new Types.ObjectId();
+      repository.archiveIfLive.mockResolvedValue({ _id: assetId, albumId: null } as unknown as MediaAssetDocument);
+      const referrerScan = makeReferrerScan();
+      const auditLogsService = makeAuditLogsService();
+      const service = new MediaAssetsService(
+        repository,
+        albumModel,
+        makeStorage(),
+        undefined,
+        referrerScan,
+        auditLogsService,
+      );
+
+      await service.remove(assetId.toString(), new Types.ObjectId());
+
+      expect(repository.archiveIfLive).toHaveBeenCalled();
+      expect(auditLogsService.write).toHaveBeenCalledWith(
+        expect.objectContaining({ newValue: expect.objectContaining({ referrersCount: 0, referrers: [] }) }),
+      );
+    });
+
+    /** Revisions hold every image ever published, so counting them would make
+     *  every archive need a confirmation and train the operator to click
+     *  through it — which is how a warning stops being read. */
+    it('ignores revisions, counting only what the live site still shows', async () => {
+      const repository = makeRepository();
+      const albumModel = makeAlbumModel();
+      const assetId = new Types.ObjectId();
+      repository.archiveIfLive.mockResolvedValue({ _id: assetId, albumId: null } as unknown as MediaAssetDocument);
+      const referrerScan = makeReferrerScan();
+      const auditLogsService = makeAuditLogsService();
+      const service = new MediaAssetsService(
+        repository,
+        albumModel,
+        makeStorage(),
+        undefined,
+        referrerScan,
+        auditLogsService,
+      );
+
+      await service.remove(assetId.toString(), new Types.ObjectId());
+
+      expect(referrerScan).toHaveBeenCalledWith(assetId.toString(), { includeRevisions: false });
+    });
+  });
+
+  describe('unarchive', () => {
+    it('puts the photo back into its album count', async () => {
+      const repository = makeRepository();
+      const albumModel = makeAlbumModel();
+      const albumId = new Types.ObjectId();
+      repository.restoreIfArchived.mockResolvedValue({ albumId } as unknown as MediaAssetDocument);
+      const service = new MediaAssetsService(repository, albumModel, makeStorage());
+
+      await service.unarchive(new Types.ObjectId().toString());
+
+      expect(albumModel.updateOne).toHaveBeenCalledWith({ _id: albumId }, { $inc: { assetCount: 1 } });
+    });
+
+    it('leaves the album count alone when the asset was already live', async () => {
+      const repository = makeRepository();
+      const albumModel = makeAlbumModel();
+      repository.restoreIfArchived.mockResolvedValue(null);
+      repository.findIncludingArchived.mockResolvedValue({
+        albumId: new Types.ObjectId(),
+        archivedAt: null,
+      } as unknown as MediaAssetDocument);
+      const service = new MediaAssetsService(repository, albumModel, makeStorage());
+
+      await service.unarchive(new Types.ObjectId().toString());
+
       expect(albumModel.updateOne).not.toHaveBeenCalled();
     });
   });
@@ -385,86 +623,6 @@ describe('MediaAssetsService', () => {
 
       await service.uploadAndCreate(icon, meta, STORAGE_FOLDERS.pages, 'icon');
       expect(storage.upload).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  describe('purge', () => {
-    /** A fresh album model per test: several of these assert on it after
-     *  handing the same instance to the service. */
-    let albumModel: ReturnType<typeof makeAlbumModel>;
-    beforeEach(() => {
-      albumModel = makeAlbumModel();
-    });
-
-    const archived = (storageKey: string) =>
-      ({
-        _id: new Types.ObjectId(),
-        albumId: null,
-        archivedAt: new Date(),
-        file: { storageKey },
-      }) as unknown as MediaAssetDocument;
-
-    it('destroys the stored object before removing the record', async () => {
-      // This order is the guarantee. Deleting the row first and failing at
-      // the store leaves an object nothing points at — the orphan the purge
-      // path exists to prevent.
-      const repository = makeRepository();
-      const storage = makeStorage();
-      repository.findIncludingArchived.mockResolvedValue(archived('uaeaf/pages/hero-ab12'));
-      repository.hardDelete.mockResolvedValue(true);
-
-      await new MediaAssetsService(repository, albumModel, storage).purge('abc');
-
-      expect(storage.destroy).toHaveBeenCalledWith('uaeaf/pages/hero-ab12');
-      expect(repository.hardDelete).toHaveBeenCalled();
-      const destroyOrder = storage.destroy.mock.invocationCallOrder[0];
-      const deleteOrder = repository.hardDelete.mock.invocationCallOrder[0];
-      expect(destroyOrder).toBeLessThan(deleteOrder);
-    });
-
-    it('keeps the record when the store refuses to destroy the object', async () => {
-      const repository = makeRepository();
-      const storage = makeStorage();
-      storage.destroy.mockRejectedValue(new ServiceUnavailableException('down'));
-      repository.findIncludingArchived.mockResolvedValue(archived('uaeaf/pages/hero-ab12'));
-
-      await expect(
-        new MediaAssetsService(repository, albumModel, storage).purge('abc'),
-      ).rejects.toBeInstanceOf(ServiceUnavailableException);
-
-      expect(repository.hardDelete).not.toHaveBeenCalled();
-    });
-
-    it('refuses to purge an asset that is still live', async () => {
-      // Purging is the second half of a two-step: archive first, then
-      // destroy. Without this, one request could delete the picture a
-      // published page is rendering, and nothing would name what broke.
-      const repository = makeRepository();
-      const storage = makeStorage();
-      repository.findIncludingArchived.mockResolvedValue({
-        _id: new Types.ObjectId(),
-        albumId: null,
-        archivedAt: null,
-        file: { storageKey: 'uaeaf/pages/live' },
-      } as unknown as MediaAssetDocument);
-
-      await expect(
-        new MediaAssetsService(repository, albumModel, storage).purge('abc'),
-      ).rejects.toBeInstanceOf(ConflictException);
-
-      expect(storage.destroy).not.toHaveBeenCalled();
-    });
-
-    it('refuses to purge an id that references nothing', async () => {
-      const repository = makeRepository();
-      const storage = makeStorage();
-      repository.findIncludingArchived.mockResolvedValue(null);
-
-      await expect(
-        new MediaAssetsService(repository, albumModel, storage).purge('abc'),
-      ).rejects.toBeInstanceOf(NotFoundException);
-
-      expect(storage.destroy).not.toHaveBeenCalled();
     });
   });
 });

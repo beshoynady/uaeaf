@@ -124,9 +124,57 @@ export abstract class BaseRepository<T> {
     return this.model.findByIdAndUpdate(id, update, { returnDocument: 'after' }).exec();
   }
 
-  async softDelete(id: string, archivedBy: Types.ObjectId): Promise<T | null> {
+  /**
+   * Archives the row only if it is live; `null` when it was already archived or
+   * does not exist.
+   *
+   * A caller that must act exactly once on the transition — a denormalized count
+   * that moves with the archive — reads that from the `null`, which `softDelete`
+   * cannot tell it because that answers the row either way.
+   */
+  async archiveIfLive(id: string, archivedBy: Types.ObjectId): Promise<T | null> {
     return this.model
-      .findByIdAndUpdate(id, { archivedAt: new Date(), archivedBy }, { returnDocument: 'after' })
+      .findOneAndUpdate(
+        { _id: id, archivedAt: null } as QueryFilter<T>,
+        { archivedAt: new Date(), archivedBy },
+        { returnDocument: 'after' },
+      )
       .exec();
+  }
+
+  /**
+   * Restores the row only if it is archived; `null` when it was already live or
+   * does not exist. Sibling of `archiveIfLive`, for the same reason.
+   *
+   * Both fields are cleared in one statement: a row with `archivedAt: null` and
+   * an `archivedBy` still set reads as live while naming who archived it, and
+   * every soft-delete filter on this class keys on `archivedAt` alone.
+   */
+  async restoreIfArchived(id: string): Promise<T | null> {
+    return this.model
+      .findOneAndUpdate(
+        { _id: id, archivedAt: { $ne: null } } as QueryFilter<T>,
+        { archivedAt: null, archivedBy: null },
+        { returnDocument: 'after' },
+      )
+      .exec();
+  }
+
+  /**
+   * Archives the row, and leaves an already-archived one exactly as it is.
+   *
+   * The date records when the archive happened, so a second call must not
+   * rewrite it nor reattribute it to whoever asked again. The row is answered
+   * either way, so the caller cannot tell the two calls apart — an idempotent
+   * archive, not a refusal.
+   */
+  async softDelete(id: string, archivedBy: Types.ObjectId): Promise<T | null> {
+    return (await this.archiveIfLive(id, archivedBy)) ?? this.model.findById(id).exec();
+  }
+
+  /** Brings an archived row back — the inverse of `softDelete`, idempotent in
+   *  the same way, and the one behind every `Restore` route. */
+  async restore(id: string): Promise<T | null> {
+    return (await this.restoreIfArchived(id)) ?? this.model.findById(id).exec();
   }
 }

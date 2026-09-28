@@ -60,4 +60,8 @@ export class CoachClubHistoryService {
   async remove(id: string, archivedBy: Types.ObjectId): Promise<CoachClubHistoryDocument | null> {
     return this.repository.softDelete(id, archivedBy);
   }
+
+  async unarchive(id: string): Promise<CoachClubHistoryDocument | null> {
+    return this.repository.restore(id);
+  }
 }

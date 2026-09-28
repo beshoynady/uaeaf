@@ -41,6 +41,11 @@ describe('RolesService', () => {
 
     service = module.get(RolesService);
     repository = module.get(RolesRepository);
+    // ADR-0104: updatePermissions and remove now compare the role’s CURRENT
+    // grants against the actor’s, so a role cannot be shrunk or archived by
+    // someone who does not hold what it grants. Resolving to nothing keeps
+    // these specs about the rules they were written for.
+    repository.findByIds.mockResolvedValue([]);
     permissionsService = module.get(PermissionsService);
   });
 
@@ -89,15 +94,20 @@ describe('RolesService', () => {
     });
 
     it('allows creating a role whose permissions are all already held by the actor', async () => {
+      // `clubs:Read`, not `roles:Read` — the latter is one of Decision 4's
+      // eight reserved pairs (2026-09-27) and is refused unconditionally by
+      // `assertGrantable` regardless of what the actor holds, which is a
+      // different rule than the one this test is about. See
+      // `super-admin-only.spec.ts` for that rule.
       const permissionId = new Types.ObjectId().toString();
       permissionsService.findById.mockResolvedValue({
-        resourceType: 'roles',
+        resourceType: 'clubs',
         action: 'Read',
       } as never);
       repository.create.mockResolvedValue({ name: { en: 'x', ar: 'س' } } as never);
 
       await service.create({ name: { en: 'x', ar: 'س' }, permissionIds: [permissionId] }, [
-        { resourceType: 'roles', action: 'Read' },
+        { resourceType: 'clubs', action: 'Read' },
       ]);
 
       expect(repository.create).toHaveBeenCalledTimes(1);
@@ -137,20 +147,24 @@ describe('RolesService', () => {
     });
 
     it('allows updating a non-system role when every permission is already held', async () => {
-      // Grants `roles:Read` alongside `roles:Update` since 2026-09-08: the
+      // Grants `clubs:Read` alongside `clubs:Update` since 2026-09-08: the
       // implied-read rule refuses a role that may edit what it cannot list,
       // so a permission set of `Update` alone is no longer a valid subject
       // for this test. The escalation behaviour under test is unchanged.
+      //
+      // `clubs`, not `roles`: `roles:Read` is one of Decision 4's eight
+      // reserved pairs (2026-09-27) and is refused unconditionally, which is
+      // a different rule than the one under test here.
       const permissionIds = [new Types.ObjectId(), new Types.ObjectId()];
       repository.findByIdIncludingArchived.mockResolvedValue({ isSystemRole: false, archivedAt: null } as never);
       permissionsService.findById
-        .mockResolvedValueOnce({ resourceType: 'roles', action: 'Update' } as never)
-        .mockResolvedValueOnce({ resourceType: 'roles', action: 'Read' } as never);
+        .mockResolvedValueOnce({ resourceType: 'clubs', action: 'Update' } as never)
+        .mockResolvedValueOnce({ resourceType: 'clubs', action: 'Read' } as never);
       repository.updateById.mockResolvedValue({ permissionIds } as never);
 
       await service.updatePermissions(new Types.ObjectId().toString(), permissionIds, [
-        { resourceType: 'roles', action: 'Update' },
-        { resourceType: 'roles', action: 'Read' },
+        { resourceType: 'clubs', action: 'Update' },
+        { resourceType: 'clubs', action: 'Read' },
       ]);
 
       expect(repository.updateById).toHaveBeenCalledTimes(1);
@@ -174,14 +188,14 @@ describe('RolesService', () => {
 
     /** Holds everything, so only the coherence rule can refuse. */
     const superAdmin: RequiredPermission[] = [
-      { resourceType: 'athletes', action: 'Delete' },
+      { resourceType: 'athletes', action: 'Archive' },
       { resourceType: 'athletes', action: 'Read' },
       { resourceType: 'newsPage', action: 'Update' },
     ];
 
-    it('refuses a role that may delete a resource it cannot read', async () => {
+    it('refuses a role that may archive a resource it cannot read', async () => {
       liveRole();
-      resolvesTo({ resourceType: 'athletes', action: 'Delete' });
+      resolvesTo({ resourceType: 'athletes', action: 'Archive' });
 
       await expect(
         service.updatePermissions(
@@ -195,7 +209,7 @@ describe('RolesService', () => {
 
     it('names the permission that would fix it', async () => {
       liveRole();
-      resolvesTo({ resourceType: 'athletes', action: 'Delete' });
+      resolvesTo({ resourceType: 'athletes', action: 'Archive' });
 
       const error = await service
         .updatePermissions(new Types.ObjectId().toString(), [new Types.ObjectId()], superAdmin)
@@ -215,7 +229,7 @@ describe('RolesService', () => {
     it('accepts the same grant once the read is included', async () => {
       liveRole();
       resolvesTo(
-        { resourceType: 'athletes', action: 'Delete' },
+        { resourceType: 'athletes', action: 'Archive' },
         { resourceType: 'athletes', action: 'Read' },
       );
       repository.updateById.mockResolvedValue({ permissionIds: [] } as never);
@@ -244,7 +258,7 @@ describe('RolesService', () => {
     });
 
     it('applies the same rule to a new role', async () => {
-      resolvesTo({ resourceType: 'athletes', action: 'Delete' });
+      resolvesTo({ resourceType: 'athletes', action: 'Archive' });
 
       await expect(
         service.create(
@@ -257,6 +271,30 @@ describe('RolesService', () => {
       ).rejects.toThrow(BadRequestException);
       expect(repository.create).not.toHaveBeenCalled();
     });
+
+    /**
+     * Independent review, round 4 (I7), closed 2026-09-28: `users` used to
+     * declare `Archive`/`Restore` un-reserved alongside a reserved `Read`, so
+     * a role granted only `users:Archive` reached this coherence rule and had
+     * to be let through — `missingImpliedReads` staying silent on a reserved
+     * implied read still carries that fix (`permission-implications.spec.ts`).
+     * `users:Archive`/`Restore` then joined the reserved set themselves
+     * (ADR-0104), so the grant below is now refused one step earlier, by
+     * `assertGrantable`, before this coherence rule ever runs.
+     */
+    it('refuses users:Archive alone — the pair is reserved before the coherence rule runs', async () => {
+      liveRole();
+      resolvesTo({ resourceType: 'users', action: 'Archive' });
+
+      await expect(
+        service.updatePermissions(
+          new Types.ObjectId().toString(),
+          [new Types.ObjectId()],
+          [{ resourceType: 'users', action: 'Archive' }],
+        ),
+      ).rejects.toMatchObject({ response: { code: 'ungrantableCapability' } });
+      expect(repository.updateById).not.toHaveBeenCalled();
+    });
   });
 
   describe('remove', () => {
@@ -267,7 +305,7 @@ describe('RolesService', () => {
 
       repository.softDelete.mockResolvedValue({ archivedAt: new Date() } as never);
 
-      await service.remove(id, archivedBy);
+      await service.remove(id, archivedBy, []);
 
       expect(repository.softDelete).toHaveBeenCalledWith(id, archivedBy);
     });
@@ -277,7 +315,7 @@ describe('RolesService', () => {
       const archivedBy = new Types.ObjectId();
       repository.findByIdIncludingArchived.mockResolvedValue({ isSystemRole: true, archivedAt: null } as never);
 
-      await expect(service.remove(id, archivedBy)).rejects.toThrow(ForbiddenException);
+      await expect(service.remove(id, archivedBy, [])).rejects.toThrow(ForbiddenException);
       expect(repository.softDelete).not.toHaveBeenCalled();
     });
   });
@@ -306,7 +344,7 @@ describe('RolesService', () => {
 
       const result = await service.resolvePermissions([roleId.toString()]);
 
-      expect(result).toEqual([{ resourceType: 'users', action: 'Read' }]);
+      expect(result).toEqual([{ resourceType: 'users', action: 'Read', scope: null }]);
     });
 
     it('costs exactly two reads regardless of how many permissions are held', async () => {
@@ -360,7 +398,7 @@ describe('RolesService', () => {
         new Types.ObjectId().toString(),
       ]);
 
-      expect(result).toEqual([{ resourceType: 'users', action: 'Read' }]);
+      expect(result).toEqual([{ resourceType: 'users', action: 'Read', scope: null }]);
     });
 
     it('grants nothing for a role id that no longer resolves', async () => {

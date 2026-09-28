@@ -8,7 +8,7 @@ import { CreateSponsorshipDto, UpdateSponsorshipDto } from './dto/create-sponsor
 import type { SponsorshipPublicResponseDto } from './dto/sponsorship-public-response.dto.js';
 import { SponsorsService } from '../sponsors/sponsors.service.js';
 import { FederationsService } from '../../federation-governance/federation/federation.service.js';
-import { wasSent } from '../../../common/utils/partial-update.util.js';
+import { wasSent, setDateField, setObjectIdField } from '../../../common/utils/partial-update.util.js';
 import { sponsorshipState } from '../../../common/utils/sponsorship-window.util.js';
 import { assertWindowOrder, dateOrNull, hidesDemoRecords } from '../common/relation-rules.js';
 import type { LocalizedText } from '../../../common/schemas/localized-text.schema.js';
@@ -66,24 +66,37 @@ export class SponsorshipsService {
   /** Checks the window and the target on the sponsorship the edit produces,
    *  not on the body: `{ endDate }` alone is valid as a body and can still
    *  end before a stored start. `status` changes only when sent — the system
-   *  never writes `Expired` (ADR-0077 D2).
+   *  never writes `Expired` (ADR-0077 D2). `startDate` is `required: true`
+   *  in the schema (no valid "no value" state); `endDate`/`bannerAssetId`
+   *  default to `null` (Fix round 4 — read from `sponsorship.schema.ts`,
+   *  not inferred from the DTO or the `!` the old code used here, which was
+   *  compile-time only and let `{ startDate: null }` silently store the
+   *  Unix epoch).
    *  @throws NotFoundException when no such sponsorship exists. */
   async update(id: string, dto: UpdateSponsorshipDto): Promise<SponsorshipDocument> {
     const current = await this.repository.findById(id);
     if (!current) throw new NotFoundException('Sponsorship not found.');
 
     const has = (key: keyof UpdateSponsorshipDto) => wasSent(dto, key);
-    const startDate = has('startDate') ? new Date(dto.startDate!) : current.startDate;
-    const endDate = has('endDate') ? dateOrNull(dto.endDate) : (current.endDate ?? null);
+
+    const update: Record<string, unknown> = {};
+    setDateField(update, dto, 'startDate', { nullable: false });
+    setDateField(update, dto, 'endDate', { nullable: true });
+    setObjectIdField(update, dto, 'bannerAssetId', { nullable: true });
+
+    // Merged state for the window/target checks below, read back from
+    // `update` rather than re-deriving the cast — there is exactly one place
+    // `dto.startDate`/`dto.endDate` become a `Date` (the setters above).
+    const startDate = 'startDate' in update ? (update.startDate as Date) : current.startDate;
+    const endDate = 'endDate' in update ? (update.endDate as Date | null) : (current.endDate ?? null);
     const targetType = dto.targetType ?? current.targetType;
     assertWindowOrder(startDate, endDate);
     this.assertEndForTarget(targetType, endDate);
     if (has('scopeLabel')) this.assertScopeLabel(dto.scopeLabel ?? null);
 
-    const update: Record<string, unknown> = {};
     if (has('sponsorId')) {
       if (!(await this.sponsorsService.findById(dto.sponsorId!))) throw new NotFoundException('Sponsor not found.');
-      update.sponsorId = new Types.ObjectId(dto.sponsorId!);
+      setObjectIdField(update, dto, 'sponsorId', { nullable: false });
     }
     if (has('targetType') || has('targetId')) {
       update.targetType = targetType;
@@ -93,10 +106,7 @@ export class SponsorshipsService {
       );
     }
     if (has('tier')) update.tier = dto.tier;
-    if (has('startDate')) update.startDate = startDate;
-    if (has('endDate')) update.endDate = endDate;
     if (has('status')) update.status = dto.status;
-    if (has('bannerAssetId')) update.bannerAssetId = dto.bannerAssetId ? new Types.ObjectId(dto.bannerAssetId) : null;
     if (has('promotionalText')) update.promotionalText = dto.promotionalText ?? null;
     if (has('scopeLabel')) update.scopeLabel = dto.scopeLabel ?? null;
     if (has('isFeatured')) update.isFeatured = dto.isFeatured;
@@ -118,6 +128,10 @@ export class SponsorshipsService {
 
   async remove(id: string, archivedBy: Types.ObjectId): Promise<SponsorshipDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  async unarchive(id: string): Promise<SponsorshipDocument | null> {
+    return this.repository.restore(id);
   }
 
   /** What the public sees at `now`: visible, running in Asia/Dubai, not

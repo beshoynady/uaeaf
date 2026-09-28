@@ -16,7 +16,10 @@ import { WorkflowActionHistoryService } from '../workflow-action-history/workflo
 import { RevisionsService } from '../revisions/revisions.service.js';
 import { PublicationsService } from '../publications/publications.service.js';
 import { AuditLogsService } from '../audit-logs/audit-logs.service.js';
+import { auditActionFor } from '../audit-logs/audit-action.util.js';
 import { UsersService } from '../../platform-administration/users/users.service.js';
+import { MediaAssetsService } from '../../media-center/media-assets/media-assets.service.js';
+import { archivedReferencedMediaAssetIds } from '../../../common/authz/orphaned-media.js';
 import { describePublishBlockers, findPublishBlockers } from './publish-blockers.js';
 import { EDITORIAL_ACTIONS } from './editorial-state.dto.js';
 import { projectRevisionContent } from '../../../common/constants/entity-content.js';
@@ -70,6 +73,8 @@ export class PublishingService {
     // History says who saved each version. Only the name is taken — see
     // `UsersService.findNamesByIds` for why it is not `findByIds`.
     private readonly usersService: UsersService,
+    // The only place that also fixes the restored asset's album `assetCount`.
+    private readonly mediaAssetsService: MediaAssetsService,
     @InjectConnection() private readonly connection: Connection,
   ) {}
 
@@ -456,6 +461,39 @@ export class PublishingService {
       ipAddress: input.context?.ipAddress ?? '',
       userAgent: input.context?.userAgent ?? '',
     });
+
+    // Must succeed, not merely try: a restored record whose picture is
+    // archived publishes with it silently missing (`GET /media-assets/public`
+    // omits an archived asset and no consumer renders a placeholder for it).
+    // Restored one at a time through `MediaAssetsService.unarchive`, the one
+    // place that also `$inc`s the owning album's `assetCount`.
+    const archivedMediaIds = await archivedReferencedMediaAssetIds(this.connection, model.schema, content);
+    const restoredMediaIds: Types.ObjectId[] = [];
+    for (const mediaId of archivedMediaIds) {
+      const restored = await this.mediaAssetsService.unarchive(mediaId.toString());
+      if (restored) {
+        restoredMediaIds.push(mediaId);
+      }
+    }
+    if (restoredMediaIds.length > 0) {
+      const mediaRestoreAction = auditActionFor('PATCH');
+      if (!mediaRestoreAction) {
+        throw new Error('No audit action for PATCH.');
+      }
+      for (const mediaId of restoredMediaIds) {
+        await this.auditLogsService.write({
+          actorId,
+          action: mediaRestoreAction,
+          entityType: 'mediaAssets',
+          entityId: mediaId,
+          previousValue: { archivedAt: 'archived' },
+          newValue: { archivedAt: null },
+          reason: `Automatically restored: referenced by the ${entityType} version being restored`,
+          ipAddress: input.context?.ipAddress ?? '',
+          userAgent: input.context?.userAgent ?? '',
+        });
+      }
+    }
 
     return { restoredFromVersion: revision.versionNumber };
   }

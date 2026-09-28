@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import type { UpdateQuery } from 'mongoose';
 import { VisionMissionPagesRepository } from './vision-mission-page.repository.js';
+import { VisionMissionPageSchema } from './schemas/vision-mission-page.schema.js';
 import type { VisionMissionPageDocument } from './schemas/vision-mission-page.schema.js';
 import { CreateVisionMissionPageDto } from './dto/create-vision-mission-page.dto.js';
 import { UpdateVisionMissionPageDto } from './dto/update-vision-mission-page.dto.js';
@@ -12,6 +13,7 @@ import { PublicationsService } from '../../workflow/publications/publications.se
 import { RevisionsService } from '../../workflow/revisions/revisions.service.js';
 import { MediaAssetsService } from '../../media-center/media-assets/media-assets.service.js';
 import { toPageSeo } from '../../../common/dto/page-seo.dto.js';
+import { asPlainObject, removedMediaAssetIds } from '../../../common/authz/orphaned-media.js';
 import type { LocalizedTextDto } from '../../../common/dto/localized-text.dto.js';
 
 const ENTITY_TYPE = 'visionMissionPage' as const;
@@ -90,8 +92,13 @@ export class VisionMissionPagesService {
     id: string,
     dto: UpdateVisionMissionPageDto,
     updatedBy: Types.ObjectId,
-  ): Promise<VisionMissionPageDocument> {
+  ): Promise<VisionMissionPageDocument & { orphanedMediaCandidates: string[] }> {
     await this.assertUsableImages(dto);
+
+    const current = await this.repository.findById(id);
+    if (!current) {
+      throw new NotFoundException('Vision and mission page not found.');
+    }
 
     const set: Record<string, unknown> = { updatedBy };
 
@@ -119,7 +126,14 @@ export class VisionMissionPagesService {
       throw new NotFoundException('Vision and mission page not found.');
     }
 
-    return updated;
+    const removedIds = removedMediaAssetIds(VisionMissionPageSchema, current, updated);
+    const orphanedMediaCandidates = await this.mediaAssetsService.orphanedMediaCandidates(removedIds);
+
+    // A plain object, not `Object.assign(updated, …)`: `toObject()`/`toJSON()`
+    // silently drop a field assigned straight onto a Mongoose document.
+    return { ...asPlainObject(updated), orphanedMediaCandidates } as VisionMissionPageDocument & {
+      orphanedMediaCandidates: string[];
+    };
   }
 
   /** The admin listing. Carries `isActive`, which the dashboard draws as the
@@ -293,6 +307,10 @@ export class VisionMissionPagesService {
 
   async remove(id: string, archivedBy: Types.ObjectId): Promise<VisionMissionPageDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  async unarchive(id: string): Promise<VisionMissionPageDocument | null> {
+    return this.repository.restore(id);
   }
 
   private async assertUsableImages(

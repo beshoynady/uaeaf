@@ -28,4 +28,4 @@ export class CreatePartnershipDto {
 }
 
 /** Request body for PATCH /partnerships/:id. */
-export class UpdatePartnershipDto extends PartialType(CreatePartnershipDto) {}
+export class UpdatePartnershipDto extends PartialType(CreatePartnershipDto, { skipNullProperties: false }) {}

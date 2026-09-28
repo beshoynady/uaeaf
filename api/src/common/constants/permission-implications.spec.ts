@@ -20,29 +20,29 @@ describe('missingImpliedReads', () => {
     ({ resourceType, action }) as PermissionCatalogueEntry;
 
   it('reports the Read a write action leaves out', () => {
-    expect(missingImpliedReads([pair('athletes', 'Delete')])).toEqual([
+    expect(missingImpliedReads([pair('athletes', 'Archive')])).toEqual([
       pair('athletes', 'Read'),
     ]);
   });
 
   it('reports nothing when the Read is already granted', () => {
     expect(
-      missingImpliedReads([pair('athletes', 'Delete'), pair('athletes', 'Read')]),
+      missingImpliedReads([pair('athletes', 'Archive'), pair('athletes', 'Read')]),
     ).toEqual([]);
   });
 
   it('treats Read on its own as complete', () => {
-    expect(missingImpliedReads([pair('auditLogs', 'Read')])).toEqual([]);
+    expect(missingImpliedReads([pair('permissions', 'Read')])).toEqual([]);
   });
 
   it('names each resource once however many write actions it carries', () => {
     expect(
       missingImpliedReads([
-        pair('roles', 'Create'),
-        pair('roles', 'Update'),
-        pair('roles', 'Delete'),
+        pair('athletes', 'Create'),
+        pair('athletes', 'Update'),
+        pair('athletes', 'Archive'),
       ]),
-    ).toEqual([pair('roles', 'Read')]);
+    ).toEqual([pair('athletes', 'Read')]);
   });
 
   it('stays silent on a resource the catalogue gives no Read permission', () => {
@@ -58,14 +58,50 @@ describe('missingImpliedReads', () => {
 
   it('reports every incomplete resource, alphabetically', () => {
     expect(
-      missingImpliedReads([pair('venues', 'Create'), pair('clubs', 'Delete')]),
+      missingImpliedReads([pair('venues', 'Create'), pair('clubs', 'Archive')]),
     ).toEqual([pair('clubs', 'Read'), pair('venues', 'Read')]);
+  });
+
+  /**
+   * B3 (owner decision 2026-09-27): `auditLogs` declares `ViewAuditLog`
+   * rather than `Read`, so the rule must key on each resource's own read
+   * verb — keying on the literal `Read` found no such pair on `auditLogs`
+   * and let `Export` through with nothing implied, which would let a role
+   * hold the audit-log CSV without the screen it exports from.
+   */
+  it('implies ViewAuditLog for auditLogs:Export, not the literal Read', () => {
+    expect(missingImpliedReads([pair('auditLogs', 'Export')])).toEqual([
+      pair('auditLogs', 'ViewAuditLog'),
+    ]);
+  });
+
+  it('reports nothing when auditLogs:Export is granted alongside ViewAuditLog', () => {
+    expect(
+      missingImpliedReads([pair('auditLogs', 'Export'), pair('auditLogs', 'ViewAuditLog')]),
+    ).toEqual([]);
+  });
+
+  /**
+   * Independent review, round 4 (I7). Without this, a role built with a
+   * non-reserved action whose implied read IS reserved was told to add that
+   * read (`400 impliedReadMissing`) — advice that granting itself refuses
+   * (`403 ungrantableCapability`), the same unfollowable-advice shape fix
+   * round 1 removed from the assign path, reappearing here on the build path.
+   * `users:Archive`/`Restore` were the case this closed for; both joined the
+   * reserved set outright on 2026-09-28 (ADR-0104), so `assertGrantable` now
+   * refuses them before this rule runs — this still exercises the pure
+   * function directly, which is what stays generic for the next resource
+   * shaped the same way.
+   */
+  it('stays silent when the implied read is itself reserved to the Super Admin', () => {
+    expect(missingImpliedReads([pair('users', 'Archive')])).toEqual([]);
+    expect(missingImpliedReads([pair('users', 'Restore')])).toEqual([]);
   });
 
   it('ignores a pair the catalogue does not define', () => {
     // Fails closed rather than inventing an implication for a resource that
     // does not exist.
-    expect(missingImpliedReads([pair('nonsenseResource', 'Delete')])).toEqual([]);
+    expect(missingImpliedReads([pair('nonsenseResource', 'Archive')])).toEqual([]);
   });
 
   it('reports nothing for an empty grant', () => {

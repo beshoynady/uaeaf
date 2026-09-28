@@ -117,22 +117,19 @@ describe("PreparingPageScreen", () => {
     }
   });
 
-  it("keeps the trail out of the hero under /about, and in structured data from depth two", async () => {
-    const about = PREPARING_PAGES.filter((page) => underAbout(page.route));
-    expect(about.length).toBeGreaterThan(0);
+  it("carries a full breadcrumb list in structured data from depth two", async () => {
+    // No `PREPARING_PAGES` entry sits under `/about` any more (its pages moved
+    // into `PUBLIC_PAGES` as they were built), so depth — not that route — is
+    // what selects a page with a parent crumb to verify.
+    const nested = PREPARING_PAGES.filter((page) => depth(page.route) >= 2);
+    expect(nested.length).toBeGreaterThan(0);
 
-    for (const page of about) {
+    for (const page of nested) {
       const { container, unmount } = await renderPage(page.key, "ar");
-      expect(heroTrail(container, "ar"), page.route).toBeNull();
-
       const list = breadcrumbList(container);
-      if (depth(page.route) >= 2) {
-        expect(list?.itemListElement[0]?.item, page.route).toBe(absoluteUrl("ar", "/"));
-        expect(list?.itemListElement.at(-1)?.item, page.route).toBe(absoluteUrl("ar", page.route));
-        expect(list?.itemListElement.at(-1)?.name, page.route).toBe(messageAt(ar, page.titleKey));
-      } else {
-        expect(list, page.route).toBeNull();
-      }
+      expect(list?.itemListElement[0]?.item, page.route).toBe(absoluteUrl("ar", "/"));
+      expect(list?.itemListElement.at(-1)?.item, page.route).toBe(absoluteUrl("ar", page.route));
+      expect(list?.itemListElement.at(-1)?.name, page.route).toBe(messageAt(ar, page.titleKey));
       unmount();
     }
   });

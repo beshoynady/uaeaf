@@ -6,7 +6,7 @@ import type { PartnershipDocument } from './schemas/partnership.schema.js';
 import { CreatePartnershipDto, UpdatePartnershipDto } from './dto/create-partnership.dto.js';
 import { MediaAssetsService } from '../../media-center/media-assets/media-assets.service.js';
 import { normalizeOrganizationName } from '../../../common/schemas/organization-name.schema.js';
-import { wasSent } from '../../../common/utils/partial-update.util.js';
+import { wasSent, setDateField, setObjectIdField } from '../../../common/utils/partial-update.util.js';
 import { assertWindowOrder, dateOrNull, hidesDemoRecords, toOrganizationCard } from '../common/relation-rules.js';
 import type { PublicOrganizationCard } from '../common/relation-rules.js';
 
@@ -41,26 +41,34 @@ export class PartnershipsService {
     });
   }
 
-  /** Checks the window on the record the edit produces.
+  /** Checks the window on the record the edit produces. `startDate` is
+   *  `required: true` in the schema (no valid "no value" state); `endDate`/
+   *  `partnerLogoId` default to `null` (Fix round 4 — read from
+   *  `partnership.schema.ts`, not inferred from the DTO or the `!` the old
+   *  code used here, which was compile-time only and let
+   *  `{ startDate: null }` silently store the Unix epoch).
    *  @throws NotFoundException when no such partnership exists. */
   async update(id: string, dto: UpdatePartnershipDto): Promise<PartnershipDocument> {
     const current = await this.repository.findById(id);
     if (!current) throw new NotFoundException('Partnership not found.');
 
     const has = (key: keyof UpdatePartnershipDto) => wasSent(dto, key);
-    const startDate = has('startDate') ? new Date(dto.startDate!) : current.startDate;
-    const endDate = has('endDate') ? dateOrNull(dto.endDate) : (current.endDate ?? null);
-    assertWindowOrder(startDate, endDate);
 
     const update: Record<string, unknown> = {};
+    setDateField(update, dto, 'startDate', { nullable: false });
+    setDateField(update, dto, 'endDate', { nullable: true });
+
+    // Merged state for the window check, read back from `update` rather than
+    // re-deriving the cast — there is exactly one place `dto.startDate`/
+    // `dto.endDate` become a `Date` (the setters above).
+    const startDate = 'startDate' in update ? (update.startDate as Date) : current.startDate;
+    const endDate = 'endDate' in update ? (update.endDate as Date | null) : (current.endDate ?? null);
+    assertWindowOrder(startDate, endDate);
+
     if (has('partnerName')) update.partnerName = normalizeOrganizationName(dto.partnerName, 'partnerName');
-    if (has('partnerLogoId')) {
-      if (dto.partnerLogoId) await this.mediaAssetsService.assertUsableImage(dto.partnerLogoId);
-      update.partnerLogoId = dto.partnerLogoId ? new Types.ObjectId(dto.partnerLogoId) : null;
-    }
+    if (dto.partnerLogoId) await this.mediaAssetsService.assertUsableImage(dto.partnerLogoId);
+    setObjectIdField(update, dto, 'partnerLogoId', { nullable: true });
     if (has('partnershipType')) update.partnershipType = dto.partnershipType;
-    if (has('startDate')) update.startDate = startDate;
-    if (has('endDate')) update.endDate = endDate;
     if (has('isActive')) update.isActive = dto.isActive;
     if (has('displayOrder')) update.displayOrder = dto.displayOrder;
     if (has('isVisible')) update.isVisible = dto.isVisible;
@@ -80,6 +88,10 @@ export class PartnershipsService {
 
   async remove(id: string, archivedBy: Types.ObjectId): Promise<PartnershipDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  async unarchive(id: string): Promise<PartnershipDocument | null> {
+    return this.repository.restore(id);
   }
 
   /** The visible partners as logo-plus-name cards, in display order; demo

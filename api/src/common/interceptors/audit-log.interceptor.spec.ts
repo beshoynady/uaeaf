@@ -5,6 +5,7 @@ import { Reflector } from '@nestjs/core';
 import { Types } from 'mongoose';
 import { AuditLogInterceptor } from './audit-log.interceptor.js';
 import { AuditLogsService } from '../../modules/workflow/audit-logs/audit-logs.service.js';
+import { REQUIRED_PERMISSION_KEY } from '../decorators/permissions.decorator.js';
 import type { Connection } from 'mongoose';
 
 describe('AuditLogInterceptor', () => {
@@ -181,6 +182,119 @@ describe('AuditLogInterceptor', () => {
     expect(auditLogsService.write).toHaveBeenCalledWith(expect.objectContaining({ entityType: 'roles' }));
   });
 
+  /**
+   * The action a request logs under now comes from the route's own
+   * `@RequirePermission` action when that action is `Archive`, `Restore` or
+   * `PermanentDelete` — not from the HTTP method alone (owner decision
+   * 2026-09-27). Before this, every `@Delete()` route logged `Delete`
+   * regardless of what it actually did.
+   */
+  describe('action derivation from the route permission (2026-09-27)', () => {
+    const withPermission = (action: string) =>
+      jest.fn((key: unknown) => (key === REQUIRED_PERMISSION_KEY ? { resourceType: 'x', action } : false));
+
+    it('logs Archive for an archive route, not the generic Delete a plain DELETE would give', async () => {
+      reflector.getAllAndOverride = withPermission('Archive') as never;
+      const request = {
+        method: 'DELETE',
+        url: '/api/v1/articles/abc',
+        params: { id: new Types.ObjectId().toString() },
+        headers: {},
+        user: { userId, permissions: [] },
+      };
+
+      await new Promise<void>((resolve) => {
+        interceptor.intercept(makeContext(request), makeHandler({ archivedAt: new Date() })).subscribe(() => resolve());
+      });
+      await Promise.resolve();
+
+      expect(auditLogsService.write).toHaveBeenCalledWith(expect.objectContaining({ action: 'Archive' }));
+    });
+
+    it('logs Restore for a restore route, not the generic Create a plain POST would give', async () => {
+      reflector.getAllAndOverride = withPermission('Restore') as never;
+      const request = {
+        method: 'POST',
+        url: '/api/v1/articles/abc/restore',
+        params: { id: new Types.ObjectId().toString() },
+        headers: {},
+        user: { userId, permissions: [] },
+      };
+
+      await new Promise<void>((resolve) => {
+        interceptor.intercept(makeContext(request), makeHandler({})).subscribe(() => resolve());
+      });
+      await Promise.resolve();
+
+      expect(auditLogsService.write).toHaveBeenCalledWith(expect.objectContaining({ action: 'Restore' }));
+    });
+
+    it('logs PermanentDelete for the real destruction — and it is not what an archive produces', async () => {
+      reflector.getAllAndOverride = withPermission('PermanentDelete') as never;
+      const request = {
+        method: 'DELETE',
+        url: '/api/v1/media-assets/abc/object',
+        params: { id: new Types.ObjectId().toString() },
+        headers: {},
+        user: { userId, permissions: [] },
+      };
+
+      await new Promise<void>((resolve) => {
+        interceptor.intercept(makeContext(request), makeHandler(null)).subscribe(() => resolve());
+      });
+      await Promise.resolve();
+
+      const [call] = auditLogsService.write.mock.calls[0] as [{ action: string }];
+      expect(call.action).toBe('PermanentDelete');
+    });
+
+    it('still logs Update for an ordinary PATCH whose permission is not one of the three overrides', async () => {
+      reflector.getAllAndOverride = withPermission('Update') as never;
+      const request = {
+        method: 'PATCH',
+        url: '/api/v1/articles/abc',
+        params: { id: new Types.ObjectId().toString() },
+        headers: {},
+        user: { userId, permissions: [] },
+      };
+
+      await new Promise<void>((resolve) => {
+        interceptor.intercept(makeContext(request), makeHandler({})).subscribe(() => resolve());
+      });
+      await Promise.resolve();
+
+      expect(auditLogsService.write).toHaveBeenCalledWith(expect.objectContaining({ action: 'Update' }));
+    });
+
+    /**
+     * Independent review, round 4 (confirmed live for this batch): the
+     * override used to check the permission BEFORE the method, so a GET
+     * route guarded by one of the three override verbs — exactly what
+     * `GET /media-assets/unused` (Task 10) is specified to be, behind
+     * `mediaAssets:PermanentDelete` — would answer `PermanentDelete` and
+     * write an audit row claiming a permanent deletion happened because
+     * somebody opened a report. A non-mutating method must never be
+     * audited, whatever the permission verb says.
+     */
+    it('writes nothing for a GET, even one guarded by a destructive permission', async () => {
+      reflector.getAllAndOverride = withPermission('PermanentDelete') as never;
+      const request = {
+        method: 'GET',
+        url: '/api/v1/media-assets/unused',
+        params: {},
+        headers: {},
+        user: { userId, permissions: [] },
+      };
+
+      await new Promise<void>((resolve) => {
+        interceptor.intercept(makeContext(request), makeHandler({ items: [] })).subscribe(() => resolve());
+      });
+      await Promise.resolve();
+
+      expect(auditLogsService.write).not.toHaveBeenCalled();
+    });
+  });
+
   describe('previousValue', () => {
     const entityId = new Types.ObjectId().toString();
 
@@ -258,6 +372,106 @@ describe('AuditLogInterceptor', () => {
 
       expect(collection).not.toHaveBeenCalled();
       expect(auditLogsService.write.mock.calls[0]?.[0]).toMatchObject({ previousValue: null });
+    });
+  });
+
+  /**
+   * ADR-0112 — a write that cannot be attributed is still recorded.
+   *
+   * The early return this replaced dropped the row entirely, and dropped it
+   * precisely for routes whose shape is unusual: no `:id` in the path and no id
+   * in the response. `PUT /workflow-policies/:entityType/approval` is exactly
+   * that shape, so turning the federation's approval requirement on or off for a
+   * content type wrote nothing at all.
+   */
+  describe('when nothing can name the record', () => {
+    const run = async (request: Record<string, unknown>, responseBody: unknown) => {
+      await new Promise<void>((resolve) => {
+        interceptor.intercept(makeContext(request), makeHandler(responseBody)).subscribe(() => resolve());
+      });
+    };
+
+    it('still writes the row, with a null entity id and a reason', async () => {
+      await run(
+        {
+          method: 'PATCH',
+          url: '/api/v1/workflow-policies/articles/approval',
+          params: {},
+          headers: {},
+          user: { userId, roleIds: [], permissions: [] },
+        },
+        undefined,
+      );
+
+      expect(auditLogsService.write).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entityType: 'workflowPolicies',
+          entityId: null,
+          reason: 'entity id unresolved',
+        }),
+      );
+    });
+
+    it('prefers the path id when there is one', async () => {
+      const id = new Types.ObjectId().toString();
+
+      await run(
+        {
+          method: 'PATCH',
+          url: '/api/v1/articles/whatever',
+          params: { id },
+          headers: {},
+          user: { userId, roleIds: [], permissions: [] },
+        },
+        { _id: new Types.ObjectId().toString() },
+      );
+
+      expect(auditLogsService.write.mock.calls[0]?.[0]).toMatchObject({
+        entityId: new Types.ObjectId(id),
+      });
+    });
+
+    // An id-shaped value that is not an ObjectId used to reach `new
+    // Types.ObjectId(...)` and throw inside the interceptor, failing the
+    // request it was only meant to observe.
+    it('treats an unusable id as no id rather than throwing', async () => {
+      await run(
+        {
+          method: 'DELETE',
+          url: '/api/v1/articles/not-an-object-id',
+          params: { id: 'not-an-object-id' },
+          headers: {},
+          user: { userId, roleIds: [], permissions: [] },
+        },
+        undefined,
+      );
+
+      expect(auditLogsService.write.mock.calls[0]?.[0]).toMatchObject({ entityId: null });
+    });
+
+    it('uses @AuditEntity for the type and records the subject it names', async () => {
+      reflector.getAllAndOverride = jest.fn((key: unknown) =>
+        key === 'auditEntity' ? { type: 'workflowPolicies', idFrom: 'entityType' } : false,
+      ) as never;
+
+      await run(
+        {
+          method: 'PUT',
+          url: '/api/v1/some-other-route/articles/Edit',
+          params: { entityType: 'articles' },
+          headers: {},
+          user: { userId, roleIds: [], permissions: [] },
+        },
+        undefined,
+      );
+
+      expect(auditLogsService.write).toHaveBeenCalledWith(
+        expect.objectContaining({
+          entityType: 'workflowPolicies',
+          entityId: null,
+          reason: 'entity id unresolved (subject: articles)',
+        }),
+      );
     });
   });
 });

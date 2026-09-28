@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { CommitteesRepository } from './committees.repository.js';
 import type { CommitteeDocument } from './schemas/committees.schema.js';
 import { CreateCommitteeDto } from './dto/create-committees.dto.js';
+import { UpdateCommitteeDto } from './dto/update-committees.dto.js';
 import { PublicationsService } from '../../workflow/publications/publications.service.js';
 import { RevisionsService } from '../../workflow/revisions/revisions.service.js';
+import { partialUpdate } from '../../../common/utils/partial-update.util.js';
 
 /** Implements: committees collection, Domain 1 — Federation & Governance.
  *  Workflow-governed (List A + List B) — wired exactly like Week 3's
@@ -39,6 +41,22 @@ export class CommitteesService {
     return this.repository.findById(id);
   }
 
+  /**
+   * Saves the draft row directly — same as `ArticlesService.update()`.
+   * `committees` is workflow-governed, but a revision is a snapshot
+   * `RevisionsService` freezes at submit/publish time (via
+   * `PublishingService`), not something this plain field edit creates.
+   *
+   * @throws NotFoundException when no such committee exists.
+   */
+  async update(id: string, dto: UpdateCommitteeDto): Promise<CommitteeDocument> {
+    const updated = await this.repository.updateById(id, partialUpdate(dto));
+    if (!updated) {
+      throw new NotFoundException(`Committee ${id} not found.`);
+    }
+    return updated;
+  }
+
   /** The sole public read path (Week 2 "Approved ≠ Published" rule).
    *  `null` when there is no current Live publication. */
   async getPublicSnapshot(id: string): Promise<Record<string, unknown> | null> {
@@ -52,5 +70,9 @@ export class CommitteesService {
 
   async remove(id: string, archivedBy: Types.ObjectId): Promise<CommitteeDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  async unarchive(id: string): Promise<CommitteeDocument | null> {
+    return this.repository.restore(id);
   }
 }

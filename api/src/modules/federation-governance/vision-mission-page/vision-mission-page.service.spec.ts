@@ -53,12 +53,17 @@ const make = () => {
   // so every spec about a published page has to say the row is switched on.
   const repository = {
     find: mock(),
+    findById: mock().mockResolvedValue({}),
     findByIdWithActivation: mock().mockResolvedValue({ isActive: true }),
     updateById: mock(),
   };
   const publications = { findLive: mock(), getPublicSnapshot: mock() };
   const revisions = {};
-  const media = { resolvePublicImages: mock(), assertUsableImage: mock() };
+  const media = {
+    resolvePublicImages: mock(),
+    assertUsableImage: mock(),
+    orphanedMediaCandidates: mock().mockResolvedValue([]),
+  };
   const service = new VisionMissionPagesService(
     repository as never,
     publications as never,
@@ -156,6 +161,22 @@ describe('VisionMissionPagesService — section photographs', () => {
     expect(String(set.visionImageId)).toBe(String(ids.vision));
     expect(set.missionImageId).toBeNull();
     expect(set).not.toHaveProperty('valuesImageId');
+  });
+
+  it('asks about a cover image a save just replaced, and carries the answer back', async () => {
+    const { service, repository, media } = make();
+    repository.findById.mockResolvedValue({ heroImageId: ids.hero });
+    repository.updateById.mockResolvedValue({ heroImageId: ids.vision });
+    media.orphanedMediaCandidates.mockResolvedValue([ids.hero.toString()]);
+
+    const saved = await service.update(
+      String(new Types.ObjectId()),
+      { heroImageId: String(ids.vision) } as never,
+      new Types.ObjectId(),
+    );
+
+    expect(media.orphanedMediaCandidates).toHaveBeenCalledWith([ids.hero.toString()]);
+    expect(saved.orphanedMediaCandidates).toEqual([ids.hero.toString()]);
   });
 });
 

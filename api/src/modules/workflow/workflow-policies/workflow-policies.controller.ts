@@ -1,6 +1,11 @@
-import { BadRequestException, Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, Post, Put, Req } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import type { Request } from 'express';
+import { extractRequestContext } from '../../../common/utils/request-context.util.js';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
+import { CurrentUser } from '../../../common/decorators/current-user.decorator.js';
+import { SkipAuditLog } from '../../../common/decorators/skip-audit-log.decorator.js';
+import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 import { WorkflowPoliciesService } from './workflow-policies.service.js';
 import { ApprovalConfigurationService } from './approval-configuration.service.js';
 import { ConfigureApprovalDto } from './dto/configure-approval.dto.js';
@@ -64,15 +69,34 @@ export class WorkflowPoliciesController {
    * demanding approval from a definition with nobody on it, which stops every
    * publication of that type with nothing on any screen to say why.
    */
+  /** `@SkipAuditLog()` because the service writes its own, more precise row
+   *  (ADR-0107): this route's parameter is `entityType`, not `:id`, so the
+   *  interceptor can name neither the record nor its previous arrangement. */
   @Put(':entityType/approval')
   @RequirePermission('workflowPolicies', 'Update')
-  configureApproval(@Param('entityType') entityType: string, @Body() dto: ConfigureApprovalDto) {
-    return this.configuration.configure(entityType, {
-      enabled: dto.enabled,
-      mode: dto.mode,
-      approverIds: dto.approverIds,
-      threshold: dto.threshold,
-    });
+  @SkipAuditLog()
+  configureApproval(
+    @Param('entityType') entityType: string,
+    @Body() dto: ConfigureApprovalDto,
+    @CurrentUser() actor: AuthenticatedUser,
+    @Req() req: Request,
+  ) {
+    return this.configuration.configure(
+      entityType,
+      {
+        enabled: dto.enabled,
+        mode: dto.mode,
+        approverIds: dto.approverIds,
+        threshold: dto.threshold,
+      },
+      actor,
+      // Threaded because this route writes its own audit row, so the
+      // interceptor's `extractRequestContext` never runs for it — and a
+      // governance row recording who and when but not from where is the "vague
+      // log" Chapter 17 §7 rules out. `WorkflowInstancesController` already does
+      // this for the same reason.
+      extractRequestContext(req),
+    );
   }
 
   /** Sets the single policy for this pair (ADR-0069 D6). `PUT` rather than

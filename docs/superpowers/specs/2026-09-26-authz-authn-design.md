@@ -151,10 +151,15 @@ each) are retired in favour of `PermanentDelete` and `ViewSensitive`.
 **Administrative verbs:** `ManageRoles`, `AssignRoles`, `ViewAuditLog`,
 `ManageSecuritySettings`.
 
-**Five pairs are un-grantable** — reserved to the Super Admin and refused to
-every role (owner decision 4, §3.4): `users:Create`, `users:Update`,
-`users:AssignRoles`, `roles:ManageRoles`, `securitySettings:ManageSecuritySettings`.
-`auditLogs:ViewAuditLog` stays grantable by decision.
+**Ten pairs are declared un-grantable today; eleven are decided reserved** —
+to the Super Admin, refused to every role (owner decision 4, §3.4; Q-A,
+§13.1; and the 2026-09-28 decision closing Batch 2): `users:Create`,
+`users:Update`, `users:AssignRoles`, `users:Read`, `users:Export`,
+`users:Archive`, `users:Restore`, `roles:ManageRoles`, `roles:Read`,
+`permissions:Read`. The eleventh, `securitySettings:ManageSecuritySettings`,
+is decided but not yet declarable — `securitySettings` is not in
+`PERMISSION_RESOURCES` until Batch 5. `auditLogs:ViewAuditLog` stays
+grantable by decision.
 
 ### 2.2 How the new verbs fit the existing pair shape — no guard rewrite
 
@@ -236,8 +241,8 @@ go). **Ten** resources, after the owner's Q6 decision added `contactMessages`
 `governanceDocuments`, `memberships`, `partnerships` and `sponsors` stay
 archival-only until a case appears. The other 59 are false.
 
-**SA-only** marks the five pairs the owner has declared un-grantable
-(decision 4, §3.4): no role may hold them at all.
+**SA-only** marks the ten pairs declared un-grantable today, of eleven
+decided (decision 4, §3.4; §2.1): no role may hold them at all.
 
 Sensitive fields are the **existing** `[RESTRICTED]` / `[SENSITIVE-MINOR]`
 markers in the schemas, classified by Chapter 17 §1. Nothing is newly declared
@@ -304,7 +309,7 @@ sensitive except where the brief names it (residency status).
 | 57 | `sponsors` | Sponsorship | • | • | • | • | **+** |  |  |  |  | no | — | — | — |
 | 58 | `sponsorships` | Sponsorship | • | • | • | • | **+** |  |  |  |  | no | — | — | — |
 | 59 | `strategicPlansPage` | Governance | • | • | • | • | **+** |  |  | • | **+** | no | — | — | — |
-| 60 | `users` | Platform | • | • | • |  |  | **+** | **+** |  |  | yes | **Create, Update, AssignRoles** | ? email | — |
+| 60 | `users` | Platform | • | • | • |  |  | **+** | **+** |  |  | yes | **Create, Update, AssignRoles, Read, Export, Archive, Restore** | ? email | — |
 | 61 | `venues` | People | • | • | **+** | • | **+** |  |  |  |  | no | — | — | — |
 | 62 | `videos` | Media | • | • | • | • | **+** |  |  |  |  | no | — | — | own · all |
 | 63 | `videosPage` | Media |  |  | • |  |  |  |  | • |  | no | — | — | — |
@@ -317,7 +322,9 @@ sensitive except where the brief names it (residency status).
 
 **Legend.** `•` the resource already declares this pair today · `**+**` new pair this map introduces · **SA-only** verbs are declared un-grantable (owner decision 4) — no role may hold them, the sync gives them to the Super Admin alone.
 
-**Totals.** 69 resources. New pairs introduced: Update **+30**, Restore **+47**, ViewSensitive **+8**, Publish **+4**, Approve **+9**, PermanentDelete **+10**. purgeable: 10 yes, 59 no. Un-grantable (Super Admin only): 5 pairs.
+**Totals.** 69 resources. New pairs introduced: Update **+30**, Restore **+47**, ViewSensitive **+8**, Publish **+4**, Approve **+9**, PermanentDelete **+10**. purgeable: 10 yes, 59 no. Un-grantable (Super Admin only): 10 pairs declared,
+11 decided — the eleventh (`securitySettings:ManageSecuritySettings`) awaits
+its collection in Batch 5.
 
 ### The group table — `ViewReports`, `Export`, `Print`
 
@@ -417,13 +424,19 @@ shortest path.
 
 ### 3.4 Account administration is Super Admin only (owner decision 4)
 
-Creating, editing, suspending and role-assigning accounts, and managing roles
-themselves, are **exclusive to the Super Admin**, exactly like
-`ManageSecuritySettings`. Five pairs are declared **un-grantable** in the
-capability map:
+Creating, editing, suspending, role-assigning, archiving and restoring
+accounts, reading account data, and managing roles themselves, are
+**exclusive to the Super Admin**, exactly like `ManageSecuritySettings`. Ten
+pairs are declared **un-grantable** in the capability map today; eleven are
+decided reserved (Q-A, §13.1, and the 2026-09-28 decision closing Batch 2 —
+full history in ADR-0104):
 
-`users:Create` · `users:Update` · `users:AssignRoles` · `roles:ManageRoles` ·
-`securitySettings:ManageSecuritySettings`
+`users:Create` · `users:Update` · `users:AssignRoles` · `users:Read` ·
+`users:Export` · `users:Archive` · `users:Restore` · `roles:ManageRoles` ·
+`roles:Read` · `permissions:Read`
+
+The eleventh, `securitySettings:ManageSecuritySettings`, is decided but not
+declarable until `securitySettings` joins `PERMISSION_RESOURCES` in Batch 5.
 
 **Enforcement, three layers:**
 
@@ -505,6 +518,29 @@ Today `Approve` exists on one resource and scoping comes only from `assigneeIds`
 (review P1-3). After this change:
 
 - `Approve` is a per-resource verb on the 9 publication-eligible workflow types.
+
+  **Declared in Batch 4, not before (owner decision 2026-09-27).** The pair and the
+  code that reads it land in the same batch. The reason is recorded in
+  `publishing.service.ts`: `<entityType>:Approve` was once asked for while no route
+  guarded it, so `permission-catalogue.spec.ts` refused to seed it, so it could not be
+  granted — and `canApprove` was therefore false for every reader of every type,
+  silently. A declared pair with no enforcement path is not a head start; it is a
+  permission that appears granted and does nothing.
+
+  **Until then `workflowInstances:Approve` is the approval pair, and it is temporary.**
+  The three review routes guard it with a decorator, so it is enforced — but it cannot
+  distinguish a news approver from a governance approver. In Batch 4:
+
+  - a `<entityType>:Approve` pair for every `WORKFLOW_ENTITY_TYPES` member, read by
+    `canApprove` and by the assignment of a step’s approver;
+  - `workflowInstances:Approve` leaves the catalogue;
+  - a negative test: a news approver cannot approve a governance document;
+  - the reviewer-approver template carries the `Approve` pairs for its own types;
+  - the policies screen offers as approvers only the holders of that type’s pair.
+
+  **No data migration for the roles.** `reset-roles` (E1, Batch 3) archives every
+  non-system role and `sync-permission-catalogue` re-grants the Super Admin, so the
+  pair change needs no rewrite of stored grants. Stated here so nobody writes one.
 - `WorkflowInstancesService.approve` requires **both** `<entityType>:Approve`
   **and** membership in the current step's `assigneeIds`. The capability is
   checked in the service, not only the route, matching how `Publish` is already
@@ -575,6 +611,20 @@ athlete resources. Every other template sees a person's record with the
 ## 6. Sensitive data, export, print, reports
 
 ### 6.1 `ViewSensitive` (A3)
+
+**Sequencing (owner decision, 2026-09-28, correcting this section).**
+`ViewSensitive` was removed from every resource in the capability map by
+owner decision D1 (see `capability-map.spec.ts`'s
+`awaitingTheBatchThatEnforcesIt` list) — it produces no catalogue pair today
+and cannot be granted to anyone, including a Super Admin. Implemented
+literally, the strip described below would fire unconditionally: every
+sensitive field hidden from everyone, Super Admin included. So **no part of
+this section is implemented before Batch 6a**: `ViewSensitive` returns to
+the capability map in that same task, in the same commit as the serializers
+that enforce it — the pair and its enforcement land together, per the
+owner's standing rule that nothing is declared without an enforcement path.
+That task's tests must show a Super Admin seeing the fields and an actor
+without the pair not seeing them.
 
 One serialization layer, not per-controller filtering. A `SensitiveFieldsService`
 reads the capability map and strips every declared path from a response unless
@@ -721,7 +771,7 @@ a silently clamped setting reads back as accepted.
 | Absolute session | 1 h | 30 d | 1 d |
 | Trusted device | 0 | 30 d | **always 0** |
 | Step-up window | 5 min | 60 min | — |
-| Attempts before lockout | 3 | 10 | — |
+| Attempts before lockout, **per (account + IP)** | 3 | 10 | — |
 | Minimum password length | 12 | 20 | — |
 
 **Immutable, not settable at all:** 2FA for Super Admin · 2FA platform-wide ·
@@ -735,7 +785,18 @@ Per §0.3 this singleton becomes the **only** home for these numbers:
 `siteSettings.sessionTimeoutMinutes` and `.maxLoginAttempts` are migrated and
 deprecated, and `auth.config.ts` keeps only the bounds.
 
-### 7.6 Passwords (B6)
+### 7.6 Passwords and lockout (B6)
+
+**Lockout (owner decision 2026-09-27, ADR-0105 D4).** Failures are counted per
+**(account + IP)** with escalating delay, per NIST 800-63B §5.2.2 — so a guess
+from elsewhere delays the guesser, not the account holder. A much higher
+account-wide ceiling (order of 100 failures in 24 hours) still bounds a
+distributed attempt, is recorded as a security event, and notifies the other
+Super Admins through `MailPort`. `lockedUntil` joins the active-Super-Admin
+count, and break-glass clears it. Exempting privileged accounts from the lockout
+was **rejected**: it removes brute-force protection from the account that most
+needs it. 2FA remains a condition of entry regardless — a correct password alone
+opens no session.
 
 NIST 800-63B: minimum length from settings (floor 12), long passphrases allowed,
 **no composition rules, no periodic expiry**. Rejected: a local breached/common
@@ -915,8 +976,21 @@ Run order matters; each is safe to re-run.
 5. `build-appointment-indexes` (F2)
 6. `migrate-security-settings` — copies the two `siteSettings` values, then marks them deprecated (§0.3)
 7. `sync-permission-catalogue` — **existing**, re-run so Super Admin gains the new capabilities
+7a. `migrate-delete-to-archive` — rewrites stored `permissions.action` from `Delete` to
+    `Archive` (Batch 2, ADR-0103). Safe in **either** order relative to step 7: a role
+    pointing at a permission row that no longer resolves grants nothing and throws
+    nothing, which `migrate-delete-to-archive.spec.ts` pins. Preferably after 7, because
+    the collection is smaller by then and the report is shorter — a preference, not a
+    correctness requirement. It refuses to run if any resource already carries both rows.
+7b. `report-reserved-pair-holders` — read-only; lists every non-Super-Admin role
+    holding a `superAdminOnly` pair (`capability-map.ts`) and the accounts that
+    hold that role. Must run here, before step 8: `reset-roles` archives every
+    non-system role, so after it every such role's grant is gone and the report
+    would find nothing. Never run by the agent; the owner runs it (2026-09-28
+    decision closing Batch 2, alongside `users:Archive`/`users:Restore` joining
+    the reserved set).
 8. `reset-roles` — archives every non-system role, reports affected accounts and open steps (E1)
-9. `seed-role-templates` — the seven (E2)
+9. `seed-role-templates` — the six (E2; the federation-staff-officer template was removed by owner decision 2026-09-26)
 10. `recover:super-admin` — break-glass, on demand only (A10)
 
 Steps 8 and 9 are a pair: 8 leaves accounts role-less and marked, and 9 gives the
@@ -942,10 +1016,16 @@ the record; each row's detail lives in the section named.
 
 ### 13.1 Decision 4 — account administration is Super Admin only
 
-Raised by the owner after Batch 0, not by a question in it. Five pairs become
-un-grantable, the "Staff Administrator" template is removed, and the templates go
-from seven to six. The superset and stronger-user rules stay in the code with
-their tests. Full reasoning in **§3.4**; recorded in **ADR-0104**.
+Raised by the owner after Batch 0, not by a question in it. Five pairs became
+un-grantable at the time, the "Staff Administrator" template is removed, and
+the templates go from seven to six. The superset and stronger-user rules stay
+in the code with their tests. Full reasoning in **§3.4**; recorded in
+**ADR-0104**.
+
+The reserved set has grown twice since: to eight (Q-A, 2026-09-27) and to ten
+declared / eleven decided (owner decision closing Batch 2, 2026-09-28, adding
+`users:Archive` and `users:Restore`). See **§2.1**, **§3.4** and ADR-0104's
+dated amendments for the current set.
 
 ### 13.2 What is still open
 

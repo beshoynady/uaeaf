@@ -3,9 +3,11 @@ import { Types } from 'mongoose';
 import { AthletesRepository } from './athletes.repository.js';
 import type { AthleteDocument } from './schemas/athlete.schema.js';
 import { CreateAthleteDto } from './dto/create-athlete.dto.js';
+import { UpdateAthleteDto } from './dto/update-athlete.dto.js';
 import { AthletePublicResponseDto } from './dto/athlete-public-response.dto.js';
 import type { AthletePublicListResponseDto } from './dto/athlete-public-list-response.dto.js';
 import { toCsv, type CsvColumn } from '../../../common/utils/csv.util.js';
+import { partialUpdate } from '../../../common/utils/partial-update.util.js';
 
 /** Column order for `athletes:Export`. Bilingual fields become two columns
  *  so neither language is lost to the other. */
@@ -106,7 +108,20 @@ export class AthletesService {
     };
   }
 
+  /** @throws NotFoundException when no such athlete exists. */
+  async update(id: string, dto: UpdateAthleteDto): Promise<AthleteDocument> {
+    const updated = await this.repository.updateById(id, partialUpdate(dto));
+    if (!updated) {
+      throw new NotFoundException(`Athlete ${id} not found.`);
+    }
+    return updated;
+  }
+
   async remove(id: string, archivedBy: Types.ObjectId): Promise<AthleteDocument | null> {
     return this.repository.softDelete(id, archivedBy);
+  }
+
+  async unarchive(id: string): Promise<AthleteDocument | null> {
+    return this.repository.restore(id);
   }
 }
