@@ -38,6 +38,13 @@ export interface NavItem {
    * is built by a later project in the same series, and its own page says so.
    */
   badge?: "soon";
+  /**
+   * True on a panel whose own featured card is a call to action for the
+   * panel itself, not a promoted article — so the drawer keeps it even
+   * though every other panel drops its featured card there. Only `athletics`
+   * carries this today (its club-finder card, spec §6).
+   */
+  keepsCardInDrawer?: true;
 }
 
 /**
@@ -82,6 +89,7 @@ export const PRIMARY_NAV: readonly NavItem[] = [
   },
   {
     key: "athletics",
+    keepsCardInDrawer: true,
     children: [
       {
         key: "discoverSport",

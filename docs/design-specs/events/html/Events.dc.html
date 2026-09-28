@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>الفعاليات</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0;background:#FAFAF8}
+*{box-sizing:border-box}
+a{color:#006B31}a:hover{color:#00502A}
+a:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid #0B0B0B;outline-offset:3px}
+.on-dark a:focus-visible,.on-dark button:focus-visible{outline-color:#FFFFFF}
+.nav-link{color:#1F2328;text-decoration:none;font-size:15px;font-weight:500;padding:10px 2px;display:inline-flex;align-items:center;gap:4px;border-bottom:2px solid transparent}
+.nav-link:hover{color:#006B31}
+.nav-on{color:#006B31;border-bottom-color:#00843D;font-weight:600}
+.hbtn{height:44px;padding:0 10px;border:none;background:transparent;border-radius:10px;color:#1F2328;font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+.hbtn:hover{background:#F1F2EF;color:#1F2328}
+.tab{height:48px;padding:0 18px;border-radius:12px;border:none;background:transparent;font-family:inherit;font-size:15px;font-weight:600;color:#3A4046;display:inline-flex;align-items:center;gap:10px;cursor:pointer;transition:background .2s,color .2s}
+.tab:hover{background:#F1F2EF;color:#0B0B0B}
+.tab-n{min-width:26px;height:22px;padding:0 7px;border-radius:999px;background:#ECEEEA;color:#3A4046;font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+.tab-on,.tab-on:hover{background:#0B0B0B;color:#FFFFFF}
+.tab-on .tab-n{background:#00843D;color:#FFFFFF}
+.view{height:44px;padding:0 14px;border-radius:10px;display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;text-decoration:none;color:#3A4046;border:none;background:transparent;font-family:inherit;cursor:pointer}
+.view:hover{color:#0B0B0B}
+.view-on{background:#FFFFFF;color:#0B0B0B;box-shadow:0 1px 3px rgba(11,11,11,.12)}
+.fld{display:flex;flex-direction:column;gap:6px;min-width:0}
+.fld-l{font-size:12px;font-weight:600;color:#5B6167}
+.fsel{appearance:none;-webkit-appearance:none;width:100%;height:46px;padding-inline:14px 38px;border-radius:12px;border:1px solid #D5D8D4;background:#FFFFFF;color:#0B0B0B;font-family:inherit;font-size:14px;cursor:pointer}
+.fsel:hover{border-color:#0B0B0B}
+.fsel-on{border-color:#00843D;background:#F2F9F4}
+.gchip{height:40px;padding:0 14px;border-radius:999px;border:1px solid #D5D8D4;background:#FFFFFF;font-family:inherit;font-size:14px;font-weight:500;color:#1F2328;display:inline-flex;align-items:center;gap:8px;cursor:pointer;transition:all .2s}
+.gchip:hover{border-color:#0B0B0B}
+.gchip-on,.gchip-on:hover{background:#0B0B0B;border-color:#0B0B0B;color:#FFFFFF}
+.ev{position:relative;display:flex;flex-direction:column;border-radius:18px;background:#FFFFFF;border:1px solid #E3E5E2;overflow:hidden;transition:transform .3s,box-shadow .3s}
+.ev::before{content:"";position:absolute;inset-inline:0;top:0;height:4px;z-index:3;background:linear-gradient(to left,#00843D 0 26%,#0B0B0B 44% 56%,#C8102E 74% 100%);opacity:0;transition:opacity .3s}
+.ev:hover,.ev:focus-within{box-shadow:0 20px 40px rgba(11,11,11,.12)}
+.ev:hover::before,.ev:focus-within::before{opacity:1}
+.ev-link{color:#0B0B0B;text-decoration:none}
+.ev-link::after{content:"";position:absolute;inset:0;z-index:2}
+.ev-link:hover{color:#006B31}
+.ev-art{transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+.ev:hover .ev-art{transform:scale(1.08) rotate(-4deg)}
+.btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 22px;border-radius:12px;background:#00843D;color:#FFFFFF;font-size:15px;font-weight:600;text-decoration:none;border:none;font-family:inherit;cursor:pointer;position:relative;z-index:3}
+.btn-primary:hover{background:#006B31;color:#FFFFFF}
+.btn-ghost{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 20px;border-radius:12px;border:1px solid #D5D8D4;background:#FFFFFF;color:#0B0B0B;font-size:15px;font-weight:600;text-decoration:none;font-family:inherit;cursor:pointer;position:relative;z-index:3}
+.btn-ghost:hover{border-color:#0B0B0B;color:#0B0B0B}
+.on-dark .btn-ghost{background:transparent;border-color:rgba(255,255,255,.45);color:#FFFFFF}
+.on-dark .btn-ghost:hover{border-color:#FFFFFF;color:#FFFFFF}
+.foot-link{color:#D0D3D6;text-decoration:none;font-size:14px}
+.foot-link:hover{color:#FFFFFF}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,255,255,.7)}70%{box-shadow:0 0 0 7px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
+@keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:no-preference){.live-dot{animation:pulse 1.6s ease-out infinite}.ev{animation:rise .6s cubic-bezier(.2,.7,.2,1) both}.ev:hover,.ev:focus-within{transform:translateY(-4px)}}
+</style>
+</helmet>
+<div style="width: 1440px; height: 2700px; display: flex; flex-direction: column; background: #FAFAF8; font-family: Alexandria, Tahoma, sans-serif; color: #0B0B0B; direction: rtl; overflow: hidden">
+
+<div style="height: 4px; flex-shrink: 0; background: linear-gradient(to left, #00843D 0 26%, #0B0B0B 44% 56%, #C8102E 74% 100%)"></div>
+<header style="height: 88px; flex-shrink: 0; background: #FFFFFF; border-bottom: 1px solid #ECEDEA; display: flex; align-items: center; justify-content: space-between; padding: 0 56px">
+<div style="display: flex; align-items: center; gap: 44px">
+<a href="#" aria-label="اتحاد الإمارات لألعاب القوى — الرئيسية" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: #0B0B0B"><svg width="50" height="42" viewBox="0 0 240 200" aria-hidden="true"><path d="M20 170 L75.05 105.05 A7 7 0 0 1 84.95 114.95 Z" fill="#C8102E"></path><path d="M40 190 L142.2 72.2 A11 11 0 0 1 157.8 87.8 Z" fill="#00843D"></path><path d="M95 190 L182.9 87.9 A10 10 0 0 1 197.1 102.1 Z" fill="#0B0B0B"></path><path d="M150 190 L200.05 130.05 A7 7 0 0 1 209.95 139.95 Z" fill="#C8102E"></path></svg><span lang="en" style="font-size: 25px; font-weight: 800; letter-spacing: -0.5px">UAEAF</span></a>
+<nav aria-label="القائمة الرئيسية"><ul style="list-style: none; margin: 0; padding: 0; display: flex; align-items: center; gap: 24px">
+<li><a class="nav-link" href="#">الرئيسية</a></li>
+<li><a class="nav-link" href="#">نبذة عن الاتحاد <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></a></li>
+<li><a class="nav-link" href="#">الأعضاء <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></a></li>
+<li><a class="nav-link" href="#">البطولات</a></li>
+<li><a class="nav-link nav-on" href="Main.dc.html" aria-current="true">الفعاليات <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></a></li>
+<li><a class="nav-link" href="#">الأخبار والمقالات</a></li>
+<li><a class="nav-link" href="#">المركز الإعلامي <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></a></li>
+<li><a class="nav-link" href="#">تواصل معنا</a></li>
+</ul></nav>
+</div>
+<div style="display: flex; align-items: center; gap: 6px">
+<button class="hbtn" type="button" aria-label="تفعيل الوضع الداكن"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"></path></svg></button>
+<button class="hbtn" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>بحث</button>
+<a class="hbtn" href="#" lang="en">English</a>
+</div>
+</header>
+
+<section class="on-dark" aria-labelledby="pt" style="position: relative; flex-shrink: 0; height: 460px; overflow: hidden; color: #FFFFFF; background: linear-gradient(135deg, #04140B 0%, #00502A 58%, #0B0B0B 100%)">
+<svg width="1440" height="460" viewBox="0 0 1440 460" preserveAspectRatio="xMidYMid slice" aria-hidden="true" style="position: absolute; inset: 0"><g fill="none" stroke="rgba(255,255,255,.10)" stroke-width="2"><path d="M-40 470 Q720 120 1480 330"></path><path d="M-40 510 Q720 170 1480 380"></path><path d="M-40 550 Q720 220 1480 430"></path><path d="M-40 590 Q720 270 1480 480"></path></g><circle cx="220" cy="80" r="220" fill="rgba(200,16,46,.16)"></circle></svg>
+<svg width="200" height="167" viewBox="0 0 240 200" aria-hidden="true" style="position: absolute; left: 36px; top: 26px"><path d="M20 170 L75.05 105.05 A7 7 0 0 1 84.95 114.95 Z" fill="#C8102E"></path><path d="M40 190 L142.2 72.2 A11 11 0 0 1 157.8 87.8 Z" fill="#00843D"></path></svg>
+<div aria-hidden="true" style="position: absolute; left: 70px; bottom: 60px; font-size: 200px; line-height: 1; font-weight: 800; letter-spacing: -8px; color: transparent; -webkit-text-stroke: 1.5px rgba(255,255,255,.16); direction: ltr">26/27</div>
+<div style="position: absolute; top: 72px; inset-inline-start: 56px; width: 640px; display: flex; flex-direction: column; gap: 16px">
+<nav aria-label="مسار التنقل"><ol style="list-style: none; margin: 0; padding: 0; display: flex; gap: 10px; font-size: 14px; color: #C4C8CC"><li><a href="#" style="color: #C4C8CC; text-decoration: none">الرئيسية</a></li><li aria-hidden="true">/</li><li aria-current="page" style="color: #FFFFFF; font-weight: 600">الفعاليات</li></ol></nav>
+<div style="display: flex; align-items: center; gap: 16px"><h1 id="pt" style="margin: 0; font-size: 64px; line-height: 1.1; font-weight: 800">الفعاليات</h1><span aria-hidden="true" style="width: 56px; height: 5px; border-radius: 3px; background: linear-gradient(to left, #00843D 0 26%, #FFFFFF 44% 56%, #C8102E 74% 100%)"></span></div>
+<p style="margin: 0; font-size: 18px; line-height: 1.8; color: #E4E6E8">المؤتمرات والاحتفاليات والمعسكرات والدورات التي ينظمها الاتحاد خلال الموسم الرياضي — بمواعيدها وأماكنها وصورها.</p>
+</div>
+<a href="Season.dc.html" style="position: absolute; top: 96px; inset-inline-end: 56px; width: 360px; padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,.22); background: rgba(11,11,11,.45); display: flex; gap: 16px; align-items: center; text-decoration: none; color: #FFFFFF; backdrop-filter: blur(6px)">
+<span aria-hidden="true" style="flex-shrink: 0; width: 76px; height: 76px; border-radius: 16px; border: 1.5px dashed rgba(255,255,255,.5); display: flex; align-items: center; justify-content: center; text-align: center; font-size: 11px; color: #C4C8CC; line-height: 1.4">شعار<br>الموسم</span>
+<span style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #C4C8CC">تعرض الآن فعاليات</span><span style="font-size: 20px; font-weight: 800">موسم 2026–2027</span><span style="font-size: 13px; color: #9FE0B6">المرحلة الحالية: الإعداد</span><span style="font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; margin-top: 4px">عن الموسم <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg></span></span>
+</a>
+</section>
+
+<main style="flex-grow: 1; padding: 0 56px 72px; display: flex; flex-direction: column; gap: 40px">
+<div style="position: relative; margin-top: -72px; padding: 20px 24px 22px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 24px 50px rgba(11,11,11,.10), 0 0 0 1px rgba(11,11,11,.05); display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<div role="tablist" aria-label="حالة الفعاليات" style="display: flex; gap: 6px">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
+<button class="{{t.cls}}" type="button" role="tab" aria-selected="{{t.sel}}" onClick="{{t.pick}}">{{t.label}} <span class="tab-n">{{t.n}}</span></button>
+</sc-for>
+</div>
+<div role="group" aria-label="طريقة العرض" style="display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: #F1F2EF">
+<button class="view view-on" type="button" aria-pressed="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"></rect><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"></rect><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"></rect><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"></rect></svg>كروت</button>
+<a class="view" href="EventsCalendar.dc.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="16" rx="2.5"></rect><path d="M3.5 9.5h17M8 2.5v4M16 2.5v4"></path></svg>تقويم</a>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto; gap: 14px; align-items: end">
+<div class="fld"><label class="fld-l" for="f-season">الموسم</label><select id="f-season" class="fsel fsel-on"><option>موسم 2026–2027 (الحالي)</option><option>موسم 2025–2026</option><option>كل المواسم</option></select></div>
+<div class="fld"><label class="fld-l" for="f-period">الفترة</label><select id="f-period" class="fsel"><option>كل الفترات</option><option>هذا الشهر</option><option>الشهر القادم</option><option>مخصص…</option></select></div>
+<div class="fld"><label class="fld-l" for="f-att">طريقة الحضور</label><select id="f-att" class="fsel"><option>الكل</option><option>حضوري</option><option>أونلاين</option><option>حضوري + أونلاين</option></select></div>
+<button type="button" style="height: 46px; padding: 0 16px; border-radius: 12px; border: none; background: transparent; font-family: inherit; font-size: 14px; font-weight: 600; color: #5B6167; cursor: pointer">مسح الفلاتر</button>
+</div>
+<div role="group" aria-label="نوع الفعالية" style="display: flex; flex-wrap: wrap; gap: 8px; padding-top: 16px; border-top: 1px solid #EEF0ED">
+<sc-for list="{{chips}}" as="c" hint-placeholder-count="7">
+<button class="{{c.cls}}" type="button" aria-pressed="{{c.pressed}}" onClick="{{c.pick}}"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 3px; background: {{c.dot}}"></span>{{c.label}}</button>
+</sc-for>
+</div>
+</div>
+
+<sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+<div style="padding: 72px 24px; border-radius: 22px; border: 1.5px dashed #D5D8D4; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center">
+<svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#8A9096" stroke-width="1.5" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="16" rx="2.5"></rect><path d="M3.5 9.5h17M8 2.5v4M16 2.5v4M10 14l4 4M14 14l-4 4"></path></svg>
+<h2 style="margin: 0; font-size: 20px; font-weight: 700">لا توجد فعاليات تطابق اختيارك</h2>
+<p style="margin: 0; font-size: 15px; color: #5B6167">جرّب نوعًا آخر أو موسمًا مختلفًا.</p>
+<button class="btn-ghost" type="button" onClick="{{clearG}}">عرض كل الأنواع</button>
+</div>
+</sc-if>
+
+<sc-if value="{{isCur}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 24px">
+<sc-for list="{{cur}}" as="e" hint-placeholder-count="1">
+<article class="ev" style="flex-direction: row; min-height: 400px">
+<div style="position: relative; flex-grow: 1; padding: 44px 44px 40px; display: flex; flex-direction: column; gap: 16px; justify-content: center">
+<div style="display: flex; align-items: center; gap: 10px"><span style="display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 8px; background: #C8102E; color: #FFFFFF; font-size: 13px; font-weight: 700"><span class="live-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #FFFFFF"></span>جارية الآن</span><span style="height: 30px; padding: 0 12px; border-radius: 8px; background: {{e.gbg}}; color: {{e.gfg}}; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center">{{e.type}}</span></div>
+<h2 style="margin: 0; font-size: 34px; line-height: 1.35; font-weight: 800"><a class="ev-link" href="EventDetail.dc.html">{{e.title}}</a></h2>
+<p style="margin: 0; font-size: 16px; line-height: 1.8; color: #3A4046; max-width: 560px">{{e.summary}}</p>
+<ul style="list-style: none; margin: 4px 0 0; padding: 0; display: flex; gap: 22px; font-size: 14px; color: #3A4046">
+<li style="display: flex; align-items: center; gap: 8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00843D" stroke-width="1.8" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="16" rx="2.5"></rect><path d="M3.5 9.5h17M8 2.5v4M16 2.5v4"></path></svg>{{e.date}}</li>
+<li style="display: flex; align-items: center; gap: 8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00843D" stroke-width="1.8" aria-hidden="true"><path d="M12 21s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg>{{e.place}}</li>
+</ul>
+<div style="display: flex; flex-direction: column; gap: 8px; max-width: 520px; margin-top: 6px">
+<div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600"><span>{{e.progLabel}}</span><span style="color: #5B6167">تنتهي {{e.endLabel}}</span></div>
+<div role="progressbar" aria-valuenow="4" aria-valuemin="1" aria-valuemax="8" aria-label="تقدّم أيام الفعالية" style="height: 8px; border-radius: 999px; background: #ECEEEA; overflow: hidden"><div style="width: {{e.prog}}; height: 100%; border-radius: 999px; background: linear-gradient(to left, #00843D, #3DAD65)"></div></div>
+</div>
+<div style="display: flex; gap: 10px; margin-top: 10px"><span class="btn-primary" aria-hidden="true">تفاصيل الفعالية <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg></span></div>
+</div>
+<div style="position: relative; width: 600px; flex-shrink: 0; background: {{e.m}}; overflow: hidden">
+<svg class="ev-art" width="420" height="420" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="0.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position: absolute; left: -40px; bottom: -70px"><path d="{{e.icon}}"></path></svg>
+<svg width="160" height="133" viewBox="0 0 240 200" aria-hidden="true" style="position: absolute; right: 24px; top: 20px"><path d="M40 190 L142.2 72.2 A11 11 0 0 1 157.8 87.8 Z" fill="rgba(255,255,255,.9)"></path><path d="M95 190 L182.9 87.9 A10 10 0 0 1 197.1 102.1 Z" fill="#C8102E"></path></svg>
+<div aria-hidden="true" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; color: rgba(255,255,255,.72); font-size: 14px">[صورة غلاف الفعالية]</div>
+</div>
+</article>
+</sc-for>
+<sc-if value="{{hasNext}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; align-items: center; justify-content: space-between; margin-top: 16px">
+<h2 style="margin: 0; font-size: 26px; font-weight: 800">بعدها في الأجندة</h2>
+<button class="btn-ghost" type="button" onClick="{{goUp}}">كل الفعاليات القادمة <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg></button>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px">
+<sc-for list="{{next3}}" as="e" hint-placeholder-count="3">
+<article class="ev">
+<div style="position: relative; height: 196px; background: {{e.m}}; overflow: hidden">
+<svg class="ev-art" width="230" height="230" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position: absolute; left: -30px; bottom: -50px"><path d="{{e.icon}}"></path></svg>
+<div style="position: absolute; top: 16px; inset-inline-start: 16px; width: 62px; height: 66px; border-radius: 14px; background: #FFFFFF; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(0,0,0,.25)"><span style="font-size: 24px; font-weight: 800; line-height: 1">{{e.day}}</span><span style="font-size: 12px; color: #3A4046; margin-top: 4px">{{e.mon}}</span></div>
+<span style="position: absolute; bottom: 14px; inset-inline-start: 16px; display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: 8px; background: {{e.sbg}}; color: {{e.sfg}}; font-size: 13px; font-weight: 700"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="13" r="8"></circle><path d="M12 9v4l2.5 1.5M9 2h6"></path></svg>{{e.stLabel}}</span>
+</div>
+<div style="padding: 20px 22px 24px; display: flex; flex-direction: column; gap: 12px">
+<span style="align-self: flex-start; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 6px; background: {{e.gbg}}; color: {{e.gfg}}">{{e.type}}</span>
+<h3 style="margin: 0; font-size: 18px; font-weight: 700; line-height: 1.55"><a class="ev-link" href="EventDetail.dc.html">{{e.title}}</a></h3>
+<ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: #3A4046">
+<li style="display: flex; align-items: center; gap: 8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00843D" stroke-width="1.8" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="16" rx="2.5"></rect><path d="M3.5 9.5h17M8 2.5v4M16 2.5v4"></path></svg>{{e.date}}</li>
+<li style="display: flex; align-items: center; gap: 8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00843D" stroke-width="1.8" aria-hidden="true"><path d="M12 21s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg>{{e.place}} · {{e.att}}</li>
+</ul>
+</div>
+</article>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{isGrid}}" hint-placeholder-val="{{ false }}">
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px">
+<sc-for list="{{grid}}" as="e" hint-placeholder-count="6">
+<article class="ev">
+<div style="position: relative; height: 196px; background: {{e.m}}; overflow: hidden">
+<svg class="ev-art" width="230" height="230" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position: absolute; left: -30px; bottom: -50px"><path d="{{e.icon}}"></path></svg>
+<div style="position: absolute; top: 16px; inset-inline-start: 16px; width: 62px; height: 66px; border-radius: 14px; background: #FFFFFF; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(0,0,0,.25)"><span style="font-size: 24px; font-weight: 800; line-height: 1">{{e.day}}</span><span style="font-size: 12px; color: #3A4046; margin-top: 4px">{{e.mon}}</span></div>
+<span style="position: absolute; bottom: 14px; inset-inline-start: 16px; display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: 8px; background: {{e.sbg}}; color: {{e.sfg}}; font-size: 13px; font-weight: 700">{{e.stLabel}}</span>
+<sc-if value="{{e.hasMedia}}" hint-placeholder-val="{{ false }}"><span style="position: absolute; bottom: 14px; inset-inline-end: 16px; display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: 8px; background: rgba(255,255,255,.95); color: #0B0B0B; font-size: 12px; font-weight: 600"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="9" cy="11" r="2"></circle><path d="M21 16l-5-5-8 8"></path></svg>{{e.media}}</span></sc-if>
+</div>
+<div style="padding: 20px 22px 24px; display: flex; flex-direction: column; gap: 12px">
+<span style="align-self: flex-start; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 6px; background: {{e.gbg}}; color: {{e.gfg}}">{{e.type}}</span>
+<h3 style="margin: 0; font-size: 18px; font-weight: 700; line-height: 1.55"><a class="ev-link" href="{{e.href}}">{{e.title}}</a></h3>
+<ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: #3A4046">
+<li style="display: flex; align-items: center; gap: 8px; text-decoration: {{e.dateDeco}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00843D" stroke-width="1.8" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="16" rx="2.5"></rect><path d="M3.5 9.5h17M8 2.5v4M16 2.5v4"></path></svg>{{e.date}}</li>
+<li style="display: flex; align-items: center; gap: 8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00843D" stroke-width="1.8" aria-hidden="true"><path d="M12 21s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg>{{e.place}} · {{e.att}}</li>
+</ul>
+<sc-if value="{{e.hasNote}}" hint-placeholder-val="{{ false }}"><p style="margin: 0; padding: 10px 12px; border-radius: 10px; background: {{e.noteBg}}; color: {{e.noteFg}}; font-size: 13px; line-height: 1.7; font-weight: 500">{{e.note}}</p></sc-if>
+</div>
+</article>
+</sc-for>
+</div>
+</sc-if>
+
+<section aria-labelledby="sub" style="margin-top: auto; border-radius: 24px; background: #0B0B0B; color: #FFFFFF; padding: 36px 44px; display: flex; align-items: center; justify-content: space-between; gap: 32px; position: relative; overflow: hidden" class="on-dark">
+<div aria-hidden="true" style="position: absolute; inset-block: 0; inset-inline-end: 0; width: 8px; background: linear-gradient(to bottom, #00843D 0 33%, #FFFFFF 33% 66%, #C8102E 66%)"></div>
+<div style="display: flex; align-items: center; gap: 20px">
+<span aria-hidden="true" style="width: 60px; height: 60px; border-radius: 16px; background: #00843D; display: flex; align-items: center; justify-content: center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.8" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="16" rx="2.5"></rect><path d="M3.5 9.5h17M8 2.5v4M16 2.5v4M12 12.5v5M9.5 15h5"></path></svg></span>
+<div style="display: flex; flex-direction: column; gap: 6px"><h2 id="sub" style="margin: 0; font-size: 22px; font-weight: 800">أضف أجندة الاتحاد إلى تقويمك</h2><p style="margin: 0; font-size: 15px; color: #C4C8CC">اشتراك واحد، وأي فعالية جديدة أو تغيير في موعد يظهر في تقويمك تلقائيًا.</p></div>
+</div>
+<div style="display: flex; gap: 10px"><a class="btn-ghost" href="#" lang="en">Google</a><a class="btn-ghost" href="#" lang="en">Apple</a><a class="btn-ghost" href="#" lang="en">Outlook</a><a class="btn-ghost" href="#">نسخ رابط .ics</a></div>
+</section>
+</main>
+
+<footer class="on-dark" style="flex-shrink: 0; background: #0B0B0B; color: #FFFFFF">
+<div style="height: 4px; background: linear-gradient(to left, #00843D 0 26%, #FFFFFF 44% 56%, #C8102E 74% 100%)"></div>
+<div style="padding: 48px 56px 24px; display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr); gap: 56px">
+<div style="display: flex; flex-direction: column; gap: 14px"><span style="font-size: 20px; font-weight: 700">اتحاد الإمارات لألعاب القوى</span><p style="margin: 0; font-size: 14px; line-height: 1.8; color: #D0D3D6; max-width: 420px">الجهة الرسمية المشرفة على رياضة ألعاب القوى في دولة الإمارات العربية المتحدة.</p></div>
+<nav aria-label="روابط الفعاليات" style="display: flex; flex-direction: column; gap: 12px"><h2 style="margin: 0 0 4px; font-size: 16px; font-weight: 700">الفعاليات</h2><a class="foot-link" href="#">جميع الفعاليات</a><a class="foot-link" href="EventsCalendar.dc.html">أجندة الموسم</a><a class="foot-link" href="Season.dc.html">الموسم الحالي</a><a class="foot-link" href="SeasonsArchive.dc.html">أرشيف المواسم</a></nav>
+<div style="display: flex; flex-direction: column; gap: 12px; font-size: 14px; color: #D0D3D6"><h2 style="margin: 0 0 4px; font-size: 16px; font-weight: 700; color: #FFFFFF">التواصل</h2><p style="margin: 0; line-height: 1.7">١ شارع النهدة، النهدة الأولى، دبي</p><a class="foot-link" href="mailto:info@uaeaf.ae" lang="en">info@uaeaf.ae</a></div>
+</div>
+<div style="margin: 0 56px; padding: 20px 0 24px; border-top: 1px solid #26292C; font-size: 13px; color: #B8BCC0">© 2026 اتحاد الإمارات لألعاب القوى. جميع الحقوق محفوظة.</div>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2700}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    const tab = s.tab || 'current';
+    const gsel = s.g || 'all';
+    const G = {
+      inst: { label: 'مؤسسية', bg: '#E8EAED', fg: '#1F2328', dot: '#3A4048', m: 'linear-gradient(135deg,#15181C 0%,#3A4048 100%)', icon: 'M12 3a3 3 0 0 1 3 3v5a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3zM5 11a7 7 0 0 0 14 0M12 18v3M8 21h8' },
+      conf: { label: 'مؤتمرات ومعرفة', bg: '#E3EEFB', fg: '#0B4A8B', dot: '#1D5FA8', m: 'linear-gradient(135deg,#071D35 0%,#1D4F86 100%)', icon: 'M3 4h18M4 4v10h16V4M12 14v4M8 21l4-3 4 3' },
+      dev: { label: 'تأهيل وتطوير', bg: '#FFF1D6', fg: '#7A4B00', dot: '#C07A06', m: 'linear-gradient(135deg,#2E2004 0%,#8A5A10 100%)', icon: 'M3 8l9-4 9 4-9 4zM7 10v5c0 1.5 2.5 3 5 3s5-1.5 5-3v-5M21 8v6' },
+      prep: { label: 'إعداد فني', bg: '#E4F3EA', fg: '#00602C', dot: '#00843D', m: 'linear-gradient(135deg,#002914 0%,#00843D 100%)', icon: 'M12 5a8 8 0 1 0 0 16a8 8 0 1 0 0-16zM12 9v4l3 2M9 2h6' },
+      cel: { label: 'احتفاليات', bg: '#FBE6EA', fg: '#9E0B24', dot: '#C8102E', m: 'linear-gradient(135deg,#2E040C 0%,#A0132C 100%)', icon: 'M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7' },
+      com: { label: 'مجتمعية', bg: '#EFE7F7', fg: '#5B2B86', dot: '#6F3AA0', m: 'linear-gradient(135deg,#1F0D35 0%,#5B2B86 100%)', icon: 'M6 8.5a3 3 0 1 0 6 0a3 3 0 1 0-6 0M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8M15 9.5a2.4 2.4 0 1 0 4.8 0a2.4 2.4 0 1 0-4.8 0M16 14.4c2.3.2 3.9 1.8 4.5 4.3' }
+    };
+    const ST = {
+      live: { bg: '#C8102E', fg: '#FFFFFF' },
+      up: { bg: '#FFFFFF', fg: '#0B0B0B' },
+      postponed: { bg: '#FFC247', fg: '#3D2A05' },
+      done: { bg: 'rgba(11,11,11,.8)', fg: '#FFFFFF' },
+      cancel: { bg: '#FFFFFF', fg: '#9E0B24' }
+    };
+    const RAW = [
+      { w: 'cur', g: 'prep', type: 'معسكر تدريبي', title: 'المعسكر التدريبي لمنتخب الشباب', summary: 'معسكر إعداد لمنتخب الشباب يشمل حصصًا فنية وبدنية يومية وقياسات أداء، ضمن التحضير لاستحقاقات الموسم.', date: '25 سبتمبر – 2 أكتوبر 2026', day: '25', mon: 'سبتمبر', place: 'مضمار ألعاب القوى، العين', att: 'حضوري', st: 'live', stLabel: 'جارية الآن', prog: '50%', progLabel: 'اليوم 4 من 8', endLabel: 'الجمعة 2 أكتوبر' },
+      { w: 'up', g: 'inst', type: 'مؤتمر صحفي', title: 'المؤتمر الصحفي لإطلاق موسم 2026–2027', date: 'الإثنين 5 أكتوبر 2026 · 11:00', day: '05', mon: 'أكتوبر', place: 'مقر الاتحاد، دبي', att: 'حضوري + بث مباشر', st: 'up', stLabel: 'بعد 6 أيام' },
+      { w: 'up', g: 'dev', type: 'دورة حكام', title: 'دورة الحكام — المستوى الأول', date: '12 – 16 أكتوبر 2026', day: '12', mon: 'أكتوبر', place: 'مقر الاتحاد، دبي', att: 'حضوري', st: 'up', stLabel: 'بعد 13 يومًا' },
+      { w: 'up', g: 'conf', type: 'ملتقى أو منتدى', title: 'ملتقى مدربي ألعاب القوى 2026', date: '24 – 25 أكتوبر 2026', day: '24', mon: 'أكتوبر', place: 'دبي', att: 'حضوري + أونلاين', st: 'up', stLabel: 'بعد 25 يومًا' },
+      { w: 'up', g: 'inst', type: 'اجتماع الجمعية العمومية', title: 'اجتماع الجمعية العمومية العادية', date: 'كان مقررًا 5 نوفمبر 2026', day: '—', mon: 'نوفمبر', place: 'مقر الاتحاد، دبي', att: 'حضوري', st: 'postponed', stLabel: 'مؤجلة', note: 'تأجّل الاجتماع، والموعد الجديد يُعلن لاحقًا.', noteBg: '#FFF4D6', noteFg: '#5C3B00', dateDeco: 'line-through' },
+      { w: 'up', g: 'cel', type: 'حفل تكريم', title: 'حفل تكريم أبطال موسم 2025–2026', date: 'الجمعة 13 نوفمبر 2026 · 19:30', day: '13', mon: 'نوفمبر', place: 'دبي', att: 'حضوري', st: 'up', stLabel: 'بعد 46 يومًا' },
+      { w: 'up', g: 'com', type: 'فعالية جري للجمهور', title: 'جري عيد الاتحاد المجتمعي', date: 'الأربعاء 2 ديسمبر 2026 · 07:00', day: '02', mon: 'ديسمبر', place: 'دبي', att: 'حضوري', st: 'up', stLabel: 'بعد 65 يومًا' },
+      { w: 'past', g: 'com', type: 'يوم رياضي', title: 'اليوم الرياضي المفتوح للمدارس', date: '20 سبتمبر 2026', day: '20', mon: 'سبتمبر', place: 'الشارقة', att: 'حضوري', st: 'cancel', stLabel: 'ملغاة', note: 'أُلغيت الفعالية لظروف تنظيمية.', noteBg: '#FBE6EA', noteFg: '#7A0A1C' },
+      { w: 'past', g: 'cel', type: 'استقبال بعثة أو منتخب', title: 'استقبال بعثة منتخب الشباب', date: '11 سبتمبر 2026', day: '11', mon: 'سبتمبر', place: 'مطار دبي الدولي', att: 'حضوري', st: 'done', stLabel: 'انتهت', media: '18 صورة · فيديو' },
+      { w: 'past', g: 'dev', type: 'ورشة عمل', title: 'ورشة الأندية: لوائح تسجيل اللاعبين للموسم الجديد', date: '10 سبتمبر 2026', day: '10', mon: 'سبتمبر', place: 'أونلاين', att: 'أونلاين', st: 'done', stLabel: 'انتهت', media: 'فيديو' },
+      { w: 'past', g: 'prep', type: 'يوم انتقاء واكتشاف مواهب', title: 'يوم انتقاء المواهب — المنطقة الشرقية', date: '6 سبتمبر 2026', day: '06', mon: 'سبتمبر', place: 'الفجيرة', att: 'حضوري', st: 'done', stLabel: 'انتهت', media: '24 صورة' }
+    ];
+    const all = RAW.map((e) => {
+      const g = G[e.g];
+      return Object.assign({ note: '', noteBg: '', noteFg: '', media: '', dateDeco: 'none', summary: '', prog: '0%', progLabel: '', endLabel: '' }, e, {
+        gbg: g.bg, gfg: g.fg, m: g.m, icon: g.icon,
+        sbg: ST[e.st].bg, sfg: ST[e.st].fg,
+        hasMedia: !!e.media, hasNote: !!e.note,
+        href: e.st === 'done' ? 'EventDetailPast.dc.html' : 'EventDetail.dc.html'
+      });
+    });
+    const byG = (e) => gsel === 'all' || e.g === gsel;
+    const cur = all.filter((e) => e.w === 'cur' && byG(e));
+    const up = all.filter((e) => e.w === 'up' && byG(e));
+    const past = all.filter((e) => e.w === 'past' && byG(e));
+    const TABS = [
+      { id: 'current', label: 'جارية الآن', n: cur.length },
+      { id: 'upcoming', label: 'قادمة', n: up.length },
+      { id: 'past', label: 'سابقة', n: past.length }
+    ];
+    const tabs = TABS.map((t) => Object.assign({}, t, {
+      cls: t.id === tab ? 'tab tab-on' : 'tab',
+      sel: t.id === tab ? 'true' : 'false',
+      pick: () => this.setState({ tab: t.id })
+    }));
+    const CH = [{ id: 'all', label: 'كل الأنواع', dot: '#0B0B0B' }].concat(Object.keys(G).map((k) => ({ id: k, label: G[k].label, dot: G[k].dot })));
+    const chips = CH.map((c) => Object.assign({}, c, {
+      cls: c.id === gsel ? 'gchip gchip-on' : 'gchip',
+      pressed: c.id === gsel ? 'true' : 'false',
+      pick: () => this.setState({ g: c.id })
+    }));
+    const grid = tab === 'upcoming' ? up : tab === 'past' ? past : [];
+    const isCur = tab === 'current' && cur.length > 0;
+    return {
+      tabs, chips, cur, grid,
+      next3: up.slice(0, 3),
+      hasNext: up.length > 0,
+      isCur,
+      isGrid: tab !== 'current' && grid.length > 0,
+      isEmpty: (tab === 'current' && cur.length === 0) || (tab !== 'current' && grid.length === 0),
+      goUp: () => this.setState({ tab: 'upcoming' }),
+      clearG: () => this.setState({ g: 'all' })
+    };
+  }
+}
+</script>
+</body>
+</html>

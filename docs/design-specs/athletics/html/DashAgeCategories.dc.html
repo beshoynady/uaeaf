@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>الداشبورد — الفئات العمرية</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0;background:#F4F6F3}
+*{box-sizing:border-box}
+a{color:#0F7A3E}a:hover{color:#0A5C2E}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #0F7A3E;outline-offset:2px}
+.si{display:flex;align-items:center;gap:12px;height:42px;padding:0 12px;border-radius:10px;color:#59625C;font-size:14px;font-weight:500;text-decoration:none}
+.si:hover{background:#F4F6F3;color:#111713}
+.si-on,.si-on:hover{background:#E6F2EA;color:#0F7A3E;font-weight:600}
+.sg{margin:16px 12px 6px;font-size:11px;font-weight:700;color:#7A837D}
+.btn{height:44px;padding:0 18px;border-radius:10px;border:1px solid #D5DAD4;background:#FFFFFF;color:#111713;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;text-decoration:none}
+.btn:hover{border-color:#111713;color:#111713}
+.btn-p{background:#0F7A3E;border-color:#0F7A3E;color:#FFFFFF}
+.btn-p:hover{background:#0A5C2E;border-color:#0A5C2E;color:#FFFFFF}
+.btn-s{height:38px;padding:0 14px;font-size:13px}
+.card{display:flex;flex-direction:column;gap:18px;padding:24px;border-radius:16px;background:#FFFFFF;border:1px solid #E3E7E2}
+.sec-h{display:flex;align-items:center;gap:12px}
+.sec-n{width:28px;height:28px;border-radius:8px;background:#111713;color:#FFFFFF;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.f{display:flex;flex-direction:column;gap:7px;min-width:0}
+.l{font-size:13px;font-weight:600;color:#111713}
+.h{font-size:12px;line-height:1.6;color:#59625C}
+.i{height:44px;box-sizing:border-box;padding:0 13px;border-radius:10px;border:1px solid #D5DAD4;background:#FFFFFF;font-family:inherit;font-size:14px;color:#111713;width:100%}
+.i-dis{background:#F4F6F3;color:#8A938D;cursor:not-allowed}
+.ta{min-height:96px;padding:12px 13px;line-height:1.7;height:auto;resize:vertical}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 6px 0 10px;border-radius:999px;background:#F1F3F0;font-size:12px;font-weight:600;color:#33403A}
+.chip button{width:22px;height:22px;border-radius:50%;border:none;background:transparent;color:#59625C;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.up{border:1.5px dashed #C9CFC8;border-radius:14px;background:#FAFBF9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;color:#59625C;font-size:12px;cursor:pointer;font-family:inherit}
+.up:hover{border-color:#0F7A3E;background:#F4FAF6;color:#0B5F30}
+.sw{position:relative;flex-shrink:0;width:40px;height:24px;border-radius:999px;border:none;background:#C9CFC8;cursor:pointer;padding:0}
+.sw::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:18px;height:18px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.sw-on{background:#0F7A3E}
+.sw-on::after{inset-inline-start:19px}
+.ib{width:34px;height:34px;border-radius:8px;border:1px solid transparent;background:transparent;color:#59625C;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.ib:hover{border-color:#D5DAD4;background:#FFFFFF;color:#B3261E}
+.ck{display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:9px;font-size:13px;color:#33403A;text-decoration:none}
+.ck:hover{background:#F4F6F3;color:#111713}
+
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{text-align:start;font-size:12px;font-weight:700;color:#59625C;padding:10px 12px;border-bottom:1px solid #E3E7E2;background:#FAFBF9}
+.tbl td{padding:12px;border-bottom:1px solid #EEF1ED;vertical-align:middle}
+.bd{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:700;background:#F1F3F0;color:#33403A}
+.bd-g{background:#E6F2EA;color:#0B5F30}
+.bd-k{background:#111713;color:#FFFFFF}
+.bd-w{background:#FFF1D6;color:#6B4200}
+.drag{color:#A0A8A2;cursor:grab;display:inline-flex}
+.rad{display:flex;align-items:flex-start;gap:12px;padding:16px;border-radius:12px;border:1px solid #D5DAD4;background:#FFFFFF;cursor:pointer}
+.rad-on{border-color:#0F7A3E;background:#F4FAF6;box-shadow:0 0 0 1px #0F7A3E}
+.rad input{margin-top:4px;accent-color:#0F7A3E;width:18px;height:18px}
+.cb{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-radius:10px;border:1px solid #D5DAD4;background:#FFFFFF;font-size:13px;font-weight:600;cursor:pointer}
+.cb input{accent-color:#0F7A3E;width:16px;height:16px}
+.cb-on{border-color:#0F7A3E;background:#F4FAF6;color:#0B5F30}
+.note{display:flex;gap:10px;padding:12px 14px;border-radius:12px;background:#F4F6F3;font-size:13px;line-height:1.8;color:#33403A}
+.warn{background:#FFF7E6;color:#5C3A00}
+.err{background:#FDECEC;color:#8A1C1C}
+.rep{display:flex;flex-direction:column;gap:12px;padding:16px;border-radius:12px;border:1px solid #E3E7E2;background:#FAFBF9}
+
+</style>
+</helmet>
+<div style="width: 1440px; height: 1320px; display: flex; overflow: hidden; background: #F4F6F3; font-family: Alexandria, Tahoma, sans-serif; color: #111713; direction: rtl">
+<aside style="width: 264px; flex-shrink: 0; padding: 22px 14px; background: #FFFFFF; border-inline-end: 1px solid #E3E7E2; display: flex; flex-direction: column">
+<div style="display: flex; align-items: center; gap: 10px; padding: 0 10px 12px"><svg width="34" height="28" viewBox="0 0 240 200" aria-hidden="true"><path d="M20 170 L75.05 105.05 A7 7 0 0 1 84.95 114.95 Z" fill="#C8102E"></path><path d="M40 190 L142.2 72.2 A11 11 0 0 1 157.8 87.8 Z" fill="#00843D"></path><path d="M95 190 L182.9 87.9 A10 10 0 0 1 197.1 102.1 Z" fill="#0B0B0B"></path><path d="M150 190 L200.05 130.05 A7 7 0 0 1 209.95 139.95 Z" fill="#C8102E"></path></svg><span lang="en" style="font-size: 19px; font-weight: 800">UAEAF</span><span style="font-size: 12px; color: #59625C">لوحة الإدارة</span></div>
+<nav aria-label="قائمة الإدارة" style="display: flex; flex-direction: column; gap: 2px">
+<a class="si" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 11l8-6.5 8 6.5V20H4z"></path><path d="M10 20v-5h4v5"></path></svg>لوحة التحكم</a>
+<div class="sg">المحتوى</div>
+<a class="si" href="DashHomeSection.dc.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"></rect><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"></rect><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"></rect><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"></rect></svg>الصفحة الرئيسية</a>
+<a class="si" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2.5"></rect><path d="M8 9h8M8 13h8M8 17h5"></path></svg>الأخبار</a>
+<a class="si" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2.5"></rect><path d="M16 10.5l5-3v9l-5-3z"></path></svg>الفيديوهات</a>
+<a class="si" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"></rect><circle cx="9" cy="10" r="1.8"></circle><path d="M20.5 16l-5-5-9 8.5"></path></svg>معرض الصور</a>
+<div class="sg">الفعاليات والمواسم</div>
+<a class="si" href="DashEvents.dc.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="16" rx="2.5"></rect><path d="M3.5 9.5h17M8 2.5v4M16 2.5v4M7.5 13.5h3M13.5 13.5h3M7.5 17h3"></path></svg>الفعاليات</a>
+<a class="si" href="DashSeasons.dc.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"></path></svg>المواسم</a>
+<div class="sg">ألعاب القوى</div>
+<a class="si" href="DashDisciplines.dc.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 18c3-6 13-6 16 0M6 14c2.5-4 9.5-4 12 0M12 5v3"></path></svg>التخصصات والمسابقات</a>
+<a class="si si-on" href="DashAgeCategories.dc.html" aria-current="page"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"></circle><path d="M3.5 19c.8-3.2 3-5 5.5-5s4.7 1.8 5.5 5"></path><path d="M16 5.5h4.5M16 9h4.5M17.5 12.5h3"></path></svg>الفئات العمرية</a>
+<a class="si" href="DashClubForm.dc.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l7.5 3v5.5c0 4.5-3.2 7.7-7.5 8.5-4.3-.8-7.5-4-7.5-8.5V6.5z"></path><path d="M9 12l2 2 4-4"></path></svg>الأندية</a>
+<a class="si" href="DashAthleticsPage.dc.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="3.5" width="15" height="17" rx="2.5"></rect><path d="M8 8h8M8 12h8M8 16h5"></path></svg>صفحة تعرّف على اللعبة</a>
+<div class="sg">الإدارة</div>
+<a class="si" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5"></rect><path d="M4 7l8 6 8-6"></path></svg>الرسائل</a>
+<a class="si" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3.5l7.5 3v5.5c0 4.5-3.2 7.7-7.5 8.5-4.3-.8-7.5-4-7.5-8.5V6.5z"></path></svg>سياسات الموافقة</a>
+</nav>
+</aside>
+<main style="flex-grow: 1; min-width: 0; padding: 30px 40px; display: flex; flex-direction: column; gap: 22px"><div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px"><div style="display: flex; flex-direction: column; gap: 6px"><h1 style="margin: 0; font-size: 26px; font-weight: 700">الفئات العمرية</h1></div><div style="display: flex; gap: 10px"><button class="btn" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8"></path></svg>نسخ من موسم 2025–2026</button><button class="btn btn-p" type="button">حفظ التغييرات</button></div></div><div style="display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-radius: 14px; background: #FFFFFF; border: 1px solid #E3E7E2">
+<label class="l" for="season">الموسم</label><select id="season" class="i" style="width: 240px"><option>موسم 2026–2027 (الحالي)</option><option>موسم 2025–2026</option><option>موسم 2027–2028</option></select>
+<span class="h">الفئات بتتحدد لكل موسم لوحده. الموسم الجديد بيبدأ فاضي، أو تنسخه من موسم قبله وتعدّل.</span></div><section class="card" aria-labelledby="a1"><div class="sec-h"><span class="sec-n">1</span><h2 id="a1" style="margin: 0; font-size: 17px; font-weight: 700">أساس الحساب</h2></div><fieldset style="border: none; padding: 0; margin: 0"><legend class="l" style="margin-bottom: 10px">الفئة بتتحسب إزاي؟</legend>
+<div class="g2">
+<label class="{{radA}}"><input type="radio" name="basis" checked="{{chkA}}" onChange="{{pickA}}"><span style="display: flex; flex-direction: column; gap: 4px"><strong style="font-size: 14px">(أ) العمر في تاريخ مرجعي</strong><span class="h">تختار تاريخ، وكل فئة ليها أقل وأكبر عمر في اليوم ده. مثال: «تحت 16» = عمره أقل من 16 سنة يوم 31 ديسمبر 2026.</span></span></label>
+<label class="{{radB}}"><input type="radio" name="basis" checked="{{chkB}}" onChange="{{pickB}}"><span style="display: flex; flex-direction: column; gap: 4px"><strong style="font-size: 14px">(ب) نطاق تاريخ الميلاد</strong><span class="h">كل فئة ليها «مواليد من … إلى …» بالتاريخ الكامل. مناسب لو اللائحة بتحدد الفئات بالمواليد مباشرة.</span></span></label>
+</div></fieldset>
+<sc-if value="{{isA}}" hint-placeholder-val="{{ true }}"><div class="g2"><div class="f"><label class="l" for="ref">التاريخ المرجعي</label><input id="ref" class="i" type="date" value="2026-12-31"><span class="h">اللي أغلب الاتحادات بتستخدمه: 31 ديسمبر من سنة البطولة.</span></div><div></div></div></sc-if></section><section class="card" aria-labelledby="a2"><div class="sec-h"><span class="sec-n">2</span><h2 id="a2" style="margin: 0; font-size: 17px; font-weight: 700">الفئات</h2><span class="h" style="margin-inline-start: auto">الترتيب = ترتيب الظهور في الموقع والفلاتر</span></div><div role="table" aria-label="الفئات العمرية" style="border-radius: 12px; border: 1px solid #E3E7E2; overflow: hidden">
+<div role="row" style="display: grid; grid-template-columns: {{cols}}; gap: 10px; align-items: center; padding: 10px 12px; background: #FAFBF9; border-bottom: 1px solid #E3E7E2">
+<span></span><span role="columnheader" style="font-size: 12px; font-weight: 700; color: #59625C">الاسم بالعربية</span><span role="columnheader" style="font-size: 12px; font-weight: 700; color: #59625C">بالإنجليزية</span><span role="columnheader" style="font-size: 12px; font-weight: 700; color: #59625C">الرمز</span>
+<span role="columnheader" style="font-size: 12px; font-weight: 700; color: #59625C">{{h1}}</span><span role="columnheader" style="font-size: 12px; font-weight: 700; color: #59625C">{{h2}}</span><span role="columnheader" style="font-size: 12px; font-weight: 700; color: #59625C">يعني مواليد</span><span></span></div>
+<sc-for list="{{cats}}" as="c" hint-placeholder-count="5">
+<div role="row" style="display: grid; grid-template-columns: {{cols}}; gap: 10px; align-items: center; padding: 10px 12px; border-bottom: 1px solid #EEF1ED">
+<span class="drag"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="6" r="1"></circle><circle cx="15" cy="6" r="1"></circle><circle cx="9" cy="12" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="9" cy="18" r="1"></circle><circle cx="15" cy="18" r="1"></circle></svg></span>
+<input class="i" value="{{c.ar}}" aria-label="الاسم بالعربية" style="height: 38px">
+<input class="i" dir="ltr" value="{{c.en}}" aria-label="بالإنجليزية" style="height: 38px">
+<input class="i" dir="ltr" value="{{c.code}}" aria-label="الرمز" style="height: 38px">
+<sc-if value="{{isA}}" hint-placeholder-val="{{ true }}"><input class="i" value="{{c.min}}" aria-label="من عمر" style="height: 38px; text-align: center"><input class="i" value="{{c.max}}" aria-label="إلى عمر" style="height: 38px; text-align: center"></sc-if>
+<sc-if value="{{isB}}" hint-placeholder-val="{{ false }}"><input class="i" type="date" value="{{c.from}}" aria-label="مواليد من" style="height: 38px"><input class="i" type="date" value="{{c.to}}" aria-label="إلى" style="height: 38px"></sc-if>
+<span><span class="bd bd-g" dir="ltr" style="white-space: nowrap">{{c.years}}</span></span>
+<button class="ib" type="button" aria-label="حذف الفئة"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13"></path></svg></button>
+</div></sc-for>
+<div style="padding: 12px"><button class="btn btn-s" type="button"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>إضافة فئة</button></div></div></section><div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; align-items: start"><section class="card" aria-labelledby="hv"><h2 id="hv" style="margin: 0; font-size: 15px; font-weight: 700">التحقق التلقائي</h2>
+<div class="note" style="background: #E6F2EA; color: #0B5F30">✓ مفيش تداخل بين الفئات</div>
+<div class="note" style="background: #E6F2EA; color: #0B5F30">✓ مفيش فجوة بين 12 و20 سنة</div>
+<div class="note warn">! «الكبار» مالهاش حد أعلى. ده طبيعي، بس اتأكد إنه مقصود.</div>
+<span class="h">الحفظ بيترفض لو فيه تداخل. الفجوات تحذير بس.</span></section>
+<section class="card" aria-labelledby="hpr"><h2 id="hpr" style="margin: 0; font-size: 15px; font-weight: 700">إزاي بتظهر على الموقع</h2><span class="h">حاسبة «اعرف فئتك» في صفحة ألعاب القوى بتستخدم الإعداد ده بالظبط. مثال: مواليد 2010 ← <strong>{{sample}}</strong>.</span><a href="Learn.dc.html#ages" style="font-size: 13px; font-weight: 700">معاينة الحاسبة</a></section>
+<section class="card" aria-labelledby="hu2"><h2 id="hu2" style="margin: 0; font-size: 15px; font-weight: 700">الاستخدام</h2><div class="note" style="flex-direction: column; gap: 4px"><span>مستخدمة في 17 مسابقة (أصغر فئة)</span><span>و31 نادي (الفئات اللي بيدرّبها)</span></div><span class="h">الفئة المستخدمة ماتتحذفش. عدّل اسمها أو حدودها.</span></section></div></main></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1320}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    const b = s.b || 'A';
+    const C = [
+      ['تحت 14 سنة', 'Under 14', 'U14', '12', '13', '2013-01-01', '2014-12-31', '2013 – 2014'],
+      ['تحت 16 سنة', 'Under 16', 'U16', '14', '15', '2011-01-01', '2012-12-31', '2011 – 2012'],
+      ['تحت 18 سنة', 'Under 18', 'U18', '16', '17', '2009-01-01', '2010-12-31', '2009 – 2010'],
+      ['تحت 20 سنة', 'Under 20', 'U20', '18', '19', '2007-01-01', '2008-12-31', '2007 – 2008'],
+      ['الكبار', 'Senior', 'SEN', '20', '—', '', '2006-12-31', '2006 وما قبلها']
+    ];
+    return {
+      isA: b === 'A', isB: b === 'B', cols: b === 'A' ? '32px minmax(0,1.3fr) minmax(0,1.2fr) 90px 100px 100px 160px 40px' : '32px minmax(0,1.2fr) minmax(0,1.1fr) 90px 170px 170px 160px 40px', h1: b === 'A' ? 'من عمر' : 'مواليد من', h2: b === 'A' ? 'إلى عمر' : 'إلى',
+      radA: b === 'A' ? 'rad rad-on' : 'rad', radB: b === 'B' ? 'rad rad-on' : 'rad',
+      chkA: b === 'A', chkB: b === 'B',
+      pickA: () => this.setState({ b: 'A' }), pickB: () => this.setState({ b: 'B' }),
+      sample: 'تحت 18 سنة (U18)',
+      cats: C.map((c) => ({ ar: c[0], en: c[1], code: c[2], min: c[3], max: c[4], from: c[5], to: c[6], years: c[7] }))
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>الرئيسية — شريط الهيرو مربوط بفعالية</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0;background:#0B0B0B}
+*{box-sizing:border-box}
+a:focus-visible{outline:2px solid #FFFFFF;outline-offset:3px}
+.bar{display:flex;align-items:center;gap:28px;padding:18px 22px 18px 18px;border-radius:20px;background:rgba(11,11,11,.72);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(14px);text-decoration:none;color:#FFFFFF;transition:border-color .3s,background .3s}
+.bar:hover{border-color:rgba(255,255,255,.5);background:rgba(11,11,11,.82);color:#FFFFFF}
+.bar:hover .go{background:#00843D;border-color:#00843D}
+.go{transition:background .3s,border-color .3s}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,255,255,.7)}70%{box-shadow:0 0 0 7px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
+@media (prefers-reduced-motion:no-preference){.live-dot{animation:pulse 1.6s ease-out infinite}}
+</style>
+</helmet>
+<div style="position: relative; width: 1440px; height: 420px; overflow: hidden; font-family: Alexandria, Tahoma, sans-serif; direction: rtl; background: linear-gradient(180deg,#07101C 0%,#132640 50%,#27385A 100%)">
+<svg width="1440" height="420" viewBox="0 0 1440 420" preserveAspectRatio="xMidYMid slice" aria-hidden="true" style="position: absolute; inset: 0"><path d="M0 250 Q720 160 1440 220 L1440 420 L0 420 Z" fill="#9E3B28"></path><path d="M0 250 Q720 160 1440 220 L1440 206 Q720 146 0 236 Z" fill="#2E7D46"></path><g fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2"><path d="M0 280 Q720 192 1440 252"></path><path d="M0 316 Q720 228 1440 288"></path><path d="M0 352 Q720 266 1440 326"></path></g></svg>
+<div aria-hidden="true" style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(7,16,28,.85), rgba(7,16,28,.1) 70%)"></div>
+<div aria-hidden="true" style="position: absolute; top: 40px; inset-inline-start: 56px; color: rgba(255,255,255,.55); font-size: 14px">[أسفل هيرو الصفحة الرئيسية]</div>
+
+<a class="bar" href="EventDetail.dc.html" style="position: absolute; inset-inline: 56px; bottom: 40px">
+<sc-if value="{{isLive}}" hint-placeholder-val="{{ false }}"><span style="flex-shrink: 0; display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 14px; border-radius: 9px; background: #C8102E; font-size: 13px; font-weight: 800"><span class="live-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #FFFFFF"></span>جارية الآن</span></sc-if>
+<sc-if value="{{isUp}}" hint-placeholder-val="{{ true }}"><span style="flex-shrink: 0; display: inline-flex; align-items: center; height: 34px; padding: 0 14px; border-radius: 9px; background: #00843D; font-size: 13px; font-weight: 800">الفعالية القادمة</span></sc-if>
+<span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 20px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{name}}</span><span style="font-size: 14px; color: #C4CDD8">{{meta}}</span></span>
+<sc-if value="{{isUp}}" hint-placeholder-val="{{ true }}">
+<span role="timer" aria-live="off" aria-label="بعد 6 أيام و14 ساعة و32 دقيقة" style="flex-shrink: 0; display: flex; gap: 8px">
+<span style="width: 70px; padding: 8px 0; border-radius: 12px; background: rgba(255,255,255,.1); text-align: center"><span style="display: block; font-size: 26px; font-weight: 800; line-height: 1.1">06</span><span style="font-size: 11px; color: #C4CDD8">يوم</span></span>
+<span style="width: 70px; padding: 8px 0; border-radius: 12px; background: rgba(255,255,255,.1); text-align: center"><span style="display: block; font-size: 26px; font-weight: 800; line-height: 1.1">14</span><span style="font-size: 11px; color: #C4CDD8">ساعة</span></span>
+<span style="width: 70px; padding: 8px 0; border-radius: 12px; background: rgba(255,255,255,.1); text-align: center"><span style="display: block; font-size: 26px; font-weight: 800; line-height: 1.1">32</span><span style="font-size: 11px; color: #C4CDD8">دقيقة</span></span>
+</span>
+</sc-if>
+<span class="go" style="flex-shrink: 0; display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,.4); font-size: 14px; font-weight: 700">التفاصيل <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg></span>
+</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"state":{"editor":"enum","options":["upcoming","live"],"default":"upcoming"},"$preview":{"width":1440,"height":420}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const live = (this.props.state ?? 'upcoming') === 'live';
+    return live
+      ? { isLive: true, isUp: false, name: 'المعسكر التدريبي لمنتخب الشباب', meta: 'مضمار ألعاب القوى، العين · اليوم 4 من 8' }
+      : { isLive: false, isUp: true, name: 'المؤتمر الصحفي لإطلاق موسم 2026–2027', meta: 'مقر الاتحاد، دبي · الإثنين 5 أكتوبر · 11:00' };
+  }
+}
+</script>
+</body>
+</html>

@@ -665,3 +665,100 @@ git commit -m "fix(dashboard): read permission id from the GET /permissions DTO 
 
 
 **الحُرّاس الكاملين، 2026-09-29 الساعة 00:19، والبورتات 3000/3001/3002 فاضية:** 763 اختبارًا في 54 ملفًا، **صفر فشل**، في 135.7 ثانية. والفشلان اللي كانوا في الموقع (`mega-link.tsx` و`motion.css`) **اتصلحوا من جلسة الهيدر** بين التشغيلتين — الدفعة دي ماتلمستش `apps/web` خالص.
+
+
+---
+
+# قرارات المالك — الرسالة التالتة (2026-09-29)، والإغلاق
+
+كل القرارات المفتوحة اتقفلت واتنفّذت. **الملفات اللي اتلمست في الجولة دي بس:**
+
+| الملف | التغيير |
+|---|---|
+| `api/src/modules/workflow/audit-logs/audit-logs.repository.ts` | `create(data, session?)` — من غير session بتفضل زي ما كانت |
+| `api/src/modules/workflow/audit-logs/audit-logs.service.ts` | `write(entry, session?)` |
+| `api/src/modules/workflow/audit-logs/audit-logs.repository.spec.ts` | حارس السطح العام على الـprototype كله |
+| `api/src/modules/workflow/audit-logs/audit-logs.transaction.spec.ts` | **جديد** — 4 اختبارات على replica set |
+| `api/src/common/interceptors/audit-log.interceptor.spec.ts` | عنصران في cast استوعبوا الـparameter الاختياري |
+| `api/src/common/authz/administrative-id-endpoints.ts` | **جديد** — 22 مدخلًا، بيانات بس |
+| `api/src/common/authz/administrative-id-endpoints.spec.ts` | **جديد** — 5 فحوصات على البيانات |
+| `api/src/bootstrap/reset-roles.ts` · `reset-roles.spec.ts` · `api/src/reset-roles.ts` | القرارات الأربعة |
+| `docs/design-system/ADR-0121-...md` | صف «Resolved»، وتصحيح §D1 |
+| `docs/superpowers/plans/2026-09-26-authz-authn.md` | ترتيب 3b، وسؤالا الدفعة 4 |
+| `docs/superpowers/specs/2026-09-26-authz-authn-design.md` | ترتيب السكريبتات: 7b-i، وشروط E1 |
+
+## القرارات كما نُفِّذت
+
+| # | القرار | التنفيذ |
+|--:|---|---|
+| 1 | E1 يرفض لو أي دور — ومنه المؤرشف — معاه `templateKey` | الفحص **أول حاجة**، قبل فحص الـObjectId وقبل تحديد الفاعل، بقراءة `roles.collection` مباشرة بـ`{ templateKey: { $ne: null } }`. **مفيش flag يتخطّاه.** الرسالة بتسمّي المفاتيح وبتقول إن E2 مش هيعيد الزرع |
+| 2 | الـSuper Admin اللي معاه دور تاني: بند منفصل | `superAdminsHoldingOtherRoles` في التقرير وفي طباعة السكريبت. **السلوك ماتغيّرش** |
+| 3 | `session?` اختياري، بلا إعداد mongoose عام | الـ`$pull` وصف التدقيق في transaction واحدة، والـsession بتتمرر صراحةً |
+| 4 | صف `Archive` لكل دور بيتأرشف | مطابق لـ`DELETE /roles/:id` |
+| 5 | العشر مسارات تنضم لقايمة السماح | 22 مدخلًا. المحرّك للدفعة 8 |
+
+## تصحيحان لفرضيتين كانتا في التعليمات
+
+**1. `DELETE /roles/:id` مابيسجّلش `Delete`.** الـcontroller معلن `@AuditEntity({ action: 'Archive' })`، والـinterceptor بيخلّي القيمة المعلنة تغلب ([audit-log.interceptor.ts:94](../../../api/src/common/interceptors/audit-log.interceptor.ts)). فالشكل اللي E1 طابقه هو `Archive`. ملاحظة الدفعة 2 («48 مسار أرشفة لسه بيسجّلوا `Delete`») مابقتش صحيحة على المسار ده.
+
+**2. `typescript` devDependency مش dependency** (`^6.0.2`). شرط المالك كان وجودها في `dependencies`؛ وهي في `devDependencies`، **وده المكان الصح** لحارس اختبارات مابيتشحنش. **مفيش dependency جديدة مطلوبة.**
+
+## اختباران حدَّدتهما أنا وطلعا لا يمكن أن يفشلا
+
+الاتنين اتكشفوا بالتنفيذ مش بالمراجعة:
+
+1. **«رمي كتابة التدقيق بيرجّع الكتابة الأولى»** كان **أخضر قبل الإصلاح**: `actorId` الناقص بيترفض في validation على جهة الـclient قبل أي كتابة، والرمية بتعمل abort للـtransaction سواء اتمرّرت الـsession أو لأ. البديل اللي احمرّ فعلًا: **abort يدوي بعد كتابة تدقيق سليمة**.
+2. **حارس append-only القديم** كان بيتأكد من أسماء بعينها على الـinstance. الجديد بيمشي على الـprototype كله ويرفض `/update|delete|remove|replace|findOneAnd|bulkWrite/i`، ومعاه أرضية عدم خلو.
+
+## قرارات أخدها المنفّذون وأقررتها
+
+- **transaction لكل وحدة** (دور واحد + صف `Archive` بتاعه؛ حساب واحد + صفوف الفصل بتاعته) مش transaction واحدة للتشغيلة كلها. الفشل في النص بيسيب اللي قبله متسجّلًا، وتشغيلة تانية بتكمّل لأن السكريبت idempotent.
+- **حسابات الـSuper Admin المؤرشفة** بتدخل `superAdminsHoldingOtherRoles` لو لسه شايلة أدوارًا تانية، لأن السكريبت بيسيبها هي كمان.
+- **فروق صف `Archive` عن المسار الحقيقي:** `ipAddress`/`userAgent` فاضيين (مفيش request context)، و`reason: 'reset-roles'`، و`previousValue` من القراءة الأولى مش من جوه الـtransaction — وأمانه من إن فلتر الأرشفة `archivedAt: null`.
+
+## ثبات مقيس
+
+| الحزمة | الثبات |
+|---|---|
+| `audit-logs.transaction` | أول نسخة فشلت **مرة من ~29**؛ بعد `Promise.all([model.init(), …])` **25 تشغيلة ورا بعض خضرا** |
+| `bootstrap/reset-roles` | **30 تشغيلة ورا بعض، 23/23 كل مرة** |
+
+السبب المرجَّح للـflake: بناء الـindexes بتاع autoIndex كان لسه شغالًا وقت أول كتابة داخل transaction.
+
+## دين جديد
+
+| # | العيب | الخطورة | المالك |
+|--:|---|---|---|
+| B27 | **`DELETE /roles/:id` بيفصل الدور عن حامليه بلا أي صف تدقيق لكل حساب** — الصف الوحيد هو `Archive` بتاع الدور. يعني المسار الحقيقي بيسجّل **أقل** من السكريبت | Important | **الدفعة 3b، البند 3** (قرار المالك 2026-09-29) |
+| B28 | نفس المسار: الأرشفة والفصل وصف التدقيق **مش في transaction واحدة** | Important | **الدفعة 3b، البند 3** |
+| B29 | اختبار السطح القديم في `audit-logs.repository.spec.ts` بيتأكد من أسماء بعينها على الـinstance؛ الجديد بيغطي أوسع، والقديم فضل | Minor | الدفعة 9 |
+
+
+## التحقق النهائي — الجولة التالتة
+
+| | النتيجة |
+|---|---|
+| **`test:guards` كامل** | **exit 0 — 764 اختبارًا في 54 ملفًا، صفر فشل، 89.1 ثانية** |
+| — API | 17 حزمة · 261 |
+| — الداشبورد | 10 ملفات · 103 |
+| — الموقع | 27 ملفًا · 400 |
+| `bootstrap/reset-roles` | **23/23** (كانت 15) |
+| `audit-logs` | **5 حزم · 20** (كانت 4 · 15) |
+| `administrative-id-endpoints` | 47 |
+| `npx tsc --noEmit` | **exit 0** |
+
+**flake اتمسك ومااتبلّغش كفشل.** التشغيلة قبل الأخيرة رجعت فشلين في حُرّاس الداشبورد، والاتنين **timeouts مش assertions** («Test timed out in 5000ms») على حارسين بيمسحوا نظام الملفات. تشغيلهم لوحدهم: **3.69 ثانية، أخضر**. التشغيلة الكاملة بعدها: **exit 0**. القاعدة («شغّل الحُرّاس أكتر من مرة قبل ما تقول إن فيه فشل») منعت بلاغًا كاذبًا هنا فعلًا.
+
+
+---
+
+## الجلسة الجاية — الترتيب المعتمد (قرار المالك 2026-09-29)
+
+**الدفعة 3b، بالترتيب ده:**
+
+1. **`PATCH /workflow-steps/:id`** — الالتفاف حول فصل المهام (**Critical**، B16)، باختبار سلبي على **كل** مسار.
+2. **تصحيح الـObjectId** — 146 موضعًا + سكريبت التحويل + حارس بيفشل لو أي مسار مرجعي طلع `Mixed` (B2).
+3. **`DELETE /roles/:id`** — صف تدقيق لكل حساب اتفصل، وtransaction واحدة، واختبار الرجوع بطريقة الـabort بعد كتابة سليمة (B27 · B28). **اتنقل من الدفعة 9.**
+4. **قياس قراءة بس** — كل مسار أرشفة بيسجّل `action` إيه فعلًا. الجدول يُعرض، **ولو فيه مسار بيأرشف ويسجّل `Delete`: يُسأل ولا يُصلَّح.**
+
+**بعدها الدفعة 4**، وأول سؤال في خطتها هو تعارض `null ≡ all` مقابل `width` (B24) — **يُعرض بخياراته وتكلفته ولا يُنفَّذ** — ومعاها تحويل `PublishingService.hasPermission` لـ`holdsPair` باختبار سلبي بنطاق `own` (B25).

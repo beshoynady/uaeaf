@@ -279,6 +279,7 @@ export const PrimaryNav = ({
           // is safe before hydration, because `isRow` is false on the server
           // and a closed panel is invisible either way.
           hidden={!isOpen && !isRow}
+          layout={isRow ? "row" : "drawer"}
           columns={item.children!}
           feature={featureFor(item.key)}
           currentPath={current}
@@ -341,7 +342,7 @@ const topLevelClass = (active: boolean) =>
   `nav-item flex min-h-11 w-full flex-row items-center justify-start gap-2 rounded-xs px-2 text-body whitespace-nowrap xl:w-auto xl:flex-col xl:justify-center xl:gap-1.5 xl:px-1 xl:py-3 ${
     active
       ? "font-medium text-[color:var(--color-text-primary)]"
-      : "font-normal text-[color:var(--color-text-secondary)] hover:text-[color:var(--color-text-primary)] active:text-[color:var(--color-text-secondary)]"
+      : "font-normal text-[color:var(--color-text-secondary)] hover:text-[color:var(--color-text-link)] focus-visible:text-[color:var(--color-text-link)] active:text-[color:var(--color-text-secondary)]"
   }`;
 
 const Chevron = () => (

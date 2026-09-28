@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>الداشبورد — الفعاليات</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0;background:#F4F6F3}
+*{box-sizing:border-box}
+a{color:#0F7A3E}a:hover{color:#0A5C2E}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #0F7A3E;outline-offset:2px}
+.si{display:flex;align-items:center;gap:12px;height:42px;padding:0 12px;border-radius:10px;color:#59625C;font-size:14px;font-weight:500;text-decoration:none}
+.si:hover{background:#F4F6F3;color:#111713}
+.si-on,.si-on:hover{background:#E6F2EA;color:#0F7A3E;font-weight:600}
+.sg{margin:16px 12px 6px;font-size:11px;font-weight:700;color:#7A837D;display:flex;align-items:center;gap:8px}
+.btn{height:44px;padding:0 18px;border-radius:10px;border:1px solid #D5DAD4;background:#FFFFFF;color:#111713;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;text-decoration:none}
+.btn:hover{border-color:#111713;color:#111713}
+.btn-p{background:#0F7A3E;border-color:#0F7A3E;color:#FFFFFF}
+.btn-p:hover{background:#0A5C2E;border-color:#0A5C2E;color:#FFFFFF}
+.tab{height:44px;padding:0 4px;border:none;border-bottom:3px solid transparent;background:none;font-family:inherit;font-size:14px;font-weight:600;color:#59625C;display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.tab:hover{color:#111713}
+.tab-on{color:#0F7A3E;border-bottom-color:#0F7A3E}
+.tn{min-width:22px;height:20px;padding:0 6px;border-radius:999px;background:#EEF0ED;color:#59625C;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+.tab-on .tn{background:#E6F2EA;color:#0F7A3E}
+.inp{height:42px;padding:0 12px;border-radius:10px;border:1px solid #D5DAD4;background:#FFFFFF;font-family:inherit;font-size:13px;color:#111713}
+.sw{position:relative;flex-shrink:0;width:40px;height:24px;border-radius:999px;border:none;background:#C9CFC8;cursor:pointer;padding:0}
+.sw::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:18px;height:18px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:inset-inline-start .2s}
+.sw-on{background:#0F7A3E}
+.sw-on::after{inset-inline-start:19px}
+.ib{width:36px;height:36px;border-radius:9px;border:1px solid transparent;background:transparent;color:#59625C;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.ib:hover{border-color:#D5DAD4;background:#FFFFFF;color:#111713}
+.tr:hover{background:#FAFBF9}
+.pill{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1120px; display: flex; overflow: hidden; background: #F4F6F3; font-family: Alexandria, Tahoma, sans-serif; color: #111713; direction: rtl">
+<aside style="width: 264px; flex-shrink: 0; padding: 22px 14px; background: #FFFFFF; border-inline-end: 1px solid #E3E7E2; display: flex; flex-direction: column">
+<div style="display: flex; align-items: center; gap: 10px; padding: 0 10px 12px"><svg width="34" height="28" viewBox="0 0 240 200" aria-hidden="true"><path d="M20 170 L75.05 105.05 A7 7 0 0 1 84.95 114.95 Z" fill="#C8102E"></path><path d="M40 190 L142.2 72.2 A11 11 0 0 1 157.8 87.8 Z" fill="#00843D"></path><path d="M95 190 L182.9 87.9 A10 10 0 0 1 197.1 102.1 Z" fill="#0B0B0B"></path><path d="M150 190 L200.05 130.05 A7 7 0 0 1 209.95 139.95 Z" fill="#C8102E"></path></svg><span lang="en" style="font-size: 19px; font-weight: 800">UAEAF</span><span style="font-size: 12px; color: #59625C">لوحة الإدارة</span></div>
+<nav aria-label="قائمة الإدارة" style="display: flex; flex-direction: column; gap: 2px">
+<a class="si" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 11l8-6.5 8 6.5V20H4z"></path><path d="M10 20v-5h4v5"></path></svg>لوحة التحكم</a>
+<div class="sg">المحتوى</div>
+<a class="si" href="DashHomeSection.dc.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"></rect><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"></rect><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"></rect><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"></rect></svg>الصفحة الرئيسية</a>
+<a class="si" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2.5"></rect><path d="M8 9h8M8 13h8M8 17h5"></path></svg>الأخبار</a>
+<a class="si" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="6" width="13" height="12" rx="2.5"></rect><path d="M16 10.5l5-3v9l-5-3z"></path></svg>الفيديوهات</a>
+<a class="si" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"></rect><circle cx="9" cy="10" r="1.8"></circle><path d="M20.5 16l-5-5-9 8.5"></path></svg>معرض الصور</a>
+<div class="sg">الفعاليات والمواسم <span style="font-size: 10px; padding: 1px 7px; border-radius: 999px; background: #0F7A3E; color: #FFFFFF">جديد</span></div>
+<a class="si si-on" href="DashEvents.dc.html" aria-current="page"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="16" rx="2.5"></rect><path d="M3.5 9.5h17M8 2.5v4M16 2.5v4M7.5 13.5h3M13.5 13.5h3M7.5 17h3"></path></svg>الفعاليات</a>
+<a class="si" href="DashSeasons.dc.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"></path></svg>المواسم</a>
+<div class="sg">الإدارة</div>
+<a class="si" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5"></rect><path d="M4 7l8 6 8-6"></path></svg>الرسائل</a>
+<a class="si" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3.5l7.5 3v5.5c0 4.5-3.2 7.7-7.5 8.5-4.3-.8-7.5-4-7.5-8.5V6.5z"></path></svg>سياسات الموافقة</a>
+<a class="si" href="#"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 3.5v2.5M12 18v2.5M3.5 12H6M18 12h2.5M6 6l1.8 1.8M16.2 16.2L18 18M6 18l1.8-1.8M16.2 7.8L18 6"></path></svg>الإعدادات</a>
+</nav>
+</aside>
+
+<main style="flex-grow: 1; min-width: 0; padding: 30px 40px; display: flex; flex-direction: column; gap: 22px">
+<div style="display: flex; align-items: flex-end; justify-content: space-between">
+<div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; color: #59625C">الفعاليات والمواسم / الفعاليات</span><h1 style="margin: 0; font-size: 28px; font-weight: 700">الفعاليات</h1></div>
+<div style="display: flex; gap: 10px"><button class="btn" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"></path></svg>تصدير</button><a class="btn btn-p" href="DashEventForm.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>إضافة فعالية</a></div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px">
+<div style="padding: 16px 18px; border-radius: 14px; background: #FFFFFF; border: 1px solid #E3E7E2; display: flex; align-items: center; justify-content: space-between"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 13px; color: #59625C">جارية الآن</span><span style="font-size: 26px; font-weight: 800">1</span></span><span aria-hidden="true" style="width: 40px; height: 40px; border-radius: 11px; background: #FCE8EB; display: flex; align-items: center; justify-content: center"><span style="width: 10px; height: 10px; border-radius: 50%; background: #C8102E"></span></span></div>
+<div style="padding: 16px 18px; border-radius: 14px; background: #FFFFFF; border: 1px solid #E3E7E2; display: flex; align-items: center; justify-content: space-between"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 13px; color: #59625C">قادمة</span><span style="font-size: 26px; font-weight: 800">6</span></span><span aria-hidden="true" style="width: 40px; height: 40px; border-radius: 11px; background: #E6F2EA; color: #0F7A3E; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.5V12l3 2"></path></svg></span></div>
+<a href="#" style="padding: 16px 18px; border-radius: 14px; background: #FFFFFF; border: 1px solid #F0C98A; display: flex; align-items: center; justify-content: space-between; text-decoration: none; color: #111713"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 13px; color: #6B4200">بانتظار الموافقة</span><span style="font-size: 26px; font-weight: 800">1</span></span><span aria-hidden="true" style="width: 40px; height: 40px; border-radius: 11px; background: #FFF1D6; color: #7A4B00; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3.5l7.5 3v5.5c0 4.5-3.2 7.7-7.5 8.5-4.3-.8-7.5-4-7.5-8.5V6.5z"></path></svg></span></a>
+<div style="padding: 16px 18px; border-radius: 14px; background: #FFFFFF; border: 1px solid #E3E7E2; display: flex; align-items: center; justify-content: space-between"><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 13px; color: #59625C">مسودات</span><span style="font-size: 26px; font-weight: 800">2</span></span><span aria-hidden="true" style="width: 40px; height: 40px; border-radius: 11px; background: #EEF0ED; color: #59625C; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h4L19 9l-4-4L4 16z"></path></svg></span></div>
+</div>
+
+<section style="border-radius: 16px; background: #FFFFFF; border: 1px solid #E3E7E2; overflow: hidden">
+<div role="tablist" aria-label="حالة الفعاليات" style="display: flex; gap: 26px; padding: 0 22px; border-bottom: 1px solid #E3E7E2">
+<button class="tab" type="button" role="tab" aria-selected="false">جارية <span class="tn">1</span></button>
+<button class="tab tab-on" type="button" role="tab" aria-selected="true">قادمة <span class="tn">6</span></button>
+<button class="tab" type="button" role="tab" aria-selected="false">سابقة <span class="tn">4</span></button>
+<button class="tab" type="button" role="tab" aria-selected="false">مسودات <span class="tn">2</span></button>
+</div>
+<div style="display: flex; gap: 10px; padding: 16px 22px; align-items: center">
+<div style="position: relative; flex-grow: 1; display: flex; align-items: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#59625C" stroke-width="2" aria-hidden="true" style="position: absolute; inset-inline-start: 12px"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg><input class="inp" type="search" aria-label="بحث في الفعاليات" placeholder="ابحث بالعنوان…" style="width: 100%; padding-inline-start: 36px"></div>
+<select class="inp" aria-label="الموسم"><option>موسم 2026–2027</option><option>كل المواسم</option></select>
+<select class="inp" aria-label="المجموعة"><option>كل الأنواع</option><option>مؤسسية</option><option>مؤتمرات ومعرفة</option><option>تأهيل وتطوير</option><option>إعداد فني</option><option>احتفاليات</option><option>مجتمعية</option></select>
+<select class="inp" aria-label="حالة الموافقة"><option>كل حالات الموافقة</option><option>معتمدة</option><option>بانتظار الموافقة</option><option>مرفوضة</option></select>
+<select class="inp" aria-label="الظهور"><option>كل حالات الظهور</option><option>ظاهرة</option><option>مجدولة</option><option>مخفية</option></select>
+</div>
+<table style="width: 100%; border-collapse: collapse; font-size: 13px">
+<thead><tr style="background: #F7F8F6; color: #59625C; text-align: start">
+<th scope="col" style="padding: 12px 22px; text-align: start; font-weight: 600">الفعالية</th>
+<th scope="col" style="padding: 12px 12px; text-align: start; font-weight: 600">الموعد</th>
+<th scope="col" style="padding: 12px 12px; text-align: start; font-weight: 600">التوقيت</th>
+<th scope="col" style="padding: 12px 12px; text-align: start; font-weight: 600">الموافقة</th>
+<th scope="col" style="padding: 12px 12px; text-align: start; font-weight: 600">الظهور على الموقع</th>
+<th scope="col" style="padding: 12px 22px; text-align: end; font-weight: 600"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">إجراءات</span></th>
+</tr></thead>
+<tbody>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+<tr class="tr" style="border-top: 1px solid #EEF0ED">
+<td style="padding: 14px 22px"><div style="display: flex; align-items: center; gap: 12px"><span aria-hidden="true" style="flex-shrink: 0; width: 44px; height: 44px; border-radius: 10px; background: {{r.m}}"></span><span style="display: flex; flex-direction: column; gap: 4px"><a href="DashEventForm.dc.html" style="font-size: 14px; font-weight: 600; color: #111713; text-decoration: none">{{r.t}}</a><span style="align-self: flex-start; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 5px; background: {{r.gbg}}; color: {{r.gfg}}">{{r.type}}</span></span></div></td>
+<td style="padding: 14px 12px; color: #33403A; line-height: 1.6">{{r.date}}</td>
+<td style="padding: 14px 12px"><span class="pill" style="background: {{r.tbg}}; color: {{r.tfg}}">{{r.timing}}</span></td>
+<td style="padding: 14px 12px"><span class="pill" style="background: {{r.abg}}; color: {{r.afg}}"><span aria-hidden="true" style="width: 7px; height: 7px; border-radius: 50%; background: {{r.adot}}"></span>{{r.appr}}</span></td>
+<td style="padding: 14px 12px"><div style="display: flex; align-items: center; gap: 10px"><button class="{{r.swc}}" type="button" role="switch" aria-checked="{{r.on}}" aria-label="إظهار على الموقع"></button><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-weight: 600">{{r.vis}}</span><span style="font-size: 12px; color: {{r.visNoteC}}; font-weight: {{r.visNoteW}}">{{r.visNote}}</span></span></div></td>
+<td style="padding: 14px 22px"><div style="display: flex; justify-content: flex-end; gap: 2px"><button class="ib" type="button" aria-label="معاينة"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"></path><circle cx="12" cy="12" r="3"></circle></svg></button><button class="ib" type="button" aria-label="نسخ الفعالية"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8"></path></svg></button><button class="ib" type="button" aria-label="المزيد"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="19" cy="12" r="1.8"></circle></svg></button></div></td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+<div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 22px; border-top: 1px solid #EEF0ED; font-size: 13px; color: #59625C"><span>6 فعاليات قادمة في موسم 2026–2027</span><span>الأوقات بتوقيت الإمارات</span></div>
+</section>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1120}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const G = {
+      inst: ['#E8EAED', '#1F2328', 'linear-gradient(135deg,#15181C,#3A4048)'],
+      dev: ['#FFF1D6', '#7A4B00', 'linear-gradient(135deg,#2E2004,#8A5A10)'],
+      conf: ['#E3EEFB', '#0B4A8B', 'linear-gradient(135deg,#071D35,#1D4F86)'],
+      cel: ['#FBE6EA', '#9E0B24', 'linear-gradient(135deg,#2E040C,#A0132C)'],
+      com: ['#EFE7F7', '#5B2B86', 'linear-gradient(135deg,#1F0D35,#5B2B86)']
+    };
+    const T = { on: ['في موعدها', '#EEF0ED', '#33403A'], post: ['مؤجلة', '#FFF1D6', '#6B4200'] };
+    const A = { ok: ['معتمدة', '#E6F2EA', '#0B5F30', '#0F7A3E'], wait: ['بانتظار الموافقة', '#FFF1D6', '#6B4200', '#C07A06'] };
+    const V = {
+      shown: { vis: 'ظاهرة', visNote: 'منذ 20 سبتمبر', on: 'true', swc: 'sw sw-on', visNoteC: '#59625C', visNoteW: '400' },
+      sched: { vis: 'مجدولة', visNote: 'تظهر الخميس 1 أكتوبر · 09:00', on: 'true', swc: 'sw sw-on', visNoteC: '#59625C', visNoteW: '400' },
+      warn: { vis: 'مجدولة', visNote: 'معاد الظهور عدّى — تظهر بعد الموافقة', on: 'true', swc: 'sw sw-on', visNoteC: '#8A3B00', visNoteW: '600' },
+      hidden: { vis: 'مخفية', visNote: 'لا تظهر على الموقع', on: 'false', swc: 'sw', visNoteC: '#59625C', visNoteW: '400' }
+    };
+    const row = (g, t, type, date, tm, ap, vi) => Object.assign({ t, type, date, gbg: G[g][0], gfg: G[g][1], m: G[g][2], timing: T[tm][0], tbg: T[tm][1], tfg: T[tm][2], appr: A[ap][0], abg: A[ap][1], afg: A[ap][2], adot: A[ap][3] }, V[vi]);
+    return {
+      rows: [
+        row('inst', 'المؤتمر الصحفي لإطلاق موسم 2026–2027', 'مؤتمر صحفي', 'الإثنين 5 أكتوبر · 11:00', 'on', 'ok', 'shown'),
+        row('dev', 'دورة الحكام — المستوى الأول', 'دورة حكام', '12 – 16 أكتوبر', 'on', 'ok', 'sched'),
+        row('conf', 'ملتقى مدربي ألعاب القوى 2026', 'ملتقى أو منتدى', '24 – 25 أكتوبر', 'on', 'wait', 'warn'),
+        row('inst', 'اجتماع الجمعية العمومية العادية', 'اجتماع الجمعية العمومية', 'كان 5 نوفمبر · بلا موعد جديد', 'post', 'ok', 'shown'),
+        row('cel', 'حفل تكريم أبطال موسم 2025–2026', 'حفل تكريم', 'الجمعة 13 نوفمبر · 19:30', 'on', 'ok', 'hidden'),
+        row('com', 'جري عيد الاتحاد المجتمعي', 'فعالية جري للجمهور', 'الأربعاء 2 ديسمبر · 07:00', 'on', 'ok', 'hidden')
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

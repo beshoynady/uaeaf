@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>صفحة التخصص — موبايل</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0;background:#FAFAF8}
+*{box-sizing:border-box}
+a{color:#006B31}a:hover{color:#00502A}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid #0B0B0B;outline-offset:3px}
+.on-dark a:focus-visible,.on-dark button:focus-visible{outline-color:#FFFFFF}
+.ni{position:relative;height:88px;display:inline-flex;align-items:center;gap:5px;padding:0 2px;font-size:15px;font-weight:500;color:#1F2328;text-decoration:none}
+.ni:hover{color:#006B31}
+.ni-on{color:#006B31;font-weight:700}
+.ni-on::after{content:"";position:absolute;inset-inline:0;bottom:0;height:3px;border-radius:3px 3px 0 0;background:linear-gradient(to left,#00843D 0 33%,#0B0B0B 33% 66%,#C8102E 66%)}
+.util{display:flex;align-items:center;gap:2px;padding:4px;border-radius:999px;background:#F3F4F1;border:1px solid #E6E8E4}
+.ub{width:40px;height:40px;border-radius:50%;border:none;background:transparent;color:#1F2328;display:inline-flex;align-items:center;justify-content:center;font-family:inherit;font-size:13px;font-weight:800;text-decoration:none;cursor:pointer}
+.ub:hover{background:#FFFFFF}
+.u-sep{width:1px;height:20px;background:#DADDD8;margin:0 2px}
+.anc{height:42px;padding:0 16px;border-radius:999px;border:1px solid rgba(255,255,255,.3);color:#FFFFFF;font-size:14px;font-weight:600;display:inline-flex;align-items:center;text-decoration:none;transition:background .2s}
+.anc:hover{background:rgba(255,255,255,.12);color:#FFFFFF}
+.sh{display:flex;flex-direction:column;gap:10px}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:13px;font-weight:700;color:#00843D}
+.eyebrow::before{content:"";width:28px;height:3px;border-radius:2px;background:linear-gradient(to left,#00843D 0 33%,#0B0B0B 33% 66%,#C8102E 66%)}
+.dc{position:relative;display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:16px;border:1px solid #E3E5E2;background:#FFFFFF;font-family:inherit;text-align:start;cursor:pointer;transition:all .25s}
+.dc:hover{border-color:#0B0B0B}
+.dc-on,.dc-on:hover{background:#0B0B0B;border-color:#0B0B0B;color:#FFFFFF}
+.dc-on .dci{background:#00843D;color:#FFFFFF}
+.dci{flex-shrink:0;width:44px;height:44px;border-radius:12px;background:#E4F3EA;color:#006B31;display:flex;align-items:center;justify-content:center;transition:all .25s}
+.evc{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 14px;border-radius:12px;border:1px solid #E3E5E2;background:#FFFFFF;font-family:inherit;font-size:14px;font-weight:600;color:#0B0B0B;cursor:pointer;transition:all .2s}
+.evc:hover{border-color:#00843D}
+.evc-on,.evc-on:hover{background:#E4F3EA;border-color:#00843D;color:#00602C}
+.inp{height:52px;padding:0 16px;border-radius:14px;border:1px solid #D5D8D4;background:#FFFFFF;font-family:inherit;font-size:16px;color:#0B0B0B}
+.btn-p{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:52px;padding:0 24px;border-radius:14px;border:none;background:#00843D;color:#FFFFFF;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none}
+.btn-p:hover{background:#006B31;color:#FFFFFF}
+.cb{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 12px;border-radius:10px;border:1px solid #D5D8D4;background:#FFFFFF;font-size:13px;font-weight:600;color:#0B0B0B;text-decoration:none}
+.cb:hover{border-color:#0B0B0B;color:#0B0B0B}
+.club{display:flex;flex-direction:column;gap:12px;padding:18px;border-radius:18px;background:#FFFFFF;border:1px solid #E3E5E2;transition:box-shadow .3s,border-color .3s}
+.club:hover{box-shadow:0 14px 30px rgba(11,11,11,.08);border-color:#CFE8D8}
+details.faq{border-radius:16px;background:#FFFFFF;border:1px solid #E3E5E2;overflow:hidden}
+details.faq summary{list-style:none;cursor:pointer;padding:20px 22px;font-size:16px;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:12px}
+details.faq summary::-webkit-details-marker{display:none}
+details.faq[open] summary{color:#006B31}
+details.faq[open] .pl{transform:rotate(45deg)}
+.pl{transition:transform .25s}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:no-preference){.rise{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}}
+.crumb{display:flex;align-items:center;gap:8px;font-size:13px;color:#5B6167}
+.crumb a{color:#5B6167;text-decoration:none}.crumb a:hover{color:#006B31}
+.chip{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 16px;border-radius:999px;border:1px solid #E3E5E2;background:#FFFFFF;font-size:14px;font-weight:600;color:#1F2328;text-decoration:none;white-space:nowrap}
+.chip:hover{border-color:#0B0B0B;color:#0B0B0B}
+.chip-on,.chip-on:hover{background:#0B0B0B;border-color:#0B0B0B;color:#FFFFFF}
+.toc{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-radius:12px;font-size:14px;font-weight:600;color:#1F2328;text-decoration:none}
+.toc:hover{background:#F1F2EF;color:#006B31}
+.ev{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:40px;padding:36px;border-radius:26px;background:#FFFFFF;border:1px solid #E3E5E2}
+.badge{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:999px;font-size:12px;font-weight:700}
+.rl{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
+.rl li{display:flex;gap:10px;font-size:15px;line-height:1.8;color:#2A2F34}
+.rl li::before{content:"";flex-shrink:0;margin-top:11px;width:8px;height:8px;border-radius:2px;background:#1D4F86}
+.pn{display:flex;align-items:center;gap:16px;padding:24px 28px;border-radius:22px;background:#FFFFFF;border:1px solid #E3E5E2;text-decoration:none;color:#0B0B0B;transition:border-color .25s}
+.pn:hover{border-color:#0B0B0B;color:#0B0B0B}
+</style>
+</helmet>
+<div style="width: 390px; height: 3100px; display: flex; flex-direction: column; background: #FAFAF8; font-family: Alexandria, Tahoma, sans-serif; color: #0B0B0B; direction: rtl; overflow: hidden">
+<div style="height: 4px; flex-shrink: 0; background: linear-gradient(to left, #00843D 0 26%, #0B0B0B 44% 56%, #C8102E 74% 100%)"></div>
+<header style="height: 68px; flex-shrink: 0; background: #FFFFFF; border-bottom: 1px solid #ECEDEA; display: flex; align-items: center; justify-content: space-between; padding: 0 16px"><a href="Main.dc.html" aria-label="اتحاد الإمارات لألعاب القوى — الرئيسية" style="display: flex; align-items: center; gap: 6px; text-decoration: none; color: #0B0B0B"><svg width="40" height="34" viewBox="0 0 240 200" aria-hidden="true"><path d="M20 170 L75.05 105.05 A7 7 0 0 1 84.95 114.95 Z" fill="#C8102E"></path><path d="M40 190 L142.2 72.2 A11 11 0 0 1 157.8 87.8 Z" fill="#00843D"></path><path d="M95 190 L182.9 87.9 A10 10 0 0 1 197.1 102.1 Z" fill="#0B0B0B"></path><path d="M150 190 L200.05 130.05 A7 7 0 0 1 209.95 139.95 Z" fill="#C8102E"></path></svg><span lang="en" style="font-size: 20px; font-weight: 800">UAEAF</span></a><a href="HeaderMobile.dc.html" aria-label="فتح القائمة" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #E3E5E2; display: flex; align-items: center; justify-content: center; color: #0B0B0B"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></a></header>
+<main style="flex-grow: 1; display: flex; flex-direction: column">
+<section class="on-dark" aria-labelledby="mpt" style="flex-shrink: 0; padding: 20px 20px 28px; color: #FFFFFF; background: linear-gradient(160deg,#1D4F86 0%,#061527 100%); display: flex; flex-direction: column; gap: 14px">
+<nav aria-label="مسار التنقل"><ol class="crumb" style="list-style: none; margin: 0; padding: 0; font-size: 12px"><li><a href="Learn.dc.html" style="color: rgba(255,255,255,.75)">ألعاب القوى</a></li><li aria-hidden="true" style="color: rgba(255,255,255,.5)">/</li><li aria-current="page" style="color: #FFFFFF; font-weight: 700">الوثب</li></ol></nav>
+<div aria-hidden="true" style="height: 190px; border-radius: 18px; border: 1.5px dashed rgba(255,255,255,.35); background: rgba(255,255,255,.06); display: flex; align-items: center; justify-content: center; font-size: 12px; color: rgba(255,255,255,.7)">[صورة غلاف التخصص]</div>
+<h1 id="mpt" style="margin: 0; font-size: 44px; font-weight: 800">الوثب</h1>
+<p style="margin: 0; font-size: 15px; line-height: 1.85; color: rgba(255,255,255,.88)">مسابقات القفز أفقيًا ورأسيًا: الطويل والثلاثي والعالي والقفز بالزانة.</p>
+<div style="display: flex; gap: 8px; flex-wrap: wrap"><span class="badge" style="background: rgba(255,255,255,.12); color: #FFFFFF">4 مسابقات</span><span class="badge" style="background: rgba(255,255,255,.12); color: #FFFFFF">مسافة / ارتفاع</span></div>
+</section>
+<nav aria-label="التخصصات" style="flex-shrink: 0; background: #FFFFFF; border-bottom: 1px solid #ECEDEA; padding: 12px 20px; display: flex; gap: 8px; overflow-x: auto"><a class="chip" href="#" style="height: 40px; font-size: 13px; flex-shrink: 0">المضمار</a><a class="chip chip-on" href="#" aria-current="page" style="height: 40px; font-size: 13px; flex-shrink: 0">الوثب</a><a class="chip" href="#" style="height: 40px; font-size: 13px; flex-shrink: 0">الرمي</a><a class="chip" href="#" style="height: 40px; font-size: 13px; flex-shrink: 0">المسابقات المركبة</a><a class="chip" href="#" style="height: 40px; font-size: 13px; flex-shrink: 0">سباقات الطرق</a><a class="chip" href="#" style="height: 40px; font-size: 13px; flex-shrink: 0">المشي</a><a class="chip" href="#" style="height: 40px; font-size: 13px; flex-shrink: 0">الضاحية</a></nav>
+<div style="padding: 28px 20px 40px; display: flex; flex-direction: column; gap: 16px">
+<h2 style="margin: 0; font-size: 26px; font-weight: 800">4 مسابقات في الوثب</h2>
+<article id="m-long" aria-labelledby="mh-long" style="display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: 20px; background: #FFFFFF; border: 1px solid #E3E5E2">
+<div aria-hidden="true" style="height: 150px; border-radius: 14px; border: 1.5px dashed #C9CFC8; background: #F7F8F6; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #8A9096">[صورة المسابقة]</div>
+<h3 id="mh-long" style="margin: 0; font-size: 22px; font-weight: 800">الوثب الطويل</h3>
+<div style="display: flex; gap: 6px; flex-wrap: wrap"><span class="badge" style="height: 26px; background: #0B0B0B; color: #FFFFFF">مسافة / ارتفاع</span><span class="badge" style="height: 26px; background: #E4F3EA; color: #00602C">U14 وما فوق</span></div>
+<p style="margin: 0; font-size: 15px; line-height: 1.85; color: #1F2328">الاقتراب بأقصى سرعة ثم الارتقاء من لوحة الارتقاء والهبوط في حفرة الرمل. تُقاس المسافة من حافة اللوحة حتى أقرب أثر في الرمل.</p>
+<details class="faq" style="border-radius: 14px"><summary style="padding: 14px 16px; font-size: 14px">القانون باختصار<svg class="pl" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></summary><ul class="rl" style="padding: 0 16px 16px"><li style="font-size: 14px">تجاوز خط اللوحة عند الارتقاء يجعل المحاولة فاشلة.</li><li style="font-size: 14px">في النهائي لكل لاعب 3 محاولات، وأفضل 8 يحصلون على 3 محاولات إضافية.</li></ul></details>
+</article>
+<article id="m-triple" aria-labelledby="mh-triple" style="display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: 20px; background: #FFFFFF; border: 1px solid #E3E5E2">
+<div aria-hidden="true" style="height: 150px; border-radius: 14px; border: 1.5px dashed #C9CFC8; background: #F7F8F6; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #8A9096">[صورة المسابقة]</div>
+<h3 id="mh-triple" style="margin: 0; font-size: 22px; font-weight: 800">الوثب الثلاثي</h3>
+<div style="display: flex; gap: 6px; flex-wrap: wrap"><span class="badge" style="height: 26px; background: #0B0B0B; color: #FFFFFF">مسافة / ارتفاع</span><span class="badge" style="height: 26px; background: #E4F3EA; color: #00602C">U16 وما فوق</span></div>
+<p style="margin: 0; font-size: 15px; line-height: 1.85; color: #1F2328">ثلاث مراحل متتالية: حجلة ثم خطوة ثم وثبة، والهبوط الأخير في حفرة الرمل.</p>
+<details class="faq" style="border-radius: 14px"><summary style="padding: 14px 16px; font-size: 14px">القانون باختصار<svg class="pl" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></summary><ul class="rl" style="padding: 0 16px 16px"><li style="font-size: 14px">الحجلة والخطوة على القدم نفسها، ثم الوثبة على القدم الأخرى.</li><li style="font-size: 14px">[قاعدة يكتبها الاتحاد من الداشبورد]</li></ul></details>
+</article>
+<article id="m-high" aria-labelledby="mh-high" style="display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: 20px; background: #FFFFFF; border: 1px solid #E3E5E2">
+<div aria-hidden="true" style="height: 150px; border-radius: 14px; border: 1.5px dashed #C9CFC8; background: #F7F8F6; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #8A9096">[صورة المسابقة]</div>
+<h3 id="mh-high" style="margin: 0; font-size: 22px; font-weight: 800">الوثب العالي</h3>
+<div style="display: flex; gap: 6px; flex-wrap: wrap"><span class="badge" style="height: 26px; background: #0B0B0B; color: #FFFFFF">مسافة / ارتفاع</span><span class="badge" style="height: 26px; background: #E4F3EA; color: #00602C">U14 وما فوق</span></div>
+<p style="margin: 0; font-size: 15px; line-height: 1.85; color: #1F2328">تجاوز العارضة الأفقية بدون إسقاطها، والعارضة ترتفع بعد كل جولة.</p>
+<details class="faq" style="border-radius: 14px"><summary style="padding: 14px 16px; font-size: 14px">القانون باختصار<svg class="pl" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></summary><ul class="rl" style="padding: 0 16px 16px"><li style="font-size: 14px">الارتقاء يكون بقدم واحدة.</li><li style="font-size: 14px">ثلاث محاولات فاشلة متتالية تُخرج اللاعب من المنافسة.</li></ul></details>
+</article>
+<article id="m-pole" aria-labelledby="mh-pole" style="display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: 20px; background: #FFFFFF; border: 1px solid #E3E5E2">
+<div aria-hidden="true" style="height: 150px; border-radius: 14px; border: 1.5px dashed #C9CFC8; background: #F7F8F6; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #8A9096">[صورة المسابقة]</div>
+<h3 id="mh-pole" style="margin: 0; font-size: 22px; font-weight: 800">القفز بالزانة</h3>
+<div style="display: flex; gap: 6px; flex-wrap: wrap"><span class="badge" style="height: 26px; background: #0B0B0B; color: #FFFFFF">مسافة / ارتفاع</span><span class="badge" style="height: 26px; background: #E4F3EA; color: #00602C">U16 وما فوق</span></div>
+<p style="margin: 0; font-size: 15px; line-height: 1.85; color: #1F2328">الاقتراب بالعصا ثم غرسها في الصندوق لرفع الجسم فوق العارضة.</p>
+<details class="faq" style="border-radius: 14px"><summary style="padding: 14px 16px; font-size: 14px">القانون باختصار<svg class="pl" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></summary><ul class="rl" style="padding: 0 16px 16px"><li style="font-size: 14px">ثلاث محاولات فاشلة متتالية تُخرج اللاعب من المنافسة.</li><li style="font-size: 14px">[قاعدة يكتبها الاتحاد من الداشبورد]</li></ul></details>
+</article>
+
+<h2 id="m-clubs" style="margin: 16px 0 0; font-size: 26px; font-weight: 800">أندية تدرّب الوثب</h2>
+<button class="btn-p" type="button" style="background: #0B0B0B; height: 48px">استخدم موقعي</button>
+<article class="club"><div style="display: flex; align-items: center; gap: 14px"><span aria-hidden="true" style="flex-shrink: 0; width: 52px; height: 52px; border-radius: 14px; border: 1.5px dashed #C9CFC8; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #8A9096">الشعار</span><span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px"><span style="font-size: 16px; font-weight: 800">نادي [اسم النادي]</span><span style="font-size: 13px; color: #5B6167">دبي</span></span><span style="display: flex; flex-direction: column; align-items: center; padding: 6px 12px; border-radius: 12px; background: #E4F3EA; color: #00602C"><strong style="font-size: 16px">3.2</strong><span style="font-size: 11px">كم</span></span></div><div style="display: flex; flex-wrap: wrap; gap: 6px"><span style="font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: #E6EEF7; color: #1D4F86">الوثب</span><span style="font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: #F1F2EF; color: #3A4046">U14–U20</span></div><div style="display: flex; gap: 8px"><a class="cb" href="#">اتصال</a><a class="cb" href="#" style="border-color: #25D366; color: #0E6B34">واتساب</a><a class="cb" href="#" style="margin-inline-start: auto; background: #0B0B0B; border-color: #0B0B0B; color: #FFFFFF">الاتجاهات</a></div></article>
+<article class="club"><div style="display: flex; align-items: center; gap: 14px"><span aria-hidden="true" style="flex-shrink: 0; width: 52px; height: 52px; border-radius: 14px; border: 1.5px dashed #C9CFC8; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #8A9096">الشعار</span><span style="flex-grow: 1; display: flex; flex-direction: column; gap: 3px"><span style="font-size: 16px; font-weight: 800">نادي [اسم النادي]</span><span style="font-size: 13px; color: #5B6167">الشارقة</span></span><span style="display: flex; flex-direction: column; align-items: center; padding: 6px 12px; border-radius: 12px; background: #E4F3EA; color: #00602C"><strong style="font-size: 16px">11.8</strong><span style="font-size: 11px">كم</span></span></div><div style="display: flex; flex-wrap: wrap; gap: 6px"><span style="font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: #E6EEF7; color: #1D4F86">الوثب</span><span style="font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: #F1F2EF; color: #3A4046">U16–الكبار</span></div><div style="display: flex; gap: 8px"><a class="cb" href="#">اتصال</a><a class="cb" href="#" style="border-color: #25D366; color: #0E6B34">واتساب</a><a class="cb" href="#" style="margin-inline-start: auto; background: #0B0B0B; border-color: #0B0B0B; color: #FFFFFF">الاتجاهات</a></div></article>
+<a class="cb" href="Learn.dc.html#clubs" style="height: 48px; font-size: 14px">كل الأندية على الخريطة</a>
+<nav aria-label="تخصصات أخرى" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px"><a class="pn" href="#" style="padding: 16px; flex-direction: column; align-items: flex-start; gap: 4px"><span style="font-size: 12px; color: #5B6167">السابق</span><span style="font-size: 16px; font-weight: 800">المضمار</span></a><a class="pn" href="#" style="padding: 16px; flex-direction: column; align-items: flex-end; gap: 4px"><span style="font-size: 12px; color: #5B6167">التالي</span><span style="font-size: 16px; font-weight: 800">الرمي</span></a></nav>
+</div>
+</main>
+<footer style="flex-shrink: 0; background: #0B0B0B; color: #FFFFFF"><div style="height: 4px; background: linear-gradient(to left, #00843D 0 26%, #FFFFFF 44% 56%, #C8102E 74% 100%)"></div><div style="padding: 24px 20px; font-size: 12px; color: #B8BCC0">© 2026 اتحاد الإمارات لألعاب القوى</div></footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":3100}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

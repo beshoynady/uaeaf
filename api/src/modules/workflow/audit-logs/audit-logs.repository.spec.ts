@@ -68,6 +68,14 @@ describe('AuditLogsRepository', () => {
     expect(typeof surface.create).toBe('function');
   });
 
+  it('declares no mutating method on its prototype beyond create()', () => {
+    const names = Object.getOwnPropertyNames(AuditLogsRepository.prototype);
+
+    // Without this floor an empty prototype would pass the check below on nothing.
+    expect(names).toEqual(expect.arrayContaining(['create', 'findPage']));
+    expect(names.filter((name) => /update|delete|remove|replace|findOneAnd|bulkWrite/i.test(name))).toEqual([]);
+  });
+
   /**
    * Both named query patterns this collection exists to serve — per-record
    * history and per-actor activity — were previously unindexed

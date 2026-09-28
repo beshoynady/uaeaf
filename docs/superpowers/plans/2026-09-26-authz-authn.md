@@ -1158,6 +1158,60 @@ reason rather than by being loosened.
 | **8** | Dashboard: the nine new screens **and every existing screen the new rules touch** — see the Batch 8 table below | Batches 2–7. **⛔ Read `docs/design-specs/auth/2026-09-26-authz-accounts/README.md` first; stop and ask if the design needs something the API cannot do** | Keyboard and screen-reader paths verified; every visual decision outside the chapters marked **Pending Figma Back-Sync** with its chapter number |
 | **9** | `/simplify` on session-changed files only; full suite once; the three explanation documents, each in the agreed nine-item format | all | Full suite green, recorded |
 
+### Batch 3b — order of work (owner decision, 2026-09-29)
+
+Three items, in this order. The first is not about stored references at all; it
+is here because it is the most serious open finding and nothing should be built
+on top of it.
+
+**1. `PATCH /workflow-steps/:id` — first, before anything else.**
+`WorkflowStepsService.update` checks only that `requiredApprovals` does not
+exceed the distinct assignee count (`workflow-steps.service.ts:112-133`). It
+does **not** check for running reviews, unlike
+`ApprovalConfigurationService.assertNothingRunning`. `workflowSteps:Update` is
+grantable, so its holder can add themselves to a step carrying a live review —
+or lower the threshold — and then approve. That walks around ADR-0106's
+separation of duties entirely.
+**Negative test required:** the same person cannot approve a step whose content
+they authored, or a step they already approved once, **by any path** — including
+the one that goes through editing the step first.
+
+**2. The stored-reference type bug**, below.
+
+**3. `DELETE /roles/:id` — atomicity and audit** (owner decision 2026-09-29,
+moved here from Batch 9 because `reset-roles` now records more than the route
+it was modelled on). The route archives a role and detaches it from every holder
+(`roles.service.ts:198-202` → `role-assignments.repository.ts:37`) and writes a
+single `Archive` row for the role. It writes **no row per account detached**, and
+the archive, the detach and the audit row are **not in one transaction**.
+
+- one audit row per account the role was detached from, in the same shape E1 writes;
+- archive, detach and audit in a **single transaction**, using the optional
+  `session?` added to the audit write;
+- a test that a failure in any part rolls back all of it — by **aborting after a
+  successful audit write**, not by sending an invalid document. An invalid
+  document is refused by client-side validation before any write, so that test
+  passes whether or not the session is threaded through, which is how it was
+  caught being green against unfixed code.
+
+**4. Measurement, read-only: what every archive route actually logs.** Batch 2
+recorded that 48 archive routes still logged `Delete`; by 2026-09-29 that was no
+longer true of `DELETE /roles/:id`, which declares
+`@AuditEntity({ action: 'Archive' })` — and the interceptor lets a declared
+action win (`audit-log.interceptor.ts:94`). The rest are unmeasured. Produce the
+table of route → logged action. **If any route archives and still logs `Delete`,
+ask — do not fix it.** The same value for a reversible act and an irreversible
+one is the part worth deciding deliberately.
+
+**Already done, 2026-09-29, and the reason step 3 is now possible:** the optional
+`ClientSession` on `AuditLogsService.write` and `AuditLogsRepository.create`,
+with **no global mongoose setting** — the protection stays visible in the code.
+The append-only guarantee is unchanged, and a test walks the repository's whole
+prototype rejecting any update, delete or replace.
+**`reset-roles` must not be run before step 2 lands** — `detachRole`'s filter
+carries an `ObjectId` only, so an account whose `roleIds` were stored as strings
+is never matched.
+
 ### Batch 3b — the stored-reference type bug (owner decision, 2026-09-28)
 
 Sits between Batch 3 and Batch 4, because Batch 4's `own` work and `reset-roles`
@@ -1205,7 +1259,17 @@ written on exactly one content resource (`articles.service.ts:207`) — `albums`
 any grant scoped narrower than `all` (`scopedGrantUnsupported`, ADR-0113), so a
 scoped grant is inert rather than quietly wide.
 
-Batch 4 builds it as one task:
+**Two questions open it, before the task starts** (owner decision, 2026-09-29):
+
+- **Scope ordering disagrees between two files.** `PermissionsGuard` treats
+  `null` as equivalent to `all` (`permissions.guard.ts`), while `width` orders
+  them `null(0) < own(1) < all(2)` (`user-authority.ts:41`). Present the options
+  and the cost of each **before building** — do not implement one.
+- **`PublishingService.hasPermission`** (`publishing.service.ts:853-861`) checks
+  resource and action only, bypassing the guard and ignoring scope. It moves to
+  `holdsPair` / the single comparison, with a negative test at `own` scope.
+
+Batch 4 then builds it as one task:
 
 - catalogue rows carrying a scope, and `scope` in `seedPermissions`' upsert
   filter and in `sync-permission-catalogue` — without it a second row matches

@@ -44,6 +44,11 @@ const main = async (): Promise<void> => {
 
     log(`Accounts detached from a non-system role: ${report.detachedFrom}`);
 
+    log(`Super Admin accounts left holding another role (${report.superAdminsHoldingOtherRoles.length}):`);
+    for (const account of report.superAdminsHoldingOtherRoles) {
+      log(`  - ${account.email} (${account.id}): retains ${account.retainedRoleIds.join(', ')}`);
+    }
+
     log(`Accounts with no live role (${report.rolelessAccounts.length}):`);
     for (const account of report.rolelessAccounts) {
       log(`  - ${account.email} — ${account.name.en} / ${account.name.ar} (${account.id})`);

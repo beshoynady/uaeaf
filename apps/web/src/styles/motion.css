@@ -316,7 +316,9 @@
 
 /*
  * The nav item's indicator: the tricolour bar, wiped in from the reading
- * edge on hover and focus, and held open on the current page.
+ * edge and held open only on the current page or the trigger whose panel is
+ * open — never on hover or focus alone, which would draw a second underline
+ * over whichever item the pointer happens to be on.
  *
  * The bar moves, never the label. A label that lifts on hover shifts the text
  * a reader is in the middle of, and across a row of nine it reads as jitter.
@@ -328,8 +330,6 @@
     transform var(--motion-transition-exit);
 }
 
-.nav-item:hover .nav-indicator,
-.nav-item:focus-visible .nav-indicator,
 .nav-item[aria-expanded="true"] .nav-indicator {
   transition:
     opacity var(--motion-transition-enter),
@@ -341,8 +341,6 @@
   transform: scaleX(0);
 }
 
-.nav-item:hover .nav-indicator[data-state="rest"],
-.nav-item:focus-visible .nav-indicator[data-state="rest"],
 .nav-item[aria-expanded="true"] .nav-indicator[data-state="rest"] {
   opacity: 1;
   transform: scaleX(1);

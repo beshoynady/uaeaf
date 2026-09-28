@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import type { ClientSession } from 'mongoose';
 import { AuditLog } from './schemas/audit-log.schema.js';
 import type { AuditLogDocument } from './schemas/audit-log.schema.js';
 import type { WriteAuditLogInput } from './dto/write-audit-log.dto.js';
@@ -20,8 +21,14 @@ import type { WriteAuditLogInput } from './dto/write-audit-log.dto.js';
 export class AuditLogsRepository {
   constructor(@InjectModel(AuditLog.name) private readonly model: Model<AuditLogDocument>) {}
 
-  async create(data: WriteAuditLogInput): Promise<AuditLogDocument> {
-    return this.model.create(data);
+  /** Appends one row; with `session`, the row commits or aborts with that transaction. */
+  async create(data: WriteAuditLogInput, session?: ClientSession): Promise<AuditLogDocument> {
+    if (!session) {
+      return this.model.create(data);
+    }
+    // Only the array form of create() accepts options, so it returns an array.
+    const [created] = await this.model.create([data], { session });
+    return created;
   }
 
   /**

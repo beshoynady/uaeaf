@@ -19,6 +19,13 @@ export interface MegaPanelProps {
    *  this panel in the DOM and animates it with CSS instead. Omitted for a
    *  caller with no stacked layout of its own. */
   hidden?: boolean;
+  /**
+   * Which surface this render sits on. The drawer drops the promoted feature
+   * card for every panel except Athletics, where it is the panel's own
+   * call to action rather than a promoted article. Defaults to `"row"` so a
+   * caller with no stacked layout keeps its existing card.
+   */
+  layout?: "row" | "drawer";
   /** Roving focus and Escape inside the panel's links. */
   onKeyDown?: (event: KeyboardEvent<HTMLDivElement>) => void;
 }
@@ -38,9 +45,15 @@ export const MegaPanel = ({
   feature,
   currentPath,
   hidden,
+  layout = "row",
   onKeyDown,
 }: MegaPanelProps) => {
   const t = useTranslations("Nav");
+  // The drawer drops the feature cards: a promoted destination below eight
+  // links on a phone is a second screen of scrolling before the list ends.
+  // A panel flagged `keepsCardInDrawer` is exempt: its card is its own call
+  // to action, not a promoted article.
+  const showFeature = layout === "row" || item.keepsCardInDrawer === true;
 
   return (
     <div
@@ -57,7 +70,7 @@ export const MegaPanel = ({
         {columns.map((column) => (
           <MegaColumn key={column.key} column={column} currentPath={currentPath} />
         ))}
-        {feature}
+        {showFeature ? feature : null}
       </div>
     </div>
   );

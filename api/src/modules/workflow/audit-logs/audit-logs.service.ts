@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
+import type { ClientSession } from 'mongoose';
 import { AuditLogsRepository } from './audit-logs.repository.js';
 import type { AuditLogDocument } from './schemas/audit-log.schema.js';
 import { SECURITY_AUDIT_ACTIONS } from './schemas/audit-log.schema.js';
@@ -64,8 +65,9 @@ export class AuditLogsService {
     return toCsv(items as unknown as Record<string, unknown>[], AUDIT_LOG_EXPORT_COLUMNS);
   }
 
-  async write(entry: WriteAuditLogInput): Promise<AuditLogDocument> {
-    return this.repository.create(entry);
+  /** Records one audit row; pass `session` so it commits or aborts with the write it records. */
+  async write(entry: WriteAuditLogInput, session?: ClientSession): Promise<AuditLogDocument> {
+    return this.repository.create(entry, session);
   }
 
   /**

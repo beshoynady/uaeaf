@@ -199,6 +199,20 @@ describe("primary navigation row (Chapter 5 §5.2)", () => {
     expect(source).not.toMatch(/--color-brand-primary/);
     expect(source).not.toMatch(/#[0-9a-fA-F]{3,8}/);
   });
+
+  /**
+   * jsdom applies no stylesheet, so the indicator's own render test can only
+   * see `data-state`, never whether `:hover`/`:focus-visible` would have
+   * drawn it. This is the guard for that half: the underline rule may key
+   * off the active page or an open panel, never a bare hover or focus state,
+   * which would show two tricolour bars at once.
+   */
+  it("draws the nav indicator from the active page or an open panel, never from hover or focus alone", () => {
+    const source = read("src/styles/motion.css");
+    expect(source).not.toMatch(/\.nav-item:hover \.nav-indicator/);
+    expect(source).not.toMatch(/\.nav-item:focus-visible \.nav-indicator/);
+    expect(source).toMatch(/\.nav-item\[aria-expanded="true"\] \.nav-indicator/);
+  });
 });
 
 describe("language toggle", () => {

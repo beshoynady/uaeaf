@@ -991,13 +991,25 @@ Run order matters; each is safe to re-run.
     would find nothing. Never run by the agent; the owner runs it (2026-09-28
     decision closing Batch 2, alongside `users:Archive`/`users:Restore` joining
     the reserved set).
+7b-i. **Before any of the steps below**, two fixes must land, in this order (owner
+    decision 2026-09-29): the running-review check on `PATCH /workflow-steps/:id`,
+    and the optional `session?` on `AuditLogsService.write` /
+    `AuditLogsRepository.create`. **`reset-roles` must not be run before the second
+    one**: without it a detachment can commit while its audit row fails, and a
+    re-run will not write the missing row because nothing is left to detach.
 7c. `migrate-objectid-references` — rewrites references stored as strings to `ObjectId`
     (Batch 3b, owner decision 2026-09-28). Must run **before** step 8: `detachRole`'s filter
     carries an `ObjectId` only and MongoDB compares BSON type first, so a `roleIds` entry
     stored as a string is never matched. E1 refuses to run while any such link exists.
 8. `reset-roles` (**E1**) — archives every non-system role, **detaches it from the accounts that
-   held it** with one audit row each, and reports the role-less accounts and the open workflow
-   steps whose assignees can no longer act. It changes no workflow step (ADR-0113 as amended).
+   held it** with one audit row each, plus an `Archive` row per role archived, matching what
+   `DELETE /roles/:id` writes. It reports the role-less accounts and the open workflow steps
+   whose assignees can no longer act, and changes no workflow step (ADR-0113 as amended).
+   **It refuses to run at all if any role — archived included — carries a `templateKey`**, so a
+   second run after step 9 cannot wipe the templates and every assignment made from them. There
+   is no flag to override that refusal. A Super Admin holding a second, non-system role is left
+   untouched and listed separately in the report; the reference it keeps is inert, because
+   `findByIds` filters `archivedAt: null` (`base.repository.ts:33`).
 9. `seed-role-templates` (**E2**) — seeds **five**: the Editor template is refused by name while
    `own` is unenforced and `PermissionsGuard` rejects scoped grants (ADR-0113 as amended). Matches
    on `templateKey`, across archived roles too. The federation-staff-officer template was removed

@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>صفحة الموسم — تجربة شروق وغروب الوضع</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0;background:#0B0D0F}
+*{box-sizing:border-box}
+.t-light{--bg:#FAFAF8;--surface:#FFFFFF;--surface2:#F1F2EF;--text:#0B0B0B;--text2:#2A2F34;--muted:#5B6167;--border:#E3E5E2;--hdr:#FFFFFF;--hdrB:#ECEDEA;--nav:#1F2328;--accent:#006B31;--line:#00843D;--util:#F3F4F1;--utilB:#E6E8E4;--utilBtn:#FFFFFF;--lk:#0B0B0B;--h1:#04140B;--h2:#00502A;--h3:#00843D;--foot:#0B0B0B;--shadow:0 20px 40px rgba(11,11,11,.08),0 0 0 1px rgba(11,11,11,.05);--p3:#0B0B0B;--p3f:#FFFFFF;--p4:#E3E5E2;--p4f:#1F2328;--ib:#E4F3EA;--if:#00602C;--cb:#E8EAED;--cf:#1F2328;--kb:#E3EEFB;--kf:#0B4A8B;--tw:#B45309}
+.t-dark{--bg:#0A0C0E;--surface:#14171A;--surface2:#1B1F23;--text:#F2F3F1;--text2:#D3D7DA;--muted:#9AA1A8;--border:#262B30;--hdr:#0A0C0E;--hdrB:#1C2024;--nav:#E4E6E8;--accent:#4CC27A;--line:#3DAD65;--util:#15181B;--utilB:#2A2E32;--utilBtn:#0A0C0E;--lk:#FFFFFF;--h1:#010604;--h2:#00301A;--h3:#005227;--foot:#050607;--shadow:0 20px 40px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.05);--p3:#E4E6E8;--p3f:#0B0B0B;--p4:#2A2E32;--p4f:#C9CDD1;--ib:#0F2F1D;--if:#7FD9A1;--cb:#23272C;--cf:#E4E6E8;--kb:#12294A;--kf:#9CC3F0;--tw:#FFB84D}
+.pg{position:absolute;inset:0;background:var(--bg);color:var(--text);font-family:Alexandria,Tahoma,sans-serif;direction:rtl;display:flex;flex-direction:column}
+.pg a{color:var(--accent)}
+.pg a:focus-visible,.pg button:focus-visible{outline:2px solid var(--line);outline-offset:3px}
+.nav-link{color:var(--nav);text-decoration:none;font-size:15px;font-weight:500;padding:10px 2px;display:inline-flex;align-items:center;gap:4px;border-bottom:2px solid transparent}
+.pg .nav-link{color:var(--nav)}
+.pg .nav-on{color:var(--accent);border-bottom-color:var(--line);font-weight:600}
+.util{display:flex;align-items:center;gap:2px;padding:4px;border-radius:999px;background:var(--util);border:1px solid var(--utilB)}
+.ub{position:relative;width:40px;height:40px;border-radius:50%;border:none;background:transparent;color:var(--nav);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;font-size:13px;font-weight:800;letter-spacing:.5px;text-decoration:none}
+.pg .ub{color:var(--nav)}
+.ub:hover{background:var(--utilBtn)}
+.u-sep{width:1px;height:20px;background:var(--utilB);margin:0 2px}
+.sky{position:relative;width:40px;height:40px;border-radius:50%;border:none;cursor:pointer;overflow:hidden;padding:0;background:var(--utilBtn);box-shadow:inset 0 0 0 1px var(--utilB)}
+.sky .hz{position:absolute;inset-inline:7px;bottom:10px;height:1.5px;border-radius:2px;background:var(--muted);opacity:.6}
+.sky .sun,.sky .moon{position:absolute;left:50%;top:9px;margin-left:-10px;transition:transform .7s cubic-bezier(.2,.8,.2,1),opacity .5s}
+.sky .sun{color:var(--tw)}
+.sky .moon{color:#DCE3EC;transform:translateY(30px);opacity:0}
+.sky-dark .sun{transform:translateY(30px);opacity:0}
+.sky-dark .moon{transform:none;opacity:1}
+.card{border-radius:18px;background:var(--surface);box-shadow:var(--shadow)}
+.top{pointer-events:none}
+.rev-down{animation:nightDown var(--d) cubic-bezier(.65,0,.35,1) both}
+.rev-up{animation:dayUp var(--d) cubic-bezier(.65,0,.35,1) both}
+.hid{clip-path:inset(0 0 100% 0)}
+@keyframes nightDown{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes dayUp{from{clip-path:inset(100% 0 0 0)}to{clip-path:inset(0 0 0 0)}}
+.glow{position:absolute;inset-inline:0;height:260px;z-index:5;pointer-events:none;filter:blur(6px)}
+.g-set{top:-130px;background:linear-gradient(to bottom,rgba(255,140,60,0) 0%,rgba(255,140,60,.55) 38%,rgba(214,66,72,.5) 55%,rgba(92,38,110,.45) 72%,rgba(20,20,60,0) 100%);animation:glowDown var(--d) cubic-bezier(.65,0,.35,1) both}
+.g-rise{bottom:-130px;background:linear-gradient(to top,rgba(255,214,120,0) 0%,rgba(255,214,120,.6) 35%,rgba(255,160,110,.5) 55%,rgba(255,236,190,.35) 72%,rgba(255,255,255,0) 100%);animation:glowUp var(--d) cubic-bezier(.65,0,.35,1) both}
+@keyframes glowDown{from{transform:translateY(0)}to{transform:translateY(var(--H))}}
+@keyframes glowUp{from{transform:translateY(0)}to{transform:translateY(calc(var(--H) * -1))}}
+@media (prefers-reduced-motion:reduce){.rev-down,.rev-up{animation:none}.glow{display:none}.sky .sun,.sky .moon{transition:none}}
+</style>
+</helmet>
+<div style="position: relative; width: 1440px; height: 2300px; overflow: hidden; --d: {{dur}}; --H: 2560px">
+<sc-for list="{{layers}}" as="L" hint-placeholder-count="2">
+<div class="pg {{L.cls}}" style="z-index: {{L.z}}" aria-hidden="{{L.hide}}">
+
+<div style="height: 4px; flex-shrink: 0; background: linear-gradient(to left, #00843D 0 26%, var(--lk) 44% 56%, #C8102E 74% 100%)"></div>
+<header style="height: 88px; flex-shrink: 0; background: var(--hdr); border-bottom: 1px solid var(--hdrB); display: flex; align-items: center; justify-content: space-between; padding: 0 56px">
+<div style="display: flex; align-items: center; gap: 44px">
+<a href="#" aria-label="اتحاد الإمارات لألعاب القوى — الرئيسية" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--text)"><svg width="50" height="42" viewBox="0 0 240 200" aria-hidden="true"><path d="M20 170 L75.05 105.05 A7 7 0 0 1 84.95 114.95 Z" fill="#C8102E"></path><path d="M40 190 L142.2 72.2 A11 11 0 0 1 157.8 87.8 Z" fill="#00843D"></path><path d="M95 190 L182.9 87.9 A10 10 0 0 1 197.1 102.1 Z" style="fill: var(--lk)"></path><path d="M150 190 L200.05 130.05 A7 7 0 0 1 209.95 139.95 Z" fill="#C8102E"></path></svg><span lang="en" style="font-size: 25px; font-weight: 800; letter-spacing: -0.5px">UAEAF</span></a>
+<nav aria-label="القائمة الرئيسية"><ul style="list-style: none; margin: 0; padding: 0; display: flex; align-items: center; gap: 24px">
+<li><a class="nav-link" href="#">الرئيسية</a></li>
+<li><a class="nav-link" href="#">نبذة عن الاتحاد</a></li>
+<li><a class="nav-link" href="#">الأعضاء</a></li>
+<li><a class="nav-link" href="#">البطولات</a></li>
+<li><a class="nav-link nav-on" href="#" aria-current="true">الفعاليات</a></li>
+<li><a class="nav-link" href="#">الأخبار والمقالات</a></li>
+<li><a class="nav-link" href="#">المركز الإعلامي</a></li>
+<li><a class="nav-link" href="#">تواصل معنا</a></li>
+</ul></nav>
+</div>
+<div class="util">
+<button class="ub" type="button" aria-label="بحث في الموقع"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M20 20l-4-4"></path></svg></button>
+<span class="u-sep" aria-hidden="true"></span>
+<a class="ub" href="#" lang="en" aria-label="English — التبديل للإنجليزية">EN</a>
+<span class="u-sep" aria-hidden="true"></span>
+<button class="sky {{L.skyCls}}" type="button" role="switch" aria-checked="{{L.darkOn}}" aria-label="الوضع الداكن" onClick="{{L.toggle}}"><svg class="sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"></circle><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"></path></svg><svg class="moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7z"></path></svg><span class="hz" aria-hidden="true"></span></button>
+</div>
+</header>
+
+<section style="position: relative; flex-shrink: 0; height: 560px; overflow: hidden; color: #FFFFFF; background: linear-gradient(120deg, var(--h1) 0%, var(--h2) 45%, var(--h3) 78%, #0B0B0B 100%)">
+<svg width="1440" height="560" viewBox="0 0 1440 560" preserveAspectRatio="xMidYMid slice" aria-hidden="true" style="position: absolute; inset: 0"><g fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2.5"><path d="M-60 580 Q720 130 1500 380"></path><path d="M-60 630 Q720 190 1500 440"></path><path d="M-60 680 Q720 250 1500 500"></path></g><circle cx="1320" cy="80" r="240" fill="rgba(200,16,46,.18)"></circle></svg>
+<div aria-hidden="true" style="position: absolute; left: 40px; bottom: -30px; font-size: 230px; line-height: 1; font-weight: 800; letter-spacing: -10px; color: transparent; -webkit-text-stroke: 2px rgba(255,255,255,.14); direction: ltr">2026–27</div>
+<div style="position: absolute; top: 70px; inset-inline-start: 56px; width: 700px; display: flex; flex-direction: column; gap: 20px">
+<span style="font-size: 14px; color: #C4D8CB">الرئيسية / المواسم / 2026–2027</span>
+<div style="display: flex; align-items: center; gap: 24px">
+<span aria-hidden="true" style="flex-shrink: 0; width: 140px; height: 140px; border-radius: 28px; background: rgba(255,255,255,.08); border: 2px dashed rgba(255,255,255,.5); display: flex; align-items: center; justify-content: center; font-size: 14px; color: #D6E6DC">شعار الموسم</span>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<span style="align-self: flex-start; height: 30px; padding: 0 12px; border-radius: 8px; background: #FFFFFF; color: #00602C; font-size: 13px; font-weight: 800; display: inline-flex; align-items: center">الموسم الحالي</span>
+<h1 style="margin: 0; font-size: 58px; line-height: 1.1; font-weight: 800">موسم 2026–2027</h1>
+<p style="margin: 0; font-size: 21px; font-weight: 600; color: #9FE0B6">«[شعار الموسم النصي]»</p>
+</div>
+</div>
+<p style="margin: 0; font-size: 17px; line-height: 1.8; color: #E0EDE4">1 سبتمبر 2026 – 31 أغسطس 2027 · المرحلة الحالية: الإعداد</p>
+</div>
+</section>
+
+<main style="flex-grow: 1; padding: 0 56px 64px; display: flex; flex-direction: column; gap: 56px">
+<dl style="position: relative; margin: -60px 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px">
+<div class="card" style="padding: 22px 24px; display: flex; flex-direction: column-reverse; gap: 4px"><dt style="font-size: 14px; color: var(--muted)">فعالية</dt><dd style="margin: 0; font-size: 40px; font-weight: 800; color: var(--accent)">11</dd></div>
+<div class="card" style="padding: 22px 24px; display: flex; flex-direction: column-reverse; gap: 4px"><dt style="font-size: 14px; color: var(--muted)">ألبوم صور</dt><dd style="margin: 0; font-size: 40px; font-weight: 800">2</dd></div>
+<div class="card" style="padding: 22px 24px; display: flex; flex-direction: column-reverse; gap: 4px"><dt style="font-size: 14px; color: var(--muted)">فيديو</dt><dd style="margin: 0; font-size: 40px; font-weight: 800">4</dd></div>
+<div class="card" style="padding: 22px 24px; display: flex; flex-direction: column-reverse; gap: 4px"><dt style="font-size: 14px; color: var(--muted)">بطولة</dt><dd style="margin: 0; font-size: 18px; font-weight: 700; color: var(--muted); padding: 14px 0 6px">تظهر مع نظام البطولات</dd></div>
+</dl>
+
+<section style="display: flex; flex-direction: column; gap: 20px">
+<h2 style="margin: 0; font-size: 30px; font-weight: 800">مراحل الموسم</h2>
+<div class="card" style="padding: 26px 28px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); font-size: 12px; font-weight: 600; color: var(--muted); text-align: center"><span>سبتمبر</span><span>أكتوبر</span><span>نوفمبر</span><span>ديسمبر</span><span>يناير</span><span>فبراير</span><span>مارس</span><span>أبريل</span><span>مايو</span><span>يونيو</span><span>يوليو</span><span>أغسطس</span></div>
+<div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 4px; height: 64px">
+<div style="grid-column: 1 / span 3; border-radius: 12px; background: #00843D; color: #FFFFFF; display: flex; flex-direction: column; justify-content: center; padding: 0 16px"><span style="font-size: 15px; font-weight: 800">الإعداد</span><span style="font-size: 12px; opacity: .85">سبتمبر – نوفمبر</span></div>
+<div style="grid-column: 4 / span 3; border-radius: 12px; background: #1D4F86; color: #FFFFFF; display: flex; flex-direction: column; justify-content: center; padding: 0 16px"><span style="font-size: 15px; font-weight: 800">الموسم الداخلي</span><span style="font-size: 12px; opacity: .85">ديسمبر – فبراير</span></div>
+<div style="grid-column: 7 / span 4; border-radius: 12px; background: var(--p3); color: var(--p3f); display: flex; flex-direction: column; justify-content: center; padding: 0 16px"><span style="font-size: 15px; font-weight: 800">الموسم الخارجي</span><span style="font-size: 12px; opacity: .85">مارس – يونيو</span></div>
+<div style="grid-column: 11 / span 2; border-radius: 12px; background: var(--p4); color: var(--p4f); display: flex; flex-direction: column; justify-content: center; padding: 0 16px"><span style="font-size: 15px; font-weight: 800">الراحة</span><span style="font-size: 12px; opacity: .85">يوليو – أغسطس</span></div>
+</div>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 20px">
+<h2 style="margin: 0; font-size: 30px; font-weight: 800">فعاليات الموسم</h2>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px">
+<article class="card" style="overflow: hidden"><div style="height: 160px; background: linear-gradient(135deg,#002914,#00843D); position: relative"><span style="position: absolute; bottom: 14px; inset-inline-start: 14px; height: 30px; padding: 0 12px; border-radius: 8px; background: #C8102E; color: #FFFFFF; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center">جارية الآن</span></div><div style="padding: 18px 20px 22px; display: flex; flex-direction: column; gap: 10px"><span style="align-self: flex-start; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 6px; background: var(--ib); color: var(--if)">معسكر تدريبي</span><h3 style="margin: 0; font-size: 17px; font-weight: 700; line-height: 1.5">المعسكر التدريبي لمنتخب الشباب</h3><span style="font-size: 14px; color: var(--muted)">25 سبتمبر – 2 أكتوبر</span></div></article>
+<article class="card" style="overflow: hidden"><div style="height: 160px; background: linear-gradient(135deg,#15181C,#3A4048); position: relative"><span style="position: absolute; bottom: 14px; inset-inline-start: 14px; height: 30px; padding: 0 12px; border-radius: 8px; background: #FFFFFF; color: #0B0B0B; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center">بعد 6 أيام</span></div><div style="padding: 18px 20px 22px; display: flex; flex-direction: column; gap: 10px"><span style="align-self: flex-start; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 6px; background: var(--cb); color: var(--cf)">مؤتمر صحفي</span><h3 style="margin: 0; font-size: 17px; font-weight: 700; line-height: 1.5">المؤتمر الصحفي لإطلاق موسم 2026–2027</h3><span style="font-size: 14px; color: var(--muted)">الإثنين 5 أكتوبر · 11:00</span></div></article>
+<article class="card" style="overflow: hidden"><div style="height: 160px; background: linear-gradient(135deg,#071D35,#1D4F86); position: relative"><span style="position: absolute; bottom: 14px; inset-inline-start: 14px; height: 30px; padding: 0 12px; border-radius: 8px; background: #FFFFFF; color: #0B0B0B; font-size: 13px; font-weight: 700; display: inline-flex; align-items: center">بعد 25 يومًا</span></div><div style="padding: 18px 20px 22px; display: flex; flex-direction: column; gap: 10px"><span style="align-self: flex-start; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 6px; background: var(--kb); color: var(--kf)">ملتقى</span><h3 style="margin: 0; font-size: 17px; font-weight: 700; line-height: 1.5">ملتقى مدربي ألعاب القوى 2026</h3><span style="font-size: 14px; color: var(--muted)">24 – 25 أكتوبر</span></div></article>
+</div>
+</section>
+
+<section style="display: grid; grid-template-columns: minmax(0, 1fr) 440px; gap: 40px; padding-top: 48px; border-top: 1px solid var(--border)">
+<div style="display: flex; flex-direction: column; gap: 14px"><h2 style="margin: 0; font-size: 30px; font-weight: 800">عن الموسم</h2><p style="margin: 0; font-size: 17px; line-height: 2; color: var(--text2)">[نبذة الموسم: أهدافه وأبرز محطاته كما تُكتب من الداشبورد.]</p><div style="padding: 16px 20px; border-radius: 14px; background: var(--surface2); font-size: 14px; line-height: 1.8; color: var(--text2)">بعد انتهاء الموسم تظهر هنا «النبذة الختامية».</div></div>
+<div class="card" style="padding: 20px; display: flex; flex-direction: column; gap: 12px"><h3 style="margin: 0; font-size: 18px; font-weight: 800">وثائق الموسم</h3><a href="#" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border); text-decoration: none; color: var(--text)"><span aria-hidden="true" lang="en" style="width: 40px; height: 46px; border-radius: 9px; background: #FBE6EA; color: #9E0B24; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800">PDF</span><span style="flex-grow: 1; font-size: 15px; font-weight: 700">روزنامة الموسم المعتمدة</span></a></div>
+</section>
+</main>
+
+<footer style="flex-shrink: 0; background: var(--foot); color: #FFFFFF">
+<div style="height: 4px; background: linear-gradient(to left, #00843D 0 26%, #FFFFFF 44% 56%, #C8102E 74% 100%)"></div>
+<div style="padding: 36px 56px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #B8BCC0"><span style="font-size: 18px; font-weight: 700; color: #FFFFFF">اتحاد الإمارات لألعاب القوى</span><span>© 2026 اتحاد الإمارات لألعاب القوى. جميع الحقوق محفوظة.</span></div>
+</footer>
+</div>
+</sc-for>
+<sc-if value="{{glow}}" hint-placeholder-val="{{ false }}"><div class="glow {{glowCls}}" aria-hidden="true"></div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"duration":{"editor":"range","min":400,"max":1600,"step":50,"unit":"ms","default":850},"$preview":{"width":1440,"height":2300}}'>
+class Component extends DCLogic {
+  componentWillUnmount() { if (this.t) clearTimeout(this.t); }
+  renderVals() {
+    const s = this.state || {};
+    const theme = s.theme || 'light';
+    const anim = s.anim || null;
+    const ms = Number(this.props.duration ?? 850);
+    const toggle = () => {
+      if (this.state && this.state.anim) return;
+      const to = theme === 'light' ? 'dark' : 'light';
+      const reduce = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduce) { this.setState({ theme: to }); return; }
+      this.setState({ anim: to, n: (s.n || 0) + 1 });
+      this.t = setTimeout(() => this.setState({ theme: to, anim: null }), ms + 30);
+    };
+    const mk = (t, top) => {
+      const dark = t === 'dark';
+      return {
+        cls: 't-' + t + (top ? (anim ? (anim === 'dark' ? ' top rev-down' : ' top rev-up') : ' top hid') : ''),
+        z: top ? '2' : '1',
+        hide: top && !anim ? 'true' : 'false',
+        skyCls: dark ? 'sky-dark' : '',
+        darkOn: dark ? 'true' : 'false',
+        toggle
+      };
+    };
+    const target = anim || (theme === 'light' ? 'dark' : 'light');
+    return {
+      dur: ms + 'ms',
+      layers: [mk(theme, false), mk(target, true)],
+      glow: !!anim,
+      glowCls: anim === 'dark' ? 'g-set' : 'g-rise'
+    };
+  }
+}
+</script>
+</body>
+</html>

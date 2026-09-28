@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NextIntlClientProvider } from "next-intl";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { SiteHeader } from "./site-header";
 import { HeaderShell } from "./header-shell";
 import { PRIMARY_NAV, type NavItem } from "@/lib/navigation";
@@ -255,6 +255,27 @@ describe("SiteHeader current-page state", () => {
   });
 });
 
+describe("SiteHeader — indicator state follows active, not hover", () => {
+  it("leaves a hovered non-active trigger's indicator at rest while the active trigger's stays on", async () => {
+    const user = userEvent.setup();
+    renderWithIntl(<SiteHeader activePath="/clubs" />, "en");
+
+    // "Athletics" holds `/clubs` in its panel, so it is the trigger the
+    // active indicator belongs to — not the leaf link inside the panel.
+    const activeTrigger = screen.getByRole("button", { name: /^Athletics$/ });
+    const activeIndicator = activeTrigger.querySelector(".nav-indicator");
+    expect(activeIndicator).toHaveAttribute("data-state", "on");
+
+    const nonActiveTrigger = screen.getByRole("button", { name: /^About$/ });
+    const nonActiveIndicator = nonActiveTrigger.querySelector(".nav-indicator");
+    expect(nonActiveIndicator).toHaveAttribute("data-state", "rest");
+
+    await user.hover(nonActiveTrigger);
+    expect(nonActiveIndicator).toHaveAttribute("data-state", "rest");
+    expect(activeIndicator).toHaveAttribute("data-state", "on");
+  });
+});
+
 describe("SiteHeader keyboard — Left/Right follow the reading direction", () => {
   it("ArrowRight moves to the next trigger in LTR", async () => {
     const user = userEvent.setup();
@@ -447,5 +468,195 @@ describe("HeaderShell — panel state (brief cases)", () => {
     await user.keyboard("{Escape}");
     expect(about).toHaveAttribute("aria-expanded", "false");
     expect(about).toHaveFocus();
+  });
+});
+
+describe("HeaderShell — drawer accordion", () => {
+  it("the drawer shows a group's column headings and links, and keeps the club-finder card", async () => {
+    const user = userEvent.setup();
+    renderWithIntl(<HeaderShell features={null} activePath="/" />, "en");
+    await user.click(screen.getByRole("button", { name: /Navigation menu/ }));
+    await user.click(screen.getByRole("button", { name: /^Athletics/ }));
+
+    expect(screen.getByRole("heading", { name: "Athletics Community", level: 2 })).toBeVisible();
+    expect(screen.getByRole("link", { name: /^Clubs/ })).toBeVisible();
+    // The one exception the design keeps in the drawer: the Athletics panel's
+    // own club-finder call to action, not a promoted article.
+    const clubFinder = screen.getByRole("link", { name: /Search Now/ });
+    expect(clubFinder).toBeVisible();
+    expect(clubFinder).toHaveAttribute("href", "/en/athletics#clubs");
+  });
+
+  it("drops the promoted card for every other panel — the column link survives, the card's own CTA does not", async () => {
+    const user = userEvent.setup();
+    renderWithIntl(<HeaderShell features={null} activePath="/" />, "en");
+    await user.click(screen.getByRole("button", { name: /Navigation menu/ }));
+    await user.click(screen.getByRole("button", { name: /^About/ }));
+
+    // `presidentMessage` (the column link) and `presidentFallbackTitle` (the
+    // card's title) render the same words, so asserting the card is gone by
+    // that text alone would pass whether or not suppression works. The CTA
+    // text belongs to `PresidentFallbackCard` alone, so only it can tell the
+    // two apart.
+    expect(screen.getByRole("link", { name: "President's Message" })).toBeVisible();
+    expect(screen.queryByRole("link", { name: /Read the message/ })).not.toBeInTheDocument();
+  });
+
+  it("keeps only one group's content reachable at a time — opening About removes Athletics's card from the tree", async () => {
+    const user = userEvent.setup();
+    renderWithIntl(<HeaderShell features={null} activePath="/" />, "en");
+    await user.click(screen.getByRole("button", { name: /Navigation menu/ }));
+
+    await user.click(screen.getByRole("button", { name: /^Athletics/ }));
+    expect(screen.getByRole("link", { name: /Search Now/ })).toBeVisible();
+
+    await user.click(screen.getByRole("button", { name: /^About/ }));
+    expect(screen.queryByRole("link", { name: /Search Now/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Read the message/ })).not.toBeInTheDocument();
+  });
+
+  it("leaves the row layout's cards untouched — suppression applies to the drawer only", async () => {
+    const user = userEvent.setup();
+    renderWithIntl(<HeaderShell features={null} activePath="/" isRow />, "en");
+    await user.click(screen.getByRole("button", { name: /^About/ }));
+    expect(screen.getByRole("link", { name: /Read the message/ })).toBeVisible();
+  });
+});
+
+describe("HeaderShell — drawer is a modal", () => {
+  it("marks the open drawer as a labelled modal dialog, not the closed one", async () => {
+    const user = userEvent.setup();
+    renderWithIntl(<HeaderShell features={null} activePath="/" />, "en");
+    const trigger = screen.getByRole("button", { name: /Navigation menu/ });
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+    await user.click(trigger);
+    const drawer = screen.getByRole("dialog");
+    expect(drawer).toHaveAttribute("aria-modal", "true");
+    expect(drawer).toHaveAccessibleName(enMessages.Header.menu);
+  });
+
+  it("keeps Tab cycling inside the drawer across many presses, forward and backward", async () => {
+    const user = userEvent.setup();
+    renderWithIntl(<HeaderShell features={null} activePath="/" />, "en");
+    await user.click(screen.getByRole("button", { name: /Navigation menu/ }));
+
+    const drawer = screen.getByRole("dialog");
+    const stops = within(drawer).getAllByRole("button");
+    // A single stop could not distinguish a trap from an accident; five is
+    // the drawer's real top-level disclosure count.
+    expect(stops.length).toBeGreaterThan(1);
+
+    stops[0]!.focus();
+    // Far more presses than the drawer has stops: a trap that merely
+    // redirects the very next Tab proves nothing about the fifth.
+    for (let i = 0; i < stops.length * 4; i += 1) {
+      await user.tab();
+      expect(drawer).toContainElement(document.activeElement as HTMLElement);
+    }
+
+    stops[0]!.focus();
+    for (let i = 0; i < stops.length * 4; i += 1) {
+      await user.tab({ shift: true });
+      expect(drawer).toContainElement(document.activeElement as HTMLElement);
+    }
+  });
+
+  it("keeps the trap accurate after an accordion row adds links mid-session", async () => {
+    const user = userEvent.setup();
+    renderWithIntl(<HeaderShell features={null} activePath="/" />, "en");
+    await user.click(screen.getByRole("button", { name: /Navigation menu/ }));
+    const drawer = screen.getByRole("dialog");
+
+    // Opening a group inserts its column links into the drawer while it is
+    // already open — a trap that captured its element list once, at the
+    // moment it was set up, would not know these exist.
+    await user.click(within(drawer).getByRole("button", { name: /^About/ }));
+    const boardMembers = within(drawer).getByRole("link", { name: "Board of Directors" });
+
+    boardMembers.focus();
+    for (let i = 0; i < 20; i += 1) {
+      await user.tab();
+      expect(drawer).toContainElement(document.activeElement as HTMLElement);
+    }
+  });
+
+  it("closes on Escape and returns focus to the button that opened it", async () => {
+    const user = userEvent.setup();
+    renderWithIntl(<HeaderShell features={null} activePath="/" />, "en");
+    const trigger = screen.getByRole("button", { name: /Navigation menu/ });
+
+    await user.click(trigger);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+  });
+});
+
+describe("HeaderShell — drawer scroll lock", () => {
+  afterEach(() => {
+    document.body.style.overflow = "";
+  });
+
+  it("locks page scroll while open and restores the value that was there, not blank, on close", async () => {
+    const user = userEvent.setup();
+    // Simulates another lock (e.g. the future search dialog) already holding
+    // the property: releasing this one must not blank someone else's value.
+    document.body.style.overflow = "scroll";
+    renderWithIntl(<HeaderShell features={null} activePath="/" />, "en");
+    const trigger = screen.getByRole("button", { name: /Navigation menu/ });
+
+    await user.click(trigger);
+    expect(document.body).toHaveStyle({ overflow: "hidden" });
+
+    await user.click(trigger);
+    expect(document.body.style.overflow).toBe("scroll");
+  });
+
+  it("releases to an empty value when nothing preceded the lock", async () => {
+    const user = userEvent.setup();
+    renderWithIntl(<HeaderShell features={null} activePath="/" />, "en");
+    const trigger = screen.getByRole("button", { name: /Navigation menu/ });
+
+    await user.click(trigger);
+    expect(document.body).toHaveStyle({ overflow: "hidden" });
+
+    await user.click(trigger);
+    expect(document.body.style.overflow).toBe("");
+  });
+});
+
+describe("HeaderShell — the row appearing while the drawer is open", () => {
+  afterEach(() => {
+    document.body.style.overflow = "";
+  });
+
+  it("closes the drawer, releases the scroll lock, and returns focus when isRow flips true", async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <NextIntlClientProvider locale="en" messages={enMessages}>
+        <HeaderShell features={null} activePath="/" isRow={false} />
+      </NextIntlClientProvider>,
+    );
+    const trigger = screen.getByRole("button", { name: /Navigation menu/ });
+
+    await user.click(trigger);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(document.body).toHaveStyle({ overflow: "hidden" });
+
+    rerender(
+      <NextIntlClientProvider locale="en" messages={enMessages}>
+        <HeaderShell features={null} activePath="/" isRow />
+      </NextIntlClientProvider>,
+    );
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    // Not just "the drawer closed" — the lock itself must be gone, or the
+    // page stays unscrollable with the row visible and no cause on screen.
+    expect(document.body.style.overflow).toBe("");
+    expect(trigger).toHaveFocus();
   });
 });

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>بطاقات الهيدر وبدائلها</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0;background:#FAFAF8}
+*{box-sizing:border-box}
+a{color:#006B31}a:hover{color:#00502A}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid #0B0B0B;outline-offset:3px}
+.on-dark a:focus-visible,.on-dark button:focus-visible{outline-color:#FFFFFF}
+.ni{position:relative;height:88px;display:inline-flex;align-items:center;gap:5px;padding:0 2px;font-size:15px;font-weight:500;color:#1F2328;text-decoration:none}
+.ni:hover{color:#006B31}
+.ni-on{color:#006B31;font-weight:700}
+.ni-on::after{content:"";position:absolute;inset-inline:0;bottom:0;height:3px;border-radius:3px 3px 0 0;background:linear-gradient(to left,#00843D 0 33%,#0B0B0B 33% 66%,#C8102E 66%)}
+.util{display:flex;align-items:center;gap:2px;padding:4px;border-radius:999px;background:#F3F4F1;border:1px solid #E6E8E4}
+.ub{width:40px;height:40px;border-radius:50%;border:none;background:transparent;color:#1F2328;display:inline-flex;align-items:center;justify-content:center;font-family:inherit;font-size:13px;font-weight:800;text-decoration:none;cursor:pointer}
+.ub:hover{background:#FFFFFF}
+.u-sep{width:1px;height:20px;background:#DADDD8;margin:0 2px}
+.anc{height:42px;padding:0 16px;border-radius:999px;border:1px solid rgba(255,255,255,.3);color:#FFFFFF;font-size:14px;font-weight:600;display:inline-flex;align-items:center;text-decoration:none;transition:background .2s}
+.anc:hover{background:rgba(255,255,255,.12);color:#FFFFFF}
+.sh{display:flex;flex-direction:column;gap:10px}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:13px;font-weight:700;color:#00843D}
+.eyebrow::before{content:"";width:28px;height:3px;border-radius:2px;background:linear-gradient(to left,#00843D 0 33%,#0B0B0B 33% 66%,#C8102E 66%)}
+.dc{position:relative;display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:16px;border:1px solid #E3E5E2;background:#FFFFFF;font-family:inherit;text-align:start;cursor:pointer;transition:all .25s}
+.dc:hover{border-color:#0B0B0B}
+.dc-on,.dc-on:hover{background:#0B0B0B;border-color:#0B0B0B;color:#FFFFFF}
+.dc-on .dci{background:#00843D;color:#FFFFFF}
+.dci{flex-shrink:0;width:44px;height:44px;border-radius:12px;background:#E4F3EA;color:#006B31;display:flex;align-items:center;justify-content:center;transition:all .25s}
+.evc{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 14px;border-radius:12px;border:1px solid #E3E5E2;background:#FFFFFF;font-family:inherit;font-size:14px;font-weight:600;color:#0B0B0B;cursor:pointer;transition:all .2s}
+.evc:hover{border-color:#00843D}
+.evc-on,.evc-on:hover{background:#E4F3EA;border-color:#00843D;color:#00602C}
+.inp{height:52px;padding:0 16px;border-radius:14px;border:1px solid #D5D8D4;background:#FFFFFF;font-family:inherit;font-size:16px;color:#0B0B0B}
+.btn-p{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:52px;padding:0 24px;border-radius:14px;border:none;background:#00843D;color:#FFFFFF;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none}
+.btn-p:hover{background:#006B31;color:#FFFFFF}
+.cb{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 12px;border-radius:10px;border:1px solid #D5D8D4;background:#FFFFFF;font-size:13px;font-weight:600;color:#0B0B0B;text-decoration:none}
+.cb:hover{border-color:#0B0B0B;color:#0B0B0B}
+.club{display:flex;flex-direction:column;gap:12px;padding:18px;border-radius:18px;background:#FFFFFF;border:1px solid #E3E5E2;transition:box-shadow .3s,border-color .3s}
+.club:hover{box-shadow:0 14px 30px rgba(11,11,11,.08);border-color:#CFE8D8}
+details.faq{border-radius:16px;background:#FFFFFF;border:1px solid #E3E5E2;overflow:hidden}
+details.faq summary{list-style:none;cursor:pointer;padding:20px 22px;font-size:16px;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:12px}
+details.faq summary::-webkit-details-marker{display:none}
+details.faq[open] summary{color:#006B31}
+details.faq[open] .pl{transform:rotate(45deg)}
+.pl{transition:transform .25s}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:no-preference){.rise{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}}
+
+.feat{position:relative;border-radius:18px;overflow:hidden;color:#FFFFFF;text-decoration:none;display:flex;flex-direction:column;justify-content:flex-end;gap:6px;padding:22px;height:260px}
+.feat:hover{color:#FFFFFF}
+.go{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;margin-top:8px}
+.tag{position:absolute;top:20px;inset-inline-start:20px;height:28px;padding:0 12px;border-radius:8px;background:#FFFFFF;color:#0B0B0B;font-size:12px;font-weight:800;display:inline-flex;align-items:center}
+.cap{font-size:13px;font-weight:700;color:#5B6167}
+.cd{padding:6px 10px;border-radius:10px;background:rgba(255,255,255,.12);text-align:center}
+
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; background: #E9EBE7; font-family: Alexandria, Tahoma, sans-serif; color: #0B0B0B; direction: rtl; padding: 40px; display: flex; flex-direction: column; gap: 28px">
+<h2 style="margin: 0; font-size: 18px; font-weight: 800">بطاقات لوحات الهيدر — بالبيانات</h2>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px"><div style="display: flex; flex-direction: column; gap: 10px"><span class="cap">عن الاتحاد · مقتطف الرئيس</span><a class="feat" href="#" style="background: linear-gradient(160deg,#00502A 0%,#0B0B0B 100%)"><span aria-hidden="true" style="position: absolute; top: 20px; inset-inline-start: 20px; width: 64px; height: 64px; border-radius: 50%; border: 2px dashed rgba(255,255,255,.4); display: flex; align-items: center; justify-content: center; font-size: 10px; color: #C4D8CB">صورة الرئيس</span><span style="font-size: 12px; font-weight: 700; color: #9FE0B6">كلمة الرئيس</span><span style="font-size: 16px; font-weight: 700; line-height: 1.7">«[pullQuote من كلمة الرئيس]»</span><span class="go">اقرأ الكلمة كاملة<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg></span></a></div><div style="display: flex; flex-direction: column; gap: 10px"><span class="cap">ألعاب القوى · ثابتة (section-black)</span><a class="feat" href="#" style="background: #0B0B0B"><span style="font-size: 12px; font-weight: 700; color: #9FE0B6">ابدأ من هنا</span><span style="font-size: 19px; font-weight: 800; line-height: 1.5">ابحث عن أقرب نادي لألعاب القوى</span><span style="font-size: 13px; color: #B8BCC0">بالإمارة والتخصص والفئة العمرية.</span><span class="go">ابحث الآن<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg></span></a></div><div style="display: flex; flex-direction: column; gap: 10px"><span class="cap">البطولات · البطولة القادمة</span><a class="feat" href="#" style="background: linear-gradient(160deg,#2E040C 0%,#A0132C 100%)"><span class="tag" style="color: #9E0B24">البطولة القادمة</span><span style="font-size: 19px; font-weight: 800; line-height: 1.5">[اسم البطولة القادمة]</span><span style="font-size: 13px; color: #F4C9D1">[التاريخ] · [المكان]</span><span class="go">التفاصيل والجدول<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg></span></a></div><div style="display: flex; flex-direction: column; gap: 10px"><span class="cap">الفعاليات · الفعالية القادمة (section-black)</span><a class="feat" href="#" style="background: #0B0B0B"><span class="tag">الفعالية القادمة</span><span style="font-size: 18px; font-weight: 800; line-height: 1.5">[اسم الفعالية القادمة]</span><span style="display: flex; gap: 8px; margin-top: 4px" aria-hidden="true"><span class="cd"><strong style="display: block; font-size: 19px">06</strong><span style="font-size: 11px">يوم</span></span><span class="cd"><strong style="display: block; font-size: 19px">14</strong><span style="font-size: 11px">ساعة</span></span><span class="cd"><strong style="display: block; font-size: 19px">32</strong><span style="font-size: 11px">دقيقة</span></span></span><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">تبدأ بعد 6 أيام</span></a></div></div>
+<h2 style="margin: 8px 0 0; font-size: 18px; font-weight: 800">البدائل (fallback) — لما المصدر يرجّع null</h2>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px"><div style="display: flex; flex-direction: column; gap: 10px"><span class="cap">عن الاتحاد · fallback: مفيش pullQuote</span><a class="feat" href="#" style="background: linear-gradient(160deg,#00502A 0%,#0B0B0B 100%)"><span style="font-size: 12px; font-weight: 700; color: #9FE0B6">عن الاتحاد</span><span style="font-size: 19px; font-weight: 800; line-height: 1.5">كلمة رئيس الاتحاد</span><span style="font-size: 13px; color: #C4D8CB">رؤية الاتحاد للموسم وأولوياته.</span><span class="go">اقرأ الكلمة<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg></span></a></div><div style="display: flex; flex-direction: column; gap: 10px"><span class="cap">البطولات · fallback: مفيش بطولة قادمة</span><a class="feat" href="#" style="background: linear-gradient(160deg,#2E040C 0%,#A0132C 100%)"><span style="font-size: 12px; font-weight: 700; color: #F4C9D1">البطولات</span><span style="font-size: 19px; font-weight: 800; line-height: 1.5">روزنامة البطولات</span><span style="font-size: 13px; color: #F4C9D1">البطولات المحلية والخارجية للموسم.</span><span class="go">تصفّح الروزنامة<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg></span></a></div><div style="display: flex; flex-direction: column; gap: 10px"><span class="cap">الفعاليات · fallback: مفيش فعالية قادمة</span><a class="feat" href="#" style="background: #0B0B0B"><span style="font-size: 12px; font-weight: 700; color: #9FE0B6">الفعاليات</span><span style="font-size: 19px; font-weight: 800; line-height: 1.5">تصفّح أجندة الموسم</span><span style="font-size: 13px; color: #B8BCC0">المؤتمرات والاحتفاليات والمعسكرات والدورات.</span><span class="go">افتح الأجندة<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg></span></a></div><div style="display: flex; flex-direction: column; gap: 10px"><span class="cap">المركز الإعلامي · أحدث فيديو (يختفي لو مفيش)</span><a class="feat" href="#" style="background: linear-gradient(160deg,#3F2A2A 0%,#0B0B0B 100%)"><span aria-hidden="true" style="position: absolute; top: 50%; left: 50%; width: 60px; height: 60px; margin: -50px 0 0 -30px; border-radius: 50%; background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.4); display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 7l8 5-8 5z"></path></svg></span><span style="font-size: 12px; font-weight: 700; color: #F4C9A8">أحدث فيديو</span><span style="font-size: 16px; font-weight: 800; line-height: 1.5">[عنوان أحدث فيديو]</span></a></div></div>
+<p style="margin: 0; font-size: 13px; line-height: 1.9; color: #2A2F34">البطاقة عرضها 380px في اللوحة (هنا مصغّرة). الـfallback نفس المكان ونفس الارتفاع، فاللوحة ماتتحركش. «آخر خبر» لو مفيش، العمود الوسطاني يختفي وعمود الروابط يتمدد. الأزرق اتشال: الهوية أخضر وأسود وأحمر بس.</p>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

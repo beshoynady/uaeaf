@@ -100,7 +100,7 @@ describe('AuditLogInterceptor', () => {
     expect(auditLogsService.write).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'Delete', entityType: 'roles' }),
     );
-    const [call] = auditLogsService.write.mock.calls[0] as [{ entityId: Types.ObjectId }];
+    const [call] = auditLogsService.write.mock.calls[0] as [{ entityId: Types.ObjectId }, unknown?];
     expect(call.entityId.toString()).toBe(targetId);
   });
 
@@ -244,7 +244,7 @@ describe('AuditLogInterceptor', () => {
       });
       await Promise.resolve();
 
-      const [call] = auditLogsService.write.mock.calls[0] as [{ action: string }];
+      const [call] = auditLogsService.write.mock.calls[0] as [{ action: string }, unknown?];
       expect(call.action).toBe('PermanentDelete');
     });
 

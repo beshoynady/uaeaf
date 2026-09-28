@@ -86,7 +86,6 @@ cd apps/web && npx vitest run <الملفات المتأثرة>
 | `apps/web/src/components/layout/cards/` | **جديد** — بطاقة لكل نوع، وبطاقة fallback لكل منها. |
 | `apps/web/src/components/shared/countdown.tsx` | **منقول** من `components/pages/home/hero-countdown.tsx`. |
 | `apps/web/src/components/search/` | **جديد** — `search-trigger.tsx`، `search-dialog.tsx`، `search-results.tsx`. |
-| `apps/web/src/app/[locale]/search/page.tsx` | **جديد** — `/search?q=`، `noindex, follow`. |
 | `api/src/modules/platform-administration/search/` | **جديد** — module البحث: controller، service، sources، normalization. |
 
 ---
@@ -1593,7 +1592,7 @@ git commit -m "feat(web): header v2 row, tools capsule and mega panels"
 **Interfaces:**
 - Consumes: `MegaColumn` من B3 — الدرج يعرض العمود نفسه، بعنوانه الصغير وروابطه.
 
-- [ ] **Step 1: اكتب الاختبار الفاشل**
+- [x] **Step 1: اكتب الاختبار الفاشل**
 
 ```tsx
 it("الدرج يعرض عناوين الأعمدة والروابط، ولا يعرض البطاقة", async () => {
@@ -1609,12 +1608,12 @@ it("الدرج يعرض عناوين الأعمدة والروابط، ولا ي
 });
 ```
 
-- [ ] **Step 2: شغّل وتأكد من الفشل**
+- [x] **Step 2: شغّل وتأكد من الفشل**
 
 Run: `cd apps/web && npx vitest run src/components/layout/site-header.test.tsx -t الدرج`
 Expected: FAIL.
 
-- [ ] **Step 3: نفّذ — نفس التركيب، عرض مختلف**
+- [x] **Step 3: نفّذ — نفس التركيب، عرض مختلف**
 
 `MegaPanel` يقبل `layout`: في `"row"` يرسم البطاقة، وفي `"drawer"` يتخطاها إلا `ClubFinderCard` داخل لوحة ألعاب القوى.
 
@@ -1626,7 +1625,7 @@ Expected: FAIL.
 const showFeature = layout === "row" || item.key === "athletics";
 ```
 
-- [ ] **Step 4: شغّل**
+- [x] **Step 4: شغّل**
 
 Run: `cd apps/web && npx vitest run src/components/layout && npx tsc --noEmit`
 Expected: PASS.
@@ -2321,7 +2320,7 @@ git commit -m "feat(web): header feature cards from one cached server read"
 
 # الدفعة E — البحث
 
-**الهدف:** بحث موقع يعمل من الكبسولة ومن الدرج ومن `Ctrl/⌘ + K`، ومن صفحة `/search?q=`.
+**الهدف:** بحث موقع يعمل من الكبسولة ومن الدرج ومن `Ctrl/⌘ + K`. **لا توجد صفحة `/search`** (قرار المالك 2026-09-29): النافذة وحدها، بـ5 نتائج لكل نوع و«عرض المزيد» داخلها.
 
 **هذه الدفعة الوحيدة التي تلمس `api/`. ممنوع تغيير أي حقل في أي schema.**
 
@@ -2334,7 +2333,7 @@ git commit -m "feat(web): header feature cards from one cached server read"
 ### الـendpoint
 
 ```
-GET /search/public?q=<string>&locale=<ar|en>&types=<csv>&limit=<1..10>
+GET /search/public?q=<string>&locale=<ar|en>&types=<csv>&limit=<1..10>   # الافتراضي 5
 ```
 
 | المعامل | النوع | الافتراضي | التحقق |
@@ -2342,7 +2341,7 @@ GET /search/public?q=<string>&locale=<ar|en>&types=<csv>&limit=<1..10>
 | `q` | string | — | إلزامي، 2–80 محرفًا بعد `trim`. أقصر من حرفين ⟵ `{ groups: [] }` بحالة 200، لا 400: حقل بحث يكتب فيه القارئ حرفًا أول ليس خطأً. |
 | `locale` | `ar` \| `en` | `ar` | enum. |
 | `types` | csv | كل الأنواع | كل قيمة من `SEARCH_SOURCE_KEYS`؛ المجهول يُتجاهَل بصمت. |
-| `limit` | int | 5 | لكل نوع لا للإجمالي. يُقصَر (clamp) عند 10 ولا يُرفض — سابقة `videos.service.ts`. |
+| `limit` | int | **5** | لكل نوع لا للإجمالي. «عرض المزيد» يرفعه تدريجيًا. يُقصَر (clamp) عند 10 ولا يُرفض — سابقة `videos.service.ts`. |
 
 **الرد:**
 ```ts
@@ -2891,48 +2890,16 @@ Expected: PASS.
 
 ---
 
-### Task E6: صفحة `/search?q=`
+### ~~Task E6: صفحة `/search?q=`~~ — **محذوفة**
 
-**Files:**
-- Create: `apps/web/src/app/[locale]/search/page.tsx`
-- Create: `apps/web/src/components/search/search-screen.tsx`
-- Modify: `apps/web/src/lib/pages/public-pages.ts` (إدخال في `PUBLIC_PAGES` بـ`indexable: false`)
-- Test: `apps/web/src/lib/design-system/seo-contract.spec.ts`
-
-- [ ] **Step 1: اكتب الاختبار الفاشل**
-
-```ts
-it('صفحة البحث noindex, follow وخارج الـsitemap', async () => {
-  const page = findPublicPage('search')!;
-  expect(await isIndexable(page)).toBe(false);
-});
-```
-
-- [ ] **Step 2: شغّل وتأكد من الفشل**
-
-Run: `cd apps/web && npx vitest run src/lib/design-system/seo-contract.spec.ts -t البحث`
-Expected: FAIL — لا إدخال.
-
-- [ ] **Step 3: نفّذ**
-
-الصفحة تقرأ `q` من `searchParams`، وتستدعي الـendpoint نفسه بـ`limit=10`، وترسم `SearchScreen` — نفس `search-results.tsx` بتخطيط صفحة لا نافذة. `noindex, follow` عبر `buildMetadata({ indexable: false })`.
-> صفحة نتائج مفهرسة تُنتج صفحة لكل استعلام كتبه أي زائر. `follow` يُبقي الروابط الخارجة نافعة.
-> `seo-contract.spec.ts` يستثني `/brand-kit` بالاسم — **لا تلمس ذلك الاستثناء**؛ أضف `/search` كإدخال عادي بـ`indexable: false`، وهو ما يعالجه الحارس أصلًا.
-
-- [ ] **Step 4: شغّل**
-
-Run: `cd apps/web && npx vitest run && npx tsc --noEmit`
-Expected: PASS بالكامل.
-
-- [ ] **Step 5: الـcommit — سلّم هذا النص للمالك**
-
-```
-git add apps/web/src/components/search apps/web/src/lib/search apps/web/src/app apps/web/src/lib/pages apps/web/src/components/layout apps/web/messages
-git commit -m "feat(web): site search dialog, shortcut and results page"
-```
-> يكسر البناء وحده: **لا**.
-
----
+> **(قرار المالك 2026-09-29)** لا توجد صفحة `/search`. يعدّل §15 بند 1 من الـspec.
+> النافذة وحدها هي سطح البحث: **5 نتائج لكل نوع**، وزر «عرض المزيد» يجلب 5 أخرى **داخل النافذة**،
+> وتبويبات النوع تظهر ومعها العدد حين توجد نتائج.
+> المرجع البصري: `png/07-search-dialog-results.png` و`08-search-states.png` و`09-search-mobile.png`،
+> والنسخ التفاعلية `html/SearchDialog.dc.html` و`SearchStates.dc.html` و`SearchMobile.dc.html`.
+>
+> **أثر على المهام السابقة:** `limit` في E.0 يصير 5 افتراضيًا و«عرض المزيد» يرفع الطلب تدريجيًا؛
+> ولا يُضاف إدخال `search` إلى `PUBLIC_PAGES`، ولا يُلمس `seo-contract.spec.ts`.
 
 ## ✅ نقطة توقف E
 

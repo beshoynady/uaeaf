@@ -1,6 +1,7 @@
 import { Types } from 'mongoose';
-import type { Model } from 'mongoose';
+import type { ClientSession, Model } from 'mongoose';
 import type { LocalizedText } from '../common/schemas/localized-text.schema.js';
+import { redactAuditSnapshot } from '../common/utils/redact-audit-snapshot.js';
 import type { Role } from '../modules/platform-administration/roles/schemas/role.schema.js';
 import type { User } from '../modules/platform-administration/users/schemas/user.schema.js';
 import type { WorkflowStep } from '../modules/workflow/workflow-steps/schemas/workflow-step.schema.js';
@@ -25,6 +26,7 @@ export interface ResetReport {
   archivedRoles: { id: string; name: LocalizedText }[];
   rolelessAccounts: { id: string; email: string; name: LocalizedText }[];
   detachedFrom: number;
+  superAdminsHoldingOtherRoles: { id: string; email: string; retainedRoleIds: string[] }[];
   blockedSteps: {
     definitionId: string;
     stepId: string;
@@ -43,8 +45,23 @@ interface StoredUser {
   archivedAt: Date | null;
 }
 
+type StoredRole = Role & { _id: Types.ObjectId };
+
 const OPEN_STATUSES: WorkflowInstanceStatus[] = ['InProgress', 'Returned'];
 const REASON = 'reset-roles';
+
+// seed-role-templates matches templateKey on archived roles too, so a template archived here is never seeded again.
+const assertNoSeededTemplates = async (roles: Model<Role>): Promise<void> => {
+  const seeded = await roles.collection.find({ templateKey: { $ne: null } }).toArray();
+  if (seeded.length > 0) {
+    throw new Error(
+      `Refusing: ${seeded.length} role(s) carry a templateKey, so the role templates are already seeded ` +
+        `(${seeded.map((role) => String(role.templateKey)).join(', ')}). Continuing would archive them and ` +
+        'detach them from every account holding them, and seed-role-templates would not seed them again, ' +
+        'because it matches archived roles too.',
+    );
+  }
+};
 
 const holdsAny = (user: StoredUser, roleIds: Set<string>): boolean =>
   (user.roleIds ?? []).some((roleId) => roleIds.has(String(roleId)));
@@ -108,52 +125,120 @@ const findBlockedSteps = async (
   });
 };
 
-/** Archives every non-system role and detaches it from each account without a system role. Idempotent;
- *  changes no workflow step. Throws before any write on a non-ObjectId role id or with no active Super Admin.
- *  See ADR-0113. */
-export const resetRoles = async (models: ResetRolesModels): Promise<ResetReport> => {
-  const users = await models.users.collection.find<StoredUser>({}).toArray();
-  assertObjectIdRoleRefs(users);
-
-  const roles = await models.roles.find().lean();
-  const systemRoleIds = new Set(roles.filter((role) => role.isSystemRole === true).map((role) => role._id.toString()));
-  const actorId = resolveActor(users, systemRoleIds);
-
-  const toArchive = roles.filter((role) => role.isSystemRole !== true && role.archivedAt == null);
+const archiveRoles = async (
+  models: ResetRolesModels,
+  session: ClientSession,
+  roles: StoredRole[],
+  actorId: Types.ObjectId,
+): Promise<ResetReport['archivedRoles']> => {
+  const archived: ResetReport['archivedRoles'] = [];
   const archivedAt = new Date();
-  for (const role of toArchive) {
-    await models.roles.updateOne({ _id: role._id, archivedAt: null }, { archivedAt, archivedBy: actorId });
+  for (const role of roles.filter((candidate) => candidate.isSystemRole !== true && candidate.archivedAt == null)) {
+    const landed = await session.withTransaction(async () => {
+      const after = await models.roles
+        .findOneAndUpdate(
+          { _id: role._id, archivedAt: null },
+          { archivedAt, archivedBy: actorId },
+          { returnDocument: 'after', session },
+        )
+        .lean();
+      if (!after) {
+        return false;
+      }
+      // Mirrors the row DELETE /roles/:id writes through AuditLogInterceptor; a script has no request context.
+      await models.auditLogs.write(
+        {
+          actorId,
+          action: 'Archive',
+          entityType: 'roles',
+          entityId: role._id,
+          previousValue: redactAuditSnapshot(role),
+          newValue: redactAuditSnapshot(after),
+          reason: REASON,
+          ipAddress: '',
+          userAgent: '',
+        },
+        session,
+      );
+      return true;
+    });
+    if (landed) {
+      archived.push({ id: role._id.toString(), name: { en: role.name.en, ar: role.name.ar } });
+    }
   }
+  return archived;
+};
 
-  const nonSystemIds = roles.filter((role) => role.isSystemRole !== true).map((role) => role._id);
-  const nonSystemSet = new Set(nonSystemIds.map(String));
+const detachRoles = async (
+  models: ResetRolesModels,
+  session: ClientSession,
+  users: StoredUser[],
+  roles: StoredRole[],
+  systemRoleIds: Set<string>,
+  actorId: Types.ObjectId,
+): Promise<number> => {
+  const nonSystemSet = new Set(roles.filter((role) => role.isSystemRole !== true).map((role) => role._id.toString()));
   let detachedFrom = 0;
   for (const user of users) {
     if (holdsAny(user, systemRoleIds) || !holdsAny(user, nonSystemSet)) {
       continue;
     }
     const pulled = (user.roleIds as Types.ObjectId[]).filter((roleId) => nonSystemSet.has(roleId.toString()));
-    const result = await models.users.updateOne(
-      { _id: user._id, roleIds: { $in: pulled, $nin: [...systemRoleIds].map((roleId) => new Types.ObjectId(roleId)) } },
-      { $pull: { roleIds: { $in: pulled } } },
-    );
-    if (result.modifiedCount === 0) {
-      continue;
+    const detached = await session.withTransaction(async () => {
+      const result = await models.users.updateOne(
+        { _id: user._id, roleIds: { $in: pulled, $nin: [...systemRoleIds].map((roleId) => new Types.ObjectId(roleId)) } },
+        { $pull: { roleIds: { $in: pulled } } },
+        { session },
+      );
+      if (result.modifiedCount === 0) {
+        return false;
+      }
+      for (const roleId of pulled) {
+        await models.auditLogs.write(
+          {
+            actorId,
+            action: 'Update',
+            entityType: 'users',
+            entityId: user._id,
+            previousValue: { roleId: roleId.toString() },
+            newValue: null,
+            reason: REASON,
+            ipAddress: '',
+            userAgent: '',
+          },
+          session,
+        );
+      }
+      return true;
+    });
+    if (detached) {
+      detachedFrom += 1;
     }
-    detachedFrom += 1;
-    for (const roleId of pulled) {
-      await models.auditLogs.write({
-        actorId,
-        action: 'Update',
-        entityType: 'users',
-        entityId: user._id,
-        previousValue: { roleId: roleId.toString() },
-        newValue: null,
-        reason: REASON,
-        ipAddress: '',
-        userAgent: '',
-      });
-    }
+  }
+  return detachedFrom;
+};
+
+/** Archives every non-system role and detaches it from each account without a system role; every write
+ *  commits or aborts with its audit rows. Idempotent; changes no workflow step. Throws before any write
+ *  when a role carries a templateKey, on a non-ObjectId role id, or with no active Super Admin. See ADR-0113. */
+export const resetRoles = async (models: ResetRolesModels): Promise<ResetReport> => {
+  await assertNoSeededTemplates(models.roles);
+
+  const users = await models.users.collection.find<StoredUser>({}).toArray();
+  assertObjectIdRoleRefs(users);
+
+  const roles: StoredRole[] = await models.roles.find().lean();
+  const systemRoleIds = new Set(roles.filter((role) => role.isSystemRole === true).map((role) => role._id.toString()));
+  const actorId = resolveActor(users, systemRoleIds);
+
+  const session = await models.roles.startSession();
+  let archivedRoles: ResetReport['archivedRoles'];
+  let detachedFrom: number;
+  try {
+    archivedRoles = await archiveRoles(models, session, roles, actorId);
+    detachedFrom = await detachRoles(models, session, users, roles, systemRoleIds, actorId);
+  } finally {
+    await session.endSession();
   }
 
   const liveRoleIds = new Set(
@@ -171,10 +256,23 @@ export const resetRoles = async (models: ResetRolesModels): Promise<ResetReport>
     .sort((a, b) => a.email.localeCompare(b.email))
     .map((user) => ({ id: user._id.toString(), email: user.email, name: { en: user.name.en, ar: user.name.ar } }));
 
+  // Retained ids grant nothing: findByIds filters archivedAt: null (base.repository.ts:33)
+  // and RolesRepository does not override it.
+  const superAdminsHoldingOtherRoles = current
+    .filter((user) => holdsAny(user, systemRoleIds))
+    .map((user) => ({
+      id: user._id.toString(),
+      email: user.email,
+      retainedRoleIds: (user.roleIds ?? []).map(String).filter((roleId) => !systemRoleIds.has(roleId)),
+    }))
+    .filter((account) => account.retainedRoleIds.length > 0)
+    .sort((a, b) => a.email.localeCompare(b.email));
+
   return {
-    archivedRoles: toArchive.map((role) => ({ id: role._id.toString(), name: { en: role.name.en, ar: role.name.ar } })),
+    archivedRoles,
     rolelessAccounts,
     detachedFrom,
+    superAdminsHoldingOtherRoles,
     blockedSteps: await findBlockedSteps(models, canAct),
   };
 };

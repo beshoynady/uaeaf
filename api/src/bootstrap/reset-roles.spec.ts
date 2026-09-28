@@ -1,13 +1,8 @@
 import mongoose, { Types } from 'mongoose';
-import type { Model } from 'mongoose';
+import type { ClientSession, Connection, Model } from 'mongoose';
 import { jest } from '@jest/globals';
-import { MongoMemoryServer } from 'mongodb-memory-server';
-import {
-  connectTestDatabase,
-  disconnectTestDatabase,
-  clearTestDatabase,
-  registerTestModel,
-} from '../../test/utils/mongo-memory-server.js';
+import { MongoMemoryReplSet } from 'mongodb-memory-server';
+import { registerTestModel } from '../../test/utils/mongo-memory-server.js';
 import { Role, RoleSchema } from '../modules/platform-administration/roles/schemas/role.schema.js';
 import { User, UserSchema } from '../modules/platform-administration/users/schemas/user.schema.js';
 import {
@@ -22,12 +17,17 @@ import {
 import { AuditLog, AuditLogSchema } from '../modules/workflow/audit-logs/schemas/audit-log.schema.js';
 import { AuditLogsRepository } from '../modules/workflow/audit-logs/audit-logs.repository.js';
 import { AuditLogsService } from '../modules/workflow/audit-logs/audit-logs.service.js';
+import type { WriteAuditLogInput } from '../modules/workflow/audit-logs/dto/write-audit-log.dto.js';
 import { resetRoles, type ResetRolesModels } from './reset-roles.js';
+
+// Transactions need a replica set; the shared helper starts a standalone server.
+const LAUNCH_TIMEOUT_MS = 25_000;
 
 /** Runs against a real MongoDB: idempotency is only a property of what the
  *  second run reads back from the first, never of a mocked answer. */
 describe('resetRoles', () => {
-  let server: MongoMemoryServer;
+  let replSet: MongoMemoryReplSet;
+  let connection: Connection;
   let models: ResetRolesModels;
   let roleModel: Model<Role>;
   let userModel: Model<User>;
@@ -80,14 +80,23 @@ describe('resetRoles', () => {
     ...extra,
   });
 
+  const allModels = () => [roleModel, userModel, stepModel, instanceModel, auditModel] as Model<unknown>[];
+
   beforeAll(async () => {
-    server = await connectTestDatabase();
-    roleModel = registerTestModel<Role>('Role', RoleSchema);
-    userModel = registerTestModel<User>('User', UserSchema);
-    stepModel = registerTestModel<WorkflowStep>('WorkflowStep', WorkflowStepSchema);
-    instanceModel = registerTestModel<WorkflowInstance>('WorkflowInstance', WorkflowInstanceSchema);
-    auditModel = registerTestModel<AuditLog>('AuditLog', AuditLogSchema);
-  });
+    replSet = await MongoMemoryReplSet.create({
+      replSet: { count: 1, storageEngine: 'wiredTiger' },
+      instanceOpts: [{ launchTimeout: LAUNCH_TIMEOUT_MS }],
+    });
+    connection = await mongoose.createConnection(replSet.getUri()).asPromise();
+    roleModel = registerTestModel<Role>('Role', RoleSchema, connection);
+    userModel = registerTestModel<User>('User', UserSchema, connection);
+    stepModel = registerTestModel<WorkflowStep>('WorkflowStep', WorkflowStepSchema, connection);
+    instanceModel = registerTestModel<WorkflowInstance>('WorkflowInstance', WorkflowInstanceSchema, connection);
+    auditModel = registerTestModel<AuditLog>('AuditLog', AuditLogSchema, connection);
+    // init() waits for the collections and their index builds; a catalog change still
+    // in flight when a transaction first writes makes that write fail intermittently.
+    await Promise.all(allModels().map((model) => model.init()));
+  }, 60_000);
 
   beforeEach(async () => {
     const auditLogs = new AuditLogsService(new AuditLogsRepository(auditModel as never));
@@ -128,11 +137,13 @@ describe('resetRoles', () => {
   });
 
   afterEach(async () => {
-    await clearTestDatabase();
+    jest.restoreAllMocks();
+    await Promise.all(allModels().map((model) => model.deleteMany({})));
   });
 
   afterAll(async () => {
-    await disconnectTestDatabase(server);
+    await connection?.close();
+    await replSet?.stop();
   });
 
   const roleIdsOf = async (userId: Types.ObjectId) =>
@@ -171,6 +182,22 @@ describe('resetRoles', () => {
       expect(await userModel.findById(SUPER_ADMIN).lean()).toEqual(before);
     });
 
+    it('writes one Archive row per archived role, in the shape DELETE /roles/:id logs', async () => {
+      const report = await resetRoles(models);
+
+      const rows = await auditModel.find({ action: 'Archive' }).lean();
+      expect(rows).toHaveLength(report.archivedRoles.length);
+      expect(rows.map((row) => row.entityId?.toString()).sort()).toEqual([ROLE_A, ROLE_B].map(String).sort());
+      for (const row of rows) {
+        expect(row).toMatchObject({ entityType: 'roles', reason: 'reset-roles' });
+        expect(row.actorId.toString()).toBe(SUPER_ADMIN.toString());
+        expect(row.previousValue).toMatchObject({ archivedAt: null });
+        expect(String(row.newValue?._id)).toBe(row.entityId?.toString());
+        expect(String(row.newValue?.archivedBy)).toBe(SUPER_ADMIN.toString());
+        expect(row.newValue).not.toHaveProperty('__v');
+      }
+    });
+
     it('keeps every account', async () => {
       const before = await userModel.countDocuments();
       await resetRoles(models);
@@ -197,8 +224,8 @@ describe('resetRoles', () => {
       const write = jest.spyOn(models.auditLogs, 'write');
       await resetRoles(models);
 
-      expect(write).toHaveBeenCalledTimes(5);
-      const rows = await auditModel.find().lean();
+      expect(write.mock.calls.filter(([entry]) => entry.entityType === 'users')).toHaveLength(5);
+      const rows = await auditModel.find({ entityType: 'users' }).lean();
       const pairs = rows.map((row) => `${row.entityId?.toString()}:${String(row.previousValue?.roleId)}`).sort();
       expect(pairs).toEqual(
         [
@@ -213,6 +240,56 @@ describe('resetRoles', () => {
         expect(row).toMatchObject({ entityType: 'users', reason: 'reset-roles', action: 'Update' });
         expect(row.actorId.toString()).toBe(SUPER_ADMIN.toString());
       }
+    });
+  });
+
+  describe('a failed audit write', () => {
+    const failAfterWriting = (failing: (entry: WriteAuditLogInput) => boolean) => {
+      const failed: WriteAuditLogInput[] = [];
+      const original = models.auditLogs.write.bind(models.auditLogs);
+      jest
+        .spyOn(models.auditLogs, 'write')
+        .mockImplementation(async (entry: WriteAuditLogInput, session?: ClientSession) => {
+          const row = await original(entry, session);
+          if (failing(entry)) {
+            failed.push(entry);
+            throw new Error('audit write failed after landing');
+          }
+          return row;
+        });
+      return failed;
+    };
+
+    it('rolls back the detach it was recording', async () => {
+      const failed = failAfterWriting((entry) => entry.entityType === 'users');
+
+      await expect(resetRoles(models)).rejects.toThrow(/audit write failed/);
+      expect(failed).toHaveLength(1);
+      const [{ entityId, previousValue }] = failed;
+      expect(await roleIdsOf(entityId as Types.ObjectId)).toContain(previousValue?.roleId);
+      expect(await auditModel.countDocuments({ entityType: 'users' })).toBe(0);
+    });
+
+    it('rolls back the archive it was recording', async () => {
+      failAfterWriting((entry) => entry.action === 'Archive');
+
+      await expect(resetRoles(models)).rejects.toThrow(/audit write failed/);
+      expect(await roleModel.countDocuments({ isSystemRole: { $ne: true }, archivedAt: null })).toBe(2);
+      expect(await auditModel.countDocuments({ action: 'Archive' })).toBe(0);
+    });
+  });
+
+  describe('Super Admin accounts holding another role', () => {
+    it('reports each one with the non-system roles it keeps', async () => {
+      await userModel.updateOne({ _id: SUPER_ADMIN }, { roleIds: [SUPER_ROLE, ROLE_B] });
+
+      expect((await resetRoles(models)).superAdminsHoldingOtherRoles).toEqual([
+        { id: SUPER_ADMIN.toString(), email: 'root@uaeaf.ae', retainedRoleIds: [ROLE_B.toString()] },
+      ]);
+    });
+
+    it('does not report a Super Admin that holds only system roles', async () => {
+      expect((await resetRoles(models)).superAdminsHoldingOtherRoles).toEqual([]);
     });
   });
 
@@ -289,8 +366,33 @@ describe('resetRoles', () => {
     const nothingWritten = async () => {
       expect(await roleModel.countDocuments({ archivedAt: { $ne: null } })).toBe(1);
       expect(await roleIdsOf(ALICE)).toEqual([ROLE_A.toString()]);
+      expect(await roleIdsOf(BOB)).toEqual([ROLE_A, ROLE_B].map(String));
+      expect(await roleIdsOf(ERIN)).toEqual([ROLE_OLD.toString()]);
+      expect(await roleIdsOf(FRANK)).toEqual([ROLE_B.toString()]);
       expect(await auditModel.countDocuments()).toBe(0);
     };
+
+    it('refuses when a live role carries a templateKey', async () => {
+      await roleModel.updateOne({ _id: ROLE_A }, { templateKey: 'editor' });
+
+      await expect(resetRoles(models)).rejects.toThrow(/templateKey[\s\S]*seed-role-templates/);
+      await nothingWritten();
+    });
+
+    it('refuses when an archived role carries a templateKey', async () => {
+      await roleModel.updateOne({ _id: ROLE_OLD }, { templateKey: 'old' });
+
+      await expect(resetRoles(models)).rejects.toThrow(/templateKey[\s\S]*seed-role-templates/);
+      await nothingWritten();
+    });
+
+    it('checks for seeded templates before any other refusal', async () => {
+      await roleModel.updateOne({ _id: ROLE_A }, { templateKey: 'editor' });
+      await userModel.updateOne({ _id: SUPER_ADMIN }, { accountStatus: 'Suspended' });
+
+      await expect(resetRoles(models)).rejects.toThrow(/templateKey/);
+      await nothingWritten();
+    });
 
     it('refuses when an account stores a role id as a string, and names the account', async () => {
       const stringy = id();

@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { UaeafLogo } from "@/components/brand/uaeaf-logo";
 import { FOCUS, TRANSITION } from "@/components/ui/interactive";
 import { HeaderToolsCapsule } from "./header-tools-capsule";
 import { PrimaryNav, useRowLayout } from "./primary-nav";
+import { useFocusTrap } from "./use-focus-trap";
 import { BrandAccentBar } from "@uaeaf/brand-ui";
 import {
   ChampionshipFallbackCard,
@@ -113,6 +114,17 @@ export const HeaderShell = ({
     setDrawerOpen(false);
   }
 
+  // The row appearing mid-session closes the drawer. Adjusted during render,
+  // the same "state derived from a prop" pattern as `renderedPath` above: an
+  // effect would paint one frame with the row visible and the drawer (and
+  // its scroll lock) still open, with nothing on screen to explain why the
+  // page will not scroll.
+  const [wasRow, setWasRow] = useState(isRow);
+  if (isRow !== wasRow) {
+    setWasRow(isRow);
+    if (isRow && drawerOpen) setDrawerOpen(false);
+  }
+
   useEffect(() => {
     // `passive` because this listener never calls preventDefault, and a
     // non-passive scroll listener blocks the compositor on touch.
@@ -122,11 +134,29 @@ export const HeaderShell = ({
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // The drawer is a disclosure, not a modal — no focus trap, no scroll lock,
-  // no way to be stranded inside it. Escape still closes it from anywhere in
-  // the header, which is the one modal affordance a disclosure should borrow.
-  // A panel's own Escape handler stops the event before it reaches here, so
-  // the first Escape closes the panel and a second closes the drawer.
+  useEffect(() => {
+    if (!drawerOpen) return;
+    // Both restored to the prior value, not blanked (the search dialog will
+    // hold this same lock later), and both set in the same pass so no frame
+    // shows the scrollbar gone before its gutter is reserved.
+    const previousOverflow = document.body.style.overflow;
+    const previousGutter = document.documentElement.style.scrollbarGutter;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.scrollbarGutter = "stable";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.documentElement.style.scrollbarGutter = previousGutter;
+    };
+  }, [drawerOpen]);
+
+  const drawerRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(drawerRef, drawerOpen);
+
+  // The drawer is a modal now: focus is trapped inside it and the page
+  // behind it cannot scroll (ADR-0121, amending ADR-0062 D4). Escape still
+  // closes it from anywhere in the header. A panel's own Escape handler
+  // stops the event before it reaches here, so the first Escape closes the
+  // panel and a second closes the drawer.
   const onHeaderKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Escape" && drawerOpen) setDrawerOpen(false);
   };
@@ -181,17 +211,24 @@ export const HeaderShell = ({
           <UaeafLogo className="h-11 w-auto sm:h-16" />
         </Link>
 
-        <PrimaryNav
-          drawerOpen={drawerOpen}
-          onCloseDrawer={() => setDrawerOpen(false)}
-          openKey={openKey}
-          onTogglePanel={togglePanel}
-          onOpenPanel={openPanel}
-          onClosePanel={closePanel}
-          isRow={isRow}
-          featureFor={featureFor}
-          activePath={activePath}
-        />
+        <div
+          ref={drawerRef}
+          role={drawerOpen ? "dialog" : undefined}
+          aria-modal={drawerOpen ? true : undefined}
+          aria-label={drawerOpen ? tHeader("menu") : undefined}
+        >
+          <PrimaryNav
+            drawerOpen={drawerOpen}
+            onCloseDrawer={() => setDrawerOpen(false)}
+            openKey={openKey}
+            onTogglePanel={togglePanel}
+            onOpenPanel={openPanel}
+            onClosePanel={closePanel}
+            isRow={isRow}
+            featureFor={featureFor}
+            activePath={activePath}
+          />
+        </div>
 
         <div className="flex shrink-0 items-center gap-1 text-[color:var(--color-text-secondary)] sm:gap-3">
           <HeaderToolsCapsule layout="row" onOpenSearch={() => setSearchOpen(true)} />

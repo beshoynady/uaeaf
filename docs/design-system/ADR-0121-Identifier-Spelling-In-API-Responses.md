@@ -12,16 +12,22 @@
 | **Why This Decision** | The rule the codebase follows is a good one: the spelling marks whether a response was filtered. Writing it down costs nothing; guarding it turns the next serializer from a silent break into a red test. The choice not to unify is deliberate — a rename touching 118 call sites is a migration, and this ADR is a rule. |
 | **Risks** | **The allow-list drifts and becomes a rubber stamp**, added to whenever the guard complains. **Mitigation:** the guard names the endpoint and the rule, and 6a's serializer work adds each resource in the task that serializes it, where a reviewer can see why. **The guard is expensive or needs tooling the project does not have.** **Mitigation:** it reads the project's own controllers and DTOs, as `permission-catalogue.spec.ts` and `archive-restore.spec.ts` already do; if it turns out to need more, the design is presented before it is built. **A consumer reads the wrong spelling anyway**, as the dashboard did. **Mitigation:** this ADR does not claim to prevent that — the dashboard's own fixtures must be written from the real response shape, which is a separate correction recorded with the permission-matrix fix. |
 | **Corrected 2026-09-29, before the guard was built** | **The Decision row's "the exceptions are `users` and `permissions`" is wrong**, and the feasibility probe for the guard is what found it. At least ten further administrative endpoints already answer `id`: `GET /live-streams/:id` (`live-streams.controller.ts:39-45`, guarded `videos:Read`, returning `LiveStreamAdminResponseDto extends LiveStreamPublicResponseDto` which declares `id`) · `GET /audit-logs` (`audit-logs.service.ts:117-119`) · `GET /media-assets/unused` (`unused-media.service.ts:86-88`) · `GET /revisions` and `GET /revisions/:id` (`publishing.service.ts:557,614`) · and the five `GET …/:id/editorial-state` routes on `about-federation-page`, `president-message-page`, `strategic-plans-page`, `vision-mission-page` and `articles`. Most are invisible to a text scan of the controllers, because 468 of 493 handlers declare no return type and the DTO is named only inside the service. **The allow-list is therefore not yet written, and the guard is not built** — writing either against the wrong set would encode the error. The owner decides whether these routes join the list or the rule is restated. |
+| **Resolved 2026-09-29 (owner decision)** | The ten administrative endpoints named in the correction above **join the allow-list unchanged** — none of them changes shape — each with a line saying why it answers `id`. The list is written now as data, in `api/src/common/authz/administrative-id-endpoints.ts`, with a test over the data itself. **The engine that checks the list against the controllers is the TypeScript Compiler API, registered in the `all` guard tier, and it is built later** — a text scan sees only 40% of the cases, because 468 of 493 handlers declare no return type and the DTO is named inside the service. `typescript` is already a devDependency (`^6.0.2`), which is the right place for a guard that never ships, so **no new dependency is needed**. Until the engine exists the list is a catalogue, not a guarantee, and the file says so. |
 | **Consequences** | One allow-list and one guard in `api/`. `GET /revisions/:id`, the single endpoint answering both spellings, and the dead `user.id ?? user._id` fallback in the dashboard are cleaned up in Batch 8. Resources gaining a serializer in Batch 6a join the list in the same task. |
 
 ---
 
 ## D1 — Why the exception list is endpoints, not resources
 
-A resource is not the unit that answers. `users` answers `id` on six routes and
-carries no identifier on `GET /users/export`, which returns a CSV. Writing the
-rule against resources would either exempt routes that need no exemption or
-force an entry for a route that answers nothing.
+A resource is not the unit that answers. `users` answers `id` on **ten** routes,
+through four different shapes — `UserResponseDto`, `MeResponseDto`, `UserNameDto`
+and `UserRefDto` — and carries no identifier at all on `GET /users/export`, which
+returns a CSV. Writing the rule against resources would either exempt routes that
+need no exemption or force an entry for a route that answers nothing.
+
+(An earlier draft of this line said six, counted before `UserRefDto` and
+`GET /users/names` existed. The count is ten, read from the controller's return
+types on 2026-09-29.)
 
 ## D2 — What the guard cannot see
 

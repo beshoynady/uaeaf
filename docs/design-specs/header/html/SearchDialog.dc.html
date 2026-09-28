@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>نافذة البحث في الموقع</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0;background:#FAFAF8}
+*{box-sizing:border-box}
+a{color:#006B31}a:hover{color:#00502A}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid #0B0B0B;outline-offset:3px}
+.on-dark a:focus-visible,.on-dark button:focus-visible{outline-color:#FFFFFF}
+.ni{position:relative;height:88px;display:inline-flex;align-items:center;gap:5px;padding:0 2px;font-size:15px;font-weight:500;color:#1F2328;text-decoration:none}
+.ni:hover{color:#006B31}
+.ni-on{color:#006B31;font-weight:700}
+.ni-on::after{content:"";position:absolute;inset-inline:0;bottom:0;height:3px;border-radius:3px 3px 0 0;background:linear-gradient(to left,#00843D 0 33%,#0B0B0B 33% 66%,#C8102E 66%)}
+.util{display:flex;align-items:center;gap:2px;padding:4px;border-radius:999px;background:#F3F4F1;border:1px solid #E6E8E4}
+.ub{width:40px;height:40px;border-radius:50%;border:none;background:transparent;color:#1F2328;display:inline-flex;align-items:center;justify-content:center;font-family:inherit;font-size:13px;font-weight:800;text-decoration:none;cursor:pointer}
+.ub:hover{background:#FFFFFF}
+.u-sep{width:1px;height:20px;background:#DADDD8;margin:0 2px}
+.anc{height:42px;padding:0 16px;border-radius:999px;border:1px solid rgba(255,255,255,.3);color:#FFFFFF;font-size:14px;font-weight:600;display:inline-flex;align-items:center;text-decoration:none;transition:background .2s}
+.anc:hover{background:rgba(255,255,255,.12);color:#FFFFFF}
+.sh{display:flex;flex-direction:column;gap:10px}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:13px;font-weight:700;color:#00843D}
+.eyebrow::before{content:"";width:28px;height:3px;border-radius:2px;background:linear-gradient(to left,#00843D 0 33%,#0B0B0B 33% 66%,#C8102E 66%)}
+.dc{position:relative;display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:16px;border:1px solid #E3E5E2;background:#FFFFFF;font-family:inherit;text-align:start;cursor:pointer;transition:all .25s}
+.dc:hover{border-color:#0B0B0B}
+.dc-on,.dc-on:hover{background:#0B0B0B;border-color:#0B0B0B;color:#FFFFFF}
+.dc-on .dci{background:#00843D;color:#FFFFFF}
+.dci{flex-shrink:0;width:44px;height:44px;border-radius:12px;background:#E4F3EA;color:#006B31;display:flex;align-items:center;justify-content:center;transition:all .25s}
+.evc{display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 14px;border-radius:12px;border:1px solid #E3E5E2;background:#FFFFFF;font-family:inherit;font-size:14px;font-weight:600;color:#0B0B0B;cursor:pointer;transition:all .2s}
+.evc:hover{border-color:#00843D}
+.evc-on,.evc-on:hover{background:#E4F3EA;border-color:#00843D;color:#00602C}
+.inp{height:52px;padding:0 16px;border-radius:14px;border:1px solid #D5D8D4;background:#FFFFFF;font-family:inherit;font-size:16px;color:#0B0B0B}
+.btn-p{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:52px;padding:0 24px;border-radius:14px;border:none;background:#00843D;color:#FFFFFF;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none}
+.btn-p:hover{background:#006B31;color:#FFFFFF}
+.cb{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 12px;border-radius:10px;border:1px solid #D5D8D4;background:#FFFFFF;font-size:13px;font-weight:600;color:#0B0B0B;text-decoration:none}
+.cb:hover{border-color:#0B0B0B;color:#0B0B0B}
+.club{display:flex;flex-direction:column;gap:12px;padding:18px;border-radius:18px;background:#FFFFFF;border:1px solid #E3E5E2;transition:box-shadow .3s,border-color .3s}
+.club:hover{box-shadow:0 14px 30px rgba(11,11,11,.08);border-color:#CFE8D8}
+details.faq{border-radius:16px;background:#FFFFFF;border:1px solid #E3E5E2;overflow:hidden}
+details.faq summary{list-style:none;cursor:pointer;padding:20px 22px;font-size:16px;font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:12px}
+details.faq summary::-webkit-details-marker{display:none}
+details.faq[open] summary{color:#006B31}
+details.faq[open] .pl{transform:rotate(45deg)}
+.pl{transition:transform .25s}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:no-preference){.rise{animation:rise .5s cubic-bezier(.2,.7,.2,1) both}}
+
+.sd{position:absolute;top:120px;left:50%;width:760px;margin-left:-380px;z-index:40;border-radius:20px;background:#FFFFFF;box-shadow:0 40px 80px rgba(11,11,11,.3),0 0 0 1px rgba(11,11,11,.06);overflow:hidden;display:flex;flex-direction:column}
+.sin{flex-grow:1;height:64px;border:none;background:transparent;font-family:inherit;font-size:19px;color:#0B0B0B;outline:none}
+.kbd{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:24px;padding:0 7px;border-radius:6px;border:1px solid #DADDD8;border-bottom-width:2px;background:#FAFAF8;font-size:11px;font-weight:700;color:#5B6167;font-family:inherit;direction:ltr}
+.tf{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:999px;border:1px solid #E3E5E2;background:#FFFFFF;font-family:inherit;font-size:13px;font-weight:600;color:#1F2328;cursor:pointer;white-space:nowrap}
+.tf:hover{border-color:#0B0B0B}
+.tf-on,.tf-on:hover{background:#0B0B0B;border-color:#0B0B0B;color:#FFFFFF}
+.tf .n{font-size:11px;font-weight:700;opacity:.7}
+.gh{display:flex;align-items:center;gap:8px;padding:14px 20px 6px;font-size:12px;font-weight:700;color:#5B6167}
+.gh .c{margin-inline-start:auto;font-weight:500}
+.ri{display:flex;align-items:center;gap:14px;margin:0 10px;padding:10px 10px;border-radius:12px;text-decoration:none;color:#0B0B0B}
+.ri:hover{background:#F2F7F3;color:#0B0B0B}
+.ri-on{background:#F2F7F3;box-shadow:inset -3px 0 0 #00843D}
+.th{flex-shrink:0;width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#FFFFFF}
+.rt{font-size:15px;font-weight:600;line-height:1.5}
+.rt mark{background:#FFF1D6;color:#0B0B0B;border-radius:3px;padding:0 1px}
+.rm{font-size:12px;color:#5B6167}
+.more{display:flex;align-items:center;gap:6px;margin:4px 20px 6px;height:34px;padding:0 10px;border:none;background:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;color:#006B31;cursor:pointer}
+.more:hover{background:#F2F7F3}
+.sug{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:999px;background:#F3F4F1;font-family:inherit;font-size:13px;font-weight:600;color:#1F2328;border:none;cursor:pointer}
+.sug:hover{background:#E4F3EA;color:#00602C}
+
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; background: #FAFAF8; font-family: Alexandria, Tahoma, sans-serif; color: #0B0B0B; direction: rtl; display: flex; flex-direction: column">
+<div style="height: 4px; flex-shrink: 0; background: linear-gradient(to left, #00843D 0 26%, #0B0B0B 44% 56%, #C8102E 74% 100%)"></div>
+<header style="height: 88px; flex-shrink: 0; background: #FFFFFF; border-bottom: 1px solid #ECEDEA; display: flex; align-items: center; justify-content: space-between; padding: 0 56px">
+<div style="display: flex; align-items: center; gap: 48px">
+<a href="Main.dc.html" aria-label="اتحاد الإمارات لألعاب القوى — الصفحة الرئيسية" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: #0B0B0B"><svg width="50" height="42" viewBox="0 0 240 200" aria-hidden="true"><path d="M20 170 L75.05 105.05 A7 7 0 0 1 84.95 114.95 Z" fill="#C8102E"></path><path d="M40 190 L142.2 72.2 A11 11 0 0 1 157.8 87.8 Z" fill="#00843D"></path><path d="M95 190 L182.9 87.9 A10 10 0 0 1 197.1 102.1 Z" fill="#0B0B0B"></path><path d="M150 190 L200.05 130.05 A7 7 0 0 1 209.95 139.95 Z" fill="#C8102E"></path></svg><span lang="en" style="font-size: 25px; font-weight: 800; letter-spacing: -0.5px">UAEAF</span></a>
+<nav aria-label="القائمة الرئيسية"><ul style="list-style: none; margin: 0; padding: 0; display: flex; align-items: center; gap: 30px">
+<li><a class="ni" href="Main.dc.html">عن الاتحاد <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></a></li>
+<li><a class="ni ni-on" href="Main.dc.html" aria-current="true">ألعاب القوى <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></a></li>
+<li><a class="ni" href="Main.dc.html">البطولات والنتائج <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></a></li>
+<li><a class="ni" href="Main.dc.html">الفعاليات والمواسم <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></a></li>
+<li><a class="ni" href="Main.dc.html">المركز الإعلامي <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></a></li>
+<li><a class="ni" href="#">تواصل معنا</a></li>
+</ul></nav>
+</div>
+<div class="util"><button class="ub" type="button" aria-label="بحث في الموقع"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M20 20l-4-4"></path></svg></button><span class="u-sep" aria-hidden="true"></span><a class="ub" href="#" lang="en" aria-label="English — التبديل للإنجليزية">EN</a><span class="u-sep" aria-hidden="true"></span><button class="ub" type="button" role="switch" aria-checked="false" aria-label="الوضع الداكن" style="width: 70px; border-radius: 999px; justify-content: space-between; padding: 0 11px; position: relative"><span aria-hidden="true" style="position: absolute; top: 4px; inset-inline-start: 4px; width: 32px; height: 32px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 2px 8px rgba(11,11,11,.16)"></span><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#C07A06" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="position: relative"><circle cx="12" cy="12" r="4"></circle><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"></path></svg><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8A9096" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="position: relative"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5a8.5 8.5 0 1 0 10.7 10.7z"></path></svg></button></div>
+</header>
+<div aria-hidden="true" style="flex-grow: 1; background: linear-gradient(135deg, #04140B 0%, #00502A 55%, #0B0B0B 100%)"></div>
+<div aria-hidden="true" style="position: absolute; inset: 0; z-index: 30; background: rgba(11,11,11,.55)"></div>
+<div class="sd" role="dialog" aria-modal="true" aria-labelledby="sd-t">
+<h2 id="sd-t" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">البحث في الموقع</h2>
+<div style="display: flex; align-items: center; gap: 12px; padding: 0 20px; border-bottom: 1px solid #ECEDEA">
+<span style="color: #006B31"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M20 20l-4-4"></path></svg></span>
+<input class="sin" type="search" role="combobox" aria-expanded="true" aria-controls="sd-list" aria-autocomplete="list" aria-label="ابحث في الموقع" placeholder="ابحث عن خبر، نادي، رياضي، ألبوم…" value="{{q}}" onChange="{{onQ}}">
+<sc-if value="{{hasQ}}" hint-placeholder-val="{{ true }}"><button type="button" aria-label="مسح البحث" onClick="{{clear}}" style="width: 32px; height: 32px; border-radius: 50%; border: none; background: #F3F4F1; color: #5B6167; display: flex; align-items: center; justify-content: center; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></sc-if>
+<span class="kbd">Esc</span>
+</div>
+<sc-if value="{{showTabs}}" hint-placeholder-val="{{ true }}">
+<div role="tablist" aria-label="نوع النتائج" style="display: flex; gap: 6px; padding: 12px 20px; border-bottom: 1px solid #ECEDEA; overflow-x: auto">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="6"><button class="{{t.cls}}" type="button" role="tab" aria-selected="{{t.sel}}" onClick="{{t.pick}}">{{t.t}}<span class="n">{{t.n}}</span></button></sc-for>
+</div>
+</sc-if>
+<div id="sd-list" role="listbox" aria-label="نتائج البحث" style="height: 470px; overflow-y: auto; padding-bottom: 8px">
+<sc-if value="{{isIdle}}" hint-placeholder-val="{{ false }}">
+<div style="padding: 22px 20px; display: flex; flex-direction: column; gap: 14px">
+<span style="font-size: 12px; font-weight: 700; color: #5B6167">جرّب البحث عن</span>
+<div style="display: flex; flex-wrap: wrap; gap: 8px"><sc-for list="{{sugs}}" as="s" hint-placeholder-count="5"><button class="sug" type="button" onClick="{{s.pick}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M20 20l-4-4"></path></svg>{{s.t}}</button></sc-for></div>
+<span style="font-size: 12px; font-weight: 700; color: #5B6167; margin-top: 12px">صفحات مهمة</span>
+<div style="display: flex; flex-direction: column; margin: 0 -10px">
+<a class="ri" href="#"><span class="th" style="background: #F3F4F1; color: #006B31"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="3.5" width="15" height="17" rx="2.5"></rect><path d="M8 8h8M8 12h8M8 16h5"></path></svg></span><span style="display: flex; flex-direction: column"><span class="rt">البطولات والنتائج</span><span class="rm">روزنامة البطولات والنتائج والأرقام القياسية</span></span></a>
+<a class="ri" href="#"><span class="th" style="background: #F3F4F1; color: #006B31"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l7.5 3v5.5c0 4.5-3.2 7.7-7.5 8.5-4.3-.8-7.5-4-7.5-8.5V6.5z"></path></svg></span><span style="display: flex; flex-direction: column"><span class="rt">ابحث عن أقرب نادي</span><span class="rm">الأندية حسب الإمارة والتخصص والفئة</span></span></a>
+<a class="ri" href="#"><span class="th" style="background: #F3F4F1; color: #006B31"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="3.5" width="15" height="17" rx="2.5"></rect><path d="M8 8h8M8 12h8M8 16h5"></path></svg></span><span style="display: flex; flex-direction: column"><span class="rt">الموسم الحالي 2026–2027</span><span class="rm">الأجندة والفعاليات والمراحل</span></span></a>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{isShort}}" hint-placeholder-val="{{ false }}"><p style="margin: 0; padding: 40px 20px; text-align: center; font-size: 14px; color: #5B6167">اكتب حرفين على الأقل عشان نبدأ البحث.</p></sc-if>
+<sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+<div style="padding: 48px 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center">
+<span style="width: 56px; height: 56px; border-radius: 50%; background: #F3F4F1; color: #8A9096; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M20 20l-4-4"></path></svg></span>
+<strong style="font-size: 16px">مفيش نتائج لـ «{{q}}»</strong>
+<span style="font-size: 13px; color: #5B6167; max-width: 380px; line-height: 1.8">جرّب كلمة أقصر أو إملاء مختلف، أو تصفّح الأقسام من القائمة.</span>
+</div>
+</sc-if>
+<sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
+<div role="group" aria-label="{{g.t}}">
+<div class="gh"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{g.icon}}"></path></svg>{{g.t}}<span class="c">{{g.total}} نتيجة</span></div>
+<sc-for list="{{g.items}}" as="r" hint-placeholder-count="3">
+<a class="{{r.cls}}" href="#" role="option" aria-selected="{{r.sel}}"><span class="th" style="background: {{r.bg}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{r.icon}}"></path></svg></span><span style="display: flex; flex-direction: column; min-width: 0"><span class="rt">{{r.a}}<mark>{{r.m}}</mark>{{r.b}}</span><span class="rm">{{r.meta}}</span></span></a>
+</sc-for>
+<sc-if value="{{g.hasMore}}" hint-placeholder-val="{{ true }}"><button class="more" type="button" onClick="{{g.more}}">عرض المزيد من {{g.t}} ({{g.next}})<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></button></sc-if>
+</div>
+</sc-for>
+</div>
+<div style="display: flex; align-items: center; gap: 16px; padding: 12px 20px; border-top: 1px solid #ECEDEA; background: #FAFAF8; font-size: 12px; color: #5B6167">
+<span style="display: inline-flex; align-items: center; gap: 6px"><span class="kbd">↑</span><span class="kbd">↓</span>للتنقل</span>
+<span style="display: inline-flex; align-items: center; gap: 6px"><span class="kbd">Enter</span>للفتح</span>
+<span style="display: inline-flex; align-items: center; gap: 6px"><span class="kbd">Esc</span>للإغلاق</span>
+<span style="margin-inline-start: auto; display: inline-flex; align-items: center; gap: 6px"><span class="kbd">Ctrl</span><span class="kbd">K</span>يفتح البحث من أي صفحة</span>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    const q = s.q === undefined ? 'بطولة' : s.q;
+    const norm = (x) => x.replace(/[\u064B-\u0652\u0640]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي');
+    const IC = {"pages": "M6.5 3.5h11a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2h-11a2 2 0 0 1-2-2v-13a2 2 0 0 1 2-2zM8 8h8M8 12h8M8 16h5", "news": "M5.5 4.5h13a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2v-11a2 2 0 0 1 2-2zM7 9h10M7 13h10M7 16.5h6", "clubs": "M12 3.5l7.5 3v5.5c0 4.5-3.2 7.7-7.5 8.5-4.3-.8-7.5-4-7.5-8.5V6.5z", "athletes": "M13 3a2 2 0 1 0 0 4a2 2 0 1 0 0-4zM9 21l2-6 3 2v4M11 15l1-5 3 3h3M7 11l3-2", "coaches": "M12 4.5a3.5 3.5 0 1 0 0 7a3.5 3.5 0 1 0 0-7zM5 20c1-4 3.8-6 7-6s6 2 7 6", "albums": "M5.5 4.5h13a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2v-11a2 2 0 0 1 2-2zM20.5 16l-5-5-9 8.5M9 8.2a1.8 1.8 0 1 0 0 3.6a1.8 1.8 0 1 0 0-3.6z", "videos": "M5.5 6h8.5a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8.5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2zM16 10.5l5-3v9l-5-3z"};
+    const T = { pages: ['الصفحات', '#00602C'], news: ['الأخبار', '#0B0B0B'], clubs: ['الأندية', '#00602C'], athletes: ['الرياضيون', '#00602C'], coaches: ['المدربون', '#00602C'], albums: ['ألبومات الصور', '#3A4048'], videos: ['الفيديوهات', '#9E0B24'] };
+    const DATA = {
+      pages: [['البطولات والنتائج', 'صفحة'], ['روزنامة البطولات', 'صفحة'], ['الأرقام القياسية', 'صفحة']],
+      news: [['انطلاق بطولة الإمارات للناشئين في دبي', '12 أكتوبر 2026 · أخبار'], ['منتخبنا يحصد 4 ميداليات في البطولة العربية', '3 أكتوبر 2026 · أخبار'], ['فتح باب التسجيل في بطولة الأندية', '28 سبتمبر 2026 · أخبار'], ['أحمد الكعبي يحطم الرقم الوطني في 400م', '20 سبتمبر 2026 · أخبار'], ['نتائج اليوم الأول من البطولة الخليجية', '14 سبتمبر 2026 · الاتحاد في الإعلام'], ['برنامج بطولة الشارقة الدولية للضاحية', '2 سبتمبر 2026 · أخبار'], ['تكريم أبطال البطولة الآسيوية', '25 أغسطس 2026 · أخبار'], ['الاتحاد يعلن روزنامة بطولات الموسم', '18 أغسطس 2026 · أخبار']],
+      clubs: [['نادي الشارقة الرياضي', 'الشارقة'], ['نادي العين الرياضي', 'أبوظبي'], ['نادي شباب الأهلي', 'دبي'], ['نادي عجمان', 'عجمان'], ['نادي الفجيرة', 'الفجيرة'], ['نادي النصر', 'دبي']],
+      athletes: [['أحمد الكعبي', 'المضمار · 400م'], ['احمد سالم المري', 'الوثب · الوثب الطويل'], ['مريم أحمد النقبي', 'الرمي · دفع الجلة']],
+      coaches: [['أحمد عبدالله', 'مدرب مسافات قصيرة']],
+      albums: [['بطولة الإمارات للناشئين 2026', '48 صورة'], ['البطولة العربية — القاهرة', '120 صورة'], ['بطولة الأندية — الجولة الأولى', '64 صورة']],
+      videos: [['ملخص البطولة العربية', '4:12'], ['نهائي 100م — بطولة الأندية', '1:05'], ['لقاء مع بطلة البطولة الخليجية', '6:30'], ['حفل ختام البطولة الآسيوية', '3:48']]
+    };
+    const nq = norm(q.trim());
+    const tab = s.tab || 'all';
+    const shown = s.shown || {};
+    const groups = [];
+    const counts = {};
+    Object.keys(DATA).forEach((k) => {
+      const hits = nq.length < 2 ? [] : DATA[k].filter((r) => norm(r[0]).indexOf(nq) >= 0);
+      counts[k] = hits.length;
+      if (!hits.length || (tab !== 'all' && tab !== k)) return;
+      const n = Math.min(hits.length, shown[k] || 5);
+      const items = hits.slice(0, n).map((r, i) => {
+        const nt = norm(r[0]); const at = nt.indexOf(nq);
+        return { a: r[0].slice(0, at), m: r[0].slice(at, at + nq.length), b: r[0].slice(at + nq.length), meta: r[1], icon: IC[k], bg: T[k][1], cls: groups.length === 0 && i === 0 ? 'ri ri-on' : 'ri', sel: groups.length === 0 && i === 0 ? 'true' : 'false' };
+      });
+      
+      const rest = hits.length - n;
+      groups.push({ t: T[k][0], icon: IC[k], total: String(hits.length), items, hasMore: rest > 0, next: String(Math.min(5, rest)), more: () => this.setState({ shown: Object.assign({}, shown, { [k]: n + 5 }) }) });
+    });
+    const total = Object.keys(counts).reduce((a, k) => a + counts[k], 0);
+    const tabs = [['all', 'الكل', total]].concat(Object.keys(DATA).filter((k) => counts[k]).map((k) => [k, T[k][0], counts[k]])).map((x) => ({ t: x[1], n: String(x[2]), cls: tab === x[0] ? 'tf tf-on' : 'tf', sel: tab === x[0] ? 'true' : 'false', pick: () => this.setState({ tab: x[0] }) }));
+    const sugs = ['بطولة', 'نادي', 'أحمد', 'ماراثون', 'الرقم القياسي'].map((t) => ({ t, pick: () => this.setState({ q: t, tab: 'all', shown: {} }) }));
+    return {
+      q, onQ: (e) => this.setState({ q: e.target.value, tab: 'all', shown: {} }), clear: () => this.setState({ q: '', tab: 'all', shown: {} }),
+      hasQ: q.length > 0, isIdle: q.trim().length === 0, isShort: nq.length === 1, isEmpty: nq.length >= 2 && total === 0,
+      showTabs: total > 0, tabs, groups, sugs
+    };
+  }
+}
+</script>
+</body>
+</html>
