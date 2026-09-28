@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { stripComments } from "@uaeaf/design-tokens/testing";
+import { sourceFiles } from "./source-files";
 
 /**
  * Guards for four defects the owner found by looking at the running site on
@@ -21,8 +22,10 @@ const WEB = join(__dirname, "..", "..", "..");
 const read = (relative: string) => stripComments(readFileSync(join(WEB, relative), "utf8"));
 
 const FOOTER = "src/components/layout/site-footer.tsx";
-const HEADER = "src/components/layout/site-header.tsx";
-const TOGGLE = "src/components/layout/language-toggle.tsx";
+// `site-header.tsx` is a thin pass-through now; the header's actual markup —
+// what these guards need to read — lives in `header-shell.tsx`.
+const HEADER = "src/components/layout/header-shell.tsx";
+const TOGGLE = "src/components/layout/language-switch.tsx";
 const LOGO = "src/components/brand/uaeaf-logo.tsx";
 const GLOBALS = "src/app/[locale]/globals.css";
 
@@ -183,7 +186,18 @@ describe("primary navigation row (Chapter 5 §5.2)", () => {
     // A band with both, or with neither, is the defect the previous two
     // thresholds each produced at one end.
     expect(read(NAV)).toMatch(/xl:static/);
-    expect(read("src/components/layout/site-header.tsx")).toMatch(/xl:hidden/);
+    expect(read(HEADER)).toMatch(/xl:hidden/);
+  });
+
+  it("يرسم الخط النشط من تدرج الهوية لا من لون مفرد", () => {
+    const source = read("src/components/layout/mega/tricolor-indicator.tsx");
+    // The tricolour gradient resolves to an invalid value unless it is
+    // redeclared on the element that paints it (surfaces.css §"[data-surface]").
+    expect(source).toMatch(/data-surface/);
+    expect(source).toMatch(/var\(--brand-tricolor\)/);
+    expect(source).toMatch(/var\(--border-width-ring\)/);
+    expect(source).not.toMatch(/--color-brand-primary/);
+    expect(source).not.toMatch(/#[0-9a-fA-F]{3,8}/);
   });
 });
 
@@ -203,5 +217,63 @@ describe("language toggle", () => {
     // The `lang` attribute is what stops a screen reader announcing "العربية"
     // with an English voice, and what lets the Arabic face be used for it.
     expect(source).toMatch(/lang=\{/);
+  });
+});
+
+describe("reduced motion targets classes a component actually carries (Chapter 5 §5.8)", () => {
+  const MOTION = "src/styles/motion.css";
+
+  /**
+   * The block itself, isolated by its own `@media` line so a match inside it
+   * cannot be confused with an unrelated rule elsewhere in the file.
+   */
+  const reducedMotionBlock = () => {
+    const source = read(MOTION);
+    const start = source.indexOf("@media (prefers-reduced-motion: reduce)");
+    expect(start, "no reduced-motion block in motion.css").toBeGreaterThan(-1);
+    const end = source.indexOf("\n}", start);
+    return source.slice(start, end);
+  };
+
+  /**
+   * True once some component's JSX carries `className` a plain `.name`
+   * selector can match.
+   *
+   * `xl:nav-float` compiles to the escaped selector `.xl\:nav-float`, which
+   * exists only inside a `min-width` media query — a bare `.nav-float` rule
+   * can never match it at any breakpoint. The lookbehind excludes exactly
+   * that case: a name preceded by `:` (a variant prefix) or another word
+   * character (a longer class this name is only a substring of) does not
+   * count as the class being carried bare.
+   */
+  const carriedBare = (className: string) => {
+    const pattern = new RegExp(`(?<![:\\w-])${className}(?![\\w-])`);
+    return sourceFiles()
+      .filter((path) => path.endsWith(".tsx"))
+      .some((path) => pattern.test(stripComments(readFileSync(path, "utf-8"))));
+  };
+
+  it("carries no selector for a class no component applies bare", () => {
+    const block = reducedMotionBlock();
+    const classNames = [...new Set([...block.matchAll(/\.([a-zA-Z][\w-]*)/g)].map((m) => m[1]))];
+    // The assertion that keeps this guard honest: it must find classes to
+    // check, or "no orphans" would be true because nothing was examined.
+    expect(classNames.length).toBeGreaterThan(0);
+    const orphaned = classNames.filter((name) => !carriedBare(name));
+    expect(orphaned).toEqual([]);
+  });
+
+  it("still covers the floating panel, through the class it actually renders", () => {
+    const block = reducedMotionBlock();
+    // `.nav-panel` guarded a second, nested floating level that no longer
+    // exists: the tree has one disclosure level now, and its nested group is
+    // a column inside `MegaPanel`, not a floating panel of its own — so
+    // `.mega-panel` is the only floating-panel class left to cover.
+    expect(block).toMatch(/\.mega-panel\b/);
+    expect(block).not.toMatch(/\.nav-panel\b/);
+    // `nav-float` only ever appears as `xl:nav-float` in component source, so
+    // a bare `.nav-float` rule here would be dead on arrival — the defect
+    // this guard exists to catch.
+    expect(block).not.toMatch(/(?<![:.\w-])nav-float\b/);
   });
 });

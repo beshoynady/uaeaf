@@ -21,6 +21,12 @@
 An account is sensitive when its **resolved** set holds any of `ManageRoles`,
 `AssignRoles`, `ViewSensitive`, `Export`, `PermanentDelete`.
 
+**Amended 2026-09-28 (owner decision): `ViewAuditLog` joins the list**, making six.
+The audit log carries the security events and the identities behind them, so reading
+it is the same class of access as extracting data or destroying it. `account-class.ts`
+holds the list and `account-class.spec.ts` names all six as literals, so narrowing the
+definition is a red test rather than an edit nobody notices.
+
 Computed from the live resolution, so it follows a role edit in the same request
 rather than at the next login. A stored flag would let an account keep a 30-day
 trusted device for the rest of that device's life after being handed

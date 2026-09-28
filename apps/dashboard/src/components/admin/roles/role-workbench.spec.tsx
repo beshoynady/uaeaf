@@ -13,9 +13,9 @@ afterEach(() => {
 });
 
 const PERMISSIONS: PermissionResponse[] = [
-  { _id: "p1", name: { en: "Read users", ar: "" }, resourceType: "users", action: "Read" },
-  { _id: "p2", name: { en: "Create users", ar: "" }, resourceType: "users", action: "Create" },
-  { _id: "p3", name: { en: "Archive albums", ar: "" }, resourceType: "albums", action: "Archive" },
+  { id: "p1", name: { en: "Read users", ar: "" }, resourceType: "users", action: "Read" },
+  { id: "p2", name: { en: "Create users", ar: "" }, resourceType: "users", action: "Create" },
+  { id: "p3", name: { en: "Archive albums", ar: "" }, resourceType: "albums", action: "Archive" },
 ];
 
 const ROLES: RoleResponse[] = [

@@ -42,7 +42,8 @@ export class PermissionsGuard implements CanActivate {
   ) {}
 
   /** @throws ForbiddenException when the required (resourceType, action)
-   *  pair is not present in the caller's resolved permission set. */
+   *  pair is not present in the caller's resolved permission set, or is held
+   *  only with a scope narrower than `all`. */
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const required = this.reflector.getAllAndOverride<RequiredPermission>(REQUIRED_PERMISSION_KEY, [
       context.getHandler(),
@@ -54,16 +55,26 @@ export class PermissionsGuard implements CanActivate {
 
     const request: DenialRequest = context.switchToHttp().getRequest();
     const user = request.user;
-    const hasPermission = user?.permissions.some(
+    const grants = (user?.permissions ?? []).filter(
       (permission) =>
         permission.resourceType === required.resourceType && permission.action === required.action,
     );
 
-    if (!hasPermission) {
+    if (grants.length === 0) {
       await this.recordDenial(request, user, required);
       throw new ForbiddenException(
         `Missing permission: ${required.action} on ${required.resourceType}.`,
       );
+    }
+
+    // No service checks row ownership yet, so a narrower scope would act as `all`
+    // and widen authority instead of narrowing it. See ADR-0113.
+    if (!grants.some((permission) => (permission.scope ?? 'all') === 'all')) {
+      await this.recordDenial(request, user, required);
+      throw new ForbiddenException({
+        code: 'scopedGrantUnsupported',
+        message: 'A grant limited to a scope is not supported until the row ownership check is built.',
+      });
     }
 
     return true;

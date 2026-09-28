@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import type { PermissionResponse, RoleResponse, UserResponse } from "@/lib/api/types";
+import type { RoleResponse, UserResponse } from "@/lib/api/types";
 import { summariseDirectory, roleUsage } from "./directory-stats";
 
-const PERMISSIONS: PermissionResponse[] = [
-  { _id: "p-read", name: { en: "Read users", ar: "" }, resourceType: "users", action: "Read" },
-  { _id: "p-create", name: { en: "Create users", ar: "" }, resourceType: "users", action: "Create" },
-  { _id: "p-archive", name: { en: "Archive roles", ar: "" }, resourceType: "roles", action: "Archive" },
+const PERMISSIONS = [
+  { id: "p-read", name: { en: "Read users", ar: "" }, resourceType: "users", action: "Read", scope: null, superAdminOnly: false },
+  { id: "p-create", name: { en: "Create users", ar: "" }, resourceType: "users", action: "Create", scope: null, superAdminOnly: false },
+  { id: "p-archive", name: { en: "Archive roles", ar: "" }, resourceType: "roles", action: "Archive", scope: null, superAdminOnly: false },
 ];
 
 const ROLES: RoleResponse[] = [
@@ -32,7 +32,7 @@ const ROLES: RoleResponse[] = [
   },
 ];
 
-function user(id: string, over: Partial<UserResponse> = {}): UserResponse {
+const user = (id: string, over: Partial<UserResponse> = {}): UserResponse => {
   return {
     id,
     name: { en: id, ar: id },
@@ -46,7 +46,7 @@ function user(id: string, over: Partial<UserResponse> = {}): UserResponse {
     preferredTheme: null,
     ...over,
   };
-}
+};
 
 const USERS: UserResponse[] = [
   user("a", { roleIds: ["r-admin"], lastLogin: "2026-09-07T10:00:00.000Z" }),

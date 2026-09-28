@@ -74,11 +74,25 @@
     "skipLink": "Skip to main content",
     "mainNav": "Main navigation",
     "homeAriaLabel": "Home — UAE Athletics Federation",
-    "switchToDarkMode": "Switch to dark mode",
-    "switchToLightMode": "Switch to light mode",
+    "darkMode": "Dark mode",
     "search": "Search",
-    "switchLanguage": "Switch to {language}",
+    "searchShortcut": "Search — Ctrl+K",
+    "switchLanguageFull": "{language} — switch to {language}",
     "menu": "Navigation menu"
+  },
+  "HeaderCards": {
+    "presidentEyebrow": "About the Federation",
+    "presidentFallbackTitle": "President's Message",
+    "presidentCta": "Read the message",
+    "championshipEyebrow": "Championships",
+    "championshipFallbackTitle": "Championship Calendar",
+    "championshipCta": "View championships",
+    "eventEyebrow": "Events",
+    "eventFallbackTitle": "Upcoming Events",
+    "eventCta": "View the calendar",
+    "clubFinderEyebrow": "Athletics Community",
+    "clubFinderFallbackTitle": "Find a Club",
+    "clubFinderCta": "Browse clubs"
   },
   "Footer": {
     "brandName": "UAE Athletics Federation",

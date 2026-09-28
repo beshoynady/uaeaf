@@ -44,7 +44,7 @@ describe('UsersController', () => {
           provide: UsersService,
           useValue: {
             findById: jest.fn(),
-            toResponse: jest.fn(() => profile),
+            toResponseFor: jest.fn(async () => profile),
             create: jest.fn(),
             findAll: jest.fn(),
             assignRoles: jest.fn(),

@@ -49,12 +49,22 @@ const bodyFontClass: Record<AppLocale, string> = {
 // Chapter 7 §7.4: theme resolution MUST be CSS-only (data-theme attribute), but the initial
 // value still has to be picked before first paint to avoid a flash of the wrong theme — this
 // inline script is the one JS exception, it only ever sets the attribute, never computes colors.
+//
+// `high-contrast.css` already defines the whole theme under
+// `[data-theme="high-contrast"]` — this script's job is only to write that
+// attribute when the device's own contrast setting is on, and to re-apply it
+// live if that setting changes (ADR-0121 D9). No token is redeclared here.
 const themeBootstrapScript = `
 (function () {
   try {
-    var stored = localStorage.getItem('uaeaf-theme');
-    var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    document.documentElement.setAttribute('data-theme', theme);
+    var hc = window.matchMedia('(prefers-contrast: more)');
+    var apply = function () {
+      var stored = localStorage.getItem('uaeaf-theme');
+      var chosen = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', hc.matches ? 'high-contrast' : chosen);
+    };
+    apply();
+    hc.addEventListener('change', apply);
   } catch (e) {}
 })();
 `;

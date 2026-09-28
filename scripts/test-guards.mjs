@@ -50,6 +50,9 @@ const API_CORE_GUARD_NAMES = [
   // holding (ADR-0104/ADR-0105). Reads CAPABILITY_MAP/PERMISSION_CATALOGUE
   // and exercises RolesService.create with mocked repositories; no database.
   'super-admin-only',
+  // The six role templates (ADR-0113): every pair in the catalogue, none
+  // reserved or PermanentDelete, scopes only where offered; no database.
+  'role-template-matrix',
 ];
 
 /** Every API guard, core plus the rest (page-activation, partial-update,

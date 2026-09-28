@@ -43,6 +43,7 @@ describe('UsersService', () => {
             assertAssignable: jest.fn(),
             resolvePermissionsForRoles: jest.fn(),
             isSystemRole: jest.fn(),
+            findAll: jest.fn(async () => []),
           },
         },
         { provide: AuthSessionsService, useValue: { revokeAllForUser: jest.fn() } },

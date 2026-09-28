@@ -153,6 +153,15 @@ export const CARD_INTERACTIVE_LG = `${LIFT} rounded-[var(--radius-lg)] ${RAISED}
 export const BADGE = "inline-flex items-center rounded-full border px-3 py-1 text-body-sm font-semibold";
 
 /**
+ * `BADGE`'s tone for a status nothing else classifies: no colour of its own,
+ * a governed text pair on the recessed ground instead (ADR-0059 D6). Shared
+ * so a page's topic chip and the header's "Soon" chip read the same
+ * "unclassified" tone rather than each defining it again.
+ */
+export const BADGE_NEUTRAL =
+  "border-transparent bg-[color:var(--color-surface-sunken)] text-[color:var(--color-text-secondary)]";
+
+/**
  * The icon inside a card: a considered colour at rest, an inversion on hover.
  *
  * `--color-action-default` is the Action role (ADR-0065 D2, ADR-0072 D13):

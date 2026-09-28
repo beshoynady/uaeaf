@@ -808,7 +808,7 @@ git commit -m "feat(web): header v2 navigation tree, routes and messages"
 **Interfaces:**
 - Produces: `<TricolorIndicator active={boolean} />` — عنصر `aria-hidden` بارتفاع `--border-width-ring` (3px) وخلفية `--brand-tricolor`.
 
-- [ ] **Step 1: اكتب الاختبار الفاشل**
+- [x] **Step 1: اكتب الاختبار الفاشل**
 
 في `direction-and-logo-contract.spec.ts`، داخل `describe("primary navigation row (Chapter 5 §5.2)")`:
 
@@ -825,12 +825,12 @@ it("يرسم الخط النشط من تدرج الهوية لا من لون م�
 });
 ```
 
-- [ ] **Step 2: شغّل وتأكد من الفشل**
+- [x] **Step 2: شغّل وتأكد من الفشل**
 
 Run: `cd apps/web && npx vitest run src/lib/design-system/direction-and-logo-contract.spec.ts -t تدرج`
 Expected: FAIL — الملف غير موجود.
 
-- [ ] **Step 3: اكتب المكوّن**
+- [x] **Step 3: اكتب المكوّن**
 
 ```tsx
 /**
@@ -851,7 +851,7 @@ export const TricolorIndicator = ({ active }: { active: boolean }) => (
 );
 ```
 
-- [ ] **Step 4: بدّل حركة `.nav-indicator` من الإزاحة إلى `scaleX`**
+- [x] **Step 4: بدّل حركة `.nav-indicator` من الإزاحة إلى `scaleX`**
 
 في `motion.css`، استبدل القاعدة عند `:297-300`:
 
@@ -868,7 +868,7 @@ export const TricolorIndicator = ({ active }: { active: boolean }) => (
 ```
 > `transform-origin: inline-start` منطقي لا فيزيائي: الخط يفتح من بداية البند في الاتجاهين. هذا الاستثناء الوحيد من ADR-0059 §D7.1 لأن الخط يتبع النص لا الهوية.
 
-- [ ] **Step 5: شغّل**
+- [x] **Step 5: شغّل**
 
 Run: `cd apps/web && npx vitest run src/lib/design-system/direction-and-logo-contract.spec.ts && npx tsc --noEmit`
 Expected: PASS.
@@ -888,7 +888,7 @@ Expected: PASS.
 **Interfaces:**
 - Produces: `<HeaderToolsCapsule layout="row" | "drawer" onOpenSearch={() => void} />`. `layout` يبدّل الأحجام فقط، لا البنية ولا الترتيب.
 
-- [ ] **Step 1: اكتب الاختبار الفاشل**
+- [x] **Step 1: اكتب الاختبار الفاشل**
 
 ```tsx
 // apps/web/src/components/layout/header-tools-capsule.spec.tsx
@@ -929,12 +929,12 @@ describe("كبسولة الأدوات", () => {
 });
 ```
 
-- [ ] **Step 2: شغّل وتأكد من الفشل**
+- [x] **Step 2: شغّل وتأكد من الفشل**
 
 Run: `cd apps/web && npx vitest run src/components/layout/header-tools-capsule.spec.tsx`
 Expected: FAIL — الملف غير موجود.
 
-- [ ] **Step 3: اكتب `ThemeSwitch`**
+- [x] **Step 3: اكتب `ThemeSwitch`**
 
 > **(تعديل ما قبل التنفيذ)** النسخة السابقة كتبت `const [theme, setTheme] = useTheme();` — **لا وجود لهذا الـhook.** الشكل الفعلي في `theme-toggle.tsx:63` هو `useSyncExternalStore(subscribe, readTheme, serverTheme)` بـ`MutationObserver` على `data-theme`. `ThemeSwitch` **ينقل `subscribe` و`readTheme` و`serverTheme` والكاتب كما هي**، والتغيير في الغلاف وحده. لا hook جديد يُستخرج.
 
@@ -974,7 +974,7 @@ export const ThemeSwitch = () => {
 };
 ```
 
-- [ ] **Step 4: التباين العالي يتبع الجهاز — قبل أول رسم**
+- [x] **Step 4: التباين العالي يتبع الجهاز — قبل أول رسم**
 
 > **مُعدَّلة بقرار المالك 2026-09-28.** النسخة السابقة ضبطت `color-scheme` وحده وأجّلت الباقي. القرار: ثيم `high-contrast` يُشغَّل فعليًا من إعداد الجهاز، **بلا تكرار أي توكن تحت media query** — الثيم موجود كاملًا في `high-contrast.css` تحت `[data-theme="high-contrast"]`، فالمطلوب كتابة السمة لا إعادة تعريف القيم.
 
@@ -999,7 +999,7 @@ const themeBootstrapScript = `
 `;
 ```
 
-- [ ] **Step 4b: المفتاح يعرض حالته المحفوظة تحت التباين العالي**
+- [x] **Step 4b: المفتاح يعرض حالته المحفوظة تحت التباين العالي**
 
 `readTheme()` في `ThemeSwitch` يقرأ السمة، وتحت التباين العالي تكون `high-contrast` — فيقرؤها المفتاح `light` ويكذب على قارئ حفظ `dark`. المفتاح يقرأ **التفضيل المحفوظ** حين لا تكون السمة أحد الوضعين:
 
@@ -1019,7 +1019,7 @@ const readTheme = (): Theme => {
 
 الكتابة لا تتغيّر: المفتاح يكتب `localStorage` و`data-theme` كما اليوم، والسكربت يعيد فرض `high-contrast` عند تغيّر الإعداد. بينما التباين العالي شغّال، كتابة المفتاح تُخزَّن ولا تُرى — وهذا هو المقصود بأسبقيته.
 
-- [ ] **Step 4c: اختبار الأسبقية**
+- [x] **Step 4c: اختبار الأسبقية**
 
 ```tsx
 it("المفتاح يعرض المحفوظ لا المطبَّق تحت التباين العالي", () => {
@@ -1032,7 +1032,7 @@ it("المفتاح يعرض المحفوظ لا المطبَّق تحت التب
 
 > `forced-colors: active` يتكفّل به المتصفح بلا عمل من جانبنا، ويُتحقَّق منه في F5. **ولا توكن واحد يُكرَّر تحت media query** — `high-contrast.css` هو المصدر الوحيد لقيم هذا الثيم.
 
-- [ ] **Step 5: اكتب `LanguageSwitch`**
+- [x] **Step 5: اكتب `LanguageSwitch`**
 
 ```tsx
 /**
@@ -1062,7 +1062,7 @@ export const LanguageSwitch = () => {
 };
 ```
 
-- [ ] **Step 6: اكتب `SearchTrigger` و`HeaderToolsCapsule`**
+- [x] **Step 6: اكتب `SearchTrigger` و`HeaderToolsCapsule`**
 
 ```tsx
 export const SearchTrigger = ({ onOpen }: { onOpen: () => void }) => {
@@ -1109,13 +1109,13 @@ export const HeaderToolsCapsule = ({
 );
 ```
 
-- [ ] **Step 7: أضف مفاتيح `Header` الجديدة في اللغتين**
+- [x] **Step 7: أضف مفاتيح `Header` الجديدة في اللغتين**
 
 `en`: `"darkMode": "Dark mode"`, `"searchShortcut": "Search — Ctrl+K"`, `"switchLanguageFull": "{language} — switch to {language}"`, `"language": { "ar": "العربية", "en": "English" }`.
 `ar`: `"darkMode": "الوضع الداكن"`, `"searchShortcut": "البحث — Ctrl+K"`, `"switchLanguageFull": "{language} — التبديل إلى {language}"`, ونفس كائن `language`.
 احذف `switchToDarkMode` و`switchToLightMode` و`switchLanguage` — يتيمة الآن، واختبار parity في A5 يكشفها.
 
-- [ ] **Step 8: احذف الملفين القديمين واربط الجديد**
+- [x] **Step 8: احذف الملفين القديمين واربط الجديد**
 
 ```bash
 rm apps/web/src/components/layout/theme-toggle.tsx
@@ -1123,7 +1123,7 @@ rm apps/web/src/components/layout/language-toggle.tsx
 ```
 في `site-header.tsx`، استبدل الكتلة `:122-145` بـ`<HeaderToolsCapsule layout="row" onOpenSearch={openSearch} />` ثم زر الدرج. `onOpenSearch` يمرَّر من `HeaderShell` في B6.
 
-- [ ] **Step 9: شغّل**
+- [x] **Step 9: شغّل**
 
 Run: `cd apps/web && npx vitest run src/components/layout src/lib/i18n && npx tsc --noEmit`
 Expected: PASS. `direction-and-logo-contract.spec.ts` يشير إلى `TOGGLE` — حدّث المسار إلى `language-switch.tsx` فيه، **ولا تحذف الحارس**.
@@ -1141,7 +1141,7 @@ Expected: PASS. `direction-and-logo-contract.spec.ts` يشير إلى `TOGGLE` �
 - Consumes: `NavItem` من `@/lib/navigation`.
 - Produces: `<MegaLink item={NavItem} currentPath={string} />` و`<MegaColumn column={NavItem} currentPath={string} />`. يستعملهما الصف والدرج معًا.
 
-- [ ] **Step 1: اكتب الاختبار الفاشل**
+- [x] **Step 1: اكتب الاختبار الفاشل**
 
 ```tsx
 import { describe, expect, it } from "vitest";
@@ -1175,12 +1175,12 @@ describe("عمود اللوحة", () => {
 });
 ```
 
-- [ ] **Step 2: شغّل وتأكد من الفشل**
+- [x] **Step 2: شغّل وتأكد من الفشل**
 
 Run: `cd apps/web && npx vitest run src/components/layout/mega/mega-column.spec.tsx`
 Expected: FAIL — الملف غير موجود.
 
-- [ ] **Step 3: اكتب `MegaLink`**
+- [x] **Step 3: اكتب `MegaLink`**
 
 ```tsx
 /**
@@ -1222,7 +1222,7 @@ export const MegaLink = ({ item, currentPath }: { item: NavItem; currentPath: st
 > الشارة **داخل** `<Link>` لا بجانبه، فتدخل اسمه المنطوق: «National Teams & Talent, Soon». خارجَه تصير نصًّا يتيمًا لا يعرف قارئ الشاشة إلى أي رابط ينتمي.
 > `NavIcon` خريطة `key → <svg>` في `mega/nav-icon.tsx`، بمربع `--space-10` (40px) وأيقونة `--icon-size-sm` (20px). التصميم يُظهر 38px ولا توكن له؛ 40px هو الأقرب و`--space-10` يحمله.
 
-- [ ] **Step 4: اكتب `MegaColumn`**
+- [x] **Step 4: اكتب `MegaColumn`**
 
 ```tsx
 /**
@@ -1250,7 +1250,7 @@ export const MegaColumn = ({ column, currentPath }: { column: NavItem; currentPa
 };
 ```
 
-- [ ] **Step 5: شغّل**
+- [x] **Step 5: شغّل**
 
 Run: `cd apps/web && npx vitest run src/components/layout/mega && npx tsc --noEmit`
 Expected: PASS.
@@ -1268,7 +1268,7 @@ Expected: PASS.
 - Consumes: `MegaColumn` من B3.
 - Produces: `<MegaPanel id item open columns feature currentPath />` — `region` باسم البند، بعرض الحاوية، وشبكة `columns + feature`.
 
-- [ ] **Step 1: اكتب الاختبار الفاشل**
+- [x] **Step 1: اكتب الاختبار الفاشل**
 
 ```tsx
 describe("لوحة mega", () => {
@@ -1286,12 +1286,12 @@ describe("لوحة mega", () => {
 });
 ```
 
-- [ ] **Step 2: شغّل وتأكد من الفشل**
+- [x] **Step 2: شغّل وتأكد من الفشل**
 
 Run: `cd apps/web && npx vitest run src/components/layout/mega/mega-panel.spec.tsx`
 Expected: FAIL — الملف غير موجود.
 
-- [ ] **Step 3: اكتب المكوّن**
+- [x] **Step 3: اكتب المكوّن**
 
 ```tsx
 /**
@@ -1324,7 +1324,7 @@ export const MegaPanel = ({ id, item, open, columns, feature, currentPath }: Meg
 };
 ```
 
-- [ ] **Step 4: اكتب CSS اللوحة**
+- [x] **Step 4: اكتب CSS اللوحة**
 
 في `motion.css`، بجوار `nav-float`:
 
@@ -1350,7 +1350,7 @@ export const MegaPanel = ({ id, item, open, columns, feature, currentPath }: Meg
 ```
 > عرض البطاقة كسر `1.2fr` لا 380px: القيمة الثابتة لا توكن لها، والكسر يعطي النسبة نفسها عند 1440 ويضيق بأمان عند 1280.
 
-- [ ] **Step 5: أضف طبقة التعتيم**
+- [x] **Step 5: أضف طبقة التعتيم**
 
 في `header-shell.tsx` (تُنشأ في B6)، بجوار الـscrim الموجود للدرج:
 
@@ -1367,7 +1367,7 @@ export const MegaPanel = ({ id, item, open, columns, feature, currentPath }: Meg
 />
 ```
 
-- [ ] **Step 6: شغّل**
+- [x] **Step 6: شغّل**
 
 Run: `cd apps/web && npx vitest run src/components/layout && npx tsc --noEmit`
 Expected: PASS.
@@ -1384,7 +1384,7 @@ Expected: PASS.
 **Interfaces:**
 - Produces: `<FeatureCard eyebrow title meta href cta tone />`. `tone` من `"green" | "red" | "blue" | "ink"` — يُختار لكل لوحة ويُثبَّت، لا يتغيّر بالمحتوى.
 
-- [ ] **Step 1: اكتب الاختبار الفاشل**
+- [x] **Step 1: اكتب الاختبار الفاشل**
 
 ```tsx
 describe("البطاقة المميزة", () => {
@@ -1400,12 +1400,12 @@ describe("البطاقة المميزة", () => {
 });
 ```
 
-- [ ] **Step 2: شغّل وتأكد من الفشل**
+- [x] **Step 2: شغّل وتأكد من الفشل**
 
 Run: `cd apps/web && npx vitest run src/components/layout/cards/feature-card.spec.tsx`
 Expected: FAIL — الملف غير موجود.
 
-- [ ] **Step 3: اكتب البطاقة**
+- [x] **Step 3: اكتب البطاقة**
 
 ```tsx
 /**
@@ -1436,7 +1436,7 @@ export const FeatureCard = ({ eyebrow, title, meta, href, cta, tone, children }:
 ```
 > `data-surface={tone}` هو ما يجعل التدرّج والحبر يُحلّان على البطاقة (سابقة `surfaces.css`)، وهو أيضًا ما يمنع hex. الألوان الأربع في صور التصميم (أخضر لعن الاتحاد، أزرق داكن لألعاب القوى، أحمر للبطولات، أزرق للفعاليات، حبر للإعلام) تُترجم إلى `data-surface` القائم؛ أي لون لا يقابله register مسجَّل يُعلَّم `DESIGN DECISION REQUIRED` ولا يُخترع.
 
-- [ ] **Step 4: اكتب بطاقات الـfallback الخمس**
+- [x] **Step 4: اكتب بطاقات الـfallback الخمس**
 
 كل واحدة تُرسم بلا أي بيانات، فتصلح كحالة أولى ثم كـfallback في D:
 
@@ -1456,7 +1456,7 @@ export const PresidentFallbackCard = () => {
 ```
 بنفس الشكل: `ChampionshipFallbackCard` ← `/championships`، `EventFallbackCard` ← `/events?view=calendar`، `ClubFinderCard` ← `/athletics#clubs`، وبطاقة الإعلام لا fallback لها (تختفي).
 
-- [ ] **Step 5: شغّل**
+- [x] **Step 5: شغّل**
 
 Run: `cd apps/web && npx vitest run src/components/layout/cards && npx tsc --noEmit`
 Expected: PASS.
@@ -1475,7 +1475,7 @@ Expected: PASS.
 - Consumes: `MegaPanel` و`HeaderToolsCapsule` والبطاقات.
 - Produces: `<HeaderShell features={HeaderFeatures | null} activePath?={string} isRow?={boolean} />` — client، يملك `openKey` و`drawerOpen` و`searchOpen`. `isRow` اختياري ومثبَّت من الاختبارات فقط؛ القيمة الحيّة من `useRowLayout()` كما اليوم، تمامًا كما يفعل `activePath` مع `usePathname()`.
 
-- [ ] **Step 1: اكتب الاختبار الفاشل**
+- [x] **Step 1: اكتب الاختبار الفاشل**
 
 ```tsx
 it("لوحة واحدة مفتوحة في أي وقت", async () => {
@@ -1501,12 +1501,12 @@ it("Escape يغلق ويعيد البؤرة للزر", async () => {
 });
 ```
 
-- [ ] **Step 2: شغّل وتأكد من الفشل**
+- [x] **Step 2: شغّل وتأكد من الفشل**
 
 Run: `cd apps/web && npx vitest run src/components/layout/site-header.test.tsx`
 Expected: FAIL — `HeaderShell` غير موجود.
 
-- [ ] **Step 3: بسّط حالة اللوحات إلى مفتاح واحد**
+- [x] **Step 3: بسّط حالة اللوحات إلى مفتاح واحد**
 
 ```tsx
 /** The open panel's key, or null. One panel at a time is what keeps Escape
@@ -1522,7 +1522,7 @@ const closePanel = useCallback(() => setOpenKey(null), []);
 ```
 احذف `openChain` و`toggle(key, level)` و`open(key, level)`، و`level` من `onKeyDown` و`onPanelKeyDown` و`renderLeaf` و`renderGroup`. المستوى الثاني لم يعد لوحة عائمة — صار عمودًا داخل `MegaPanel`.
 
-- [ ] **Step 4: أضف الأسهم الأفقية بين أزرار الصف**
+- [x] **Step 4: أضف الأسهم الأفقية بين أزرار الصف**
 
 ```tsx
 // Left and right follow the reading direction: in RTL the visual "next" button
@@ -1538,7 +1538,7 @@ if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
 }
 ```
 
-- [ ] **Step 5: طبّق الحواف والمسافات من التوكنات**
+- [x] **Step 5: طبّق الحواف والمسافات من التوكنات**
 
 في `site-header.tsx`، استبدل `px-4 sm:px-6`:
 
@@ -1553,12 +1553,12 @@ className={`site-header sticky top-0 px-4 sm:px-6 xl:px-[var(--space-10)] 2xl:px
 ```
 > 40/24 من 1280، و64/32 من 1536. **القياس في F4 هو ما يحسم** ما إذا كان الإنجليزي يتسع لـ64/32 عند 1280؛ إن اتسع، توحَّد القيمتان على توكنات الـgrid ويُحذف الـbreakpoint الثاني. النتيجة تُسجَّل في ADR-0121 بمنهج ADR-0062 D5: المطلوب مقابل المتاح لكل لغة.
 
-- [ ] **Step 6: شغّل**
+- [x] **Step 6: شغّل**
 
 Run: `cd apps/web && npx vitest run src/components/layout && npx tsc --noEmit`
 Expected: PASS.
 
-- [ ] **Step 7: الـcommit — سلّم هذا النص للمالك**
+- [x] **Step 7: الـcommit — سلّم هذا النص للمالك**
 
 ```
 git add apps/web/src/components/layout apps/web/src/components/search apps/web/src/styles/motion.css apps/web/src/app/[locale]/globals.css apps/web/messages apps/web/src/lib/design-system

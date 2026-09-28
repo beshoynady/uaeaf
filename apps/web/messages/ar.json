@@ -74,11 +74,25 @@
     "skipLink": "تخطَّ إلى المحتوى الرئيسي",
     "mainNav": "التنقل الرئيسي",
     "homeAriaLabel": "الصفحة الرئيسية — اتحاد الإمارات لألعاب القوى",
-    "switchToDarkMode": "التبديل إلى المظهر الداكن",
-    "switchToLightMode": "التبديل إلى المظهر الفاتح",
+    "darkMode": "الوضع الداكن",
     "search": "بحث",
-    "switchLanguage": "التبديل إلى {language}",
+    "searchShortcut": "البحث — Ctrl+K",
+    "switchLanguageFull": "{language} — التبديل إلى {language}",
     "menu": "قائمة التنقّل"
+  },
+  "HeaderCards": {
+    "presidentEyebrow": "عن الاتحاد",
+    "presidentFallbackTitle": "كلمة الرئيس",
+    "presidentCta": "قراءة الكلمة",
+    "championshipEyebrow": "البطولات",
+    "championshipFallbackTitle": "روزنامة البطولات",
+    "championshipCta": "عرض البطولات",
+    "eventEyebrow": "الفعاليات",
+    "eventFallbackTitle": "الفعاليات القادمة",
+    "eventCta": "عرض الروزنامة",
+    "clubFinderEyebrow": "مجتمع ألعاب القوى",
+    "clubFinderFallbackTitle": "البحث عن نادٍ",
+    "clubFinderCta": "تصفّح الأندية"
   },
   "Footer": {
     "brandName": "اتحاد الإمارات لألعاب القوى",

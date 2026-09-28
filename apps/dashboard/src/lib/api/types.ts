@@ -9,11 +9,10 @@ import type { PermissionGrant } from "../auth/permissions";
  * small, and covered by the API's own DTO tests. When the generator lands,
  * this file is the thing it replaces — it is written to be deleted.
  *
- * `users` comes from `UserResponseDto`, an explicit allowlist. `roles` and
- * `permissions` are still returned as raw Mongoose documents by their
- * controllers, which is why those two carry `_id` rather than `id`. That
- * asymmetry is the API's, not this file's, and is recorded as an open item
- * rather than papered over here.
+ * `users` and `permissions` come from explicit DTOs (`UserResponseDto`,
+ * `PermissionResponseDto`) and carry `id`. `roles` is still returned as a raw
+ * Mongoose document, so it carries `_id`. That asymmetry is the API's, not
+ * this file's, and is recorded as an open item rather than papered over here.
  */
 export interface LocalizedText {
   en: string;
@@ -66,7 +65,7 @@ export interface FederationPersonResponse {
 }
 
 export interface PermissionResponse {
-  _id: string;
+  id: string;
   name: LocalizedText;
   resourceType: string;
   action: string;
@@ -76,9 +75,9 @@ export interface PermissionResponse {
  *  second language was filled in can hold an empty string, so this falls
  *  back to the other language rather than rendering a blank cell — an
  *  administrator needs to see *something* identifying the row. */
-export function localized(text: LocalizedText | null, locale: "ar" | "en"): string {
+export const localized = (text: LocalizedText | null, locale: "ar" | "en"): string => {
   if (!text) {
     return "";
   }
   return text[locale] || text[locale === "ar" ? "en" : "ar"] || "";
-}
+};

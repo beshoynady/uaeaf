@@ -153,8 +153,14 @@ export const PRIMARY_NAV: readonly NavItem[] = [
   { key: "contact", href: "/contact" },
 ];
 
-/** The page part of a destination: everything before `#` or `?`. */
-const pagePart = (href: string): string => href.split(/[#?]/, 1)[0]!;
+/**
+ * The page part of a destination: everything before `#` or `?`.
+ *
+ * Exported so the prefetch gate on a mega link (`MegaLink`) compares the same
+ * page address this module already derives, rather than a second copy of the
+ * split.
+ */
+export const pagePart = (href: string): string => href.split(/[#?]/, 1)[0]!;
 
 /**
  * Every leaf destination in the tree, in reading order.

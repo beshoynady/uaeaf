@@ -5,6 +5,7 @@ import { PermissionsGuard } from './permissions.guard.js';
 import { REQUIRED_PERMISSION_KEY } from '../decorators/permissions.decorator.js';
 import type { AuthenticatedUser } from '../interfaces/jwt-payload.interface.js';
 import { AuditLogsService } from '../../modules/workflow/audit-logs/audit-logs.service.js';
+import { isApiErrorCode } from '../errors/api-error-code.js';
 
 describe('PermissionsGuard', () => {
   const makeContext = (user: AuthenticatedUser | undefined, params: Record<string, string> = {}): ExecutionContext =>
@@ -99,4 +100,86 @@ describe('PermissionsGuard', () => {
     expect(warnSpy).toHaveBeenCalledTimes(1);
     warnSpy.mockRestore();
   });
+
+  describe('grant scope', () => {
+    const required = { resourceType: 'articles', action: 'Update' };
+    const actor = (permissions: AuthenticatedUser['permissions']): AuthenticatedUser => ({
+      userId: '507f1f77bcf86cd799439011',
+      roleIds: ['507f1f77bcf86cd799439012'],
+      permissions,
+    });
+
+    it('denies a grant scoped to own with scopedGrantUnsupported', async () => {
+      const guard = new PermissionsGuard(makeReflector(required), makeAuditLogsService());
+      const user = actor([{ resourceType: 'articles', action: 'Update', scope: 'own' }]);
+
+      await expect(guard.canActivate(makeContext(user))).rejects.toMatchObject({
+        response: { code: 'scopedGrantUnsupported' },
+      });
+    });
+
+    it('keeps scopedGrantUnsupported in the error vocabulary so the filter does not rewrite it', () => {
+      expect(isApiErrorCode('scopedGrantUnsupported')).toBe(true);
+    });
+
+    it('allows a grant whose scope is null', async () => {
+      const guard = new PermissionsGuard(makeReflector(required), makeAuditLogsService());
+      const user = actor([{ resourceType: 'articles', action: 'Update', scope: null }]);
+
+      await expect(guard.canActivate(makeContext(user))).resolves.toBe(true);
+    });
+
+    it('allows a grant with no scope key at all', async () => {
+      const guard = new PermissionsGuard(makeReflector(required), makeAuditLogsService());
+      const user = actor([{ resourceType: 'articles', action: 'Update' }]);
+
+      await expect(guard.canActivate(makeContext(user))).resolves.toBe(true);
+    });
+
+    it('allows a grant scoped to all', async () => {
+      const guard = new PermissionsGuard(makeReflector(required), makeAuditLogsService());
+      const user = actor([{ resourceType: 'articles', action: 'Update', scope: 'all' }]);
+
+      await expect(guard.canActivate(makeContext(user))).resolves.toBe(true);
+    });
+
+    it('allows the request when one of several grants for the pair is scoped to all', async () => {
+      const guard = new PermissionsGuard(makeReflector(required), makeAuditLogsService());
+      const user = actor([
+        { resourceType: 'articles', action: 'Update', scope: 'own' },
+        { resourceType: 'articles', action: 'Update', scope: 'all' },
+      ]);
+
+      await expect(guard.canActivate(makeContext(user))).resolves.toBe(true);
+    });
+
+    it('records the scoped denial as an AccessDenied row through the existing path', async () => {
+      const auditLogsService = makeAuditLogsService();
+      const guard = new PermissionsGuard(makeReflector(required), auditLogsService);
+      const user = actor([{ resourceType: 'articles', action: 'Update', scope: 'own' }]);
+
+      await expect(guard.canActivate(makeContext(user, { id: '507f1f77bcf86cd799439099' }))).rejects.toThrow(
+        ForbiddenException,
+      );
+
+      expect(auditLogsService.write).toHaveBeenCalledTimes(1);
+      const [entry] = auditLogsService.write.mock.calls[0];
+      expect(entry.action).toBe('AccessDenied');
+      expect(entry.entityType).toBe('articles');
+      expect((entry.entityId as { toString(): string }).toString()).toBe('507f1f77bcf86cd799439099');
+      expect((entry.actorId as { toString(): string }).toString()).toBe('507f1f77bcf86cd799439011');
+      expect(entry.reason).toBe('Update on articles');
+    });
+
+    it('still denies an actor without the pair with the missing-permission message, not the scope code', async () => {
+      const guard = new PermissionsGuard(makeReflector(required), makeAuditLogsService());
+      const user = actor([{ resourceType: 'articles', action: 'Read', scope: 'all' }]);
+
+      const denial = guard.canActivate(makeContext(user));
+
+      await expect(denial).rejects.toThrow('Missing permission: Update on articles.');
+      await expect(denial).rejects.not.toMatchObject({ response: { code: 'scopedGrantUnsupported' } });
+    });
+  });
 });
+

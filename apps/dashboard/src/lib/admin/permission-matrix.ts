@@ -85,9 +85,9 @@ const CONSEQUENTIAL: ReadonlySet<string> = new Set([
   "ViewSensitive",
 ]);
 
-export function isConsequential(action: string): boolean {
+export const isConsequential = (action: string): boolean => {
   return CONSEQUENTIAL.has(action);
-}
+};
 
 export interface MatrixCell {
   permissionId: string;
@@ -109,11 +109,11 @@ export interface MatrixRow {
   hasConsequential: boolean;
 }
 
-export function buildMatrix(
+export const buildMatrix = (
   catalogue: readonly PermissionResponse[],
   selected: ReadonlySet<string>,
   actorGrants: readonly PermissionGrant[],
-): MatrixRow[] {
+): MatrixRow[] => {
   const held = new Set(actorGrants.map((grant) => `${grant.resourceType}:${grant.action}`));
   const byResource = new Map<string, MatrixRow>();
 
@@ -135,9 +135,9 @@ export function buildMatrix(
         hasConsequential: false,
       };
 
-    const granted = selected.has(permission._id);
+    const granted = selected.has(permission.id);
     row.cells[permission.action] = {
-      permissionId: permission._id,
+      permissionId: permission.id,
       granted,
       grantable: held.has(`${permission.resourceType}:${permission.action}`),
     };
@@ -155,7 +155,7 @@ export function buildMatrix(
   // Alphabetical by the resource identifier, which is the name the API uses
   // and the only label guaranteed to exist in both languages.
   return [...byResource.values()].sort((a, b) => a.resourceType.localeCompare(b.resourceType));
-}
+};
 
 /**
  * Whether this checkbox may be interacted with right now.
@@ -163,18 +163,18 @@ export function buildMatrix(
  * Asymmetric on purpose: ticking asks the API to grant, unticking asks it to
  * stop granting. Only the first needs the actor to hold the permission.
  */
-export function canCheck(cell: MatrixCell): boolean {
+export const canCheck = (cell: MatrixCell): boolean => {
   return cell.grantable || cell.granted;
-}
+};
 
 /**
  * Selected permissions the actor does not hold — i.e. the exact reason a save
  * would be refused, expressed as pairs the screen can name.
  */
-export function selectionBlockers(
+export const selectionBlockers = (
   rows: readonly MatrixRow[],
   selected: ReadonlySet<string>,
-): PermissionGrant[] {
+): PermissionGrant[] => {
   const blockers: PermissionGrant[] = [];
   for (const row of rows) {
     for (const [action, cell] of Object.entries(row.cells)) {
@@ -184,18 +184,18 @@ export function selectionBlockers(
     }
   }
   return blockers;
-}
+};
 
-export function toggleSelection(
+export const toggleSelection = (
   selected: ReadonlySet<string>,
   permissionId: string,
-): Set<string> {
+): Set<string> => {
   const next = new Set(selected);
   if (!next.delete(permissionId)) {
     next.add(permissionId);
   }
   return next;
-}
+};
 
 /**
  * Only the columns the catalogue actually fills, in the API's order.
@@ -206,9 +206,9 @@ export function toggleSelection(
  * that is empty for every row tells the reader nothing except that it is
  * empty.
  */
-export function visibleActions(rows: readonly MatrixRow[]): PermissionAction[] {
+export const visibleActions = (rows: readonly MatrixRow[]): PermissionAction[] => {
   return ACTION_ORDER.filter((action) => rows.some((row) => row.cells[action] !== undefined));
-}
+};
 
 export interface ImpliedToggle {
   next: Set<string>;
@@ -239,11 +239,11 @@ export interface ImpliedToggle {
  *    naming a permission they never chose. Leaving it off lets
  *    `incoherentSelections` explain the real problem instead.
  */
-export function toggleWithImpliedRead(
+export const toggleWithImpliedRead = (
   rows: readonly MatrixRow[],
   selected: ReadonlySet<string>,
   permissionId: string,
-): ImpliedToggle {
+): ImpliedToggle => {
   const next = toggleSelection(selected, permissionId);
   if (!next.has(permissionId)) {
     return { next, autoAdded: [] };
@@ -261,7 +261,7 @@ export function toggleWithImpliedRead(
 
   next.add(read.permissionId);
   return { next, autoAdded: [read.permissionId] };
-}
+};
 
 /**
  * Resources the selection may write but not read — the exact set the API
@@ -270,10 +270,10 @@ export function toggleWithImpliedRead(
  * Sibling of `selectionBlockers`, and the same shape, because both answer
  * "why would this save be rejected, in terms the screen can name".
  */
-export function incoherentSelections(
+export const incoherentSelections = (
   rows: readonly MatrixRow[],
   selected: ReadonlySet<string>,
-): PermissionGrant[] {
+): PermissionGrant[] => {
   const incomplete: PermissionGrant[] = [];
   for (const row of rows) {
     const read = row.cells.Read;
@@ -288,13 +288,13 @@ export function incoherentSelections(
     }
   }
   return incomplete;
-}
+};
 
 /** Which row and action a permission id sits at. */
-function locate(
+const locate = (
   rows: readonly MatrixRow[],
   permissionId: string,
-): { row: MatrixRow; action: PermissionAction } | null {
+): { row: MatrixRow; action: PermissionAction } | null => {
   for (const row of rows) {
     for (const action of ACTION_ORDER) {
       if (row.cells[action]?.permissionId === permissionId) {
@@ -303,7 +303,7 @@ function locate(
     }
   }
   return null;
-}
+};
 
 export interface SelectionDiff {
   added: string[];
@@ -312,22 +312,22 @@ export interface SelectionDiff {
 }
 
 /** What the save button would send, and what the reader is told it will do. */
-export function diffSelection(
+export const diffSelection = (
   original: ReadonlySet<string>,
   current: ReadonlySet<string>,
-): SelectionDiff {
+): SelectionDiff => {
   const added = [...current].filter((id) => !original.has(id)).sort();
   const removed = [...original].filter((id) => !current.has(id)).sort();
   return { added, removed, changed: added.length > 0 || removed.length > 0 };
-}
+};
 
 export type RowFilter = "all" | "granted";
 
-export function filterRows(
+export const filterRows = (
   rows: readonly MatrixRow[],
   query: string,
   filter: RowFilter,
-): MatrixRow[] {
+): MatrixRow[] => {
   const needle = query.trim().toLowerCase();
   return rows.filter((row) => {
     if (filter === "granted" && row.grantedCount === 0) {
@@ -335,8 +335,8 @@ export function filterRows(
     }
     return needle.length === 0 || row.resourceType.toLowerCase().includes(needle);
   });
-}
+};
 
-function isKnownAction(action: string): action is PermissionAction {
+const isKnownAction = (action: string): action is PermissionAction => {
   return (ACTION_ORDER as readonly string[]).includes(action);
-}
+};

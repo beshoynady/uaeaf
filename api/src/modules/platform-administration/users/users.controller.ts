@@ -15,24 +15,7 @@ import { UserResponseDto } from './dto/user-response.dto.js';
 import { UserNameDto } from './dto/user-name.dto.js';
 import { UserRefDto } from './dto/user-ref.dto.js';
 import { MeResponseDto } from './dto/me-response.dto.js';
-
-/**
- * Whether a path id names the caller's own account.
- *
- * Not `===`. `ObjectId.isValid` accepts any 24 hex characters in either case and
- * Mongoose casts them to the same document, while `toString()` canonicalises to
- * lowercase — so an upper-cased hex id failed a string compare and reached the
- * same record. That let an administrator suspend themselves or strip their own
- * roles, which is exactly what the self-refusals exist to prevent (found by
- * independent review, 2026-09-27).
- *
- * Falls back to the string compare for an id that is not a valid ObjectId: it
- * cannot name a record, so the only thing left to do is compare what was sent.
- */
-const isSelf = (pathId: string, actorId: string): boolean =>
-  Types.ObjectId.isValid(pathId) && Types.ObjectId.isValid(actorId)
-    ? new Types.ObjectId(pathId).equals(new Types.ObjectId(actorId))
-    : pathId === actorId;
+import { isSelf } from './is-self.js';
 
 /** Implements: users collection, Domain 8 — Platform Administration. */
 @ApiTags('users')
@@ -57,14 +40,14 @@ export class UsersController {
     @CurrentUser() actor: AuthenticatedUser,
   ): Promise<UserResponseDto> {
     const user = await this.usersService.create(dto, actor);
-    return this.usersService.toResponse(user);
+    return this.usersService.toResponseFor(user);
   }
 
   @Get()
   @RequirePermission('users', 'Read')
   async findAll(): Promise<UserResponseDto[]> {
     const users = await this.usersService.findAll();
-    return users.map((user) => this.usersService.toResponse(user));
+    return this.usersService.toResponses(users);
   }
 
   /** No @RequirePermission — any authenticated user may read their own
@@ -86,7 +69,7 @@ export class UsersController {
       // confusing 200 for a caller — fail loudly instead.
       throw new NotFoundException('User not found.');
     }
-    return { ...this.usersService.toResponse(found), permissions: user.permissions };
+    return { ...(await this.usersService.toResponseFor(found)), permissions: user.permissions };
   }
 
   /** No @RequirePermission — like `GET me`, a user acts on their own record,
@@ -167,7 +150,7 @@ export class UsersController {
     if (!found) {
       throw new NotFoundException('User not found.');
     }
-    return this.usersService.toResponse(found);
+    return this.usersService.toResponseFor(found);
   }
 
   @Patch(':id/roles')
@@ -202,7 +185,7 @@ export class UsersController {
       actor,
       extractRequestContext(req),
     );
-    return this.usersService.toResponse(updated);
+    return this.usersService.toResponseFor(updated);
   }
 
   /**

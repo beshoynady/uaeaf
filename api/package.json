@@ -39,7 +39,9 @@
     "migrate:president-message": "nest build && node --env-file-if-exists=.env dist/migrate-president-message-v2.js",
     "seed:about": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/seed-about-federation-page.js",
     "sync:permissions": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/sync-permission-catalogue.js",
-    "report:reserved-pair-holders": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/report-reserved-pair-holders.js"
+    "report:reserved-pair-holders": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/report-reserved-pair-holders.js",
+    "reset:roles": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/reset-roles.js",
+    "seed:role-templates": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/seed-role-templates.js"
   },
   "dependencies": {
     "@nestjs/common": "^12.0.1",

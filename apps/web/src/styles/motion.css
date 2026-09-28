@@ -274,13 +274,55 @@
 }
 
 /*
- * The nav item's indicator: a 2px bar that rises into place along the same
- * vector on hover and focus, and stays put on the current page.
+ * The mega panel: full container width, its columns closing up around
+ * whatever `data-columns` actually reports rather than around a fixed count.
+ * The featured slot is a fraction (`1.2fr`) and not a pixel width — there is
+ * no token for the ~380px the canvas shows at 1440, and the fraction holds
+ * the same proportion there while narrowing safely at 1280.
+ *
+ * Below the row breakpoint this same element is the drawer's in-flow
+ * accordion body (`primary-nav.tsx`, `hidden={!isOpen && !isRow}`), so the
+ * floating box and its multi-column grid apply only from `NAV_ROW_BREAKPOINT`
+ * (1280px, matching `--breakpoint-xl`). Left unguarded, `position: absolute`
+ * would pull an open drawer panel out of the page flow instead of stacking it.
+ */
+@utility mega-panel {
+  border-bottom-left-radius: var(--radius-lg);
+  border-bottom-right-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+}
+
+.mega-panel > div {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.mega-panel[data-columns="1"] > div {
+  --mega-columns: 1;
+}
+
+@media (min-width: 1280px) {
+  .mega-panel {
+    position: absolute;
+    inset-inline: 0;
+    top: 100%;
+    z-index: 40;
+    box-shadow: var(--elevation-dropdown);
+  }
+
+  .mega-panel > div {
+    grid-template-columns: repeat(var(--mega-columns, 2), minmax(0, 1fr)) minmax(0, 1.2fr);
+  }
+}
+
+/*
+ * The nav item's indicator: the tricolour bar, wiped in from the reading
+ * edge on hover and focus, and held open on the current page.
  *
  * The bar moves, never the label. A label that lifts on hover shifts the text
  * a reader is in the middle of, and across a row of nine it reads as jitter.
  */
 .nav-indicator {
+  transform-origin: inline-start;
   transition:
     opacity var(--motion-transition-exit),
     transform var(--motion-transition-exit);
@@ -296,14 +338,14 @@
 
 .nav-indicator[data-state="rest"] {
   opacity: 0;
-  transform: translate(calc(-1 * var(--space-1)), var(--space-1));
+  transform: scaleX(0);
 }
 
 .nav-item:hover .nav-indicator[data-state="rest"],
 .nav-item:focus-visible .nav-indicator[data-state="rest"],
 .nav-item[aria-expanded="true"] .nav-indicator[data-state="rest"] {
   opacity: 1;
-  transform: translate(0, 0);
+  transform: scaleX(1);
 }
 
 /* The chevron on a disclosure trigger points at the panel it controls. */
@@ -361,9 +403,17 @@
    * `visibility` delay is what would otherwise leave a panel unpaintable for
    * 150ms after an instant fade. Zeroed here so the panels appear and vanish
    * outright, with their function and content unchanged.
+   *
+   * `.nav-float` is never applied bare — only as the `xl:nav-float` variant,
+   * which Tailwind compiles to the escaped selector `.xl\:nav-float` inside a
+   * `min-width` media query, so a bare `.nav-float` selector here matches
+   * nothing at any width. `.mega-panel` is the class the floating panel
+   * actually carries unprefixed, at every breakpoint, so this rule keeps
+   * applying to the element the `xl:nav-float` utility decorates even if that
+   * utility's own breakpoint variant changes later.
    */
-  .nav-float,
-  .nav-float[data-open="false"],
+  .mega-panel,
+  .mega-panel[data-open="false"],
   .nav-scrim,
   .nav-scrim[data-open="false"],
   .nav-indicator,
@@ -373,7 +423,7 @@
   }
 
   .nav-indicator[data-state="rest"],
-  .nav-float[data-open="false"] {
+  .mega-panel[data-open="false"] {
     transform: none !important;
   }
 }
@@ -612,7 +662,7 @@
 /*
  * A change of theme is not a transition.
  *
- * `theme-toggle.tsx` marks the root for the two frames in which the colours
+ * `theme-switch.tsx` marks the root for the two frames in which the colours
  * change. Without this, every control faded to its new colour over 150ms
  * while every ground cut to it at once. `!important` because a control's own
  * `transition-colors` is a utility and this has to beat it from outside.
@@ -622,6 +672,69 @@
 [data-theme-switching] *::before,
 [data-theme-switching] *::after {
   transition: none !important;
+}
+
+/*
+ * The theme switch's track and knob, both driven by `aria-checked` rather
+ * than a class swap. Colours mirror the dashboard's own on/off convention
+ * (`apps/dashboard/src/components/ui/switch-field.tsx`) so a second one does
+ * not appear here. The reduced-motion reset above (`globals.css`) already
+ * zeroes the knob's transition duration.
+ */
+.theme-switch {
+  border: var(--border-width-default) solid var(--color-border-strong);
+  background-color: var(--color-surface-sunken);
+}
+
+.theme-switch[aria-checked="true"] {
+  border-color: var(--color-brand-primary);
+  background-color: var(--color-brand-primary);
+}
+
+.theme-switch-icon {
+  position: relative;
+  z-index: 1;
+  color: var(--color-text-secondary);
+}
+
+/*
+ * The knob travels by `transform`, not `inset-inline-start`: an inset change
+ * forces layout on every frame (ADR-0009, Chapter 5 §5.6 — only `opacity` and
+ * `transform` animate). Its resting position is still set once, logically, so
+ * a `dir="rtl"` page places it on the correct physical side without ever
+ * transitioning that property.
+ *
+ * `--knob-direction` carries the mirroring `inset-inline-start` would have
+ * done for free: `1` in LTR moves the knob toward the physical right (the
+ * reading end), `-1` in RTL moves it toward the physical left (also the
+ * reading end there). The travel distance itself is the track's own geometry
+ * — its width minus the knob's width minus the inset on both sides — so it
+ * stays correct if any of those three tokens change, rather than a number
+ * that happens to match today.
+ */
+.theme-switch-knob {
+  position: absolute;
+  top: 50%;
+  inset-inline-start: var(--space-1);
+  --knob-direction: 1;
+  transform: translate(0, -50%);
+  height: var(--space-8);
+  width: var(--space-8);
+  border-radius: var(--radius-full);
+  background-color: var(--color-text-secondary);
+  transition: transform var(--motion-duration-fast) var(--motion-easing-standard);
+}
+
+[dir="rtl"] .theme-switch-knob {
+  --knob-direction: -1;
+}
+
+.theme-switch[aria-checked="true"] .theme-switch-knob {
+  transform: translate(
+    calc(var(--knob-direction) * (var(--space-16) - var(--space-8) - 2 * var(--space-1))),
+    -50%
+  );
+  background-color: var(--color-text-on-brand);
 }
 
 /*

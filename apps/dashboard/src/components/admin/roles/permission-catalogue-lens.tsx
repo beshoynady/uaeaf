@@ -22,7 +22,7 @@ import { SearchField } from "@/components/ui/search-field";
  * carries guards a route nobody in the federation can reach, and nothing in
  * the platform said so before.
  */
-export function PermissionCatalogueLens({
+export const PermissionCatalogueLens = ({
   permissions,
   roles,
   selectedRoleId,
@@ -35,7 +35,7 @@ export function PermissionCatalogueLens({
    *  `permissions:Read` but no `roles:Read`. */
   selectedRoleId: string | null;
   locale: AppLocale;
-}) {
+}) => {
   const t = useTranslations("RolesWorkbench");
   const actions = useTranslations("PermissionAction");
   const [query, setQuery] = useState("");
@@ -108,11 +108,11 @@ export function PermissionCatalogueLens({
             </thead>
             <tbody>
               {visible.map((permission) => {
-                const count = holders.get(permission._id) ?? 0;
-                const held = selectedHolds.has(permission._id);
+                const count = holders.get(permission.id) ?? 0;
+                const held = selectedHolds.has(permission.id);
                 return (
                   <tr
-                    key={permission._id}
+                    key={permission.id}
                     data-selected-role-holds={held ? "true" : "false"}
                     className={`border-b border-[color:var(--color-border-subtle)] ${
                       held
@@ -158,4 +158,4 @@ export function PermissionCatalogueLens({
       )}
     </div>
   );
-}
+};

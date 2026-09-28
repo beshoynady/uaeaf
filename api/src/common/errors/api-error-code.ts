@@ -186,6 +186,9 @@ export const API_ERROR_CODES = [
   // `refuseNull` (`partial-update.util.ts`) for the reference and date fields
   // their `update()` post-processes.
   'requiredFieldCleared',
+  // A route whose pair the actor holds only with a narrower scope than `all`.
+  // Not `forbidden`: the grant exists, and the fix is to change its scope (ADR-0113).
+  'scopedGrantUnsupported',
 ] as const;
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

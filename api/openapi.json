@@ -1067,6 +1067,16 @@
             }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArchiveMediaAssetDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": ""
@@ -1120,6 +1130,27 @@
         },
         "tags": [
           "media-assets"
+        ]
+      }
+    },
+    "/api/v1/me/permissions": {
+      "get": {
+        "operationId": "MeController_permissions_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MePermissionsResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "me"
         ]
       }
     },
@@ -12279,6 +12310,9 @@
             ],
             "nullable": true
           },
+          "hasNoRole": {
+            "type": "boolean"
+          },
           "permissions": {
             "type": "array",
             "items": {
@@ -12292,6 +12326,7 @@
           "email",
           "roleIds",
           "accountStatus",
+          "hasNoRole",
           "permissions"
         ]
       },
@@ -12371,6 +12406,9 @@
               "dark"
             ],
             "nullable": true
+          },
+          "hasNoRole": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -12378,7 +12416,8 @@
           "name",
           "email",
           "roleIds",
-          "accountStatus"
+          "accountStatus",
+          "hasNoRole"
         ]
       },
       "UserNameDto": {
@@ -12871,6 +12910,160 @@
             "description": "Internal provenance mark: the picture was generated rather than photographed. Shown only in the dashboard, as a \"temporary\" chip and a filter; never returned on a public route."
           }
         }
+      },
+      "ArchiveMediaAssetDto": {
+        "type": "object",
+        "properties": {
+          "acknowledgeReferences": {
+            "type": "boolean",
+            "description": "Confirms the operator has seen every place this image is used (or that the check for that could not complete) and wants to archive it anyway. Omit or false on the first attempt."
+          }
+        }
+      },
+      "ScopedGrantDto": {
+        "type": "object",
+        "properties": {
+          "resourceType": {
+            "type": "string",
+            "enum": [
+              "aboutFederationPage",
+              "ageCategories",
+              "albums",
+              "albumsPage",
+              "articles",
+              "auditLogs",
+              "athleteClubHistory",
+              "athleteCoachHistory",
+              "athleteGuardianRelationships",
+              "athleteNationalTeamHistory",
+              "athleteProfiles",
+              "athletes",
+              "athletesPage",
+              "boardMembersPage",
+              "clubTeams",
+              "clubs",
+              "clubsPage",
+              "coachClubHistory",
+              "coaches",
+              "coachesPage",
+              "committees",
+              "committeesPage",
+              "contactMessages",
+              "contactUsPage",
+              "countries",
+              "disciplines",
+              "disciplinesPage",
+              "documents",
+              "electionCycles",
+              "federation",
+              "federationAppointments",
+              "federationPersonnel",
+              "governanceDocuments",
+              "heroSlides",
+              "mediaAssets",
+              "memberships",
+              "navigationItems",
+              "navigationMenus",
+              "newsPage",
+              "notifications",
+              "officialAssignments",
+              "officialClubHistory",
+              "officialProfiles",
+              "officials",
+              "organizationalStructure",
+              "pageSections",
+              "pages",
+              "partnerships",
+              "permissions",
+              "presidentMessagePage",
+              "publications",
+              "recordsPage",
+              "resultsRankingsPage",
+              "revisions",
+              "roles",
+              "siteSettings",
+              "sponsors",
+              "sponsorships",
+              "strategicPlansPage",
+              "users",
+              "venues",
+              "videos",
+              "videosPage",
+              "visionMissionPage",
+              "workflowActionHistory",
+              "workflowDefinitions",
+              "workflowInstances",
+              "workflowPolicies",
+              "workflowSteps",
+              "governanceReports",
+              "peopleReports",
+              "athleticsReports",
+              "mediaReports",
+              "documentsReports",
+              "workflowReports",
+              "sponsorshipReports",
+              "commsReports",
+              "cmsReports"
+            ]
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "Read",
+              "Create",
+              "Update",
+              "Archive",
+              "Restore",
+              "PermanentDelete",
+              "Export",
+              "Print",
+              "ViewSensitive",
+              "Publish",
+              "Approve",
+              "ViewReports",
+              "ManageRoles",
+              "AssignRoles",
+              "ViewAuditLog",
+              "ManageSecuritySettings"
+            ]
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "own",
+              "all"
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "resourceType",
+          "action",
+          "scope"
+        ]
+      },
+      "MePermissionsResponseDto": {
+        "type": "object",
+        "properties": {
+          "permissions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ScopedGrantDto"
+            }
+          },
+          "accountClass": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "sensitive",
+              "superAdmin"
+            ]
+          }
+        },
+        "required": [
+          "permissions",
+          "accountClass"
+        ]
       },
       "LoginDto": {
         "type": "object",

@@ -22,6 +22,7 @@ import { AuditLogsService } from '../../workflow/audit-logs/audit-logs.service.j
 import { duplicateKeyField, isDuplicateKeyError } from '../../../common/utils/mongo-errors.util.js';
 import { toCsv, type CsvColumn } from '../../../common/utils/csv.util.js';
 import { missingPairs } from './user-authority.js';
+import { isSelf } from './is-self.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 
 /**
@@ -360,6 +361,7 @@ export class UsersService {
    *
    * @throws BadRequestException when an id resolves to no live role.
    * @throws NotFoundException when the account itself does not exist.
+   * @throws ForbiddenException with code `selfAssignment` when the actor is the target.
    */
   async assignRoles(
     id: string,
@@ -371,6 +373,12 @@ export class UsersService {
      *  only readers. */
     context: { ipAddress: string; userAgent: string } = { ipAddress: '', userAgent: '' },
   ): Promise<UserDocument> {
+    if (isSelf(id, actor.userId)) {
+      throw new ForbiddenException({
+        code: 'selfAssignment',
+        message: 'You cannot assign roles to yourself.',
+      });
+    }
     const asStrings = roleIds.map((roleId) => roleId.toString());
     await this.rolesService.assertAssignable(asStrings);
     await this.assertAssignableByActor(asStrings, actor);
@@ -498,7 +506,7 @@ export class UsersService {
     if (accountStatus !== 'Active') {
       await this.authSessionsService.revokeAllForUser(id);
     }
-    return this.toResponse(updated);
+    return this.toResponseFor(updated);
   }
 
   /**
@@ -536,7 +544,7 @@ export class UsersService {
   /** Maps a full `User` document to its allowlist response shape — the
    *  controller boundary that must never let `authMethods` (or the raw
    *  document at all) escape (auth-security-audit-2026-09-05.md P0 #1). */
-  toResponse(user: UserDocument): UserResponseDto {
+  toResponse(user: UserDocument, liveRoleIds: ReadonlySet<string>): UserResponseDto {
     return {
       id: user._id.toString(),
       name: user.name,
@@ -548,7 +556,25 @@ export class UsersService {
       photoId: user.photoId ? user.photoId.toString() : null,
       preferredLanguage: user.preferredLanguage,
       preferredTheme: user.preferredTheme,
+      hasNoRole: !user.roleIds.some((roleId) => liveRoleIds.has(roleId.toString())),
     };
+  }
+
+  /** `toResponse` for a list: the live-role set is read once, not once per row. */
+  async toResponses(users: UserDocument[]): Promise<UserResponseDto[]> {
+    const liveRoleIds = await this.liveRoleIds();
+    return users.map((user) => this.toResponse(user, liveRoleIds));
+  }
+
+  /** `toResponse` for a single account, against the same live-role set. */
+  async toResponseFor(user: UserDocument): Promise<UserResponseDto> {
+    return this.toResponse(user, await this.liveRoleIds());
+  }
+
+  // RolesService.findAll answers live roles only, so an archived role is absent.
+  private async liveRoleIds(): Promise<ReadonlySet<string>> {
+    const roles = await this.rolesService.findAll();
+    return new Set(roles.map((role) => role._id.toString()));
   }
 
   /** Self-service preference update — the writer for `preferredLanguage`/
@@ -579,7 +605,7 @@ export class UsersService {
     }
 
     const user = await this.repository.updateById(id, update);
-    return user ? this.toResponse(user) : null;
+    return user ? this.toResponseFor(user) : null;
   }
 
   async recordSuccessfulLogin(id: string): Promise<void> {

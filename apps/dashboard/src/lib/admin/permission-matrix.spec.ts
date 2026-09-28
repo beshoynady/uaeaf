@@ -19,9 +19,16 @@ import {
   visibleActions,
 } from "./permission-matrix";
 
-function permission(resourceType: string, action: string, id = `${resourceType}:${action}`): PermissionResponse {
-  return { _id: id, name: { en: `${action} ${resourceType}`, ar: `${action} — ${resourceType}` }, resourceType, action };
-}
+// The exact shape `GET /permissions` returns: `id`, never `_id`, plus the two
+// fields the screen does not read, which an annotation would reject.
+const permission = (resourceType: string, action: string, id = `${resourceType}:${action}`) => ({
+  id,
+  name: { en: `${action} ${resourceType}`, ar: `${action} — ${resourceType}` },
+  resourceType,
+  action,
+  scope: null,
+  superAdminOnly: false,
+});
 
 const CATALOGUE: PermissionResponse[] = [
   permission("users", "Read"),
@@ -30,6 +37,20 @@ const CATALOGUE: PermissionResponse[] = [
   permission("roles", "Archive"),
   permission("albums", "Publish"),
 ];
+
+describe("buildMatrix", () => {
+  it("shows a permission the role holds as granted, under its real id", () => {
+    const readUsers = permission("users", "Read", "66f1a2b3c4d5e6f708192a3b");
+    const rows = buildMatrix([readUsers], new Set([readUsers.id]), []);
+
+    expect(rows[0].cells.Read).toEqual({
+      permissionId: "66f1a2b3c4d5e6f708192a3b",
+      granted: true,
+      grantable: false,
+    });
+    expect(rows[0].grantedCount).toBe(1);
+  });
+});
 
 describe("ACTION_ORDER", () => {
   it("mirrors PERMISSION_ACTIONS in the API's own order", () => {

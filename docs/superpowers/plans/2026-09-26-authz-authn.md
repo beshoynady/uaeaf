@@ -1145,11 +1145,79 @@ is fully specified above because it is next and it carries the P0.
 | **4** | Approvals: per-type `Approve`, SoD, blocked assignees, Super Admin override with reason (A6); editorial cycle completed for the five types, then `federationPersonnel` (F9) | Batch 2. **Stop-and-ask if `publications`/`revisions` need a shape change** | A review cannot be approved by its author; `committees` can be published |
 | **5** | Authentication: TOTP (`crypto`, RFC 6238 vectors), `qrcode` enrolment, recovery codes, trusted device, step-up, sessions, `securitySettings` + migration, bcrypt 12 + transparent rehash, `MailPort`/`LogMailAdapter` (B1–B6); break-glass (A10); setup links (A11) | **⛔ Stop and ask about the mail provider if still undecided** — "continue with the log" is an acceptable answer | RFC 6238 vectors pass; a replayed code is refused; `siteSettings`' two fields are gone; the last Super Admin can be recovered from the command line |
 | **6a** | Sensitive fields (`ViewSensitive`, per resource) + `ViewReports` per group + `SensitiveRead` auditing debounced per (actor, record, minute) | Batch 2 | A `Read`-only holder never receives a sensitive field; reading one record ten times in a minute writes one row, and ten records write ten |
+
+**6a and the id spelling** (owner decision, 2026-09-28): a resource that gains a
+serializer in 6a changes shape **on purpose** — from a raw document answering `_id`
+to a DTO answering `id`. Each one is added to the administrative-`id` allow-list in
+the same task that gives it the serializer, so the id-policy guard stays green for a
+reason rather than by being loosened.
+
 | **6b** | Export/print routes behind the **group** grants + audit with filters and count; `ViewAuditLog`, security events, log export (C1); the annual-review audit entry | Batch 6a | An exporter without `ViewSensitive` on a resource gets a file without its sensitive columns; the log has no mutating path |
 | **6c** | **Contact-message settings and spam defence** (owner decision 2026-09-28). Four `siteSettings` fields with defaults and bounds — `messagesPurgeEnabled` (false), `messagesWarnThreshold` (500, 50–10000), `contactRateLimitPer10Min` (3, 1–10), `contactRateLimitPerDay` (10, 1–50) — Super-Admin-only with step-up, every change audited old→new, out-of-bounds refused 400 bilingually. A threshold **warning** that deletes nothing and refuses nothing. **Bulk permanent delete on archived messages only**, three selections (ids · oldest N · all archived), a two-step confirmation where the second request must carry the preview’s exact count or be refused, one audit row naming method/count/ids, and all three refused when `messagesPurgeEnabled` is off. Per-IP limits from **cached** settings, `429` bilingual; a honeypot field that answers success without saving and is hidden from a screen reader (`aria-hidden`, `tabindex="-1"`, `autocomplete="off"`). | Batch 2 (its `PermanentDelete` route). **No new dependency, measured**: `RateLimitGuard` is already a global `APP_GUARD` with a per-route `@RateLimit()` override, and `POST /contact-messages` already carries `@RateLimit(5, 60)`. The guard's own comment records that `@nestjs/throttler` 6.5.0 has **no release supporting this project's NestJS 12**, so installing it would be a regression rather than an upgrade. What the existing guard lacks is a **second window** per route (a day alongside ten minutes) and values read from cached settings instead of decorator constants — that is the extension, not a replacement. | A real message is never deleted or refused by the system itself; an unarchived message is skipped by every bulk path; a preview whose count has changed is refused; the honeypot saves nothing and is invisible to a screen reader |
 | **7** | Profiles domain: indexes (F2), appointment closure (F4), person link (F5), `showPublicContact` (F6), CV sections (F7), public endpoints (F8), derived org chart (F10) | Batch 2 for `Update`; Batch 4 for F9's read path | No N+1 on the board, committees or org chart; a closed post stays readable |
 | **8** | Dashboard: the nine new screens **and every existing screen the new rules touch** — see the Batch 8 table below | Batches 2–7. **⛔ Read `docs/design-specs/auth/2026-09-26-authz-accounts/README.md` first; stop and ask if the design needs something the API cannot do** | Keyboard and screen-reader paths verified; every visual decision outside the chapters marked **Pending Figma Back-Sync** with its chapter number |
 | **9** | `/simplify` on session-changed files only; full suite once; the three explanation documents, each in the agreed nine-item format | all | Full suite green, recorded |
+
+### Batch 3b — the stored-reference type bug (owner decision, 2026-09-28)
+
+Sits between Batch 3 and Batch 4, because Batch 4's `own` work and `reset-roles`
+both depend on a stored reference being findable.
+
+**Measured, 2026-09-28.** 364 of 365 `ObjectId` paths resolve to `Mixed` at
+runtime. `@nestjs/mongoose` 12.0.0 treats the bson `ObjectId` class as a nested
+class, builds it an empty schema, and the path becomes `Mixed`; Mongoose 9.9.4
+on its own yields `ObjectId` correctly. The one sound path is
+`LiveStream.thumbnailId`, the only one declared `MongooseSchema.Types.ObjectId`.
+With no cast at write time, a `create` that casts by hand stores an `ObjectId`
+and a `PATCH` passing `partialUpdate(dto)` raw stores a **string**; query
+filters are not cast either.
+
+1. **`Types.ObjectId` becomes `MongooseSchema.Types.ObjectId`** across the 146
+   declarations.
+2. **An idempotent script converts references stored as strings**, written and
+   run by the owner.
+3. **A guard fails when any reference path resolves to `Mixed` at runtime** —
+   it reads the project's own schemas, so a new `@Prop` declared the old way is
+   red rather than silently untyped.
+
+**What was measured to survive the bug, and what does not:**
+
+| Path | Finds both spellings? |
+|---|---|
+| `findMediaAssetReferrers` and its batch copy | **Yes** — `options.ref` is still readable on a `Mixed` path (verified at runtime), and the query carries `$in: [...ids, ...ids.map(String)]` |
+| `mediaInUse` refusal | **Yes** — same scan |
+| Permission resolution from `role.permissionIds` | **Yes** — `.toString()` then `_id: { $in }`, and `_id` is a real `ObjectId` |
+| **`detachRole`** (`role-assignments.repository.ts:39`) | **No** — the filter carries an `ObjectId` only, and MongoDB compares BSON type first, so a `roleIds` entry stored as a string is never matched and never pulled |
+
+**Consequence for E1:** `reset-roles` refuses to run when it finds any role link
+stored as a string, and reports the accounts, rather than detaching some and
+silently missing others. The lasting fix is `$in: [oid, hex]`, the shape
+`media-references.ts:754` already uses.
+
+**Script order:** the conversion script runs **before** E1.
+
+### Batch 4 — `own` built in full (owner decision, 2026-09-28)
+
+`own` is declared and enforced nowhere: no service performs a row-level
+ownership test, `publishing.service.ts` ignores scope, and `createdBy` is
+written on exactly one content resource (`articles.service.ts:207`) — `albums`,
+`videos` and `heroSlides` leave it `null`. Until then `PermissionsGuard` refuses
+any grant scoped narrower than `all` (`scopedGrantUnsupported`, ADR-0113), so a
+scoped grant is inert rather than quietly wide.
+
+Batch 4 builds it as one task:
+
+- catalogue rows carrying a scope, and `scope` in `seedPermissions`' upsert
+  filter and in `sync-permission-catalogue` — without it a second row matches
+  the first non-deterministically;
+- the row-level ownership check, evaluated inside the handler immediately
+  before the write, from current state (CLAUDE.md §31);
+- `createdBy` written on **every** create path of **every** resource that
+  declares a scope;
+- records whose `createdBy` is `null` stay **closed** to `own` — an unowned
+  record is not everyone's;
+- the guard's scope refusal is removed **in the same task**, with its test;
+- only then does `seed-role-templates` seed the Editor template.
 
 ### Batch 6c — the rate-limit extension, as decided (owner, 2026-09-28)
 
@@ -1180,6 +1248,15 @@ until it is changed.
 | Users directory | "بدون رول / No role" marker | ADR-0113 |
 | Global | standing warning while fewer than two active Super Admins | ADR-0105 |
 | **Person screens + board-page admin** | built to `source/governance/` and `screens/08-*`, `09-*` in the design reference | ADR-0114, ADR-0117, ADR-0119 |
+
+
+**Id-spelling cleanup carried into Batch 8** (owner decision, 2026-09-28):
+
+- `GET /revisions/:id` returns `id` at the top level and `_id` inside `content`
+  — the one endpoint in 491 that answers in both spellings. Settle it on one.
+- `apps/dashboard/src/lib/admin/newsroom-screen.ts:302` reads
+  `user.id ?? user._id`; the `_id` branch is dead, since `UserResponseDto` has
+  answered `id` throughout. Remove the fallback.
 
 **Committees dashboard screen stays out of scope** until its design is ready.
 

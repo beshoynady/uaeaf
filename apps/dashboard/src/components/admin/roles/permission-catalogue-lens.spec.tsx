@@ -3,7 +3,7 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithIntl } from "@/test/render";
 import { PermissionCatalogueLens } from "./permission-catalogue-lens";
-import type { PermissionResponse, RoleResponse } from "@/lib/api/types";
+import type { RoleResponse } from "@/lib/api/types";
 
 /**
  * The second lens on the same relation.
@@ -15,10 +15,10 @@ import type { PermissionResponse, RoleResponse } from "@/lib/api/types";
  * that content survives — so this lens carries it and answers the question
  * the flat table could not.
  */
-const PERMISSIONS: PermissionResponse[] = [
-  { _id: "p1", name: { en: "Read athletes", ar: "قراءة الرياضيين" }, resourceType: "athletes", action: "Read" },
-  { _id: "p2", name: { en: "Delete athletes", ar: "حذف الرياضيين" }, resourceType: "athletes", action: "Delete" },
-  { _id: "p3", name: { en: "Export users", ar: "تصدير المستخدمين" }, resourceType: "users", action: "Export" },
+const PERMISSIONS = [
+  { id: "p1", name: { en: "Read athletes", ar: "قراءة الرياضيين" }, resourceType: "athletes", action: "Read", scope: null, superAdminOnly: false },
+  { id: "p2", name: { en: "Delete athletes", ar: "حذف الرياضيين" }, resourceType: "athletes", action: "Delete", scope: null, superAdminOnly: false },
+  { id: "p3", name: { en: "Export users", ar: "تصدير المستخدمين" }, resourceType: "users", action: "Export", scope: null, superAdminOnly: false },
 ];
 
 const ROLES: RoleResponse[] = [
@@ -26,7 +26,7 @@ const ROLES: RoleResponse[] = [
   { _id: "r2", name: { en: "Editor", ar: "محرّر" }, description: null, permissionIds: ["p1"], isSystemRole: false },
 ] as RoleResponse[];
 
-function render(over: Partial<React.ComponentProps<typeof PermissionCatalogueLens>> = {}) {
+const render = (over: Partial<React.ComponentProps<typeof PermissionCatalogueLens>> = {}) => {
   return renderWithIntl(
     <PermissionCatalogueLens
       permissions={PERMISSIONS}
@@ -36,7 +36,7 @@ function render(over: Partial<React.ComponentProps<typeof PermissionCatalogueLen
       {...over}
     />,
   );
-}
+};
 
 describe("PermissionCatalogueLens", () => {
   it("lists every permission by its bilingual name", () => {

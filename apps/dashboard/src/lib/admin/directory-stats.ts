@@ -24,13 +24,13 @@ export interface DirectorySummary {
   neverSignedIn: number;
 }
 
-export function summariseDirectory(
+export const summariseDirectory = (
   users: readonly UserResponse[],
   roles: readonly RoleResponse[],
   permissions: readonly PermissionResponse[],
-): DirectorySummary {
+): DirectorySummary => {
   const consequentialPermissionIds = new Set(
-    permissions.filter((permission) => isConsequential(permission.action)).map((p) => p._id),
+    permissions.filter((permission) => isConsequential(permission.action)).map((p) => p.id),
   );
   const consequentialRoleIds = new Set(
     roles
@@ -68,7 +68,7 @@ export function summariseDirectory(
     rolesWithoutUsers: countBy(roles, (role) => (usage.get(role._id) ?? 0) === 0),
     neverSignedIn: countBy(users, (user) => user.lastLogin === null),
   };
-}
+};
 
 /**
  * Holders per role, seeded with every role so one nobody holds reads as 0
@@ -78,10 +78,10 @@ export function summariseDirectory(
  * roles are soft-deleted, so a stale id survives on the user document and
  * would otherwise appear as usage of something that is gone.
  */
-export function roleUsage(
+export const roleUsage = (
   users: readonly UserResponse[],
   roles: readonly RoleResponse[],
-): Map<string, number> {
+): Map<string, number> => {
   const counts = new Map<string, number>(roles.map((role) => [role._id, 0]));
   for (const user of users) {
     for (const roleId of user.roleIds) {
@@ -92,8 +92,8 @@ export function roleUsage(
     }
   }
   return counts;
-}
+};
 
-function countBy<T>(items: readonly T[], predicate: (item: T) => boolean): number {
+const countBy = <T>(items: readonly T[], predicate: (item: T) => boolean): number => {
   return items.reduce((total, item) => (predicate(item) ? total + 1 : total), 0);
-}
+};

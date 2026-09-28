@@ -26,4 +26,9 @@ export class UserResponseDto {
   /** `null` = not chosen; the client falls back to `prefers-color-scheme`. */
   @ApiProperty({ enum: USER_THEMES, required: false, nullable: true })
   preferredTheme: UserTheme | null;
+
+  /** No live role resolves from `roleIds` — the account exists and can sign in
+   *  but may do nothing. Derived per request: a role archived a second ago must
+   *  show here at once. See ADR-0113. */
+  @ApiProperty() hasNoRole: boolean;
 }

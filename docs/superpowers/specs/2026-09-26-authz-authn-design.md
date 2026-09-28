@@ -528,7 +528,9 @@ Today `Approve` exists on one resource and scoping comes only from `assigneeIds`
   permission that appears granted and does nothing.
 
   **Until then `workflowInstances:Approve` is the approval pair, and it is temporary.**
-  The three review routes guard it with a decorator, so it is enforced — but it cannot
+  Four routes guard it with a decorator, so it is enforced — three reachable review
+  actions plus `:id/delegate`, which refuses every request while delegation is off
+  (measured 2026-09-28; ADR-0106 as amended). But it cannot
   distinguish a news approver from a governance approver. In Batch 4:
 
   - a `<entityType>:Approve` pair for every `WORKFLOW_ENTITY_TYPES` member, read by
@@ -989,8 +991,17 @@ Run order matters; each is safe to re-run.
     would find nothing. Never run by the agent; the owner runs it (2026-09-28
     decision closing Batch 2, alongside `users:Archive`/`users:Restore` joining
     the reserved set).
-8. `reset-roles` — archives every non-system role, reports affected accounts and open steps (E1)
-9. `seed-role-templates` — the six (E2; the federation-staff-officer template was removed by owner decision 2026-09-26)
+7c. `migrate-objectid-references` — rewrites references stored as strings to `ObjectId`
+    (Batch 3b, owner decision 2026-09-28). Must run **before** step 8: `detachRole`'s filter
+    carries an `ObjectId` only and MongoDB compares BSON type first, so a `roleIds` entry
+    stored as a string is never matched. E1 refuses to run while any such link exists.
+8. `reset-roles` (**E1**) — archives every non-system role, **detaches it from the accounts that
+   held it** with one audit row each, and reports the role-less accounts and the open workflow
+   steps whose assignees can no longer act. It changes no workflow step (ADR-0113 as amended).
+9. `seed-role-templates` (**E2**) — seeds **five**: the Editor template is refused by name while
+   `own` is unenforced and `PermissionsGuard` rejects scoped grants (ADR-0113 as amended). Matches
+   on `templateKey`, across archived roles too. The federation-staff-officer template was removed
+   by owner decision 2026-09-26.
 10. `recover:super-admin` — break-glass, on demand only (A10)
 
 Steps 8 and 9 are a pair: 8 leaves accounts role-less and marked, and 9 gives the

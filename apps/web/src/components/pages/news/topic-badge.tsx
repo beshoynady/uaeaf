@@ -1,5 +1,5 @@
 import { useTranslations } from "next-intl";
-import { BADGE } from "@/components/ui/surface";
+import { BADGE, BADGE_NEUTRAL } from "@/components/ui/surface";
 import type { ArticleTopic } from "@/lib/api/types";
 
 /**
@@ -22,11 +22,6 @@ const TONES: Record<ArticleTopic, string> = {
     "border-[color:var(--color-topic-records-edge)] bg-[color:var(--color-topic-records-surface)] text-[color:var(--color-topic-records-ink)]",
 };
 
-/** No colour of its own: an article nobody classified is not filed under a
- *  seventh topic. A governed text pair on the recessed ground (ADR-0059 D6). */
-const NEUTRAL =
-  "border-transparent bg-[color:var(--color-surface-sunken)] text-[color:var(--color-text-secondary)]";
-
 /**
  * What a story is about, as a coloured chip (ADR-0094).
  *
@@ -44,7 +39,7 @@ export const TopicBadge = ({ topic }: { topic: ArticleTopic | null }) => {
   const t = useTranslations("News");
 
   return (
-    <span className={`${BADGE} relative text-overline font-bold ${topic ? TONES[topic] : NEUTRAL}`}>
+    <span className={`${BADGE} relative text-overline font-bold ${topic ? TONES[topic] : BADGE_NEUTRAL}`}>
       {topic ? t(`topic_${topic}`) : t("topicNone")}
     </span>
   );

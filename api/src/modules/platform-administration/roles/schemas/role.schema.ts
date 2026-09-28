@@ -33,6 +33,14 @@ export class Role extends BaseSchema {
    *  blocks rename/delete while this is true — see RolesService. */
   @Prop({ type: Boolean, default: false })
   isSystemRole: boolean;
+
+  /** Stable key the template seed matches on; the name cannot serve, since an
+   *  administrator may rename the role. See ADR-0113. */
+  @Prop({ type: String })
+  templateKey?: string;
 }
 
 export const RoleSchema = SchemaFactory.createForClass(Role);
+
+// Sparse: roles created by hand carry no key and must not collide on its absence.
+RoleSchema.index({ templateKey: 1 }, { unique: true, sparse: true });
