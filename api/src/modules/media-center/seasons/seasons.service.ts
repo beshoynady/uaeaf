@@ -283,7 +283,7 @@ export class SeasonsService {
    *  count: what `remove()` reports in its refusal. */
   private async referrersOf(season: SeasonDocument): Promise<string[]> {
     const days = dubaiDayRange(season.startDate, season.endDate);
-    const range = { $gte: days.from, $lt: days.to };
+    const range = { $gte: season.startDate, $lt: season.endDate };
     const [albums, videos] = await Promise.all([
       this.albumsRepository.findPaginated(0, 1, { eventDate: range }),
       this.videosRepository.findPaginated(0, 1, { publishedAt: range }),
@@ -359,4 +359,8 @@ export class SeasonsService {
   private async assertSeason(id: string): Promise<SeasonDocument> {
     const season = await this.repository.findById(id);
     if (!season) {
-      throw new NotFoundException(`Season ${id} not found.`)
+      throw new NotFoundException(`Season ${id} not found.`);
+    }
+    return season;
+  }
+}
