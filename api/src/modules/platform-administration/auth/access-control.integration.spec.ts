@@ -12,6 +12,7 @@ import { Permission, PermissionSchema } from '../permissions/schemas/permission.
 import { RolesRepository } from '../roles/roles.repository.js';
 import { RolesService } from '../roles/roles.service.js';
 import type { RoleAssignmentsRepository } from '../roles/role-assignments.repository.js';
+import type { AuditLogsService } from '../../workflow/audit-logs/audit-logs.service.js';
 import { PermissionsRepository } from '../permissions/permissions.repository.js';
 import { PermissionsService } from '../permissions/permissions.service.js';
 import { JwtStrategy } from './strategies/jwt.strategy.js';
@@ -72,7 +73,12 @@ describe('Access control resolution (integration)', () => {
         throw new Error('detachRole is not part of permission resolution');
       },
     } as unknown as RoleAssignmentsRepository;
-    const rolesService = new RolesService(rolesRepository, permissionsService, roleAssignments);
+    const auditLogs = {
+      write: () => {
+        throw new Error('audit rows are not part of permission resolution');
+      },
+    } as unknown as AuditLogsService;
+    const rolesService = new RolesService(rolesRepository, permissionsService, roleAssignments, auditLogs);
 
     jwtService = new JwtService({ secret: SECRET });
     strategy = new JwtStrategy(

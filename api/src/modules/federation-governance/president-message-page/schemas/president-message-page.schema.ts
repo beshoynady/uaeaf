@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { HeroPageSchema } from '../../../../common/schemas/hero-page.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
@@ -38,13 +38,13 @@ export type PresidentMessagePageDocument = HydratedDocument<PresidentMessagePage
 @Schema({ collection: 'presidentMessagePage', timestamps: true })
 export class PresidentMessagePage extends HeroPageSchema {
   /** Canonical link to the specific presidential appointment/term. */
-  @Prop({ type: Types.ObjectId, ref: 'FederationAppointment', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'FederationAppointment', required: true })
   federationAppointmentId: Types.ObjectId;
 
   /** The president's portrait, distinct from `heroImageId`'s background
    *  (ADR-0044's `featured_image` role). Alt text belongs to the asset, in
    *  `mediaAssets.altText`, and is deliberately not duplicated here. */
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   featuredImageId: Types.ObjectId | null;
 
   /** The pulled quote. A distinct editorial element rendered at every

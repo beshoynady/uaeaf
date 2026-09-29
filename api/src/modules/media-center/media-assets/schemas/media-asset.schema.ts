@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
@@ -13,7 +13,7 @@ export type MediaAssetDocument = HydratedDocument<MediaAsset>;
  *  collection (Domain 6 split); do not add video-handling fields here. */
 @Schema({ collection: 'mediaAssets', timestamps: true })
 export class MediaAsset extends BaseSchema {
-  @Prop({ type: Types.ObjectId, ref: 'Album', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Album', default: null })
   albumId: Types.ObjectId | null;
 
   @Prop({ type: MediaFileSchema, required: true })

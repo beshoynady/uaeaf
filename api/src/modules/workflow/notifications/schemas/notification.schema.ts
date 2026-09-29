@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 
@@ -37,13 +37,13 @@ export class Notification extends BaseSchema {
   @Prop({ type: String, enum: NOTIFICATION_TYPES, required: true })
   type: NotificationType;
 
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
   recipientId: Types.ObjectId;
 
   @Prop({ type: String, enum: NOTIFICATION_TRIGGER_TYPES, required: true })
   triggerType: NotificationTriggerType;
 
-  @Prop({ type: Types.ObjectId, required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, required: true })
   triggerId: Types.ObjectId;
 
   @Prop({ type: String, enum: NOTIFICATION_CHANNELS, required: true })

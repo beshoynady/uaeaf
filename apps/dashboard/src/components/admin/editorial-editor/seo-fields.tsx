@@ -24,6 +24,7 @@ export const SeoFields = ({
   canReadMedia,
   locale,
   onUploaded,
+  shareImage = true,
 }: {
   seo: SeoDraft;
   onChange: (seo: SeoDraft) => void;
@@ -32,6 +33,15 @@ export const SeoFields = ({
   canReadMedia: boolean;
   locale: AppLocale;
   onUploaded: (image: MediaAssetOption) => void;
+  /**
+   * Whether this draws the share-image picker (`seo.ogImageId`).
+   *
+   * Off for a record that carries its own share image elsewhere in the form —
+   * a season keeps `shareImageId` in its visuals section, as the approved form
+   * draws it, and a second picker here would offer two fields for one
+   * picture. The stored `ogImageId` is still sent back untouched.
+   */
+  shareImage?: boolean;
 }) => {
   const t = useTranslations("EditorialEditor");
   const { metaTitle, metaDescription } = seo;
@@ -82,16 +92,18 @@ export const SeoFields = ({
 
       <p className="text-caption text-[color:var(--color-text-muted)]">{t("seoNote")}</p>
 
-      <MediaPicker
-        label={t("shareImage")}
-        value={seo.ogImageId}
-        images={images}
-        canRead={canReadMedia}
-        disabled={disabled}
-        locale={locale}
-        onChange={(ogImageId) => onChange({ ...seo, ogImageId })}
-        onUploaded={onUploaded}
-      />
+      {shareImage ? (
+        <MediaPicker
+          label={t("shareImage")}
+          value={seo.ogImageId}
+          images={images}
+          canRead={canReadMedia}
+          disabled={disabled}
+          locale={locale}
+          onChange={(ogImageId) => onChange({ ...seo, ogImageId })}
+          onUploaded={onUploaded}
+        />
+      ) : null}
 
       <Preview title={metaTitle} description={metaDescription} locale={locale} />
     </>

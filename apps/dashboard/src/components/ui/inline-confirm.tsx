@@ -7,11 +7,18 @@ import { Button } from "@/components/ui/button";
 /**
  * The second press before something that cannot be taken back, drawn in place.
  *
- * Not `ConfirmDialog`: the album screens carry no overlays of any kind (owner
- * brief for this module — "no drawer, no popup, for anything"). The question
+ * Not `ConfirmDialog`: the album and season screens carry no overlays of any
+ * kind (owner brief for the albums module — "no drawer, no popup, for
+ * anything" — and the seasons list follows the same screens). The question
  * appears where the action was asked for, and the rest of the screen stays
  * readable beside it, which matters most when the thing being deleted is a
  * selection the editor wants to check before confirming.
+ *
+ * In `ui/` because two unrelated screens use it. `tone` says what kind of
+ * irreversible step is being confirmed: `destructive` for a removal, and
+ * `primary` for a step that replaces something without destroying it —
+ * making a different season current moves a public redirect, and a red
+ * button would call that a deletion.
  *
  * The two rules `ConfirmDialog` keeps, kept here too:
  *
@@ -27,6 +34,7 @@ export const InlineConfirm = ({
   confirmLabel,
   cancelLabel,
   busy = false,
+  tone = "destructive",
   onConfirm,
   onCancel,
 }: {
@@ -34,6 +42,7 @@ export const InlineConfirm = ({
   confirmLabel: string;
   cancelLabel: string;
   busy?: boolean;
+  tone?: "destructive" | "primary";
   onConfirm: () => void;
   onCancel: () => void;
 }) => {
@@ -46,7 +55,11 @@ export const InlineConfirm = ({
   return (
     <div
       role="alert"
-      className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-md)] border border-[color:var(--color-semantic-error)] bg-[color:var(--color-surface-raised)] px-4 py-3"
+      className={`flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius-md)] border ${
+        tone === "destructive"
+          ? "border-[color:var(--color-semantic-error)]"
+          : "border-[color:var(--color-brand-primary)]"
+      } bg-[color:var(--color-surface-raised)] px-4 py-3`}
     >
       <p className="text-body-sm font-medium text-[color:var(--color-text-primary)]">{message}</p>
       <div className="flex flex-wrap items-center gap-2">
@@ -58,7 +71,7 @@ export const InlineConfirm = ({
           </Button>
         </div>
         <div className="order-1">
-          <Button variant="destructive" loading={busy} onClick={onConfirm}>
+          <Button variant={tone} loading={busy} onClick={onConfirm}>
             {confirmLabel}
           </Button>
         </div>

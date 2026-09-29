@@ -1,5 +1,5 @@
 import { Model, Types } from 'mongoose';
-import type { QueryFilter, UpdateQuery } from 'mongoose';
+import type { ClientSession, QueryFilter, UpdateQuery } from 'mongoose';
 
 /**
  * Soft-delete-aware CRUD for a schema extending BaseSchema. HardDelete is
@@ -131,13 +131,21 @@ export abstract class BaseRepository<T> {
    * A caller that must act exactly once on the transition — a denormalized count
    * that moves with the archive — reads that from the `null`, which `softDelete`
    * cannot tell it because that answers the row either way.
+   *
+   * @param session joins an open transaction, so the archive commits or aborts
+   *   with whatever else that transaction records about it. Without one the
+   *   write behaves exactly as it always has.
    */
-  async archiveIfLive(id: string, archivedBy: Types.ObjectId): Promise<T | null> {
+  async archiveIfLive(
+    id: string,
+    archivedBy: Types.ObjectId,
+    session?: ClientSession,
+  ): Promise<T | null> {
     return this.model
       .findOneAndUpdate(
         { _id: id, archivedAt: null } as QueryFilter<T>,
         { archivedAt: new Date(), archivedBy },
-        { returnDocument: 'after' },
+        { returnDocument: 'after', session },
       )
       .exec();
   }
@@ -167,9 +175,16 @@ export abstract class BaseRepository<T> {
    * rewrite it nor reattribute it to whoever asked again. The row is answered
    * either way, so the caller cannot tell the two calls apart — an idempotent
    * archive, not a refusal.
+   *
+   * @param session joins an open transaction — both the write and the read that
+   *   answers an already-archived row, so neither can see or leave state the
+   *   transaction has not committed.
    */
-  async softDelete(id: string, archivedBy: Types.ObjectId): Promise<T | null> {
-    return (await this.archiveIfLive(id, archivedBy)) ?? this.model.findById(id).exec();
+  async softDelete(id: string, archivedBy: Types.ObjectId, session?: ClientSession): Promise<T | null> {
+    return (
+      (await this.archiveIfLive(id, archivedBy, session)) ??
+      this.model.findById(id).session(session ?? null).exec()
+    );
   }
 
   /** Brings an archived row back — the inverse of `softDelete`, idempotent in

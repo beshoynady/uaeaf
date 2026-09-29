@@ -1,0 +1,48 @@
+{
+  "Metadata": {
+    "title": "UAE Athletics Federation | الاتحاد الإماراتي لألعاب القوى",
+    "description": "UAEAF Digital Ecosystem"
+  },
+  "Pages": {
+    "about": "About the Federation",
+    "news": "News",
+    "athletes": "Athletes",
+    "clubs": "Clubs",
+    "coaches": "Coaches",
+    "disciplines": "Disciplines",
+    "records": "National records",
+    "results-rankings": "Results & rankings",
+    "albums": "Photo albums",
+    "videos": "Videos",
+    "board-members": "Board members",
+    "committees": "Committees",
+    "contact-us": "Contact us",
+    "president-message": "President's Message",
+    "vision-mission": "Vision & Mission",
+    "strategic-plan": "Strategic Plan",
+    "breadcrumbLabel": "Breadcrumb",
+    "policies": "Regulations & Policies"
+  },
+  "Sections": {
+    "boardMembers": "Board members",
+    "registeredAthletes": "Registered athletes",
+    "contactDetails": "Contact details",
+    "email": "Email",
+    "phones": "Phone numbers",
+    "address": "Address",
+    "officeHours": "Office hours",
+    "website": "Website",
+    "map": "Location on the map",
+    "openMap": "Open the map",
+    "socialLinks": "Social links"
+  },
+  "NotFound": {
+    "title": "Page not found",
+    "description": "The link you opened does not point to a page on this site. It may still be in preparation, or its address may have changed.",
+    "backHome": "Back to the homepage",
+    "available": "Pages available now"
+  },
+  "Preparing": {
+    "status": "This page is being prepared."
+  }
+}

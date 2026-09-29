@@ -3,8 +3,10 @@ import type { ReactElement, ReactNode } from "react";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import arMessages from "../../../../messages/ar.json";
+import { loadMessages } from "@/i18n/messages";
 import type { ViewerPhoto } from "@/lib/albums/photo-window";
+
+const arMessages = loadMessages("ar");
 
 import { PhotoSlider } from "./photo-slider";
 

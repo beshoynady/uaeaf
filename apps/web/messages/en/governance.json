@@ -1,0 +1,115 @@
+{
+  "About": {
+    "achievements": {
+      "previous": "Previous achievement",
+      "next": "Next achievement",
+      "medal": {
+        "gold": "Gold",
+        "silver": "Silver",
+        "bronze": "Bronze",
+        "other": "Achievement"
+      }
+    },
+    "timeline": {
+      "category": {
+        "association": "The Association",
+        "firstLeadership": "First leadership",
+        "firstParticipation": "First participation",
+        "federation": "The Federation",
+        "globalMembership": "Global membership",
+        "continentalMembership": "Continental membership"
+      }
+    },
+    "ecosystem": {
+      "source": {
+        "clubs": "Clubs",
+        "athletes": "Athletes",
+        "officials": "Officials",
+        "championships": "Championships"
+      },
+      "unit": {
+        "clubs": "member clubs",
+        "athletes": "registered athletes",
+        "officials": "certified officials",
+        "championships": "championships on the calendar"
+      }
+    }
+  },
+  "VisionMission": {
+    "vision": "Vision",
+    "mission": "Mission",
+    "goals": "Goals",
+    "values": "Our Values",
+    "ctaTitle": "Our Strategy Charts the Path to the Future",
+    "ctaText": "Discover the strategic priorities and pillars guiding the Federation’s journey through the next phase.",
+    "ctaPrimary": "Explore Our Strategic Plan",
+    "ctaSecondary": "About the Federation"
+  },
+  "StrategicPlan": {
+    "phasesLabel": "Phases of the strategic plan",
+    "metricsLabel": "Performance indicators",
+    "executionLabel": "Steps of the execution path",
+    "stepOf": "Step {number} of {total}"
+  },
+  "Policies": {
+    "title": "Regulations and Policies",
+    "intro": "The documents that govern the federation's work: competition and registration regulations, approved policies, and official forms. Every document published here is the version in force.",
+    "breadcrumbLabel": "Breadcrumb",
+    "searchLabel": "Search the documents",
+    "searchPlaceholder": "Regulation or policy name",
+    "clearSearch": "Clear search",
+    "allFilter": "All",
+    "countUnit": "documents",
+    "showing": "Showing {shown} of {total} documents",
+    "groups": {
+      "regulations": {
+        "title": "Regulations",
+        "description": "The rules governing competitions, registration and club membership."
+      },
+      "policies": {
+        "title": "Policies",
+        "description": "Policies approved by the board and binding on every party."
+      },
+      "forms": {
+        "title": "Forms",
+        "description": "The official forms required for applications and submissions."
+      },
+      "guides": {
+        "title": "Guides",
+        "description": "Detailed guidance documents."
+      }
+    },
+    "emptySearchTitle": "No document matches “{query}”",
+    "emptyGroupTitle": "No documents published in this section yet",
+    "emptyDescription": "Try another word, or show every document.",
+    "showAll": "Show all documents",
+    "view": "View document",
+    "download": "Download {title}",
+    "dateLabel": "Published",
+    "sizeLabel": "File size",
+    "featuredBadge": "Core",
+    "seedNotice": "This is a preliminary list: documents are published from the CMS as they are approved, and their files are not yet uploaded.",
+    "governanceTitle": "Governance and strategy",
+    "governanceDescription": "The framework these documents rest on: the federation's vision and mission, and its strategic plan.",
+    "tiles": {
+      "vision": {
+        "title": "Vision and Mission",
+        "description": "What the federation works toward, and the values it works by."
+      },
+      "strategy": {
+        "title": "Strategic Plan",
+        "description": "The goals and workstreams for the coming years."
+      }
+    },
+    "ctaTitle": "Didn't find the document you were looking for?",
+    "ctaDescription": "Contact the federation and we will point you to the right department.",
+    "ctaAction": "Contact us",
+    "types": {
+      "Regulation": "Regulation",
+      "Policy": "Policy",
+      "Form": "Form",
+      "Guide": "Guide",
+      "Decision": "Decision"
+    }
+  }
+}

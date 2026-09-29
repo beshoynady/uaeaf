@@ -24,7 +24,7 @@ const subscribe = (onChange: () => void) => {
 };
 
 /** The stored preference, which is what the switch reports while the device's
- *  high-contrast setting is overriding the attribute (ADR-0121 D9). */
+ *  high-contrast setting is overriding the attribute (ADR-0122 D15). */
 const readTheme = (): Theme => {
   const applied = document.documentElement.getAttribute("data-theme");
   if (applied === "dark" || applied === "light") return applied;
@@ -76,7 +76,7 @@ const MoonIcon = ({ className }: { className?: string }) => (
  * Light and dark. High contrast is not a third position here: it follows the
  * device (`prefers-contrast: more`, `forced-colors: active`) and outranks this
  * control, so a switch with a third state would offer a choice the platform
- * has already made (ADR-0121 D9).
+ * has already made (ADR-0122 D15).
  */
 export const ThemeSwitch = () => {
   const t = useTranslations("Header");

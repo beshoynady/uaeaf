@@ -2,7 +2,7 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { PhotoGrid } from "./photo-grid";
-import { InlineConfirm } from "./inline-confirm";
+import { InlineConfirm } from "@/components/ui/inline-confirm";
 import { AlbumPublishingSection } from "./album-publishing-section";
 import { AlbumAffiliationSection } from "./album-affiliation-section";
 import { UploadList } from "./upload-list";

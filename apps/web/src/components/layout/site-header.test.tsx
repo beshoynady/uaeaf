@@ -1,16 +1,53 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NextIntlClientProvider } from "next-intl";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { SiteHeader } from "./site-header";
 import { HeaderShell } from "./header-shell";
 import { PRIMARY_NAV, type NavItem } from "@/lib/navigation";
 import { renderWithIntl } from "@/test/render-with-intl";
 import { LOCALE_ENDONYM, type AppLocale } from "@/i18n/routing";
-import arMessages from "../../../messages/ar.json";
-import enMessages from "../../../messages/en.json";
+import type { HeaderFeatures } from "@/lib/header/features";
+import { loadMessages } from "@/i18n/messages";
+
+const arMessages = loadMessages("ar");
+const enMessages = loadMessages("en");
+
+/** No source is fetched here: `getHeaderFeatures` is a separate, isolated
+ *  unit (`features.spec.ts`), and every structural/behavioural test in this
+ *  file is unrelated to what a panel's card shows. Resolving instantly to
+ *  every field absent keeps these tests off the network and reproduces the
+ *  fallback cards they already expect. */
+const EMPTY_FEATURES: HeaderFeatures = {
+  presidentExcerpt: null,
+  nextChampionship: null,
+  nextEvent: null,
+  currentSeasonSummary: null,
+  latestArticle: null,
+  latestVideo: null,
+  activeLiveStream: null,
+};
+
+vi.mock("@/lib/header/features", () => ({
+  getHeaderFeatures: vi.fn(async () => EMPTY_FEATURES),
+}));
 
 const messagesByLocale = { ar: arMessages, en: enMessages } as const;
+
+/** The one named format `PublishDate` asks for (`i18n/request.ts`), restated
+ *  here because a bare `NextIntlClientProvider` in a test carries none of the
+ *  server's request config. Only the article teaser tests below render a
+ *  date, so this is scoped to them rather than every render in this file. */
+const DATE_FORMATS = {
+  dateTime: { long: { dateStyle: "long" as const, numberingSystem: "latn" as const } },
+};
+
+const renderEnWithFormats = (ui: React.ReactElement) =>
+  render(
+    <NextIntlClientProvider locale="en" messages={enMessages} formats={DATE_FORMATS}>
+      {ui}
+    </NextIntlClientProvider>,
+  );
 
 const groups = PRIMARY_NAV.filter((item) => item.children);
 const topLevelLinks = PRIMARY_NAV.filter((item) => !item.children);
@@ -40,16 +77,16 @@ describe.each<AppLocale>(["ar", "en"])("SiteHeader (%s)", (locale) => {
   const label = (key: string) => messages.Nav[key as keyof typeof messages.Nav];
   const localePath = (href: string) => `/${locale}${href === "/" ? "" : href}`;
 
-  it("renders a banner containing the labelled main navigation", () => {
-    renderWithIntl(<SiteHeader />, locale);
+  it("renders a banner containing the labelled main navigation", async () => {
+    renderWithIntl(await SiteHeader({ locale }), locale);
     const banner = screen.getByRole("banner");
     expect(
       within(banner).getByRole("navigation", { name: messages.Header.mainNav }),
     ).toBeInTheDocument();
   });
 
-  it("renders each grouping item as a collapsed disclosure button, not a link", () => {
-    renderWithIntl(<SiteHeader />, locale);
+  it("renders each grouping item as a collapsed disclosure button, not a link", async () => {
+    renderWithIntl(await SiteHeader({ locale }), locale);
     expect(groups).toHaveLength(5);
     for (const group of groups) {
       const trigger = screen.getByRole("button", {
@@ -63,8 +100,8 @@ describe.each<AppLocale>(["ar", "en"])("SiteHeader (%s)", (locale) => {
     }
   });
 
-  it("renders each top-level destination as a real link to its own route", () => {
-    renderWithIntl(<SiteHeader />, locale);
+  it("renders each top-level destination as a real link to its own route", async () => {
+    renderWithIntl(await SiteHeader({ locale }), locale);
     expect(topLevelLinks).toHaveLength(1);
     for (const item of topLevelLinks) {
       expect(screen.getByRole("link", { name: label(item.key) })).toHaveAttribute(
@@ -74,8 +111,8 @@ describe.each<AppLocale>(["ar", "en"])("SiteHeader (%s)", (locale) => {
     }
   });
 
-  it("carries every destination exactly once, so the tab order is not doubled", () => {
-    const { container } = renderWithIntl(<SiteHeader />, locale);
+  it("carries every destination exactly once, so the tab order is not doubled", async () => {
+    const { container } = renderWithIntl(await SiteHeader({ locale }), locale);
     const nav = container.querySelector("#primary-nav") as HTMLElement;
     // Read from the DOM, not the accessibility tree, since a closed panel's
     // links are absent from screen-reader queries; `PRIMARY_NAV` itself,
@@ -87,12 +124,17 @@ describe.each<AppLocale>(["ar", "en"])("SiteHeader (%s)", (locale) => {
       a.getAttribute("href"),
     );
     expect(new Set(hrefs).size).toBe(hrefs.length);
-    const expected = leafHrefs(PRIMARY_NAV).map((href) => localePath(href));
+    // The live-stream destination is conditional on a running broadcast
+    // (D3); `SiteHeader` here reads no live stream, so its own leaf is
+    // absent from the DOM on purpose and out of scope for this count.
+    const expected = leafHrefs(PRIMARY_NAV)
+      .filter((href) => href !== "/media/videos#live")
+      .map((href) => localePath(href));
     expect([...hrefs].sort()).toEqual([...expected].sort());
   });
 
-  it("uses the disclosure pattern, never an application menu", () => {
-    const { container } = renderWithIntl(<SiteHeader />, locale);
+  it("uses the disclosure pattern, never an application menu", async () => {
+    const { container } = renderWithIntl(await SiteHeader({ locale }), locale);
     // `role="menu"` / `menuitem` would strip these of their link semantics: a
     // screen reader stops counting them as links, drops them from its links
     // list, and announces "menu item" for something that navigates.
@@ -105,7 +147,7 @@ describe.each<AppLocale>(["ar", "en"])("SiteHeader (%s)", (locale) => {
 describe("SiteHeader disclosure behaviour", () => {
   it("opens a panel on click and reveals its columns and their links with no second click", async () => {
     const user = userEvent.setup();
-    renderWithIntl(<SiteHeader />, "en");
+    renderWithIntl(await SiteHeader({ locale: "en" }), "en");
     const trigger = screen.getByRole("button", { name: /^About$/ });
 
     expect(screen.queryByRole("link", { name: "Board of Directors" })).toBeNull();
@@ -128,7 +170,7 @@ describe("SiteHeader disclosure behaviour", () => {
 
   it("closes on Escape from the trigger itself", async () => {
     const user = userEvent.setup();
-    renderWithIntl(<SiteHeader />, "en");
+    renderWithIntl(await SiteHeader({ locale: "en" }), "en");
     const trigger = screen.getByRole("button", { name: /^About$/ });
 
     await user.click(trigger);
@@ -145,7 +187,7 @@ describe("SiteHeader disclosure behaviour", () => {
     // Escape, so it cannot fail even if focus-return is deleted entirely —
     // focus never left. The real scenario is a reader deep inside the panel.
     const user = userEvent.setup();
-    renderWithIntl(<SiteHeader />, "en");
+    renderWithIntl(await SiteHeader({ locale: "en" }), "en");
     const trigger = screen.getByRole("button", { name: /^About$/ });
 
     await user.click(trigger);
@@ -160,7 +202,7 @@ describe("SiteHeader disclosure behaviour", () => {
 
   it("opens with ArrowDown and lands focus on the first link in the panel", async () => {
     const user = userEvent.setup();
-    renderWithIntl(<SiteHeader />, "en");
+    renderWithIntl(await SiteHeader({ locale: "en" }), "en");
     const trigger = screen.getByRole("button", { name: /^Athletics$/ });
 
     trigger.focus();
@@ -174,7 +216,7 @@ describe("SiteHeader disclosure behaviour", () => {
 
   it("moves between a panel's items with the arrow keys", async () => {
     const user = userEvent.setup();
-    renderWithIntl(<SiteHeader />, "en");
+    renderWithIntl(await SiteHeader({ locale: "en" }), "en");
     await user.click(screen.getByRole("button", { name: /^Athletics$/ }));
 
     const clubs = screen.getByRole("link", { name: /^Clubs/ });
@@ -188,7 +230,7 @@ describe("SiteHeader disclosure behaviour", () => {
 
   it("collapses the second disclosure level: a column's links need no click of their own", async () => {
     const user = userEvent.setup();
-    renderWithIntl(<SiteHeader />, "en");
+    renderWithIntl(await SiteHeader({ locale: "en" }), "en");
 
     await user.click(screen.getByRole("button", { name: /^About$/ }));
     // `Governance` used to be its own floating sub-panel behind a second
@@ -202,7 +244,7 @@ describe("SiteHeader disclosure behaviour", () => {
 
   it("opens only one panel at a time", async () => {
     const user = userEvent.setup();
-    renderWithIntl(<SiteHeader />, "en");
+    renderWithIntl(await SiteHeader({ locale: "en" }), "en");
     const about = screen.getByRole("button", { name: /^About$/ });
     const athletics = screen.getByRole("button", { name: /^Athletics$/ });
 
@@ -215,7 +257,7 @@ describe("SiteHeader disclosure behaviour", () => {
 
   it("keeps the meaning Clubs lost when it stopped being a top-level item", async () => {
     const user = userEvent.setup();
-    renderWithIntl(<SiteHeader />, "en");
+    renderWithIntl(await SiteHeader({ locale: "en" }), "en");
     // "Clubs IS the General Assembly membership listing" is why IA §8.1 gave it
     // top level; carried on the description since it moved inside a panel
     // (ADR-0062).
@@ -227,7 +269,7 @@ describe("SiteHeader disclosure behaviour", () => {
 
   it("drives panel visibility from the hidden attribute in the stacked (non-row) layout", async () => {
     const user = userEvent.setup();
-    const { container } = renderWithIntl(<SiteHeader />, "en");
+    const { container } = renderWithIntl(await SiteHeader({ locale: "en" }), "en");
     const region = () => container.querySelector('[role="region"][aria-label="About"]');
 
     // jsdom's stubbed `matchMedia` answers every query `false`, which is the
@@ -244,7 +286,7 @@ describe("SiteHeader disclosure behaviour", () => {
 describe("SiteHeader current-page state", () => {
   it("marks the current page, and its ancestor group without claiming to be it", async () => {
     const user = userEvent.setup();
-    const { container } = renderWithIntl(<SiteHeader activePath="/clubs" />, "en");
+    const { container } = renderWithIntl(await SiteHeader({ locale: "en", activePath: "/clubs" }), "en");
     await user.click(screen.getByRole("button", { name: /^Athletics$/ }));
 
     expect(screen.getByRole("link", { name: /Clubs/ })).toHaveAttribute("aria-current", "page");
@@ -258,7 +300,7 @@ describe("SiteHeader current-page state", () => {
 describe("SiteHeader — indicator state follows active, not hover", () => {
   it("leaves a hovered non-active trigger's indicator at rest while the active trigger's stays on", async () => {
     const user = userEvent.setup();
-    renderWithIntl(<SiteHeader activePath="/clubs" />, "en");
+    renderWithIntl(await SiteHeader({ locale: "en", activePath: "/clubs" }), "en");
 
     // "Athletics" holds `/clubs` in its panel, so it is the trigger the
     // active indicator belongs to — not the leaf link inside the panel.
@@ -279,7 +321,7 @@ describe("SiteHeader — indicator state follows active, not hover", () => {
 describe("SiteHeader keyboard — Left/Right follow the reading direction", () => {
   it("ArrowRight moves to the next trigger in LTR", async () => {
     const user = userEvent.setup();
-    renderWithDirection(<SiteHeader />, "en", "ltr");
+    renderWithDirection(await SiteHeader({ locale: "en" }), "en", "ltr");
     const about = screen.getByRole("button", { name: /^About$/ });
     const athletics = screen.getByRole("button", { name: /^Athletics$/ });
 
@@ -293,7 +335,7 @@ describe("SiteHeader keyboard — Left/Right follow the reading direction", () =
 
   it("ArrowLeft moves to the visually-next trigger in RTL — not backwards", async () => {
     const user = userEvent.setup();
-    renderWithDirection(<SiteHeader />, "ar", "rtl");
+    renderWithDirection(await SiteHeader({ locale: "ar" }), "ar", "rtl");
     const about = screen.getByRole("button", {
       name: new RegExp(`^${escapeRegExp(arMessages.Nav.about)}`),
     });
@@ -315,7 +357,7 @@ describe("SiteHeader keyboard — Left/Right follow the reading direction", () =
     // `dir="rtl"` is the one combination that only the DOM's actual
     // `direction` can get right.
     const user = userEvent.setup();
-    renderWithDirection(<SiteHeader />, "en", "rtl");
+    renderWithDirection(await SiteHeader({ locale: "en" }), "en", "rtl");
     const about = screen.getByRole("button", { name: /^About$/ });
     const athletics = screen.getByRole("button", { name: /^Athletics$/ });
 
@@ -331,7 +373,7 @@ describe("SiteHeader keyboard — Left/Right follow the reading direction", () =
 describe("SiteHeader — mega panel backdrop", () => {
   it("renders a second backdrop for the row's mega panels, closed until one opens", async () => {
     const user = userEvent.setup();
-    const { container } = renderWithIntl(<SiteHeader />, "en");
+    const { container } = renderWithIntl(await SiteHeader({ locale: "en" }), "en");
     const scrims = container.querySelectorAll(".nav-scrim");
     expect(scrims).toHaveLength(2);
     const panelScrim = scrims[1]!;
@@ -346,7 +388,7 @@ describe("SiteHeader — mega panel backdrop", () => {
 
   it("clicking the panel backdrop closes the open panel", async () => {
     const user = userEvent.setup();
-    const { container } = renderWithIntl(<SiteHeader />, "en");
+    const { container } = renderWithIntl(await SiteHeader({ locale: "en" }), "en");
     const trigger = screen.getByRole("button", { name: /^About$/ });
 
     await user.click(trigger);
@@ -359,15 +401,15 @@ describe("SiteHeader — mega panel backdrop", () => {
 });
 
 describe("SiteHeader — edges and gaps from spacing tokens", () => {
-  it("moves the header's side padding onto --space-10 from xl and --grid-margin-xl from 2xl", () => {
-    const { container } = renderWithIntl(<SiteHeader />, "en");
+  it("moves the header's side padding onto --space-10 from xl and --grid-margin-xl from 2xl", async () => {
+    const { container } = renderWithIntl(await SiteHeader({ locale: "en" }), "en");
     const header = container.querySelector("header")!;
     expect(header.className).toMatch(/xl:px-\[var\(--space-10\)\]/);
     expect(header.className).toMatch(/2xl:px-\[var\(--grid-margin-xl\)\]/);
   });
 
-  it("moves the row's item gap onto --space-6 from xl and --grid-gutter-xl from 2xl", () => {
-    const { container } = renderWithIntl(<SiteHeader />, "en");
+  it("moves the row's item gap onto --space-6 from xl and --grid-gutter-xl from 2xl", async () => {
+    const { container } = renderWithIntl(await SiteHeader({ locale: "en" }), "en");
     const list = container.querySelector("#primary-nav > ul")!;
     expect(list.className).toMatch(/xl:gap-\[var\(--space-6\)\]/);
     expect(list.className).toMatch(/2xl:gap-\[var\(--grid-gutter-xl\)\]/);
@@ -375,8 +417,8 @@ describe("SiteHeader — edges and gaps from spacing tokens", () => {
 });
 
 describe("SiteHeader utilities and drawer", () => {
-  it("renders the utility controls (theme, search, language) as real controls", () => {
-    renderWithIntl(<SiteHeader />, "ar");
+  it("renders the utility controls (theme, search, language) as real controls", async () => {
+    renderWithIntl(await SiteHeader({ locale: "ar" }), "ar");
     expect(screen.getByRole("switch", { name: arMessages.Header.darkMode })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: arMessages.Header.search })).toBeInTheDocument();
     const switcher = screen.getByRole("link", {
@@ -386,8 +428,8 @@ describe("SiteHeader utilities and drawer", () => {
     expect(switcher).toHaveAttribute("hrefLang", "en");
   });
 
-  it("provides a skip link to the main content", () => {
-    renderWithIntl(<SiteHeader />, "en");
+  it("provides a skip link to the main content", async () => {
+    renderWithIntl(await SiteHeader({ locale: "en" }), "en");
     expect(screen.getByRole("link", { name: enMessages.Header.skipLink })).toHaveAttribute(
       "href",
       "#main-content",
@@ -396,7 +438,7 @@ describe("SiteHeader utilities and drawer", () => {
 
   it("toggles the drawer and keeps its links out of the tab order while closed", async () => {
     const user = userEvent.setup();
-    const { container } = renderWithIntl(<SiteHeader />, "en");
+    const { container } = renderWithIntl(await SiteHeader({ locale: "en" }), "en");
     const toggle = screen.getByRole("button", { name: enMessages.Header.menu });
 
     expect(toggle).toHaveAttribute("aria-expanded", "false");
@@ -413,7 +455,7 @@ describe("SiteHeader utilities and drawer", () => {
 
   it("closes the drawer on Escape", async () => {
     const user = userEvent.setup();
-    renderWithIntl(<SiteHeader />, "en");
+    renderWithIntl(await SiteHeader({ locale: "en" }), "en");
     const toggle = screen.getByRole("button", { name: enMessages.Header.menu });
 
     await user.click(toggle);
@@ -424,15 +466,15 @@ describe("SiteHeader utilities and drawer", () => {
     expect(toggle).toHaveAttribute("aria-expanded", "false");
   });
 
-  it("gives the drawer trigger a 44px target", () => {
-    const { container } = renderWithIntl(<SiteHeader />, "en");
+  it("gives the drawer trigger a 44px target", async () => {
+    const { container } = renderWithIntl(await SiteHeader({ locale: "en" }), "en");
     const toggle = container.querySelector('button[aria-controls="primary-nav"]');
     expect(toggle?.className).toMatch(/(?:^|\s)size-11(?:\s|$)/);
   });
 
   it("dims the page behind the drawer without adding a control to reach past it", async () => {
     const user = userEvent.setup();
-    const { container } = renderWithIntl(<SiteHeader />, "en");
+    const { container } = renderWithIntl(await SiteHeader({ locale: "en" }), "en");
     const scrim = container.querySelector(".nav-scrim")!;
 
     expect(scrim).toHaveAttribute("aria-hidden", "true");
@@ -468,6 +510,157 @@ describe("HeaderShell — panel state (brief cases)", () => {
     await user.keyboard("{Escape}");
     expect(about).toHaveAttribute("aria-expanded", "false");
     expect(about).toHaveFocus();
+  });
+});
+
+/** A full set of live values, standing in for a real `getHeaderFeatures`
+ *  read. `nextChampionship`, `nextEvent` and `currentSeasonSummary` stay
+ *  `null` even here — no reader exists for them yet, so a fixture claiming
+ *  otherwise would test a shape the app never produces. */
+const LIVE_FEATURES: HeaderFeatures = {
+  presidentExcerpt: { quote: "A message from the President.", href: "/about/president" },
+  nextChampionship: null,
+  nextEvent: null,
+  currentSeasonSummary: null,
+  latestArticle: {
+    slug: "national-record-trials",
+    title: "New national record set at trials",
+    date: "2026-09-20",
+    category: "General",
+    href: "/news/national-record-trials",
+    cover: null,
+  },
+  latestVideo: { title: "Championship highlights", href: "/media/videos", thumbnailId: null },
+  activeLiveStream: { title: "National Championships — Day 1", href: "/media/videos#live" },
+};
+
+describe("HeaderShell — cards render from server data, not a client fetch", () => {
+  // The feature card is dropped in the stacked (drawer) layout for every
+  // panel but Athletics (`MegaPanel`'s own `showFeature` rule); `isRow`
+  // renders the surface these tests are actually about.
+  it("shows the Media panel's card already in the markup and calls no fetch on open", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch");
+    const user = userEvent.setup();
+    renderWithIntl(<HeaderShell features={LIVE_FEATURES} activePath="/" isRow />, "en");
+
+    await user.click(screen.getByRole("button", { name: /^Media/ }));
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(screen.getByText(LIVE_FEATURES.latestVideo!.title)).toBeInTheDocument();
+    fetchSpy.mockRestore();
+  });
+
+  it("shows the About panel's real excerpt instead of the standing card when one is served", async () => {
+    const user = userEvent.setup();
+    renderWithIntl(<HeaderShell features={LIVE_FEATURES} activePath="/" isRow />, "en");
+    await user.click(screen.getByRole("button", { name: /^About/ }));
+
+    // Scoped to the promoted card itself (`.feature-card`), not the panel at
+    // large: `presidentMessage`'s own column link renders the words
+    // "President's Message" too, so a panel-wide text search would pass
+    // whether or not the excerpt actually replaced the fallback.
+    const card = screen.getByRole("region", { name: /About/i }).querySelector(".feature-card")!;
+    expect(card).toHaveTextContent(LIVE_FEATURES.presidentExcerpt!.quote);
+    expect(card).not.toHaveTextContent("President's Message");
+  });
+
+  it.each([
+    ["presidentExcerpt" as const, /^About/, "President's Message"],
+    ["nextChampionship" as const, /^Championships/, "Championship Calendar"],
+    ["nextEvent" as const, /^Events/, "Upcoming Events"],
+  ])("a missing %s falls back to the standing card in its own panel", async (field, trigger, fallbackText) => {
+    const user = userEvent.setup();
+    renderWithIntl(
+      <HeaderShell features={{ ...LIVE_FEATURES, [field]: null }} activePath="/" isRow />,
+      "en",
+    );
+    await user.click(screen.getByRole("button", { name: trigger }));
+    const card = screen.getByRole("region", { name: trigger }).querySelector(".feature-card")!;
+    expect(card).toHaveTextContent(fallbackText);
+  });
+
+  it("shows the live-stream destination in the Media panel only while a broadcast runs", async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <NextIntlClientProvider locale="en" messages={enMessages}>
+        <HeaderShell features={{ ...LIVE_FEATURES, activeLiveStream: null }} activePath="/" isRow />
+      </NextIntlClientProvider>,
+    );
+    await user.click(screen.getByRole("button", { name: /^Media/ }));
+    const panel = screen.getByRole("region", { name: /Media/i });
+    expect(within(panel).queryByRole("link", { name: /Live Stream/i })).not.toBeInTheDocument();
+
+    rerender(
+      <NextIntlClientProvider locale="en" messages={enMessages}>
+        <HeaderShell features={LIVE_FEATURES} activePath="/" isRow />
+      </NextIntlClientProvider>,
+    );
+    const liveLink = within(screen.getByRole("region", { name: /Media/i })).getByRole("link", {
+      name: /Live Stream/i,
+    });
+    expect(liveLink).toHaveAttribute("href", expect.stringContaining("/media/videos#live"));
+  });
+
+  it("leaves the Championships panel at one column while there is no season summary to show", async () => {
+    const user = userEvent.setup();
+    renderWithIntl(<HeaderShell features={LIVE_FEATURES} activePath="/" isRow />, "en");
+    await user.click(screen.getByRole("button", { name: /^Championships/ }));
+
+    const panel = screen.getByRole("region", { name: /Championships/i });
+    expect(panel.querySelector("[data-columns]")).toHaveAttribute("data-columns", "1");
+  });
+});
+
+describe("HeaderShell — Media panel's middle slot (latest article)", () => {
+  it("shows the article teaser only when latestArticle is present, without disturbing the links column", async () => {
+    const user = userEvent.setup();
+    const { rerender } = renderEnWithFormats(
+      <HeaderShell features={{ ...LIVE_FEATURES, latestArticle: null }} activePath="/" isRow />,
+    );
+    await user.click(screen.getByRole("button", { name: /^Media/ }));
+    let panel = screen.getByRole("region", { name: /Media/i });
+    expect(screen.queryByText(LIVE_FEATURES.latestArticle!.title)).not.toBeInTheDocument();
+    // The real links column — independent of the middle slot's own state —
+    // is what "the column count does not change" guards: adding or removing
+    // the article teaser must never touch it.
+    expect(within(panel).getByRole("link", { name: /News & Articles/ })).toBeInTheDocument();
+    expect(within(panel).getByRole("link", { name: /Photo Albums/ })).toBeInTheDocument();
+    expect(within(panel).getByRole("link", { name: /^Videos$/ })).toBeInTheDocument();
+
+    rerender(
+      <NextIntlClientProvider locale="en" messages={enMessages} formats={DATE_FORMATS}>
+        <HeaderShell features={LIVE_FEATURES} activePath="/" isRow />
+      </NextIntlClientProvider>,
+    );
+    panel = screen.getByRole("region", { name: /Media/i });
+    expect(screen.getByText(LIVE_FEATURES.latestArticle!.title)).toBeInTheDocument();
+    expect(within(panel).getByRole("link", { name: /News & Articles/ })).toBeInTheDocument();
+    expect(within(panel).getByRole("link", { name: /Photo Albums/ })).toBeInTheDocument();
+    expect(within(panel).getByRole("link", { name: /^Videos$/ })).toBeInTheDocument();
+  });
+
+  it("closes the grid to the links column alone without an article, and opens a second track with one", async () => {
+    const user = userEvent.setup();
+    const { rerender } = renderEnWithFormats(
+      <HeaderShell features={{ ...LIVE_FEATURES, latestArticle: null }} activePath="/" isRow />,
+    );
+    await user.click(screen.getByRole("button", { name: /^Media/ }));
+    expect(screen.getByRole("region", { name: /Media/i })).toHaveAttribute("data-columns", "1");
+
+    rerender(
+      <NextIntlClientProvider locale="en" messages={enMessages} formats={DATE_FORMATS}>
+        <HeaderShell features={LIVE_FEATURES} activePath="/" isRow />
+      </NextIntlClientProvider>,
+    );
+    expect(screen.getByRole("region", { name: /Media/i })).toHaveAttribute("data-columns", "2");
+  });
+
+  it("renders no article teaser in the drawer, same as the feature cards", async () => {
+    const user = userEvent.setup();
+    renderWithIntl(<HeaderShell features={LIVE_FEATURES} activePath="/" isRow={false} />, "en");
+    await user.click(screen.getByRole("button", { name: /Navigation menu/ }));
+    await user.click(screen.getByRole("button", { name: /^Media/ }));
+    expect(screen.queryByText(LIVE_FEATURES.latestArticle!.title)).not.toBeInTheDocument();
   });
 });
 
@@ -537,50 +730,60 @@ describe("HeaderShell — drawer is a modal", () => {
     expect(drawer).toHaveAccessibleName(enMessages.Header.menu);
   });
 
-  it("keeps Tab cycling inside the drawer across many presses, forward and backward", async () => {
-    const user = userEvent.setup();
-    renderWithIntl(<HeaderShell features={null} activePath="/" />, "en");
-    await user.click(screen.getByRole("button", { name: /Navigation menu/ }));
+  it(
+    "keeps Tab cycling inside the drawer across many presses, forward and backward",
+    async () => {
+      const user = userEvent.setup();
+      renderWithIntl(<HeaderShell features={null} activePath="/" />, "en");
+      await user.click(screen.getByRole("button", { name: /Navigation menu/ }));
 
-    const drawer = screen.getByRole("dialog");
-    const stops = within(drawer).getAllByRole("button");
-    // A single stop could not distinguish a trap from an accident; five is
-    // the drawer's real top-level disclosure count.
-    expect(stops.length).toBeGreaterThan(1);
+      const drawer = screen.getByRole("dialog");
+      const stops = within(drawer).getAllByRole("button");
+      // A single stop could not distinguish a trap from an accident; five is
+      // the drawer's real top-level disclosure count.
+      expect(stops.length).toBeGreaterThan(1);
 
-    stops[0]!.focus();
-    // Far more presses than the drawer has stops: a trap that merely
-    // redirects the very next Tab proves nothing about the fifth.
-    for (let i = 0; i < stops.length * 4; i += 1) {
-      await user.tab();
-      expect(drawer).toContainElement(document.activeElement as HTMLElement);
-    }
+      stops[0]!.focus();
+      // Far more presses than the drawer has stops: a trap that merely
+      // redirects the very next Tab proves nothing about the fifth.
+      for (let i = 0; i < stops.length * 4; i += 1) {
+        await user.tab();
+        expect(drawer).toContainElement(document.activeElement as HTMLElement);
+      }
 
-    stops[0]!.focus();
-    for (let i = 0; i < stops.length * 4; i += 1) {
-      await user.tab({ shift: true });
-      expect(drawer).toContainElement(document.activeElement as HTMLElement);
-    }
-  });
+      stops[0]!.focus();
+      for (let i = 0; i < stops.length * 4; i += 1) {
+        await user.tab({ shift: true });
+        expect(drawer).toContainElement(document.activeElement as HTMLElement);
+      }
+    },
+    // Longer than the default: the drawer's tools row adds two more stops,
+    // so the same iteration count now presses Tab more times overall.
+    15000,
+  );
 
-  it("keeps the trap accurate after an accordion row adds links mid-session", async () => {
-    const user = userEvent.setup();
-    renderWithIntl(<HeaderShell features={null} activePath="/" />, "en");
-    await user.click(screen.getByRole("button", { name: /Navigation menu/ }));
-    const drawer = screen.getByRole("dialog");
+  it(
+    "keeps the trap accurate after an accordion row adds links mid-session",
+    async () => {
+      const user = userEvent.setup();
+      renderWithIntl(<HeaderShell features={null} activePath="/" />, "en");
+      await user.click(screen.getByRole("button", { name: /Navigation menu/ }));
+      const drawer = screen.getByRole("dialog");
 
-    // Opening a group inserts its column links into the drawer while it is
-    // already open — a trap that captured its element list once, at the
-    // moment it was set up, would not know these exist.
-    await user.click(within(drawer).getByRole("button", { name: /^About/ }));
-    const boardMembers = within(drawer).getByRole("link", { name: "Board of Directors" });
+      // Opening a group inserts its column links into the drawer while it is
+      // already open — a trap that captured its element list once, at the
+      // moment it was set up, would not know these exist.
+      await user.click(within(drawer).getByRole("button", { name: /^About/ }));
+      const boardMembers = within(drawer).getByRole("link", { name: "Board of Directors" });
 
-    boardMembers.focus();
-    for (let i = 0; i < 20; i += 1) {
-      await user.tab();
-      expect(drawer).toContainElement(document.activeElement as HTMLElement);
-    }
-  });
+      boardMembers.focus();
+      for (let i = 0; i < 20; i += 1) {
+        await user.tab();
+        expect(drawer).toContainElement(document.activeElement as HTMLElement);
+      }
+    },
+    15000,
+  );
 
   it("closes on Escape and returns focus to the button that opened it", async () => {
     const user = userEvent.setup();
@@ -629,6 +832,51 @@ describe("HeaderShell — drawer scroll lock", () => {
   });
 });
 
+describe("HeaderShell — drawer tools row", () => {
+  it(
+    "the drawer's bottom row holds the shared capsule, with no duplicate switch or search control",
+    async () => {
+      const user = userEvent.setup();
+      renderWithIntl(<HeaderShell features={null} activePath="/" isRow={false} />, "en");
+      await user.click(screen.getByRole("button", { name: /Navigation menu/ }));
+
+      const drawer = screen.getByRole("dialog");
+      expect(within(drawer).getAllByRole("switch")).toHaveLength(1);
+      expect(within(drawer).getByRole("button", { name: /search/i })).toBeVisible();
+    },
+    15000,
+  );
+
+  it("does not render the drawer's copy while the drawer is closed", () => {
+    renderWithIntl(<HeaderShell features={null} activePath="/" isRow={false} />, "en");
+    // Unscoped: with the drawer closed, the drawer's capsule must not exist
+    // anywhere in the document, not merely be styled out of view — the only
+    // switch left is the header row's own.
+    expect(screen.getAllByRole("switch")).toHaveLength(1);
+    expect(screen.getAllByRole("button", { name: /^Search$/ })).toHaveLength(1);
+  });
+
+  it("does not render the drawer's copy once the row layout takes over", () => {
+    renderWithIntl(<HeaderShell features={null} activePath="/" isRow />, "en");
+    expect(screen.getAllByRole("switch")).toHaveLength(1);
+    expect(screen.getAllByRole("button", { name: /^Search$/ })).toHaveLength(1);
+  });
+
+  it(
+    "keeps search, then language, then theme — the same order as the row",
+    async () => {
+      const user = userEvent.setup();
+      renderWithIntl(<HeaderShell features={null} activePath="/" isRow={false} />, "en");
+      await user.click(screen.getByRole("button", { name: /Navigation menu/ }));
+
+      const drawer = screen.getByRole("dialog");
+      const tools = [...drawer.querySelectorAll<HTMLElement>("[data-tool]")];
+      expect(tools.map((tool) => tool.dataset.tool)).toEqual(["search", "language", "theme"]);
+    },
+    15000,
+  );
+});
+
 describe("HeaderShell — the row appearing while the drawer is open", () => {
   afterEach(() => {
     document.body.style.overflow = "";
@@ -658,5 +906,53 @@ describe("HeaderShell — the row appearing while the drawer is open", () => {
     // page stays unscrollable with the row visible and no cause on screen.
     expect(document.body.style.overflow).toBe("");
     expect(trigger).toHaveFocus();
+  });
+});
+
+describe("HeaderShell — Ctrl/Cmd+K opens search", () => {
+  afterEach(() => {
+    document.body.style.overflow = "";
+  });
+
+  it("Ctrl+K opens the search dialog", async () => {
+    const user = userEvent.setup();
+    renderWithIntl(<HeaderShell features={null} activePath="/" />, "en");
+
+    await user.keyboard("{Control>}k{/Control}");
+    expect(screen.getByRole("dialog", { name: /search/i })).toBeInTheDocument();
+  });
+
+  it("Meta+K opens the search dialog too", async () => {
+    const user = userEvent.setup();
+    renderWithIntl(<HeaderShell features={null} activePath="/" />, "en");
+
+    await user.keyboard("{Meta>}k{/Meta}");
+    expect(screen.getByRole("dialog", { name: /search/i })).toBeInTheDocument();
+  });
+
+  it("is ignored while a text field holds focus, so it cannot steal the key from one", async () => {
+    const user = userEvent.setup();
+    render(
+      <NextIntlClientProvider locale="en" messages={enMessages}>
+        <input aria-label="note" />
+        <HeaderShell features={null} activePath="/" />
+      </NextIntlClientProvider>,
+    );
+
+    await user.click(screen.getByLabelText("note"));
+    await user.keyboard("{Control>}k{/Control}");
+
+    expect(screen.queryByRole("dialog", { name: /search/i })).not.toBeInTheDocument();
+  });
+
+  it("closes on Escape, the same as every other overlay this header opens", async () => {
+    const user = userEvent.setup();
+    renderWithIntl(<HeaderShell features={null} activePath="/" />, "en");
+
+    await user.keyboard("{Control>}k{/Control}");
+    const dialog = screen.getByRole("dialog", { name: /search/i });
+
+    await user.keyboard("{Escape}");
+    expect(dialog).not.toBeInTheDocument();
   });
 });

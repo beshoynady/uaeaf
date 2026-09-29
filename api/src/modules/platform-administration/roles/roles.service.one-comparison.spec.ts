@@ -5,6 +5,7 @@ import { RolesService } from './roles.service.js';
 import { RolesRepository } from './roles.repository.js';
 import { RoleAssignmentsRepository } from './role-assignments.repository.js';
 import { PermissionsService } from '../permissions/permissions.service.js';
+import { AuditLogsService } from '../../workflow/audit-logs/audit-logs.service.js';
 
 /**
  * ADR-0104 created `user-authority.ts` so that role-building and role-
@@ -38,7 +39,8 @@ describe('RolesService.assertGrantable — the one comparison', () => {
             findByIds: jest.fn(),
           },
         },
-        { provide: RoleAssignmentsRepository, useValue: { detachRole: jest.fn() } },
+        { provide: RoleAssignmentsRepository, useValue: { detachRole: jest.fn(async () => []) } },
+        { provide: AuditLogsService, useValue: { write: jest.fn() } },
         { provide: PermissionsService, useValue: { findById: jest.fn() } },
       ],
     }).compile();

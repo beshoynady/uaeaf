@@ -16,6 +16,13 @@ import { missingImpliedReads } from '../../../common/constants/permission-implic
 import { holdsPair, missingPairs, width } from '../users/user-authority.js';
 import type { PermissionCatalogueEntry } from '../../../common/constants/permission-catalogue.js';
 import { isSuperAdminOnly } from '../../../common/authz/capability-map.js';
+import { AuditLogsService } from '../../workflow/audit-logs/audit-logs.service.js';
+import type { RequestContext } from '../../workflow/workflow-instances/workflow-instances.service.js';
+
+/** Why an account lost a role on the rows `remove` writes. Its own value, not
+ *  `reset-roles`'s, so an administrator reading the trail can tell a route an
+ *  administrator took from a maintenance run over the whole collection. */
+export const ROLE_ARCHIVE_DETACH_REASON = 'role-archived';
 
 /** Implements: roles collection, Domain 8 — Platform Administration
  *  (FigJam node 103:7869). */
@@ -25,6 +32,10 @@ export class RolesService {
     private readonly repository: RolesRepository,
     private readonly permissionsService: PermissionsService,
     private readonly assignments: RoleAssignmentsRepository,
+    // ADR-0107: this service writes its own audit rows. The interceptor cannot —
+    // it records the role, and nothing on the route names the accounts that
+    // lost it.
+    private readonly auditLogs: AuditLogsService,
   ) {}
 
   /** @param actorPermissions the acting user's own resolved permission set
@@ -178,7 +189,8 @@ export class RolesService {
   }
 
   /**
-   * Archives a role and removes it from everyone holding it.
+   * Archives a role, removes it from everyone holding it, and records what
+   * each account lost.
    *
    * The detach runs *after* the archive, never before: doing it first would
    * strip the role from every user and then leave the role live if the
@@ -187,6 +199,16 @@ export class RolesService {
    * detach exists so the reference stops appearing on accounts that no
    * screen can explain it on.
    *
+   * One `Update` row per account the role was pulled from, in the shape
+   * `reset-roles` writes so the two paths read alike: the row names the
+   * ACCOUNT, since the role's own `Archive` row — written by
+   * `AuditLogInterceptor` from the route's `@AuditEntity` — already names the
+   * role and cannot name the holders. Without these rows an account could
+   * lose a role with nothing in the trail saying so.
+   *
+   * @param context the request's `{ ipAddress, userAgent }`, from
+   *   `extractRequestContext(req)` at the controller. Defaulted so callers
+   *   with nothing to pass keep working; the rows below are its only readers.
    * @throws NotFoundException when no live role has this id.
    * @throws ForbiddenException when the target is a system role.
    */
@@ -194,12 +216,40 @@ export class RolesService {
     id: string,
     archivedBy: Types.ObjectId,
     actorPermissions: RequiredPermission[],
+    context: RequestContext = {},
   ): Promise<RoleDocument> {
     await this.assertEditable(id);
     await this.assertRemovable(id, actorPermissions);
-    const archived = this.assertUpdated(await this.repository.softDelete(id, archivedBy));
-    await this.assignments.detachRole(id);
-    return archived;
+
+    const session = await this.repository.startSession();
+    try {
+      // One transaction for the whole route, not one per account as the
+      // resumable `reset-roles` script uses: an HTTP request cannot be resumed,
+      // so a partial result leaves nobody to finish it.
+      return await session.withTransaction(async () => {
+        const archived = this.assertUpdated(await this.repository.softDelete(id, archivedBy, session));
+        const detachedFrom = await this.assignments.detachRole(id, session);
+        for (const accountId of detachedFrom) {
+          await this.auditLogs.write(
+            {
+              actorId: archivedBy,
+              action: 'Update',
+              entityType: 'users',
+              entityId: accountId,
+              previousValue: { roleId: id },
+              newValue: null,
+              reason: ROLE_ARCHIVE_DETACH_REASON,
+              ipAddress: context.ipAddress ?? '',
+              userAgent: context.userAgent ?? '',
+            },
+            session,
+          );
+        }
+        return archived;
+      });
+    } finally {
+      await session.endSession();
+    }
   }
 
   /**

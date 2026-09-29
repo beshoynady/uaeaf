@@ -7,6 +7,8 @@ import { RolesService } from './roles.service.js';
 import { RolesRepository } from './roles.repository.js';
 import { RoleAssignmentsRepository } from './role-assignments.repository.js';
 import { PermissionsService } from '../permissions/permissions.service.js';
+import { AuditLogsService } from '../../workflow/audit-logs/audit-logs.service.js';
+import { fakeSession } from '../../../../test/utils/fake-session.js';
 
 describe('RolesService', () => {
   let service: RolesService;
@@ -26,9 +28,11 @@ describe('RolesService', () => {
             findByIdIncludingArchived: jest.fn(),
             updateById: jest.fn(),
             softDelete: jest.fn(),
+            startSession: jest.fn(async () => fakeSession()),
           },
         },
-        { provide: RoleAssignmentsRepository, useValue: { detachRole: jest.fn() } },
+        { provide: RoleAssignmentsRepository, useValue: { detachRole: jest.fn(async () => []) } },
+        { provide: AuditLogsService, useValue: { write: jest.fn() } },
         {
           provide: PermissionsService,
           useValue: {
@@ -307,7 +311,7 @@ describe('RolesService', () => {
 
       await service.remove(id, archivedBy, []);
 
-      expect(repository.softDelete).toHaveBeenCalledWith(id, archivedBy);
+      expect(repository.softDelete).toHaveBeenCalledWith(id, archivedBy, expect.anything());
     });
 
     it('rejects deleting a system role', async () => {

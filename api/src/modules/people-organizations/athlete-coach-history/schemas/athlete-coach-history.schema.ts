@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 
@@ -13,13 +13,13 @@ export type AthleteCoachHistoryDocument = HydratedDocument<AthleteCoachHistory>;
  *  coach is always derived by querying this collection, never denormalized. */
 @Schema({ collection: 'athleteCoachHistory', timestamps: true })
 export class AthleteCoachHistory extends BaseSchema {
-  @Prop({ type: Types.ObjectId, ref: 'Athlete', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Athlete', required: true })
   athleteId: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'Coach', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Coach', required: true })
   coachId: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'Discipline', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Discipline', default: null })
   disciplineId: Types.ObjectId | null;
 
   @Prop({ type: Date, required: true })

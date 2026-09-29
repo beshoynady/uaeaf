@@ -112,7 +112,14 @@ export class PublishingService {
       });
     }
 
-    if (resolved.mode === 'blocked') {
+    // `noPolicy` is an administrator's choice not to require one, not a
+    // broken configuration (owner rule: "no policy" means publish-by-
+    // permission, never blocked) — it falls through to the `Publish` grant
+    // already asserted above, exactly like a policy row with
+    // `workflowRequired: false`. The other three blocked reasons name a
+    // policy that DOES exist and cannot be used, which is a misconfiguration
+    // an administrator must fix, so those still refuse.
+    if (resolved.mode === 'blocked' && resolved.reason !== 'noPolicy') {
       throw new ConflictException({
         code: 'publishingPolicyMissing',
         message: this.blockedMessage(entityType, resolved.reason),

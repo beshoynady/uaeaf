@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
@@ -17,10 +17,10 @@ export class Venue extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   name: LocalizedText;
 
-  @Prop({ type: Types.ObjectId, ref: 'Country', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Country', required: true })
   countryId: Types.ObjectId;
    
-  @Prop({ type: Types.ObjectId, ref: 'Club', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Club', default: null })
   ownerClubId: Types.ObjectId | null;
 
   @Prop({ type: Number, default: null })

@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
@@ -37,13 +37,13 @@ export type AthleteProfileStatus = (typeof ATHLETE_PROFILE_STATUSES)[number];
  *  finding). */
 @Schema({ collection: 'athleteProfiles', timestamps: true })
 export class AthleteProfile extends BaseSchema {
-  @Prop({ type: Types.ObjectId, ref: 'Athlete', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Athlete', required: true })
   athleteId: Types.ObjectId;
 
   @Prop({ required: true, trim: true })
   slug: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'Club', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Club', default: null })
   clubId: Types.ObjectId | null;
 
   @Prop({ required: true, trim: true })
@@ -55,7 +55,7 @@ export class AthleteProfile extends BaseSchema {
   @Prop({ type: String, enum: ATHLETE_PROFILE_STATUSES, required: true })
   status: AthleteProfileStatus;
 
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   photoId: Types.ObjectId | null;
 
   @Prop({ type: LocalizedTextSchema, default: null })

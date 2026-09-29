@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { OrganizationName, OrganizationNameSchema } from '../../../../common/schemas/organization-name.schema.js';
@@ -19,7 +19,7 @@ export class Partnership extends BaseSchema {
   partnerName: OrganizationName;
 
   /** Optional: a partner without a logo shows its name in the logo's place. */
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   partnerLogoId: Types.ObjectId | null;
 
   @Prop({ type: String, enum: PARTNERSHIP_TYPES, required: true })

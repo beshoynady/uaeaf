@@ -1,7 +1,6 @@
 import { render } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import ar from "../../../messages/ar.json";
-import en from "../../../messages/en.json";
+import { loadMessages } from "@/i18n/messages";
 import sitemap from "@/app/sitemap";
 import { PREPARING_PAGES, PUBLIC_PAGES } from "@/lib/pages/public-pages";
 import { absoluteUrl } from "@/lib/seo/metadata";
@@ -28,10 +27,8 @@ const { messageAt } = vi.hoisted(() => ({
 
 // The real messages, so the titles asserted are the ones the site prints.
 vi.mock("next-intl/server", async () => {
-  const messages = {
-    ar: (await import("../../../messages/ar.json")).default,
-    en: (await import("../../../messages/en.json")).default,
-  };
+  const { loadMessages } = await import("@/i18n/messages");
+  const messages = { ar: loadMessages("ar"), en: loadMessages("en") };
   return {
     getTranslations: async ({ locale, namespace }: { locale: "ar" | "en"; namespace?: string }) =>
       (key: string) => messageAt(messages[locale], namespace ? `${namespace}.${key}` : key),
@@ -56,6 +53,8 @@ vi.mock("@/lib/api/public-client", async (importOriginal) => ({
       : { items: [{}], email: "e", introText: { ar: "ن", en: "t" }, messageBody: { ar: "ن", en: "t" }, visionText: { ar: "ن", en: "t" } },
 }));
 
+const ar = loadMessages("ar");
+const en = loadMessages("en");
 const MESSAGES = { ar, en } as const;
 const LOCALES = ["ar", "en"] as const;
 

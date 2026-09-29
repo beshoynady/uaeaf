@@ -7,6 +7,7 @@ import { RolesService } from '../../modules/platform-administration/roles/roles.
 import { RolesRepository } from '../../modules/platform-administration/roles/roles.repository.js';
 import { RoleAssignmentsRepository } from '../../modules/platform-administration/roles/role-assignments.repository.js';
 import { PermissionsService } from '../../modules/platform-administration/permissions/permissions.service.js';
+import { AuditLogsService } from '../../modules/workflow/audit-logs/audit-logs.service.js';
 
 /**
  * Owner decision 4 (2026-09-26) and Q-A (2026-09-27): account and role
@@ -99,7 +100,8 @@ describe('the un-grantable pairs', () => {
         providers: [
           RolesService,
           { provide: RolesRepository, useValue: { create: jest.fn(), findByIds: jest.fn() } },
-          { provide: RoleAssignmentsRepository, useValue: { detachRole: jest.fn() } },
+          { provide: RoleAssignmentsRepository, useValue: { detachRole: jest.fn(async () => []) } },
+          { provide: AuditLogsService, useValue: { write: jest.fn() } },
           { provide: PermissionsService, useValue: { findById: jest.fn() } },
         ],
       }).compile();

@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import {
@@ -99,17 +99,17 @@ export class Album extends BaseSchema {
    *  No `ref:` on any of them: none of the three collections is registered
    *  yet, the same poly-ref pattern this schema already uses.
    */
-  @Prop({ type: Types.ObjectId, default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, default: null })
   championshipId: Types.ObjectId | null;
 
   /** One competition inside `championshipId` — a single final, a single day. */
-  @Prop({ type: Types.ObjectId, default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, default: null })
   competitionId: Types.ObjectId | null;
 
   /** The institutional branch: a conference, an honouring, a signing.
    *  Mutually exclusive with `championshipId` — an occasion is one or the
    *  other, never both. */
-  @Prop({ type: Types.ObjectId, default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, default: null })
   publicEventId: Types.ObjectId | null;
 
   /**
@@ -123,10 +123,10 @@ export class Album extends BaseSchema {
    *  `clubs` are built, so their filters work from day one while the four
    *  above stay hidden until their modules exist.
    */
-  @Prop({ type: [Types.ObjectId], default: [] })
+  @Prop({ type: [MongooseSchema.Types.ObjectId], default: [] })
   athleteIds: Types.ObjectId[];
 
-  @Prop({ type: [Types.ObjectId], default: [] })
+  @Prop({ type: [MongooseSchema.Types.ObjectId], default: [] })
   clubIds: Types.ObjectId[];
 
   /** When the occasion happened — what the card and the period filter show.
@@ -154,7 +154,7 @@ export class Album extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, default: null })
   championshipName: LocalizedText | null;
 
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   coverImageId: Types.ObjectId | null;
 
   @Prop({ type: Number, required: true })
@@ -166,7 +166,7 @@ export class Album extends BaseSchema {
   @Prop({ type: Date, default: null })
   publishedAt: Date | null;
 
-  @Prop({ type: Types.ObjectId, ref: 'User', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', default: null })
   publishedBy: Types.ObjectId | null;
 
   @Prop({ type: [String], default: [] })
@@ -213,3 +213,11 @@ AlbumSchema.index({ athleteIds: 1 });
 AlbumSchema.index({ clubIds: 1 });
 // Finds the one featured album without scanning the collection.
 AlbumSchema.index({ isFeatured: 1, publicationState: 1 });
+
+// Site search. `default_language: 'none'` — see `articles.schema.ts`'s
+// identical index for why: Mongo's stemmer has no Arabic support, and
+// `'english'` would only strip English stop-words out of bilingual text.
+AlbumSchema.index(
+  { 'title.ar': 'text', 'title.en': 'text' },
+  { default_language: 'none', name: 'search_text' },
+);

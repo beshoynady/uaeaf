@@ -6,6 +6,7 @@ import { RolesService } from './roles/roles.service.js';
 import { RolesRepository } from './roles/roles.repository.js';
 import { RoleAssignmentsRepository } from './roles/role-assignments.repository.js';
 import { PermissionsService } from './permissions/permissions.service.js';
+import { AuditLogsService } from '../workflow/audit-logs/audit-logs.service.js';
 import { UsersController } from './users/users.controller.js';
 import { UsersService } from './users/users.service.js';
 import type { AuthenticatedUser } from '../../common/interfaces/jwt-payload.interface.js';
@@ -62,7 +63,8 @@ describe('403 refusals carry distinguishable codes', () => {
               findByIds: jest.fn(),
             },
           },
-          { provide: RoleAssignmentsRepository, useValue: { detachRole: jest.fn() } },
+          { provide: RoleAssignmentsRepository, useValue: { detachRole: jest.fn(async () => []) } },
+          { provide: AuditLogsService, useValue: { write: jest.fn() } },
           { provide: PermissionsService, useValue: { findById: jest.fn() } },
         ],
       }).compile();

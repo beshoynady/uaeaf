@@ -1,5 +1,5 @@
 import { Prop, Schema } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import { BaseSchema } from './base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from './localized-text.schema.js';
 
@@ -61,7 +61,7 @@ export abstract class HeroPageSchema extends BaseSchema {
   @Prop({ type: Boolean, default: true, select: false })
   isActive: boolean;
 
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   heroImageId: Types.ObjectId | null;
 
   @Prop({ type: LocalizedTextSchema, required: true })

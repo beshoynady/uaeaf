@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
@@ -53,13 +53,13 @@ export const HERO_SLIDE_LIMIT = { min: 1, max: 5 } as const;
  *  `videoId`. Not workflow-governed. */
 @Schema({ collection: 'heroSlides', timestamps: true })
 export class HeroSlide extends BaseSchema {
-  @Prop({ type: Types.ObjectId, ref: 'PageSection', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'PageSection', required: true })
   pageSectionId: Types.ObjectId;
 
   @Prop({ type: String, enum: HERO_SLIDE_MEDIA_TYPES, required: true })
   mediaType: HeroSlideMediaType;
 
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   imageAssetId: Types.ObjectId | null;
 
   /** Where the landscape picture must keep looking when the hero's frame
@@ -81,7 +81,7 @@ export class HeroSlide extends BaseSchema {
    *  when `useMobileImage` is true; cropping a 16:9 frame down to a phone's
    *  portrait viewport keeps the pixels and loses the composition, which is
    *  why the field exists at all (owner decision 2026-09-16). */
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   mobileImageAssetId: Types.ObjectId | null;
 
   @Prop({ type: FocalPointSchema, default: () => ({ x: 50, y: 50 }) })
@@ -95,7 +95,7 @@ export class HeroSlide extends BaseSchema {
    *  reason `mobileImageAssetId` is: switching is not deleting. The portrait
    *  phone picture has no English twin; its quiet part is at the bottom, which
    *  reading direction does not move. */
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   ltrImageAssetId: Types.ObjectId | null;
 
   /** Required with `ltrImageAssetId`, and null otherwise, rather than centred
@@ -104,7 +104,7 @@ export class HeroSlide extends BaseSchema {
   @Prop({ type: FocalPointSchema, default: null })
   ltrFocalPoint: FocalPoint | null;
 
-  @Prop({ type: Types.ObjectId, ref: 'Video', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Video', default: null })
   videoId: Types.ObjectId | null;
 
   /** The short line above the title. Present in the approved Figma slide 1

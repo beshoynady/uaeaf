@@ -2,10 +2,12 @@ import { jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { RolesService } from './roles.service.js';
+import { ROLE_ARCHIVE_DETACH_REASON, RolesService } from './roles.service.js';
 import { RolesRepository } from './roles.repository.js';
 import { RoleAssignmentsRepository } from './role-assignments.repository.js';
 import { PermissionsService } from '../permissions/permissions.service.js';
+import { AuditLogsService } from '../../workflow/audit-logs/audit-logs.service.js';
+import { fakeSession } from '../../../../test/utils/fake-session.js';
 
 /**
  * Covers the three defects found on 2026-09-08 while building the roles
@@ -24,9 +26,12 @@ describe('RolesService — lifecycle guards', () => {
   let repository: jest.Mocked<RolesRepository>;
   let assignments: jest.Mocked<RoleAssignmentsRepository>;
   let permissionsService: jest.Mocked<PermissionsService>;
+  let auditLogs: jest.Mocked<AuditLogsService>;
 
   const id = new Types.ObjectId().toString();
   const actor = new Types.ObjectId();
+  const holderA = new Types.ObjectId();
+  const holderB = new Types.ObjectId();
   const name = { en: 'Content Editor', ar: 'محرّر المحتوى' };
 
   beforeEach(async () => {
@@ -42,10 +47,12 @@ describe('RolesService — lifecycle guards', () => {
             findByIdIncludingArchived: jest.fn(),
             updateById: jest.fn(),
             softDelete: jest.fn(),
+            startSession: jest.fn(async () => fakeSession()),
           },
         },
-        { provide: RoleAssignmentsRepository, useValue: { detachRole: jest.fn() } },
+        { provide: RoleAssignmentsRepository, useValue: { detachRole: jest.fn(async () => []) } },
         { provide: PermissionsService, useValue: { findById: jest.fn(), findByIds: jest.fn() } },
+        { provide: AuditLogsService, useValue: { write: jest.fn() } },
       ],
     }).compile();
 
@@ -57,6 +64,7 @@ describe('RolesService — lifecycle guards', () => {
     repository.findByIds.mockResolvedValue([]);
     assignments = module.get(RoleAssignmentsRepository);
     permissionsService = module.get(PermissionsService);
+    auditLogs = module.get(AuditLogsService);
   });
 
   const stored = (over: Record<string, unknown> = {}) =>
@@ -146,13 +154,49 @@ describe('RolesService — lifecycle guards', () => {
       // that no screen could explain.
       repository.findByIdIncludingArchived.mockResolvedValue(stored());
       repository.softDelete.mockResolvedValue(stored({ archivedAt: new Date() }));
-      assignments.detachRole.mockResolvedValue(3);
+      assignments.detachRole.mockResolvedValue([holderA, holderB]);
 
       const result = await service.remove(id, actor, []);
 
-      expect(repository.softDelete).toHaveBeenCalledWith(id, actor);
-      expect(assignments.detachRole).toHaveBeenCalledWith(id);
+      const session = await repository.startSession.mock.results[0].value;
+      expect(repository.softDelete).toHaveBeenCalledWith(id, actor, session);
+      expect(assignments.detachRole).toHaveBeenCalledWith(id, session);
+      // Explicit, because the order is the guarantee: detaching first would
+      // strip the role from everyone and then leave it live if the archive
+      // failed.
+      expect(repository.softDelete.mock.invocationCallOrder[0]).toBeLessThan(
+        assignments.detachRole.mock.invocationCallOrder[0],
+      );
       expect(result).toMatchObject({ archivedAt: expect.any(Date) });
+    });
+
+    it('records one row per account detached, naming the account and not the role', async () => {
+      // The role's own `Archive` row comes from the interceptor and names the
+      // role; nothing on the route can name the accounts that lost it.
+      repository.findByIdIncludingArchived.mockResolvedValue(stored());
+      repository.softDelete.mockResolvedValue(stored({ archivedAt: new Date() }));
+      assignments.detachRole.mockResolvedValue([holderA, holderB]);
+
+      await service.remove(id, actor, [], { ipAddress: '10.0.0.7', userAgent: 'jest-agent' });
+
+      const session = await repository.startSession.mock.results[0].value;
+      expect(auditLogs.write).toHaveBeenCalledTimes(2);
+      for (const holder of [holderA, holderB]) {
+        expect(auditLogs.write).toHaveBeenCalledWith(
+          {
+            actorId: actor,
+            action: 'Update',
+            entityType: 'users',
+            entityId: holder,
+            previousValue: { roleId: id },
+            newValue: null,
+            reason: ROLE_ARCHIVE_DETACH_REASON,
+            ipAddress: '10.0.0.7',
+            userAgent: 'jest-agent',
+          },
+          session,
+        );
+      }
     });
 
     it('does not detach when the archive itself did not happen', async () => {
@@ -238,8 +282,9 @@ describe('RolesService.rename — description', () => {
             findByIds: jest.fn(),
           },
         },
-        { provide: RoleAssignmentsRepository, useValue: { detachRole: jest.fn() } },
+        { provide: RoleAssignmentsRepository, useValue: { detachRole: jest.fn(async () => []) } },
         { provide: PermissionsService, useValue: { findById: jest.fn() } },
+        { provide: AuditLogsService, useValue: { write: jest.fn() } },
       ],
     }).compile();
 

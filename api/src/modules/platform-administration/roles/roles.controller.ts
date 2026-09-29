@@ -1,9 +1,11 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, NotFoundException, Param, Patch, Post, Req } from '@nestjs/common';
+import type { Request } from 'express';
 import { ApiTags } from '@nestjs/swagger';
 import { Types } from 'mongoose';
 import { RequirePermission } from '../../../common/decorators/permissions.decorator.js';
 import { AuditEntity } from '../../../common/decorators/audit-entity.decorator.js';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator.js';
+import { extractRequestContext } from '../../../common/utils/request-context.util.js';
 import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.interface.js';
 import { RolesService } from './roles.service.js';
 import { CreateRoleDto } from './dto/create-role.dto.js';
@@ -76,11 +78,20 @@ export class RolesController {
    *  review, round 4) — without it, `auditActionFor` falls back to the
    *  HTTP method and logs `Delete`, indistinguishable from an irreversible
    *  destruction, for an act that is reversible and merely detaches the
-   *  role from its holders. */
+   *  role from its holders.
+   *
+   *  The request context is passed on because the service writes a row per
+   *  account detached, and a row recorded from a real request carries the real
+   *  address and agent rather than the empty strings a script leaves. */
   @Delete(':id')
   @RequirePermission('roles', 'ManageRoles')
   @AuditEntity({ action: 'Archive' })
-  remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.rolesService.remove(id, new Types.ObjectId(user.userId), user.permissions);
+  remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser, @Req() req: Request) {
+    return this.rolesService.remove(
+      id,
+      new Types.ObjectId(user.userId),
+      user.permissions,
+      extractRequestContext(req),
+    );
   }
 }

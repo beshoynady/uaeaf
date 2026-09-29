@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
@@ -26,7 +26,7 @@ export class Role extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, default: null })
   description: LocalizedText | null;
 
-  @Prop({ type: [Types.ObjectId], ref: 'Permission', default: [] })
+  @Prop({ type: [MongooseSchema.Types.ObjectId], ref: 'Permission', default: [] })
   permissionIds: Types.ObjectId[];
 
   /** True for RBAC-critical seeded roles (e.g. Super Admin). RolesService

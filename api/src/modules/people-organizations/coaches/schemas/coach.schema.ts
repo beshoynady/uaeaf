@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
@@ -28,7 +28,7 @@ export class Coach extends BaseSchema {
   @Prop({ required: true })
   slug: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   photoId: Types.ObjectId | null;
 
   @Prop({ type: String, enum: LICENSE_LEVELS, required: true })
@@ -43,13 +43,13 @@ export class Coach extends BaseSchema {
   @Prop({ required: true, trim: true })
   registrationNumber: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'Club', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Club', default: null })
   clubId: Types.ObjectId | null;
 
-  @Prop({ type: [Types.ObjectId], ref: 'Discipline', default: [] })
+  @Prop({ type: [MongooseSchema.Types.ObjectId], ref: 'Discipline', default: [] })
   disciplineIds: Types.ObjectId[];
 
-  @Prop({ type: Types.ObjectId, ref: 'Country', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Country', required: true })
   nationalityId: Types.ObjectId;
 
   @Prop({ type: LocalizedTextSchema, default: null })
@@ -73,4 +73,11 @@ CoachSchema.index({ slug: 1 }, { unique: true, partialFilterExpression: { archiv
 CoachSchema.index(
   { registrationNumber: 1 },
   { unique: true, partialFilterExpression: { archivedAt: null } },
+);
+
+// Site search. `default_language: 'none'` — see `articles.schema.ts`'s
+// identical index for why.
+CoachSchema.index(
+  { 'fullName.ar': 'text', 'fullName.en': 'text' },
+  { default_language: 'none', name: 'search_text' },
 );

@@ -1644,7 +1644,7 @@ Expected: PASS.
 
 > هذا يعدّل سلوك ADR-0062 D4 («disclosure, not a modal»). القرار مالكي، ويُسجَّل في ADR-0121 كتعديل لا كإصلاح عيب.
 
-- [ ] **Step 1: اكتب الاختبار الفاشل**
+- [x] **Step 1: اكتب الاختبار الفاشل**
 
 ```tsx
 it("Tab يدور داخل الدرج ولا يخرج منه", async () => {
@@ -1671,12 +1671,12 @@ it("Escape يغلق الدرج ويعيد البؤرة لزر القائمة", a
 });
 ```
 
-- [ ] **Step 2: شغّل وتأكد من الفشل**
+- [x] **Step 2: شغّل وتأكد من الفشل**
 
 Run: `cd apps/web && npx vitest run src/components/layout/site-header.test.tsx -t Tab`
 Expected: FAIL — لا `role="dialog"` ولا حبس.
 
-- [ ] **Step 3: اكتب الـhook**
+- [x] **Step 3: اكتب الـhook**
 
 ```ts
 /**
@@ -1723,11 +1723,11 @@ const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
 ```
 
-- [ ] **Step 4: اربطه بالدرج**
+- [x] **Step 4: اربطه بالدرج**
 
 في `header-shell.tsx`، غلّف الدرج بـ`role="dialog" aria-modal="true" aria-label={t("menu")}` واستدعِ `useFocusTrap(drawerRef, drawerOpen)`.
 
-- [ ] **Step 5: شغّل**
+- [x] **Step 5: شغّل**
 
 Run: `cd apps/web && npx vitest run src/components/layout && npx tsc --noEmit`
 Expected: PASS.
@@ -1740,7 +1740,7 @@ Expected: PASS.
 - Modify: `apps/web/src/components/layout/header-shell.tsx`
 - Test: `apps/web/src/components/layout/site-header.test.tsx`
 
-- [ ] **Step 1: اكتب الاختبار الفاشل**
+- [x] **Step 1: اكتب الاختبار الفاشل**
 
 ```tsx
 it("فتح الدرج يوقف تمرير الصفحة، وإغلاقه يعيده", async () => {
@@ -1755,12 +1755,12 @@ it("فتح الدرج يوقف تمرير الصفحة، وإغلاقه يعيد
 });
 ```
 
-- [ ] **Step 2: شغّل وتأكد من الفشل**
+- [x] **Step 2: شغّل وتأكد من الفشل**
 
 Run: `cd apps/web && npx vitest run src/components/layout/site-header.test.tsx -t تمرير`
 Expected: FAIL.
 
-- [ ] **Step 3: نفّذ**
+- [x] **Step 3: نفّذ**
 
 ```tsx
 useEffect(() => {
@@ -1775,7 +1775,7 @@ useEffect(() => {
 }, [drawerOpen]);
 ```
 
-- [ ] **Step 4: شغّل**
+- [x] **Step 4: شغّل**
 
 Run: `cd apps/web && npx vitest run src/components/layout`
 Expected: PASS.
@@ -1790,7 +1790,7 @@ Expected: PASS.
 
 **Review Focus #5 مثبَّت هنا.**
 
-- [ ] **Step 1: اكتب الاختبار الفاشل**
+- [x] **Step 1: اكتب الاختبار الفاشل**
 
 ```tsx
 it("ظهور الصف يغلق الدرج ويفك قفل التمرير", async () => {
@@ -1804,12 +1804,12 @@ it("ظهور الصف يغلق الدرج ويفك قفل التمرير", async
 });
 ```
 
-- [ ] **Step 2: شغّل وتأكد من الفشل**
+- [x] **Step 2: شغّل وتأكد من الفشل**
 
 Run: `cd apps/web && npx vitest run src/components/layout/site-header.test.tsx -t الصف`
 Expected: FAIL — الدرج يبقى مفتوحًا والقفل قائمًا، فتصير الصفحة غير قابلة للتمرير بلا سبب مرئي.
 
-- [ ] **Step 3: نفّذ — أثناء الـrender لا في effect**
+- [x] **Step 3: نفّذ — أثناء الـrender لا في effect**
 
 ```tsx
 // Adjusted during render, React's documented "state derived from a prop"
@@ -1822,7 +1822,7 @@ if (isRow !== wasRow) {
 }
 ```
 
-- [ ] **Step 4: شغّل**
+- [x] **Step 4: شغّل**
 
 Run: `cd apps/web && npx vitest run src/components/layout && npx tsc --noEmit`
 Expected: PASS.
@@ -1835,7 +1835,7 @@ Expected: PASS.
 - Modify: `apps/web/src/components/layout/header-shell.tsx`
 - Test: `apps/web/src/components/layout/site-header.test.tsx`
 
-- [ ] **Step 1: اكتب الاختبار الفاشل**
+- [x] **Step 1: اكتب الاختبار الفاشل**
 
 ```tsx
 it("الكبسولة نفسها في أسفل الدرج، بلا ازدواج في ترتيب الـTab", async () => {
@@ -1847,21 +1847,21 @@ it("الكبسولة نفسها في أسفل الدرج، بلا ازدواج �
 });
 ```
 
-- [ ] **Step 2: شغّل وتأكد من الفشل**
+- [x] **Step 2: شغّل وتأكد من الفشل**
 
 Run: `cd apps/web && npx vitest run src/components/layout/site-header.test.tsx -t الكبسولة`
 Expected: FAIL.
 
-- [ ] **Step 3: نفّذ**
+- [x] **Step 3: نفّذ**
 
 `<HeaderToolsCapsule layout="drawer" onOpenSearch={openSearch} />` في أسفل الدرج. الكبسولة في الصف مخفية تحت 1280 بـ`hidden xl:flex`، وفي الدرج ظاهرة فقط وهو مفتوح — فلا يوجد نسختان في ترتيب الـTab في أي لحظة.
 
-- [ ] **Step 4: شغّل**
+- [x] **Step 4: شغّل**
 
 Run: `cd apps/web && npx vitest run src/components/layout && npx tsc --noEmit`
 Expected: PASS.
 
-- [ ] **Step 5: الـcommit — سلّم هذا النص للمالك**
+- [x] **Step 5: الـcommit — سلّم هذا النص للمالك**
 
 ```
 git add apps/web/src/components/layout
@@ -1899,7 +1899,7 @@ git commit -m "feat(web): header v2 modal drawer with focus trap and tools row"
 
 > قاعدة الـshared components: الجزء يُستعمل في مكانين (الهيرو، وبطاقة الفعالية في الهيدر) فيصير مكوّنًا واحدًا. المنطق لا يتغيّر — `eventBarState` من `@uaeaf/content/hero` كما هو، بتوقيت Asia/Dubai، وتحديث على حدّ الدقيقة لا كل ثانية.
 
-- [ ] **Step 1: اكتب الاختبار الفاشل**
+- [x] **Step 1: اكتب الاختبار الفاشل**
 
 ```tsx
 import { describe, expect, it } from "vitest";
@@ -1927,12 +1927,12 @@ describe("العداد", () => {
 });
 ```
 
-- [ ] **Step 2: شغّل وتأكد من الفشل**
+- [x] **Step 2: شغّل وتأكد من الفشل**
 
 Run: `cd apps/web && npx vitest run src/components/shared/countdown.spec.tsx`
 Expected: FAIL — الملف غير موجود.
 
-- [ ] **Step 3: انقل الملف وأعد تسمية الـexport**
+- [x] **Step 3: انقل الملف وأعد تسمية الـexport**
 
 النقل يدوي — `git mv` ممنوع (CLAUDE.md §33). أنشئ `components/shared/countdown.tsx` بمحتوى `components/pages/home/hero-countdown.tsx` حرفيًا، ثم:
 
@@ -1942,7 +1942,7 @@ rm apps/web/src/components/pages/home/hero-countdown.tsx
 
 غيّر `export const HeroCountdown` إلى `export const Countdown`، وحدّث الاستيراد في `hero-event-bar.tsx` من `./hero-countdown` إلى `@/components/shared/countdown`. **لا تغيير في جسم المكوّن** — لا في `useEffect`، ولا في حدّ الدقيقة، ولا في `aria-live="off"`.
 
-- [ ] **Step 4: شغّل**
+- [x] **Step 4: شغّل**
 
 Run: `cd apps/web && npx vitest run src/components/shared src/components/pages/home && npx tsc --noEmit`
 Expected: PASS — اختبارات الهيرو القائمة تبقى خضراء.
@@ -1974,7 +1974,7 @@ export const getHeaderFeatures = (locale: AppLocale): Promise<HeaderFeatures>;
 
 **Review Focus #3 مثبَّت هنا.**
 
-- [ ] **Step 1: اكتب الاختبار الفاشل**
+- [x] **Step 1: اكتب الاختبار الفاشل**
 
 ```ts
 import { describe, expect, it, vi } from "vitest";
@@ -2009,12 +2009,12 @@ describe("getHeaderFeatures", () => {
 });
 ```
 
-- [ ] **Step 2: شغّل وتأكد من الفشل**
+- [x] **Step 2: شغّل وتأكد من الفشل**
 
 Run: `cd apps/web && npx vitest run src/lib/header/features.spec.ts`
 Expected: FAIL — الملف غير موجود.
 
-- [ ] **Step 3: نفّذ**
+- [x] **Step 3: نفّذ**
 
 ```ts
 /**
@@ -2071,7 +2071,7 @@ const readLatestArticle = async (locale: AppLocale) => {
 ```
 > `try/catch` **و**`allSettled` معًا عن قصد: الأول يحوّل الفشل إلى `null` داخل القارئ، والثاني يلتقط ما يرمي خارجه (خطأ برمجي في التحويل نفسه). أحدهما وحده يترك ثغرة.
 
-- [ ] **Step 4: شغّل**
+- [x] **Step 4: شغّل**
 
 Run: `cd apps/web && npx vitest run src/lib/header/features.spec.ts`
 Expected: PASS.
@@ -2091,7 +2091,7 @@ Expected: PASS.
 
 **Review Focus #2 مثبَّت هنا.**
 
-- [ ] **Step 1: اكتب الاختبار الفاشل**
+- [x] **Step 1: اكتب الاختبار الفاشل**
 
 ```tsx
 it("بند البث يظهر أثناء البث فقط", () => {
@@ -2109,12 +2109,12 @@ it("غياب البث لا يترك فاصلًا معلقًا ولا يغير ع
 });
 ```
 
-- [ ] **Step 2: شغّل وتأكد من الفشل**
+- [x] **Step 2: شغّل وتأكد من الفشل**
 
 Run: `cd apps/web && npx vitest run src/components/layout/mega/mega-column.spec.tsx -t البث`
 Expected: FAIL — البند يُرسم دائمًا.
 
-- [ ] **Step 3: نفّذ**
+- [x] **Step 3: نفّذ**
 
 ```tsx
 // The one conditional destination in the tree. It is filtered here rather than
@@ -2138,7 +2138,7 @@ const visible = column.children!.filter((item) => item.key !== "liveStream" || l
 ```
 > `--motion-duration-ambient` (1200ms) هو التوكن الوحيد لنبض مستمر. الحركة تتوقف تحت `prefers-reduced-motion` بالإعادة العامة في `base.css`، وتبقى النقطة ظاهرة ساكنة.
 
-- [ ] **Step 4: أضف `id="live"` على مسرح البث**
+- [x] **Step 4: أضف `id="live"` على مسرح البث**
 
 في `library-screen.tsx` عند `:194`، على العنصر الذي يحوي مسرح البث:
 ```tsx
@@ -2146,7 +2146,7 @@ const visible = column.children!.filter((item) => item.key !== "liveStream" || l
 ```
 > هذا ما يجعل `/media/videos#live` يهبط على البث لا على أعلى الصفحة. القسم موجود فقط حين `live` موجود، وهو نفس شرط ظهور البند في الهيدر — فلا يوجد anchor يقود إلى لا شيء.
 
-- [ ] **Step 5: شغّل**
+- [x] **Step 5: شغّل**
 
 Run: `cd apps/web && npx vitest run src/components/layout/mega src/components/pages/video && npx tsc --noEmit`
 Expected: PASS.
@@ -2164,7 +2164,7 @@ Expected: PASS.
 - Consumes: `getHeaderFeatures` من D2.
 - Produces: `SiteHeader` بلا props، server. `HeaderShell` يقبل `features: HeaderFeatures`.
 
-- [ ] **Step 1: اكتب الاختبار الفاشل**
+- [x] **Step 1: اكتب الاختبار الفاشل**
 
 ```tsx
 it("اللوحات في الـHTML من الخادم — لا جلب عند الفتح", async () => {
@@ -2176,12 +2176,12 @@ it("اللوحات في الـHTML من الخادم — لا جلب عند ال
 });
 ```
 
-- [ ] **Step 2: شغّل وتأكد من الفشل**
+- [x] **Step 2: شغّل وتأكد من الفشل**
 
 Run: `cd apps/web && npx vitest run src/components/layout/site-header.test.tsx -t الخادم`
 Expected: FAIL — `HeaderShell` لا يقبل `features` بعد.
 
-- [ ] **Step 3: اكتب `SiteHeader` الجديد**
+- [x] **Step 3: اكتب `SiteHeader` الجديد**
 
 ```tsx
 /**
@@ -2199,7 +2199,7 @@ export const SiteHeader = async ({ activePath }: { activePath?: string }) => {
 ```
 انقل إلى `header-shell.tsx`: `"use client"`، وحالة `scrolled`، و`onHeaderKeyDown`، والـscrim، وكل JSX الهيدر. `site-header.tsx` لا يبقى فيه إلا ما فوق.
 
-- [ ] **Step 4: شغّل**
+- [x] **Step 4: شغّل**
 
 Run: `cd apps/web && npx vitest run src/components/layout && npx tsc --noEmit`
 Expected: PASS.
@@ -2213,7 +2213,7 @@ Expected: PASS.
 - Modify: `apps/web/src/components/layout/header-shell.tsx`
 - Test: `apps/web/src/components/layout/cards/feature-card.spec.tsx`
 
-- [ ] **Step 1: اكتب الاختبار الفاشل — جدول الـfallbacks من §8**
+- [x] **Step 1: اكتب الاختبار الفاشل — جدول الـfallbacks من §8**
 
 ```tsx
 describe("جدول الـfallbacks", () => {
@@ -2240,12 +2240,12 @@ describe("جدول الـfallbacks", () => {
 });
 ```
 
-- [ ] **Step 2: شغّل وتأكد من الفشل**
+- [x] **Step 2: شغّل وتأكد من الفشل**
 
 Run: `cd apps/web && npx vitest run src/components/layout/cards`
 Expected: FAIL.
 
-- [ ] **Step 3: نفّذ — البطاقة أو بديلها، لكل لوحة**
+- [x] **Step 3: نفّذ — البطاقة أو بديلها، لكل لوحة**
 
 ```tsx
 /** The panel's card, or the standing card that stands in for it. */
@@ -2279,7 +2279,7 @@ export const panelFeature = (key: string, features: HeaderFeatures) => {
 };
 ```
 
-- [ ] **Step 4: بطاقة الفعالية تحمل العدّاد**
+- [x] **Step 4: بطاقة الفعالية تحمل العدّاد**
 
 ```tsx
 <EventCard
@@ -2294,12 +2294,12 @@ export const panelFeature = (key: string, features: HeaderFeatures) => {
 ```
 > الحالة الأولى تُحسب على الخادم فيرى القارئ رقمًا حقيقيًا في أول إطار وبلا JavaScript؛ العميل يتابع من القيمة نفسها. هذا سلوك `Countdown` القائم، لا جديد.
 
-- [ ] **Step 5: شغّل**
+- [x] **Step 5: شغّل**
 
 Run: `cd apps/web && npx vitest run src/components/layout && npx tsc --noEmit`
 Expected: PASS.
 
-- [ ] **Step 6: الـcommit — سلّم هذا النص للمالك**
+- [x] **Step 6: الـcommit — سلّم هذا النص للمالك**
 
 ```
 git add apps/web/src/lib/header apps/web/src/components/layout apps/web/src/components/shared apps/web/src/components/pages
@@ -2418,7 +2418,7 @@ export const SEARCH_SOURCES: readonly SearchSource[] = [...];
 
 > **قرار مطلوب من المالك (أ/ب)** — انظر §القرارات في التقرير. الخطة مكتوبة لـ**(أ)**، لأن `MONGODB_URI=mongodb://127.0.0.1:27017/uaeaf` أي لا يوجد Atlas cluster أصلًا، فـ`lucene.arabic` ليس خيارًا متاحًا اليوم.
 
-- [ ] **Step 1: اكتب الاختبار الفاشل**
+- [x] **Step 1: اكتب الاختبار الفاشل**
 
 ```ts
 import { normalizeArabic } from './arabic-normalize.js';
@@ -2447,12 +2447,12 @@ describe('normalizeArabic', () => {
 });
 ```
 
-- [ ] **Step 2: شغّل وتأكد من الفشل**
+- [x] **Step 2: شغّل وتأكد من الفشل**
 
 Run: `cd api && npx jest --runInBand arabic-normalize`
 Expected: FAIL — الملف غير موجود.
 
-- [ ] **Step 3: نفّذ**
+- [x] **Step 3: نفّذ**
 
 ```ts
 /**
@@ -2480,7 +2480,7 @@ export const normalizeArabic = (text: string): string =>
     .trim();
 ```
 
-- [ ] **Step 4: شغّل**
+- [x] **Step 4: شغّل**
 
 Run: `cd api && npx jest --runInBand arabic-normalize`
 Expected: PASS.
@@ -2502,7 +2502,7 @@ Expected: PASS.
 
 **Review Focus #4 مثبَّت هنا.**
 
-- [ ] **Step 1: اكتب الاختبار الفاشل**
+- [x] **Step 1: اكتب الاختبار الفاشل**
 
 ```ts
 describe('SearchService', () => {
@@ -2536,12 +2536,12 @@ describe('SearchService', () => {
 });
 ```
 
-- [ ] **Step 2: شغّل وتأكد من الفشل**
+- [x] **Step 2: شغّل وتأكد من الفشل**
 
 Run: `cd api && npx jest --runInBand search.service`
 Expected: FAIL — الملف غير موجود.
 
-- [ ] **Step 3: نفّذ**
+- [x] **Step 3: نفّذ**
 
 ```ts
 const MIN_QUERY = 2;
@@ -2581,7 +2581,7 @@ export class SearchService {
 }
 ```
 
-- [ ] **Step 4: شغّل**
+- [x] **Step 4: شغّل**
 
 Run: `cd api && npx jest --runInBand search`
 Expected: PASS.
@@ -2598,7 +2598,7 @@ Expected: PASS.
 - Modify: ستة ملفات `*.schema.ts` — **سطر `Schema.index(...)` فقط، ولا حقل**
 - Test: `api/src/modules/platform-administration/search/search.controller.spec.ts`
 
-- [ ] **Step 1: تحقّق من الـindexes النصّية القائمة قبل أي إضافة**
+- [x] **Step 1: تحقّق من الـindexes النصّية القائمة قبل أي إضافة**
 
 ```bash
 mongosh "mongodb://127.0.0.1:27017/uaeaf" --quiet --eval '
@@ -2610,7 +2610,7 @@ mongosh "mongodb://127.0.0.1:27017/uaeaf" --quiet --eval '
 ```
 > مجموعة تعيد غير `none` ⟵ **وسّع الـindex الموجود، لا تضف ثانيًا.** MongoDB يسمح بواحد لكل collection ويرفض الثاني بخطأ عند الإقلاع.
 
-- [ ] **Step 2: اكتب الاختبار الفاشل**
+- [x] **Step 2: اكتب الاختبار الفاشل**
 
 ```ts
 describe('GET /search/public', () => {
@@ -2628,12 +2628,12 @@ describe('GET /search/public', () => {
 });
 ```
 
-- [ ] **Step 3: شغّل وتأكد من الفشل**
+- [x] **Step 3: شغّل وتأكد من الفشل**
 
 Run: `cd api && npx jest --runInBand search.controller`
 Expected: FAIL — لا مسار.
 
-- [ ] **Step 4: اكتب الـcontroller**
+- [x] **Step 4: اكتب الـcontroller**
 
 ```ts
 @Controller('search')
@@ -2652,7 +2652,7 @@ export class SearchController {
 ```
 > `@RateLimit` — راجع توقيع `rate-limit.decorator.ts` القائم واستعمله كما هو؛ القيم أعلاه اقتراح يُثبَّت بعد قراءته.
 
-- [ ] **Step 5: أضف الـindexes — سطر واحد لكل schema**
+- [x] **Step 5: أضف الـindexes — سطر واحد لكل schema**
 
 في نهاية كل ملف schema، بجوار الـindexes القائمة:
 ```ts
@@ -2666,13 +2666,13 @@ ArticleSchema.index(
 > `default_language: 'none'` مقصود: مجذّع MongoDB لا يدعم العربية، و`'english'` كان سيجذّع اللاتيني فقط ويترك العربي كما هو مع كلمات وقف إنجليزية تُحذف من نصّ عربي بلا سبب.
 > **ولا حقل واحد يُضاف أو يُعدَّل في أي schema.**
 
-- [ ] **Step 6: سجّل الـmodule وشغّل**
+- [x] **Step 6: سجّل الـmodule وشغّل**
 
 Run: `cd api && npx tsc --noEmit && npx jest --runInBand search`
 Expected: PASS.
 > **لا تشغّل `nest build` والـAPI يعمل تحت `--watch`** — يترك الخادم مرتبطًا بلا شيء (سابقة موثّقة مرتين). `npx tsc --noEmit` للتحقق النوعي.
 
-- [ ] **Step 7: الـcommit — سلّم هذا النص للمالك**
+- [x] **Step 7: الـcommit — سلّم هذا النص للمالك**
 
 ```
 git add api/src/modules/platform-administration/search api/src/app.module.ts api/src/modules
@@ -2702,7 +2702,7 @@ git commit -m "feat(api): public site search over registered sources"
 - Consumes: `GET /search/public` من E3.
 - Produces: `<SearchDialog open onClose />`.
 
-- [ ] **Step 1: اكتب الاختبار الفاشل**
+- [x] **Step 1: اكتب الاختبار الفاشل**
 
 ```tsx
 describe('نافذة البحث', () => {
@@ -2742,12 +2742,12 @@ describe('نافذة البحث', () => {
 });
 ```
 
-- [ ] **Step 2: شغّل وتأكد من الفشل**
+- [x] **Step 2: شغّل وتأكد من الفشل**
 
 Run: `cd apps/web && npx vitest run src/components/search`
 Expected: FAIL — الملف غير موجود.
 
-- [ ] **Step 3: نفّذ — Escape أولًا**
+- [x] **Step 3: نفّذ — Escape أولًا**
 
 ```tsx
 /**
@@ -2806,7 +2806,7 @@ export const SearchDialog = ({ open, onClose }: { open: boolean; onClose: () => 
 > `useSearch(term)` في `lib/search/client.ts`: يؤخّر الطلب 200ms بعد آخر ضغطة، ويُلغي الطلب السابق بـ`AbortController`، ويعيد `state: 'idle' | 'loading' | 'ready' | 'error'`. الإلغاء ليس تحسينًا: بدونه يصل ردّ استعلام قديم بعد الجديد ويكتب فوقه.
 > الحقل `type="text"` لا `type="search"`، للسبب أعلاه.
 
-- [ ] **Step 4: النتائج مجمّعة بالنوع**
+- [x] **Step 4: النتائج مجمّعة بالنوع**
 
 ```tsx
 <ul role="listbox" id={listId} aria-label={t('resultsLabel')}>
@@ -2826,7 +2826,7 @@ export const SearchDialog = ({ open, onClose }: { open: boolean; onClose: () => 
 ```
 وحالة التحميل `role="status"` بنص «جارٍ البحث»، وحالة الفراغ والخطأ نصّان مختلفان: «لا نتائج لـ…» ليست «تعذّر البحث».
 
-- [ ] **Step 5: شغّل**
+- [x] **Step 5: شغّل**
 
 Run: `cd apps/web && npx vitest run src/components/search && npx tsc --noEmit`
 Expected: PASS.
@@ -2839,7 +2839,7 @@ Expected: PASS.
 - Modify: `apps/web/src/components/layout/header-shell.tsx`
 - Test: `apps/web/src/components/layout/site-header.test.tsx`
 
-- [ ] **Step 1: اكتب الاختبار الفاشل**
+- [x] **Step 1: اكتب الاختبار الفاشل**
 
 ```tsx
 it('Ctrl+K و Meta+K يفتحان البحث', async () => {
@@ -2856,12 +2856,12 @@ it('الاختصار لا يسرق المفتاح من حقل كتابة', async
 });
 ```
 
-- [ ] **Step 2: شغّل وتأكد من الفشل**
+- [x] **Step 2: شغّل وتأكد من الفشل**
 
 Run: `cd apps/web && npx vitest run src/components/layout/site-header.test.tsx -t Ctrl`
 Expected: FAIL.
 
-- [ ] **Step 3: نفّذ**
+- [x] **Step 3: نفّذ**
 
 ```tsx
 useEffect(() => {
@@ -2883,7 +2883,7 @@ useEffect(() => {
 ```
 > حقل البحث في أسفل الدرج ليس حقلًا ثانيًا: هو `SearchTrigger` بمظهر حقل، يفتح النافذة نفسها. حقلان حقيقيان = قيمتان يمكن أن تختلفا.
 
-- [ ] **Step 4: شغّل**
+- [x] **Step 4: شغّل**
 
 Run: `cd apps/web && npx vitest run src/components/layout src/components/search && npx tsc --noEmit`
 Expected: PASS.
@@ -2925,7 +2925,7 @@ Expected: PASS.
 
 **الرقم 0121 مؤكَّد: أعلى ADR قائم هو 0120، ولا يوجد 0121.**
 
-- [ ] **Step 1: اكتب الـADR بالقرارات التالية**
+- [x] **Step 1: اكتب الـADR بالقرارات التالية**
 
 | # | القرار |
 |---|---|
@@ -2941,12 +2941,12 @@ Expected: PASS.
 | D10 | البحث: module بمصادر مسجَّلة، وطريقة التطبيع العربي، وحدّها المعروف (لا تجذيع). |
 | D11 | الأصول بلا مقابل في التوكنات (88px، 56/30، 12.5px، 380px، 0.3s) **تُرجمت** ولم تُنقل. الجدول في Global Constraints من الخطة يُنسخ هنا. |
 
-- [ ] **Step 2: علّم الـADR `Pending Figma Back-Sync`**
+- [x] **Step 2: علّم الـADR `Pending Figma Back-Sync`**
 
 اسرد كل حالة بصرية جديدة بلا frame في Figma: اللوحات الخمس، الكبسولة، مفتاح الوضع الجديد، الخط الثلاثي، الدرج modal، نافذة البحث، `/search`.
 > الاشتراك متوقف — **لا تفتح Figma ولا تحاول التعديل** حتى يؤكّد المالك عودة الوصول.
 
-- [ ] **Step 3: معيار «تم»**
+- [x] **Step 3: معيار «تم»**
 
 الـADR يذكر كل قرار في الجدول، ولكل واحد سببه ومصدره. `grep -c "ADR-0121" docs/design-system/ADR-0062-*.md` ≥ 1.
 
@@ -2957,17 +2957,17 @@ Expected: PASS.
 **Files:**
 - Modify: `docs/product/01-Information-Architecture.md` §8.1 و§8.3 و§12 (سطر 1016) و(سطر 779)
 
-- [ ] **Step 1: §8.1 — جدول جديد يحلّ محل الثماني**
+- [x] **Step 1: §8.1 — جدول جديد يحلّ محل الثماني**
 
 الجدول القديم **يبقى** موسومًا `> سجل تاريخي — لا تبنِ عليه (ADR-0121)`. لا يُحذف: ADRs سابقة تحيل إليه.
 
-- [ ] **Step 2: §8.3 — الفوتر مشتق**
+- [x] **Step 2: §8.3 — الفوتر مشتق**
 
 `FOOTER_QUICK_LINKS = navDestinations()`، والوجهات على مستوى الصفحة فقط: تُستبعد الـanchors وبند البث الشرطي.
 
-- [ ] **Step 3: §12 سطر 1016 — العتبة 1280** (كان تعارض #1)، **وسطر 779** (تعارض #2)، **وتوحيد «اللوائح والسياسات»** (تعارض #8).
+- [x] **Step 3: §12 سطر 1016 — العتبة 1280** (كان تعارض #1)، **وسطر 779** (تعارض #2)، **وتوحيد «اللوائح والسياسات»** (تعارض #8).
 
-- [ ] **Step 4: معيار «تم»**
+- [x] **Step 4: معيار «تم»**
 
 `grep -n "1280" docs/product/01-Information-Architecture.md` يُظهر العتبة الصحيحة، و`grep -c "السياسات واللوائح"` = 0.
 
@@ -2979,13 +2979,13 @@ Expected: PASS.
 - Modify: `api/openapi.json` (مُولَّد)
 - Modify: `api/docs/api/public-api-contract.md`
 
-- [ ] **Step 1: أعد توليد الـOpenAPI بالسكربت المعتاد في المستودع**
+- [x] **Step 1: أعد توليد الـOpenAPI بالسكربت المعتاد في المستودع**
 
 > لا تكتبه بيدك. السكربت هو المصدر، والملف ناتج.
 
-- [ ] **Step 2: أضف `GET /search/public` إلى عقد الـAPI العام** بمعاملاته وشكل رده وحدّ المعدّل.
+- [x] **Step 2: أضف `GET /search/public` إلى عقد الـAPI العام** بمعاملاته وشكل رده وحدّ المعدّل.
 
-- [ ] **Step 3: معيار «تم»**
+- [x] **Step 3: معيار «تم»**
 
 `grep -c "search/public" api/openapi.json` ≥ 1، و`npx tsc --noEmit` في `api/` أخضر.
 

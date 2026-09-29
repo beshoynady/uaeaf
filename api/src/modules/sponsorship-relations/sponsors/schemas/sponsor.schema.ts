@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
@@ -22,7 +22,7 @@ export class SponsorRestricted {
   @Prop({ type: Number, default: null })
   contractValue: number | null;
 
-  @Prop({ type: Types.ObjectId, ref: 'Document', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Document', default: null })
   contractDocId: Types.ObjectId | null;
 }
 
@@ -47,7 +47,7 @@ export class Sponsor extends BaseSchema {
   @Prop({ type: OrganizationNameSchema, required: true })
   name: OrganizationName;
 
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', required: true })
   logoId: Types.ObjectId;
 
   @Prop({ type: String, default: null, match: /^https?:\/\/.+/ })

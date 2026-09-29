@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { SettingsCard } from "@/components/ui/settings-card";
 import { useToast } from "@/components/ui/toast";
 import { WriteFailure } from "@/components/ui/write-failure";
-import { InlineConfirm } from "./inline-confirm";
+import { InlineConfirm } from "@/components/ui/inline-confirm";
 import { titleOf } from "./album-row-parts";
 import { useAlbumWrite } from "@/lib/admin/albums/use-album-write";
 import type { AdminAlbum } from "@/lib/admin/albums/types";

@@ -121,6 +121,7 @@ const RESOURCE_TO_DOMAIN: Record<string, string> = {
   resultsRankingsPage: "cms-page-composition",
   revisions: "workflow",
   roles: "platform-administration",
+  seasons: "media-center",
   siteSettings: "cms-page-composition",
   sponsors: "sponsorship-relations",
   sponsorships: "sponsorship-relations",

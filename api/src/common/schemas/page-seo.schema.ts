@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import { LocalizedText, LocalizedTextSchema } from './localized-text.schema.js';
 
 /**
@@ -21,7 +21,7 @@ export class PageSeo {
   @Prop({ type: LocalizedTextSchema, default: null })
   metaDescription: LocalizedText | null;
 
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   ogImageId: Types.ObjectId | null;
 }
 

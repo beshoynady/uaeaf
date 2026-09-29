@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
@@ -20,7 +20,7 @@ export type NavigationItemDocument = HydratedDocument<NavigationItem>;
  *  publication semantics. */
 @Schema({ collection: 'navigationItems', timestamps: true })
 export class NavigationItem extends BaseSchema {
-  @Prop({ type: Types.ObjectId, ref: 'NavigationMenu', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'NavigationMenu', required: true })
   menuId: Types.ObjectId;
 
   @Prop({ type: LocalizedTextSchema, required: true })
@@ -29,7 +29,7 @@ export class NavigationItem extends BaseSchema {
   @Prop({ type: String, required: true })
   url: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'NavigationItem', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'NavigationItem', default: null })
   parentItemId: Types.ObjectId | null;
 
   @Prop({ type: Number, required: true })

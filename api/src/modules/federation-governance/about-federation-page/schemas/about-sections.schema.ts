@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
 
 /**
@@ -109,7 +109,7 @@ export class HeroSection {
   @Prop({ type: LocalizedTextSchema, required: true })
   description: LocalizedText;
 
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   imageId: Types.ObjectId | null;
 }
 export const HeroSectionSchema = SchemaFactory.createForClass(HeroSection);
@@ -180,7 +180,7 @@ export class StorySection {
   @Prop({ type: [LocalizedTextSchema], default: [] })
   paragraphs: LocalizedText[];
 
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   imageId: Types.ObjectId | null;
 
   @Prop({ type: StoryDocCardSchema, required: true })
@@ -221,7 +221,7 @@ export class Milestone {
   @Prop({ type: Boolean, default: false })
   featured: boolean;
 
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   imageId: Types.ObjectId | null;
 
   @Prop({ type: Boolean, default: true })
@@ -275,10 +275,10 @@ export class Achievement {
   /** Optional link to the athlete's own record, where one exists. Editorial
    *  content stays here either way: this is a card about a moment, not a
    *  projection of a profile. */
-  @Prop({ type: Types.ObjectId, ref: 'Athlete', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Athlete', default: null })
   athleteId: Types.ObjectId | null;
 
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   imageId: Types.ObjectId | null;
 
   @Prop({ type: Boolean, default: true })
@@ -318,7 +318,7 @@ export class Pioneer {
   @Prop({ type: LocalizedTextSchema, required: true })
   description: LocalizedText;
 
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   imageId: Types.ObjectId | null;
 
   /** The wide card in the approved composition. At most one, enforced by the

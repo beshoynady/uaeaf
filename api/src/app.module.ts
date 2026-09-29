@@ -43,6 +43,7 @@ import { ClubTeamsModule } from './modules/people-organizations/club-teams/club-
 import { AthleteGuardianRelationshipsModule } from './modules/people-organizations/athlete-guardian-relationships/athlete-guardian-relationships.module.js';
 import { AlbumsModule } from './modules/media-center/albums/albums.module.js';
 import { VideosModule } from './modules/media-center/videos/videos.module.js';
+import { SeasonsModule } from './modules/media-center/seasons/seasons.module.js';
 import { LiveStreamsModule } from './modules/media-center/live-streams/live-streams.module.js';
 import { VideoSectionModule } from './modules/media-center/video-section/video-section.module.js';
 import { PhotoGallerySectionModule } from './modules/media-center/photo-gallery-section/photo-gallery-section.module.js';
@@ -82,6 +83,7 @@ import { AlbumsPageModule } from './modules/media-center/albums-page/albums-page
 import { VideosPageModule } from './modules/media-center/videos-page/videos-page.module.js';
 import { ContactMessagesModule } from './modules/public-communication/contact-messages/contact-messages.module.js';
 import { ArticlesModule } from './modules/public-communication/articles/articles.module.js';
+import { SearchModule } from './modules/platform-administration/search/search.module.js';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard.js';
 import { PermissionsGuard } from './common/guards/permissions.guard.js';
 import { RateLimitGuard } from './common/guards/rate-limit.guard.js';
@@ -136,6 +138,7 @@ import { AppController } from './app.controller.js';
     AthleteGuardianRelationshipsModule,
     AlbumsModule,
     VideosModule,
+    SeasonsModule,
     LiveStreamsModule,
     VideoSectionModule,
     PhotoGallerySectionModule,
@@ -178,6 +181,7 @@ import { AppController } from './app.controller.js';
     // Week 4 — Domain 10 Public Communication
     ContactMessagesModule,
     ArticlesModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [

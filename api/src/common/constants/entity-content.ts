@@ -49,6 +49,13 @@ export const PUBLISH_REQUIREMENTS: Record<PublicationEntityType, readonly string
   committees: [],
   documents: [],
   publicEvents: [],
+  // The banner carries the hero composition of the public season page, the
+  // same reasoning `presidentMessagePage.featuredImageId` carries above:
+  // published without it, the page's top section is an empty frame rather
+  // than an ordinary season with no banner. `logoId`, `tagline` and the rest
+  // stay optional — their absence changes the page's density, not its
+  // structure.
+  seasons: ['bannerId'],
 };
 
 /**
@@ -164,6 +171,28 @@ export const REVISION_READ_FIELDS: Record<PublicationEntityType, readonly string
   committees: ['name', 'description', 'displayOrder', 'isActive', 'committeeType', 'committeeGroup'],
   documents: ['file', 'documentType', 'ownerType', 'ownerId', 'effectiveDate', 'expiryDate'],
   publicEvents: [],
+  // `publicationState`, `publishedAt`, `publishedBy`, `isCurrent` and
+  // `isVisible` are deliberately absent: they describe where the season
+  // stands now, the same reasoning `articles` gives above for
+  // `publicationState`/`archived`/`publishDate`.
+  seasons: [
+    'name',
+    'shortName',
+    'slug',
+    'tagline',
+    'logoId',
+    'bannerId',
+    'shareImageId',
+    'about',
+    'closingSummary',
+    'startDate',
+    'endDate',
+    'phases',
+    'keyDates',
+    'calendarDocumentId',
+    'documentIds',
+    'seo',
+  ],
 };
 
 /**

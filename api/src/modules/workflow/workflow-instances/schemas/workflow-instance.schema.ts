@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { WORKFLOW_ENTITY_TYPES } from '../../../../common/constants/workflow-entity-types.js';
@@ -28,19 +28,19 @@ export type WorkflowInstanceStatus = (typeof WORKFLOW_INSTANCE_STATUSES)[number]
  */
 @Schema({ collection: 'workflowInstances', timestamps: true })
 export class WorkflowInstance extends BaseSchema {
-  @Prop({ type: Types.ObjectId, ref: 'WorkflowDefinition', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'WorkflowDefinition', required: true })
   workflowDefinitionId: Types.ObjectId;
 
   @Prop({ type: String, enum: WORKFLOW_ENTITY_TYPES, required: true })
   entityType: WorkflowEntityType;
 
-  @Prop({ type: Types.ObjectId, required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, required: true })
   entityId: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'Revision', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Revision', default: null })
   revisionId: Types.ObjectId | null;
 
-  @Prop({ type: Types.ObjectId, ref: 'WorkflowStep', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'WorkflowStep', default: null })
   currentStepId: Types.ObjectId | null;
 
   @Prop({ type: String, enum: WORKFLOW_INSTANCE_STATUSES, required: true, default: 'InProgress' })

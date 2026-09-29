@@ -98,8 +98,19 @@ type Props = {
   /** The featured card for a panel's key, or `null` to leave that slot empty
    *  (a panel with no live promotion, e.g. the media panel today). */
   featureFor: (key: string) => ReactNode;
+  /** The panel's middle content track (design spec §5), or `null` for a
+   *  panel with no such slot (every panel but Media today). */
+  middleFor: (key: string) => ReactNode;
+  /** The running broadcast, or `null` while none is on air. Forwarded to
+   *  every panel; only the Media panel's column has a live-stream item. */
+  live?: { title: string; href: string } | null;
   /** Pinned by tests; the live value comes from `usePathname`. */
   activePath?: string;
+  /** The shared tools capsule (search, language, theme), passed only while the
+   *  drawer is open — its absence otherwise keeps the drawer's copy out of the
+   *  document entirely rather than merely hidden by a stylesheet. Never shown
+   *  in the row layout regardless (`xl:hidden` on its wrapper). */
+  toolsRow?: ReactNode;
 };
 
 export const PrimaryNav = ({
@@ -111,7 +122,10 @@ export const PrimaryNav = ({
   onClosePanel,
   isRow,
   featureFor,
+  middleFor,
+  live = null,
   activePath,
+  toolsRow,
 }: Props) => {
   const t = useTranslations("Nav");
   const tHeader = useTranslations("Header");
@@ -221,7 +235,7 @@ export const PrimaryNav = ({
     }
   };
 
-  const renderLeaf = (item: NavItem) => {
+  const renderLeaf = (item: NavItem, index: number) => {
     const active = item.href === current;
     return (
       <Link
@@ -232,7 +246,8 @@ export const PrimaryNav = ({
         data-nav-focusable=""
         onClick={onCloseDrawer}
         onKeyDown={(event) => onTriggerKeyDown(event, item)}
-        className={`${topLevelClass(active)} ${TRANSITION} ${FOCUS}`}
+        style={{ "--rise-index": index } as React.CSSProperties}
+        className={`rise-in ${topLevelClass(active)} ${TRANSITION} ${FOCUS}`}
       >
         <span className="flex items-center gap-1.5 whitespace-nowrap">{t(item.key)}</span>
         <TricolorIndicator active={active} />
@@ -240,7 +255,7 @@ export const PrimaryNav = ({
     );
   };
 
-  const renderGroup = (item: NavItem) => {
+  const renderGroup = (item: NavItem, index: number) => {
     const isOpen = openKey === item.key;
     const holdsCurrent = containsPath(item, current);
     const panelId = `${baseId}-${item.key}`;
@@ -256,7 +271,8 @@ export const PrimaryNav = ({
           data-nav-focusable=""
           onClick={() => onTogglePanel(item.key)}
           onKeyDown={(event) => onTriggerKeyDown(event, item)}
-          className={`${topLevelClass(holdsCurrent)} ${TRANSITION} ${FOCUS}`}
+          style={{ "--rise-index": index } as React.CSSProperties}
+          className={`rise-in ${topLevelClass(holdsCurrent)} ${TRANSITION} ${FOCUS}`}
         >
           <span className="flex items-center gap-1.5 whitespace-nowrap">
             {t(item.key)}
@@ -282,6 +298,8 @@ export const PrimaryNav = ({
           layout={isRow ? "row" : "drawer"}
           columns={item.children!}
           feature={featureFor(item.key)}
+          middle={middleFor(item.key)}
+          live={live}
           currentPath={current}
           onKeyDown={(event) => onPanelKeyDown(event, item.key)}
         />
@@ -315,8 +333,9 @@ export const PrimaryNav = ({
         {PRIMARY_NAV.map((item, index) => (
           <li
             key={item.key}
-            className="rise-in relative"
-            style={{ "--rise-index": index } as React.CSSProperties}
+            // No `position`, no `.rise-in` (moved to the trigger below): a
+            // transform is a containing block too, and `.mega-panel` must
+            // resolve against `<header>` (`sticky`), not this item.
             onMouseEnter={() => {
               if (!hoverEnabled()) return;
               cancelClose();
@@ -324,10 +343,16 @@ export const PrimaryNav = ({
               else onClosePanel();
             }}
           >
-            {item.children ? renderGroup(item) : renderLeaf(item)}
+            {item.children ? renderGroup(item, index) : renderLeaf(item, index)}
           </li>
         ))}
       </ul>
+
+      {toolsRow && (
+        <div className="mt-[var(--space-6)] flex justify-center border-t border-[color:var(--color-border-default)] pt-[var(--space-6)] xl:hidden">
+          {toolsRow}
+        </div>
+      )}
     </nav>
   );
 };
@@ -338,8 +363,19 @@ export const PrimaryNav = ({
 // each call site instead of baked in here, so the interaction-state contract
 // (`interaction-state-contract.spec.ts`) can see them where it looks: in the
 // `className` attribute's own text, not inside an opaque helper call.
+// `xl:h-[var(--header-height)]` is the hover region, not decoration: a trigger
+// shorter than the row leaves a dead band between its bottom edge and the
+// panel, which starts at the header's own bottom (`top: 100%`). A pointer
+// travelling from the trigger into the panel crosses that band, leaves the
+// `<nav>` that owns the close timer, and the panel is gone before it arrives.
+// Full-height triggers make the nav's box and the panel contiguous — the
+// reference composition's `.ni` (`height: 88px`, the whole row) for the same
+// reason. The label stays centred, so nothing moves but the hit area; the
+// indicator is pinned to the bottom edge instead, which is where the design
+// draws it (`01-desktop-1440-panel-2-athletics.png`, and `.ni::after
+// {bottom: 0}`).
 const topLevelClass = (active: boolean) =>
-  `nav-item flex min-h-11 w-full flex-row items-center justify-start gap-2 rounded-xs px-2 text-body whitespace-nowrap xl:w-auto xl:flex-col xl:justify-center xl:gap-1.5 xl:px-1 xl:py-3 ${
+  `nav-item flex min-h-11 w-full flex-row items-center justify-start gap-2 rounded-xs px-2 text-body whitespace-nowrap xl:relative xl:h-[var(--header-height)] xl:w-auto xl:flex-col xl:justify-center xl:px-1 ${
     active
       ? "font-medium text-[color:var(--color-text-primary)]"
       : "font-normal text-[color:var(--color-text-secondary)] hover:text-[color:var(--color-text-link)] focus-visible:text-[color:var(--color-text-link)] active:text-[color:var(--color-text-secondary)]"

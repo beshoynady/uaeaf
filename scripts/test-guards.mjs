@@ -53,6 +53,11 @@ const API_CORE_GUARD_NAMES = [
   // The six role templates (ADR-0113): every pair in the catalogue, none
   // reserved or PermanentDelete, scopes only where offered; no database.
   'role-template-matrix',
+  // Stored references: fails when a reference path stops resolving to a real
+  // ObjectId, which makes every id on it uncast in both directions and
+  // invisible to the filters that read it. Reads every *.schema.ts; no
+  // database.
+  'reference-path-typing',
 ];
 
 /** Every API guard, core plus the rest (page-activation, partial-update,

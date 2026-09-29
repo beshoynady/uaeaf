@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { UaeafLogo } from "@/components/brand/uaeaf-logo";
@@ -9,36 +9,22 @@ import { HeaderToolsCapsule } from "./header-tools-capsule";
 import { PrimaryNav, useRowLayout } from "./primary-nav";
 import { useFocusTrap } from "./use-focus-trap";
 import { BrandAccentBar } from "@uaeaf/brand-ui";
-import {
-  ChampionshipFallbackCard,
-  ClubFinderCard,
-  EventFallbackCard,
-  PresidentFallbackCard,
-} from "@/components/layout/cards";
+import { panelFeature, panelMiddle } from "@/components/layout/cards";
+import { SearchDialog } from "@/components/search/search-dialog";
+import type { HeaderFeatures } from "@/lib/header/features";
 
-/**
- * The server-fetched card content this component will eventually receive
- * (spec §8: `getHeaderFeatures(locale)`, `revalidate: 60`). Every field is
- * independent — one source failing must never blank the others.
- */
-export interface HeaderFeatures {
-  presidentExcerpt: ReactNode | null;
-  nextChampionship: ReactNode | null;
-  nextEvent: ReactNode | null;
-  currentSeasonSummary: ReactNode | null;
-  latestArticle: ReactNode | null;
-  latestVideo: ReactNode | null;
-  activeLiveStream: ReactNode | null;
-}
-
-/** Panel key → its featured card while no live data is wired in yet. The
- *  media panel has no standing fallback (spec §8: absent, the slot is empty,
- *  not a placeholder). */
-const FALLBACK_CARDS: Record<string, ReactNode> = {
-  about: <PresidentFallbackCard />,
-  athletics: <ClubFinderCard />,
-  championshipsResults: <ChampionshipFallbackCard />,
-  eventsSeasons: <EventFallbackCard />,
+/** Every field absent. Used when a caller (a test, or a route that renders
+ *  the header before any data source exists) has no server read to pass —
+ *  every panel then shows its standing fallback card, exactly as before this
+ *  data was wired in. */
+const EMPTY_FEATURES: HeaderFeatures = {
+  presidentExcerpt: null,
+  nextChampionship: null,
+  nextEvent: null,
+  currentSeasonSummary: null,
+  latestArticle: null,
+  latestVideo: null,
+  activeLiveStream: null,
 };
 
 /**
@@ -74,8 +60,8 @@ export const HeaderShell = ({
   activePath,
   isRow: isRowOverride,
 }: {
-  /** Accepted but not yet consumed field-by-field: no data source is wired in
-   *  yet, so the standing fallback cards below cover every panel instead. */
+  /** The server's one cached read, or `null` for a caller with none to give
+   *  (falls back to every panel's standing card). */
   features: HeaderFeatures | null;
   activePath?: string;
   /** Pinned by tests; the live value comes from `useRowLayout()`, exactly as
@@ -86,6 +72,7 @@ export const HeaderShell = ({
   const pathname = usePathname();
   const liveIsRow = useRowLayout();
   const isRow = isRowOverride ?? liveIsRow;
+  const data = features ?? EMPTY_FEATURES;
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [openKey, setOpenKey] = useState<string | null>(null);
@@ -135,6 +122,25 @@ export const HeaderShell = ({
   }, []);
 
   useEffect(() => {
+    // Ctrl+K is "delete to end of line" inside a text field on several
+    // platforms — taking it there would break editing to open a search box
+    // the reader can still reach from the header's own button.
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key.toLowerCase() !== "k" || !(event.ctrlKey || event.metaKey)) return;
+      const active = document.activeElement;
+      const inTextField =
+        active instanceof HTMLInputElement ||
+        active instanceof HTMLTextAreaElement ||
+        (active as HTMLElement | null)?.isContentEditable;
+      if (inTextField) return;
+      event.preventDefault();
+      setSearchOpen(true);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  useEffect(() => {
     if (!drawerOpen) return;
     // Both restored to the prior value, not blanked (the search dialog will
     // hold this same lock later), and both set in the same pass so no frame
@@ -153,7 +159,7 @@ export const HeaderShell = ({
   useFocusTrap(drawerRef, drawerOpen);
 
   // The drawer is a modal now: focus is trapped inside it and the page
-  // behind it cannot scroll (ADR-0121, amending ADR-0062 D4). Escape still
+  // behind it cannot scroll (ADR-0122 D3, amending ADR-0062 D4). Escape still
   // closes it from anywhere in the header. A panel's own Escape handler
   // stops the event before it reaches here, so the first Escape closes the
   // panel and a second closes the drawer.
@@ -161,15 +167,14 @@ export const HeaderShell = ({
     if (event.key === "Escape" && drawerOpen) setDrawerOpen(false);
   };
 
-  const featureFor = (key: string) => FALLBACK_CARDS[key] ?? null;
+  const featureFor = (key: string) => panelFeature(key, data);
+  const middleFor = (key: string) => panelMiddle(key, data);
 
   return (
     <>
       <header
         onKeyDown={onHeaderKeyDown}
         data-scrolled={scrolled}
-        // No search dialog is rendered yet; this attribute is the only
-        // observable trace of the state until one exists.
         data-search-open={searchOpen}
         className={`site-header sticky top-0 z-50 flex h-[var(--header-height)] w-full items-center justify-between gap-2 border-b bg-[color:var(--color-surface-base)] px-4 sm:px-6 xl:px-[var(--space-10)] 2xl:px-[var(--grid-margin-xl)] ${
           scrolled
@@ -226,12 +231,38 @@ export const HeaderShell = ({
             onClosePanel={closePanel}
             isRow={isRow}
             featureFor={featureFor}
+            middleFor={middleFor}
+            live={data.activeLiveStream}
             activePath={activePath}
+            // Only while open: the drawer's own copy of the tools capsule
+            // must not exist in the document at all while closed, or reachable
+            // while the row layout is active — a stylesheet rule cannot be
+            // trusted alone for either (§ focus-trap `isReachable` doc).
+            toolsRow={
+              drawerOpen ? (
+                <HeaderToolsCapsule
+                  layout="drawer"
+                  // Closes the drawer rather than stacking it behind the
+                  // dialog: two modal traps active at once would each cycle
+                  // Tab through its own subtree, and a reader could never
+                  // reach the other's controls from either.
+                  onOpenSearch={() => {
+                    setDrawerOpen(false);
+                    setSearchOpen(true);
+                  }}
+                />
+              ) : undefined
+            }
           />
         </div>
 
         <div className="flex shrink-0 items-center gap-1 text-[color:var(--color-text-secondary)] sm:gap-3">
-          <HeaderToolsCapsule layout="row" onOpenSearch={() => setSearchOpen(true)} />
+          {/* Row's own copy: real CSS breakpoint hiding, not a JS condition —
+              this one must be visible instantly on first paint at xl+, with
+              no hydration wait. */}
+          <div className="hidden xl:flex">
+            <HeaderToolsCapsule layout="row" onOpenSearch={() => setSearchOpen(true)} />
+          </div>
 
           <button
             type="button"
@@ -276,6 +307,8 @@ export const HeaderShell = ({
           openKey ? "" : "pointer-events-none"
         }`}
       />
+
+      <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 };

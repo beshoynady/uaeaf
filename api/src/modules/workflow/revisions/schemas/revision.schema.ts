@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { PUBLICATION_ENTITY_TYPES } from '../../../../common/constants/workflow-entity-types.js';
 import type { PublicationEntityType } from '../../../../common/constants/workflow-entity-types.js';
@@ -25,7 +25,7 @@ export class Revision {
   @Prop({ type: String, enum: PUBLICATION_ENTITY_TYPES, required: true })
   entityType: PublicationEntityType;
 
-  @Prop({ type: Types.ObjectId, required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, required: true })
   entityId: Types.ObjectId;
 
   @Prop({ type: Number, required: true })
@@ -34,7 +34,7 @@ export class Revision {
   @Prop({ type: Object, required: true })
   snapshotData: Record<string, unknown>;
 
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
   createdBy: Types.ObjectId;
 }
 

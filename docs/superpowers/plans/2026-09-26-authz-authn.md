@@ -1176,6 +1176,21 @@ separation of duties entirely.
 they authored, or a step they already approved once, **by any path** — including
 the one that goes through editing the step first.
 
+**Scope decided 2026-09-29 (owner): P1 and P12 together.** The measurement found
+25 distinct write paths, and a cleaner escalation than this one. **P12:**
+`POST /workflow-instances` takes `workflowDefinitionId` from the request body and
+`assertCanSubmitThrough` checks only that it is active and governs the right
+entity type — never that it is the definition the **policy** names; `publishApproved`
+then reads `findLatestApproved`, keyed on `(entityType, entityId, 'Approved')`
+with no reference to the policy's definition at all. A holder of ordinary
+grantable pairs builds a definition naming only themselves, submits, approves and
+publishes — **touching no step, so no lock is even conceptually engaged**, and the
+author rule does not close it because the actor need not be the author. The fix
+is scoped by ADR-0125. **Correction to this section's own premise:** the route
+does not walk around separation of duties — SoD **does not exist** in `api/src`
+(`selfApproval` has zero occurrences outside the spec); it walks around the
+assignee-membership check, the only gate there is.
+
 **2. The stored-reference type bug**, below.
 
 **3. `DELETE /roles/:id` — atomicity and audit** (owner decision 2026-09-29,
@@ -1245,8 +1260,19 @@ filters are not cast either.
 
 **Consequence for E1:** `reset-roles` refuses to run when it finds any role link
 stored as a string, and reports the accounts, rather than detaching some and
-silently missing others. The lasting fix is `$in: [oid, hex]`, the shape
-`media-references.ts:754` already uses.
+silently missing others.
+
+**Corrected 2026-09-29, by the work itself.** This paragraph used to say the
+lasting fix was `$in: [oid, hex]`, "the shape `media-references.ts:754` already
+uses". **The conversion above invalidated it, measured:** on a real `ObjectId`
+path Mongoose casts *every member* of an `$in` before the query leaves, so the
+two spellings arrive as one value twice. `detachRole` therefore writes through
+the **driver collection**, where both spellings survive as written, and its
+TSDoc records why. The same reversal applies to `findMediaAssetReferrers`, whose
+two-spelling scan is now inert — recorded in ADR-0123 D1 as an **open owner
+decision**, because the remedy is either the same driver-collection move or
+running the converter and deleting the dead half. Latent today: every production
+write casts.
 
 **Script order:** the conversion script runs **before** E1.
 
@@ -1282,6 +1308,56 @@ Batch 4 then builds it as one task:
   record is not everyone's;
 - the guard's scope refusal is removed **in the same task**, with its test;
 - only then does `seed-role-templates` seed the Editor template.
+
+### Batch 4 — four further owner decisions (2026-09-29)
+
+Recorded the same day, to be built in Batch 4 and **not** in 3b. Each has its own
+ADR; the plan carries only what changes about the order of work.
+
+**1. `createdBy` and `updatedBy` become mandatory everywhere (ADR-0124).**
+Required on every resource schema, written by the server from the current user on
+every create and update — archival and restore included — and refused if they
+arrive in the body. A guard fails on a resource schema missing either, or on a
+create/update path that does not write them. An idempotent backfill fills the
+`null`s with the bootstrap Super Admin (the existing data is test data), written
+and not run, placed **after** `convert:reference-ids` in the script order. Once it
+runs, ADR-0113's "records whose `createdBy` is null stay closed to `own`" ends.
+Negative tests: a body carrying either field does not change the stored value;
+every update writes `updatedBy` to the current user.
+
+**2. Direct publishing is an administrator's setting, and the policy decides
+(ADR-0125).** A type that requires approval publishes **only** through the
+policy's definition, even for a holder of the publish capability — this is the
+P12 fix. A type set to direct publish needs the publish capability at scope `own`
+or `all`, with **no** author check, because there is no approval. No policy, or an
+unreadable one, refuses publication. Every direct publish writes an audit row
+naming the publisher.
+**Gated on a measurement, and the owner's instruction is to stop and ask if either
+answer is absent:** does the policy carry a direct-publish option today, and what
+capability actually permits publication per type — `Update`, or a `Publish` pair?
+It is known not to be uniform: for `videos`, `Update` *is* publication.
+Negative tests: a publish-capability holder cannot publish a review-required type
+directly; a non-holder cannot publish a direct type; an `own`-scoped holder cannot
+publish another person's content.
+
+**3. Content credit is content, not authorship (ADR-0126).** Article author
+(mandatory), article-image photographer, album photographer, video owner
+(optional); a photograph's photographer lives on the **media asset**. These appear
+on the public site and take **no part** in the author check or in `own` — a
+negative test holds that no permission path reads them. **Measurement first, then
+a proposal for approval; nothing is implemented.** One question stays open for the
+owner: is an article's author free text, or a link to a people-organizations
+record?
+
+**4. "The author" is all three fields (ADR-0124).** `revision.createdBy`, the
+record's `createdBy`, and the record's `updatedBy`; matching any one refuses the
+approval. Until decision 1 lands, a `null` field is skipped — that field only —
+and `revision.createdBy` is checked always. **`workflowInstances.createdBy` is
+read by nothing**, with a negative test: it exists and is `null` on every row ever
+written, so a check reaching for it fails open. Where the rule leaves a review
+with no permitted approver, the remedy is the Super Admin override with a written
+reason. One approval per person per step, so a legitimate re-approval after a
+`return` is permitted and a second step is not.
 
 ### Batch 6c — the rate-limit extension, as decided (owner, 2026-09-28)
 

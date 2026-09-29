@@ -22,7 +22,18 @@ const Badge = ({ children }: { children: React.ReactNode }) => (
  * so it joins the link's accessible name rather than becoming text a screen
  * reader cannot attribute to anything.
  */
-export const MegaLink = ({ item, currentPath }: { item: NavItem; currentPath: string }) => {
+export const MegaLink = ({
+  item,
+  currentPath,
+  live = null,
+}: {
+  item: NavItem;
+  currentPath: string;
+  /** The running broadcast, present only for the live-stream item while one
+   *  is on air. Overrides the caption with the broadcast's own title, so the
+   *  destination says what is playing rather than just where it leads. */
+  live?: { title: string } | null;
+}) => {
   const t = useTranslations("Nav");
 
   return (
@@ -34,14 +45,29 @@ export const MegaLink = ({ item, currentPath }: { item: NavItem; currentPath: st
       className={`mega-link flex min-h-11 items-start gap-3 rounded-sm p-3 ${TRANSITION} ${FOCUS} hover:bg-[color:var(--color-surface-sunken)] active:text-[color:var(--color-text-secondary)]`}
     >
       <span className={`${CARD_ICON} size-10 shrink-0`}>
-        <NavIcon name={item.key} />
+        {live ? (
+          // Static, not pulsing: no motion token covers a continuous
+          // above-the-fold indicator (owner ruling — `--motion-duration-ambient`
+          // is a single-authorised-use token per ADR-0069 D9, `--motion-duration-entrance`
+          // is restricted to below-the-fold content per ADR-0087 D1, and
+          // `--motion-duration-orbit` is BrandBorder-only). Colour alone still
+          // is not the only channel: the caption below names the broadcast.
+          <span
+            aria-hidden="true"
+            className="block size-[var(--icon-size-sm)] rounded-[var(--radius-full)] bg-[color:var(--color-brand-secondary)]"
+          />
+        ) : (
+          <NavIcon name={item.key} />
+        )}
       </span>
       <span className="flex min-w-0 flex-col gap-0.5">
         <span className="flex items-center gap-2 text-body font-bold">
           {t(item.key)}
           {item.badge ? <Badge>{t("badgeSoon")}</Badge> : null}
         </span>
-        {item.descriptionKey ? (
+        {live ? (
+          <span className="text-caption text-[color:var(--color-text-muted)]">{live.title}</span>
+        ) : item.descriptionKey ? (
           <span className="text-caption text-[color:var(--color-text-muted)]">
             {t(item.descriptionKey)}
           </span>

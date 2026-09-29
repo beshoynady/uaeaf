@@ -70,6 +70,7 @@ export const PERMISSION_RESOURCES = [
   'resultsRankingsPage',
   'revisions',
   'roles',
+  'seasons',
   'siteSettings',
   'sponsors',
   'sponsorships',

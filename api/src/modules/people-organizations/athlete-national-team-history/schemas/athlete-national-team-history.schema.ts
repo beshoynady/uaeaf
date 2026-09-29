@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 
@@ -13,10 +13,10 @@ export type AthleteNationalTeamHistoryDocument = HydratedDocument<AthleteNationa
  *  is always derived by querying this collection. */
 @Schema({ collection: 'athleteNationalTeamHistory', timestamps: true })
 export class AthleteNationalTeamHistory extends BaseSchema {
-  @Prop({ type: Types.ObjectId, ref: 'Athlete', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Athlete', required: true })
   athleteId: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'AgeCategory', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'AgeCategory', required: true })
   ageCategoryId: Types.ObjectId;
 
   @Prop({ type: Date, required: true })

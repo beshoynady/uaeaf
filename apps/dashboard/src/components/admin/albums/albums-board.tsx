@@ -10,7 +10,7 @@ import { WriteFailure } from "@/components/ui/write-failure";
 import { AddAlbumLink } from "./album-links";
 import { AlbumsFilters } from "./albums-filters";
 import { AlbumsTable } from "./albums-table";
-import { InlineConfirm } from "./inline-confirm";
+import { InlineConfirm } from "@/components/ui/inline-confirm";
 import { titleOf } from "./album-row-parts";
 import { byNewestOccasion, isFiltering, matchesFilters, NO_FILTERS, periodsOf } from "@/lib/admin/albums/list-filters";
 import { useAlbumWrite } from "@/lib/admin/albums/use-album-write";

@@ -1,7 +1,9 @@
 import { render } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import ar from "../../../messages/ar.json";
+import { loadMessages } from "@/i18n/messages";
 import { StaticPageScreen, isInstitutional } from "./static-page-screen";
+
+const ar = loadMessages("ar");
 
 /**
  * The trail of a page built on `StaticPageScreen` (IA §8.5, ADR-0072 D7): in
@@ -23,10 +25,8 @@ const { messageAt } = vi.hoisted(() => ({
 }));
 
 vi.mock("next-intl/server", async () => {
-  const messages = {
-    ar: (await import("../../../messages/ar.json")).default,
-    en: (await import("../../../messages/en.json")).default,
-  };
+  const { loadMessages } = await import("@/i18n/messages");
+  const messages = { ar: loadMessages("ar"), en: loadMessages("en") };
   return {
     getTranslations: async ({ locale, namespace }: { locale: "ar" | "en"; namespace?: string }) =>
       (key: string) => messageAt(messages[locale], namespace ? `${namespace}.${key}` : key),

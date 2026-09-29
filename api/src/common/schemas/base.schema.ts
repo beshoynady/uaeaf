@@ -1,5 +1,5 @@
 import { Prop, Schema } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 
 /**
  * Fields shared by every collection on the live FigJam Physical Model:
@@ -11,15 +11,15 @@ import { Types } from 'mongoose';
   timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' },
 })
 export abstract class BaseSchema {
-  @Prop({ type: Types.ObjectId, ref: 'User', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', default: null })
   createdBy: Types.ObjectId | null;
 
-  @Prop({ type: Types.ObjectId, ref: 'User', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', default: null })
   updatedBy: Types.ObjectId | null;
 
   @Prop({ type: Date, default: null })
   archivedAt: Date | null;
 
-  @Prop({ type: Types.ObjectId, ref: 'User', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', default: null })
   archivedBy: Types.ObjectId | null;
 }

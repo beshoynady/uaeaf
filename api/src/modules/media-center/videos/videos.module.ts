@@ -9,6 +9,10 @@ import { VideosController } from './videos.controller.js';
   imports: [MongooseModule.forFeature([{ name: Video.name, schema: VideoSchema }])],
   controllers: [VideosController],
   providers: [VideosRepository, VideosService],
-  exports: [VideosService],
+  // `VideosRepository` is also exported: `SeasonsService`'s delete guard
+  // counts videos by `publishedAt` range directly — a video has no
+  // `seasonId` to join on, so it reads the repository, not a new service
+  // method built only for this one check.
+  exports: [VideosService, VideosRepository],
 })
 export class VideosModule {}

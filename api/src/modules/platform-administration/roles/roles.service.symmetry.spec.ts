@@ -5,6 +5,8 @@ import { RolesService } from './roles.service.js';
 import { RolesRepository } from './roles.repository.js';
 import { RoleAssignmentsRepository } from './role-assignments.repository.js';
 import { PermissionsService } from '../permissions/permissions.service.js';
+import { AuditLogsService } from '../../workflow/audit-logs/audit-logs.service.js';
+import { fakeSession } from '../../../../test/utils/fake-session.js';
 import type { RequiredPermission } from '../../../common/decorators/permissions.decorator.js';
 
 /**
@@ -65,10 +67,12 @@ describe('RolesService — you cannot remove authority you do not hold', () => {
             findByIds: jest.fn(),
             updateById: jest.fn(),
             softDelete: jest.fn(),
+            startSession: jest.fn(async () => fakeSession()),
           },
         },
         { provide: PermissionsService, useValue: { findById: jest.fn(), findByIds: jest.fn() } },
-        { provide: RoleAssignmentsRepository, useValue: { detachRole: jest.fn() } },
+        { provide: RoleAssignmentsRepository, useValue: { detachRole: jest.fn(async () => []) } },
+        { provide: AuditLogsService, useValue: { write: jest.fn() } },
       ],
     }).compile();
 
@@ -79,7 +83,7 @@ describe('RolesService — you cannot remove authority you do not hold', () => {
 
     repository.updateById.mockResolvedValue({ _id: new Types.ObjectId(roleId) } as never);
     repository.softDelete.mockResolvedValue({ _id: new Types.ObjectId(roleId) } as never);
-    assignments.detachRole.mockResolvedValue(undefined as never);
+    assignments.detachRole.mockResolvedValue([]);
   });
 
   /** A role the actor cannot match: it grants governance authority they lack. */
@@ -170,7 +174,7 @@ describe('RolesService — you cannot remove authority you do not hold', () => {
       ] as never);
 
       await expect(service.remove(roleId, new Types.ObjectId(), weakActor)).resolves.toBeDefined();
-      expect(assignments.detachRole).toHaveBeenCalledWith(roleId);
+      expect(assignments.detachRole).toHaveBeenCalledWith(roleId, expect.anything());
     });
   });
 });

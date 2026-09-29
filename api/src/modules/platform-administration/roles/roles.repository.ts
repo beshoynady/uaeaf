@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import type { ClientSession } from 'mongoose';
 import { BaseRepository } from '../../../common/repositories/base.repository.js';
 import { Role } from './schemas/role.schema.js';
 import type { RoleDocument } from './schemas/role.schema.js';
@@ -25,5 +26,17 @@ export class RolesRepository extends BaseRepository<RoleDocument> {
    */
   async findByIdIncludingArchived(id: string): Promise<RoleDocument | null> {
     return this.model.findById(id).exec();
+  }
+
+  /**
+   * A session on this repository's own connection, for a caller that has to
+   * make several writes land as one.
+   *
+   * Taken from the model rather than from an injected `Connection` so the
+   * session provably belongs to the connection these writes go out on — two
+   * connections would produce a session that commits nothing the writes saw.
+   */
+  async startSession(): Promise<ClientSession> {
+    return this.model.startSession();
   }
 }

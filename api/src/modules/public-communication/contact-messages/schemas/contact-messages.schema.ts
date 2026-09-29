@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 
@@ -77,14 +77,14 @@ export class ContactMessage extends BaseSchema {
   /** Poly → `users | roles`. Message routing is a platform/dashboard
    *  operational concern, deliberately independent of the federation's own
    *  organizational structure (this replaced an earlier `departmentId`). */
-  @Prop({ type: Types.ObjectId, default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, default: null })
   assignedToId: Types.ObjectId | null;
 
   @Prop({ type: String, enum: CONTACT_MESSAGE_ASSIGNEE_TYPES, default: null })
   assignedToType: ContactMessageAssigneeType | null;
 
   /** Set only if a formal workflow was triggered. */
-  @Prop({ type: Types.ObjectId, ref: 'WorkflowInstance', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'WorkflowInstance', default: null })
   workflowInstanceId: Types.ObjectId | null;
 
   /** The reply text written by the assigned staff member. The system
@@ -97,7 +97,7 @@ export class ContactMessage extends BaseSchema {
   @Prop({ type: Date, default: null })
   repliedAt: Date | null;
 
-  @Prop({ type: Types.ObjectId, ref: 'User', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', default: null })
   repliedBy: Types.ObjectId | null;
 
   @Prop({ type: String, enum: CONTACT_MESSAGE_REPLY_CHANNELS, default: null })

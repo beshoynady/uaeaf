@@ -192,7 +192,9 @@ export const LibraryScreen = ({
         {/* The broadcast takes the top of the library too, on the same terms as
             the homepage: while one is running it IS the lead. */}
         {live ? (
-          <section className="flex flex-col gap-4">
+          // The header's live-stream item points at `#live`; this section only
+          // exists while `live` does, so that anchor never lands on nothing.
+          <section id="live" className="flex flex-col gap-4">
             <VideoStage
               platform="youtube"
               externalId={live.videoId}

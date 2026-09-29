@@ -62,6 +62,14 @@ describe('isApiErrorCode', () => {
     expect(isApiErrorCode('writtenElsewhere')).toBe(true);
   });
 
+  it('carries the season calendar refusals', () => {
+    // `SeasonsService` throws both. Outside the vocabulary a season sharing a
+    // day with another arrives as a bare `conflict`, and two same-type phases
+    // overlapping as a bare `badRequest`: the form could not point at dates.
+    expect(isApiErrorCode('seasonOverlap')).toBe(true);
+    expect(isApiErrorCode('seasonPhaseOverlap')).toBe(true);
+  });
+
   it('rejects anything outside it', () => {
     // A typo in a throw site must degrade to the status default rather than
     // reach a client that has no branch for it.

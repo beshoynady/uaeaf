@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { eventBarState, formatEventDateTime } from "@uaeaf/content/hero";
-import { HeroCountdown } from "./hero-countdown";
+import { Countdown } from "@/components/shared/countdown";
 import { CONTAINER } from "@/components/ui/section";
 import type { AppLocale } from "@/i18n/routing";
 import type { NextEvent } from "@/lib/pages/homepage";
@@ -37,7 +37,7 @@ export const HeroEventBar = async ({ event, locale }: { event: NextEvent; locale
           </p>
           <p className="text-body-sm font-bold">{event.name}</p>
         </div>
-        <HeroCountdown
+        <Countdown
           event={event.event}
           initial={initial}
           labels={{

@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { HeroPageSchema } from '../../../../common/schemas/hero-page.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
@@ -47,7 +47,7 @@ export type StrategicPlansPageDocument = HydratedDocument<StrategicPlansPage>;
  *  board states no singleton constraint — see `SingletonPageService`. */
 @Schema({ collection: 'strategicPlansPage', timestamps: true })
 export class StrategicPlansPage extends HeroPageSchema {
-  @Prop({ type: Types.ObjectId, ref: 'Federation', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Federation', required: true })
   federationId: Types.ObjectId;
 
   /** e.g. "خارطة طريق نحو المستقبل". */
@@ -60,7 +60,7 @@ export class StrategicPlansPage extends HeroPageSchema {
   /** The photographs the sections print, content edited with the page as
    *  the hero's is: every picture the page prints has a field (owner rule
    *  2026-09-14). */
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   introImageId: Types.ObjectId | null; // beside the overview
 
   /** The composition prints the phases with no heading; the field exists so
@@ -83,7 +83,7 @@ export class StrategicPlansPage extends HeroPageSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   objectivesTitle: LocalizedText;
 
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   objectivesImageId: Types.ObjectId | null; // beside the objectives
 
   @Prop({ type: [PlanListItemSchema], default: [] })
@@ -92,7 +92,7 @@ export class StrategicPlansPage extends HeroPageSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   metricsTitle: LocalizedText;
 
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   metricsImageId: Types.ObjectId | null; // behind the metrics band
 
   @Prop({ type: [PlanMetricSchema], default: [] })
@@ -113,7 +113,7 @@ export class StrategicPlansPage extends HeroPageSchema {
   @Prop({ type: LocalizedTextSchema, default: null })
   ctaText: LocalizedText | null;
 
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   ctaImageId: Types.ObjectId | null; // behind the closing call
 
   /** Shared with `pages` and the other governance pages (Chapter 14 §3). */
@@ -122,7 +122,7 @@ export class StrategicPlansPage extends HeroPageSchema {
 
   /** Denormalized pointer to the revision this row's content came from —
    *  present on this collection and `visionMissionPage` on the board. */
-  @Prop({ type: Types.ObjectId, ref: 'Revision', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Revision', default: null })
   revisionId: Types.ObjectId | null;
 
   /** Denormalized ← `publications` (ADR-0020). */

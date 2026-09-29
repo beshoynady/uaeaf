@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
@@ -26,13 +26,13 @@ export class Club extends BaseSchema {
   @Prop({ required: true })
   slug: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   logoId: Types.ObjectId | null;
 
   @Prop({ type: Date, required: true })
   foundingDate: Date;
 
-  @Prop({ type: Types.ObjectId, ref: 'Country', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Country', required: true })
   emirateId: Types.ObjectId;
 
   /** Uniqueness added (schema-audit-2026-09-04.md §3.3/§9.5, P1 finding):
@@ -48,7 +48,7 @@ export class Club extends BaseSchema {
   @Prop({ type: String, enum: CLUB_TYPES, required: true })
   clubType: ClubType;
 
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   coverImage: Types.ObjectId | null;
 
   @Prop({ type: LocalizedTextSchema, default: null })
@@ -69,13 +69,13 @@ export class Club extends BaseSchema {
   @Prop({ type: [SocialLinkSchema], default: [] })
   socialLinks: SocialLink[];
 
-  @Prop({ type: Types.ObjectId, ref: 'Venue', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Venue', default: null })
   venueId: Types.ObjectId | null;
 
   @Prop({ type: String, enum: CLUB_STATUSES, required: true })
   status: ClubStatus;
 
-  @Prop({ type: Types.ObjectId, ref: 'Video', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Video', default: null })
   introVideoId: Types.ObjectId | null;
 
   @Prop({ type: Number, default: null })
@@ -94,3 +94,7 @@ ClubSchema.index(
   { registrationNumber: 1 },
   { unique: true, partialFilterExpression: { archivedAt: null } },
 );
+
+// Site search. `default_language: 'none'` — see `articles.schema.ts`'s
+// identical index for why.
+ClubSchema.index({ 'name.ar': 'text', 'name.en': 'text' }, { default_language: 'none', name: 'search_text' });

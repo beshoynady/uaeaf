@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
@@ -145,7 +145,7 @@ export class Article extends BaseSchema {
   @Prop({ type: String, default: null, trim: true })
   sourceUrl: string | null;
 
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   coverMediaId: Types.ObjectId | null;
 
   /**
@@ -226,3 +226,15 @@ ArticleSchema.index({ category: 1, publicationState: 1, archived: 1, publishDate
 // every article the federation has ever published to answer one badge click.
 // Multikey over the array, which is what Mongo builds for an indexed [String].
 ArticleSchema.index({ tags: 1, publicationState: 1, archived: 1, publishDate: -1 });
+
+// Site search. `default_language: 'none'`: Mongo's stemmer has no Arabic
+// support, and `'english'` would strip English stop-words out of Arabic text
+// for no benefit — see `arabic-normalize.ts`, which is what actually
+// reconciles spelling variation, on both the stored text and the query.
+// There is no `summary`/`excerpt` field on this schema to weight alongside
+// `title` (the only body text is `body`, a rich-text document per language,
+// not indexable as plain text), so this covers title only.
+ArticleSchema.index(
+  { 'title.ar': 'text', 'title.en': 'text' },
+  { default_language: 'none', name: 'search_text' },
+);

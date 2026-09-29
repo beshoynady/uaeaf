@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import ar from "../../../messages/ar.json";
-import en from "../../../messages/en.json";
+import { loadMessages } from "@/i18n/messages";
 import { PREPARING_PAGES, PUBLIC_PAGES } from "./public-pages";
 
 /**
@@ -21,7 +20,7 @@ import { PREPARING_PAGES, PUBLIC_PAGES } from "./public-pages";
  * namespace, a `PreparingPage` a whole dotted `titleKey` into any namespace.
  */
 
-const MESSAGES = { ar, en } as const;
+const MESSAGES = { ar: loadMessages("ar"), en: loadMessages("en") } as const;
 
 /** Walks a dotted path, which is what `next-intl` does with a key. */
 const resolve = (messages: unknown, path: string): unknown =>

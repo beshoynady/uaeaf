@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>إدارة اللجان</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800;900&amp;display=swap">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0B0B0B}
+.th-dark{--bg:#0B0B0B;--side:#111111;--sf:#141414;--sf2:#1C1C1C;--sf3:#232629;--tx:#F2F2F2;--tx2:#E4E6E8;--mu:#A8ADB2;--bd:#2A2D30;--bd2:#4B5157;--grt:#4CC27E;--ink:#FFFFFF;--on:#0F1A13;--ok-bg:#0F2A1B;--ok:#4CC27E;--warn-bg:#2E2410;--warn:#E3B341;--err-bg:#2A1015;--err:#FF8A99;--info-bg:#122236;--info:#8CB8F0;--inp:#0F0F0F}
+.th-light{--bg:#F4F4F4;--side:#FFFFFF;--sf:#FFFFFF;--sf2:#F6F7F6;--sf3:#ECEEEC;--tx:#0B0B0B;--tx2:#1F2328;--mu:#50565C;--bd:#D5D8D4;--bd2:#8F9590;--grt:#006B32;--ink:#0B0B0B;--on:#E7F3EC;--ok-bg:#E7F3EC;--ok:#006B32;--warn-bg:#FFF4D6;--warn:#7A5300;--err-bg:#FBE9EC;--err:#A30D26;--info-bg:#E6EEF9;--info:#1F4E8C;--inp:#FFFFFF}
+.root{background:var(--bg);color:var(--tx);font-family:Alexandria,Tahoma,sans-serif}
+a{color:var(--grt)}a:hover{color:var(--tx)}
+a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.tri{background:linear-gradient(90deg,#00843D 0 33%,var(--ink) 33% 66%,#C8102E 66%)}
+.side-h{font-size:12px;font-weight:700;color:var(--mu);padding:14px 14px 6px}
+.side-link{display:flex;align-items:center;gap:12px;height:40px;padding:0 14px;border-radius:10px;color:var(--tx2);text-decoration:none;font-size:14px}
+.side-link:hover{background:var(--sf2);color:var(--tx)}
+.side-on{background:var(--on);color:var(--tx);font-weight:700;box-shadow:inset -3px 0 0 #00843D}
+[dir=ltr] .side-on{box-shadow:inset 3px 0 0 #00843D}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 18px;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn-pri{background:#00843D;color:#FFFFFF;border:none}
+.btn-pri:hover{background:#006B32;color:#FFFFFF}
+.btn-sec{background:transparent;color:var(--tx);border:1px solid var(--bd2)}
+.btn-sec:hover{border-color:#00843D;color:var(--tx)}
+.btn-sm{height:36px;padding:0 12px;font-size:13px}
+.btn-danger{background:transparent;color:var(--err);border:1px solid var(--err)}
+.btn-danger:hover{background:var(--err-bg);color:var(--err)}
+.chip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+.c-ok{background:var(--ok-bg);color:var(--ok)}
+.c-warn{background:var(--warn-bg);color:var(--warn)}
+.c-err{background:var(--err-bg);color:var(--err)}
+.c-info{background:var(--info-bg);color:var(--info)}
+.c-muted{background:var(--sf3);color:var(--mu)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--bd)}
+.tab{position:relative;display:inline-flex;align-items:center;gap:8px;height:50px;padding:0 18px;border:none;background:transparent;font-family:inherit;font-size:15px;font-weight:600;color:var(--mu);cursor:pointer}
+.tab:hover{color:var(--tx)}
+.tab-on{color:var(--tx);font-weight:800}
+.tab-on::after{content:"";position:absolute;inset:auto 12px -1px 12px;height:3px;border-radius:3px 3px 0 0;background:linear-gradient(90deg,#00843D 0 33%,var(--ink) 33% 66%,#C8102E 66%)}
+.count{min-width:22px;height:22px;padding:0 6px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:var(--sf3);color:var(--tx2)}
+.seg{display:inline-flex;padding:4px;border-radius:12px;background:var(--sf3);gap:4px}
+.seg-b{height:38px;padding:0 16px;border-radius:9px;border:none;background:transparent;font-family:inherit;font-size:14px;font-weight:600;color:var(--mu);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.seg-b:hover{color:var(--tx)}
+.seg-on{background:var(--sf);color:var(--tx);box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:16px}
+.lbl{font-size:13px;font-weight:700;color:var(--tx2)}
+.hint{font-size:12px;color:var(--mu);line-height:1.7}
+.lang{font-size:11px;font-weight:800;padding:2px 7px;border-radius:6px;background:var(--sf3);color:var(--mu)}
+.inp{height:44px;border-radius:10px;border:1px solid var(--bd2);padding:0 14px;font-family:inherit;font-size:14px;color:var(--tx);background:var(--inp);width:100%}
+.inp:hover{border-color:var(--mu)}
+.ta{height:auto;min-height:104px;padding:10px 14px;line-height:1.8;resize:vertical}
+.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.fld{display:flex;flex-direction:column;gap:8px}
+.fld-h{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.row{display:grid;grid-template-columns:20px 26px 44px minmax(0,1fr) auto 40px;align-items:center;gap:10px;width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--bd);background:var(--sf);font-family:inherit;font-size:14px;color:var(--tx);text-align:start;cursor:pointer;transition:border-color .15s,background .15s}
+.row:hover{border-color:var(--bd2)}
+.row-on{border-color:#00843D;background:var(--on)}
+.num{width:26px;height:26px;border-radius:8px;background:var(--sf3);color:var(--mu);font-size:12px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+.av{width:44px;height:44px;border-radius:999px;background:var(--sf3);color:var(--mu);display:inline-flex;align-items:center;justify-content:center}
+.sw{width:40px;height:24px;border-radius:999px;border:none;padding:3px;background:var(--bd2);display:inline-flex;cursor:pointer;flex-shrink:0}
+.sw span{width:18px;height:18px;border-radius:999px;background:#FFFFFF}
+.sw-on{background:#00843D;justify-content:flex-end}
+.drop{display:flex;align-items:center;gap:18px;padding:18px;border-radius:14px;border:2px dashed var(--bd2);background:var(--sf2)}
+.ph{width:112px;height:140px;border-radius:12px;background:var(--sf3);color:var(--mu);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ro{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;padding:10px 14px;border-radius:12px;background:var(--sf2);border:1px solid var(--bd);font-size:14px}
+.meter{height:8px;border-radius:999px;background:var(--sf3);overflow:hidden}
+.meter span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#C8102E,#E3B341)}
+.step{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;text-align:center;font-size:13px;color:var(--mu)}
+.step-dot{width:36px;height:36px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;background:var(--sf3);color:var(--mu)}
+.step-on .step-dot{background:#00843D;color:#FFFFFF}
+.step-on{color:var(--tx);font-weight:700}
+.issue{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:12px;background:var(--sf);border:1px solid var(--bd);color:var(--tx2);font-size:14px;line-height:1.7;text-decoration:none}
+.issue:hover{border-color:var(--bd2);color:var(--tx)}
+.sec-row{display:grid;grid-template-columns:28px minmax(0,1fr) auto 40px;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;border:1px solid var(--bd);background:var(--sf)}
+.lock{color:var(--mu)}
+.gprev{padding:18px;border-radius:12px;background:#FFFFFF;border:1px solid #D5D8D4;font-family:Arial,sans-serif;color:#1F2328}
+.onode{padding:10px 14px;border-radius:12px;border:1px solid var(--bd2);background:var(--sf);font-size:13px;font-weight:700;text-align:center;color:var(--tx)}
+.oline{width:2px;height:18px;background:#00843D;align-self:center}
+.search{display:flex;align-items:center;gap:10px;height:40px;width:340px;padding:0 12px;border-radius:10px;border:1px solid var(--bd);background:var(--sf2);color:var(--mu);font-size:13px}
+.kbd{margin-inline-start:auto;font-size:11px;font-weight:700;padding:2px 6px;border-radius:6px;border:1px solid var(--bd2);color:var(--mu)}
+.ib{width:40px;height:40px;border-radius:10px;border:1px solid var(--bd);background:var(--sf);color:var(--tx2);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700}
+.ib:hover{border-color:#00843D}
+.ver{display:grid;grid-template-columns:90px minmax(0,1fr) 200px 160px 150px;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--bd);font-size:14px;color:var(--tx2)}
+.side-g{display:flex;align-items:center;justify-content:space-between}
+.rp{display:flex;align-items:center;gap:8px;height:40px;padding:0 6px 0 12px;border-radius:10px;border:1px dashed var(--bd2);font-size:12px;color:var(--mu)}
+.rp select{height:32px;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:700;color:var(--tx);cursor:pointer}
+.ro-banner{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;background:var(--info-bg);color:var(--info);font-size:13px;font-weight:600}
+.subtabs{display:flex;gap:4px;flex-wrap:wrap;padding:4px;border-radius:12px;background:var(--sf3)}
+.st{height:36px;padding:0 14px;border-radius:9px;border:none;background:transparent;font-family:inherit;font-size:13px;font-weight:600;color:var(--mu);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.st:hover{color:var(--tx)}
+.st-on{background:var(--sf);color:var(--tx);box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.prow{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:12px;width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--bd);background:var(--sf);font-family:inherit;color:var(--tx);text-align:start;cursor:pointer}
+.prow:hover{border-color:var(--bd2)}
+.prow-on{border-color:#00843D;background:var(--on)}
+.pos-chip{display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:999px;background:var(--sf3);color:var(--tx2);font-size:11px;font-weight:700;white-space:nowrap}
+.acc{border:1px solid var(--bd);border-radius:14px;background:var(--sf)}
+.acc-h{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:14px 16px;border:none;background:transparent;font-family:inherit;color:var(--tx);cursor:pointer;text-align:start}
+.acc-b{padding:0 16px 16px;display:flex;flex-direction:column;gap:14px}
+.empty{display:flex;flex-direction:column;align-items:center;gap:6px;padding:18px;border-radius:12px;border:1px dashed var(--bd2);color:var(--mu);font-size:13px;text-align:center}
+.mask{display:flex;align-items:center;gap:10px;height:44px;padding:0 14px;border-radius:10px;border:1px dashed var(--bd2);background:var(--sf2);color:var(--mu);font-size:13px}
+.tl-row{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:14px;align-items:start;padding:14px 0;border-bottom:1px solid var(--bd)}
+.tl-dot{width:12px;height:12px;border-radius:999px;background:#00843D;margin-top:6px}
+.tl-dot-past{background:var(--bd2)}
+.overlay{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:5}
+.dlg{width:520px;border-radius:18px;background:var(--sf);border:1px solid var(--bd);box-shadow:0 30px 60px rgba(0,0,0,.4);padding:24px;display:flex;flex-direction:column;gap:16px}
+.pick{display:grid;grid-template-columns:40px minmax(0,1fr) auto;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;border:1px solid var(--bd);background:var(--sf)}
+.lnk-card{display:flex;align-items:center;gap:14px;padding:16px;border-radius:14px;border:1px solid var(--bd);background:var(--sf2)}
+.grp-h{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 2px 2px;font-size:12px;font-weight:800;color:var(--tx2)}
+.grp-h .count{height:20px;min-width:20px;font-size:11px}
+.tree{display:inline-flex;color:var(--bd2)}
+.row-arch{opacity:.6}
+.kind{display:flex;flex-direction:column;gap:16px;padding:18px;border-radius:14px;border:1px solid var(--bd);background:var(--sf2)}
+.kopt{display:grid;grid-template-columns:22px minmax(0,1fr);gap:10px;align-items:start;padding:14px;border-radius:12px;border:1px solid var(--bd2);background:var(--sf);font-family:inherit;color:var(--tx);text-align:start;cursor:pointer;width:100%}
+.kopt:hover{border-color:var(--mu)}
+.kopt-on{border-color:#00843D;background:var(--on);box-shadow:0 0 0 1px #00843D}
+.radio{width:20px;height:20px;border-radius:999px;border:2px solid var(--bd2);display:inline-flex;align-items:center;justify-content:center;margin-top:2px}
+.kopt-on .radio{border-color:#00843D}
+.kopt-on .radio::after{content:"";width:10px;height:10px;border-radius:999px;background:#00843D}
+.popt{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;min-height:48px;padding:8px 12px;border-radius:10px;border:1px solid var(--bd);background:var(--sf);font-family:inherit;font-size:14px;color:var(--tx);text-align:start;cursor:pointer}
+.popt:hover{border-color:var(--bd2)}
+.popt-on{border-color:#00843D;background:var(--on)}
+.popt-off{cursor:not-allowed;color:var(--mu);background:var(--sf2);border-style:dashed}
+.popt-off:hover{border-color:var(--bd)}
+.demo{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:6px;border-radius:12px;border:1px dashed var(--bd2)}
+.demo-l{font-size:11px;font-weight:700;color:var(--mu);padding:0 6px}
+.dj{height:30px;padding:0 12px;border-radius:8px;border:none;background:transparent;font-family:inherit;font-size:12px;font-weight:700;color:var(--mu);cursor:pointer}
+.dj-on{background:var(--sf3);color:var(--tx)}
+.b-err{background:var(--err-bg);color:var(--err)}
+.b-info{background:var(--info-bg);color:var(--info)}
+.b-warn{background:var(--warn-bg);color:var(--warn)}
+.bn{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:12px;font-size:13px;line-height:1.8}
+.bn strong{display:block;font-size:14px;color:inherit}
+.bn span{color:var(--tx2)}
+</style>
+</helmet>
+<div class="{{rootClass}}" dir="{{dir}}" lang="{{lang}}" style="position: relative; width: 1440px; height: 1760px; display: flex; overflow: hidden">
+
+<aside style="width: 248px; flex-shrink: 0; background: var(--side); border-inline-end: 1px solid var(--bd); display: flex; flex-direction: column">
+<div class="tri" style="height: 3px"></div>
+<div style="height: 64px; display: flex; align-items: center; gap: 10px; padding: 0 20px">
+<svg width="36" height="30" viewBox="0 0 240 200" aria-hidden="true"><path d="M20 170 L75.05 105.05 A7 7 0 0 1 84.95 114.95 Z" fill="#C8102E"></path><path d="M40 190 L142.2 72.2 A11 11 0 0 1 157.8 87.8 Z" fill="#00843D"></path><path d="M95 190 L182.9 87.9 A10 10 0 0 1 197.1 102.1 Z" style="fill: var(--ink)"></path><path d="M150 190 L200.05 130.05 A7 7 0 0 1 209.95 139.95 Z" fill="#C8102E"></path></svg>
+<span style="font-size: 16px; font-weight: 800">UAEAF</span>
+</div>
+<nav aria-label="{{s.navAria}}" style="padding: 4px 12px; display: flex; flex-direction: column; gap: 2px">
+<span class="side-h">{{s.gHome}}</span>
+<a class="side-link" href="#">{{s.overview}}</a>
+<span class="side-h">{{s.gContent}}</span>
+<a class="side-link" href="#">{{s.news}}</a>
+<a class="side-link" href="#">{{s.videos}}</a>
+<a class="side-link" href="#">{{s.albums}}</a>
+<span class="side-h">{{s.gGov}}</span>
+<a class="side-link" href="People.dc.html">{{s.people}}</a>
+<a class="side-link" href="Admin.dc.html">{{s.board}}</a>
+<a class="side-link side-on" href="ComAdmin.dc.html">{{s.coms}}</a>
+<span class="side-h">{{s.gPages}}</span>
+<a class="side-link" href="#">{{s.about}}</a>
+<a class="side-link" href="#">{{s.msg}}</a>
+<a class="side-link" href="#">{{s.pol}}</a>
+<span class="side-h">{{s.gData}}</span>
+<a class="side-link" href="#">{{s.clubs}}</a>
+<a class="side-link" href="#">{{s.athletes}}</a>
+<sc-if value="{{isSA}}" hint-placeholder-val="{{ true }}">
+<span class="side-h">{{s.gAccess}}</span>
+<a class="side-link" href="#">{{s.users}}</a>
+<a class="side-link" href="#">{{s.roles}}</a>
+<a class="side-link" href="#">{{s.policies}}</a>
+<a class="side-link" href="#">{{s.security}}</a>
+<a class="side-link" href="#">{{s.audit}}</a>
+</sc-if>
+</nav>
+</aside>
+
+<div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column">
+<div style="height: 64px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 32px; border-bottom: 1px solid var(--bd); background: var(--side)">
+<div class="search" role="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg><span>{{s.search}}</span><span class="kbd">⌘K</span></div>
+<div style="display: flex; align-items: center; gap: 8px">
+<label class="rp"><span>{{s.previewAs}}</span><select value="{{role}}" onChange="{{pickRole}}" aria-label="{{s.previewAs}}"><option value="sa">Super Admin</option><option value="gov">{{s.rGov}}</option><option value="viewer">{{s.rViewer}}</option></select></label>
+<button class="ib" aria-label="{{s.themeAria}}" onClick="{{toggleTheme}}">
+<sc-if value="{{isLight}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg></sc-if>
+<sc-if value="{{isDark}}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg></sc-if>
+</button>
+<button class="ib" aria-label="{{s.langAria}}" onClick="{{toggleLang}}">{{s.langLabel}}</button>
+<span class="av" style="width: 40px; height: 40px; font-size: 13px; font-weight: 800" aria-hidden="true">BS</span>
+</div>
+</div>
+
+<div style="flex-grow: 1; padding: 28px 32px 32px; display: flex; flex-direction: column; gap: 18px; min-height: 0">
+<sc-if value="{{isViewer}}" hint-placeholder-val="{{ false }}"><div class="ro-banner" role="status"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>{{s.readOnly}}</div></sc-if>
+<div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 24px">
+<div style="display: flex; flex-direction: column; gap: 8px; max-width: 760px">
+<nav aria-label="breadcrumb" style="font-size: 13px; color: var(--mu)"><a href="#" style="color: var(--mu); text-decoration: none">{{t.crumbs}}</a> / <span aria-current="page">{{t.title}}</span></nav>
+<div style="display: flex; align-items: center; gap: 12px"><h1 style="margin: 0; font-size: 28px; font-weight: 800">{{t.title}}</h1><span class="chip c-info">{{t.policy}}</span></div>
+<p style="margin: 0; font-size: 14px; line-height: 1.8; color: var(--mu)">{{t.lead}}</p>
+</div>
+<div style="display: flex; align-items: center; gap: 10px">
+<a class="btn btn-sec" href="Committee.dc.html"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>{{t.preview}}</a>
+<sc-if value="{{canEditUnlocked}}" hint-placeholder-val="{{ true }}"><button class="btn btn-sec">{{t.save}}</button><button class="btn btn-pri">{{t.submit}}</button></sc-if>
+</div>
+</div>
+
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 16px">
+<div class="seg" role="group" aria-label="{{t.title}}">
+<sc-for list="{{segs}}" as="sg" hint-placeholder-count="3"><button class="{{sg.cls}}" aria-pressed="{{sg.pressed}}" onClick="{{sg.go}}">{{sg.label}}<sc-if value="{{sg.hasBadge}}" hint-placeholder-val="{{ true }}"><span class="count">{{sg.badge}}</span></sc-if></button></sc-for>
+</div>
+<sc-if value="{{canEdit}}" hint-placeholder-val="{{ true }}"><div class="demo" role="group" aria-label="{{t.demoL}}"><span class="demo-l">{{t.demoL}}</span><sc-for list="{{demos}}" as="dm" hint-placeholder-count="3"><button class="{{dm.cls}}" aria-pressed="{{dm.pressed}}" onClick="{{dm.go}}">{{dm.label}}</button></sc-for></div></sc-if>
+</div>
+
+<sc-if value="{{isList}}" hint-placeholder-val="{{ true }}">
+<div style="display: grid; grid-template-columns: 440px minmax(0, 1fr); gap: 20px; align-items: start">
+
+<div class="card" style="padding: 16px; display: flex; flex-direction: column; gap: 10px">
+<sc-if value="{{canEdit}}" hint-placeholder-val="{{ true }}"><button class="btn btn-sec" style="width: 100%" onClick="{{addCom}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>{{t.add}}</button></sc-if>
+<p class="hint" style="margin: 0">{{t.dragHint}}</p>
+<sc-for list="{{groups}}" as="g" hint-placeholder-count="3">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div class="grp-h"><span style="display: flex; flex-direction: column; gap: 2px"><span>{{g.title}}</span><span class="hint" style="font-weight: 500">{{g.hint}}</span></span><span class="count">{{g.count}}</span></div>
+<sc-if value="{{g.isEmpty}}" hint-placeholder-val="{{ false }}"><div class="empty" style="padding: 12px">{{g.empty}}</div></sc-if>
+<ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px" aria-label="{{g.title}}">
+<sc-for list="{{g.items}}" as="c" hint-placeholder-count="3">
+<li style="{{c.indent}}"><button class="{{c.rowCls}}" aria-pressed="{{c.pressed}}" onClick="{{c.pick}}" style="grid-template-columns: 20px 26px minmax(0, 1fr) auto">
+<sc-if value="{{c.isChild}}" hint-placeholder-val="{{ false }}"><span class="tree" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3v9a4 4 0 0 0 4 4h9"></path></svg></span></sc-if>
+<sc-if value="{{c.isRoot}}" hint-placeholder-val="{{ true }}"><span aria-label="{{t.drag}}" style="color: var(--mu); display: inline-flex"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"></circle><circle cx="15" cy="6" r="1.6"></circle><circle cx="9" cy="12" r="1.6"></circle><circle cx="15" cy="12" r="1.6"></circle><circle cx="9" cy="18" r="1.6"></circle><circle cx="15" cy="18" r="1.6"></circle></svg></span></sc-if>
+<span class="num">{{c.n}}</span>
+<span style="display: flex; flex-direction: column; gap: 3px; min-width: 0"><span style="font-weight: 700; line-height: 1.5">{{c.name}}</span><span style="font-size: 12px; color: var(--mu)">{{c.sub}}</span></span>
+<span style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px"><sc-if value="{{c.hasChip}}" hint-placeholder-val="{{ false }}"><span class="{{c.chipCls}}">{{c.chip}}</span></sc-if><sc-if value="{{c.review}}" hint-placeholder-val="{{ false }}"><span class="chip c-warn">{{t.inReview}}</span></sc-if></span>
+</button></li>
+</sc-for>
+</ul>
+</div>
+</sc-for>
+<p class="hint" style="margin: 0; padding-top: 10px; border-top: 1px solid var(--bd)">{{t.sampleNote}}</p>
+</div>
+
+<sc-if value="{{noCur}}" hint-placeholder-val="{{ false }}"><div class="card empty" style="padding: 64px 24px; gap: 10px"><span style="font-size: 17px; font-weight: 800; color: var(--tx)">{{t.emptyT}}</span><span style="max-width: 460px; line-height: 1.8">{{t.emptyX}}</span><sc-if value="{{canEdit}}" hint-placeholder-val="{{ true }}"><button class="btn btn-pri" onClick="{{addCom}}" style="margin-top: 6px">{{t.add}}</button></sc-if></div></sc-if>
+<sc-if value="{{hasCur}}" hint-placeholder-val="{{ true }}">
+<div class="card" style="padding: 22px; display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 6px"><h2 style="margin: 0; font-size: 22px; font-weight: 800">{{cur.name}}</h2><span style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap"><span class="{{cur.chipCls}}">{{cur.kindLabel}}</span><span style="font-size: 13px; color: var(--mu); direction: ltr; text-align: start">/{{lang}}/committees/{{cur.slugShown}}</span></span></div>
+<sc-if value="{{canArchive}}" hint-placeholder-val="{{ true }}"><button class="btn btn-danger btn-sm" onClick="{{openArchive}}">{{t.archive}}</button></sc-if>
+</div>
+
+<sc-if value="{{serverErr}}" hint-placeholder-val="{{ false }}"><div class="bn b-err" role="alert"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="flex-shrink: 0"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v6M12 16.5v.5"></path></svg><div style="flex-grow: 1"><strong>{{t.errT}}</strong><span>{{t.errX}}</span></div><button class="btn btn-sec btn-sm" onClick="{{fixErr}}">{{t.errFix}}</button></div></sc-if>
+
+<sc-if value="{{locked}}" hint-placeholder-val="{{ true }}"><div class="banner b-warn" role="status" style="display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-radius: 14px; background: var(--warn-bg); color: var(--warn); font-size: 13px; line-height: 1.8"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="flex-shrink: 0"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg><div style="flex-grow: 1"><strong style="display: block; font-size: 14px">{{t.lockT}}</strong><span style="color: var(--tx2)">{{t.lockX}}</span></div><span style="display: flex; gap: 8px; flex-shrink: 0"><button class="btn btn-sec btn-sm" onClick="{{noop}}">{{t.openReview}}</button><sc-if value="{{canEdit}}" hint-placeholder-val="{{ true }}"><button class="btn btn-sec btn-sm">{{t.withdraw}}</button></sc-if></span></div></sc-if>
+
+<div class="subtabs" role="tablist" aria-label="{{cur.name}}">
+<sc-for list="{{subs}}" as="sb" hint-placeholder-count="6"><button class="{{sb.cls}}" role="tab" aria-selected="{{sb.sel}}" onClick="{{sb.go}}">{{sb.label}}</button></sc-for>
+</div>
+
+<sc-if value="{{isContent}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 20px">
+<div class="pair">
+<div class="fld"><label class="lbl" for="cna">{{t.nameL}} <span class="lang">AR</span></label><input id="cna" class="inp" dir="rtl" value="{{cur.nameA}}" placeholder="{{t.namePhA}}" onChange="{{noop}}"></div>
+<div class="fld"><label class="lbl" for="cne">{{t.nameL}} <span class="lang">EN</span></label><input id="cne" class="inp" dir="ltr" value="{{cur.nameE}}" placeholder="[Committee name]" onChange="{{noop}}"></div>
+</div>
+<div class="fld" style="max-width: 50%"><label class="lbl" for="csl">{{t.slugL}}</label><input id="csl" class="inp" dir="ltr" value="{{cur.slug}}" placeholder="[committee-slug]" onChange="{{noop}}"><span class="hint">{{t.slugHint}}</span></div>
+
+<section class="kind" aria-labelledby="kindT">
+<div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px"><span style="display: flex; flex-direction: column; gap: 4px"><span id="kindT" class="lbl" style="font-size: 15px; color: var(--tx)">{{t.kindT}}</span><span class="hint">{{t.kindX}}</span></span><sc-if value="{{cur.hasKids}}" hint-placeholder-val="{{ false }}"><span class="chip c-info">{{cur.kidsLabel}}</span></sc-if></div>
+
+<sc-if value="{{kindEditable}}" hint-placeholder-val="{{ true }}">
+<div role="radiogroup" aria-labelledby="kindT" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+<sc-for list="{{kindOpts}}" as="ko" hint-placeholder-count="2"><button class="{{ko.cls}}" role="radio" aria-checked="{{ko.checked}}" onClick="{{ko.go}}"><span class="radio" aria-hidden="true"></span><span style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 14px; font-weight: 800">{{ko.label}}</span><span class="hint">{{ko.desc}}</span></span></button></sc-for>
+</div>
+<sc-if value="{{cur.unclassified}}" hint-placeholder-val="{{ false }}"><span class="hint" style="color: var(--warn)">{{t.kindNone}}</span></sc-if>
+
+<sc-if value="{{cur.dropParent}}" hint-placeholder-val="{{ false }}"><div class="bn b-warn" role="status"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="flex-shrink: 0"><path d="M12 3l10 18H2z"></path><path d="M12 10v4M12 17.5v.5"></path></svg><div><strong>{{t.dropT}}</strong><span>{{cur.dropX}}</span></div></div></sc-if>
+
+<sc-if value="{{cur.isSub}}" hint-placeholder-val="{{ false }}">
+<div class="fld" role="radiogroup" aria-labelledby="parT">
+<span id="parT" class="lbl">{{t.parT}}</span>
+<span class="hint" style="margin-top: -4px">{{t.parX}}</span>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<sc-for list="{{parentOpts}}" as="po" hint-placeholder-count="5"><button class="{{po.cls}}" role="radio" aria-checked="{{po.checked}}" aria-disabled="{{po.off}}" onClick="{{po.go}}" style="{{po.indent}}"><span class="radio" aria-hidden="true" style="{{po.dot}}"></span><span style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span style="font-weight: 700">{{po.label}}</span><sc-if value="{{po.hasNote}}" hint-placeholder-val="{{ false }}"><span class="hint">{{po.note}}</span></sc-if></span><sc-if value="{{po.hasWhy}}" hint-placeholder-val="{{ false }}"><span class="chip c-muted"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>{{po.why}}</span></sc-if></button></sc-for>
+</div>
+</div>
+</sc-if>
+</sc-if>
+
+<sc-if value="{{kindReadOnly}}" hint-placeholder-val="{{ false }}">
+<div class="pair"><div class="ro"><span class="hint">{{t.kindShort}}</span><span style="font-weight: 700">{{cur.kindLabel}}</span></div><div class="ro"><span class="hint">{{t.parShort}}</span><span style="font-weight: 700">{{cur.parentLabel}}</span></div></div>
+</sc-if>
+</section>
+<div class="pair">
+<div class="fld"><div class="fld-h"><label class="lbl" for="csa">{{t.sumL}} <span class="lang">AR</span></label><span class="hint">{{t.sumCount}}</span></div><textarea id="csa" class="inp ta" dir="rtl" style="min-height: 76px" value="" onChange="{{noop}}"></textarea></div>
+<div class="fld"><div class="fld-h"><label class="lbl" for="cse">{{t.sumL}} <span class="lang">EN</span></label><span class="hint">{{t.sumCount}}</span></div><textarea id="cse" class="inp ta" dir="ltr" style="min-height: 76px" value="" onChange="{{noop}}"></textarea></div>
+</div>
+<span class="hint" style="margin-top: -10px">{{t.sumHint}}</span>
+<div class="pair">
+<div class="fld"><div class="fld-h"><label class="lbl" for="caa">{{t.aboutL}} <span class="lang">AR</span></label><span class="hint">{{t.aboutCount}}</span></div><textarea id="caa" class="inp ta" dir="rtl" style="min-height: 140px" value="" onChange="{{noop}}"></textarea></div>
+<div class="fld"><div class="fld-h"><label class="lbl" for="cae">{{t.aboutL}} <span class="lang">EN</span></label><span class="hint">{{t.aboutCount}}</span></div><textarea id="cae" class="inp ta" dir="ltr" style="min-height: 140px" value="" onChange="{{noop}}"></textarea></div>
+</div>
+<div class="fld"><div class="fld-h"><span class="lbl">{{t.cover}}</span><span class="chip c-muted">{{t.optional}}</span></div>
+<div class="drop"><div class="ph" style="width: 220px; height: 110px"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="M21 15l-5-5L5 21"></path></svg></div><div style="display: flex; flex-direction: column; gap: 10px"><sc-if value="{{canEditUnlocked}}" hint-placeholder-val="{{ true }}"><button class="btn btn-sec btn-sm" style="align-self: flex-start">{{t.upload}}</button></sc-if><span class="hint">{{t.coverSpec}}</span></div></div></div>
+<div style="display: flex; align-items: center; gap: 10px; padding-top: 16px; border-top: 1px solid var(--bd)"><span class="sw sw-on" role="switch" aria-checked="true" aria-label="{{t.showOnSite}}"><span></span></span><span style="font-size: 14px">{{t.showOnSite}}</span></div>
+</div>
+</sc-if>
+
+<sc-if value="{{isDuties}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 14px">
+<p class="hint" style="margin: 0">{{t.dutiesLead}}</p>
+<div class="empty" style="padding: 28px"><span style="font-size: 15px; font-weight: 700; color: var(--tx)">{{t.noDuties}}</span><span>{{t.noDutiesX}}</span></div>
+<sc-if value="{{canEditUnlocked}}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 18px; border-radius: 14px; background: var(--sf2)">
+<span class="lbl">{{t.dutyNew}}</span>
+<div class="pair"><div class="fld"><label class="lbl" for="dta">{{t.dTitle}} <span class="lang">AR</span></label><input id="dta" class="inp" dir="rtl" value="" onChange="{{noop}}"></div><div class="fld"><label class="lbl" for="dte">{{t.dTitle}} <span class="lang">EN</span></label><input id="dte" class="inp" dir="ltr" value="" onChange="{{noop}}"></div></div>
+<div class="pair"><div class="fld"><label class="lbl" for="dda">{{t.dDesc}} <span class="lang">AR</span></label><textarea id="dda" class="inp ta" dir="rtl" style="min-height: 76px" value="" onChange="{{noop}}"></textarea></div><div class="fld"><label class="lbl" for="dde">{{t.dDesc}} <span class="lang">EN</span></label><textarea id="dde" class="inp ta" dir="ltr" style="min-height: 76px" value="" onChange="{{noop}}"></textarea></div></div>
+<div style="display: flex; justify-content: flex-end; gap: 8px"><button class="btn btn-sec btn-sm">{{t.cancel}}</button><button class="btn btn-pri btn-sm">{{t.addDuty}}</button></div>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{isMembers}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 18px">
+<div class="fld" style="max-width: 50%"><label class="lbl" for="ccy">{{t.cycle}}</label><select id="ccy" class="inp" value="now" onChange="{{noop}}"><option value="now">{{t.cycleVal}}</option></select></div>
+<div class="fld"><span class="lbl">{{t.chairT}}</span>
+<sc-if value="{{cur.hasChair}}" hint-placeholder-val="{{ false }}"><div class="lnk-card"><span class="av" style="width: 56px; height: 56px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"></path></svg></span><span style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1"><span style="font-size: 16px; font-weight: 800">{{cur.chair}}</span><span class="hint">{{t.chairRole}} · 2025 – 2028</span></span><a class="btn btn-sec btn-sm" href="People.dc.html">{{t.openPerson}}</a><sc-if value="{{canEditUnlocked}}" hint-placeholder-val="{{ true }}"><button class="btn btn-sec btn-sm" onClick="{{openPicker}}">{{t.change}}</button><button class="btn btn-sec btn-sm" onClick="{{openClose}}">{{t.closePos}}</button></sc-if></div></sc-if>
+<sc-if value="{{cur.noChair}}" hint-placeholder-val="{{ true }}"><div class="lnk-card" style="border-style: dashed"><span class="av" style="width: 56px; height: 56px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"></path></svg></span><span style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1"><span style="font-size: 15px; font-weight: 800">{{t.noChair}}</span><span class="hint">{{t.noChairX}}</span></span><sc-if value="{{canEditUnlocked}}" hint-placeholder-val="{{ true }}"><button class="btn btn-pri btn-sm" onClick="{{openPicker}}">{{t.assignChair}}</button></sc-if></div></sc-if>
+<span class="hint">{{t.chairHint}}</span></div>
+<div style="display: flex; align-items: center; justify-content: space-between; padding-top: 16px; border-top: 1px solid var(--bd)"><span class="lbl">{{t.membersT}}</span><sc-if value="{{canEditUnlocked}}" hint-placeholder-val="{{ true }}"><button class="btn btn-pri btn-sm" onClick="{{openPicker}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>{{t.assign}}</button></sc-if></div>
+<div class="empty" style="padding: 28px"><span style="font-size: 15px; font-weight: 700; color: var(--tx)">{{t.noMembers}}</span><span>{{t.noMembersX}}</span></div>
+<span class="hint">{{t.order}}</span>
+</div>
+</sc-if>
+
+<sc-if value="{{isDocs}}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 18px">
+<span class="lbl">{{t.formT}}</span>
+<div class="pair"><div class="fld"><label class="lbl" for="fno">{{t.formNo}}</label><input id="fno" class="inp" dir="ltr" value="" onChange="{{noop}}"></div><div class="fld"><label class="lbl" for="fdt">{{t.formDate}}</label><input id="fdt" class="inp" dir="ltr" type="date" value="" onChange="{{noop}}"></div></div>
+<div style="display: flex; flex-direction: column; gap: 10px; padding-top: 16px; border-top: 1px solid var(--bd)"><span class="lbl">{{t.docsT}}</span><span class="hint">{{t.docsHint}}</span>
+<sc-if value="{{canEditUnlocked}}" hint-placeholder-val="{{ true }}"><div style="display: flex; gap: 10px; align-items: flex-end"><div class="fld" style="flex-grow: 1"><select class="inp" aria-label="{{t.pickDoc}}" value="" onChange="{{noop}}"><option value="">{{t.pickDoc}}</option></select></div><button class="btn btn-pri">{{t.link}}</button></div></sc-if>
+<div class="empty">{{t.noDocs}}</div></div>
+</div>
+</sc-if>
+
+<sc-if value="{{isReview}}" hint-placeholder-val="{{ false }}">
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start">
+<div style="display: flex; flex-direction: column; gap: 12px"><span class="lbl">{{t.flowT}}</span><span class="hint">{{t.flowX}}</span>
+<sc-for list="{{steps}}" as="s" hint-placeholder-count="2"><div class="sec-row" style="grid-template-columns: 28px minmax(0, 1fr) auto"><span class="num">{{s.n}}</span><span style="font-weight: 700; font-size: 14px">{{s.who}}</span><span class="{{s.cls}}">{{s.state}}</span></div></sc-for>
+<span class="hint" style="color: var(--info)">{{t.sod}}</span></div>
+<div style="display: flex; flex-direction: column; gap: 10px"><span class="lbl">{{t.checks}}</span>
+<sc-for list="{{issues}}" as="is" hint-placeholder-count="5"><div class="issue" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--bd); background: var(--sf)"><span class="{{is.cls}}">{{is.tag}}</span><span style="flex-grow: 1; font-size: 13px">{{is.text}}</span><button class="btn btn-sec btn-sm" onClick="{{is.go}}">{{t.fix}}</button></div></sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isVersions}}" hint-placeholder-val="{{ false }}">
+<div class="empty" style="padding: 44px"><span style="font-size: 16px; font-weight: 700; color: var(--tx)">{{t.verEmpty}}</span><span>{{t.verEmptyX}}</span></div>
+</sc-if>
+
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{isPage}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="padding: 22px; display: flex; flex-direction: column; gap: 20px">
+<p class="hint" style="margin: 0">{{t.pageLead}}</p>
+<div style="display: flex; align-items: center; gap: 10px"><span class="sw sw-on" role="switch" aria-checked="true" aria-label="{{t.active}}"><span></span></span><span style="font-size: 14px; font-weight: 700">{{t.active}}</span></div>
+<div class="pair"><div class="fld"><label class="lbl" for="pht">{{t.heroT}} <span class="lang">AR</span></label><input id="pht" class="inp" dir="rtl" value="اللجان المتخصصة" onChange="{{noop}}"></div><div class="fld"><label class="lbl" for="phe">{{t.heroT}} <span class="lang">EN</span></label><input id="phe" class="inp" dir="ltr" value="Specialised Committees" onChange="{{noop}}"></div></div>
+<div class="pair"><div class="fld"><label class="lbl" for="phs">{{t.heroS}} <span class="lang">AR</span></label><textarea id="phs" class="inp ta" dir="rtl" value="" placeholder="[الوصف التعريفي لصفحة اللجان]" onChange="{{noop}}"></textarea></div><div class="fld"><label class="lbl" for="phse">{{t.heroS}} <span class="lang">EN</span></label><textarea id="phse" class="inp ta" dir="ltr" value="" placeholder="[Committees page introduction]" onChange="{{noop}}"></textarea></div></div>
+<div style="display: flex; flex-direction: column; gap: 12px; padding-top: 16px; border-top: 1px solid var(--bd)">
+<div style="display: flex; align-items: center; justify-content: space-between"><span style="display: flex; flex-direction: column; gap: 2px"><span class="lbl">{{t.howT}}</span><span class="hint">{{t.howX}}</span></span><span class="sw sw-on" role="switch" aria-checked="true" aria-label="{{t.howT}}"><span></span></span></div>
+<div class="sec-row" style="grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1fr)"><span class="num">1</span><input class="inp" aria-label="{{t.stepL}} 1" value="لجان دائمة، ولجان فرعية تتبع لجنة أو مجلس الإدارة مباشرة" onChange="{{noop}}"><input class="inp" dir="ltr" aria-label="{{t.stepL}} 1 EN" value="Standing committees, and sub-committees under a committee or the Board" onChange="{{noop}}"></div>
+<div class="sec-row" style="grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1fr)"><span class="num">2</span><input class="inp" aria-label="{{t.stepL}} 2" value="تعمل اللجان خلال الدورة الانتخابية" onChange="{{noop}}"><input class="inp" dir="ltr" aria-label="{{t.stepL}} 2 EN" value="Committees serve for the electoral term" onChange="{{noop}}"></div>
+<div class="sec-row" style="grid-template-columns: 28px minmax(0, 1fr) minmax(0, 1fr)"><span class="num">3</span><input class="inp" aria-label="{{t.stepL}} 3" value="" placeholder="[آلية التشكيل ورفع التقارير]" onChange="{{noop}}"><input class="inp" dir="ltr" aria-label="{{t.stepL}} 3 EN" value="" placeholder="[Formation and reporting process]" onChange="{{noop}}"></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{isSeo}}" hint-placeholder-val="{{ false }}">
+<div class="card" style="padding: 22px; display: flex; flex-direction: column; gap: 18px">
+<p class="hint" style="margin: 0">{{t.seoHint}}</p>
+<div class="pair"><div class="fld"><label class="lbl" for="sst">{{t.seoTitle}} <span class="lang">AR</span></label><input id="sst" class="inp" dir="rtl" value="اللجان المتخصصة | اتحاد الإمارات لألعاب القوى" onChange="{{noop}}"></div><div class="fld"><label class="lbl" for="sste">{{t.seoTitle}} <span class="lang">EN</span></label><input id="sste" class="inp" dir="ltr" value="Specialised Committees | UAE Athletics Federation" onChange="{{noop}}"></div></div>
+<div class="pair"><div class="fld"><label class="lbl" for="ssd">{{t.seoDesc}} <span class="lang">AR</span></label><textarea id="ssd" class="inp ta" dir="rtl" value="تعرّف على اللجان المتخصصة في اتحاد الإمارات لألعاب القوى، ورؤسائها ومهامها." onChange="{{noop}}"></textarea></div><div class="fld"><label class="lbl" for="ssde">{{t.seoDesc}} <span class="lang">EN</span></label><textarea id="ssde" class="inp ta" dir="ltr" value="Meet the specialised committees of the UAE Athletics Federation, their chairs and duties." onChange="{{noop}}"></textarea></div></div>
+</div>
+</sc-if>
+
+</div>
+</div>
+<sc-if value="{{pickerOpen}}" hint-placeholder-val="{{ false }}">
+<div class="overlay">
+<div class="dlg" role="dialog" aria-modal="true" aria-labelledby="cpkT" style="width: 600px">
+<div style="display: flex; flex-direction: column; gap: 6px"><h2 id="cpkT" style="margin: 0; font-size: 20px; font-weight: 800">{{t.pkTitle}}</h2><p class="hint" style="margin: 0; font-size: 13px">{{t.pkLead}}</p></div>
+<input class="inp" type="search" aria-label="{{t.pkSearch}}" placeholder="{{t.pkSearch}}" value="" onChange="{{noop}}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{pickList}}" as="pk" hint-placeholder-count="3">
+<div class="pick"><span class="av" style="width: 40px; height: 40px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"></path></svg></span><span style="display: flex; flex-direction: column; gap: 4px; min-width: 0"><span style="font-weight: 700; font-size: 14px">{{pk.name}}</span><span class="hint">{{pk.note}}</span></span><button class="btn btn-sec btn-sm" onClick="{{shut}}">{{t.pkPick}}</button></div>
+</sc-for>
+</div>
+<div class="ro"><span class="hint">{{t.pkNew}}</span><a class="btn btn-sec btn-sm" href="People.dc.html">{{t.pkNewBtn}}</a></div>
+<div style="display: flex; justify-content: flex-end"><button class="btn btn-sec" onClick="{{shut}}">{{t.cancel}}</button></div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{closeOpen}}" hint-placeholder-val="{{ false }}">
+<div class="overlay">
+<div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlgT">
+<h2 id="dlgT" style="margin: 0; font-size: 20px; font-weight: 800">{{t.dlgTitle}}</h2>
+<p class="hint" style="margin: 0; font-size: 13px">{{t.dlgLead}}</p>
+<div class="pair">
+<div class="fld"><label class="lbl" for="dEnd">{{t.endDate}}</label><input id="dEnd" class="inp" dir="ltr" type="date" value="" onChange="{{noop}}"></div>
+<div class="fld"><label class="lbl" for="dRs">{{t.reason}}</label><select id="dRs" class="inp" value="completed" onChange="{{noop}}"><option value="completed">{{t.rCompleted}}</option><option value="resigned">{{t.rResigned}}</option><option value="removed">{{t.rRemoved}}</option><option value="transitioned">{{t.rTransitioned}}</option><option value="deceased">{{t.rDeceased}}</option></select></div>
+</div>
+<div style="display: flex; justify-content: flex-end; gap: 10px"><button class="btn btn-sec" onClick="{{shut}}">{{t.cancel}}</button><button class="btn btn-pri" onClick="{{shut}}">{{t.confirm}}</button></div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{archOpen}}" hint-placeholder-val="{{ false }}">
+<div class="overlay">
+<div class="dlg" role="dialog" aria-modal="true" aria-labelledby="arT">
+<h2 id="arT" style="margin: 0; font-size: 20px; font-weight: 800">{{t.arTitle}}</h2>
+<p class="hint" style="margin: 0; font-size: 13px">{{t.arLead}}</p>
+<sc-if value="{{cur.hasKids}}" hint-placeholder-val="{{ false }}"><div class="bn b-warn" role="status"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="flex-shrink: 0"><path d="M12 3l10 18H2z"></path><path d="M12 10v4M12 17.5v.5"></path></svg><div><strong>{{cur.kidsLabel}}</strong><span>{{cur.kidsNames}}. {{t.arKids}}</span></div></div></sc-if>
+<div style="display: flex; justify-content: flex-end; gap: 10px"><button class="btn btn-sec" onClick="{{shut}}">{{t.cancel}}</button><button class="btn btn-danger" onClick="{{shut}}">{{t.archive}}</button></div>
+</div>
+</div>
+</sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme": {"editor": "enum", "options": ["dark", "light"], "default": "dark"}, "lang": {"editor": "enum", "options": ["ar", "en"], "default": "ar"}, "role": {"editor": "enum", "options": ["sa", "gov", "viewer"], "default": "sa"}, "$preview": {"width": 1440, "height": 1760}}'>
+class Component extends DCLogic {
+  shellVals(T, theme, lang, role) {
+    const ar = lang === 'ar';
+    const R = {
+      sa: { canEdit: true, canSensitive: true, canExport: true, canLink: true },
+      gov: { canEdit: true, canSensitive: false, canExport: true, canLink: false },
+      viewer: { canEdit: false, canSensitive: false, canExport: false, canLink: false }
+    }[role];
+    return {
+      rootClass: 'root th-' + theme,
+      dir: ar ? 'rtl' : 'ltr',
+      lang,
+      role,
+      isDark: theme === 'dark',
+      isLight: theme !== 'dark',
+      isSA: role === 'sa',
+      isViewer: role === 'viewer',
+      canEdit: R.canEdit,
+      canSensitive: R.canSensitive,
+      noSensitive: !R.canSensitive,
+      canExport: R.canExport,
+      canLink: R.canLink,
+      noLink: !R.canLink,
+      toggleTheme: () => this.setState({ theme: theme === 'dark' ? 'light' : 'dark' }),
+      toggleLang: () => this.setState({ lang: ar ? 'en' : 'ar' }),
+      pickRole: (e) => this.setState({ role: e && e.target ? e.target.value : 'sa' }),
+      noop: () => {},
+      s: {
+        navAria: T('قائمة لوحة التحكم', 'Dashboard menu'),
+        gHome: T('الرئيسية', 'Home'), overview: T('نظرة عامة', 'Overview'),
+        gContent: T('المحتوى', 'Content'), news: T('الأخبار', 'News'), videos: T('الفيديوهات', 'Videos'), albums: T('ألبومات الصور', 'Photo albums'),
+        gGov: T('الحوكمة', 'Governance'), people: T('الأشخاص', 'People'), board: T('مجلس الإدارة', 'Board of Directors'), coms: T('اللجان', 'Committees'),
+        gPages: T('صفحات الاتحاد', 'Federation pages'), about: T('نبذة عن الاتحاد', 'About'), msg: T('كلمة الرئيس', "Chairman's message"), pol: T('اللوائح والسياسات', 'Policies'),
+        gData: T('قواعد البيانات', 'Databases'), clubs: T('الأندية', 'Clubs'), athletes: T('اللاعبون', 'Athletes'),
+        gAccess: T('المستخدمون والوصول', 'Users & access'), users: T('المستخدمون', 'Users'), roles: T('الأدوار والصلاحيات', 'Roles & permissions'), policies: T('سياسات الموافقة', 'Approval policies'), security: T('إعدادات الأمان', 'Security settings'), audit: T('سجل التدقيق', 'Audit log'),
+        search: T('ابحث في لوحة التحكم…', 'Search the dashboard…'),
+        previewAs: T('معاينة كـ', 'Preview as'),
+        rGov: T('مسؤول الحوكمة', 'Governance Officer'),
+        rViewer: T('مشاهد الإدارة العليا', 'Executive Viewer'),
+        themeAria: theme === 'dark' ? T('تفعيل الوضع الفاتح', 'Switch to light mode') : T('تفعيل الوضع الداكن', 'Switch to dark mode'),
+        langLabel: ar ? 'EN' : 'ع', langAria: T('Switch to English', 'التبديل إلى العربية'),
+        readOnly: T('عرض فقط — دورك يسمح بالقراءة بدون تعديل', 'View only — your role can read but not edit')
+      }
+    };
+  }
+  renderVals() {
+    const st = this.state || {};
+    const theme = st.theme || this.props.theme || 'dark';
+    const lang = st.lang || this.props.lang || 'ar';
+    const role = st.role || this.props.role || 'sa';
+    const seg = st.seg || 'list';
+    const sub = st.sub || 'content';
+    const demo = st.demo || 'none';
+    const pickerOpen = !!st.pickerOpen;
+    const closeOpen = !!st.closeOpen;
+    const archOpen = !!st.archOpen;
+    const ar = lang === 'ar';
+    const T = (a, e) => (ar ? a : e);
+    const sh = this.shellVals(T, theme, lang, role);
+    const set = (patch) => () => this.setState(patch);
+
+    // Sample rows only: in the product every committee, its kind, parent, chair and members are entered by the admin.
+    const SEED = [
+      { id: 'c1', ar: 'لجنة الاستراتيجية والحوكمة', en: 'Strategy & Governance Committee', slug: 'strategy-governance', kind: 'standing', parent: null },
+      { id: 'c2', ar: 'لجنة الاستثمار', en: 'Investment Committee', slug: 'investment', kind: 'standing', parent: null, review: true },
+      { id: 'c3', ar: 'اللجنة الفنية', en: 'Technical Committee', slug: 'technical', kind: 'standing', parent: null },
+      { id: 'c4', ar: 'اللجنة المالية', en: 'Finance Committee', slug: 'finance', kind: 'standing', parent: null },
+      { id: 'c5', ar: 'لجنة الحكام', en: 'Referees Committee', slug: 'referees', kind: 'sub', parent: 'c3' },
+      { id: 'c6', ar: 'لجنة المنتخبات والمواهب', en: 'National Teams & Talent Committee', slug: 'national-teams', kind: 'sub', parent: 'c3' },
+      { id: 'c7', ar: 'لجنة الإعلام والتسويق', en: 'Media & Marketing Committee', slug: 'media-marketing', kind: 'sub', parent: null },
+      { id: 'c8', ar: 'اللجنة الاستشارية', en: 'Advisory Committee', slug: 'advisory', kind: null, parent: null },
+      { id: 'c9', ar: 'لجنة الحماية', en: 'Safeguarding Committee', slug: 'safeguarding', kind: null, parent: null },
+      { id: 'c10', ar: 'لجنة المرأة', en: "Women's Committee", slug: 'women', kind: null, parent: null },
+      { id: 'c11', ar: 'لجنة شؤون اللاعبين والأندية', en: 'Athletes & Clubs Committee', slug: 'athletes-clubs', kind: null, parent: null },
+      { id: 'c12', ar: 'لجنة العلاقات العامة والاتصال المؤسسي', en: 'Public Relations Committee', slug: 'public-relations', kind: 'standing', parent: null, archived: true }
+    ];
+    const coms = demo === 'empty' ? (st.emptyComs || []) : (st.coms || SEED);
+    const store = demo === 'empty' ? 'emptyComs' : 'coms';
+    const byId = {};
+    coms.forEach((c) => { byId[c.id] = c; });
+    const upd = (id, patch) => this.setState({ [store]: coms.map((c) => (c.id === id ? Object.assign({}, c, patch) : c)) });
+    const nameOf = (c) => (c ? (T(c.ar, c.en) || T('[لجنة جديدة]', '[New committee]')) : '');
+    const live = (c) => c && !c.archived;
+    const kidsOf = (id) => coms.filter((c) => live(c) && c.kind === 'sub' && c.parent === id);
+    const isUnder = (id, anc) => {
+      let c = byId[id]; let guard = 0;
+      while (c && c.kind === 'sub' && c.parent && guard < 50) { if (c.parent === anc) return true; c = byId[c.parent]; guard++; }
+      return false;
+    };
+
+    const selDefault = demo === 'empty' ? (coms[0] ? coms[0].id : null) : 'c5';
+    const sel = st.sel && byId[st.sel] ? st.sel : selDefault;
+    const chairLine = (c) => T('الرئيس: ', 'Chair: ') + (c.chair ? T(c.chair[0], c.chair[1]) : T('لم يُسند بعد', 'not assigned yet'));
+    const follows = (c) => {
+      const p = c.parent ? byId[c.parent] : null;
+      if (!p) return T('تتبع مجلس الإدارة مباشرة', 'Reports to the Board directly');
+      return T('تتبع ', 'Under ') + nameOf(p);
+    };
+    const row = (c, n, depth) => {
+      const badParent = c.kind === 'sub' && c.parent && !live(byId[c.parent]);
+      const chip = c.archived ? [T('مؤرشفة', 'Archived'), 'chip c-muted']
+        : badParent ? [T('اللجنة الأم مؤرشفة', 'Parent archived'), 'chip c-err']
+        : c.kind === 'sub' ? [T('فرعية', 'Sub'), 'chip c-info']
+        : !c.kind ? [T('غير مصنّفة', 'Unclassified'), 'chip c-warn'] : null;
+      return {
+        n, name: nameOf(c), sub: c.kind === 'sub' && depth === 0 ? follows(c) : chairLine(c),
+        hasChip: !!chip, chip: chip ? chip[0] : '', chipCls: chip ? chip[1] : '',
+        review: !!c.review, isChild: depth > 0, isRoot: depth === 0,
+        indent: depth > 0 ? 'padding-inline-start: ' + (depth * 22) + 'px' : '',
+        rowCls: 'row' + (c.id === sel ? ' row-on' : '') + (c.archived ? ' row-arch' : ''), pressed: c.id === sel ? 'true' : 'false',
+        pick: () => this.setState({ sel: c.id, sub: 'content' })
+      };
+    };
+    const tree = (roots) => {
+      const out = [];
+      const walk = (c, n, depth, seen) => {
+        out.push(row(c, n, depth));
+        kidsOf(c.id).forEach((k, i) => { if (!seen[k.id]) walk(k, n + '.' + (i + 1), depth + 1, Object.assign({ [k.id]: 1 }, seen)); });
+      };
+      roots.forEach((c, i) => walk(c, String(i + 1), 0, { [c.id]: 1 }));
+      return out;
+    };
+    const standingRoots = coms.filter((c) => live(c) && c.kind === 'standing');
+    const boardSubs = coms.filter((c) => live(c) && c.kind === 'sub' && (!c.parent || !live(byId[c.parent])));
+    const unclassified = coms.filter((c) => live(c) && !c.kind);
+    const archivedList = coms.filter((c) => c.archived);
+    const mk = (title, hint, items, empty, count) => ({ title, hint, items, count: String(count), isEmpty: !items.length, empty });
+    const groups = [
+      mk(T('اللجان الدائمة', 'Standing committees'), T('وتحت كل لجنة اللجان الفرعية التابعة ليها', 'Each with the sub-committees under it'), tree(standingRoots), T('مفيش لجان دائمة لسه', 'No standing committees yet'), standingRoots.length),
+      mk(T('لجان فرعية تتبع مجلس الإدارة', 'Sub-committees under the Board'), T('مش تابعة لأي لجنة', 'Not under any committee'), tree(boardSubs), T('مفيش لجان فرعية تابعة للمجلس مباشرة', 'No sub-committees report to the Board directly'), boardSubs.length),
+      mk(T('غير مصنّفة بعد', 'Not classified yet'), T('محتاجة تحديد النوع قبل ما تظهر في قسمها على الموقع', 'Pick a kind so it shows in the right section on the site'), tree(unclassified), T('كل اللجان متصنّفة', 'Every committee is classified'), unclassified.length)
+    ];
+    if (archivedList.length) groups.push(mk(T('مؤرشفة', 'Archived'), T('مش ظاهرة على الموقع، وماينفعش تبقى لجنة أم', 'Hidden on the site and can’t be a parent'), archivedList.map((c, i) => row(c, String(i + 1), 0)), '', archivedList.length));
+    if (!coms.length) groups.splice(0, groups.length, mk(T('اللجان', 'Committees'), '', [], T('مفيش لجان لسه. أول لجنة تضيفها هتظهر هنا.', 'No committees yet. The first one you add appears here.'), 0));
+
+    const c0 = sel ? byId[sel] : null;
+    const kids = c0 ? kidsOf(c0.id) : [];
+    const par = c0 && c0.parent ? byId[c0.parent] : null;
+    const kindLabel = !c0 ? '' : c0.archived ? T('مؤرشفة', 'Archived') : c0.kind === 'standing' ? T('لجنة دائمة', 'Standing committee') : c0.kind === 'sub' ? T('لجنة فرعية', 'Sub-committee') : T('غير مصنّفة بعد', 'Not classified yet');
+    const cur = c0 ? {
+      name: nameOf(c0), nameA: c0.ar, nameE: c0.en, slug: c0.slug, slugShown: c0.slug || '[slug]',
+      kindLabel, chipCls: c0.archived ? 'chip c-muted' : c0.kind === 'standing' ? 'chip c-ok' : c0.kind === 'sub' ? 'chip c-info' : 'chip c-warn',
+      isSub: c0.kind === 'sub', unclassified: !c0.kind,
+      dropParent: c0.kind === 'standing' && !!par,
+      dropX: par ? T('كانت تابعة لـ«' + nameOf(par) + '». اللجنة الدائمة ماتتبعش أي لجنة، فالتبعية هتتشال عند الحفظ.', 'It was under “' + nameOf(par) + '”. A standing committee can’t sit under another committee, so this link is removed on save.') : '',
+      parentLabel: c0.kind === 'sub' ? (par ? nameOf(par) : T('مجلس الإدارة مباشرة', 'The Board directly')) : '—',
+      hasKids: kids.length > 0,
+      kidsLabel: T('ليها ' + kids.length + (kids.length === 1 ? ' لجنة فرعية' : ' لجان فرعية'), kids.length + (kids.length === 1 ? ' sub-committee' : ' sub-committees') + ' under it'),
+      kidsNames: kids.map(nameOf).join(T('، ', ', ')),
+      hasChair: !!c0.chair, noChair: !c0.chair, chair: c0.chair ? T(c0.chair[0], c0.chair[1]) : '',
+      review: !!c0.review, isNew: !!c0.isNew, archived: !!c0.archived
+    } : null;
+    const locked = !!(cur && cur.review);
+    const canEditUnlocked = sh.canEdit && !locked && !!cur && !cur.archived;
+
+    const kindOpts = [
+      ['standing', T('دائمة', 'Standing'), T('لجنة أساسية، مابتتبعش أي لجنة تانية', 'A core committee that sits under no other committee')],
+      ['sub', T('فرعية', 'Sub-committee'), T('بتتبع لجنة أم، أو مجلس الإدارة مباشرة', 'Sits under a parent committee or the Board directly')]
+    ].map((k) => ({
+      label: k[1], desc: k[2], checked: c0 && c0.kind === k[0] ? 'true' : 'false',
+      cls: 'kopt' + (c0 && c0.kind === k[0] ? ' kopt-on' : ''),
+      go: () => c0 && upd(c0.id, { kind: k[0] })
+    }));
+
+    const note = (c) => c.archived ? T('مؤرشفة', 'Archived')
+      : c.kind === 'standing' ? T('دائمة', 'Standing')
+      : c.kind === 'sub' ? T('فرعية · ', 'Sub · ') + follows(c)
+      : T('غير مصنّفة', 'Unclassified');
+    const parentOpts = !c0 ? [] : [{
+      label: T('مجلس الإدارة مباشرة', 'The Board directly'), note: T('لو اللجنة الفرعية مش تابعة لأي لجنة', 'When the sub-committee sits under no committee'), hasNote: true,
+      why: '', hasWhy: false, off: 'false', dot: '', indent: '',
+      checked: !c0.parent ? 'true' : 'false', cls: 'popt' + (!c0.parent ? ' popt-on' : ''),
+      go: () => upd(c0.id, { parent: null })
+    }].concat(coms.filter((c) => c.id !== c0.id).sort((a, b) => (a.archived ? 1 : 0) - (b.archived ? 1 : 0)).map((c) => {
+      const why = c.archived ? T('مؤرشفة', 'Archived') : isUnder(c.id, c0.id) ? T('تتبع هذه اللجنة', 'Sits under this one') : '';
+      const on = c0.parent === c.id;
+      return {
+        label: nameOf(c), note: note(c), hasNote: true, why, hasWhy: !!why, off: why ? 'true' : 'false', dot: why ? 'opacity: .35' : '', indent: '',
+        checked: on ? 'true' : 'false', cls: 'popt' + (why ? ' popt-off' : on ? ' popt-on' : ''),
+        go: why ? () => {} : () => upd(c0.id, { parent: c.id })
+      };
+    }));
+
+    const activeCount = coms.filter(live).length;
+    const segs = [['list', T('اللجان', 'Committees'), String(activeCount)], ['page', T('صفحة اللجان', 'Committees page'), ''], ['seo', 'SEO', '']]
+      .map((d) => ({ label: d[1], badge: d[2], hasBadge: !!d[2], cls: d[0] === seg ? 'seg-b seg-on' : 'seg-b', pressed: d[0] === seg ? 'true' : 'false', go: set({ seg: d[0] }) }));
+    const subs = [['content', T('المحتوى', 'Content')], ['duties', T('المهام', 'Duties')], ['members', T('الأعضاء', 'Members')], ['docs', T('الوثائق', 'Documents')], ['review', T('المراجعة والنشر', 'Review & publish')], ['versions', T('الإصدارات', 'Versions')]]
+      .map((d) => ({ label: d[1], cls: d[0] === sub ? 'st st-on' : 'st', sel: d[0] === sub ? 'true' : 'false', go: set({ sub: d[0] }) }));
+    const demos = [['none', T('عادي', 'Normal')], ['err', T('السيرفر رفض الحفظ', 'Server rejected save')], ['empty', T('أول مرة: مفيش لجان', 'First run: no committees')]]
+      .map((d) => ({ label: d[1], cls: d[0] === demo ? 'dj dj-on' : 'dj', pressed: d[0] === demo ? 'true' : 'false', go: set({ demo: d[0], sel: null, sub: 'content', seg: 'list' }) }));
+
+    const issueRows = [];
+    if (cur && cur.unclassified) issueRows.push([T('نوع اللجنة غير محدد (دائمة أو فرعية)', 'Committee kind not set (standing or sub)'), 'c-warn', T('تحذير', 'Warning'), 'content']);
+    if (cur && cur.dropParent) issueRows.push([T('لجنة دائمة ومعاها لجنة أم — التبعية هتتشال عند الحفظ', 'Standing committee with a parent — the link is removed on save'), 'c-warn', T('تحذير', 'Warning'), 'content']);
+    if (cur && cur.noChair) issueRows.push([T('مفيش رئيس مُسند للجنة', 'No chair assigned'), 'c-warn', T('تحذير', 'Warning'), 'members']);
+    const issues = issueRows.concat([
+      [T('السطر التعريفي فاضي (عربي وإنجليزي)', 'Summary is empty (Arabic and English)'), 'c-err', T('يمنع النشر', 'Blocks publishing'), 'content'],
+      [T('مفيش مهام مضافة', 'No duties added'), 'c-err', T('يمنع النشر', 'Blocks publishing'), 'duties'],
+      [T('مفيش أعضاء غير الرئيس', 'No members besides the chair'), 'c-warn', T('تحذير', 'Warning'), 'members'],
+      [T('قرار التشكيل غير مسجّل', 'Formation decision not recorded'), 'c-warn', T('تحذير', 'Warning'), 'docs']
+    ]).map((x) => ({ text: x[0], cls: 'chip ' + x[1], tag: x[2], go: set({ sub: x[3] }) }));
+    const pickList = [
+      [T('[اسم الشخص من «الأشخاص»]', '[Person from People]'), T('عضو مجلس الإدارة', 'Board Member')],
+      [T('[اسم الشخص من «الأشخاص»]', '[Person from People]'), T('من خارج مجلس الإدارة', 'Not on the Board')],
+      [T('[اسم الشخص من «الأشخاص»]', '[Person from People]'), T('من خارج مجلس الإدارة', 'Not on the Board')]
+    ].map((x) => ({ name: x[0], note: x[1] }));
+    const steps = (locked ? [
+      [T('حساب الحوكمة', 'Governance desk'), T('وافق', 'Approved'), 'c-ok'],
+      [T('[المعتمد التالي]', '[Next approver]'), T('في انتظار الموافقة', 'Awaiting approval'), 'c-warn']
+    ] : [
+      [T('حساب الحوكمة', 'Governance desk'), T('لم يُرسل بعد', 'Not submitted'), 'c-muted'],
+      [T('[المعتمد التالي]', '[Next approver]'), T('لم يُرسل بعد', 'Not submitted'), 'c-muted']
+    ]).map((x, i) => ({ n: String(i + 1), who: x[0], state: x[1], cls: 'chip ' + x[2] }));
+
+    const addCom = () => {
+      const id = 'n' + (coms.length + 1) + '-' + Math.floor(Math.random() * 1e6);
+      this.setState({ [store]: coms.concat([{ id, ar: '', en: '', slug: '', kind: null, parent: null, isNew: true }]), sel: id, seg: 'list', sub: 'content' });
+    };
+    const fixErr = () => { if (c0) upd(c0.id, { parent: null }); this.setState({ demo: 'none' }); };
+
+    return Object.assign(sh, {
+      segs, subs, groups, cur: cur || {}, issues, pickList, steps, demos, kindOpts, parentOpts,
+      hasCur: !!cur, noCur: !cur,
+      isList: seg === 'list', isPage: seg === 'page', isSeo: seg === 'seo',
+      isContent: sub === 'content', isDuties: sub === 'duties', isMembers: sub === 'members', isDocs: sub === 'docs', isReview: sub === 'review', isVersions: sub === 'versions',
+      locked, unlocked: !locked, editable: canEditUnlocked, canEditUnlocked,
+      canArchive: canEditUnlocked && !cur.isNew,
+      kindEditable: canEditUnlocked, kindReadOnly: !canEditUnlocked,
+      serverErr: demo === 'err' && sub === 'content' && !!cur,
+      pickerOpen, closeOpen, archOpen, addCom, fixErr,
+      openPicker: set({ pickerOpen: true }), openClose: set({ closeOpen: true }), openArchive: set({ archOpen: true }), shut: set({ pickerOpen: false, closeOpen: false, archOpen: false }),
+      t: {
+        demoL: T('أزرار التجربة', 'Try states'),
+        sampleNote: T('الأسماء والتصنيف في القايمة أمثلة للعرض بس. في المنتج مفيش بيانات مزروعة: الأدمن هو اللي بيضيف كل لجنة ويحدد نوعها وتبعيتها ورئيسها وأعضاءها ومهامها، وصفحة مجلس الإدارة والهيكل التنظيمي وصفحة اللجان بيقروا منها.', 'Names and kinds here are display samples only. Nothing is seeded in the product: the admin adds every committee and sets its kind, parent, chair, members and duties, and the Board page, org chart and Committees page read from it.'),
+        emptyT: T('ابدأ بإضافة أول لجنة', 'Add your first committee'),
+        emptyX: T('كل بيانات اللجان بتتدخّل من هنا: الاسم، والنوع (دائمة أو فرعية)، والتبعية، والرئيس والأعضاء من «الأشخاص»، والمهام، وقرار التشكيل.', 'All committee data is entered here: name, kind (standing or sub), parent, chair and members from People, duties and the formation decision.'),
+        namePhA: '[اسم اللجنة]',
+        kindT: T('التصنيف والتبعية', 'Kind and parent'),
+        kindX: T('بيحدد مكان اللجنة في صفحة اللجان والهيكل التنظيمي: الدائمة في قسمها، والفرعية تحت لجنتها الأم أو تحت المجلس.', 'Sets where the committee appears on the Committees page and org chart: standing in its own section, sub-committees under their parent or the Board.'),
+        kindNone: T('اللجنة لسه مش متصنّفة. اختار النوع بعد اعتماد مجلس الإدارة الرسمي.', 'Not classified yet. Pick the kind once the Board has formally approved it.'),
+        dropT: T('التبعية هتتشال', 'The parent link will be removed'),
+        parT: T('تتبع', 'Sits under'),
+        parX: T('اللجان المقفولة ماينفعش تبقى أم: المؤرشفة، واللي تابعة للجنة دي (عشان مايبقاش فيه تبعية دايرة). واللجنة نفسها مش في القايمة.', 'Locked committees can’t be the parent: archived ones, and any that already sit under this one (to prevent a loop). The committee itself isn’t listed.'),
+        kindShort: T('النوع', 'Kind'), parShort: T('تتبع', 'Sits under'),
+        errT: T('السيرفر رفض الحفظ', 'The server rejected the save'),
+        errX: T('اللجنة الأم اللي اخترتها اتأرشفت من حساب تاني بعد ما فتحت الصفحة. القايمة اتحدّثت، واختار لجنة تانية أو خلّيها تابعة للمجلس. مفيش حاجة اتحفظت.', 'The parent you picked was archived from another account after you opened the page. The list is refreshed; pick another parent or the Board. Nothing was saved.'),
+        errFix: T('تابعة للمجلس', 'Use the Board'),
+        chairRole: T('رئيس اللجنة', 'Committee chair'),
+        noChair: T('لم يُسند رئيس بعد', 'No chair assigned yet'),
+        noChairX: T('اختار الرئيس من «الأشخاص». مش لازم يكون من مجلس الإدارة.', 'Pick the chair from People. They don’t have to be a board member.'),
+        assignChair: T('إسناد رئيس', 'Assign chair'),
+        arTitle: T('أرشفة اللجنة', 'Archive committee'),
+        arLead: T('اللجنة هتختفي من الموقع وتتنقل للمؤرشفة، وتقدر ترجّعها. مناصب الرئيس والأعضاء مش هتتمسح.', 'The committee is hidden on the site and moved to Archived; you can restore it. Chair and member appointments are kept.'),
+        arKids: T('[مصير اللجان الفرعية لما الأم تتأرشف: يتحدد في خطة الدفعة 7]', '[What happens to sub-committees when the parent is archived: decided in the batch 7 plan]'),
+        crumbs: T('الحوكمة', 'Governance'), title: T('اللجان', 'Committees'),
+        lead: T(activeCount + ' لجنة بقالب موحّد. الأدمن هو اللي بيضيف اللجان ويحدد نوعها وتبعيتها من هنا، والرئيس والأعضاء بييجوا من «الأشخاص» كمناصب في الدورة الحالية.', activeCount + ' committees on one template. The admin adds committees and sets their kind and parent here; the chair and members come from People as appointments in the current term.'),
+        policy: T('سياسة «اللجان»: يتطلب موافقة', 'Committees policy: requires approval'),
+        preview: T('معاينة', 'Preview'), save: T('حفظ المسودة', 'Save draft'), submit: T('إرسال للمراجعة', 'Submit for review'),
+        add: T('إضافة لجنة', 'Add committee'), dragHint: T('اسحب لتغيير الترتيب جوه نفس المجموعة. الفرعية بتفضل تحت لجنتها الأم.', 'Drag to reorder within a group. Sub-committees stay under their parent.'), drag: T('سحب لإعادة الترتيب', 'Drag to reorder'),
+        inReview: T('في المراجعة', 'In review'),
+        lockT: T('فيه نسخة من اللجنة دي في المراجعة', 'A version of this committee is in review'),
+        lockX: T('التعديل مقفول لحد ما المعتمد يوافق أو يرفض، أو تسحب النسخة. ده بيمنع إن نسختين يتعارضوا.', 'Editing is locked until the approver approves or rejects, or you withdraw it. This prevents conflicting versions.'),
+        withdraw: T('سحب من المراجعة', 'Withdraw'), openReview: T('فتح المراجعة', 'Open review'),
+        archive: T('أرشفة', 'Archive'), url: T('الرابط', 'URL'),
+        nameL: T('اسم اللجنة', 'Committee name'), slugL: T('الرابط المختصر', 'Slug'), slugHint: T('ثابت بعد النشر — تغييره بيعمل تحويل 301 من الرابط القديم', 'Fixed after publishing — changing it adds a 301 redirect'),
+        sumL: T('السطر التعريفي', 'Summary line'), sumHint: T('يظهر على كارت اللجنة وتحت العنوان · 160 حرف بالكتير', 'Shown on the card and under the title · max 160 characters'), sumCount: '0 / 160',
+        aboutL: T('عن اللجنة', 'About the committee'), aboutCount: '0 / 1200',
+        cover: T('صورة الغلاف', 'Cover photo'), coverSpec: T('JPG أو WebP · 2400×1200 على الأقل · بتظهر بطبقة الهوية الخضرا', 'JPG or WebP · at least 2400×1200 · shown with the green brand overlay'), upload: T('رفع صورة', 'Upload photo'), optional: T('اختياري', 'Optional'),
+        showOnSite: T('إظهار اللجنة على الموقع', 'Show committee on the site'),
+        dutiesLead: T('كل مهمة ليها عنوان ووصف بالعربي والإنجليزي. الترتيب هنا هو ترتيب الموقع.', 'Each duty has a title and description in Arabic and English. The order here is the site order.'),
+        noDuties: T('لا توجد مهام بعد', 'No duties yet'), noDutiesX: T('ضيف المهام زي ما وردت في قرار التشكيل أو لائحة اللجنة.', 'Add duties as stated in the formation decision or committee regulations.'),
+        dutyNew: T('مهمة جديدة', 'New duty'), dTitle: T('عنوان المهمة', 'Duty title'), dDesc: T('الوصف', 'Description'), addDuty: T('إضافة المهمة', 'Add duty'), cancel: T('إلغاء', 'Cancel'),
+        cycle: T('الدورة الانتخابية', 'Election cycle'), cycleVal: T('2025 – 2028 (الحالية)', '2025 – 2028 (current)'),
+        chairT: T('رئيس اللجنة', 'Committee chair'), chairHint: T('منصب «رئيس لجنة» مربوط بسجل الشخص، ومش لازم يكون من مجلس الإدارة. التغيير بيقفل المنصب الحالي ويفتح واحد جديد', 'A “committee chair” appointment linked to the person, who need not be a board member. Changing it closes the current appointment and opens a new one'),
+        change: T('تغيير الرئيس', 'Change chair'), openPerson: T('فتح في «الأشخاص»', 'Open in People'), closePos: T('إغلاق المنصب', 'Close position'),
+        membersT: T('الأعضاء', 'Members'), assign: T('إسناد عضو', 'Assign member'),
+        noMembers: T('مفيش أعضاء غير الرئيس', 'No members besides the chair'), noMembersX: T('الأعضاء بيتختاروا من سجل «الأشخاص». لو الشخص مش موجود، اعمله سجل هناك الأول.', 'Members are chosen from People. If someone is missing, create their record there first.'),
+        order: T('الترتيب في الصفحة: الرئيس أولًا، وبعده الأعضاء بالترتيب ده', 'Page order: the chair first, then members in this order'),
+        formT: T('قرار التشكيل', 'Formation decision'), formNo: T('رقم القرار', 'Decision number'), formDate: T('تاريخ القرار', 'Decision date'),
+        docsT: T('الوثائق المربوطة', 'Linked documents'), docsHint: T('بتختار من «اللوائح والسياسات» — مفيش رفع ملفات هنا عشان المستند يفضل في مكان واحد', 'Pick from Regulations & Policies — no uploads here so each document lives in one place'),
+        pickDoc: T('اختر مستند…', 'Choose a document…'), link: T('ربط', 'Link'), noDocs: T('مفيش وثائق مربوطة — القسم هيختفي من صفحة اللجنة', 'No linked documents — the section is hidden on the committee page'),
+        flowT: T('مسار الاعتماد', 'Approval flow'), flowX: T('من «سياسات الموافقة» — النوع: اللجان · بالترتيب', 'From Approval Policies — type: Committees · in order'),
+        checks: T('فحص ما قبل النشر', 'Pre-publish checks'), fix: T('إصلاح', 'Fix'),
+        sod: T('اللي بيقدّم التعديل مايقدرش يوافق عليه — المعتمد اللي بعده هو اللي بيراجع.', 'Whoever submits a change can’t approve it — the next approver reviews it.'),
+        verEmpty: T('لا توجد إصدارات منشورة بعد', 'No published versions yet'), verEmptyX: T('أول نشر بيعمل الإصدار 1، وكل نشر بعده بيحفظ نسخة تقدر تقارنها أو ترجعلها.', 'The first publish creates version 1; each later publish saves a copy you can compare or restore.'),
+        pageLead: T('إعدادات صفحة /committees نفسها — الكروت بتتبني لوحدها من اللجان', 'Settings for the /committees page itself — cards are built from the committees automatically'),
+        active: T('الصفحة نشطة على الموقع', 'Page is live on the site'),
+        heroT: T('عنوان الصفحة', 'Page title'), heroS: T('الوصف التعريفي', 'Introduction'),
+        howT: T('قسم «كيف تعمل اللجان»', '“How committees work” section'), howX: T('3 خطوات · عنوان ووصف لكل خطوة · ممكن تخفيه', '3 steps · a title and description each · can be hidden'),
+        stepL: T('الخطوة', 'Step'),
+        seoTitle: T('عنوان محركات البحث', 'SEO title'), seoDesc: T('الوصف', 'Meta description'),
+        seoHint: T('لكل لجنة: العنوان والوصف بيتولّدوا من اسمها وسطرها التعريفي، وتقدر تعدّلهم من هنا', 'Per committee: title and description are generated from its name and summary, and can be overridden here'),
+        pkTitle: T('إسناد عضو للجنة', 'Assign a committee member'), pkLead: T('اختر من سجل «الأشخاص». الشخص بيتسند مرة واحدة للجنة في نفس الدورة.', 'Choose from People. A person can be assigned once per committee per term.'),
+        pkSearch: T('ابحث في الأشخاص…', 'Search people…'), pkPick: T('إسناد', 'Assign'), pkNew: T('الشخص مش موجود؟ اعمله سجل في «الأشخاص» الأول', 'Not listed? Create their record in People first'), pkNewBtn: T('إضافة في «الأشخاص»', 'Add in People'),
+        dlgTitle: T('إغلاق المنصب', 'Close position'),
+        dlgLead: T('المنصب مش هيتمسح. هيفضل في الأرشيف، ويظهر في الملف الشخصي كمنصب سابق.', 'The position is not deleted. It stays in the archive and appears on the profile as a past position.'),
+        endDate: T('تاريخ الانتهاء', 'End date'), reason: T('سبب الانتهاء', 'Reason'),
+        rCompleted: T('انتهاء المدة', 'Term completed'), rResigned: T('استقالة', 'Resigned'), rRemoved: T('إعفاء', 'Removed'), rTransitioned: T('انتقال لمنصب آخر', 'Moved to another role'), rDeceased: T('وفاة', 'Deceased'),
+        confirm: T('تأكيد الإغلاق', 'Confirm')
+      }
+    });
+  }
+}
+
+</script>
+</body>
+</html>

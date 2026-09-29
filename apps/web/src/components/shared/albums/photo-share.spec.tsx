@@ -6,10 +6,12 @@ import type { ReactNode } from "react";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import arMessages from "../../../../messages/ar.json";
-import enMessages from "../../../../messages/en.json";
+import { loadMessages } from "@/i18n/messages";
 
 import { PhotoShare } from "./photo-share";
+
+const arMessages = loadMessages("ar");
+const enMessages = loadMessages("en");
 
 /**
  * The photo link on every width, and every way the platform can answer it:

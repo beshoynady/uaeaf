@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model, Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
@@ -118,7 +118,7 @@ export class Video extends BaseSchema {
   @Prop({ required: true })
   externalUrl: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   thumbnailId: Types.ObjectId | null;
 
   @Prop({ type: [ContentAssociationSchema], default: [] })
@@ -130,6 +130,13 @@ export class Video extends BaseSchema {
 
 export const VideoSchema = SchemaFactory.createForClass(Video);
 VideoSchema.index({ isLive: 1 }, { unique: true, partialFilterExpression: { isLive: true } });
+
+// Site search. `default_language: 'none'` — see `articles.schema.ts`'s
+// identical index for why.
+VideoSchema.index(
+  { 'title.ar': 'text', 'title.en': 'text' },
+  { default_language: 'none', name: 'search_text' },
+);
 
 VideoSchema.pre('save', async function (this: VideoDocument) {
   if (this.isLive && this.isModified('isLive')) {

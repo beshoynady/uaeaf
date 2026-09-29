@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { screen } from "@testing-library/react";
+import { NextIntlClientProvider } from "next-intl";
 import { renderWithIntl } from "@/test/render-with-intl";
 import { MegaColumn } from "./mega-column";
+import { loadMessages } from "@/i18n/messages";
+
+const enMessages = loadMessages("en");
 
 const column = {
   key: "athleticsCommunity",
@@ -10,6 +14,16 @@ const column = {
     { key: "athletes", href: "/athletes" },
     { key: "nationalTeams", href: "/national-teams", badge: "soon" as const },
     { key: "disciplinesEvents", href: "/athletics#disciplines" },
+  ],
+};
+
+const contentColumn = {
+  key: "contentColumn",
+  children: [
+    { key: "news", href: "/news", descriptionKey: "newsDescription" },
+    { key: "photoAlbums", href: "/media/albums" },
+    { key: "videos", href: "/media/videos" },
+    { key: "liveStream", href: "/media/videos#live" },
   ],
 };
 
@@ -69,5 +83,50 @@ describe("عمود اللوحة", () => {
   it("href على الرابط يطابق الوجهة مع بادئة اللغة", () => {
     renderWithIntl(<MegaColumn column={column} currentPath="/" />, "en");
     expect(screen.getByRole("link", { name: /^Athletes$/ })).toHaveAttribute("href", "/en/athletes");
+  });
+});
+
+describe("بند البث المباشر", () => {
+  it("لا يظهر ولا يُعدّ من الأعمدة الفعلية حين لا بث", () => {
+    const { container } = renderWithIntl(
+      <MegaColumn column={contentColumn} currentPath="/" live={null} />,
+      "en",
+    );
+    expect(screen.queryByRole("link", { name: /Live Stream/i })).not.toBeInTheDocument();
+    expect(container.querySelectorAll("li")).toHaveLength(contentColumn.children.length - 1);
+  });
+
+  it("يظهر بعنوانه الحقيقي ورابطه أثناء البث فقط", () => {
+    const { rerender } = renderWithIntl(
+      <MegaColumn column={contentColumn} currentPath="/" live={null} />,
+      "en",
+    );
+    expect(screen.queryByRole("link", { name: /Live Stream/i })).not.toBeInTheDocument();
+
+    rerender(
+      <NextIntlClientProvider locale="en" messages={enMessages}>
+        <MegaColumn
+          column={contentColumn}
+          currentPath="/"
+          live={{ title: "National Championships — Day 1", href: "/media/videos#live" }}
+        />
+      </NextIntlClientProvider>,
+    );
+    const link = screen.getByRole("link", { name: /Live Stream/i });
+    expect(link).toHaveAttribute("href", expect.stringContaining("/media/videos#live"));
+    expect(link).toHaveTextContent("National Championships — Day 1");
+  });
+
+  it("لا يمس البند الحي بقية روابط العمود", () => {
+    renderWithIntl(
+      <MegaColumn
+        column={contentColumn}
+        currentPath="/"
+        live={{ title: "t", href: "/media/videos#live" }}
+      />,
+      "en",
+    );
+    expect(screen.getByRole("link", { name: /^Videos$/ })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /^News/ })).toBeInTheDocument();
   });
 });

@@ -2,8 +2,10 @@ import { describe, expect, it, vi } from "vitest";
 import type { ReactNode } from "react";
 import { render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
-import enMessages from "../../../../messages/en.json";
+import { loadMessages } from "@/i18n/messages";
 import { MegaLink } from "./mega-link";
+
+const enMessages = loadMessages("en");
 
 /**
  * `@/i18n/navigation`'s real `Link` never forwards `prefetch` to the DOM — it

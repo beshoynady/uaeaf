@@ -14,6 +14,7 @@ import { Permission, PermissionSchema } from './modules/platform-administration/
 import { RolesRepository } from './modules/platform-administration/roles/roles.repository.js';
 import { RolesService } from './modules/platform-administration/roles/roles.service.js';
 import type { RoleAssignmentsRepository } from './modules/platform-administration/roles/role-assignments.repository.js';
+import type { AuditLogsService } from './modules/workflow/audit-logs/audit-logs.service.js';
 import { PermissionsRepository } from './modules/platform-administration/permissions/permissions.repository.js';
 import { PermissionsService } from './modules/platform-administration/permissions/permissions.service.js';
 
@@ -71,7 +72,14 @@ describe('migrate-delete-to-archive', () => {
         throw new Error('detachRole is not part of permission resolution');
       },
     } as unknown as RoleAssignmentsRepository;
-    rolesService = new RolesService(roles, permissionsService, roleAssignments);
+    // Archiving is not exercised here either, so the audit writer is the same
+    // kind of loud stub as `detachRole` above.
+    const auditLogs = {
+      write: () => {
+        throw new Error('audit rows are not part of permission resolution');
+      },
+    } as unknown as AuditLogsService;
+    rolesService = new RolesService(roles, permissionsService, roleAssignments, auditLogs);
   }, 60000);
 
   afterEach(async () => {

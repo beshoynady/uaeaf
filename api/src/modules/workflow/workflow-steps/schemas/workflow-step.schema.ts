@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 
@@ -17,7 +17,7 @@ export type WorkflowStepType = (typeof WORKFLOW_STEP_TYPES)[number];
  *  never a role or committee as a group. */
 @Schema({ collection: 'workflowSteps', timestamps: true })
 export class WorkflowStep extends BaseSchema {
-  @Prop({ type: Types.ObjectId, ref: 'WorkflowDefinition', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'WorkflowDefinition', required: true })
   workflowDefinitionId: Types.ObjectId;
 
   @Prop({ type: Number, required: true })
@@ -29,7 +29,7 @@ export class WorkflowStep extends BaseSchema {
   @Prop({ type: String, enum: ['User'], default: 'User' })
   assigneeType: 'User';
 
-  @Prop({ type: [Types.ObjectId], ref: 'User', default: [] })
+  @Prop({ type: [MongooseSchema.Types.ObjectId], ref: 'User', default: [] })
   assigneeIds: Types.ObjectId[];
 
   @Prop({ type: Number, required: true })

@@ -577,6 +577,15 @@ export const CAPABILITY_MAP: readonly ResourceCapability[] = [
     scopes: [],
   },
   {
+    resourceType: 'seasons',
+    group: 'media-center',
+    actions: ['Read', 'Create', 'Update', 'Archive', 'Restore', 'Publish'],
+    purgeable: false,
+    superAdminOnly: [],
+    sensitiveFields: [],
+    scopes: [],
+  },
+  {
     resourceType: 'siteSettings',
     group: 'cms-page-composition',
     actions: ['Read', 'Update'],

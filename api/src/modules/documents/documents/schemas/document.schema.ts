@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { PUBLICATION_STATES } from '../../../../common/constants/publication-states.js';
@@ -73,7 +73,7 @@ export class Document extends BaseSchema {
   @Prop({ type: String, enum: DOCUMENT_OWNER_TYPES, default: null })
   ownerType: DocumentOwnerType | null;
 
-  @Prop({ type: Types.ObjectId, default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, default: null })
   ownerId: Types.ObjectId | null;
 
   @Prop({ type: Date, required: true })

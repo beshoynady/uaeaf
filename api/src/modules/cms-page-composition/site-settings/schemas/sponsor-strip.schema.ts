@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 
 /** One setting for the whole strip, never per sponsor (ADR-0077 D5 #1). */
 export const SPONSOR_STRIP_DISPLAY_MODES = ['logo', 'logoName', 'logoNameScope'] as const;
@@ -41,7 +41,7 @@ export class SponsorStripSettings {
   selection: SponsorStripSelection;
 
   /** Read only when `selection` is `manual`, in this order. */
-  @Prop({ type: [Types.ObjectId], default: [] })
+  @Prop({ type: [MongooseSchema.Types.ObjectId], default: [] })
   sponsorshipIds: Types.ObjectId[];
 
   @Prop({ type: String, enum: SPONSOR_STRIP_ORDERS, default: 'tier' })
@@ -57,7 +57,7 @@ export class SponsorStripSettings {
    * something has to enforce. A choice that stops running is not found when
    * the strip is built, so nothing is held and no gap is left.
    */
-  @Prop({ type: Types.ObjectId, default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, default: null })
   pinnedSponsorshipId: Types.ObjectId | null;
 
   @Prop({ type: String, enum: SPONSOR_STRIP_SPEEDS, default: 'medium' })

@@ -8,7 +8,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { SettingsCard } from "@/components/ui/settings-card";
 import { useToast } from "@/components/ui/toast";
 import { WriteFailure } from "@/components/ui/write-failure";
-import { InlineConfirm } from "./inline-confirm";
+import { InlineConfirm } from "@/components/ui/inline-confirm";
 import { PhotoDetailsPanel } from "./photo-details-panel";
 import { PhotoDropzone } from "./photo-dropzone";
 import { PhotoGrid } from "./photo-grid";

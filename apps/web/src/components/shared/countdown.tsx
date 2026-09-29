@@ -17,8 +17,12 @@ import type { EventBarState, NextEventLike } from "@uaeaf/content/hero";
  * Not a live region (`aria-live="off"`): a value that changes every minute
  * would interrupt a screen reader for a figure nobody asked to hear again. Its
  * whole meaning is in one accessible name.
+ *
+ * Shared by the homepage hero's event bar and the header's Events panel card
+ * (2026-09-22 shared-components rule): one part rendered in two places is one
+ * component, not two copies that drift.
  */
-export const HeroCountdown = ({
+export const Countdown = ({
   event,
   initial,
   labels,

@@ -40,7 +40,10 @@ export const FeatureCard = ({ eyebrow, title, meta, href, cta, tone, children }:
       href={href}
       data-nav-focusable=""
       data-surface={tone}
-      className={`feature-card brand-surface flex min-h-11 flex-col justify-end gap-2 rounded-[var(--radius-md)] p-[var(--space-6)] ${TRANSITION} ${FOCUS}`}
+      // `min-h-[calc(var(--space-16)*4)]` = 256px: no token sits at the
+      // ~250px the canvas shows, and this is the nearest multiple of an
+      // existing spacing step (`--space-16`, 64px) above it.
+      className={`feature-card brand-surface flex min-h-[calc(var(--space-16)*4)] flex-col justify-end gap-2 rounded-[var(--radius-md)] p-[var(--space-6)] ${TRANSITION} ${FOCUS}`}
     >
       {children}
       <span className="text-overline opacity-85">{eyebrow}</span>

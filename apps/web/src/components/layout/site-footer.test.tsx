@@ -6,10 +6,9 @@ import type { FooterContent } from "@/lib/pages/footer-content";
 import type { MediaAssetPublic } from "@/lib/api/types";
 import { renderWithIntl } from "@/test/render-with-intl";
 import type { AppLocale } from "@/i18n/routing";
-import arMessages from "../../../messages/ar.json";
-import enMessages from "../../../messages/en.json";
+import { loadMessages } from "@/i18n/messages";
 
-const messagesByLocale = { ar: arMessages, en: enMessages } as const;
+const messagesByLocale = { ar: loadMessages("ar"), en: loadMessages("en") } as const;
 
 const ICON = {
   id: "i1",

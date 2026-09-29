@@ -222,6 +222,21 @@ const HOMEPAGE_SCREENS: readonly NavItem[] = [
   homepageScreen("homepageVideo", "/homepage/video", HOMEPAGE_VIDEO_GRANTS),
 ];
 
+/**
+ * The Events & Seasons screens, in the approved order: Events first, then
+ * Seasons, each opened by `Read` on its own resource.
+ *
+ * Events is not listed. It has no screen in this dashboard and no permission
+ * resource in the API (`publicEvents` is a workflow entity type only), so no
+ * grant could ever reveal it and the only destination it could have is a
+ * 404. It joins this list, first, as
+ * `{ key: "events", href: "/events", requires: [{ resourceType: "publicEvents", action: "Read" }] }`
+ * once both exist.
+ */
+const EVENTS_SEASONS_SCREENS: readonly NavItem[] = [
+  { key: "seasons", href: "/seasons", requires: [{ resourceType: "seasons", action: "Read" }] },
+];
+
 export const NAV_ITEMS: readonly NavItem[] = [
   { key: "overview", href: "/", requires: null },
   // The singleton content pages. `newsPage` stands for all twelve: they are
@@ -321,6 +336,17 @@ export const NAV_ITEMS: readonly NavItem[] = [
   /** The photo albums, beside the videos: the media centre's other library.
    *  `albums:Read` opens it, for the reason `videos:Read` opens that one. */
   { key: "albums", href: "/albums", requires: [{ resourceType: "albums", action: "Read" }] },
+  /**
+   * Events & Seasons, as the approved sidebar groups them (dash-01), after
+   * the media libraries. Shown when the reader may open any of its screens,
+   * and gone when they may open none.
+   */
+  {
+    key: "eventsSeasons",
+    href: "/seasons",
+    requires: EVENTS_SEASONS_SCREENS.flatMap((screen) => screen.requires ?? []),
+    children: EVENTS_SEASONS_SCREENS,
+  },
   /**
    * The homepage: one entry, no nested menu (owner decision 2026-09-24).
    *

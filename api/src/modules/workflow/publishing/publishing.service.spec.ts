@@ -425,6 +425,141 @@ describe('PublishingService.publishApproved', () => {
 });
 
 /**
+ * Publishing with no review — the door `noPolicy` no longer closes.
+ *
+ * The owner's rule: a policy requiring workflow keeps this door shut; a
+ * missing policy is the administrator's choice not to configure one, so it
+ * publishes by permission instead of refusing outright; a policy that DOES
+ * exist but cannot be used (an archived, inactive, or foreign-type
+ * definition) is a misconfiguration, not a choice, and stays shut.
+ */
+describe('PublishingService.publishDirect', () => {
+  const entityType = 'articles' as const;
+  const entityId = new Types.ObjectId();
+  const revisionId = new Types.ObjectId();
+  const publicationId = new Types.ObjectId();
+  const publishedAt = new Date('2026-09-29T10:00:00.000Z');
+  const expectedUpdatedAt = new Date('2026-09-01T00:00:00.000Z');
+
+  const userWith = (permissions: { resourceType: string; action: string }[]): AuthenticatedUser =>
+    ({ userId: new Types.ObjectId().toString(), permissions }) as unknown as AuthenticatedUser;
+
+  const publisher = userWith([{ resourceType: 'articles', action: 'Publish' }]);
+  const editorOnly = userWith([{ resourceType: 'articles', action: 'Update' }]);
+
+  const makeDeps = () => {
+    const policiesService = { resolve: jest.fn() } as unknown as jest.Mocked<WorkflowPoliciesService>;
+    const instancesService = { findActive: jest.fn(async () => null) } as unknown as jest.Mocked<WorkflowInstancesService>;
+    const revisionsService = {
+      create: jest.fn(async () => ({ _id: revisionId })),
+    } as unknown as jest.Mocked<RevisionsService>;
+    const publicationsService = {
+      publish: jest.fn(async () => ({ _id: publicationId, publishedAt })),
+    } as unknown as jest.Mocked<PublicationsService>;
+    const auditLogsService = { write: jest.fn() } as unknown as jest.Mocked<AuditLogsService>;
+    const usersService = { findNamesByIds: jest.fn(async () => new Map()) } as unknown as jest.Mocked<UsersService>;
+
+    const updateOne = jest.fn(() => ({ exec: jest.fn(async () => undefined) }));
+    const articleModel = {
+      collection: { collectionName: 'articles' },
+      schema: { path: () => undefined },
+      updateOne,
+      findOne: jest.fn(() => ({
+        lean: () => ({
+          exec: jest.fn(async () => ({ _id: entityId, updatedAt: expectedUpdatedAt, publicationState: 'Draft' })),
+        }),
+      })),
+    };
+    const connection = { models: { Article: articleModel } };
+
+    return {
+      policiesService,
+      instancesService,
+      revisionsService,
+      publicationsService,
+      auditLogsService,
+      usersService,
+      connection,
+      articleModel,
+      updateOne,
+    };
+  };
+
+  const makeService = (deps: ReturnType<typeof makeDeps>) =>
+    new PublishingService(
+      deps.policiesService,
+      deps.instancesService,
+      {} as unknown as WorkflowStepsService,
+      {} as unknown as WorkflowDefinitionsService,
+      {} as unknown as WorkflowActionHistoryService,
+      deps.revisionsService,
+      deps.publicationsService,
+      deps.auditLogsService,
+      deps.usersService,
+      { unarchive: jest.fn() } as unknown as MediaAssetsService,
+      deps.connection as never,
+    );
+
+  const publishDirect = (deps: ReturnType<typeof makeDeps>, actor: AuthenticatedUser) =>
+    makeService(deps).publishDirect({ entityType, entityId, actor, expectedUpdatedAt });
+
+  it('refuses when the policy requires workflow approval — must be approved first', async () => {
+    const deps = makeDeps();
+    deps.policiesService.resolve.mockResolvedValue({
+      mode: 'workflow',
+      policy: {} as never,
+      workflowDefinitionId: new Types.ObjectId(),
+      reason: null,
+    });
+
+    await expect(publishDirect(deps, publisher)).rejects.toMatchObject({
+      response: { code: 'workflowRequired' },
+    });
+    expect(deps.publicationsService.publish).not.toHaveBeenCalled();
+  });
+
+  it.each(['definitionMissing', 'definitionInactive', 'definitionForeignType'] as const)(
+    'keeps blocking a policy that exists but cannot be used (%s)',
+    async (reason) => {
+      const deps = makeDeps();
+      deps.policiesService.resolve.mockResolvedValue({ mode: 'blocked', policy: {} as never, workflowDefinitionId: null, reason });
+
+      await expect(publishDirect(deps, publisher)).rejects.toMatchObject({
+        response: { code: 'publishingPolicyMissing' },
+      });
+      expect(deps.publicationsService.publish).not.toHaveBeenCalled();
+    },
+  );
+
+  it('publishes directly when no policy exists and the actor holds Publish', async () => {
+    const deps = makeDeps();
+    deps.policiesService.resolve.mockResolvedValue({ mode: 'blocked', policy: null, workflowDefinitionId: null, reason: 'noPolicy' });
+
+    const result = await publishDirect(deps, publisher);
+
+    expect(deps.publicationsService.publish).toHaveBeenCalledWith(
+      expect.objectContaining({ entityType, entityId, revisionId, workflowInstanceId: null }),
+    );
+    expect(result).toEqual({
+      revisionId: revisionId.toString(),
+      publicationId: publicationId.toString(),
+      publishedAt: publishedAt.toISOString(),
+    });
+  });
+
+  it('refuses with 403 when no policy exists and the actor lacks Publish', async () => {
+    const deps = makeDeps();
+    deps.policiesService.resolve.mockResolvedValue({ mode: 'blocked', policy: null, workflowDefinitionId: null, reason: 'noPolicy' });
+
+    await expect(publishDirect(deps, editorOnly)).rejects.toThrow(ForbiddenException);
+    // Rule 3: "no policy" is not "blocked" — a 403 here must come from the
+    // permission check, not from the policy being unreadable.
+    expect(deps.policiesService.resolve).not.toHaveBeenCalled();
+    expect(deps.publicationsService.publish).not.toHaveBeenCalled();
+  });
+});
+
+/**
  * Restoring a past version brings its images back with it.
  *
  * The opposite of the save-side suggestion (`ArticlesService` et al.): a

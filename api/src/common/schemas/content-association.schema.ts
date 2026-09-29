@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 
 /** `sportsEvents` joined this list on 2026-09-23 for the video system.
  *
@@ -39,7 +39,7 @@ export class ContentAssociation {
   @Prop({ type: String, enum: CONTENT_ASSOCIATION_OWNER_TYPES, required: true })
   ownerType: ContentAssociationOwnerType;
 
-  @Prop({ type: Types.ObjectId, required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, required: true })
   ownerId: Types.ObjectId;
 
   /** How this media item relates to the owner — e.g. the `Primary` photo

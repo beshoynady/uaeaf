@@ -8,6 +8,8 @@ import { RolesService } from './roles.service.js';
 import type { RolesRepository } from './roles.repository.js';
 import type { RoleAssignmentsRepository } from './role-assignments.repository.js';
 import type { PermissionsService } from '../permissions/permissions.service.js';
+import type { AuditLogsService } from '../../workflow/audit-logs/audit-logs.service.js';
+import { fakeSession } from '../../../../test/utils/fake-session.js';
 
 const WRITE_METHODS: ReadonlySet<RequestMethod> = new Set([
   RequestMethod.POST,
@@ -37,6 +39,8 @@ const ROLE_ID = new Types.ObjectId().toString();
 const NAME = { en: 'Content Editor', ar: 'محرّر المحتوى' };
 const BODY = { name: NAME, description: null, permissionIds: [] as string[] };
 const ACTOR = { userId: new Types.ObjectId().toString(), permissions: [] };
+/** `extractRequestContext` reads only these two off the request. */
+const REQUEST = { ip: '10.0.0.7', headers: { 'user-agent': 'jest-agent' } };
 
 const role = (isSystemRole: boolean) =>
   ({ _id: new Types.ObjectId(ROLE_ID), name: NAME, isSystemRole, archivedAt: null, permissionIds: [] }) as never;
@@ -51,8 +55,10 @@ describe('a system role is unwritable through every roles route', () => {
     findByIdIncludingArchived: jest.fn<() => Promise<unknown>>(),
     updateById: jest.fn<() => Promise<unknown>>(),
     softDelete: jest.fn<() => Promise<unknown>>(),
+    startSession: jest.fn(async () => fakeSession()),
   };
-  const assignments = { detachRole: jest.fn<() => Promise<void>>() };
+  const assignments = { detachRole: jest.fn<() => Promise<Types.ObjectId[]>>() };
+  const auditLogs = { write: jest.fn<() => Promise<unknown>>() };
 
   // Arguments are placed by the handler's own parameter decorators, so a route
   // added later is driven without this file knowing its signature.
@@ -63,7 +69,13 @@ describe('a system role is unwritable through every roles route', () => {
     for (const [key, { index }] of Object.entries(params)) {
       const type = Number(key.split(':')[0]);
       args[index] =
-        type === RouteParamtypes.PARAM ? ROLE_ID : type === RouteParamtypes.BODY ? body : ACTOR;
+        type === RouteParamtypes.PARAM
+          ? ROLE_ID
+          : type === RouteParamtypes.BODY
+            ? body
+            : type === RouteParamtypes.REQUEST
+              ? REQUEST
+              : ACTOR;
     }
     const method = (controller as unknown as Record<string, (...a: unknown[]) => unknown>)[handler];
     return method.apply(controller, args);
@@ -75,11 +87,13 @@ describe('a system role is unwritable through every roles route', () => {
     repository.create.mockImplementation(async (data) => data);
     repository.updateById.mockResolvedValue(CUSTOM_ROLE);
     repository.softDelete.mockResolvedValue(CUSTOM_ROLE);
-    assignments.detachRole.mockResolvedValue(undefined);
+    repository.startSession.mockImplementation(async () => fakeSession());
+    assignments.detachRole.mockResolvedValue([]);
     const service = new RolesService(
       repository as unknown as RolesRepository,
       { findById: jest.fn(), findByIds: jest.fn() } as unknown as PermissionsService,
       assignments as unknown as RoleAssignmentsRepository,
+      auditLogs as unknown as AuditLogsService,
     );
     controller = new RolesController(service);
   });

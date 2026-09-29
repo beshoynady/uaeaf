@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { PUBLICATION_ENTITY_TYPES } from '../../../../common/constants/workflow-entity-types.js';
@@ -28,19 +28,19 @@ export class Publication extends BaseSchema {
   @Prop({ type: String, enum: PUBLICATION_ENTITY_TYPES, required: true })
   entityType: PublicationEntityType;
 
-  @Prop({ type: Types.ObjectId, required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, required: true })
   entityId: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'Revision', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Revision', required: true })
   revisionId: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'WorkflowInstance', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'WorkflowInstance', default: null })
   workflowInstanceId: Types.ObjectId | null;
 
   @Prop({ type: Date, required: true, default: Date.now })
   publishedAt: Date;
 
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
   publishedBy: Types.ObjectId;
 
   @Prop({ type: String, enum: PUBLICATION_STATUSES, required: true, default: 'Live' })

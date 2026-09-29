@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
@@ -42,7 +42,7 @@ export class GovernanceDocument extends BaseSchema {
 
   /** ref → documents (1:1). `documents.file` holds both EN/AR variants
    *  internally (Domain 6), so there is no second file field here. */
-  @Prop({ type: Types.ObjectId, ref: 'Document', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Document', required: true })
   fileId: Types.ObjectId;
 
   /** e.g. "1.0", "2.1" — same field name/pattern as

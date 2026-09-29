@@ -15,7 +15,7 @@ import { AlbumBasicsSection } from "./album-basics-section";
 import { AlbumDeleteZone } from "./album-delete-zone";
 import { AlbumOccasionSection } from "./album-occasion-section";
 import { AlbumPublishingSection } from "./album-publishing-section";
-import { InlineConfirm } from "./inline-confirm";
+import { InlineConfirm } from "@/components/ui/inline-confirm";
 import { suggestSlug } from "@/lib/admin/articles";
 import { draftFromAlbum, draftProblems, toCreateBody, toPatchBody } from "@/lib/admin/albums/album-draft";
 import { useAlbumWrite } from "@/lib/admin/albums/use-album-write";

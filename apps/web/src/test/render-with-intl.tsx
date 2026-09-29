@@ -1,13 +1,12 @@
 import type { ReactElement } from "react";
 import { render } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
-import arMessages from "../../messages/ar.json";
-import enMessages from "../../messages/en.json";
+import { loadMessages } from "@/i18n/messages";
 import type { AppLocale } from "@/i18n/routing";
 
-const messagesByLocale: Record<AppLocale, typeof arMessages> = {
-  ar: arMessages,
-  en: enMessages,
+const messagesByLocale: Record<AppLocale, ReturnType<typeof loadMessages>> = {
+  ar: loadMessages("ar"),
+  en: loadMessages("en"),
 };
 
 /** Shared test helper: every component under `src/components` now depends on

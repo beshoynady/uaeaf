@@ -128,12 +128,14 @@ export class WorkflowInstancesService {
 
   /** @throws ConflictException when the instance is not InProgress.
    *  @throws ForbiddenException when the actor is not among the current
-   *  step's `assigneeIds` — the only self-approval gate (BE-PLAN-010 Week
-   *  2 §9); no author-field comparison exists or is performed. */
+   *  step's `assigneeIds` (BE-PLAN-010 Week 2 §9), or wrote the revision
+   *  under review (ADR-0124's author check, scoped to `revision.createdBy`
+   *  — see `assertNotAuthor`). */
   async approve(id: string, actorId: string, reason?: string, context: RequestContext = {}): Promise<WorkflowInstanceDocument | null> {
     const instance = await this.loadInProgress(id);
     await this.assertStillGoverned(instance);
     const currentStep = await this.loadAssignedStep(instance, actorId);
+    await this.assertNotAuthor(instance, actorId);
     const actorObjectId = new Types.ObjectId(actorId);
 
     await this.actionHistoryService.record({
@@ -612,6 +614,34 @@ export class WorkflowInstancesService {
       throw new BadRequestException(
         `Revision ${revisionId.toString()} is not a revision of ${entityType} ${entityId.toString()}.`,
       );
+    }
+  }
+
+  /**
+   * The author-comparison half of rule 1: the assignee check above answers
+   * "may this person act on this step", this answers "did this person write
+   * what is under review".
+   *
+   * ADR-0124 defines "the author" as `revision.createdBy` plus the record's
+   * own `createdBy`/`updatedBy`; the record half stays out of this check —
+   * both fields are still optional on every schema, so comparing them would
+   * silently pass on every row written before that field is made required.
+   * `revision.createdBy` is `required: true` already, so it is compared on
+   * every eligible type, in strings, never `.equals()` (ADR-0124 D2).
+   *
+   * `contactMessages` carries no revision (ADR-0124 D3), so it is excluded
+   * by entity type, the same way `assertRevisionOf` excludes it, rather than
+   * by treating a missing revision as "not the author".
+   *
+   * @throws ForbiddenException when `actorId` wrote the revision under review.
+   */
+  private async assertNotAuthor(instance: WorkflowInstanceDocument, actorId: string): Promise<void> {
+    if (!isPublicationEligible(instance.entityType)) {
+      return;
+    }
+    const revision = await this.revisionsService.findById((instance.revisionId as Types.ObjectId).toString());
+    if (revision && String(revision.createdBy) === actorId) {
+      throw new ForbiddenException('An author may not approve their own content.');
     }
   }
 

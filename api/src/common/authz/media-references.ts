@@ -104,6 +104,7 @@ export const SCANNED_COLLECTIONS = [
   'resultsRankingsPage',
   'revisions',
   'roles',
+  'seasons',
   'siteSettings',
   'sponsors',
   'sponsorships',
@@ -185,20 +186,37 @@ export class MediaReferenceCheckFailedError extends Error {
 /** The internals this walk reads. Every member is optional and the cast below
  *  severs any tie to `SchemaType`, so a property a future major removes reads as
  *  `undefined` with no diagnostic — which is what the coverage guard is for. */
-interface WalkableType {
+export interface WalkableType {
   instance?: string;
   options?: Record<string, unknown>;
   schema?: Schema;
   caster?: { instance?: string; options?: Record<string, unknown> };
   $embeddedSchemaType?: { instance?: string; options?: Record<string, unknown> };
+  /** The path's own cast, which is the only reading of a path that cannot be
+   *  fooled by metadata: it answers what a stored value would become. */
+  cast?: (value: unknown) => unknown;
 }
 
 const asWalkable = (type: SchemaType): WalkableType => type as unknown as WalkableType;
 
 const OBJECT_ID_INSTANCES = new Set(['ObjectID', 'ObjectId']);
 
-const isObjectIdConstructor = (declared: unknown): boolean =>
-  declared === Types.ObjectId || (typeof declared === 'function' && declared.name === 'ObjectId');
+/**
+ * Both ObjectId classes, because a schema can be handed either.
+ *
+ * `Types.ObjectId` is bson's, named `ObjectId`. `MongooseSchema.Types.ObjectId`
+ * is the schema-layer one the schemas declare — it is a different class, its
+ * `name` is `SchemaObjectId`, and it announces itself through `schemaName`
+ * instead. Reading only the bson name misses every array path: an array's
+ * `caster` and `$embeddedSchemaType` are both `undefined` on 9.9.4, so the
+ * declared element type is the only thing left to read, and
+ * `albums.athleteIds` would report as no id at all.
+ */
+const isObjectIdConstructor = (declared: unknown): boolean => {
+  if (declared === Types.ObjectId || declared === MongooseSchema.Types.ObjectId) return true;
+  if (typeof declared !== 'function') return false;
+  return declared.name === 'ObjectId' || (declared as { schemaName?: unknown }).schemaName === 'ObjectId';
+};
 
 const isStringConstructor = (declared: unknown): boolean =>
   declared === String || (typeof declared === 'function' && declared.name === 'SchemaString');
@@ -225,23 +243,23 @@ const isObjectIdPath = (type: WalkableType): boolean =>
 const isStringPath = (type: WalkableType): boolean => isDeclared(type, isStringConstructor, new Set(['String']));
 
 /**
- * A path Mongoose cannot type — and in this codebase that is where the
- * `ObjectId`s are.
+ * A path Mongoose cannot type.
  *
- * Measured, because it decides whether the coverage guard sweeps anything at
- * all: `@nestjs/mongoose` recognises a declared type as a Mongoose type only
- * when its prototype chain reaches `mongoose.SchemaType`
- * (`definitions.factory.js: isMongooseSchemaType`). `Types.ObjectId` is the
- * **bson** class, whose chain does not, so Nest treats it as an ordinary class,
- * builds an empty definition from it and hands Mongoose `{ type: {} }` — which
- * becomes a `Mixed` path. Verified on the built output as well as under the
- * test runner: `mediaAssets.albumId` reports `instance: 'Mixed'` with
- * `options.ref: 'Album'` in `dist/`.
+ * Swept alongside the real `ObjectId` paths, and kept even though the schemas
+ * no longer produce one by accident. `@nestjs/mongoose` recognises a declared
+ * type as a Mongoose type only when its prototype chain reaches
+ * `mongoose.SchemaType` (`definitions.factory.js: isMongooseSchemaType`).
+ * `Types.ObjectId` is the **bson** class, whose chain does not, so Nest treats
+ * it as an ordinary class, builds an empty definition from it and hands
+ * Mongoose `{ type: {} }` — a `Mixed` path holding an id that nothing casts.
+ * Every reference is declared with the schema-layer class now, and
+ * `reference-path-typing.spec.ts` is what keeps it that way; this stays because
+ * an untyped path is at least as opaque as an ObjectId with no `ref`, so the
+ * wider set is the safer one to sweep in front of an irreversible delete.
  *
- * So a guard keyed on `instance === 'ObjectID'` would sweep NOTHING across the
- * whole project and report green — the exact silent failure the guard exists to
- * prevent. `Mixed` is swept instead, which is also the wider and safer set: an
- * untyped path is at least as opaque as an ObjectId with no `ref`.
+ * `type: Object`, which five paths declare deliberately, collapses to the same
+ * `{}` — so this reading cannot tell a free-form document from a mis-declared
+ * id, and does not try to. Both are swept.
  */
 const isEmptyObjectDeclaration = (declared: unknown): boolean =>
   typeof declared === 'object' &&
@@ -252,14 +270,14 @@ const isEmptyObjectDeclaration = (declared: unknown): boolean =>
 const isUntypedPath = (type: WalkableType): boolean => {
   if (type.instance === 'Mixed') return true;
   if (type.caster?.instance === 'Mixed' || type.$embeddedSchemaType?.instance === 'Mixed') return true;
-  // `[Types.ObjectId]` becomes `type: [{}]`, an Array path whose `caster` is
-  // undefined on 9.9.4, so only the declaration itself names a bare id array.
+  // An Array path's `caster` is undefined on 9.9.4 whatever it holds, so only
+  // the declaration itself can name a bare id array.
   const declared = type.options?.type;
   return isEmptyObjectDeclaration(declared) || (Array.isArray(declared) && isEmptyObjectDeclaration(declared[0]));
 };
 
 /** Every place a `ref` (or a `refPath`) can be declared, for one path. */
-const declaredOn = (type: WalkableType, key: 'ref' | 'refPath'): unknown[] => {
+export const declaredOn = (type: WalkableType, key: 'ref' | 'refPath'): unknown[] => {
   const arrayType = type.options?.type;
   const inArray = Array.isArray(arrayType) ? (arrayType[0] as Record<string, unknown> | undefined) : undefined;
   return [
@@ -284,7 +302,7 @@ const isRichTextPath = (type: WalkableType): boolean => {
   });
 };
 
-type LeafVisitor = (path: string, type: WalkableType) => void;
+export type LeafVisitor = (path: string, type: WalkableType) => void;
 
 /**
  * Every path a schema declares, sub-schemas walked in place and
@@ -296,7 +314,7 @@ type LeafVisitor = (path: string, type: WalkableType) => void;
  * is the same schema object at dozens of paths, and a visited set would walk
  * it once and skip the rest.
  */
-const walkPaths = (schema: Schema, visit: LeafVisitor, prefix = '', stack: readonly Schema[] = []): void => {
+export const walkPaths = (schema: Schema, visit: LeafVisitor, prefix = '', stack: readonly Schema[] = []): void => {
   if (stack.includes(schema)) return;
   const nested = [...stack, schema];
   for (const [key, raw] of Object.entries(schema.paths)) {
@@ -455,8 +473,7 @@ export const scannableTextFieldsIn = (roots: readonly SchemaRoot[]): ScannableTe
 /**
  * Every path that could hold a document id nothing declares a target for: an
  * `ObjectId` with no `ref` and no `refPath`, and every untyped (`Mixed`) path,
- * which is the shape this codebase's `ObjectId` props actually compile to (see
- * `isUntypedPath`).
+ * which could hold one without saying so (see `isUntypedPath`).
  *
  * What the coverage guard sweeps. Exported from here so the guard walks the
  * same tree the scan walks, rather than a second one that could disagree with
@@ -748,9 +765,19 @@ const scan = async (
     }
   };
 
-  // Both spellings of the same id. An `ObjectId` prop in this codebase compiles
-  // to an untyped (`Mixed`) path, so Mongoose casts nothing on the way in and a
-  // service that passed a DTO's string straight through stored a string.
+  // Both spellings of the same id, because a row written before the reference
+  // paths were typed could hold either and MongoDB compares the BSON type
+  // before the value.
+  //
+  // ⚠️ Measured: on a real `ObjectId` path Mongoose casts every member of an
+  // `$in`, so the string half arrives as the ObjectId it already carries and
+  // adds nothing. These queries go through the model, so a reference genuinely
+  // stored as a string is invisible to them — and this scan is what stands
+  // between a permanent delete and a published page. Nothing is known to be
+  // stored that way; `npm run convert:reference-ids` is what settles it for a
+  // given database. Recorded here rather than worked around, because making
+  // this filter uncastable changes what the delete refusal reads and that is
+  // not a change to make silently.
   const idFilter = { $in: [...ids, ...ids.map((id) => id.toString())] };
 
   // Grouped by collection, not by model: a discriminator is a second model on

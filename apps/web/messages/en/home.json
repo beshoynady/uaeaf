@@ -1,0 +1,87 @@
+{
+  "HomePage": {
+    "title": "UAE Athletics Federation",
+    "description": "The site shell (header and footer) is ready. Homepage sections are in progress."
+  },
+  "HomeHero": {
+    "pageHeading": "UAE Athletics Federation",
+    "carousel": "carousel",
+    "slide": "slide",
+    "slideLabel": "Slide {current} of {total}",
+    "play": "Start automatic slideshow",
+    "pause": "Stop automatic slideshow",
+    "goTo": "Go to slide",
+    "opensInNewTab": "opens in a new tab",
+    "progress": "Time left on this slide",
+    "nextEvent": {
+      "live": "Happening now",
+      "days": "days",
+      "hours": "hrs",
+      "minutes": "min",
+      "countdown": "{days} days, {hours} hours and {minutes} minutes to go"
+    }
+  },
+  "HomeSponsors": {
+    "strip": {
+      "label": "Federation sponsors",
+      "pause": "Stop the sponsor strip",
+      "play": "Start the sponsor strip"
+    },
+    "tiers": {
+      "Strategic": "Strategic Sponsor",
+      "Official": "Official Sponsor",
+      "Supporting": "Supporting Sponsor"
+    },
+    "tiersEnglish": {
+      "Strategic": "Strategic Sponsor",
+      "Official": "Official Sponsor",
+      "Supporting": "Supporting Sponsor"
+    },
+    "sponsors": {
+      "title": "Sponsors & Partners",
+      "subtitle": "Our Strategic Partner, Official Sponsors, and Supporting Partners help develop athletics in the UAE and organize national and international championships.",
+      "featured": "VIP",
+      "visitWebsite": "Visit the {name} website",
+      "opensInNewTab": "opens in a new tab",
+      "stats": {
+        "label": "Sponsorship in numbers",
+        "sponsors": "Official Partners & Sponsors",
+        "years": "Years of Our Longest Partnership",
+        "championships": "Championships Supported Annually"
+      }
+    },
+    "partners": {
+      "title": "Partners"
+    },
+    "memberships": {
+      "title": "We Are Proud of Our Membership in Leading Organizations",
+      "subtitle": "Active and ongoing official representation of the United Arab Emirates in regional and international athletics forums"
+    }
+  },
+  "HomeCoverage": {
+    "heading": "UAEAF in the Media",
+    "subtitle": "Trusted coverage from leading local and international outlets",
+    "viewAll": "View all coverage",
+    "viewAllLabel": "View all media coverage",
+    "read": "Read the coverage",
+    "readLabel": "Read the original coverage (opens in a new window)",
+    "carouselLabel": "Media coverage",
+    "slideLabel": "{index} of {count}",
+    "previous": "Previous coverage",
+    "next": "Next coverage",
+    "placeholderLogo": "[Publication logo {index}]",
+    "placeholderPublication": "[Publication name]",
+    "placeholderTitle": "[Coverage title, in the federation's words]",
+    "placeholderExcerpt": "[A short excerpt of the coverage]",
+    "placeholderDate": "[Date]",
+    "position": "Group {index} of {count}",
+    "placeholderLogoShort": "[Logo]"
+  },
+  "home": {
+    "albums": {
+      "title": "Photo albums",
+      "allAlbums": "All albums",
+      "openAlbum": "View album"
+    }
+  }
+}

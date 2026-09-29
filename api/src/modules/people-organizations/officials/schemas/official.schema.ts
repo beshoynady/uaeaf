@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
@@ -36,10 +36,10 @@ export class Official extends BaseSchema {
 
   /** Same flagged future-redesign / access-isolation note as
    *  `Athlete.disciplineIds` — see that schema. */
-  @Prop({ type: [Types.ObjectId], ref: 'Discipline', default: [] })
+  @Prop({ type: [MongooseSchema.Types.ObjectId], ref: 'Discipline', default: [] })
   disciplineIds: Types.ObjectId[];
 
-  @Prop({ type: Types.ObjectId, ref: 'Country', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Country', required: true })
   nationalityId: Types.ObjectId;
 
   @Prop({ type: String, enum: RESIDENCY_TYPES, required: true })

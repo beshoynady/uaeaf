@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
@@ -13,7 +13,7 @@ export class DefaultSeo {
   @Prop({ type: LocalizedTextSchema, default: null })
   titleSuffix: LocalizedText | null;
 
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   defaultOgImageId: Types.ObjectId | null;
 
   @Prop({ type: LocalizedTextSchema, default: null })
@@ -85,22 +85,22 @@ export class SiteSettings extends BaseSchema {
   @Prop({ type: FooterHeadingsSchema, default: null })
   footerHeadings: FooterHeadings | null;
 
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   logoId: Types.ObjectId | null;
 
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   logoDarkId: Types.ObjectId | null;
 
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   faviconId: Types.ObjectId | null;
 
-  @Prop({ type: Types.ObjectId, default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, default: null })
   privacyPolicyPageId: Types.ObjectId | null;
 
-  @Prop({ type: Types.ObjectId, default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, default: null })
   termsOfUsePageId: Types.ObjectId | null;
 
-  @Prop({ type: Types.ObjectId, default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, default: null })
   accessibilityStatementPageId: Types.ObjectId | null;
 
   @Prop({ type: Boolean, default: false })

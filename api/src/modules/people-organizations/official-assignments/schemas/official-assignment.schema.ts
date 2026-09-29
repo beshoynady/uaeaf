@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { OFFICIAL_ROLE_TYPES } from '../../../../common/constants/official-role-types.js';
@@ -28,7 +28,7 @@ export type OfficialAssignmentTargetType = (typeof OFFICIAL_ASSIGNMENT_TARGET_TY
  *  same enum but are never derived from one another. */
 @Schema({ collection: 'officialAssignments', timestamps: true })
 export class OfficialAssignment extends BaseSchema {
-  @Prop({ type: Types.ObjectId, ref: 'Official', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Official', required: true })
   officialId: Types.ObjectId;
 
   @Prop({ type: String, enum: OFFICIAL_ROLE_TYPES, required: true })
@@ -37,7 +37,7 @@ export class OfficialAssignment extends BaseSchema {
   @Prop({ type: String, enum: OFFICIAL_ASSIGNMENT_TARGET_TYPES, required: true })
   targetType: OfficialAssignmentTargetType;
 
-  @Prop({ type: Types.ObjectId, required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, required: true })
   targetId: Types.ObjectId;
 }
 

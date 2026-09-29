@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
@@ -7,7 +7,7 @@ import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/l
 export type SponsorshipDocument = HydratedDocument<Sponsorship>;
 
 /** `Department` deliberately excluded (specification: a business decision). */
-export const SPONSORSHIP_TARGET_TYPES = ['Federation', 'Championship', 'Event'] as const;
+export const SPONSORSHIP_TARGET_TYPES = ['Federation', 'Championship', 'Event', 'Season'] as const;
 export type SponsorshipTargetType = (typeof SPONSORSHIP_TARGET_TYPES)[number];
 
 /** Highest first. The banner takes the highest tier present (ADR-0085 D5.1). */
@@ -32,13 +32,13 @@ export const SCOPE_LABEL_MAX = 120;
  *  not yet built (the established pattern for poly refs). */
 @Schema({ collection: 'sponsorships', timestamps: true })
 export class Sponsorship extends BaseSchema {
-  @Prop({ type: Types.ObjectId, ref: 'Sponsor', required: true, index: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Sponsor', required: true, index: true })
   sponsorId: Types.ObjectId;
 
   @Prop({ type: String, enum: SPONSORSHIP_TARGET_TYPES, required: true })
   targetType: SponsorshipTargetType;
 
-  @Prop({ type: Types.ObjectId, default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, default: null })
   targetId: Types.ObjectId | null;
 
   @Prop({ type: String, enum: SPONSORSHIP_TIERS, required: true })
@@ -56,7 +56,7 @@ export class Sponsorship extends BaseSchema {
 
   /** Kept per the specification; the banner draws no photograph (ADR-0085
    *  D3 #10), so nothing reads it yet. */
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   bannerAssetId: Types.ObjectId | null;
 
   @Prop({ type: LocalizedTextSchema, default: null })

@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
@@ -45,7 +45,7 @@ export class OrganizationalStructureNode extends BaseSchema {
   @Prop({ type: LocalizedTextSchema, required: true })
   title: LocalizedText;
 
-  @Prop({ type: Types.ObjectId, ref: 'OrganizationalStructureNode', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'OrganizationalStructureNode', default: null })
   parentNodeId: Types.ObjectId | null;
 
   @Prop({ type: Number, required: true })
@@ -60,7 +60,7 @@ export class OrganizationalStructureNode extends BaseSchema {
 
   /** Optional, for standalone nodes not tied to a committee or department
    *  (e.g. "Office of the Director General"). */
-  @Prop({ type: Types.ObjectId, ref: 'FederationAppointment', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'FederationAppointment', default: null })
   federationAppointmentId: Types.ObjectId | null;
 }
 

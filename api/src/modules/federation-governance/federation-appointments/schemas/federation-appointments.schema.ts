@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
@@ -50,12 +50,12 @@ export type AppointmentStatus = (typeof APPOINTMENT_STATUSES)[number];
  *  closed lists. */
 @Schema({ collection: 'federationAppointments', timestamps: true })
 export class FederationAppointment extends BaseSchema {
-  @Prop({ type: Types.ObjectId, ref: 'FederationPersonnel', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'FederationPersonnel', required: true })
   personId: Types.ObjectId;
 
   /** Self-reference: the specific prior appointment this one succeeds.
    *  Optional — a first-ever appointment supersedes nothing. */
-  @Prop({ type: Types.ObjectId, ref: 'FederationAppointment', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'FederationAppointment', default: null })
   supersedesAppointmentId: Types.ObjectId | null;
 
   @Prop({ type: String, enum: APPOINTMENT_ROLE_TYPES, required: true })
@@ -68,12 +68,12 @@ export class FederationAppointment extends BaseSchema {
   /** Populated only for CommitteeChair/CommitteeMember roleTypes. The
    *  board states no schema-level conditional requirement, so none is
    *  enforced here. */
-  @Prop({ type: Types.ObjectId, ref: 'Committee', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Committee', default: null })
   committeeId: Types.ObjectId | null;
 
   /** Populated for President and BoardMember roleTypes (both elected by
    *  the same cycle). */
-  @Prop({ type: Types.ObjectId, ref: 'ElectionCycle', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'ElectionCycle', default: null })
   electionCycleId: Types.ObjectId | null;
 
   @Prop({ type: Date, required: true })

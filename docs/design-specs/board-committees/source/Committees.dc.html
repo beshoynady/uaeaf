@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>اللجان المتخصصة</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800;900&amp;display=swap">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#F4F4F4}
+.th-light{--bg:#F4F4F4;--sf:#FFFFFF;--sf2:#ECEEEC;--tx:#0B0B0B;--mu:#50565C;--bd:#D5D8D4;--grt:#006B32;--ink:#0B0B0B;--chip:#E7F3EC;--sh:0 18px 40px rgba(11,11,11,.10);--sh2:0 26px 54px rgba(11,11,11,.16)}
+.th-dark{--bg:#0B0B0B;--sf:#141414;--sf2:#1C1C1C;--tx:#F2F2F2;--mu:#A8ADB2;--bd:#2A2D30;--grt:#4CC27E;--ink:#FFFFFF;--chip:#0F2A1B;--sh:0 18px 40px rgba(0,0,0,.5);--sh2:0 26px 54px rgba(0,0,0,.6)}
+.root{background:var(--bg);color:var(--tx);font-family:Alexandria,Tahoma,sans-serif;transition:background .3s,color .3s}
+a{color:var(--grt)}a:hover{color:var(--tx)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.on-dark a:focus-visible,.on-dark button:focus-visible{outline-color:#FFFFFF}
+.tri{background:linear-gradient(90deg,#00843D 0 33%,var(--ink) 33% 66%,#C8102E 66%)}
+.tri-w{background:linear-gradient(90deg,#00843D 0 33%,#FFFFFF 33% 66%,#C8102E 66%)}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--tx)}
+.brand:hover{color:var(--tx)}
+.nav{list-style:none;margin:0;padding:0;display:flex;align-items:center;gap:22px}
+.nav-link{color:var(--tx);text-decoration:none;font-size:15px;font-weight:500;padding:10px 2px;display:inline-flex;align-items:center;gap:4px;border-bottom:2px solid transparent}
+.nav-link:hover{color:var(--grt)}
+.nav-on{color:var(--grt);border-bottom-color:#00843D;font-weight:700}
+.icon-btn{width:44px;height:44px;border:1px solid var(--bd);background:var(--sf);border-radius:12px;color:var(--tx);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:border-color .2s}
+.icon-btn:hover{border-color:#00843D}
+.lang-btn{height:44px;min-width:64px;padding:0 14px;border:1px solid var(--bd);background:var(--sf);border-radius:12px;color:var(--tx);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.lang-btn:hover{border-color:#00843D}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:14px;font-weight:700;letter-spacing:.3px;color:var(--grt)}
+.eyebrow::before{content:"";width:28px;height:3px;border-radius:2px;background:linear-gradient(90deg,#00843D 0 33%,var(--ink) 33% 66%,#C8102E 66%)}
+.on-dark .eyebrow{color:#7AD9A0}
+.on-dark .eyebrow::before{background:linear-gradient(90deg,#00843D 0 33%,#FFFFFF 33% 66%,#C8102E 66%)}
+.crumbs{list-style:none;margin:0;padding:0;display:flex;align-items:center;gap:10px;font-size:14px;color:#D0D3D6}
+.crumbs a{color:#D0D3D6;text-decoration:none}
+.crumbs a:hover{color:#FFFFFF;text-decoration:underline}
+.jump{display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;border:1px solid rgba(255,255,255,.35);color:#FFFFFF;text-decoration:none;font-size:15px;font-weight:600;transition:background .2s,border-color .2s}
+.jump:hover{background:rgba(255,255,255,.1);border-color:#FFFFFF;color:#FFFFFF}
+.jump-pri{background:#00843D;border-color:#00843D}
+.jump-pri:hover{background:#006B32;border-color:#006B32}
+.stat{position:relative;display:flex;flex-direction:column;gap:6px;padding:20px 22px;border-radius:18px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(8px)}
+.stat::after{content:"";position:absolute;inset-inline:22px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:linear-gradient(90deg,#00843D 0 33%,#FFFFFF 33% 66%,#C8102E 66%)}
+.h2{margin:0;font-size:48px;font-weight:800;line-height:1.2;letter-spacing:-.5px}
+.lead{margin:0;font-size:18px;line-height:1.9;color:var(--mu)}
+.node{position:relative;display:flex;align-items:center;gap:16px;padding:18px 22px;border-radius:18px;border:2px solid var(--bd);background:var(--sf);color:var(--tx);text-decoration:none;transition:border-color .25s,transform .25s,box-shadow .25s}
+.node:hover{border-color:#00843D;transform:translateY(-3px);box-shadow:var(--sh);color:var(--tx)}
+.node-top{border:2px solid transparent;background:linear-gradient(#0B0B0B,#0B0B0B) padding-box,linear-gradient(90deg,#00843D 0 30%,#FFFFFF 40% 60%,#C8102E 70%) border-box;color:#FFFFFF}
+.node-top:hover{color:#FFFFFF}
+.node-lbl{font-size:13px;font-weight:700;color:var(--grt)}
+.node-top .node-lbl{color:#7AD9A0}
+.node-name{font-size:18px;font-weight:700;line-height:1.4}
+.node-meta{font-size:14px;color:var(--mu)}
+.node-top .node-meta{color:#D0D3D6}
+.node-ic{width:48px;height:48px;flex-shrink:0;border-radius:14px;background:var(--chip);color:var(--grt);display:inline-flex;align-items:center;justify-content:center}
+.node-top .node-ic{background:rgba(255,255,255,.1);color:#FFFFFF}
+.conn{width:2px;background:#00843D;align-self:center;border-radius:2px}
+.brk-top{height:30px;border:2px solid #00843D;border-bottom:none;border-radius:16px 16px 0 0;align-self:center}
+.brk-bot{height:30px;border:2px solid #00843D;border-top:none;border-radius:0 0 16px 16px;align-self:center}
+.lvl-tag{align-self:center;display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 18px;border-radius:999px;background:var(--chip);color:var(--grt);font-size:14px;font-weight:700}
+.bus{height:2px;border-radius:2px;background:#00843D;align-self:center;width:calc((500% + 80px) / 6)}
+.mgrid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:16px}
+.mcol{display:flex;flex-direction:column}
+.mnode{flex-grow:1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:18px 12px 20px;border-radius:18px;border:2px solid var(--bd);background:var(--sf);color:var(--tx);text-decoration:none;transition:border-color .25s,transform .25s,box-shadow .25s}
+.mnode:hover{border-color:#00843D;transform:translateY(-3px);box-shadow:var(--sh);color:var(--tx)}
+.mnode-name{font-size:15px;font-weight:700;line-height:1.5}
+.mnode-role{font-size:12px;line-height:1.7;color:var(--mu)}
+.tree{list-style:none;margin:0;padding:0 0 0 0;display:flex;flex-direction:column;gap:10px;margin-inline-start:24px;border-inline-start:2px solid #00843D;padding-block:4px}
+.tree li{position:relative;padding-inline-start:18px}
+.tree li::before{content:"";position:absolute;inset-inline-start:0;top:50%;width:16px;height:2px;background:#00843D}
+.cchip{display:flex;align-items:center;gap:10px;min-height:56px;padding:10px 14px;border-radius:14px;border:1px solid var(--bd);background:var(--sf2);color:var(--tx);text-decoration:none;font-size:14px;font-weight:600;line-height:1.5;transition:border-color .2s,background .2s}
+.cchip:hover{border-color:#00843D;background:var(--chip);color:var(--tx)}
+.cnum{font-size:12px;font-weight:800;color:var(--grt);min-width:22px}
+.mini{width:34px;height:34px;border-radius:999px;border:2px solid var(--sf);background:var(--sf2);display:inline-flex;align-items:center;justify-content:center;color:var(--mu);margin-inline-start:-8px}
+.ph{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;background:radial-gradient(120% 90% at 50% 0%,var(--sf2),var(--bd));color:var(--mu)}
+.th-dark .ph{background:radial-gradient(120% 90% at 50% 0%,#23262A,#141414)}
+.ph-tag{position:absolute;bottom:14px;inset-inline-start:14px;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:rgba(11,11,11,.72);color:#FFFFFF;font-size:12px;font-weight:600}
+.frame{border:3px solid transparent;background:linear-gradient(var(--sf),var(--sf)) padding-box,linear-gradient(135deg,#00843D 0 35%,var(--ink) 35% 65%,#C8102E 65%) border-box}
+.badge{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:6px 14px;border-radius:999px;background:var(--chip);color:var(--grt);font-size:13px;font-weight:700;text-decoration:none;line-height:1.5}
+.badge:hover{background:#00843D;color:#FFFFFF}
+.chip-term{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--bd);font-size:13px;font-weight:600;color:var(--mu)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:52px;padding:0 26px;border-radius:12px;font-family:inherit;font-size:16px;font-weight:700;text-decoration:none;transition:background .2s,border-color .2s}
+.btn-pri{background:#00843D;color:#FFFFFF}
+.btn-pri:hover{background:#006B32;color:#FFFFFF}
+.btn-out{border:2px solid var(--tx);color:var(--tx)}
+.btn-out:hover{background:var(--tx);color:var(--bg)}
+.pcard{position:relative;display:flex;flex-direction:column;border-radius:22px;overflow:hidden;border:2px solid var(--bd);background:var(--sf);transition:transform .35s cubic-bezier(.2,.7,.2,1),box-shadow .35s,border-color .35s}
+.pcard:hover{transform:translateY(-6px);box-shadow:var(--sh2);border-color:transparent;background:linear-gradient(var(--sf),var(--sf)) padding-box,conic-gradient(from var(--a),#00843D,var(--ink) 30%,#C8102E 50%,var(--ink) 70%,#00843D) border-box}
+.lcard{display:flex;gap:28px;align-items:stretch;padding:24px;border-radius:24px;border:2px solid var(--bd);background:var(--sf);transition:box-shadow .3s,border-color .3s}
+.lcard:hover{border-color:#00843D;box-shadow:var(--sh)}
+.gov{display:flex;flex-direction:column;gap:14px;min-height:220px;padding:28px;border-radius:22px;border:2px solid var(--bd);background:var(--sf);color:var(--tx);text-decoration:none;transition:transform .3s,border-color .3s,box-shadow .3s}
+.gov:hover{transform:translateY(-4px);border-color:#00843D;box-shadow:var(--sh);color:var(--tx)}
+.d0{--i:0}.d1{--i:1}.d2{--i:2}.d3{--i:3}.d4{--i:4}.d5{--i:5}
+.gic-k{background:#0B0B0B}.th-dark .gic-k{background:#2A2D30}.gic-g{background:#00843D}.gic-r{background:#C8102E}
+.gov-ic{width:56px;height:56px;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;color:#FFFFFF}
+.more{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;color:var(--grt);margin-top:auto}
+.foot-link{color:#D0D3D6;text-decoration:none;font-size:14px}
+.foot-link:hover{color:#FFFFFF;text-decoration:underline}
+.flip{transform:scaleX(-1)}
+[dir=rtl] .fl{transform:scaleX(-1)}
+.nm-link{color:var(--tx);text-decoration:none}.nm-link:hover{color:var(--grt);text-decoration:underline}
+@property --a{syntax:'<angle>';initial-value:0deg;inherits:false}
+@keyframes rot{to{--a:360deg}}
+@keyframes rise{from{opacity:0;transform:translateY(36px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+@keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes growx{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes unmask{from{clip-path:inset(100% 0 0 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes zoomout{from{transform:scale(1.18)}to{transform:scale(1)}}
+@keyframes drift{0%,100%{transform:translate(0,0) rotate(0)}50%{transform:translate(-18px,14px) rotate(-2deg)}}
+@keyframes paint{from{color:var(--bd)}to{color:var(--tx)}}
+@media (prefers-reduced-motion:no-preference){
+.pcard:hover{animation:rot 3s linear infinite}
+.hero-in{animation:rise .9s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--i,0) * 130ms + 150ms)}
+.drift{animation:drift 14s ease-in-out infinite}
+@supports (animation-timeline:view()){
+.sr{animation:rise linear both;animation-timeline:view();animation-range:entry calc(var(--i,0) * 5%) cover calc(26% + var(--i,0) * 5%)}
+.sr-pop{animation:pop linear both;animation-timeline:view();animation-range:entry calc(var(--i,0) * 6%) cover calc(30% + var(--i,0) * 6%)}
+.sr-line{transform-origin:top;animation:grow linear both;animation-timeline:view();animation-range:entry 30% cover 50%}
+.sr-linex{animation:growx linear both;animation-timeline:view();animation-range:entry 30% cover 50%}
+.sr-mask{animation:unmask linear both;animation-timeline:view();animation-range:entry 0% cover 40%}
+.sr-mask .ph-in{animation:zoomout linear both;animation-timeline:view();animation-range:entry 0% cover 60%}
+.sr-paint{animation:paint linear both;animation-timeline:view();animation-range:entry 20% cover 55%}
+.hero-par{animation:zoomout linear both;animation-timeline:scroll();animation-range:0 700px;animation-direction:reverse}
+}
+}
+.hbadge{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:8px 16px;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.28);color:#FFFFFF;font-size:14px;font-weight:700;text-decoration:none;line-height:1.5}
+.hbadge-g{background:#00843D;border-color:#00843D}
+.hbadge-g:hover{background:#006B32;color:#FFFFFF}
+.hmeta{display:flex;flex-wrap:wrap;gap:28px;font-size:15px;color:#D0D3D6}
+.hmeta b{display:block;font-size:13px;font-weight:600;color:#A8ADB2;margin-bottom:4px}
+.hmeta span{color:#FFFFFF;font-weight:700}
+.tl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px;position:relative}
+.tl::before{content:"";position:absolute;inset-inline-start:11px;top:12px;bottom:12px;width:2px;background:var(--bd)}
+.tl-item{position:relative;display:grid;grid-template-columns:24px minmax(0,1fr);gap:20px;align-items:start}
+.tl-dot{position:relative;z-index:1;width:24px;height:24px;border-radius:999px;background:#00843D;border:5px solid var(--bg);box-shadow:0 0 0 2px #00843D;margin-top:22px}
+.tl-dot-past{background:var(--bd);box-shadow:0 0 0 2px var(--bd)}
+.tl-card{display:flex;flex-direction:column;gap:8px;padding:22px 24px;border-radius:20px;border:2px solid var(--bd);background:var(--sf)}
+.tl-card-now{border-color:#00843D}
+.tl-card-ph{border-style:dashed;background:transparent}
+.st-now{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:999px;background:var(--chip);color:var(--grt);font-size:12px;font-weight:800;white-space:nowrap}
+.st-past{display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:999px;border:1px solid var(--bd);color:var(--mu);font-size:12px;font-weight:700;white-space:nowrap}
+.cv-card{height:100%;display:flex;flex-direction:column;gap:10px;padding:24px;border-radius:20px;border:2px dashed var(--bd);background:transparent}
+.cv-ic{width:44px;height:44px;border-radius:14px;background:#00843D;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center}
+.phx{color:var(--mu)}
+.phx-t{color:var(--mu)}
+.phx-chip{display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;border:1px dashed var(--bd);color:var(--mu);font-size:14px;font-weight:600}
+.lbl-s{font-size:15px;font-weight:800}
+.sec-h{display:flex;flex-direction:column;gap:12px}
+.sec-num{font-size:14px;font-weight:800;color:var(--grt)}
+.facts{border-radius:24px;border:2px solid var(--bd);background:var(--sf);padding:26px;display:flex;flex-direction:column;gap:18px}
+.fact{display:flex;flex-direction:column;gap:4px;padding-bottom:14px;border-bottom:1px solid var(--bd)}
+.fact dt{font-size:13px;color:var(--mu)}
+.fact dd{margin:0;font-size:15px;font-weight:700;line-height:1.6}
+.toc{display:flex;flex-direction:column;gap:4px}
+.toc a{display:flex;align-items:center;gap:10px;min-height:44px;padding:0 14px;border-radius:12px;color:var(--tx);text-decoration:none;font-size:15px;font-weight:600}
+.toc a:hover{background:var(--sf2);color:var(--tx)}
+.toc a span{font-size:12px;font-weight:800;color:var(--grt);min-width:22px}
+.ccard{position:relative;display:flex;flex-direction:column;gap:18px;min-height:340px;padding:28px;border-radius:24px;border:2px solid var(--bd);background:var(--sf);color:var(--tx);text-decoration:none;transition:transform .3s,border-color .3s,box-shadow .3s;overflow:hidden}
+.ccard:hover{transform:translateY(-5px);border-color:#00843D;box-shadow:var(--sh2);color:var(--tx)}
+.ccard-num{font-size:56px;font-weight:900;line-height:1;color:transparent;-webkit-text-stroke:1.5px var(--bd)}
+.ccard:hover .ccard-num{-webkit-text-stroke-color:#00843D}
+.ccard-ic{width:56px;height:56px;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;color:#FFFFFF}
+.chair-row{display:flex;align-items:center;gap:12px;padding-top:16px;margin-top:auto;border-top:1px solid var(--bd)}
+.avatar{width:48px;height:48px;border-radius:999px;flex-shrink:0}
+.step-c{display:flex;flex-direction:column;gap:12px;padding:26px;border-radius:22px;background:var(--sf);border:2px solid var(--bd)}
+.step-n{width:44px;height:44px;border-radius:999px;background:#0B0B0B;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font-weight:800}
+.th-dark .step-n{background:#FFFFFF;color:#0B0B0B}
+.duty{display:grid;grid-template-columns:44px minmax(0,1fr);gap:16px;align-items:start;padding:20px 22px;border-radius:18px;border:2px dashed var(--bd)}
+.duty-n{width:44px;height:44px;border-radius:12px;background:var(--chip);color:var(--grt);display:inline-flex;align-items:center;justify-content:center;font-weight:800}
+.mem{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;padding:24px 16px;border-radius:20px;border:2px dashed var(--bd);background:transparent}
+.mem-chair{border-style:solid;border-color:#00843D;background:var(--sf)}
+.cmini{display:flex;align-items:center;gap:12px;min-height:64px;padding:12px 16px;border-radius:16px;border:2px solid var(--bd);background:var(--sf);color:var(--tx);text-decoration:none;font-size:14px;font-weight:700;line-height:1.5;transition:border-color .2s}
+.cmini:hover{border-color:#00843D;color:var(--tx)}
+.cmini-on{border-color:#00843D;background:var(--chip)}
+.doc{display:flex;align-items:center;gap:14px;padding:18px 20px;border-radius:16px;border:2px dashed var(--bd)}
+.doc-ic{width:44px;height:52px;border-radius:8px;background:#C8102E;color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+</style>
+</helmet>
+<div class="{{rootClass}}" dir="{{dir}}" lang="{{lang}}" style="width: 1440px; height: 3240px; display: flex; flex-direction: column; overflow: hidden">
+<div class="tri" style="height: 4px; flex-shrink: 0"></div>
+
+<header style="height: 84px; flex-shrink: 0; background: var(--sf); border-bottom: 1px solid var(--bd); display: flex; align-items: center; justify-content: space-between; padding: 0 64px">
+<div style="display: flex; align-items: center; gap: 40px">
+<a class="brand" href="#" aria-label="{{t.homeAria}}">
+<svg width="52" height="44" viewBox="0 0 240 200" aria-hidden="true"><path d="M20 170 L75.05 105.05 A7 7 0 0 1 84.95 114.95 Z" fill="#C8102E"></path><path d="M40 190 L142.2 72.2 A11 11 0 0 1 157.8 87.8 Z" fill="#00843D"></path><path d="M95 190 L182.9 87.9 A10 10 0 0 1 197.1 102.1 Z" style="fill: var(--ink)"></path><path d="M150 190 L200.05 130.05 A7 7 0 0 1 209.95 139.95 Z" fill="#C8102E"></path></svg>
+<span style="font-size: 26px; font-weight: 800; letter-spacing: -0.5px">UAEAF</span>
+</a>
+<nav aria-label="{{t.navAria}}">
+<ul class="nav">
+<sc-for list="{{nav}}" as="n" hint-placeholder-count="9"><li><a class="{{n.cls}}" href="#" aria-current="{{n.current}}">{{n.label}}</a></li></sc-for>
+</ul>
+</nav>
+</div>
+<div style="display: flex; align-items: center; gap: 10px">
+<button class="icon-btn" aria-label="{{t.search}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg></button>
+<button class="icon-btn" aria-label="{{t.themeAria}}" onClick="{{toggleTheme}}">
+<sc-if value="{{isLight}}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg></sc-if>
+<sc-if value="{{isDark}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg></sc-if>
+</button>
+<button class="lang-btn" aria-label="{{t.langAria}}" onClick="{{toggleLang}}">{{t.langLabel}}</button>
+</div>
+</header>
+
+
+
+<section class="on-dark" aria-labelledby="c-h1" style="position: relative; flex-shrink: 0; background: #0B0B0B; color: #FFFFFF; overflow: hidden; padding: 48px 64px 72px">
+<div aria-hidden="true" style="position: absolute; inset: 0; background: repeating-linear-gradient(115deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 120px)"></div>
+<svg class="drift hero-par" aria-hidden="true" width="760" height="640" viewBox="0 0 240 200" style="position: absolute; inset-inline-end: -120px; top: -40px; opacity: 0.5"><path d="M20 170 L75.05 105.05 A7 7 0 0 1 84.95 114.95 Z" fill="#C8102E"></path><path d="M40 190 L142.2 72.2 A11 11 0 0 1 157.8 87.8 Z" fill="#00843D"></path><path d="M95 190 L182.9 87.9 A10 10 0 0 1 197.1 102.1 Z" fill="#FFFFFF"></path><path d="M150 190 L200.05 130.05 A7 7 0 0 1 209.95 139.95 Z" fill="#C8102E"></path></svg>
+<nav aria-label="{{t.crumbsAria}}" class="d0 hero-in" style="position: relative; margin-bottom: 56px"><ol class="crumbs"><li><a href="#">{{t.home}}</a></li><li aria-hidden="true">/</li><li><a href="#">{{t.about}}</a></li><li aria-hidden="true">/</li><li aria-current="page" style="color: #FFFFFF; font-weight: 600">{{t.coms}}</li></ol></nav>
+<div style="position: relative; display: flex; flex-direction: column; gap: 22px; max-width: 820px">
+<span class="d1 eyebrow hero-in">{{t.eyebrow}}</span>
+<h1 id="c-h1" class="d2 hero-in" style="margin: 0; font-size: 72px; font-weight: 900; line-height: 1.1">{{t.h1}}</h1>
+<p class="d3 hero-in" style="margin: 0; font-size: 20px; line-height: 1.9; color: #D0D3D6">{{t.sub}}</p>
+<div class="d4 hero-in" style="display: flex; gap: 12px; margin-top: 6px"><a class="jump jump-pri" href="#all">{{t.jAll}}</a><a class="jump" href="#how">{{t.jHow}}</a></div>
+</div>
+<dl class="d5 hero-in" style="position: relative; margin: 56px 0 0; display: grid; grid-template-columns: repeat(3, 240px); gap: 16px">
+<div class="stat"><dt style="font-size: 14px; color: #D0D3D6">{{t.sCom}}</dt><dd style="margin: 0; font-size: 44px; font-weight: 800; line-height: 1">8</dd></div>
+<div class="stat"><dt style="font-size: 14px; color: #D0D3D6">{{t.sChairs}}</dt><dd style="margin: 0; font-size: 44px; font-weight: 800; line-height: 1">8</dd></div>
+<div class="stat"><dt style="font-size: 14px; color: #D0D3D6">{{t.sTerm}}</dt><dd style="margin: 0; font-size: 30px; font-weight: 800; line-height: 1.45">{{t.term}}</dd></div>
+</dl>
+<div class="tri-w" aria-hidden="true" style="position: absolute; inset-inline: 0; bottom: 0; height: 4px"></div>
+</section>
+
+<section id="how" aria-labelledby="h-how" style="flex-shrink: 0; padding: 96px 64px 40px; display: flex; flex-direction: column; gap: 36px">
+<div class="sr" style="display: flex; flex-direction: column; gap: 14px; max-width: 760px"><span class="eyebrow">{{t.howEy}}</span><h2 id="h-how" class="h2">{{t.howT}}</h2></div>
+<ol style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px">
+<sc-for list="{{steps}}" as="s" hint-placeholder-count="3"><li class="sr {{s.dcls}}"><div class="{{s.cls}}" style="height: 100%"><span class="step-n">{{s.n}}</span><span style="font-size: 20px; font-weight: 800; line-height: 1.5">{{s.title}}</span><span style="font-size: 15px; line-height: 1.9; color: var(--mu)">{{s.desc}}</span></div></li></sc-for>
+</ol>
+</section>
+
+<section id="all" aria-labelledby="h-all" style="flex-shrink: 0; padding: 64px 64px 96px; display: flex; flex-direction: column; gap: 36px">
+<div class="sr" style="display: flex; flex-direction: column; gap: 14px; max-width: 760px"><span class="eyebrow">{{t.allEy}}</span><h2 id="h-all" class="h2">{{t.allT}}</h2><p class="lead">{{t.allLead}}</p></div>
+<ul style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px">
+<sc-for list="{{cards}}" as="c" hint-placeholder-count="8">
+<li class="sr-pop {{c.dcls}}"><a class="ccard" href="Committee.dc.html">
+<div style="display: flex; align-items: flex-start; justify-content: space-between"><span class="{{c.bg}} ccard-ic" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.2"></circle><circle cx="17" cy="9.5" r="2.4"></circle><path d="M3 19v-1a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v1M15 14.5h2a4 4 0 0 1 4 4v.5"></path></svg></span><span class="ccard-num" aria-hidden="true">{{c.num}}</span></div>
+<span style="font-size: 21px; font-weight: 800; line-height: 1.45">{{c.name}}</span>
+<span class="phx" style="font-size: 14px; line-height: 1.8">{{t.mandatePh}}</span>
+<div class="chair-row"><span class="ph avatar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"></path></svg></span><span style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span style="font-size: 12px; font-weight: 700; color: var(--grt)">{{c.chairTitle}}</span><span style="font-size: 14px; font-weight: 700; line-height: 1.5">{{c.chairName}}</span></span></div>
+<span style="display: flex; align-items: center; justify-content: space-between; font-size: 13px"><span class="phx">{{t.members}}</span><span class="more" style="margin-top: 0">{{t.view}} <svg class="fl" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span></span>
+</a></li>
+</sc-for>
+</ul>
+</section>
+
+<section aria-labelledby="h-rel" style="flex-shrink: 0; background: var(--sf); border-top: 1px solid var(--bd); padding: 72px 64px 88px; display: flex; flex-direction: column; gap: 28px">
+<span id="h-rel" class="eyebrow sr">{{t.relEy}}</span>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px">
+<a class="gov sr d0" href="Main.dc.html" style="min-height: 180px"><span class="gov-ic gic-k"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 21h18M5 21V10l7-5 7 5v11M9 21v-6h6v6"></path></svg></span><span style="font-size: 22px; font-weight: 800">{{t.relBoard}}</span><span style="font-size: 15px; color: var(--mu)">{{t.relBoardX}}</span><span class="more">{{t.more}} <svg class="fl" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span></a>
+<a class="gov sr d1" href="#" style="min-height: 180px"><span class="gov-ic gic-r"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5M9 13h6M9 17h6"></path></svg></span><span style="font-size: 22px; font-weight: 800">{{t.relPol}}</span><span style="font-size: 15px; color: var(--mu)">{{t.relPolX}}</span><span class="more">{{t.more}} <svg class="fl" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span></a>
+</div>
+</section>
+
+<footer class="on-dark" style="flex-grow: 1; background: #0B0B0B; color: #FFFFFF; padding: 72px 64px 40px; display: flex; flex-direction: column; gap: 48px">
+<div style="display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 64px">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; align-items: center; gap: 10px"><svg width="44" height="36" viewBox="0 0 240 200" aria-hidden="true"><path d="M20 170 L75.05 105.05 A7 7 0 0 1 84.95 114.95 Z" fill="#C8102E"></path><path d="M40 190 L142.2 72.2 A11 11 0 0 1 157.8 87.8 Z" fill="#00843D"></path><path d="M95 190 L182.9 87.9 A10 10 0 0 1 197.1 102.1 Z" fill="#FFFFFF"></path><path d="M150 190 L200.05 130.05 A7 7 0 0 1 209.95 139.95 Z" fill="#C8102E"></path></svg><span style="font-size: 22px; font-weight: 800">UAEAF</span></div>
+<p style="margin: 0; font-size: 15px; line-height: 1.9; color: #D0D3D6; max-width: 440px">{{t.footDesc}}</p>
+</div>
+<nav aria-label="{{t.title}}"><ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px"><li><a class="foot-link" href="Main.dc.html">{{t.fBoard}}</a></li><li><a class="foot-link" href="Committees.dc.html">{{t.fCom}}</a></li><li><a class="foot-link" href="#">{{t.fClubs}}</a></li><li><a class="foot-link" href="#">{{t.fPol}}</a></li><li><a class="foot-link" href="#">{{t.fContact}}</a></li></ul></nav>
+<address style="font-style: normal; display: flex; flex-direction: column; gap: 12px; font-size: 14px; line-height: 1.8; color: #D0D3D6"><span>{{t.addr}}</span><a class="foot-link" href="mailto:info@uaeaf.ae">info@uaeaf.ae</a></address>
+</div>
+<div style="border-top: 1px solid #2A2D30; padding-top: 24px; font-size: 13px; color: #A8ADB2">{{t.rights}}</div>
+</footer>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme": {"editor": "enum", "options": ["light", "dark"], "default": "light"}, "lang": {"editor": "enum", "options": ["ar", "en"], "default": "ar"}, "$preview": {"width": 1440, "height": 3240}}'>
+class Component extends DCLogic {
+  pubVals(T, theme, lang, navOn) {
+    const ar = lang === 'ar';
+    // Official list sent by the federation (04 - Members). Committee chairs come from the committees design and still need confirmation.
+    const P = [
+      ['dr-mohammed-al-murr', 'د. محمد عبدالله المر', 'Dr. Mohammed Abdulla Al Murr', 'chair', null, false],
+      ['mohammed-al-khayat', 'محمد عبدالناصر الخياط', 'Mohammed Abdulnasser Al Khayat', 'vice', 'investment', false],
+      ['faisal-al-khumairi', 'فيصل أحمد الخميري', 'Faisal Ahmed Al Khumairi', 'sg', 'strategy', false],
+      ['fahad-bin-jumaa', 'فهد عبدالله بن جمعة', 'Fahad Abdulla Bin Jumaa', 'member', 'advisory', false],
+      ['nasser-bin-ashour', 'ناصر محمد بن عاشور', 'Nasser Mohammed Bin Ashour', 'member', 'technical', false],
+      ['rashid-al-ali', 'راشد ناصر آل علي', 'Rashid Nasser Al Ali', 'member', 'teams', false],
+      ['jameela-abdulrahman', 'جميلة عبدالله عبدالرحمن', 'Jameela Abdulla Abdulrahman', 'member', 'protection', true],
+      ['khawla-sajwani', 'خولة محمد جاسم سجواني', 'Khawla Mohammed Jassim Sajwani', 'member', 'women', true],
+      ['al-wazna-falah', 'الوازنة فلاح', 'Al Wazna Falah', 'member', 'pr', true]
+    ];
+    const ROLE = { chair: ['رئيس مجلس الإدارة', 'Chairman of the Board'], vice: ['نائب رئيس مجلس الإدارة', 'Vice Chairman'], sg: ['الأمين العام', 'General Secretary'], member: ['عضو مجلس الإدارة', 'Board Member'] };
+    const C = [
+      ['strategy', 'لجنة الاستراتيجية والتميز المؤسسي', 'Strategy & Institutional Excellence Committee', 'gic-k'],
+      ['investment', 'لجنة الاستثمار', 'Investment Committee', 'gic-g'],
+      ['technical', 'اللجنة الفنية', 'Technical Committee', 'gic-r'],
+      ['teams', 'لجنة المنتخبات والمواهب', 'National Teams & Talent Committee', 'gic-k'],
+      ['protection', 'لجنة الحماية', 'Protection Committee', 'gic-g'],
+      ['women', 'لجنة المرأة', "Women's Committee", 'gic-r'],
+      ['pr', 'لجنة العلاقات العامة والاتصال المؤسسي', 'Public Relations & Corporate Communication Committee', 'gic-k'],
+      ['advisory', 'اللجنة الاستشارية', 'Advisory Committee', 'gic-g']
+    ];
+    const people = P.map((p, i) => ({
+      i, slug: p[0], name: T(p[1], p[2]), roleKey: p[3], role: T(ROLE[p[3]][0], ROLE[p[3]][1]), comKey: p[4], fem: p[5],
+      initials: p[2].replace('Dr. ', '').split(' ').filter((w) => /^[A-Z]/.test(w)).slice(0, 2).map((w) => w[0]).join('')
+    }));
+    const committees = C.map((c, i) => {
+      const chair = people.find((p) => p.comKey === c[0]);
+      return {
+        i, key: c[0], num: (i < 9 ? '0' : '') + (i + 1), name: T(c[1], c[2]), bg: c[3],
+        chair, chairName: chair ? chair.name : '', chairRole: chair ? chair.role : '',
+        chairTitle: chair ? T(chair.fem ? 'رئيسة اللجنة' : 'رئيس اللجنة', 'Committee Chair') : ''
+      };
+    });
+    people.forEach((p) => {
+      const c = committees.find((x) => x.key === p.comKey);
+      p.com = c ? c.name : '';
+      p.hasCom = !!c;
+      p.chairOf = c ? T((p.fem ? 'رئيسة ' : 'رئيس ') + c.name, 'Chair, ' + c.name) : '';
+    });
+    const navItems = ar
+      ? ['الرئيسية', 'عن الاتحاد', 'الأعضاء', 'الأندية', 'البطولات', 'الفعاليات', 'الأخبار والمقالات', 'المركز الإعلامي', 'تواصل معنا']
+      : ['Home', 'About', 'Members', 'Clubs', 'Championships', 'Events', 'News', 'Media Center', 'Contact'];
+    const nav = navItems.map((label, i) => ({ label, cls: i === navOn ? 'nav-link nav-on' : 'nav-link', current: i === navOn ? 'page' : null }));
+    return {
+      people, committees,
+      base: {
+        rootClass: 'root th-' + theme, dir: ar ? 'rtl' : 'ltr', lang,
+        isDark: theme === 'dark', isLight: theme !== 'dark',
+        toggleTheme: () => this.setState({ theme: theme === 'dark' ? 'light' : 'dark' }),
+        toggleLang: () => this.setState({ lang: ar ? 'en' : 'ar' }),
+        nav
+      },
+      tb: {
+        homeAria: T('اتحاد الإمارات لألعاب القوى — الصفحة الرئيسية', 'UAE Athletics Federation — Home'),
+        navAria: T('القائمة الرئيسية', 'Main menu'), search: T('بحث في الموقع', 'Search the site'),
+        themeAria: theme === 'dark' ? T('تفعيل الوضع الفاتح', 'Switch to light mode') : T('تفعيل الوضع الداكن', 'Switch to dark mode'),
+        langLabel: ar ? 'English' : 'العربية', langAria: T('Switch to English', 'التبديل إلى العربية'),
+        crumbsAria: T('مسار التنقل', 'Breadcrumb'), home: T('الرئيسية', 'Home'), about: T('عن الاتحاد', 'About'),
+        board: T('مجلس الإدارة', 'Board of Directors'), coms: T('اللجان', 'Committees'),
+        photo: T('صورة رسمية مطلوبة', 'Official photo pending'), term: '2025 – 2028',
+        footDesc: T('الجهة الرسمية المشرفة على رياضة ألعاب القوى في دولة الإمارات العربية المتحدة، وعضو في الاتحاد الدولي لألعاب القوى والاتحاد الآسيوي.', 'The official governing body for athletics in the UAE, member of World Athletics and the Asian Athletics Association.'),
+        addr: T('١ شارع النهدة، النهدة الأولى، دبي، الإمارات العربية المتحدة', '1 Al Nahda St, Al Nahda 1, Dubai, United Arab Emirates'),
+        rights: T('© 2026 اتحاد الإمارات لألعاب القوى. جميع الحقوق محفوظة.', '© 2026 UAE Athletics Federation. All rights reserved.'),
+        title: T('اتحاد الإمارات لألعاب القوى', 'UAE Athletics Federation'),
+        fBoard: T('مجلس الإدارة', 'Board'), fCom: T('اللجان', 'Committees'), fClubs: T('الأندية', 'Clubs'), fPol: T('اللوائح والسياسات', 'Policies'), fContact: T('تواصل معنا', 'Contact')
+      }
+    };
+  }
+  renderVals() {
+    const st = this.state || {};
+    const theme = st.theme || this.props.theme || 'light';
+    const lang = st.lang || this.props.lang || 'ar';
+    const ar = lang === 'ar';
+    const T = (a, e) => (ar ? a : e);
+    const D = this.pubVals(T, theme, lang, 1);
+    const cards = D.committees.map((c) => ({ ...c, dcls: 'd' + (c.i % 4) }));
+    const steps = [
+      [T('يرأس كل لجنة عضو من مجلس الإدارة', 'Each committee is chaired by a board member'), T('رئيس اللجنة بيظهر على الكارت، ومنه تقدر تفتح ملفه الشخصي.', 'The chair is shown on each card and links to their profile.'), false],
+      [T('تعمل اللجان خلال الدورة الانتخابية', 'Committees serve for the electoral term'), T('الدورة الحالية 2025 – 2028، ومع كل دورة جديدة بتتشكّل اللجان من جديد.', 'The current term is 2025 – 2028; committees are re-formed with each new term.'), false],
+      [T('[آلية التشكيل ورفع التقارير]', '[Formation and reporting process]'), T('[من لائحة اللجان المعتمدة من الاتحاد]', '[From the Federation’s approved committee regulations]'), true]
+    ].map((s, i) => ({ n: String(i + 1), title: s[0], desc: s[1], cls: s[2] ? 'step-c phx' : 'step-c', dcls: 'd' + i }));
+    return Object.assign(D.base, {
+      cards, steps,
+      t: Object.assign({}, D.tb, {
+        eyebrow: T('الحوكمة', 'Governance'),
+        h1: T('اللجان المتخصصة', 'Specialised Committees'),
+        sub: T('ثماني لجان يرأسها أعضاء مجلس الإدارة لتنفيذ استراتيجية الاتحاد في كل مجال.', 'Eight committees, each chaired by a board member, deliver the Federation’s strategy in every field.'),
+        sCom: T('لجان متخصصة', 'Committees'), sChairs: T('رؤساء من مجلس الإدارة', 'Chairs from the Board'), sTerm: T('الدورة الانتخابية', 'Electoral term'),
+        jAll: T('كل اللجان', 'All committees'), jHow: T('كيف تعمل اللجان', 'How committees work'),
+        howEy: T('01 — كيف تعمل اللجان', '01 — How committees work'), howT: T('من مجلس الإدارة إلى العمل الميداني', 'From the Board to the field'),
+        allEy: T('02 — اللجان', '02 — The committees'), allT: T('تعرّف على كل لجنة', 'Meet each committee'),
+        allLead: T('اضغط على أي لجنة لعرض دورها ومهامها وأعضائها.', 'Select a committee to see its role, duties and members.'),
+        mandatePh: T('[نبذة مختصرة عن دور اللجنة]', '[A short line on the committee’s role]'),
+        members: T('[عدد الأعضاء]', '[Member count]'),
+        view: T('عرض اللجنة', 'View committee'),
+        relEy: T('03 — روابط الحوكمة', '03 — Governance links'),
+        relBoard: T('مجلس الإدارة', 'Board of Directors'), relBoardX: T('أعضاء المجلس والهيكل التنظيمي للاتحاد.', 'Board members and the Federation’s structure.'),
+        relPol: T('اللوائح والسياسات', 'Regulations & Policies'), relPolX: T('النظام الأساسي ولوائح عمل اللجان.', 'The statutes and committee regulations.'),
+        more: T('عرض الصفحة', 'View page')
+      })
+    });
+  }
+}
+
+</script>
+</body>
+</html>

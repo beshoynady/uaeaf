@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>مجلس الإدارة — سطح المكتب</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800;900&amp;display=swap">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#F4F4F4}
+.th-light{--bg:#F4F4F4;--sf:#FFFFFF;--sf2:#ECEEEC;--tx:#0B0B0B;--mu:#50565C;--bd:#D5D8D4;--grt:#006B32;--ink:#0B0B0B;--chip:#E7F3EC;--sh:0 18px 40px rgba(11,11,11,.10);--sh2:0 26px 54px rgba(11,11,11,.16)}
+.th-dark{--bg:#0B0B0B;--sf:#141414;--sf2:#1C1C1C;--tx:#F2F2F2;--mu:#A8ADB2;--bd:#2A2D30;--grt:#4CC27E;--ink:#FFFFFF;--chip:#0F2A1B;--sh:0 18px 40px rgba(0,0,0,.5);--sh2:0 26px 54px rgba(0,0,0,.6)}
+.root{background:var(--bg);color:var(--tx);font-family:Alexandria,Tahoma,sans-serif;transition:background .3s,color .3s}
+a{color:var(--grt)}a:hover{color:var(--tx)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.on-dark a:focus-visible,.on-dark button:focus-visible{outline-color:#FFFFFF}
+.tri{background:linear-gradient(90deg,#00843D 0 33%,var(--ink) 33% 66%,#C8102E 66%)}
+.tri-w{background:linear-gradient(90deg,#00843D 0 33%,#FFFFFF 33% 66%,#C8102E 66%)}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--tx)}
+.brand:hover{color:var(--tx)}
+.nav{list-style:none;margin:0;padding:0;display:flex;align-items:center;gap:22px}
+.nav-link{color:var(--tx);text-decoration:none;font-size:15px;font-weight:500;padding:10px 2px;display:inline-flex;align-items:center;gap:4px;border-bottom:2px solid transparent}
+.nav-link:hover{color:var(--grt)}
+.nav-on{color:var(--grt);border-bottom-color:#00843D;font-weight:700}
+.icon-btn{width:44px;height:44px;border:1px solid var(--bd);background:var(--sf);border-radius:12px;color:var(--tx);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:border-color .2s}
+.icon-btn:hover{border-color:#00843D}
+.lang-btn{height:44px;min-width:64px;padding:0 14px;border:1px solid var(--bd);background:var(--sf);border-radius:12px;color:var(--tx);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.lang-btn:hover{border-color:#00843D}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:14px;font-weight:700;letter-spacing:.3px;color:var(--grt)}
+.eyebrow::before{content:"";width:28px;height:3px;border-radius:2px;background:linear-gradient(90deg,#00843D 0 33%,var(--ink) 33% 66%,#C8102E 66%)}
+.on-dark .eyebrow{color:#7AD9A0}
+.on-dark .eyebrow::before{background:linear-gradient(90deg,#00843D 0 33%,#FFFFFF 33% 66%,#C8102E 66%)}
+.crumbs{list-style:none;margin:0;padding:0;display:flex;align-items:center;gap:10px;font-size:14px;color:#D0D3D6}
+.crumbs a{color:#D0D3D6;text-decoration:none}
+.crumbs a:hover{color:#FFFFFF;text-decoration:underline}
+.jump{display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 20px;border-radius:999px;border:1px solid rgba(255,255,255,.35);color:#FFFFFF;text-decoration:none;font-size:15px;font-weight:600;transition:background .2s,border-color .2s}
+.jump:hover{background:rgba(255,255,255,.1);border-color:#FFFFFF;color:#FFFFFF}
+.jump-pri{background:#00843D;border-color:#00843D}
+.jump-pri:hover{background:#006B32;border-color:#006B32}
+.stat{position:relative;display:flex;flex-direction:column;gap:6px;padding:20px 22px;border-radius:18px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(8px)}
+.stat::after{content:"";position:absolute;inset-inline:22px;bottom:0;height:3px;border-radius:3px 3px 0 0;background:linear-gradient(90deg,#00843D 0 33%,#FFFFFF 33% 66%,#C8102E 66%)}
+.h2{margin:0;font-size:48px;font-weight:800;line-height:1.2;letter-spacing:-.5px}
+.lead{margin:0;font-size:18px;line-height:1.9;color:var(--mu)}
+.node{position:relative;display:flex;align-items:center;gap:16px;padding:18px 22px;border-radius:18px;border:2px solid var(--bd);background:var(--sf);color:var(--tx);text-decoration:none;transition:border-color .25s,transform .25s,box-shadow .25s}
+.node:hover{border-color:#00843D;transform:translateY(-3px);box-shadow:var(--sh);color:var(--tx)}
+.node-top{border:2px solid transparent;background:linear-gradient(#0B0B0B,#0B0B0B) padding-box,linear-gradient(90deg,#00843D 0 30%,#FFFFFF 40% 60%,#C8102E 70%) border-box;color:#FFFFFF}
+.node-top:hover{color:#FFFFFF}
+.node-lbl{font-size:13px;font-weight:700;color:var(--grt)}
+.node-top .node-lbl{color:#7AD9A0}
+.node-name{font-size:18px;font-weight:700;line-height:1.4}
+.node-meta{font-size:14px;color:var(--mu)}
+.node-top .node-meta{color:#D0D3D6}
+.node-ic{width:48px;height:48px;flex-shrink:0;border-radius:14px;background:var(--chip);color:var(--grt);display:inline-flex;align-items:center;justify-content:center}
+.node-top .node-ic{background:rgba(255,255,255,.1);color:#FFFFFF}
+.conn{width:2px;background:#00843D;align-self:center;border-radius:2px}
+.brk-top{height:30px;border:2px solid #00843D;border-bottom:none;border-radius:16px 16px 0 0;align-self:center}
+.brk-bot{height:30px;border:2px solid #00843D;border-top:none;border-radius:0 0 16px 16px;align-self:center}
+.lvl-tag{align-self:center;display:inline-flex;align-items:center;gap:8px;height:42px;padding:0 18px;border-radius:999px;background:var(--chip);color:var(--grt);font-size:14px;font-weight:700}
+.bus{height:2px;border-radius:2px;background:#00843D;align-self:center;width:calc((500% + 80px) / 6)}
+.mgrid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:16px}
+.mcol{display:flex;flex-direction:column}
+.mnode{flex-grow:1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:18px 12px 20px;border-radius:18px;border:2px solid var(--bd);background:var(--sf);color:var(--tx);text-decoration:none;transition:border-color .25s,transform .25s,box-shadow .25s}
+.mnode:hover{border-color:#00843D;transform:translateY(-3px);box-shadow:var(--sh);color:var(--tx)}
+.mnode-name{font-size:15px;font-weight:700;line-height:1.5}
+.mnode-role{font-size:12px;line-height:1.7;color:var(--mu)}
+.tree{list-style:none;margin:0;padding:0 0 0 0;display:flex;flex-direction:column;gap:10px;margin-inline-start:24px;border-inline-start:2px solid #00843D;padding-block:4px}
+.tree li{position:relative;padding-inline-start:18px}
+.tree li::before{content:"";position:absolute;inset-inline-start:0;top:50%;width:16px;height:2px;background:#00843D}
+.cchip{display:flex;align-items:center;gap:10px;min-height:56px;padding:10px 14px;border-radius:14px;border:1px solid var(--bd);background:var(--sf2);color:var(--tx);text-decoration:none;font-size:14px;font-weight:600;line-height:1.5;transition:border-color .2s,background .2s}
+.cchip:hover{border-color:#00843D;background:var(--chip);color:var(--tx)}
+.cnum{font-size:12px;font-weight:800;color:var(--grt);min-width:22px}
+.cgrp-t{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:800;color:var(--tx2)}
+.cgrp-t span{font-size:12px;font-weight:600;color:var(--mu)}
+.csub{display:flex;align-items:center;gap:8px;min-height:44px;padding:6px 12px;border-radius:12px;border:1px dashed var(--bd);color:var(--tx2);text-decoration:none;font-size:13px;font-weight:600;line-height:1.5}
+.csub:hover{border-color:#00843D;color:var(--tx)}
+.csub svg{flex-shrink:0;color:var(--mu)}
+[dir=ltr] .csub svg{transform:scaleX(-1)}
+.mini{width:34px;height:34px;border-radius:999px;border:2px solid var(--sf);background:var(--sf2);display:inline-flex;align-items:center;justify-content:center;color:var(--mu);margin-inline-start:-8px}
+.ph{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;background:radial-gradient(120% 90% at 50% 0%,var(--sf2),var(--bd));color:var(--mu)}
+.th-dark .ph{background:radial-gradient(120% 90% at 50% 0%,#23262A,#141414)}
+.ph-tag{position:absolute;bottom:14px;inset-inline-start:14px;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:rgba(11,11,11,.72);color:#FFFFFF;font-size:12px;font-weight:600}
+.frame{border:3px solid transparent;background:linear-gradient(var(--sf),var(--sf)) padding-box,linear-gradient(135deg,#00843D 0 35%,var(--ink) 35% 65%,#C8102E 65%) border-box}
+.badge{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:6px 14px;border-radius:999px;background:var(--chip);color:var(--grt);font-size:13px;font-weight:700;text-decoration:none;line-height:1.5}
+.badge:hover{background:#00843D;color:#FFFFFF}
+.chip-term{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--bd);font-size:13px;font-weight:600;color:var(--mu)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:52px;padding:0 26px;border-radius:12px;font-family:inherit;font-size:16px;font-weight:700;text-decoration:none;transition:background .2s,border-color .2s}
+.btn-pri{background:#00843D;color:#FFFFFF}
+.btn-pri:hover{background:#006B32;color:#FFFFFF}
+.btn-out{border:2px solid var(--tx);color:var(--tx)}
+.btn-out:hover{background:var(--tx);color:var(--bg)}
+.pcard{position:relative;display:flex;flex-direction:column;border-radius:22px;overflow:hidden;border:2px solid var(--bd);background:var(--sf);transition:transform .35s cubic-bezier(.2,.7,.2,1),box-shadow .35s,border-color .35s}
+.pcard:hover{transform:translateY(-6px);box-shadow:var(--sh2);border-color:transparent;background:linear-gradient(var(--sf),var(--sf)) padding-box,conic-gradient(from var(--a),#00843D,var(--ink) 30%,#C8102E 50%,var(--ink) 70%,#00843D) border-box}
+.lcard{display:flex;gap:28px;align-items:stretch;padding:24px;border-radius:24px;border:2px solid var(--bd);background:var(--sf);transition:box-shadow .3s,border-color .3s}
+.lcard:hover{border-color:#00843D;box-shadow:var(--sh)}
+.gov{display:flex;flex-direction:column;gap:14px;min-height:220px;padding:28px;border-radius:22px;border:2px solid var(--bd);background:var(--sf);color:var(--tx);text-decoration:none;transition:transform .3s,border-color .3s,box-shadow .3s}
+.gov:hover{transform:translateY(-4px);border-color:#00843D;box-shadow:var(--sh);color:var(--tx)}
+.d0{--i:0}.d1{--i:1}.d2{--i:2}.d3{--i:3}.d4{--i:4}.d5{--i:5}
+.gic-k{background:#0B0B0B}.th-dark .gic-k{background:#2A2D30}.gic-g{background:#00843D}.gic-r{background:#C8102E}
+.gov-ic{width:56px;height:56px;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;color:#FFFFFF}
+.more{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;color:var(--grt);margin-top:auto}
+.foot-link{color:#D0D3D6;text-decoration:none;font-size:14px}
+.foot-link:hover{color:#FFFFFF;text-decoration:underline}
+.flip{transform:scaleX(-1)}
+[dir=rtl] .fl{transform:scaleX(-1)}
+.nm-link{color:var(--tx);text-decoration:none}.nm-link:hover{color:var(--grt);text-decoration:underline}
+@property --a{syntax:'<angle>';initial-value:0deg;inherits:false}
+@keyframes rot{to{--a:360deg}}
+@keyframes rise{from{opacity:0;transform:translateY(36px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
+@keyframes grow{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes growx{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes unmask{from{clip-path:inset(100% 0 0 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes zoomout{from{transform:scale(1.18)}to{transform:scale(1)}}
+@keyframes drift{0%,100%{transform:translate(0,0) rotate(0)}50%{transform:translate(-18px,14px) rotate(-2deg)}}
+@keyframes paint{from{color:var(--bd)}to{color:var(--tx)}}
+@media (prefers-reduced-motion:no-preference){
+.pcard:hover{animation:rot 3s linear infinite}
+.hero-in{animation:rise .9s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--i,0) * 130ms + 150ms)}
+.drift{animation:drift 14s ease-in-out infinite}
+@supports (animation-timeline:view()){
+.sr{animation:rise linear both;animation-timeline:view();animation-range:entry calc(var(--i,0) * 5%) cover calc(26% + var(--i,0) * 5%)}
+.sr-pop{animation:pop linear both;animation-timeline:view();animation-range:entry calc(var(--i,0) * 6%) cover calc(30% + var(--i,0) * 6%)}
+.sr-line{transform-origin:top;animation:grow linear both;animation-timeline:view();animation-range:entry 30% cover 50%}
+.sr-linex{animation:growx linear both;animation-timeline:view();animation-range:entry 30% cover 50%}
+.sr-mask{animation:unmask linear both;animation-timeline:view();animation-range:entry 0% cover 40%}
+.sr-mask .ph-in{animation:zoomout linear both;animation-timeline:view();animation-range:entry 0% cover 60%}
+.sr-paint{animation:paint linear both;animation-timeline:view();animation-range:entry 20% cover 55%}
+.hero-par{animation:zoomout linear both;animation-timeline:scroll();animation-range:0 700px;animation-direction:reverse}
+}
+}
+
+</style>
+</helmet>
+<div class="{{rootClass}}" dir="{{dir}}" lang="{{lang}}" style="width: 1440px; height: 5280px; display: flex; flex-direction: column; overflow: hidden">
+
+<div class="tri" style="height: 4px; flex-shrink: 0"></div>
+
+<header style="height: 84px; flex-shrink: 0; background: var(--sf); border-bottom: 1px solid var(--bd); display: flex; align-items: center; justify-content: space-between; padding: 0 64px">
+<div style="display: flex; align-items: center; gap: 40px">
+<a class="brand" href="#" aria-label="{{t.homeAria}}">
+<svg width="52" height="44" viewBox="0 0 240 200" aria-hidden="true"><path d="M20 170 L75.05 105.05 A7 7 0 0 1 84.95 114.95 Z" fill="#C8102E"></path><path d="M40 190 L142.2 72.2 A11 11 0 0 1 157.8 87.8 Z" fill="#00843D"></path><path d="M95 190 L182.9 87.9 A10 10 0 0 1 197.1 102.1 Z" style="fill: var(--ink)"></path><path d="M150 190 L200.05 130.05 A7 7 0 0 1 209.95 139.95 Z" fill="#C8102E"></path></svg>
+<span style="font-size: 26px; font-weight: 800; letter-spacing: -0.5px">UAEAF</span>
+</a>
+<nav aria-label="{{t.navAria}}">
+<ul class="nav">
+<sc-for list="{{nav}}" as="n" hint-placeholder-count="9"><li><a class="{{n.cls}}" href="#" aria-current="{{n.current}}">{{n.label}}</a></li></sc-for>
+</ul>
+</nav>
+</div>
+<div style="display: flex; align-items: center; gap: 10px">
+<button class="icon-btn" aria-label="{{t.search}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg></button>
+<button class="icon-btn" aria-label="{{t.themeAria}}" onClick="{{toggleTheme}}">
+<sc-if value="{{isLight}}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg></sc-if>
+<sc-if value="{{isDark}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg></sc-if>
+</button>
+<button class="lang-btn" aria-label="{{t.langAria}}" onClick="{{toggleLang}}">{{t.langLabel}}</button>
+</div>
+</header>
+
+<section class="on-dark" aria-labelledby="board-title" style="position: relative; flex-shrink: 0; height: 660px; background: #0B0B0B; color: #FFFFFF; overflow: hidden; display: flex; align-items: center; padding: 0 64px">
+<div aria-hidden="true" style="position: absolute; inset: 0; background: repeating-linear-gradient(115deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 120px)"></div>
+<div aria-hidden="true" class="hero-par" style="position: absolute; inset-inline-end: -120px; top: -40px; width: 820px; height: 740px; transform-origin: center">
+<svg class="drift" width="820" height="700" viewBox="0 0 240 200" aria-hidden="true" style="opacity: 0.92"><path d="M20 170 L75.05 105.05 A7 7 0 0 1 84.95 114.95 Z" fill="#C8102E"></path><path d="M40 190 L142.2 72.2 A11 11 0 0 1 157.8 87.8 Z" fill="#00843D"></path><path d="M95 190 L182.9 87.9 A10 10 0 0 1 197.1 102.1 Z" fill="#FFFFFF" fill-opacity="0.9"></path><path d="M150 190 L200.05 130.05 A7 7 0 0 1 209.95 139.95 Z" fill="#C8102E"></path></svg>
+</div>
+<div aria-hidden="true" style="position: absolute; inset-inline-end: 0; top: 0; width: 900px; height: 100%; background: linear-gradient(90deg, rgba(11,11,11,0) 0%, rgba(11,11,11,0.55) 100%)"></div>
+
+<div style="position: relative; width: 760px; display: flex; flex-direction: column; gap: 24px">
+<nav aria-label="{{t.crumbsAria}}" class="d0 hero-in">
+<ol class="crumbs"><li><a href="#">{{t.home}}</a></li><li aria-hidden="true">/</li><li><a href="#">{{t.about}}</a></li><li aria-hidden="true">/</li><li aria-current="page" style="color: #FFFFFF; font-weight: 600">{{t.title}}</li></ol>
+</nav>
+<span class="d1 eyebrow hero-in">{{t.eyebrow}}</span>
+<h1 id="board-title" class="d2 hero-in" style="margin: 0; font-size: 96px; font-weight: 900; line-height: 1.05; letter-spacing: -1.5px">{{t.title}}</h1>
+<p class="d3 hero-in" style="margin: 0; max-width: 640px; font-size: 20px; line-height: 1.9; color: #D0D3D6">{{t.sub}}</p>
+<div class="d4 hero-in" style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px">
+<a class="jump jump-pri" href="#structure">{{t.jStructure}}</a>
+<a class="jump" href="#chairman">{{t.jChair}}</a>
+<a class="jump" href="#members">{{t.jMembers}}</a>
+</div>
+</div>
+
+<dl class="d5 hero-in" style="position: absolute; inset-inline-end: 64px; bottom: 64px; margin: 0; width: 460px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px">
+<div class="stat"><dt style="font-size: 14px; color: #D0D3D6">{{t.sMembers}}</dt><dd style="margin: 0; font-size: 44px; font-weight: 800; line-height: 1">9</dd></div>
+<div class="stat"><dt style="font-size: 14px; color: #D0D3D6">{{t.sCommittees}}</dt><dd style="margin: 0; font-size: 44px; font-weight: 800; line-height: 1">{{comCount}}</dd></div>
+<div class="stat"><dt style="font-size: 14px; color: #D0D3D6">{{t.sClubs}}</dt><dd style="margin: 0; font-size: 44px; font-weight: 800; line-height: 1">25</dd></div>
+<div class="stat"><dt style="font-size: 14px; color: #D0D3D6">{{t.sTerm}}</dt><dd style="margin: 0; font-size: 28px; font-weight: 800; line-height: 1.6">{{t.term}}</dd></div>
+</dl>
+<div class="tri-w" aria-hidden="true" style="position: absolute; inset-inline: 0; bottom: 0; height: 4px"></div>
+</section>
+
+<section id="structure" aria-labelledby="st-title" style="flex-shrink: 0; padding: 112px 64px 120px; display: flex; flex-direction: column; gap: 48px">
+<div class="sr" style="display: flex; justify-content: space-between; align-items: flex-end; gap: 48px">
+<div style="display: flex; flex-direction: column; gap: 16px; max-width: 640px">
+<span class="eyebrow">{{t.st1}}</span>
+<h2 id="st-title" class="h2">{{t.stTitle}}</h2>
+</div>
+<p class="lead" style="max-width: 560px">{{t.stLead}}</p>
+</div>
+
+<div class="d1 sr" style="border-radius: 32px; background: var(--sf); border: 1px solid var(--bd); padding: 56px 72px 64px; display: flex; flex-direction: column">
+<a class="node sr-pop" href="#" style="width: 420px; align-self: center">
+<span class="node-ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 22h18M6 18v-7M10 18v-7M14 18v-7M18 18v-7M12 2l8 5H4z"></path></svg></span>
+<span style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1"><span class="node-lbl">01</span><span class="node-name">{{t.ga}}</span><span class="node-meta">{{t.gaMeta}}</span></span>
+<svg class="fl" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+</a>
+<div class="conn sr-line" style="height: 44px"></div>
+<a class="d1 node node-top sr-pop" href="#chairman" style="width: 480px; align-self: center; padding: 20px 24px">
+<span class="ph" style="width: 64px; height: 64px; border-radius: 999px; flex-shrink: 0; background: #23262A; color: #A8ADB2"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"></path></svg></span>
+<span style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1"><span class="node-lbl">02 · {{t.chairLbl}}</span><span class="node-name" style="font-size: 20px">{{chairman.name}}</span></span>
+<svg class="fl" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+</a>
+<div class="conn sr-line" style="height: 30px"></div>
+<div class="brk-top sr-linex" style="width: 50%"></div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px">
+<sc-for list="{{leaders}}" as="l" hint-placeholder-count="2">
+<a class="d2 node sr-pop" href="Profile.dc.html" style="align-self: center; width: 100%">
+<span class="ph" style="width: 56px; height: 56px; border-radius: 999px; flex-shrink: 0"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"></path></svg></span>
+<span style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1"><span class="node-lbl">03 · {{l.role}}</span><span class="node-name">{{l.name}}</span><span class="node-meta">{{l.chair}}</span></span>
+</a>
+</sc-for>
+</div>
+<div class="brk-bot sr-linex" style="width: 50%"></div>
+<div class="conn sr-line" style="height: 24px"></div>
+<div class="d3 lvl-tag sr-pop"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"></path></svg>04 · {{t.boardLbl}} · {{t.boardMeta}}</div>
+<div class="conn sr-line" style="height: 24px"></div>
+<div class="bus sr-linex"></div>
+<ul class="mgrid">
+<sc-for list="{{minis}}" as="m" hint-placeholder-count="6">
+<li class="mcol">
+<div class="conn sr-line" style="height: 26px"></div>
+<a class="mnode sr-pop {{m.seq}}" href="Profile.dc.html">
+<span class="ph" style="width: 56px; height: 56px; border-radius: 999px; flex-shrink: 0"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"></path></svg></span>
+<span class="mnode-name">{{m.name}}</span>
+<span class="mnode-role">{{m.chair}}</span>
+</a>
+<div class="conn sr-line" style="height: 26px"></div>
+</li>
+</sc-for>
+</ul>
+<div class="bus sr-linex"></div>
+<div class="conn sr-line" style="height: 36px"></div>
+<div class="d4 sr-pop" style="border-radius: 22px; border: 2px dashed var(--bd); padding: 24px; display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<span style="display: flex; align-items: center; gap: 12px"><span class="node-ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2 2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path></svg></span><span style="display: flex; flex-direction: column"><span class="node-lbl">05</span><span class="node-name">{{t.comLbl}}</span></span></span>
+<a class="more" href="Committees.dc.html" style="margin-top: 0">{{t.comMeta}} <svg class="fl" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
+</div>
+<sc-for list="{{comGroups}}" as="cg" hint-placeholder-count="2">
+<div style="display: flex; flex-direction: column; gap: 12px">
+<h3 class="cgrp-t" style="margin: 0">{{cg.title}}<span>{{cg.hint}}</span></h3>
+<ul style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; align-items: start">
+<sc-for list="{{cg.items}}" as="c" hint-placeholder-count="4"><li class="sr-pop {{c.dcls}}" style="display: flex; flex-direction: column; gap: 8px"><a class="cchip" href="Committee.dc.html"><span class="cnum">{{c.num}}</span>{{c.name}}</a>
+<sc-if value="{{c.hasKids}}" hint-placeholder-val="{{ false }}"><ul style="list-style: none; margin: 0; padding: 0; padding-inline-start: 18px; display: flex; flex-direction: column; gap: 6px" aria-label="{{t.subsOf}} {{c.name}}"><sc-for list="{{c.kids}}" as="k" hint-placeholder-count="2"><li><a class="csub" href="Committee.dc.html"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 3v9a4 4 0 0 1-4 4H5"></path></svg>{{k.name}}</a></li></sc-for></ul></sc-if>
+</li></sc-for>
+</ul>
+</div>
+</sc-for>
+</div>
+</div>
+</section>
+
+<section id="chairman" aria-labelledby="ch-title" style="flex-shrink: 0; background: var(--sf); border-block: 1px solid var(--bd); padding: 120px 64px; display: grid; grid-template-columns: 520px minmax(0, 1fr); gap: 88px; align-items: center">
+<div class="sr-mask frame" style="height: 620px; border-radius: 32px; overflow: hidden">
+<div class="ph" style="width: 100%; height: 100%; border-radius: 29px">
+<svg class="ph-in" width="200" height="200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"></path></svg>
+<span class="ph-tag">{{t.photo}}</span>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 24px">
+<span class="eyebrow sr">{{t.st2}}</span>
+<h2 id="ch-title" class="d1 h2 sr" style="font-size: 56px">{{chairman.name}}</h2>
+<div class="d2 sr" style="display: flex; flex-wrap: wrap; gap: 10px"><span class="badge">{{chairman.role}}</span><span class="chip-term">{{t.termChip}}</span></div>
+<figure class="d3 sr" style="margin: 16px 0 0; position: relative; padding-inline-start: 36px">
+<span aria-hidden="true" style="position: absolute; inset-inline-start: -8px; top: -34px; font-size: 120px; line-height: 1; font-weight: 900; color: #00843D">“</span>
+<blockquote class="sr-paint" style="margin: 0; font-size: 26px; line-height: 1.9; font-weight: 600">{{t.quote}}</blockquote>
+</figure>
+<div class="d4 sr" style="display: flex; gap: 12px; margin-top: 8px"><a class="btn btn-out" href="Profile.dc.html">{{t.profile}}</a><a class="btn btn-pri" href="#">{{t.readMsg}} <svg class="fl" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a></div>
+</div>
+</section>
+
+<section id="leadership" aria-labelledby="ld-title" style="flex-shrink: 0; padding: 112px 64px; display: flex; flex-direction: column; gap: 44px">
+<div class="sr" style="display: flex; flex-direction: column; gap: 16px"><span class="eyebrow">{{t.st3}}</span><h2 id="ld-title" class="h2">{{t.ldTitle}}</h2></div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px">
+<sc-for list="{{leaders}}" as="l" hint-placeholder-count="2">
+<article class="d1 lcard sr">
+<div class="sr-mask" style="width: 200px; height: 250px; flex-shrink: 0; border-radius: 18px; overflow: hidden"><div class="ph" style="width: 100%; height: 100%"><svg class="ph-in" width="88" height="88" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"></path></svg><span class="ph-tag" style="font-size: 11px">{{t.photo}}</span></div></div>
+<div style="display: flex; flex-direction: column; gap: 12px; justify-content: center">
+<span class="node-lbl">{{l.role}}</span>
+<h3 style="margin: 0; font-size: 30px; font-weight: 800; line-height: 1.35"><a class="nm-link" href="Profile.dc.html">{{l.name}}</a></h3>
+<a class="badge" href="#" style="align-self: flex-start"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2 2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>{{l.chair}}</a>
+</div>
+</article>
+</sc-for>
+</div>
+</section>
+
+<section id="members" aria-labelledby="mb-title" style="flex-shrink: 0; padding: 8px 64px 120px; display: flex; flex-direction: column; gap: 44px">
+<div class="sr" style="display: flex; justify-content: space-between; align-items: flex-end; gap: 48px">
+<div style="display: flex; flex-direction: column; gap: 16px"><span class="eyebrow">{{t.st4}}</span><h2 id="mb-title" class="h2">{{t.mbTitle}}</h2></div>
+<p class="lead" style="max-width: 520px">{{t.mbLead}}</p>
+</div>
+<ul style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px">
+<sc-for list="{{members}}" as="m" hint-placeholder-count="6">
+<li class="sr {{m.dcls}}">
+<article class="pcard" style="height: 100%">
+<div class="sr-mask" style="height: 330px; overflow: hidden"><div class="ph" style="width: 100%; height: 100%"><svg class="ph-in" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.9" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"></path></svg><span class="ph-tag">{{t.photo}}</span></div></div>
+<div style="padding: 24px 26px 26px; display: flex; flex-direction: column; gap: 10px; flex-grow: 1">
+<span class="node-lbl">{{m.role}}</span>
+<h3 style="margin: 0; font-size: 24px; font-weight: 800; line-height: 1.4"><a class="nm-link" href="Profile.dc.html">{{m.name}}</a></h3>
+<a class="badge" href="#" style="align-self: flex-start; margin-top: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 2 2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>{{m.chair}}</a>
+<a class="more" href="Profile.dc.html" style="margin-top: 10px">{{t.profile}} <svg class="fl" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></a>
+</div>
+</article>
+</li>
+</sc-for>
+</ul>
+</section>
+
+<section aria-labelledby="gv-title" style="flex-shrink: 0; background: var(--sf); border-top: 1px solid var(--bd); padding: 104px 64px 112px; display: flex; flex-direction: column; gap: 40px">
+<div class="sr" style="display: flex; flex-direction: column; gap: 16px"><span class="eyebrow">{{t.st5}}</span><h2 id="gv-title" class="h2" style="font-size: 40px">{{t.gvTitle}}</h2></div>
+<ul style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px">
+<sc-for list="{{gov}}" as="g" hint-placeholder-count="4">
+<li class="sr {{g.dcls}}"><a class="gov" href="{{g.href}}" style="height: 100%">
+<span class="gov-ic {{g.bg}}"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6M16 13H8M16 17H8"></path></svg></span>
+<span style="font-size: 22px; font-weight: 800">{{g.title}}</span>
+<span style="font-size: 15px; line-height: 1.8; color: var(--mu)">{{g.desc}}</span>
+<span class="more">{{t.more}} <svg class="fl" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span>
+</a></li>
+</sc-for>
+</ul>
+</section>
+
+<footer class="on-dark" style="flex-grow: 1; background: #0B0B0B; color: #FFFFFF; padding: 72px 64px 40px; display: flex; flex-direction: column; gap: 48px">
+<div style="display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 64px">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; align-items: center; gap: 10px"><svg width="44" height="36" viewBox="0 0 240 200" aria-hidden="true"><path d="M20 170 L75.05 105.05 A7 7 0 0 1 84.95 114.95 Z" fill="#C8102E"></path><path d="M40 190 L142.2 72.2 A11 11 0 0 1 157.8 87.8 Z" fill="#00843D"></path><path d="M95 190 L182.9 87.9 A10 10 0 0 1 197.1 102.1 Z" fill="#FFFFFF"></path><path d="M150 190 L200.05 130.05 A7 7 0 0 1 209.95 139.95 Z" fill="#C8102E"></path></svg><span style="font-size: 22px; font-weight: 800">UAEAF</span></div>
+<p style="margin: 0; font-size: 15px; line-height: 1.9; color: #D0D3D6; max-width: 440px">{{t.footDesc}}</p>
+</div>
+<nav aria-label="{{t.title}}"><ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px"><li><a class="foot-link" href="Main.dc.html">{{t.fBoard}}</a></li><li><a class="foot-link" href="Committees.dc.html">{{t.fCom}}</a></li><li><a class="foot-link" href="#">{{t.fClubs}}</a></li><li><a class="foot-link" href="#">{{t.fPol}}</a></li><li><a class="foot-link" href="#">{{t.fContact}}</a></li></ul></nav>
+<address style="font-style: normal; display: flex; flex-direction: column; gap: 12px; font-size: 14px; line-height: 1.8; color: #D0D3D6"><span>{{t.addr}}</span><a class="foot-link" href="mailto:info@uaeaf.ae">info@uaeaf.ae</a></address>
+</div>
+<div style="border-top: 1px solid #2A2D30; padding-top: 24px; font-size: 13px; color: #A8ADB2">{{t.rights}}</div>
+</footer>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme": {"editor": "enum", "options": ["light", "dark"], "default": "light"}, "lang": {"editor": "enum", "options": ["ar", "en"], "default": "ar"}, "$preview": {"width": 1440, "height": 5280}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const theme = st.theme || this.props.theme || 'light';
+    const lang = st.lang || this.props.lang || 'ar';
+    const ar = lang === 'ar';
+    const T = (a, e) => (ar ? a : e);
+
+    // Official list sent by the federation (04 - Members). Committee chairs come from the committees design and still need confirmation.
+    const people = [
+      { na: 'د. محمد عبدالله المر', ne: 'Dr. Mohammed Abdulla Al Murr', ra: 'رئيس مجلس الإدارة', re: 'Chairman' },
+      { na: 'محمد عبدالناصر الخياط', ne: 'Mohammed Abdulnasser Al Khayat', ra: 'نائب رئيس مجلس الإدارة', re: 'Vice Chairman', ca: 'لجنة الاستثمار', ce: 'Investment Committee' },
+      { na: 'فيصل أحمد الخميري', ne: 'Faisal Ahmed Al Khumairi', ra: 'الأمين العام', re: 'General Secretary', ca: 'لجنة الاستراتيجية والتميز المؤسسي', ce: 'Strategy & Excellence Committee' },
+      { na: 'فهد عبدالله بن جمعة', ne: 'Fahad Abdulla Bin Jumaa', ra: 'عضو مجلس الإدارة', re: 'Board Member', ca: 'اللجنة الاستشارية', ce: 'Advisory Committee' },
+      { na: 'ناصر محمد بن عاشور', ne: 'Nasser Mohammed Bin Ashour', ra: 'عضو مجلس الإدارة', re: 'Board Member', ca: 'اللجنة الفنية', ce: 'Technical Committee' },
+      { na: 'راشد ناصر آل علي', ne: 'Rashid Nasser Al Ali', ra: 'عضو مجلس الإدارة', re: 'Board Member', ca: 'لجنة المنتخبات والمواهب', ce: 'National Teams & Talent Committee' },
+      { na: 'جميلة عبدالله عبدالرحمن', ne: 'Jameela Abdulla Abdulrahman', ra: 'عضو مجلس الإدارة', re: 'Board Member', ca: 'لجنة الحماية', ce: 'Protection Committee', fem: true },
+      { na: 'خولة محمد جاسم سجواني', ne: 'Khawla Mohammed Jassim Sajwani', ra: 'عضو مجلس الإدارة', re: 'Board Member', ca: 'لجنة المرأة', ce: "Women's Committee", fem: true },
+      { na: 'الوازنة فلاح', ne: 'Al Wazna Falah', ra: 'عضو مجلس الإدارة', re: 'Board Member', ca: 'لجنة العلاقات العامة والاتصال المؤسسي', ce: 'Public Relations & Corporate Communication', fem: true }
+    ];
+    const mk = (p, i) => ({
+      i,
+      name: T(p.na, p.ne),
+      role: T(p.fem && p.ra === 'عضو مجلس الإدارة' ? 'عضو مجلس الإدارة' : p.ra, p.re),
+      chair: p.ca ? T((p.fem ? 'رئيسة ' : 'رئيس ') + p.ca, 'Chair · ' + p.ce) : '',
+      hasChair: !!p.ca,
+      dcls: 'd' + (i % 3)
+    });
+    const all = people.map(mk);
+    // Sample rows: the chart is built at render time from what the admin enters in Committees (kind + parent).
+    const COMS = [
+      ['c1', 'لجنة الاستراتيجية والحوكمة', 'Strategy & Governance', 'standing', null],
+      ['c2', 'لجنة الاستثمار', 'Investment', 'standing', null],
+      ['c3', 'اللجنة الفنية', 'Technical', 'standing', null],
+      ['c4', 'اللجنة المالية', 'Finance', 'standing', null],
+      ['c5', 'لجنة الحكام', 'Referees', 'sub', 'c3'],
+      ['c6', 'لجنة المنتخبات والمواهب', 'National Teams & Talent', 'sub', 'c3'],
+      ['c7', 'لجنة الإعلام والتسويق', 'Media & Marketing', 'sub', null],
+      ['c8', 'اللجنة الاستشارية', 'Advisory', null, null],
+      ['c9', 'لجنة الحماية', 'Safeguarding', null, null],
+      ['c10', 'لجنة المرأة', "Women's", null, null],
+      ['c11', 'لجنة شؤون اللاعبين والأندية', 'Athletes & Clubs', null, null]
+    ];
+    const pad = (n) => (n < 10 ? '0' : '') + n;
+    const kidsOf = (id) => COMS.filter((c) => c[3] === 'sub' && c[4] === id).map((c) => ({ name: T(c[1], c[2]) }));
+    const item = (c, i) => { const kids = kidsOf(c[0]); return { name: T(c[1], c[2]), num: pad(i + 1), dcls: 'd' + (i % 4), kids, hasKids: kids.length > 0 }; };
+    const comGroups = [
+      [T('اللجان الدائمة', 'Standing committees'), T('وتحت كل لجنة لجانها الفرعية', 'with their sub-committees'), COMS.filter((c) => c[3] === 'standing')],
+      [T('لجان فرعية تتبع مجلس الإدارة', 'Sub-committees under the Board'), '', COMS.filter((c) => c[3] === 'sub' && !c[4])],
+      [T('لجان أخرى', 'Other committees'), T('[لسه ماتصنّفتش: عرضها يتحدد في الدفعة 7]', '[Not classified yet: display decided in batch 7]'), COMS.filter((c) => !c[3])]
+    ].filter((g) => g[2].length).map((g) => ({ title: g[0], hint: g[1], items: g[2].map(item) }));
+    const comCount = COMS.length;
+
+    const navItems = ar
+      ? ['الرئيسية', 'عن الاتحاد', 'الأعضاء', 'الأندية', 'البطولات', 'الفعاليات', 'الأخبار والمقالات', 'المركز الإعلامي', 'تواصل معنا']
+      : ['Home', 'About', 'Members', 'Clubs', 'Championships', 'Events', 'News', 'Media Center', 'Contact'];
+    const nav = navItems.map((label, i) => ({ label, cls: i === 1 ? 'nav-link nav-on' : 'nav-link', current: i === 1 ? 'page' : null }));
+
+    const gov = [
+      { title: T('كلمة الرئيس', "Chairman's Message"), desc: T('رؤية رئيس مجلس الإدارة لمستقبل «أم الألعاب» في الدولة.', 'The Chairman’s vision for the future of athletics in the UAE.'), bg: 'gic-k', href: '#', dcls: 'd0' },
+      { title: T('اللجان المتخصصة', 'Specialised Committees'), desc: T('لجان دائمة وفرعية تنفّذ استراتيجية الاتحاد في كل مجال.', 'Standing and sub-committees that deliver the Federation’s strategy in every field.'), bg: 'gic-g', href: 'Committees.dc.html', dcls: 'd1' },
+      { title: T('اللوائح والسياسات', 'Regulations & Policies'), desc: T('النظام الأساسي واللوائح المنظمة لعمل الاتحاد.', 'The statutes and regulations that govern the Federation.'), bg: 'gic-r', href: '#', dcls: 'd2' },
+      { title: T('الرؤية والرسالة', 'Vision & Mission'), desc: T('الغايات التي يعمل مجلس الإدارة على تحقيقها.', 'The goals the Board works to achieve.'), bg: 'gic-k', href: '#', dcls: 'd3' }
+    ];
+
+    return {
+      rootClass: 'root th-' + theme,
+      dir: ar ? 'rtl' : 'ltr',
+      lang,
+      isDark: theme === 'dark',
+      isLight: theme !== 'dark',
+      toggleTheme: () => this.setState({ theme: theme === 'dark' ? 'light' : 'dark' }),
+      toggleLang: () => this.setState({ lang: ar ? 'en' : 'ar' }),
+      nav,
+      chairman: all[0],
+      leaders: all.slice(1, 3),
+      members: all.slice(3),
+      minis: all.slice(3).map((m, k) => Object.assign({}, m, { seq: 'd' + k })),
+      comGroups, comCount: String(comCount),
+      gov,
+      t: {
+        homeAria: T('اتحاد الإمارات لألعاب القوى — الصفحة الرئيسية', 'UAE Athletics Federation — Home'),
+        navAria: T('القائمة الرئيسية', 'Main menu'),
+        search: T('بحث في الموقع', 'Search the site'),
+        themeAria: theme === 'dark' ? T('تفعيل الوضع الفاتح', 'Switch to light mode') : T('تفعيل الوضع الداكن', 'Switch to dark mode'),
+        langLabel: ar ? 'English' : 'العربية',
+        langShort: ar ? 'EN' : 'ع',
+        langAria: T('Switch to English', 'التبديل إلى العربية'),
+        menu: T('فتح القائمة', 'Open menu'),
+        crumbsAria: T('مسار التنقل', 'Breadcrumb'),
+        home: T('الرئيسية', 'Home'),
+        about: T('عن الاتحاد', 'About'),
+        title: T('مجلس الإدارة', 'Board of Directors'),
+        eyebrow: T('الحوكمة والقيادة', 'Governance & Leadership'),
+        sub: T('الهيئة العليا المسؤولة عن إدارة الاتحاد وتوجيه استراتيجية ألعاب القوى في دولة الإمارات العربية المتحدة.', 'The governing body that leads the Federation and steers the strategy of athletics in the United Arab Emirates.'),
+        jStructure: T('الهيكل التنظيمي', 'Organisational structure'),
+        jChair: T('رئيس المجلس', 'The Chairman'),
+        jMembers: T('أعضاء المجلس', 'Board members'),
+        sMembers: T('عضوًا في المجلس', 'Board members'),
+        sCommittees: T('لجان متخصصة', 'Committees'),
+        sClubs: T('ناديًا عضوًا', 'Member clubs'),
+        sTerm: T('الدورة الانتخابية', 'Electoral term'),
+        term: '2025 – 2028',
+        st1: T('01 — الهيكل التنظيمي', '01 — Organisational structure'),
+        stTitle: T('من الجمعية العمومية إلى اللجان', 'From the General Assembly to the committees'),
+        stLead: T('كيف تُدار ألعاب القوى في الدولة: الأندية الأعضاء تشكّل الجمعية العمومية، ومجلس الإدارة يقود الاتحاد، واللجان المتخصصة تنفّذ استراتيجيته. اضغط على أي مستوى للانتقال إليه.', 'How athletics is governed in the UAE: member clubs form the General Assembly, the Board leads the Federation and specialised committees deliver its strategy. Select any level to jump to it.'),
+        ga: T('الجمعية العمومية', 'General Assembly'),
+        gaMeta: T('25 ناديًا عضوًا — عرض الأندية', '25 member clubs — view clubs'),
+        chairLbl: T('رئيس مجلس الإدارة', 'Chairman of the Board'),
+        boardLbl: T('أعضاء مجلس الإدارة', 'Board members'),
+        boardMeta: T('6 أعضاء', '6 members'),
+        comLbl: T('اللجان المتخصصة', 'Specialised committees'),
+        comMeta: T(comCount + ' لجنة', comCount + ' committees'), subsOf: T('اللجان الفرعية التابعة لـ', 'Sub-committees of'),
+        st2: T('02 — رئيس مجلس الإدارة', '02 — Chairman of the Board'),
+        quote: T('يتبنّى اتحاد الإمارات لألعاب القوى منظومة متكاملة ترسخ تمكين جميع لاعبي ولاعبات منتخباتنا الوطنية المختلفة بأفضل الممارسات لاكتشاف مواهبهم وتطوير قدراتهم وصقل تجاربهم…', 'The UAE Athletics Federation adopts an integrated system that empowers all the athletes of our national teams with the best practices to discover their talents, develop their capabilities and refine their experience…'),
+        profile: T('الملف الشخصي', 'Full profile'),
+        readMsg: T('اقرأ كلمة الرئيس كاملة', "Read the Chairman's full message"),
+        termChip: T('الدورة الانتخابية 2025 – 2028', 'Term 2025 – 2028'),
+        st3: T('03 — قيادة المجلس', '03 — Board leadership'),
+        ldTitle: T('نائب الرئيس والأمين العام', 'Vice Chairman & General Secretary'),
+        st4: T('04 — أعضاء المجلس', '04 — Board members'),
+        mbTitle: T('أعضاء مجلس الإدارة', 'Members of the Board'),
+        mbLead: T('ستة أعضاء يشاركون في قيادة الاتحاد، ويرأس كلٌّ منهم إحدى لجانه المتخصصة.', 'Six members share in leading the Federation, each chairing one of its specialised committees.'),
+        st5: T('05 — الحوكمة', '05 — Governance'),
+        gvTitle: T('تعرّف أكثر على منظومة الحوكمة', 'Explore the governance framework'),
+        more: T('عرض الصفحة', 'View page'),
+        photo: T('صورة رسمية مطلوبة', 'Official photo pending'),
+        footDesc: T('الجهة الرسمية المشرفة على رياضة ألعاب القوى في دولة الإمارات العربية المتحدة، وعضو في الاتحاد الدولي لألعاب القوى والاتحاد الآسيوي.', 'The official governing body for athletics in the UAE, member of World Athletics and the Asian Athletics Association.'),
+        addr: T('١ شارع النهدة، النهدة الأولى، دبي، الإمارات العربية المتحدة', '1 Al Nahda St, Al Nahda 1, Dubai, United Arab Emirates'),
+        rights: T('© 2026 اتحاد الإمارات لألعاب القوى. جميع الحقوق محفوظة.', '© 2026 UAE Athletics Federation. All rights reserved.'),
+        fBoard: T('مجلس الإدارة', 'Board'), fCom: T('اللجان', 'Committees'), fClubs: T('الأندية', 'Clubs'), fPol: T('اللوائح والسياسات', 'Policies'), fContact: T('تواصل معنا', 'Contact')
+      }
+    };
+  }
+}
+
+</script>
+</body>
+</html>

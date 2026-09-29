@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
@@ -17,7 +17,7 @@ export type GuardianRelationshipType = (typeof GUARDIAN_RELATIONSHIP_TYPES)[numb
  *  this same week, Domain 6). */
 @Schema({ collection: 'athleteGuardianRelationships', timestamps: true })
 export class AthleteGuardianRelationship extends BaseSchema {
-  @Prop({ type: Types.ObjectId, ref: 'Athlete', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Athlete', required: true })
   athleteId: Types.ObjectId;
 
   @Prop({ type: LocalizedTextSchema, required: true })
@@ -29,7 +29,7 @@ export class AthleteGuardianRelationship extends BaseSchema {
   @Prop({ type: GuardianContactSchema, required: true })
   guardianContact: GuardianContact;
 
-  @Prop({ type: Types.ObjectId, ref: 'Document', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Document', default: null })
   consentDocId: Types.ObjectId | null;
 
   @Prop({ type: Date, required: true })

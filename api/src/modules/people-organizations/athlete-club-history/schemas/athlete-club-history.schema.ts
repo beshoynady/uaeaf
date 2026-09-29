@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 
@@ -17,10 +17,10 @@ export type AthleteClubHistoryDocument = HydratedDocument<AthleteClubHistory>;
  *  new one — see `create()`/`endCurrent()`. */
 @Schema({ collection: 'athleteClubHistory', timestamps: true })
 export class AthleteClubHistory extends BaseSchema {
-  @Prop({ type: Types.ObjectId, ref: 'Athlete', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Athlete', required: true })
   athleteId: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'Club', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Club', required: true })
   clubId: Types.ObjectId;
 
   @Prop({ type: Date, required: true })

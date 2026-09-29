@@ -1,0 +1,115 @@
+{
+  "About": {
+    "achievements": {
+      "previous": "الإنجاز السابق",
+      "next": "الإنجاز التالي",
+      "medal": {
+        "gold": "ذهبية",
+        "silver": "فضية",
+        "bronze": "برونزية",
+        "other": "إنجاز"
+      }
+    },
+    "timeline": {
+      "category": {
+        "association": "الجمعية",
+        "firstLeadership": "القيادة الأولى",
+        "firstParticipation": "أول مشاركة",
+        "federation": "الاتحاد",
+        "globalMembership": "عضوية دولية",
+        "continentalMembership": "عضوية قارية"
+      }
+    },
+    "ecosystem": {
+      "source": {
+        "clubs": "الأندية",
+        "athletes": "الرياضيون",
+        "officials": "الحكام",
+        "championships": "البطولات"
+      },
+      "unit": {
+        "clubs": "نادٍ عضو في المنظومة",
+        "athletes": "رياضي مسجَّل",
+        "officials": "حكم معتمد",
+        "championships": "بطولة ضمن الروزنامة"
+      }
+    }
+  },
+  "VisionMission": {
+    "vision": "الرؤية",
+    "mission": "الرسالة",
+    "goals": "الأهداف",
+    "values": "قيمنا",
+    "ctaTitle": "استراتيجيتنا ترسم الطريق إلى المستقبل",
+    "ctaText": "تعرّف على الأولويات والمحاور التي توجه مسيرة الاتحاد خلال المرحلة القادمة.",
+    "ctaPrimary": "استكشف الخطة الاستراتيجية",
+    "ctaSecondary": "عن الاتحاد"
+  },
+  "StrategicPlan": {
+    "phasesLabel": "مراحل الخطة الاستراتيجية",
+    "metricsLabel": "مؤشرات الأداء",
+    "executionLabel": "خطوات مسار التنفيذ",
+    "stepOf": "الخطوة {number} من {total}"
+  },
+  "Policies": {
+    "title": "اللوائح والسياسات",
+    "intro": "الوثائق التي تحكم عمل الاتحاد: لوائح المسابقات والتسجيل، والسياسات المعتمدة، والنماذج الرسمية. كل وثيقة منشورة هنا هي النسخة السارية.",
+    "breadcrumbLabel": "مسار التنقل",
+    "searchLabel": "ابحث في الوثائق",
+    "searchPlaceholder": "اسم اللائحة أو السياسة",
+    "clearSearch": "مسح البحث",
+    "allFilter": "الكل",
+    "countUnit": "وثيقة",
+    "showing": "عرض {shown} من {total} وثيقة",
+    "groups": {
+      "regulations": {
+        "title": "اللوائح",
+        "description": "القواعد المنظِّمة للمسابقات والتسجيل وعضوية الأندية."
+      },
+      "policies": {
+        "title": "السياسات",
+        "description": "السياسات المعتمدة من مجلس الإدارة والملزِمة لكل الأطراف."
+      },
+      "forms": {
+        "title": "النماذج",
+        "description": "النماذج الرسمية المطلوبة للتقديم والطلبات."
+      },
+      "guides": {
+        "title": "الأدلة",
+        "description": "الأدلة الإرشادية التفصيلية."
+      }
+    },
+    "emptySearchTitle": "لا توجد وثيقة تطابق «{query}»",
+    "emptyGroupTitle": "لا توجد وثائق منشورة في هذا القسم بعد",
+    "emptyDescription": "جرّب كلمة أخرى، أو اعرض كل الوثائق.",
+    "showAll": "عرض كل الوثائق",
+    "view": "عرض الوثيقة",
+    "download": "تنزيل {title}",
+    "dateLabel": "تاريخ النشر",
+    "sizeLabel": "حجم الملف",
+    "featuredBadge": "الأساسية",
+    "seedNotice": "هذه قائمة تمهيدية: الوثائق تُنشر تباعًا من نظام إدارة المحتوى، ولم تُرفع ملفاتها بعد.",
+    "governanceTitle": "الحوكمة والاستراتيجية",
+    "governanceDescription": "الإطار الذي تُبنى عليه هذه الوثائق: رؤية الاتحاد ورسالته، وخطته الاستراتيجية.",
+    "tiles": {
+      "vision": {
+        "title": "الرؤية والرسالة",
+        "description": "ما يسعى إليه الاتحاد والقيم التي يعمل بها."
+      },
+      "strategy": {
+        "title": "الخطة الاستراتيجية",
+        "description": "الأهداف ومحاور العمل للسنوات القادمة."
+      }
+    },
+    "ctaTitle": "لم تجد الوثيقة التي تبحث عنها؟",
+    "ctaDescription": "تواصل مع الاتحاد وسنوجّهك إلى الجهة المختصة.",
+    "ctaAction": "تواصل معنا",
+    "types": {
+      "Regulation": "لائحة",
+      "Policy": "سياسة",
+      "Form": "نموذج",
+      "Guide": "دليل",
+      "Decision": "قرار"
+    }
+  }
+}

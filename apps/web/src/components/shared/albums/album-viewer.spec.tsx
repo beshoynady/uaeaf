@@ -6,10 +6,12 @@ import { fileURLToPath } from "node:url";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import arMessages from "../../../../messages/ar.json";
-import enMessages from "../../../../messages/en.json";
+import { loadMessages } from "@/i18n/messages";
 import { REVEAL_CAP, STAGE_SIZES, revealStep } from "@/lib/albums/photo-window";
 import type { ViewerPhoto } from "@/lib/albums/photo-window";
+
+const arMessages = loadMessages("ar");
+const enMessages = loadMessages("en");
 
 import { ALBUM_VIEWER_PLAY_EVENT, AlbumViewer, DWELL_MS, requestAlbumSlideshow } from "./album-viewer";
 

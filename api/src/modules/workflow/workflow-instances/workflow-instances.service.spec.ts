@@ -426,6 +426,28 @@ describe('WorkflowInstancesService', () => {
       );
     });
 
+    it('refuses to approve a revision the actor themselves wrote', async () => {
+      const deps = makeDeps();
+      deps.repository.findById.mockResolvedValue(inProgressInstance() as never);
+      deps.stepsService.findById.mockResolvedValue({
+        _id: stepAId,
+        workflowDefinitionId,
+        sequenceOrder: 0,
+        assigneeIds: [assignedActorObjectId],
+        requiredApprovals: 1,
+      } as never);
+      // Being assigned to the step is not enough (rule 1): the same person
+      // also wrote the revision under review here.
+      deps.revisions.set(revisionId.toString(), {
+        ...revisionOf(revisionId, entityType, entityId),
+        createdBy: assignedActorObjectId,
+      });
+      const service = makeService(deps);
+
+      await expect(service.approve(instanceId, actorId)).rejects.toThrow(ForbiddenException);
+      expect(deps.actionHistoryService.record).not.toHaveBeenCalled();
+    });
+
     it('rejects approving an instance that is not InProgress', async () => {
       const deps = makeDeps();
       deps.repository.findById.mockResolvedValue({ ...inProgressInstance(), status: 'Rejected' } as never);

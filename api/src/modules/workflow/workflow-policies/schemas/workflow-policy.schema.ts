@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { WORKFLOW_ENTITY_TYPES } from '../../../../common/constants/workflow-entity-types.js';
@@ -30,7 +30,7 @@ export class WorkflowPolicy extends BaseSchema {
   @Prop({ type: Boolean, required: true, default: false })
   workflowRequired: boolean;
 
-  @Prop({ type: Types.ObjectId, ref: 'WorkflowDefinition', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'WorkflowDefinition', default: null })
   workflowDefinitionId: Types.ObjectId | null;
 
   @Prop({ type: Boolean, required: true, default: false })

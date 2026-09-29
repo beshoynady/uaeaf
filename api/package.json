@@ -31,6 +31,8 @@
     "seed:newsroom": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/seed-newsroom-demo.js",
     "seed:albums:dev": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/seed-albums-dev.js",
     "seed:albums:dev:clean": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/seed-albums-dev-clean.js",
+    "seed:directory:dev": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/seed-directory-dev.js",
+    "seed:directory:dev:clean": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/seed-directory-dev-clean.js",
     "backfill:created-at": "nest build && node --env-file-if-exists=.env dist/backfill-created-at.js",
     "backfill:article-topic": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/backfill-article-topic.js",
     "backfill:article-source": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/backfill-article-source.js",
@@ -41,6 +43,7 @@
     "sync:permissions": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/sync-permission-catalogue.js",
     "report:reserved-pair-holders": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/report-reserved-pair-holders.js",
     "reset:roles": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/reset-roles.js",
+    "convert:reference-ids": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/convert-reference-ids.js",
     "seed:role-templates": "tsc -p tsconfig.seed.json && node --env-file-if-exists=.env dist-seed/seed-role-templates.js"
   },
   "dependencies": {

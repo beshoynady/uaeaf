@@ -53,7 +53,7 @@ const bodyFontClass: Record<AppLocale, string> = {
 // `high-contrast.css` already defines the whole theme under
 // `[data-theme="high-contrast"]` — this script's job is only to write that
 // attribute when the device's own contrast setting is on, and to re-apply it
-// live if that setting changes (ADR-0121 D9). No token is redeclared here.
+// live if that setting changes (ADR-0122 D15). No token is redeclared here.
 const themeBootstrapScript = `
 (function () {
   try {
@@ -142,7 +142,7 @@ const RootLayout = async ({ children, params }: LayoutProps) => {
       >
         <NextIntlClientProvider>
           <MotionProvider>
-            <SiteHeader />
+            <SiteHeader locale={locale} />
             {/* Target for the header's skip link (WCAG 2.2 SC 2.4.1). `flex-1` keeps
                 the footer at the bottom on short pages. */}
             <main id="main-content" className="flex-1">

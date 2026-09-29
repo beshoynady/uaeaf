@@ -7,6 +7,7 @@ import { RolesService } from './roles.service.js';
 import { RolesRepository } from './roles.repository.js';
 import { RoleAssignmentsRepository } from './role-assignments.repository.js';
 import { PermissionsService } from '../permissions/permissions.service.js';
+import { AuditLogsService } from '../../workflow/audit-logs/audit-logs.service.js';
 import { CreateRoleDto } from './dto/create-role.dto.js';
 import { RenameRoleDto } from './dto/rename-role.dto.js';
 import { UpdateRolePermissionsDto } from './dto/update-role-permissions.dto.js';
@@ -82,7 +83,8 @@ describe('Role.templateKey (ADR-0113)', () => {
         providers: [
           RolesService,
           { provide: RolesRepository, useValue: repository },
-          { provide: RoleAssignmentsRepository, useValue: { detachRole: jest.fn() } },
+          { provide: RoleAssignmentsRepository, useValue: { detachRole: jest.fn(async () => []) } },
+          { provide: AuditLogsService, useValue: { write: jest.fn() } },
           { provide: PermissionsService, useValue: { findById: jest.fn(), findByIds: jest.fn() } },
         ],
       }).compile();

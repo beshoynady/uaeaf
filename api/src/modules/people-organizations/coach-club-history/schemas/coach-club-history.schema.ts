@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 
@@ -12,10 +12,10 @@ export type CoachClubHistoryDocument = HydratedDocument<CoachClubHistory>;
  *  row has an explicit endDate" rule applies here. */
 @Schema({ collection: 'coachClubHistory', timestamps: true })
 export class CoachClubHistory extends BaseSchema {
-  @Prop({ type: Types.ObjectId, ref: 'Coach', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Coach', required: true })
   coachId: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'Club', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Club', required: true })
   clubId: Types.ObjectId;
 
   @Prop({ type: Date, required: true })

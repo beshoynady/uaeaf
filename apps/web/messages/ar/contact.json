@@ -1,0 +1,53 @@
+{
+  "Contact": {
+    "cards": {
+      "phone": "الهاتف",
+      "email": "البريد الإلكتروني",
+      "location": "الموقع",
+      "officeHours": "ساعات العمل"
+    },
+    "messageTypes": {
+      "Suggestion": "اقتراح",
+      "Complaint": "شكوى",
+      "Inquiry": "استفسار",
+      "General": "عام"
+    },
+    "form": {
+      "title": "أرسل لنا رسالة",
+      "submit": "إرسال الرسالة",
+      "sending": "جارٍ الإرسال…",
+      "sent": "وصلتنا رسالتك. شكرًا لتواصلك معنا.",
+      "failed": "تعذّر إرسال الرسالة. حاول مرة أخرى.",
+      "requiredHint": "الحقول المعلَّمة بـ * مطلوبة.",
+      "labels": {
+        "senderName": "الاسم",
+        "senderPhone": "رقم الهاتف",
+        "senderEmail": "البريد الإلكتروني",
+        "messageType": "نوع الرسالة",
+        "subject": "موضوع الرسالة",
+        "messageBody": "الرسالة"
+      },
+      "placeholders": {
+        "senderName": "مثال: محمد أحمد",
+        "senderPhone": "مثال: ‎+971 50 123 4567",
+        "senderEmail": "example@email.com",
+        "subject": "عنوان مختصر لرسالتكم",
+        "messageBody": "اكتب رسالتكم بالتفصيل هنا..."
+      },
+      "errors": {
+        "required": "هذا الحقل مطلوب.",
+        "email": "أدخل بريدًا إلكترونيًا صحيحًا."
+      }
+    },
+    "map": {
+      "title": "موقعنا",
+      "viewOnMaps": "عرض الموقع على خرائط Google",
+      "openDirections": "فتح الاتجاهات",
+      "frameTitle": "خريطة Google لموقع الاتحاد"
+    },
+    "social": {
+      "title": "تابعنا",
+      "note": "أحدث الأخبار والبطولات ولحظات المنافسة على قنوات الاتحاد الرسمية."
+    }
+  }
+}

@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 
@@ -97,7 +97,7 @@ export const SECURITY_AUDIT_ACTIONS = [
  */
 @Schema({ collection: 'auditLogs', timestamps: true })
 export class AuditLog extends BaseSchema {
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
   actorId: Types.ObjectId;
 
   @Prop({ type: String, enum: AUDIT_ACTIONS, required: true })
@@ -111,7 +111,7 @@ export class AuditLog extends BaseSchema {
   })
   entityType: string;
 
-  @Prop({ type: Types.ObjectId, default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, default: null })
   entityId: Types.ObjectId | null;
 
   @Prop({ type: Date, required: true, default: Date.now })

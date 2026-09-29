@@ -189,6 +189,14 @@ export const API_ERROR_CODES = [
   // A route whose pair the actor holds only with a narrower scope than `all`.
   // Not `forbidden`: the grant exists, and the fix is to change its scope (ADR-0113).
   'scopedGrantUnsupported',
+  // Season calendar refusals. Two codes because the fix lies in different
+  // places: `seasonOverlap` shares a day with ANOTHER season record (the body
+  // names it), so either season's dates move; `seasonPhaseOverlap` is two
+  // phases of the same type inside the one season being saved (the body names
+  // both and the type), so only this form changes. As a bare `conflict` or
+  // `badRequest` neither says which dates to look at.
+  'seasonOverlap',
+  'seasonPhaseOverlap',
 ] as const;
 
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

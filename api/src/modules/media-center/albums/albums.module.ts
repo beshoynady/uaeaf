@@ -29,6 +29,10 @@ import { findMediaAssetReferrers } from '../../../common/authz/media-references.
           findMediaAssetReferrers(connection, photoId, { includeRevisions: false, ignore }),
     },
   ],
-  exports: [AlbumsService],
+  // `AlbumsRepository` is also exported: `SeasonsService`'s delete guard
+  // counts albums by `eventDate` range directly — an album has no
+  // `seasonId` to join on, so it reads the repository, not a new service
+  // method built only for this one check.
+  exports: [AlbumsService, AlbumsRepository],
 })
 export class AlbumsModule {}

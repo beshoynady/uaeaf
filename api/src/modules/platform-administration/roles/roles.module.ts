@@ -11,6 +11,10 @@ import { RolesController } from './roles.controller.js';
 // (auth-security-audit-2026-09-05.md P0 #2) — one-directional import,
 // PermissionsModule never depends back on RolesModule, so no cycle.
 import { PermissionsModule } from '../permissions/permissions.module.js';
+// Archiving a role records what each account lost, which the audit interceptor
+// cannot do — it names the role, not the holders. One-directional, as above:
+// AuditLogsModule depends on nothing here.
+import { AuditLogsModule } from '../../workflow/audit-logs/audit-logs.module.js';
 
 @Module({
   imports: [
@@ -24,6 +28,7 @@ import { PermissionsModule } from '../permissions/permissions.module.js';
       { name: User.name, schema: UserSchema },
     ]),
     PermissionsModule,
+    AuditLogsModule,
   ],
   controllers: [RolesController],
   providers: [RolesRepository, RoleAssignmentsRepository, RolesService],

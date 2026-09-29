@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 
@@ -23,13 +23,13 @@ export type WorkflowAction = (typeof WORKFLOW_ACTIONS)[number];
  *  populated only when `action='Returned'`. */
 @Schema({ collection: 'workflowActionHistory', timestamps: true })
 export class WorkflowActionHistory extends BaseSchema {
-  @Prop({ type: Types.ObjectId, ref: 'WorkflowInstance', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'WorkflowInstance', required: true })
   workflowInstanceId: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'WorkflowStep', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'WorkflowStep', required: true })
   workflowStepId: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
   actorId: Types.ObjectId;
 
   @Prop({ type: String, enum: WORKFLOW_ACTIONS, required: true })
@@ -38,10 +38,10 @@ export class WorkflowActionHistory extends BaseSchema {
   @Prop({ type: String, default: null })
   reason: string | null;
 
-  @Prop({ type: Types.ObjectId, ref: 'User', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', default: null })
   delegatedToUserId: Types.ObjectId | null;
 
-  @Prop({ type: Types.ObjectId, ref: 'WorkflowStep', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'WorkflowStep', default: null })
   returnedToStepId: Types.ObjectId | null;
 
   /**
@@ -59,7 +59,7 @@ export class WorkflowActionHistory extends BaseSchema {
   @Prop({ type: Boolean, required: true, default: false })
   revisionRequested: boolean;
 
-  @Prop({ type: Types.ObjectId, ref: 'Revision', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Revision', required: true })
   revisionId: Types.ObjectId;
 
   @Prop({ type: Date, required: true, default: Date.now })

@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
@@ -89,7 +89,7 @@ export type PageSectionItemTarget = (typeof PAGE_SECTION_ITEM_TARGETS)[number];
  *  behaviour depends on the resolution. */
 @Schema({ collection: 'pageSections', timestamps: true })
 export class PageSection extends BaseSchema {
-  @Prop({ type: Types.ObjectId, ref: 'Page', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Page', required: true })
   pageId: Types.ObjectId;
 
   @Prop({ type: String, enum: PAGE_SECTION_TYPES, required: true })
@@ -136,7 +136,7 @@ export class PageSection extends BaseSchema {
   @Prop({ type: String, enum: PAGE_SECTION_SELECTION_MODES, required: true })
   selectionMode: PageSectionSelectionMode;
 
-  @Prop({ type: [Types.ObjectId], default: [] })
+  @Prop({ type: [MongooseSchema.Types.ObjectId], default: [] })
   items: Types.ObjectId[];
 
   @Prop({ type: Object, default: null })

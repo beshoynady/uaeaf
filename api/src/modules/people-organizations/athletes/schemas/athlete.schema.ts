@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
@@ -40,7 +40,7 @@ export class Athlete extends BaseSchema {
   @Prop({ type: Date, required: true })
   dateOfBirth: Date;
 
-  @Prop({ type: Types.ObjectId, ref: 'Country', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Country', required: true })
   nationalityId: Types.ObjectId;
 
   /** Flagged, NOT-YET-DECIDED future redesign candidate (a richer
@@ -48,7 +48,7 @@ export class Athlete extends BaseSchema {
    *  Read it only via `AthletesService.getDisciplineIds()`, never by
    *  destructuring this field directly from another module, so a future
    *  migration doesn't touch the public API shape. */
-  @Prop({ type: [Types.ObjectId], ref: 'Discipline', default: [] })
+  @Prop({ type: [MongooseSchema.Types.ObjectId], ref: 'Discipline', default: [] })
   disciplineIds: Types.ObjectId[];
 
   @Prop({ type: String, enum: ATHLETE_GENDERS, required: true })
@@ -62,3 +62,12 @@ export class Athlete extends BaseSchema {
 }
 
 export const AthleteSchema = SchemaFactory.createForClass(Athlete);
+
+// Site search. On `athletes`, not `athleteProfiles`: `athleteProfiles` has no
+// bilingual name field of its own (confirmed against its schema), so the
+// text index has to live where `name` actually is. A match here is resolved
+// through `athleteProfiles` before it becomes a public result — see
+// `search-sources.ts` — so a Guest athlete (no profile) is never reachable
+// through it despite being indexed. `default_language: 'none'` — see
+// `articles.schema.ts`'s identical index for why.
+AthleteSchema.index({ 'name.ar': 'text', 'name.en': 'text' }, { default_language: 'none', name: 'search_text' });

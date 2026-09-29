@@ -1,0 +1,87 @@
+{
+  "HomePage": {
+    "title": "اتحاد الإمارات لألعاب القوى",
+    "description": "الهيكل العام للموقع (الترويسة والتذييل) جاهز. أقسام الصفحة الرئيسية قيد التنفيذ."
+  },
+  "HomeHero": {
+    "pageHeading": "اتحاد الإمارات لألعاب القوى",
+    "carousel": "معرض شرائح",
+    "slide": "شريحة",
+    "slideLabel": "شريحة {current} من {total}",
+    "play": "تشغيل العرض التلقائي",
+    "pause": "إيقاف العرض التلقائي",
+    "goTo": "اذهب إلى الشريحة",
+    "opensInNewTab": "يفتح في تبويب جديد",
+    "progress": "الوقت المتبقي لهذه الشريحة",
+    "nextEvent": {
+      "live": "جارية الآن",
+      "days": "يوم",
+      "hours": "ساعة",
+      "minutes": "دقيقة",
+      "countdown": "متبقٍ {days} يوم و{hours} ساعة و{minutes} دقيقة"
+    }
+  },
+  "HomeSponsors": {
+    "strip": {
+      "label": "رعاة الاتحاد",
+      "pause": "إيقاف حركة شريط الرعاة",
+      "play": "تشغيل حركة شريط الرعاة"
+    },
+    "tiers": {
+      "Strategic": "الراعي الاستراتيجي",
+      "Official": "الراعي الرسمي",
+      "Supporting": "الراعي الداعم"
+    },
+    "tiersEnglish": {
+      "Strategic": "Strategic Sponsor",
+      "Official": "Official Sponsor",
+      "Supporting": "Supporting Sponsor"
+    },
+    "sponsors": {
+      "title": "الرعاة والشركاء",
+      "subtitle": "الشريك الاستراتيجي والرعاة الرسميون والشركاء المساندون في دعم وتطوير ألعاب القوى في دولة الإمارات وتنظيم البطولات الوطنية والدولية.",
+      "featured": "VIP",
+      "visitWebsite": "زيارة موقع {name}",
+      "opensInNewTab": "يفتح في تبويب جديد",
+      "stats": {
+        "label": "أرقام الرعاية",
+        "sponsors": "شريك وراعٍ رسمي",
+        "years": "سنوات من أطول شراكة",
+        "championships": "بطولة مدعومة سنويًا"
+      }
+    },
+    "partners": {
+      "title": "الشركاء"
+    },
+    "memberships": {
+      "title": "نحن فخورون بعضويتنا في كبرى المنظمات",
+      "subtitle": "تمثيل رسمي فاعل ومستمر لدولة الإمارات العربية المتحدة في المحافل الإقليمية والدولية لألعاب القوى"
+    }
+  },
+  "HomeCoverage": {
+    "heading": "الاتحاد في الإعلام",
+    "subtitle": "تغطية إعلامية موثوقة من أبرز المنصات المحلية والعالمية",
+    "viewAll": "عرض جميع التغطيات",
+    "viewAllLabel": "عرض جميع التغطيات الإعلامية",
+    "read": "قراءة التغطية",
+    "readLabel": "قراءة التغطية الأصلية (يفتح في نافذة جديدة)",
+    "carouselLabel": "تغطيات إعلامية",
+    "slideLabel": "{index} من {count}",
+    "previous": "التغطية السابقة",
+    "next": "التغطية التالية",
+    "placeholderLogo": "[شعار المنشور {index}]",
+    "placeholderPublication": "[اسم المنشور]",
+    "placeholderTitle": "[عنوان التغطية — بصياغة الاتحاد]",
+    "placeholderExcerpt": "[مقتطف مختصر من التغطية الإعلامية]",
+    "placeholderDate": "[التاريخ]",
+    "position": "المجموعة {index} من {count}",
+    "placeholderLogoShort": "[شعار]"
+  },
+  "home": {
+    "albums": {
+      "title": "ألبومات الصور",
+      "allAlbums": "كل الألبومات",
+      "openAlbum": "عرض الألبوم"
+    }
+  }
+}

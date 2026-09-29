@@ -274,11 +274,21 @@
 }
 
 /*
- * The mega panel: full container width, its columns closing up around
- * whatever `data-columns` actually reports rather than around a fixed count.
- * The featured slot is a fraction (`1.2fr`) and not a pixel width — there is
- * no token for the ~380px the canvas shows at 1440, and the fraction holds
- * the same proportion there while narrowing safely at 1280.
+ * The mega panel: sized against the header container, not the trigger.
+ *
+ * `position: absolute` resolves against the nearest positioned ancestor,
+ * which is `<header>` (`sticky`) once `primary-nav.tsx`'s `<li>` carries no
+ * `position` of its own. Because that ancestor is the header's own padding
+ * box — practically edge-to-edge, `header-shell.tsx` has no left/right
+ * border — `inset-inline` has to restate the same padding the header applies
+ * to its own children, or the panel spans the viewport instead of the
+ * header's content width. `--space-10` / `--grid-margin-xl` are exactly the
+ * tokens `header-shell.tsx` uses for that padding at the same breakpoints.
+ *
+ * `--mega-feature-width` has no exact token either: `calc(var(--space-24) *
+ * 4)` = 384px, 4px over the ~380px the canvas shows at 1440, and it keeps
+ * the card fixed while the link columns (`minmax(0, 1fr)`) narrow between
+ * 1280 and 1440.
  *
  * Below the row breakpoint this same element is the drawer's in-flow
  * accordion body (`primary-nav.tsx`, `hidden={!isOpen && !isRow}`), so the
@@ -294,6 +304,7 @@
 
 .mega-panel > div {
   grid-template-columns: minmax(0, 1fr);
+  --mega-feature-width: calc(var(--space-24) * 4);
 }
 
 .mega-panel[data-columns="1"] > div {
@@ -303,14 +314,40 @@
 @media (min-width: 1280px) {
   .mega-panel {
     position: absolute;
-    inset-inline: 0;
+    inset-inline: var(--space-10);
     top: 100%;
     z-index: 40;
     box-shadow: var(--elevation-dropdown);
   }
 
   .mega-panel > div {
-    grid-template-columns: repeat(var(--mega-columns, 2), minmax(0, 1fr)) minmax(0, 1.2fr);
+    grid-template-columns: repeat(var(--mega-columns, 2), minmax(0, 1fr)) minmax(
+        0,
+        var(--mega-feature-width)
+      );
+  }
+
+  /*
+   * The underline on the header's bottom edge, where the design draws it, and
+   * out of the flow so the label alone stays centred in a trigger that now
+   * fills the row.
+   *
+   * Descendant selector on purpose: the indicator carries `data-surface`, and
+   * `[data-surface]{position:relative}` in `surfaces.css` is unlayered, which
+   * beats anything Tailwind emits into a layer. Matching on two classes clears
+   * it on specificity rather than on import order, which a later import into
+   * `globals.css` could quietly reverse.
+   */
+  .nav-item .nav-indicator {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+  }
+}
+
+@media (min-width: 1536px) {
+  .mega-panel {
+    inset-inline: var(--grid-margin-xl);
   }
 }
 

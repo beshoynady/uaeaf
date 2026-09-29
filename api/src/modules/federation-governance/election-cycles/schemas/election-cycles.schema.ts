@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
@@ -17,7 +17,7 @@ export type ElectionCycleStatus = (typeof ELECTION_CYCLE_STATUSES)[number];
  *  Domain 7 closed lists). */
 @Schema({ collection: 'electionCycles', timestamps: true })
 export class ElectionCycle extends BaseSchema {
-  @Prop({ type: Types.ObjectId, ref: 'Federation', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Federation', required: true })
   federationId: Types.ObjectId;
 
   @Prop({ type: Date, required: true })

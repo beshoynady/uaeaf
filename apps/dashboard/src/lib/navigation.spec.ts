@@ -337,3 +337,32 @@ describe("the messages link (owner request 2026-09-22)", () => {
     expect(keys([{ resourceType: "contactMessages", action: "Export" }])).not.toContain("messages");
   });
 });
+
+describe("the Events & Seasons group", () => {
+  const keys = (grants: { resourceType: string; action: string }[]) => visibleNavItems(grants).map((item) => item.key);
+
+  it("sits after the media libraries and holds the seasons screen", () => {
+    const top = NAV_ITEMS.map((item) => item.key);
+    expect(top.indexOf("eventsSeasons")).toBe(top.indexOf("albums") + 1);
+    const group = NAV_ITEMS.find((item) => item.key === "eventsSeasons");
+    expect(group?.flat).toBeUndefined();
+    expect(group?.children?.map((child) => child.key)).toEqual(["seasons"]);
+    expect(group?.children?.[0].href).toBe("/seasons");
+  });
+
+  it("appears for a reader of seasons, opening on the seasons screen", () => {
+    const [, group] = visibleNavItems([{ resourceType: "seasons", action: "Read" }]);
+    expect(group.key).toBe("eventsSeasons");
+    expect(group.href).toBe("/seasons");
+  });
+
+  it("disappears for a reader who may open none of its screens", () => {
+    expect(keys([{ resourceType: "albums", action: "Read" }])).not.toContain("eventsSeasons");
+    expect(keys([{ resourceType: "seasons", action: "Update" }])).not.toContain("eventsSeasons");
+  });
+
+  it("links no screen that does not exist", () => {
+    const group = NAV_ITEMS.find((item) => item.key === "eventsSeasons");
+    expect(group?.children?.some((child) => child.key === "events")).toBe(false);
+  });
+});

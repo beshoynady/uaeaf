@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { HeroPageSchema } from '../../../../common/schemas/hero-page.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
@@ -144,7 +144,7 @@ export const ContactMapContentSchema = SchemaFactory.createForClass(ContactMapCo
  */
 @Schema({ _id: false })
 export class ContactSocialLink extends SocialLink {
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   iconId: Types.ObjectId | null;
 }
 

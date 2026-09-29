@@ -548,8 +548,35 @@ Today `Approve` exists on one resource and scoping comes only from `assigneeIds`
   checked in the service, not only the route, matching how `Publish` is already
   checked (`publishing.service.ts:560-570`).
 - **Separation of duties:** the actor may not approve a revision they created or
-  submitted. Compared against `revision.createdBy` and the instance's submitter.
-  Refusal `selfApproval`.
+  submitted. Refusal `selfApproval`.
+
+  **"The author" is defined by ADR-0124 (owner decision, 2026-09-29), and the
+  earlier wording here was not implementable.** It is **all three** of
+  `revision.createdBy`, the record's `createdBy` and the record's `updatedBy`;
+  matching **any** of them refuses the approval. Until ADR-0124's field work
+  lands, a field that is `null` is skipped — that field only — and
+  `revision.createdBy` is checked in every case, being `required: true` on every
+  creation path already.
+
+  **`workflowInstances.createdBy` is never read by any check**, and a negative
+  test holds that. Measured 2026-09-29: the field exists, inherited from
+  `BaseSchema`, and is `null` on every row ever written — `create` never sets it
+  and none of the six updates do. A check reaching for it would fail **open**,
+  which is why the prohibition is written down rather than assumed.
+
+  **One approval per person per step** (ADR-0124 D1), which is a **new** rule
+  appearing in no approved document before it. Re-approving the *same* step
+  after a `return` is permitted; approving a *second* step of the same review is
+  refused. Cycle-scoping cannot express this — `return` writes no
+  `Submitted`/`Resubmitted` row, so the cycle boundary does not move.
+
+  Where the rule leaves a review with no permitted approver, the remedy is the
+  Super Admin override with a written reason below, never a relaxation.
+
+  **The comparison is `String(...) === String(...)` in JavaScript, never a Mongo
+  filter** (ADR-0124 D2). A filter that misses reads as "not the author" and lets
+  the approval through — silent, and open. `contactMessages` has no revision at
+  all and is handled by entity type, never by testing for `null`.
 - **Super Admin override** requires a written reason, and the reason is stored on
   the `workflowActionHistory` row and the audit row. Without a reason it is
   refused like anyone else — the override is a documented act, not a silent
@@ -871,6 +898,9 @@ Exporting the log is itself audited. Retention per §0.1 / §13 Q1.
 | `permissions` | **+ `superAdminOnly: boolean`** (decision 4, §3.4) — the five un-grantable pairs |
 | `auditLogs` | `AUDIT_ACTIONS` **+ `Export`, `SensitiveRead`** |
 | `PUBLICATION_ENTITY_TYPES` | **+ `federationPersonnel`** (F9) — which forces a `PUBLISH_REQUIREMENTS` row by compile error, the mechanical gate noted in the roles review |
+| **every reference path** | **`type: Types.ObjectId` → `type: MongooseSchema.Types.ObjectId`** — 146 declarations across 57 files (ADR-0123). Done 2026-09-29. Not a stored-shape change; it makes the path typed at runtime, which it was not. |
+| **every resource schema** | **+ `createdBy` and `updatedBy`, both `required`** (ADR-0124, owner decision 1, 2026-09-29). Written by the server from the current user on every create and every update, archival and restore included; a value arriving in the body is refused. **Batch 4.** |
+| `articles` · `albums` · `videos` · `mediaAssets` | **+ content-credit fields** (ADR-0126, owner decision 3, 2026-09-29) — article author (mandatory), album photographer, video owner (optional), and `photographer` on the media asset. **Shape not yet decided**; measurement first, then a proposal for approval. **Batch 4.** |
 
 ### 9.3 CV sections (F7)
 
@@ -997,10 +1027,19 @@ Run order matters; each is safe to re-run.
     `AuditLogsRepository.create`. **`reset-roles` must not be run before the second
     one**: without it a detachment can commit while its audit row fails, and a
     re-run will not write the missing row because nothing is left to detach.
-7c. `migrate-objectid-references` — rewrites references stored as strings to `ObjectId`
-    (Batch 3b, owner decision 2026-09-28). Must run **before** step 8: `detachRole`'s filter
-    carries an `ObjectId` only and MongoDB compares BSON type first, so a `roleIds` entry
-    stored as a string is never matched. E1 refuses to run while any such link exists.
+7c. `convert:reference-ids` — rewrites references stored as strings to `ObjectId`
+    (Batch 3b, ADR-0123; built 2026-09-29, **not run**). Dry run by default; the write needs an
+    explicit flag. It derives its work list from the project's own schemas rather than a
+    hand-written list, and reports — on every run — the 29 id-shaped paths that declare no `ref`
+    and are therefore outside its sweep (ADR-0123 D3, owner decision open).
+    Must run **before** step 8. `detachRole` no longer depends on it to be correct — it now
+    carries both BSON spellings through the driver collection (ADR-0123 D1) — but E1 still
+    refuses to run while any role link is stored as a string, deliberately, so a database nobody
+    has read is not half-detached.
+7d. `backfill-authorship` — fills `createdBy`/`updatedBy` that are `null` with the bootstrap
+    Super Admin account (ADR-0124, owner decision 1, 2026-09-29; the existing data is test data).
+    Idempotent, **written not run**, and it runs **after** 7c. Once it has run, ADR-0113's
+    "records whose `createdBy` is null stay closed to `own`" ends. **Batch 4.**
 8. `reset-roles` (**E1**) — archives every non-system role, **detaches it from the accounts that
    held it** with one audit row each, plus an `Archive` row per role archived, matching what
    `DELETE /roles/:id` writes. It reports the role-less accounts and the open workflow steps

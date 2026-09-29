@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
@@ -47,10 +47,10 @@ export class User extends BaseSchema {
   @Prop({ required: true, lowercase: true, trim: true })
   email: string;
 
-  @Prop({ type: [Types.ObjectId], ref: 'Role', default: [] })
+  @Prop({ type: [MongooseSchema.Types.ObjectId], ref: 'Role', default: [] })
   roleIds: Types.ObjectId[];
 
-  @Prop({ type: Types.ObjectId, ref: 'FederationPersonnel', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'FederationPersonnel', default: null })
   personId: Types.ObjectId | null;
 
   /** The account's own avatar, as a standalone reference (owner decision,
@@ -59,7 +59,7 @@ export class User extends BaseSchema {
    *  federation person (service and contractor accounts exist), and an
    *  administrator's dashboard avatar is an account-level choice rather
    *  than an official personnel portrait. */
-  @Prop({ type: Types.ObjectId, ref: 'MediaAsset', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   photoId: Types.ObjectId | null;
 
   /** Preferred dashboard language. `null` means "not chosen" — the client

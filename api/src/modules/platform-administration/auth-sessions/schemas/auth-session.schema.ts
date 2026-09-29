@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 
 export type AuthSessionDocument = HydratedDocument<AuthSession>;
@@ -19,7 +19,7 @@ export type AuthSessionDocument = HydratedDocument<AuthSession>;
  */
 @Schema({ collection: 'authSessions' })
 export class AuthSession {
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
   userId: Types.ObjectId;
 
   /** SHA-256 of the refresh token (see `common/utils/hash-token.util.ts`) —
@@ -47,7 +47,7 @@ export class AuthSession {
    *  refresh. A refresh request presenting the OLD token after this is set
    *  is a reuse of an already-consumed token — rejected, and treated as a
    *  possible compromise signal (see AuthSessionsService.revoke()). */
-  @Prop({ type: Types.ObjectId, ref: 'AuthSession', default: null })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'AuthSession', default: null })
   replacedBySessionId: Types.ObjectId | null;
 
   @Prop({ default: '' })
