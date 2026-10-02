@@ -13098,10 +13098,70 @@
           "url"
         ]
       },
+      "CvEntryDto": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "isVisible": {
+            "type": "boolean"
+          },
+          "order": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "text",
+          "order"
+        ]
+      },
+      "PersonnelCvDto": {
+        "type": "object",
+        "properties": {
+          "qualifications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CvEntryDto"
+            }
+          },
+          "certifications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CvEntryDto"
+            }
+          },
+          "previousPositions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CvEntryDto"
+            }
+          },
+          "experience": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CvEntryDto"
+            }
+          },
+          "achievements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CvEntryDto"
+            }
+          }
+        }
+      },
       "CreateFederationPersonnelDto": {
         "type": "object",
         "properties": {
+          "slug": {
+            "type": "string",
+            "description": "Public URL segment for /about/people/{slug}. Fixed after creation."
+          },
           "fullName": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "honorific": {
             "$ref": "#/components/schemas/LocalizedTextDto"
           },
           "photoId": {
@@ -13120,6 +13180,10 @@
           "publicContact": {
             "$ref": "#/components/schemas/PersonnelPublicContactDto"
           },
+          "showPublicContact": {
+            "type": "boolean",
+            "description": "Whether the public page shows publicContact. Defaults to false."
+          },
           "internalContact": {
             "$ref": "#/components/schemas/PersonnelInternalContactDto"
           },
@@ -13135,9 +13199,13 @@
             "items": {
               "$ref": "#/components/schemas/SocialLinkDto"
             }
+          },
+          "cv": {
+            "$ref": "#/components/schemas/PersonnelCvDto"
           }
         },
         "required": [
+          "slug",
           "fullName",
           "nationalityId",
           "status"
@@ -13149,6 +13217,9 @@
           "fullName": {
             "$ref": "#/components/schemas/LocalizedTextDto"
           },
+          "honorific": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
           "photoId": {
             "type": "string",
             "description": "ref → mediaAssets, must be an image."
@@ -13165,6 +13236,10 @@
           "publicContact": {
             "$ref": "#/components/schemas/PersonnelPublicContactDto"
           },
+          "showPublicContact": {
+            "type": "boolean",
+            "description": "Omit to leave unchanged; null is refused."
+          },
           "internalContact": {
             "$ref": "#/components/schemas/PersonnelInternalContactDto"
           },
@@ -13180,6 +13255,14 @@
             "items": {
               "$ref": "#/components/schemas/SocialLinkDto"
             }
+          },
+          "cv": {
+            "description": "Omit to leave unchanged; null is refused.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PersonnelCvDto"
+              }
+            ]
           }
         }
       },
@@ -17533,35 +17616,15 @@
           },
           "supersedesAppointmentId": {
             "type": "string",
-            "description": "The specific prior appointment this one succeeds. When set, that appointment is closed (termEnd = this appointment's termStart, status = Completed). Explicit admin choice — no roleType-based auto-close happens without it."
-          },
-          "roleType": {
-            "type": "string",
-            "enum": [
-              "President",
-              "BoardMember",
-              "CommitteeChair",
-              "CommitteeMember",
-              "ExecutiveDirector",
-              "Manager",
-              "Other"
-            ]
-          },
-          "positionTitle": {
-            "description": "e.g. \"نائب الرئيس\".",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LocalizedTextDto"
-              }
-            ]
+            "description": "The specific prior appointment this one succeeds. When set, that appointment is closed (termEnd = this appointment's termStart, status = Completed). Explicit admin choice — no auto-close happens without it."
           },
           "committeeId": {
             "type": "string",
-            "description": "For CommitteeChair/CommitteeMember roleTypes."
+            "description": "Required when the assigned position is a committee post."
           },
           "electionCycleId": {
             "type": "string",
-            "description": "For President/BoardMember roleTypes."
+            "description": "Scopes the position's duplicate-holder and max-holder checks to this cycle."
           },
           "termStart": {
             "type": "string"
@@ -17587,8 +17650,7 @@
         },
         "required": [
           "personId",
-          "roleType",
-          "positionTitle",
+          "positionId",
           "termStart",
           "status",
           "displayOrder"
@@ -17601,24 +17663,16 @@
             "$ref": "#/components/schemas/LocalizedTextDto"
           },
           "positionTitle": {
-            "description": "The specific title within the role, e.g. \"نائب الرئيس\".",
+            "description": "The position's title, e.g. \"نائب الرئيس\".",
             "allOf": [
               {
                 "$ref": "#/components/schemas/LocalizedTextDto"
               }
             ]
           },
-          "roleType": {
-            "type": "string",
-            "enum": [
-              "President",
-              "BoardMember",
-              "CommitteeChair",
-              "CommitteeMember",
-              "ExecutiveDirector",
-              "Manager",
-              "Other"
-            ]
+          "rank": {
+            "type": "number",
+            "description": "The position's level in the organisational chart; 1 is highest."
           },
           "displayOrder": {
             "type": "number",
@@ -17633,7 +17687,7 @@
         "required": [
           "fullName",
           "positionTitle",
-          "roleType",
+          "rank",
           "displayOrder"
         ]
       },
@@ -17649,35 +17703,15 @@
           },
           "supersedesAppointmentId": {
             "type": "string",
-            "description": "The specific prior appointment this one succeeds. When set, that appointment is closed (termEnd = this appointment's termStart, status = Completed). Explicit admin choice — no roleType-based auto-close happens without it."
-          },
-          "roleType": {
-            "type": "string",
-            "enum": [
-              "President",
-              "BoardMember",
-              "CommitteeChair",
-              "CommitteeMember",
-              "ExecutiveDirector",
-              "Manager",
-              "Other"
-            ]
-          },
-          "positionTitle": {
-            "description": "e.g. \"نائب الرئيس\".",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LocalizedTextDto"
-              }
-            ]
+            "description": "The specific prior appointment this one succeeds. When set, that appointment is closed (termEnd = this appointment's termStart, status = Completed). Explicit admin choice — no auto-close happens without it."
           },
           "committeeId": {
             "type": "string",
-            "description": "For CommitteeChair/CommitteeMember roleTypes."
+            "description": "Required when the assigned position is a committee post."
           },
           "electionCycleId": {
             "type": "string",
-            "description": "For President/BoardMember roleTypes."
+            "description": "Scopes the position's duplicate-holder and max-holder checks to this cycle."
           },
           "termStart": {
             "type": "string"
@@ -17736,26 +17770,6 @@
           "personId": {
             "type": "string"
           },
-          "positionTitle": {
-            "description": "e.g. \"نائب الرئيس\".",
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/LocalizedTextDto"
-              }
-            ]
-          },
-          "roleType": {
-            "type": "string",
-            "enum": [
-              "President",
-              "BoardMember",
-              "CommitteeChair",
-              "CommitteeMember",
-              "ExecutiveDirector",
-              "Manager",
-              "Other"
-            ]
-          },
           "termStart": {
             "type": "string"
           },
@@ -17778,8 +17792,6 @@
           "cycleId",
           "positionId",
           "personId",
-          "positionTitle",
-          "roleType",
           "termStart",
           "endReason",
           "displayOrder"
