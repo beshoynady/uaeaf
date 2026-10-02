@@ -166,6 +166,14 @@ describe("document structure", () => {
       // headline, its standfirst and its byline as one block, which is not the
       // shape `page-hero` draws.
       "src/components/pages/news/article-screen.tsx",
+      // A committee opens on its name over a photographic band, with the chair,
+      // the body it reports to and four facts read as one object. A person's
+      // profile opens on their name alone, over a drawn stadium, revealed a
+      // word at a time. Neither is the shape `page-hero` draws, and in both the
+      // heading is part of the composition rather than a string handed to a
+      // shared band — the same reason the article screen keeps its own.
+      "src/components/pages/governance/committee/committee-hero.tsx",
+      "src/components/pages/governance/profile/opening-scene.tsx",
     ];
     const offenders = SOURCES.filter(
       ({ file, source }) => /<h1[\s>]/.test(source) && !ALLOWED.includes(file),

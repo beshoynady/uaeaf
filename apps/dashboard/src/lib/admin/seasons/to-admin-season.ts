@@ -105,7 +105,7 @@ export const toAdminSeason = (raw: unknown): AdminSeason | null => {
     documentIds: ids(row.documentIds),
     isCurrent: row.isCurrent === true,
     publicationState: state(row.publicationState),
-    publishedAt: when(row.publishedAt),
+    publishDate: when(row.publishDate),
     isVisible: row.isVisible === true,
     seo: seo(row.seo),
     updatedAt: when(row.updatedAt),

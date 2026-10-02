@@ -101,4 +101,21 @@ describe("layoutTimeline", () => {
       ["b", 50],
     ]);
   });
+
+  it("reads a late key date back towards its day, so its label stays on the grid", () => {
+    const { keyDates } = layoutTimeline(
+      {
+        startDate: START,
+        endDate: END,
+        phases: [],
+        keyDates: [
+          { title: { ar: "أ", en: "early" }, date: START },
+          { title: { ar: "ب", en: "late" }, date: END },
+        ],
+      },
+      new Date("2026-10-15T08:00:00Z"),
+      "en",
+    );
+    expect(keyDates.map((entry) => entry.side)).toEqual(["start", "end"]);
+  });
 });

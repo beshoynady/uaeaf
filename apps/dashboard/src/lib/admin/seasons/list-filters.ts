@@ -51,24 +51,27 @@ export const currentPhaseOf = (season: AdminSeason, now: Date): SeasonPhase | nu
  *
  * Current first: it is the fact the list exists to show, and a current season
  * is necessarily the one visitors are sent to. Then the states that keep a
- * season off the public site, most final first — archived, hidden, draft —
- * because "why can nobody see it" is the question those rows raise.
+ * season off the public site, most final first — archived, hidden, taken
+ * down, draft — because "why can nobody see it" is the question those rows
+ * raise.
  */
-export type SeasonBadge = "current" | "archived" | "hidden" | "draft" | "published";
+export type SeasonBadge = "current" | "archived" | "hidden" | "unpublished" | "draft" | "live";
 
 export const badgeOf = (season: AdminSeason): SeasonBadge => {
   if (season.isCurrent) return "current";
   if (season.publicationState === "Archived") return "archived";
   if (!season.isVisible) return "hidden";
-  return season.publicationState === "Draft" ? "draft" : "published";
+  if (season.publicationState === "Unpublished") return "unpublished";
+  return season.publicationState === "Draft" ? "draft" : "live";
 };
 
 /**
  * The line under the badge, when there is something worth saying.
  *
  * - The current phase, on the current season: what the public hero shows.
- * - "Not published yet", on anything unpublished.
- * - "Closing summary not written", on a published season that has ended —
+ * - "Not published yet", on a draft. A season taken down says so in its
+ *   badge; it has been published.
+ * - "Closing summary not written", on a live season that has ended —
  *   the public page shows that summary from the day after the season ends,
  *   so its absence is visible to visitors.
  */
@@ -83,7 +86,8 @@ export const noteOf = (season: AdminSeason, now: Date): SeasonNote => {
     const phase = currentPhaseOf(season, now);
     return phase ? { kind: "phase", phase } : null;
   }
-  if (season.publicationState !== "Published") return { kind: "notPublished" };
+  if (season.publicationState === "Draft") return { kind: "notPublished" };
+  if (season.publicationState !== "Live") return null;
   if (seasonTiming(season, now) === "ended" && !season.closingSummary) return { kind: "closingMissing" };
   return null;
 };

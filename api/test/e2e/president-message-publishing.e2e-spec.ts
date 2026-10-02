@@ -36,9 +36,13 @@ let Types: typeof import('mongoose').Types;
 let messageModel: import('mongoose').Model<PresidentMessagePageDocument>;
 let policyModel: import('mongoose').Model<unknown>;
 let appointmentModel: import('mongoose').Model<FederationAppointmentDocument>;
+let positionModel: import('mongoose').Model<unknown>;
 let auditModel: import('mongoose').Model<unknown>;
 let publicationModel: import('mongoose').Model<unknown>;
 let revisionModel: import('mongoose').Model<RevisionDocument>;
+// The single board-body, rank-1 position `storeMessage()` appoints its
+// president to — data an admin would have created, never a role name.
+let presidentPositionId: string;
 
 const tokens = {} as Record<Who, string>;
 const ids = {} as Record<Who, string>;
@@ -81,6 +85,9 @@ beforeAll(async () => {
   const { FederationAppointment } = await import(
     '../../src/modules/federation-governance/federation-appointments/schemas/federation-appointments.schema.js'
   );
+  const { FederationPosition } = await import(
+    '../../src/modules/federation-governance/federation-positions/schemas/federation-positions.schema.js'
+  );
   const { AuditLog } = await import('../../src/modules/workflow/audit-logs/schemas/audit-log.schema.js');
   const { Publication } = await import('../../src/modules/workflow/publications/schemas/publication.schema.js');
   const { Revision } = await import('../../src/modules/workflow/revisions/schemas/revision.schema.js');
@@ -95,12 +102,23 @@ beforeAll(async () => {
   messageModel = moduleFixture.get(getModelToken(PresidentMessagePage.name));
   policyModel = moduleFixture.get(getModelToken(WorkflowPolicy.name));
   appointmentModel = moduleFixture.get(getModelToken(FederationAppointment.name));
+  positionModel = moduleFixture.get(getModelToken(FederationPosition.name));
   auditModel = moduleFixture.get(getModelToken(AuditLog.name));
   publicationModel = moduleFixture.get(getModelToken(Publication.name));
   revisionModel = moduleFixture.get(getModelToken(Revision.name));
   const permissionModel = moduleFixture.get(getModelToken(Permission.name));
   const roleModel = moduleFixture.get(getModelToken(User.name)) && moduleFixture.get(getModelToken(Role.name));
   const userModel = moduleFixture.get(getModelToken(User.name));
+
+  const position = await positionModel.create({
+    title: { ar: 'رئيس الاتحاد', en: 'President' },
+    body: 'board',
+    rank: 1,
+    displayOrder: 1,
+    maxHolders: 1,
+    isVisible: true,
+  });
+  presidentPositionId = String((position as { _id: unknown })._id);
 
   const grant = async (pairs: Array<[string, string]>) =>
     Promise.all(
@@ -194,8 +212,7 @@ async function storeMessage(
 ): Promise<{ id: string; appointmentId: string }> {
   const appointment = await appointmentModel.create({
     personId: new Types.ObjectId(),
-    roleType: 'President',
-    positionTitle: { ar: 'رئيس الاتحاد', en: 'President' },
+    positionId: new Types.ObjectId(presidentPositionId),
     termStart: new Date('2025-01-01'),
     status: 'Active',
     displayOrder: 1,

@@ -306,11 +306,25 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
     schemaType: "AboutPage",
     listEndpoint: null,
   },
+  {
+    // Its own collection (seasons spec §4.2), with no hero wrapper record: the
+    // heading is static copy. Moved here from `PREPARING_PAGES` the day its
+    // full page was built, under the same route, so no link changed.
+    key: "seasons",
+    route: "/seasons",
+    // No `seasonsPage` record exists, so the page's own read is the list.
+    apiPath: "/seasons/public",
+    messageKey: "seasons",
+    register: "neutral",
+    registerBasis:
+      "seasons spec §4: the ground stays neutral and the hero is the black register — the arrangement /about/governance/policies set. The archive cards share one ink header (spec §5.3).",
+    schemaType: "CollectionPage",
+    listEndpoint: "/seasons/public",
+  },
 ];
 
-export function findPublicPage(key: string): PublicPage | undefined {
-  return PUBLIC_PAGES.find((page) => page.key === key);
-}
+export const findPublicPage = (key: string): PublicPage | undefined =>
+  PUBLIC_PAGES.find((page) => page.key === key);
 
 /**
  * A destination the site already links to whose full page is not built yet.
@@ -384,18 +398,12 @@ export const PREPARING_PAGES: readonly PreparingPage[] = [
     registerBasis: "صفحة مؤقتة؛ التصنيف النهائي يتحدد في spec المشروع الذي يبني الصفحة الحقيقية.",
   },
   {
-    key: "seasons",
-    route: "/seasons",
-    titleKey: "Nav.seasonsArchive",
-    register: "neutral",
-    registerBasis: "صفحة مؤقتة؛ التصنيف النهائي يتحدد في spec المشروع الذي يبني الصفحة الحقيقية.",
-  },
-  {
     key: "current-season",
     route: "/seasons/current",
     titleKey: "Nav.currentSeason",
     register: "neutral",
-    registerBasis: "صفحة مؤقتة؛ التصنيف النهائي يتحدد في spec المشروع الذي يبني الصفحة الحقيقية.",
+    registerBasis:
+      "تحويل دائم لا صفحة محتوى: يرسل القارئ إلى الموسم الحالي أو إلى أرشيف المواسم (seasons spec §4.3)، فيبقى هنا بلا محتوى يُفهرَس.",
   },
   {
     key: "help",

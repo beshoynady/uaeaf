@@ -19,6 +19,9 @@ export const SEASON_ERROR_CODES = [
   "seasonOverlap",
   /** The API's `seasonPhaseOverlap`: two phases of the same type share a day. */
   "seasonPhaseOverlap",
+  /** The API's `seasonPhaseOutOfRange`: one phase leaves the season's days or
+   *  ends before it starts. */
+  "seasonPhaseOutOfRange",
   /** The API's `stillReferenced` on a delete: albums or videos still fall
    *  inside the season's dates. */
   "seasonHasContent",

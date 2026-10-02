@@ -370,6 +370,15 @@ export const CAPABILITY_MAP: readonly ResourceCapability[] = [
     scopes: [],
   },
   {
+    resourceType: 'federationPositions',
+    group: 'federation-governance',
+    actions: ['Read', 'Create', 'Update', 'Archive', 'Restore'],
+    purgeable: false,
+    superAdminOnly: [],
+    sensitiveFields: [],
+    scopes: [],
+  },
+  {
     resourceType: 'governanceDocuments',
     group: 'federation-governance',
     actions: ['Read', 'Create', 'Update', 'Archive', 'Restore', 'Publish'],

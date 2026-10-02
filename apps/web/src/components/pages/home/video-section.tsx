@@ -6,7 +6,7 @@ import { CinematicHeading } from "@/components/pages/video/cinematic-heading";
 import { ShareButton } from "@/components/pages/video/share-button";
 import { VideoCard } from "@/components/pages/video/video-card";
 import { VideoCarousel } from "@/components/pages/video/video-carousel";
-import { VideoPlayerModal } from "@/components/pages/video/video-player-modal";
+import { VideoGalleryModal } from "@/components/pages/video/video-gallery-modal";
 import { VideoReveal } from "@/components/pages/video/video-reveal";
 import { VideoStage } from "@/components/pages/video/video-stage";
 import { useVideoGallery } from "@/components/pages/video/use-video-gallery";
@@ -215,34 +215,12 @@ export const HomeVideoSection = ({
         ) : null}
       </div>
 
-      {gallery.video ? (
-        <VideoPlayerModal
-          video={gallery.video}
-          locale={locale}
-          labels={{
-            ...embedLabels,
-            close: t("close"),
-            previous: t("previous"),
-            next: t("next"),
-            position: t("position", {
-              index: (gallery.index ?? 0) + 1,
-              total: carousel.length,
-              list: live ? t("alsoWatchHeading") : t("latestHeading"),
-            }),
-            platform: t(`platform_${gallery.video.platform}`),
-            category: t(`category_${gallery.video.category}`),
-            share: t("share"),
-            shareCopied: t("shareCopied"),
-            openOn: t("openOn", { platform: t(`platform_${gallery.video.platform}`) }),
-          }}
-          onClose={gallery.close}
-          onPrevious={gallery.previous}
-          onNext={gallery.next}
-          hasPrevious={gallery.hasPrevious}
-          hasNext={gallery.hasNext}
-          returnFocusTo={gallery.openerElement}
-        />
-      ) : null}
+      <VideoGalleryModal
+        gallery={gallery}
+        total={carousel.length}
+        listName={live ? t("alsoWatchHeading") : t("latestHeading")}
+        locale={locale}
+      />
 
       <VideoReveal />
     </section>

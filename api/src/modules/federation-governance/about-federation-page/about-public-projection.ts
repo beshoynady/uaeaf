@@ -27,7 +27,7 @@ type Hideable = { isVisible?: boolean };
 export interface AboutLeader {
   fullName: Localized;
   positionTitle: Localized;
-  roleType: string;
+  rank: number;
   displayOrder: number;
   photoId: string | null;
 }

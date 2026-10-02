@@ -7,14 +7,19 @@ import type { SeasonDocument } from './schemas/season.schema.js';
 import type { DayRange } from '../../../common/utils/dubai-day-range.util.js';
 
 /**
- * What a visitor may see: published, not soft-deleted — the same
- * `publicationState`/`archivedAt` shape `albums.repository.ts`'s `PUBLISHED`
- * uses — plus `isVisible: true`, the one gate `albums`/`videos` have no
- * field for. It is what `SeasonsService.remove()`'s refusal points an editor
- * at instead of deleting: hiding a referenced season clears it from every
- * public read without touching the content that still points at it.
+ * What a visitor may see: live, not soft-deleted, plus `isVisible: true` —
+ * the one gate `albums`/`videos` have no field for. It is what
+ * `SeasonsService.remove()`'s refusal points an editor at instead of
+ * deleting: hiding a referenced season clears it from every public read
+ * without touching the content that still points at it.
+ *
+ * `'Live'`, not `albums`'s `'Published'`: a season is a publication entity
+ * type, so `PublishingService.markLive` is what moves it, and that writes the
+ * platform's own vocabulary. Reading a different word here is what made a
+ * published season vanish from the site — the write and the read each agreed
+ * with themselves and with nothing else.
  */
-export const PUBLISHED_SEASON = { publicationState: 'Published', isVisible: true, archivedAt: null } as const;
+export const PUBLISHED_SEASON = { publicationState: 'Live', isVisible: true, archivedAt: null } as const;
 
 /** Thrown inside `setCurrent`'s transaction only, to abort it when the target
  *  id does not resolve — never leaves this file. */
@@ -29,6 +34,12 @@ export class SeasonsRepository extends BaseRepository<SeasonDocument> {
 
   async findBySlug(slug: string): Promise<SeasonDocument | null> {
     return this.findOne({ slug });
+  }
+
+  /** One season whether or not it is archived: what `SeasonsService.unarchive`
+   *  reads the days of before it brings a season back. */
+  async findByIdIncludingArchived(id: string): Promise<SeasonDocument | null> {
+    return this.model.findById(id).exec();
   }
 
   async findCurrent(): Promise<SeasonDocument | null> {

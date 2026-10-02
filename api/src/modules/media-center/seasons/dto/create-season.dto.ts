@@ -13,20 +13,20 @@ import {
 } from 'class-validator';
 import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
 import { PageSeoDto } from '../../../../common/dto/page-seo.dto.js';
-import { SEASON_PUBLICATION_STATES } from '../schemas/season.schema.js';
-import type { SeasonPublicationState } from '../schemas/season.schema.js';
+import { PUBLICATION_STATES } from '../../../../common/constants/publication-states.js';
+import type { PublicationState } from '../../../../common/constants/publication-states.js';
 import { SeasonPhaseDto } from './season-phase.dto.js';
 import { SeasonKeyDateDto } from './season-key-date.dto.js';
 
 /** `publicationState` values creatable directly via POST /seasons —
- *  `'Published'` is reachable only through `PATCH /seasons/:id/publish`,
- *  which is gated by a dedicated `Publish` permission. */
-export const CREATABLE_SEASON_PUBLICATION_STATES = SEASON_PUBLICATION_STATES.filter(
-  (state) => state !== 'Published',
+ *  `'Live'` is reachable only through the publishing routes, which are gated
+ *  by a dedicated `Publish` permission and by the type's approval policy. */
+export const CREATABLE_SEASON_PUBLICATION_STATES = PUBLICATION_STATES.filter(
+  (state: PublicationState) => state !== 'Live',
 );
 
-/** Request body for POST /seasons. Excludes `publishedAt`/`publishedBy`
- *  (server-set only, via `SeasonsService.publish()`) and `isCurrent`
+/** Request body for POST /seasons. Excludes `publishDate`/`publishedBy`
+ *  (server-set only, by `PublishingService`) and `isCurrent`
  *  (settable only via `PATCH /seasons/:id/set-current`). */
 export class CreateSeasonDto {
   @ApiProperty({ type: LocalizedTextDto })
@@ -111,7 +111,7 @@ export class CreateSeasonDto {
 
   @ApiProperty({ enum: CREATABLE_SEASON_PUBLICATION_STATES })
   @IsIn(CREATABLE_SEASON_PUBLICATION_STATES)
-  publicationState: SeasonPublicationState;
+  publicationState: PublicationState;
 
   @ApiPropertyOptional({ description: 'Hidden unless true.' })
   @IsOptional()

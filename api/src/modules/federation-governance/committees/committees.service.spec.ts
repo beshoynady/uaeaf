@@ -4,21 +4,24 @@ import { CommitteesService } from './committees.service.js';
 import { CommitteesRepository } from './committees.repository.js';
 import { PublicationsService } from '../../workflow/publications/publications.service.js';
 import { RevisionsService } from '../../workflow/revisions/revisions.service.js';
+import { CommitteeHierarchyService } from './committee-hierarchy.service.js';
 
 describe('CommitteesService (workflow wiring)', () => {
   const makeRepository = () =>
-    ({ create: jest.fn(), find: jest.fn() }) as unknown as jest.Mocked<CommitteesRepository>;
+    ({ create: jest.fn(), find: jest.fn(), findOne: jest.fn() }) as unknown as jest.Mocked<CommitteesRepository>;
   const makePublications = () =>
     ({ getPublicSnapshot: jest.fn() }) as unknown as jest.Mocked<PublicationsService>;
   const makeRevisions = () =>
     ({ assertHardDeletable: jest.fn() }) as unknown as jest.Mocked<RevisionsService>;
+  const makeHierarchy = () =>
+    ({ assertPlacementAllowed: jest.fn() }) as unknown as jest.Mocked<CommitteeHierarchyService>;
 
   it('reads the public view through publications under its own entityType, not the raw row', async () => {
     const repository = makeRepository();
     const publications = makePublications();
     const revisions = makeRevisions();
     publications.getPublicSnapshot.mockResolvedValue({ name: 'snapshot' } as never);
-    const service = new CommitteesService(repository, publications, revisions);
+    const service = new CommitteesService(repository, publications, revisions, makeHierarchy());
     const id = new Types.ObjectId().toString();
 
     const result = await service.getPublicSnapshot(id);
@@ -31,7 +34,7 @@ describe('CommitteesService (workflow wiring)', () => {
   it('delegates the HardDelete gate to RevisionsService under its own entityType', async () => {
     const publications = makePublications();
     const revisions = makeRevisions();
-    const service = new CommitteesService(makeRepository(), publications, revisions);
+    const service = new CommitteesService(makeRepository(), publications, revisions, makeHierarchy());
 
     await service.assertHardDeletable(new Types.ObjectId().toString());
 
@@ -41,13 +44,15 @@ describe('CommitteesService (workflow wiring)', () => {
   it('stores isActive as given and never derives it from publicationState', async () => {
     const repository = makeRepository();
     repository.create.mockResolvedValue({} as never);
-    const service = new CommitteesService(repository, makePublications(), makeRevisions());
+    repository.findOne.mockResolvedValue(null as never);
+    const service = new CommitteesService(repository, makePublications(), makeRevisions(), makeHierarchy());
 
     // Archived publicationState with isActive left true — the board's FIELD
     // PRECEDENCE RULE says the two are independent and never auto-synced.
     await service.create({
       name: { en: 'Technical Committee', ar: 'اللجنة الفنية' },
       description: { en: 'desc', ar: 'وصف' },
+      slug: 'technical-committee',
       displayOrder: 1,
       isActive: true,
       committeeType: 'Technical',

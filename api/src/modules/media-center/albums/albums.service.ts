@@ -1,4 +1,4 @@
-import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Inject, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { Types } from 'mongoose';
 import type { IgnoredDocument, MediaAssetReferrer } from '../../../common/authz/media-references.js';
 import { AlbumsRepository } from './albums.repository.js';
@@ -30,6 +30,7 @@ export const ALBUM_PHOTO_PAGE_SIZE = 40;
 import { AlbumPublicResponseDto, RelatedAlbumSummaryDto } from './dto/album-public-response.dto.js';
 import { AlbumDetailPageResponseDto } from './dto/album-detail-page-response.dto.js';
 import { MediaAssetsService } from '../media-assets/media-assets.service.js';
+import { SeasonRangeResolver } from '../seasons/season-range-resolver.js';
 import { isDuplicateKeyError, duplicateKeyField } from '../../../common/utils/mongo-errors.util.js';
 
 /** `tags[]` cleanup bounds. Confirmed final (2026-09-03) — not a
@@ -65,6 +66,9 @@ export class AlbumsService {
     private readonly repository: AlbumsRepository,
     private readonly mediaAssetsService: MediaAssetsService,
     @Inject(ALBUM_PHOTO_REFERRER_SCAN) private readonly referrerScan?: AlbumPhotoReferrerScan,
+    // Optional so a test that never filters by season need not build one;
+    // `AlbumsModule` always provides it (guarded by `season-range-wiring.spec.ts`).
+    @Optional() private readonly seasonRanges?: SeasonRangeResolver,
   ) {}
 
   /** `null` for an absent id, an `ObjectId` for a present one. Written once
@@ -131,7 +135,8 @@ export class AlbumsService {
     limit = ALBUM_PAGE_SIZE,
     previewPhotos?: number,
   ): Promise<AlbumListResponseDto> {
-    const filter = buildAlbumFilter(query);
+    const season = this.seasonRanges ? await this.seasonRanges.resolve(query.season) : undefined;
+    const filter = buildAlbumFilter(query, season);
     const { items, total } = await this.repository.findPublicPage(
       filter,
       (page - 1) * limit,

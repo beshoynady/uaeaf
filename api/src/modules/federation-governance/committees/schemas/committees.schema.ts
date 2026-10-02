@@ -1,9 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
 import { PUBLICATION_STATES } from '../../../../common/constants/publication-states.js';
 import type { PublicationState } from '../../../../common/constants/publication-states.js';
+import { CommitteeDuty, CommitteeDutySchema } from './committee-duty.schema.js';
+import { FormationDecision, FormationDecisionSchema } from './formation-decision.schema.js';
 
 export type CommitteeDocument = HydratedDocument<Committee>;
 
@@ -12,6 +15,12 @@ export type CommitteeType = (typeof COMMITTEE_TYPES)[number];
 
 export const COMMITTEE_GROUPS = ['Leadership', 'Specialized'] as const;
 export type CommitteeGroup = (typeof COMMITTEE_GROUPS)[number];
+
+/** The two shapes a committee's place in the hierarchy may take. Fixed by the
+ *  approved model, not admin-entered data — only a committee's own
+ *  classification and parent are admin-controlled. */
+export const COMMITTEE_KINDS = ['standing', 'sub'] as const;
+export type CommitteeKind = (typeof COMMITTEE_KINDS)[number];
 
 /** Implements: committees collection, Domain 1 — Federation & Governance
  *  (live FigJam Physical Model, re-read fresh 2026-09-03).
@@ -59,6 +68,39 @@ export class Committee extends BaseSchema {
   /** Denormalized ← `publications` (ADR-0020). */
   @Prop({ type: String, enum: PUBLICATION_STATES, required: true })
   publicationState: PublicationState;
+
+  @Prop({ type: String, required: true })
+  slug: string;
+
+  @Prop({ type: LocalizedTextSchema, default: null })
+  summary: LocalizedText | null;
+
+  @Prop({ type: LocalizedTextSchema, default: null })
+  about: LocalizedText | null;
+
+  @Prop({ type: [CommitteeDutySchema], default: [] })
+  duties: CommitteeDuty[];
+
+  @Prop({ type: FormationDecisionSchema, default: null })
+  formationDecision: FormationDecision | null;
+
+  @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Document' }], default: [] })
+  documentIds: Types.ObjectId[];
+
+  /** The admin's own show/hide switch. Separate from `isActive`, which the
+   *  2026-09-01 rule above keeps descriptive, and from `publicationState`,
+   *  which remains the approvals engine's gate (ADR-0020, ADR-0125). */
+  @Prop({ type: Boolean, default: true })
+  isVisible: boolean;
+
+  /** Null until an admin classifies the committee; the dashboard lists such
+   *  rows under "not yet classified" and the pre-publish check refuses them. */
+  @Prop({ type: String, enum: COMMITTEE_KINDS, default: null })
+  kind: CommitteeKind | null;
+
+  /** Set only on a sub-committee. Null there means it follows the board. */
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Committee', default: null })
+  parentCommitteeId: Types.ObjectId | null;
 }
 
 export const CommitteeSchema = SchemaFactory.createForClass(Committee);

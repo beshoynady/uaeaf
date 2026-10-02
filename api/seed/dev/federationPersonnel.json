@@ -13,6 +13,7 @@
     "updatedAt": {
       "$date": "2026-09-08T17:53:45.877Z"
     },
+    "slug": "sample-board-member-1",
     "fullName": {
       "ar": "عضو مجلس تجريبي 1",
       "en": "Sample board member 1"
@@ -48,6 +49,7 @@
     "updatedAt": {
       "$date": "2026-09-08T17:53:45.878Z"
     },
+    "slug": "sample-board-member-2",
     "fullName": {
       "ar": "عضو مجلس تجريبي 2",
       "en": "Sample board member 2"
@@ -83,6 +85,7 @@
     "updatedAt": {
       "$date": "2026-09-08T17:53:45.878Z"
     },
+    "slug": "sample-board-member-3",
     "fullName": {
       "ar": "عضو مجلس تجريبي 3",
       "en": "Sample board member 3"
@@ -118,6 +121,7 @@
     "updatedAt": {
       "$date": "2026-09-08T17:53:45.878Z"
     },
+    "slug": "sample-board-member-4",
     "fullName": {
       "ar": "عضو مجلس تجريبي 4",
       "en": "Sample board member 4"
@@ -153,6 +157,7 @@
     "updatedAt": {
       "$date": "2026-09-08T17:53:45.878Z"
     },
+    "slug": "sample-board-member-5",
     "fullName": {
       "ar": "عضو مجلس تجريبي 5",
       "en": "Sample board member 5"
@@ -188,6 +193,7 @@
     "updatedAt": {
       "$date": "2026-09-08T17:53:45.878Z"
     },
+    "slug": "sample-board-member-6",
     "fullName": {
       "ar": "عضو مجلس تجريبي 6",
       "en": "Sample board member 6"
@@ -223,6 +229,7 @@
     "updatedAt": {
       "$date": "2026-09-08T17:53:45.878Z"
     },
+    "slug": "sample-board-member-7",
     "fullName": {
       "ar": "عضو مجلس تجريبي 7",
       "en": "Sample board member 7"
@@ -258,6 +265,7 @@
     "updatedAt": {
       "$date": "2026-09-12T00:00:00Z"
     },
+    "slug": "federation-president",
     "fullName": {
       "ar": "سعادة اللواء الدكتور محمد عبدالله المر",
       "en": "Dr. Muhammad Abdullah Al-Murr"

@@ -9,6 +9,7 @@ import { PermissionsRepository } from './permissions.repository.js';
 import type { PermissionDocument } from './schemas/permission.schema.js';
 import type { PermissionResponseDto } from './dto/permission-response.dto.js';
 import { isSuperAdminOnly } from '../../../common/authz/capability-map.js';
+import { REPORT_GROUP_RESOURCES } from '../../../common/constants/permission-resources.js';
 
 /** Implements: permissions collection, Domain 8 — Platform Administration
  *  (FigJam node 103:7901). */
@@ -57,9 +58,16 @@ export class PermissionsService implements OnApplicationBootstrap {
       this.connection.modelNames().map((name) => this.connection.model(name).collection.name),
     );
 
+    // The report groups are exempt by declaration, not by accident: they
+    // carry `ViewReports` for a product group and own no collection, so the
+    // collection rule cannot apply to them. Everything else must name one.
     const unknown = permissions
       .map((permission) => permission.resourceType)
-      .filter((resourceType) => !registeredCollections.has(resourceType));
+      .filter(
+        (resourceType) =>
+          !registeredCollections.has(resourceType) &&
+          !REPORT_GROUP_RESOURCES.has(resourceType as never),
+      );
 
     if (unknown.length > 0) {
       throw new Error(

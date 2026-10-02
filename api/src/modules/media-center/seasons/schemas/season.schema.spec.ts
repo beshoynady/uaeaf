@@ -1,5 +1,6 @@
 import { Model } from 'mongoose';
 import { Season, SeasonSchema } from './season.schema.js';
+import { PUBLICATION_STATES } from '../../../../common/constants/publication-states.js';
 import type { SeasonDocument } from './season.schema.js';
 import {
   connectTestDatabase,
@@ -56,5 +57,26 @@ describe('Season schema', () => {
   it('allows any number of isCurrent:false seasons', async () => {
     await SeasonModel.create({ ...base(), slug: '2024-2025', isCurrent: false });
     await expect(SeasonModel.create({ ...base(), slug: '2025-2026', isCurrent: false })).resolves.toBeDefined();
+  });
+
+  /**
+   * A season is a publication entity type, so `PublishingService` is what
+   * moves it — and that writes the platform's words and the platform's date
+   * field. A schema spelling either of them differently accepts the write
+   * (an `updateOne` runs no enum validator) and then fails to be read back.
+   */
+  it('speaks the platform publication vocabulary', () => {
+    expect(SeasonSchema.path('publicationState').options.enum).toEqual(PUBLICATION_STATES);
+  });
+
+  it('carries the publish date under the name the publishing path writes', () => {
+    expect(SeasonSchema.path('publishDate')).toBeDefined();
+    expect(SeasonSchema.path('publishedAt')).toBeUndefined();
+  });
+
+  it('stores a live season the schema itself accepts', async () => {
+    const live = await SeasonModel.create({ ...base(), slug: 'live', publicationState: 'Live' });
+
+    await expect(live.validate()).resolves.toBeUndefined();
   });
 });

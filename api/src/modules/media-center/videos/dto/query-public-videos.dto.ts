@@ -45,7 +45,11 @@ export class QueryPublicVideosDto {
   @IsIn(VIDEO_CATEGORIES)
   category?: string;
 
-  @ApiProperty({ required: false, description: 'e.g. "2025–2026". Ignored if unparseable.' })
+  @ApiProperty({
+    required: false,
+    description:
+      'A season label such as "2025–2026" (en dash: 1 September to 1 September, UTC, over publishedAt), or a published season’s slug such as "2025-2026" (that season’s own first to last day, inclusive, Asia/Dubai). Ignored when it is neither.',
+  })
   @IsOptional()
   @IsString()
   season?: string;

@@ -173,7 +173,7 @@ graph TD
 | ID | Entity | Collection | Cluster | Status | Aggregate Root? |
 |---|---|---|---|---|---|
 | ENT-001 | Federation | `federation` | A | APPROVED | Yes (singleton) |
-| ENT-002 | Season | `seasons` | G | PROPOSED | Yes |
+| ENT-002 | Season | `seasons` | G | BUILT 2026-09-29 (ADR-0127) — publication entity type, not a registry row | Yes |
 | ENT-003 | Championship | `championships` | H | APPROVED | Yes |
 | ENT-004 | Event | `events` | I | APPROVED | Yes |
 | ENT-005 | Result | `results` | K | APPROVED | Yes |
@@ -303,7 +303,7 @@ Organized by the same eight functional clusters as `03-Content-Data-Structuring-
 
 | Collection | Decision | Rationale |
 |---|---|---|
-| `seasons` | Own collection | PROPOSED — modeled per §8.8 spec regardless of adoption status, so Championship has somewhere to point once Season is approved |
+| `seasons` | Own collection | BUILT 2026-09-29 (ADR-0127): inclusive Asia/Dubai days, phases and key dates embedded, published through `PublishingService` with `publicationState`/`publishDate`/`publishedBy`. Fields and indexes: `07-Mongoose-Schema-Specification.md` §`seasons`. `championships.seasonId` is still unbuilt |
 | `championshipSeries` **(SPECULATIVE)** | Own collection, `championships.seriesId` optional back-reference | Placeholder only — sketch below (§16) |
 | `championships` | Own collection. References: `seasonId` (nullable until Season adopted), `venueId`, computed `participatingClubIds` (never stored, always derived from Participation per ADR-0020) | Sponsors are explicitly **never** a direct field here (source doc §8.9: "never a direct sponsor field") — always via `sponsorships` |
 | `events` | Own collection. References: `championshipId`, `disciplineId`. Embeds: nothing unbounded | An Event's Participants/Results are referenced collections, not embedded arrays — a Championship's full event list across careers-worth of Results would blow past sane document size otherwise |
@@ -526,7 +526,7 @@ Per Principle §3.2 and Ch.19 ADR-0031: every field marked `Multilingual? = Yes`
 
 Per Ch.13 (ADR-0024, Headless Business Platform) and Master Spec §57: the CMS never directly couples to the frontend, and registry data (`athletes`, `championships`, `results`, …) is never owned by a CMS content type. The boundary in this data architecture:
 
-- **Registry collections** (`athletes`, `clubs`, `coaches`, `officials`, `championships`, `events`, `participations`, `results`, `records`, `seasons`, `venues`, `disciplines`, `countries`) — entered via Admin Dashboard, governed by `verificationStatus` (Principle §3.5), never a `publicationState`.
+- **Registry collections** (`athletes`, `clubs`, `coaches`, `officials`, `championships`, `events`, `participations`, `results`, `records`, `venues`, `disciplines`, `countries`) — entered via Admin Dashboard, governed by `verificationStatus` (Principle §3.5), never a `publicationState`. `seasons` left this list when it was built as a publication entity type (ADR-0127).
 - **CMS collections** (`articles`, `staticPages`, `mediaAssets`, `externalMediaCoverage`, `governanceDocuments`) — authored via CMS Editorial Workflow, governed by `publicationState` (Principle §3.5), reference registry entities one-way only (`articles.references[]` points at an Athlete/Club/Championship; nothing on `athletes` points back to `articles` — reverse lookup is a query, not a stored field, per source doc §7's own "never restates the fact, only links" rule).
 - **Hybrid entity boundary** (Ch.13): Athlete/Club/Coach carry an "editorial overlay" — this is not a separate collection, it is additional fields on the same registry document (bio, featured flags) that the CMS is permitted to edit without changing the fact that Athlete/Club/Coach are registry-owned, not CMS-owned, entities.
 

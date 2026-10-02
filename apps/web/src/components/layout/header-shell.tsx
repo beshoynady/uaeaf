@@ -25,6 +25,7 @@ const EMPTY_FEATURES: HeaderFeatures = {
   latestArticle: null,
   latestVideo: null,
   activeLiveStream: null,
+  seasons: [],
 };
 
 /**

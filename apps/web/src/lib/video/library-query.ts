@@ -40,7 +40,10 @@ export interface LibraryQuery {
   kind: KindTab;
   platform?: VideoPlatform;
   category?: VideoCategory;
-  /** A season label as the API writes it, e.g. `2025-2026`. */
+  /** A season as the API reads it: a label (`2025\u20132026`, en dash — what each
+   *  video's `season` field carries and the select offers) or a season's slug
+   *  (`2025-2026`, hyphen — what a season's page links with). Sent as written;
+   *  the API tells the two apart. */
   season?: string;
   /** `<ownerType>:<id>`. Nothing produces one today — no championship or event
    *  entity exists — but the API filters by it and the URL carries it, so the
@@ -55,6 +58,9 @@ export interface LibraryQuery {
 }
 
 const DAYS = { last7: 7, last30: 30, last90: 90 } as const;
+
+/** A year pair joined by a hyphen (a season slug) or an en dash (a label). */
+const SEASON = /^\d{4}[-\u2013]\d{4}$/;
 
 const isoDate = (date: Date): string => date.toISOString().slice(0, 10);
 
@@ -97,7 +103,7 @@ export const readLibraryQuery = (params: Record<string, string | string[] | unde
     kind: oneOf(VIDEO_KINDS, one("kind")) ?? "all",
     platform: oneOf(VIDEO_PLATFORMS, one("platform")),
     category: oneOf(VIDEO_CATEGORIES, one("category")),
-    season: /^\d{4}-\d{4}$/.test(season ?? "") ? season : undefined,
+    season: SEASON.test(season ?? "") ? season : undefined,
     association: /^[a-zA-Z]+:[a-f\d]{24}$/.test(association ?? "") ? association : undefined,
     search: one("search")?.trim() || undefined,
     period,

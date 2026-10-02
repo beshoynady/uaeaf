@@ -99,6 +99,7 @@ const UPDATE_METHODS_USING_SHARED_SETTERS = [
   'modules/federation-governance/federation/federation.service.ts',
   'modules/federation-governance/federation-appointments/federation-appointments.service.ts',
   'modules/federation-governance/federation-personnel/federation-personnel.service.ts',
+  'modules/federation-governance/federation-positions/federation-positions.service.ts',
   'modules/federation-governance/governance-documents/governance-documents.service.ts',
   'modules/media-center/media-assets/media-assets.service.ts',
   'modules/cms-page-composition/navigation-menus/navigation-menus.service.ts',
@@ -396,11 +397,11 @@ describe('no update() casts a raw ObjectId/Date outside the shared helper', () =
     expect(rawUpdateCasts(extractMethodBody(source, 'update') ?? '')).toEqual(['new Types.ObjectId(dto.y)']);
   });
 
-  it('is exactly the 32 update() methods migrated to the shared setters so far', () => {
+  it('is exactly the 33 update() methods migrated to the shared setters so far', () => {
     // A count that silently drops matters as much as one that grows it —
     // same reasoning as the table-driven spec's own count check.
-    expect(UPDATE_METHODS_USING_SHARED_SETTERS).toHaveLength(32);
-    expect(new Set(UPDATE_METHODS_USING_SHARED_SETTERS).size).toBe(32);
+    expect(UPDATE_METHODS_USING_SHARED_SETTERS).toHaveLength(33);
+    expect(new Set(UPDATE_METHODS_USING_SHARED_SETTERS).size).toBe(33);
   });
 
   it('finds none in the update() method of any guarded file', () => {
@@ -520,8 +521,8 @@ describe('no Update*Dto lets PartialType skip null', () => {
       return [...stripped.matchAll(/export class (\w+Dto)\s+extends\s+PartialType\s*\(/g)].map((m) => m[1]);
     });
 
-    expect(declared).toHaveLength(33);
-    expect(new Set(declared).size).toBe(33);
+    expect(declared).toHaveLength(34);
+    expect(new Set(declared).size).toBe(34);
   });
 
   it('finds none that accepts null', () => {

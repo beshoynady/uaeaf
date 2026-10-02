@@ -9,8 +9,8 @@ import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
  *
  * `slug` is omitted, not made optional: a published season's slug is its
  * public address, so renaming it is not offered here. `publicationState`
- * stays on `CreateSeasonDto` because `'Published'` is already excluded from
- * `CREATABLE_SEASON_PUBLICATION_STATES` — the only route into `Published` is
+ * stays on `CreateSeasonDto` because `'Live'` is already excluded from
+ * `CREATABLE_SEASON_PUBLICATION_STATES` — the only route into `Live` is
  * `PATCH /seasons/:id/publish`.
  *
  * The nullable fields below are redeclared rather than merely made optional:

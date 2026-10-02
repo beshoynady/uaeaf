@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
 
 import { BoardMembersScreen } from "@/components/pages/board-members/board-members-screen";
+import { BoardScreen } from "@/components/pages/governance/board/board-screen";
 import { buildStaticPageMetadata } from "@/components/pages/static-page-screen";
+import { governanceV2Enabled } from "@/lib/governance/flag";
+import { sampleBoardPage } from "@/lib/governance/sample-data";
 import { findPublicPage } from "@/lib/pages/public-pages";
 import { isIndexable } from "@/lib/pages/indexability";
 import type { AppLocale } from "@/i18n/routing";
@@ -17,8 +20,13 @@ export const generateMetadata = async ({
 }): Promise<Metadata> => {
   const { locale } = await params;
   // Chapter 14 §11, decided in `indexability.ts` so this page's robots
-  // directive and its row in the sitemap cannot disagree.
-  return buildStaticPageMetadata(KEY, locale, await isIndexable(findPublicPage(KEY)!));
+  // directive and its row in the sitemap cannot disagree. The rebuilt screen
+  // is the exception: it reads placeholder records, so it is never indexable
+  // whatever the page's own state says.
+  const indexable = governanceV2Enabled()
+    ? false
+    : await isIndexable(findPublicPage(KEY)!);
+  return buildStaticPageMetadata(KEY, locale, indexable);
 };
 
 const BoardMembersPage = async ({ params }: { params: Promise<{ locale: AppLocale }> }) => {
@@ -29,6 +37,13 @@ const BoardMembersPage = async ({ params }: { params: Promise<{ locale: AppLocal
   // (ADR-0102 §D2).
   const withheld = await withheldPage(KEY, locale);
   if (withheld) return withheld;
+
+  // The rebuilt page, on the sample records, while its endpoints are written.
+  // Off — the default — the screen that reads `/federation-appointments/public`
+  // is served unchanged, so real names never give way to placeholders.
+  if (governanceV2Enabled()) {
+    return <BoardScreen board={sampleBoardPage()} locale={locale} />;
+  }
 
   return <BoardMembersScreen locale={locale} />;
 };

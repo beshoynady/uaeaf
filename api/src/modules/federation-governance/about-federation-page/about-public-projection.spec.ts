@@ -82,7 +82,7 @@ const card = (extra: Record<string, unknown> = {}) => ({
 const leader = (extra: Partial<AboutLeader> = {}): AboutLeader => ({
   fullName: pair('President'),
   positionTitle: pair('President'),
-  roleType: 'President',
+  rank: 1,
   displayOrder: 0,
   photoId: null,
   ...extra,
@@ -328,8 +328,8 @@ describe('projectAboutPage — the two automatic sections', () => {
       {},
       {
         leaders: [
-          leader({ fullName: pair('First'), roleType: 'President', displayOrder: 1 }),
-          leader({ fullName: pair('Second'), roleType: 'BoardMember', displayOrder: 2 }),
+          leader({ fullName: pair('First'), rank: 1, displayOrder: 1 }),
+          leader({ fullName: pair('Second'), rank: 2, displayOrder: 2 }),
         ],
       },
     );

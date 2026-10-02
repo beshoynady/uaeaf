@@ -8,6 +8,8 @@ import type { AuthenticatedUser } from '../../../common/interfaces/jwt-payload.i
 import { FederationAppointmentsService } from './federation-appointments.service.js';
 import { CreateFederationAppointmentDto } from './dto/create-federation-appointments.dto.js';
 import { UpdateFederationAppointmentDto } from './dto/update-federation-appointments.dto.js';
+import { CloseAppointmentDto } from './dto/close-appointment.dto.js';
+import { ReplaceChairDto } from './dto/replace-chair.dto.js';
 import { AppointmentPublicResponseDto } from './dto/appointment-public-response.dto.js';
 
 /** Implements: federationAppointments collection, Domain 1 — Federation & Governance. */
@@ -62,5 +64,21 @@ export class FederationAppointmentsController {
   @RequirePermission('federationAppointments', 'Restore')
   unarchive(@Param('id') id: string) {
     return this.service.unarchive(id);
+  }
+
+  @Patch(':id/close')
+  @RequirePermission('federationAppointments', 'Update')
+  close(@Param('id') id: string, @Body() dto: CloseAppointmentDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.service.close(id, dto, new Types.ObjectId(user.userId));
+  }
+
+  @Post('committees/:committeeId/chair')
+  @RequirePermission('federationAppointments', 'Update')
+  replaceChairOfCommittee(
+    @Param('committeeId') committeeId: string,
+    @Body() dto: ReplaceChairDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.service.replaceChairOfCommittee({ ...dto, committeeId }, new Types.ObjectId(user.userId));
   }
 }

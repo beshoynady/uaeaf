@@ -199,7 +199,10 @@ export class PresidentMessagePagesService {
    * `AlbumsService` set — when no such message is Live.
    */
   async getCurrentPublic(): Promise<PresidentMessagePublicResponseDto | WithheldPageDto | null> {
-    const appointments = await this.appointmentsService.findActiveByRole('President');
+    // Narrowed to the board's own top-ranked post, not merely "Active": a
+    // row whose federationAppointmentId names a board member's appointment
+    // must resolve to nothing here, not be served as the president's.
+    const appointments = await this.appointmentsService.findActiveTopOfBoard();
     if (appointments.length === 0) {
       return null;
     }

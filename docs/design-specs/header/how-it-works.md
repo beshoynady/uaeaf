@@ -55,7 +55,7 @@ page around it.
 | --- | --- | --- |
 | 1 | `apps/web/src/lib/navigation.ts` | The tree (`PRIMARY_NAV`), its types (`NavItem`, `NavLeaf`), and its derived views (`navDestinations`, `isWithin`, `containsPath`, `pagePart`). No JSX. |
 | 2 | `apps/web/messages/{ar,en}.json` (`Nav` namespace) | Display text keyed by `NavItem.key`/`descriptionKey`. |
-| 3 | `apps/web/src/lib/header/features.ts` | `getHeaderFeatures(locale)` — the one server-side read for every panel's card, four independent sources plus three explicit `null`s. |
+| 3 | `apps/web/src/lib/header/features.ts` | `getHeaderFeatures(locale)` — the one server-side read for every panel's card, five independent sources (the fifth is the public season archive, for the season picker) plus three explicit `null`s. |
 | 4 | `apps/web/src/components/layout/site-header.tsx` | Async server component: calls `getHeaderFeatures`, hands the result to `HeaderShell`. Zero client code. |
 | 5 | `apps/web/src/app/[locale]/layout.tsx` | Mounts `<SiteHeader locale={locale} />` once per request. |
 | 6 | `apps/web/src/components/layout/header-shell.tsx` | Client: owns `openKey`, `drawerOpen`, `searchOpen`, `scrolled`; the Ctrl/Cmd+K listener; the drawer's focus trap and scroll lock; renders `PrimaryNav`, `HeaderToolsCapsule` (twice — row and drawer copies) and `SearchDialog`. |
@@ -66,6 +66,7 @@ page around it.
 | 11 | `apps/web/src/components/layout/mega/tricolor-indicator.tsx` | The 3px tricolour underline, shared by the leaf-link and group-trigger renderers in `primary-nav.tsx`. |
 | 12 | `apps/web/src/components/layout/mega/nav-icon.tsx` | `key → <svg>` map for every nav leaf, with a fallback glyph for anything unmapped. |
 | 13 | `apps/web/src/components/layout/cards/index.tsx` | `panelFeature(key, features)` / `panelMiddle(key, features)` — the single switch mapping a panel's key to its live card, its standing fallback, or `null`. |
+| 13a | `apps/web/src/components/layout/cards/season-picker.tsx` | The Events & Seasons middle track: the latest three seasons and a year search over every public season, filtered in the browser with no request (`docs/design-specs/seasons/how-it-works.md`). |
 | 14 | `apps/web/src/components/layout/header-tools-capsule.tsx`, `language-switch.tsx`, `theme-switch.tsx` | The three-control capsule shared, unchanged in structure, between the row and the drawer. |
 | 15 | `apps/web/src/components/layout/use-focus-trap.ts` | The `useFocusTrap` hook — shared by the drawer here and by the search dialog (Part 2). |
 | 16 | `apps/web/src/components/shared/countdown.tsx` | Shared countdown logic, used by a header event card and the homepage hero alike. |
@@ -218,7 +219,8 @@ should show it.
   live-stream item's conditional visibility, prefetch computed from the page part (not the raw
   href), icon fallback behaviour.
 - `apps/web/src/lib/header/features.spec.ts` — each source's isolation (one failing source
-  never affects the others), the function never rejects, explicit-null fields stay `null`.
+  never affects the others), the function never rejects, explicit-null fields stay `null`,
+  the season list is `[]` (never `null`) when the archive cannot be read.
 
 ### 8. What was deliberately not built, and why
 
@@ -229,11 +231,10 @@ should show it.
   a continuous, above-the-fold pulse (every candidate token is restricted to a different,
   already-spoken-for use). The dot is static; its title caption carries the "this is live"
   meaning instead.
-- **A season picker inside the Events & Seasons panel, and a season summary inside the
-  Championships panel.** Both are named in the design spec as a "middle" track occupant, and
-  both have no reader today — no season/championship collection exists yet. The mechanism
-  (the middle slot) is built and shared; the specific readers are explicitly deferred to a
-  later project in the same series.
+- **A season summary inside the Championships panel.** Named in the design spec as a
+  "middle" track occupant, it has no reader — no championships or records collection exists to
+  summarise. (The Events & Seasons panel's season picker, the other occupant deferred here, is
+  built: `cards/season-picker.tsx`, ADR-0127 D9.)
 - **A detail page for an individual athlete, club or coach.** Search links to these as
   same-page anchors (`/athletes#slug`, `/clubs#slug`, `/coaches#slug`) because no `[slug]`
   detail route exists under any of the three directory pages.

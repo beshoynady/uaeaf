@@ -40,7 +40,7 @@ const NewSeasonPage = async ({ params }: { params: Promise<{ locale: string }> }
     );
   }
 
-  const { images, documents, sponsors, permissions, publishMode } = screen.data;
+  const { images, documents, sponsors, permissions, publishMode, editorial } = screen.data;
   return (
     <>
       {header}
@@ -51,6 +51,7 @@ const NewSeasonPage = async ({ params }: { params: Promise<{ locale: string }> }
         sponsors={sponsors}
         permissions={permissions}
         publishMode={publishMode}
+        editorial={editorial}
         locale={locale}
         now={new Date().toISOString()}
       />

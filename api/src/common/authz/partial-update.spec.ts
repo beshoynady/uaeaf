@@ -179,9 +179,18 @@ const rows: readonly Row[] = (() => {
     payload: Record<string, unknown>,
     extraArgCount: number,
     findByIdResult: unknown = null,
+    // Per-position override for an extra ctor dependency that `update()`
+    // actually calls (rather than merely holds) — every other position still
+    // gets the blank `{}` the file header describes. `committees` is the
+    // first row to need this: its `update()` reads the row via `findById`
+    // (like `workflowSteps`, covered by `findByIdResult` above) AND calls
+    // `hierarchyService.assertPlacementAllowed`, so that one extra needs a
+    // callable stub or the row fails on "not a function", not on the thing
+    // this table exists to check.
+    extraStubs: readonly unknown[] = [],
   ) => {
     const repo = repositoryStub(findByIdResult);
-    const extras = Array.from({ length: extraArgCount }, () => ({}) as never);
+    const extras = Array.from({ length: extraArgCount }, (_unused, i) => (extraStubs[i] ?? {}) as never);
     const service = new ServiceCtor(repo as never, ...extras);
     table.push({
       resource,
@@ -211,7 +220,17 @@ const rows: readonly Row[] = (() => {
   add('clubTeams', ClubTeamsService, UpdateClubTeamDto, { gender: 'Female' }, 0);
   add('clubs', ClubsService, UpdateClubDto, { status: 'Inactive' }, 0);
   add('coaches', CoachesService, UpdateCoachDto, { status: 'Inactive' }, 0);
-  add('committees', CommitteesService, UpdateCommitteeDto, { isActive: false }, 2);
+  add(
+    'committees',
+    CommitteesService,
+    UpdateCommitteeDto,
+    { isActive: false },
+    3,
+    // Unclassified, no parent — the guard returns on the first check, so the
+    // stored shape need only supply what `update()` actually reads.
+    { kind: null, parentCommitteeId: null },
+    [{}, {}, { assertPlacementAllowed: async () => undefined }],
+  );
   add('countries', CountriesService, UpdateCountryDto, { type: 'Emirate' }, 0);
   add('disciplines', DisciplinesService, UpdateDisciplineDto, { isInternationallyCertified: true }, 0);
   add('documents', DocumentsService, UpdateDocumentDto, { documentType: 'Bylaw' }, 2);
@@ -224,7 +243,16 @@ const rows: readonly Row[] = (() => {
     { status: 'Completed' },
     1,
   );
-  add('federationPersonnel', FederationPersonnelsService, UpdateFederationPersonnelDto, { status: 'Inactive' }, 1);
+  add(
+    'federationPersonnel',
+    FederationPersonnelsService,
+    UpdateFederationPersonnelDto,
+    { status: 'Inactive' },
+    1,
+    // Task 4: update() now loads the existing row first, to refuse a
+    // changed slug — a truthy stand-in so that check passes through.
+    { slug: 'existing-slug' },
+  );
   add('governanceDocuments', GovernanceDocumentsService, UpdateGovernanceDocumentDto, { documentVersion: 'v2' }, 3);
   add('mediaAssets', MediaAssetsService, UpdateMediaAssetDto, { isFeatured: true }, 2);
   add('navigationMenus', NavigationMenusService, UpdateNavigationMenuDto, { location: 'Footer' }, 0);
@@ -411,6 +439,9 @@ const NULL_CASES: readonly NullCase[] = (() => {
     UpdateFederationPersonnelDto,
     { photoId: null },
     1,
+    // Task 4: update() now loads the existing row first, to refuse a
+    // changed slug — a truthy stand-in so that check passes through.
+    { findByIdResult: { slug: 'existing-slug' } },
   );
   add(
     'federationPersonnel',
@@ -420,6 +451,7 @@ const NULL_CASES: readonly NullCase[] = (() => {
     UpdateFederationPersonnelDto,
     { nationalityId: null },
     1,
+    { findByIdResult: { slug: 'existing-slug' } },
   );
 
   add(

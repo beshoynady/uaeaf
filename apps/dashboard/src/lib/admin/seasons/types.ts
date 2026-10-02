@@ -9,12 +9,14 @@ import type { LocalizedText } from "@/lib/api/types";
  * would turn a runtime contract into a build-time dependency. The API's own
  * `@IsIn` refuses anything outside these with a 400.
  */
-export const SEASON_STATES = ["Draft", "Published", "Archived"] as const;
+/** The platform's publication vocabulary. `Unpublished` is not `Draft`: the
+ *  season has been live and was taken down. */
+export const SEASON_STATES = ["Draft", "Live", "Unpublished", "Archived"] as const;
 export type SeasonState = (typeof SEASON_STATES)[number];
 
-/** What `POST /seasons` accepts. `Published` is reachable only through
- *  `PATCH /seasons/:id/publish`, which runs the type's approval policy. */
-export const CREATABLE_SEASON_STATES = ["Draft", "Archived"] as const satisfies readonly SeasonState[];
+/** What `POST /seasons` accepts. `Live` is reachable only through the publish
+ *  routes, which run the type's approval policy. */
+export const CREATABLE_SEASON_STATES = ["Draft", "Unpublished", "Archived"] as const satisfies readonly SeasonState[];
 
 export const SEASON_PHASE_TYPES = ["preparation", "domestic", "international", "rest"] as const;
 export type SeasonPhaseType = (typeof SEASON_PHASE_TYPES)[number];
@@ -58,7 +60,8 @@ export interface AdminSeason {
   documentIds: string[];
   isCurrent: boolean;
   publicationState: SeasonState;
-  publishedAt: string | null;
+  /** When the season last went live. */
+  publishDate: string | null;
   isVisible: boolean;
   seo: SeasonSeo;
   /** The version the editor is looking at. `PATCH :id/publish` refuses a

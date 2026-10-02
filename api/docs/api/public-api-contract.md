@@ -218,6 +218,53 @@ Same singleton pattern as `/albums-page`, for the Videos landing page.
 {}
 ```
 
+### The `season` parameter on `GET /api/v1/albums/public` and `GET /api/v1/videos/public`
+
+Written from the code (`seasons/season-range-resolver.ts`, ADR-0127 D5), not captured
+from a running instance. Three readings, in order:
+
+| Value | Example | Range applied |
+| --- | --- | --- |
+| A label (en dash) | `?season=2025–2026` | 1 September to 1 September, UTC midnight — unchanged, whether or not a season record exists. Albums by `eventDate`, videos by `publishedAt`. |
+| A published season's slug | `?season=2025-2026` | That season's own first to last day, inclusive, Asia/Dubai. Only a `Live`, visible, unarchived season resolves. |
+| Anything else | `?season=next` | Ignored: the whole library, never an empty page. |
+
+An explicit `from`/`to` window still wins over either reading.
+
+### `GET /api/v1/seasons/public`, `/public/current`, `/public/:slug`
+
+Written from the code (`SeasonsService.toPublicResponse`), not captured — no season was
+seeded when this was recorded. The archive answers an array, newest first; `/public/current`
+and `/public/:slug` answer one season, or `null` — sent as a 200 with an empty body — when none
+is current or the slug names no season a visitor may see (a Draft, a hidden season and an unknown slug read the same). Only a
+`Live`, visible, unarchived season is ever returned.
+
+```json
+{
+  "id": "…",
+  "name": { "ar": "موسم 2026–2027", "en": "Season 2026–2027" },
+  "shortName": "26/27",
+  "slug": "2026-2027",
+  "tagline": null,
+  "logoId": null,
+  "bannerId": null,
+  "shareImageId": null,
+  "about": { "ar": "…", "en": "…" },
+  "closingSummary": null,
+  "startDate": "2026-08-31T20:00:00.000Z",
+  "endDate": "2027-08-30T20:00:00.000Z",
+  "phases": [{ "name": { "ar": "…", "en": "…" }, "type": "preparation", "from": "…", "to": "…" }],
+  "keyDates": [{ "title": { "ar": "…", "en": "…" }, "date": "…" }],
+  "calendarDocumentId": null,
+  "documentIds": [],
+  "isCurrent": true,
+  "seo": { "metaTitle": null, "metaDescription": null, "ogImageId": null }
+}
+```
+
+Every date is the Dubai midnight of the calendar day it names, and every day is inclusive
+(ADR-0127 D1). `closingSummary` stays `null` until the whole last Dubai day has passed.
+
 ---
 
 ## CMS & Page Composition

@@ -76,7 +76,7 @@ export const SeasonStatus = ({ season, locale, now }: { season: AdminSeason; loc
 
   return (
     <span className="flex flex-col items-start gap-1">
-      <StatusBadge status={badge === "current" || badge === "published" ? "published" : "draft"} label={t(`badge_${badge}`)} />
+      <StatusBadge status={badge === "current" || badge === "live" ? "published" : "draft"} label={t(`badge_${badge}`)} />
       {note ? (
         <span className="text-caption text-[color:var(--color-text-secondary)]">
           {note.kind === "phase"

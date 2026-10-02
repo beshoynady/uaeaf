@@ -1,19 +1,23 @@
 import type { AppLocale } from "./routing";
 
 import arAlbums from "../../messages/ar/albums.json";
+import arBoard from "../../messages/ar/board.json";
 import arChrome from "../../messages/ar/chrome.json";
 import arContact from "../../messages/ar/contact.json";
 import arGovernance from "../../messages/ar/governance.json";
 import arHome from "../../messages/ar/home.json";
 import arNews from "../../messages/ar/news.json";
+import arSeasons from "../../messages/ar/seasons.json";
 import arShell from "../../messages/ar/shell.json";
 import arVideo from "../../messages/ar/video.json";
 import enAlbums from "../../messages/en/albums.json";
+import enBoard from "../../messages/en/board.json";
 import enChrome from "../../messages/en/chrome.json";
 import enContact from "../../messages/en/contact.json";
 import enGovernance from "../../messages/en/governance.json";
 import enHome from "../../messages/en/home.json";
 import enNews from "../../messages/en/news.json";
+import enSeasons from "../../messages/en/seasons.json";
 import enShell from "../../messages/en/shell.json";
 import enVideo from "../../messages/en/video.json";
 
@@ -31,6 +35,8 @@ export const MESSAGE_FILES = [
   "albums",
   "governance",
   "contact",
+  "seasons",
+  "board",
 ] as const;
 
 const FILES_BY_LOCALE = {
@@ -43,6 +49,8 @@ const FILES_BY_LOCALE = {
     albums: arAlbums,
     governance: arGovernance,
     contact: arContact,
+    seasons: arSeasons,
+    board: arBoard,
   },
   en: {
     chrome: enChrome,
@@ -53,6 +61,8 @@ const FILES_BY_LOCALE = {
     albums: enAlbums,
     governance: enGovernance,
     contact: enContact,
+    seasons: enSeasons,
+    board: enBoard,
   },
 } as const;
 
@@ -68,5 +78,7 @@ export const loadMessages = (locale: AppLocale) => {
     ...files.albums,
     ...files.governance,
     ...files.contact,
+    ...files.seasons,
+    ...files.board,
   };
 };

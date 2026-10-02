@@ -1,0 +1,282 @@
+/*
+ * Motion for the governance pages: the board, the committees, one committee,
+ * and a person's profile.
+ *
+ * Separate from `motion.css` because the site's shared vocabulary is four
+ * entrances and a parallax, while these four pages are a scripted sequence —
+ * an organisational chart whose connectors draw as it is read, and a profile
+ * told as seven scenes. Keeping that vocabulary here means the site's shared
+ * stylesheet does not grow a dozen rules only four pages use.
+ *
+ * Every rule animates `transform` or `opacity` and nothing else. Chapter 5
+ * §5.6 and Chapter 8's component governance make that GPU-only restriction
+ * absolute (ADR-0009), which rules out three techniques the design reference
+ * reaches for, so each is expressed compositor-only instead:
+ *
+ * - The photo wipe is not `clip-path`. The frame clips and an inner layer
+ *   travels, which is the same picture arriving from the same edge.
+ * - The biography's word-by-word colouring is not `color`. That text is white
+ *   on a dark scene and the reference travels from 14% white to full, so a
+ *   per-word `opacity` ramp reproduces it exactly rather than approximately.
+ * - The track in the profile's fourth scene does not draw by
+ *   `stroke-dashoffset`. It is an `aria-hidden` backdrop at low opacity, so it
+ *   settles as one layer instead.
+ *
+ * Guarded the way `motion.css` guards its own scroll work, and for the same
+ * reason: `animation-timeline` ignores `animation-duration`, so the global
+ * reduced-motion reset does not reach a scroll-driven animation and only the
+ * enclosing `no-preference` block honours Chapter 5 §5.8. Reduced motion
+ * therefore leaves every element below at its resting state, fully visible —
+ * no rule here is what makes content appear.
+ *
+ * `--reveal-step` is the shared stagger index, set through `revealStep()` in
+ * `lib/motion/reveal.ts`, so these rules stagger the way the rest of the site
+ * does.
+ */
+
+/*
+ * No `opacity` here, and that is the whole correctness argument — the same one
+ * `motion.css` makes at `uaeaf-rise-track`.
+ *
+ * A scroll-driven animation is the one kind whose end state a static render is
+ * not guaranteed to reach: anything below the fold sits at progress 0 for a
+ * crawler, a print and a full-page screenshot. Written with `opacity: 0` at
+ * `from`, every card on the board below the first screen rendered invisible —
+ * measured, not theorised. Scaling an already-opaque card costs nothing if the
+ * animation never runs.
+ */
+@keyframes uaeaf-gov-pop {
+  from {
+    transform: scale(0.92);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* Drawn from the top down: a connector belongs to the level above it. */
+@keyframes uaeaf-gov-line {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes uaeaf-gov-line-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* The card tips up onto its face. Opaque throughout, for the reason above. */
+@keyframes uaeaf-gov-flip {
+  from {
+    transform: perspective(900px) rotateX(38deg) translateY(var(--space-12));
+  }
+  to {
+    transform: perspective(900px) rotateX(0) translateY(0);
+  }
+}
+
+/* The inner layer of a clipping frame, arriving from below. */
+@keyframes uaeaf-gov-wipe {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* A plinth grows out of the floor it stands on. */
+@keyframes uaeaf-gov-rise-from-base {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes uaeaf-gov-stretch {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* A backdrop settling out of a push-in. */
+@keyframes uaeaf-gov-settle {
+  from {
+    transform: scale(1.18);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* White text at 14% is white text at 14% opacity. */
+@keyframes uaeaf-gov-ink {
+  from {
+    opacity: 0.14;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes uaeaf-gov-word {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-8));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* A light strip crossing the opening scene. */
+@keyframes uaeaf-gov-streak {
+  from {
+    transform: translateX(120%);
+  }
+  to {
+    transform: translateX(-160%);
+  }
+}
+
+/*
+ * Resting states, outside every guard.
+ *
+ * Each of these is the state the element holds when nothing animates it —
+ * under reduced motion, in a browser without `animation-timeline`, and in a
+ * static render. Written here rather than relied on by default because two of
+ * them are not the initial value: a word of the name and a word of the
+ * biography would otherwise be invisible if a rule below ever failed to apply.
+ */
+.gov-word,
+.gov-ink {
+  opacity: 1;
+}
+
+.gov-wipe-inner {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /*
+   * On load. Only the opening scene, where the animation is certain to finish:
+   * the name arrives word by word, and the strips cross behind it.
+   */
+  .gov-word {
+    animation: uaeaf-gov-word var(--motion-duration-entrance) var(--motion-easing-decelerate) both;
+    animation-delay: calc(
+      min(var(--reveal-step), var(--motion-ascent-stagger-steps)) * var(--motion-ascent-stagger)
+    );
+  }
+
+  /*
+   * Three passes and then it rests, declared here rather than left running.
+   *
+   * WCAG 2.2.2 requires a control for motion that both starts by itself and
+   * runs past five seconds; a finite count means there is nothing to pause, so
+   * no control has to exist. It must not become `infinite`.
+   */
+  .gov-streak {
+    animation: uaeaf-gov-streak var(--motion-duration-orbit) var(--motion-easing-standard) 3 both;
+    animation-delay: calc(var(--reveal-step) * var(--motion-duration-slower));
+  }
+
+  @supports (animation-timeline: view()) {
+    /*
+     * Scroll-driven, so the reader's own scrolling runs them and reversing
+     * reverses the motion. Ranges are bounded inside `entry` for the reason
+     * `motion.css` sets out at `.rise-scroll`: a `cover`-bounded range strands
+     * anything already on screen at first paint near zero progress.
+     */
+    .gov-pop,
+    .gov-flip,
+    .gov-line,
+    .gov-line-x,
+    .gov-podium,
+    .gov-tape,
+    .gov-wipe-inner,
+    .gov-ink {
+      animation-timeline: view();
+      animation-fill-mode: both;
+      animation-range: entry 0% entry var(--space-32);
+    }
+
+    .gov-pop {
+      animation-name: uaeaf-gov-pop;
+      animation-delay: calc(var(--reveal-step) * var(--motion-ascent-stagger));
+    }
+
+    .gov-flip {
+      animation-name: uaeaf-gov-flip;
+      animation-delay: calc(var(--reveal-step) * var(--motion-ascent-stagger));
+    }
+
+    .gov-line {
+      animation-name: uaeaf-gov-line;
+      transform-origin: top;
+    }
+
+    .gov-line-x {
+      animation-name: uaeaf-gov-line-x;
+    }
+
+    .gov-podium {
+      animation-name: uaeaf-gov-rise-from-base;
+      transform-origin: bottom;
+      animation-delay: calc(var(--reveal-step) * var(--motion-ascent-stagger));
+    }
+
+    .gov-tape {
+      animation-name: uaeaf-gov-stretch;
+      transform-origin: center;
+    }
+
+    .gov-wipe-inner {
+      animation-name: uaeaf-gov-wipe;
+    }
+
+    /*
+     * One word of the biography, lit as it is reached. The stagger is a share
+     * of the range rather than a delay, because a scroll timeline ignores
+     * `animation-delay`; without it a long paragraph's words would all light
+     * at once.
+     *
+     * Bounded inside `entry` like everything above. This is the one rule here
+     * that still animates `opacity`, because the reference travels from 14%
+     * white to full on a dark scene and that IS the effect rather than a
+     * reveal — so it has to be impossible to strand. An element already on
+     * screen has finished its `entry` phase by definition, and `fill: both`
+     * then resolves it to lit rather than leaving a biography at 14%.
+     */
+    .gov-ink {
+      animation-name: uaeaf-gov-ink;
+      animation-range: entry calc(var(--reveal-step) * 1.5%) entry
+        calc(30% + var(--reveal-step) * 1.5%);
+    }
+
+    /*
+     * A backdrop, pushed in and settling across its whole pass through the
+     * viewport — the one place a `cover` range is right, because there is no
+     * entrance to strand: at zero progress the layer is merely at its largest.
+     */
+    .gov-settle {
+      animation: uaeaf-gov-settle both;
+      animation-timeline: view();
+      animation-range: entry 0% exit 100%;
+    }
+  }
+}

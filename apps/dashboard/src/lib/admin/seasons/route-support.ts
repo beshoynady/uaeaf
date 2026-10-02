@@ -15,9 +15,10 @@ import type { SeasonErrorCode } from "./error-codes";
  *   starts. `classifyWriteFailure` turns every 422 into a 502 "service
  *   unavailable", which would send the editor to wait for a server rather
  *   than fix a date.
- * - **The two overlaps** arrive under their own codes (`seasonOverlap`,
- *   `seasonPhaseOverlap`), which the shared vocabulary does not know and
- *   would fold into a bare `conflict`; each gets its sentence. A create's
+ * - **The season's date refusals** arrive under their own codes
+ *   (`seasonOverlap`, `seasonPhaseOverlap`, `seasonPhaseOutOfRange`); each
+ *   is matched here by code whatever its status, so a 422 is never folded
+ *   into "service unavailable", and each gets its sentence. A create's
  *   plain `conflict` is the taken address.
  *
  * - **Shared codes whose shared words are wrong or vague here.**
@@ -34,7 +35,7 @@ import type { SeasonErrorCode } from "./error-codes";
  * as it does on every other screen.
  */
 
-export type SeasonFailureContext = "create" | "write" | "delete" | "publish" | "submit" | "action";
+export type SeasonFailureContext = "create" | "write" | "delete" | "publish" | "submit" | "publishApproved" | "action";
 
 export const classifySeasonFailure = (
   error: unknown,
@@ -44,6 +45,7 @@ export const classifySeasonFailure = (
     const own = (code: SeasonErrorCode, status: number) => ({ status, code });
     if (error.apiCode === "seasonOverlap") return own("seasonOverlap", error.status);
     if (error.apiCode === "seasonPhaseOverlap") return own("seasonPhaseOverlap", error.status);
+    if (error.apiCode === "seasonPhaseOutOfRange") return own("seasonPhaseOutOfRange", error.status);
     if (context === "create" || context === "write") {
       if (error.status === 422) return own("seasonRangeInvalid", 422);
       if (context === "create" && error.status === 409 && error.apiCode === "conflict") return own("seasonSlugTaken", 409);
@@ -52,7 +54,7 @@ export const classifySeasonFailure = (
     if (context === "publish" && error.apiCode === "workflowRequired") return own("seasonNeedsReview", 409);
     if (context === "submit" && error.apiCode === "conflict") return own("seasonPublishDirectly", 409);
     if (context === "submit" && error.apiCode === "activeWorkflowExists") return own("seasonReviewInProgress", 409);
-    if ((context === "publish" || context === "submit") && error.apiCode === "missingRequiredField") {
+    if ((context === "publish" || context === "submit" || context === "publishApproved") && error.apiCode === "missingRequiredField") {
       return own("seasonBannerMissing", 409);
     }
   }

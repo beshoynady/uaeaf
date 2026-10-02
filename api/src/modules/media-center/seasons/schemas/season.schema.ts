@@ -4,11 +4,10 @@ import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
 import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
 import { PageSeo, PageSeoSchema } from '../../../../common/schemas/page-seo.schema.js';
+import { PUBLICATION_STATES } from '../../../../common/constants/publication-states.js';
+import type { PublicationState } from '../../../../common/constants/publication-states.js';
 
 export type SeasonDocument = HydratedDocument<Season>;
-
-export const SEASON_PUBLICATION_STATES = ['Draft', 'Published', 'Archived'] as const;
-export type SeasonPublicationState = (typeof SEASON_PUBLICATION_STATES)[number];
 
 export const SEASON_PHASE_TYPES = ['preparation', 'domestic', 'international', 'rest'] as const;
 export type SeasonPhaseType = (typeof SEASON_PHASE_TYPES)[number];
@@ -46,11 +45,12 @@ export const SeasonKeyDateSchema = SchemaFactory.createForClass(SeasonKeyDate);
  * Implements: `seasons` collection, Domain 5 — Media Center.
  *
  * `seasons` is a `WORKFLOW_ENTITY_TYPES`/`PublicationEntityType` member:
- * `publicationState` moves to `Published` only through
- * `PublishingService.publishDirect`, behind the type's approval policy and
- * its `Publish` permission (ADR-0125) — `SeasonsController` no longer
- * publishes on its own. Unlike `albums`/`videos`, which stay outside the
- * list (see `album.schema.ts`).
+ * `publicationState` moves to `Live` only through `PublishingService`
+ * (`publishDirect`, or `publishApproved` after a review), behind the type's
+ * approval policy and its `Publish` permission (ADR-0125). So it carries the
+ * platform's vocabulary — `PUBLICATION_STATES` and `publishDate` — which is
+ * what `PublishingService.markLive` writes; `albums`/`videos` stay outside
+ * that list and keep a vocabulary of their own (see `album.schema.ts`).
  */
 @Schema({ collection: 'seasons', timestamps: true })
 export class Season extends BaseSchema {
@@ -110,11 +110,13 @@ export class Season extends BaseSchema {
   @Prop({ type: Boolean, default: false })
   isCurrent: boolean;
 
-  @Prop({ type: String, enum: SEASON_PUBLICATION_STATES, required: true })
-  publicationState: SeasonPublicationState;
+  @Prop({ type: String, enum: PUBLICATION_STATES, required: true })
+  publicationState: PublicationState;
 
+  /** Set by `PublishingService.markLive` from the publication row, so the
+   *  date a reader sees and the date the publication records cannot differ. */
   @Prop({ type: Date, default: null })
-  publishedAt: Date | null;
+  publishDate: Date | null;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', default: null })
   publishedBy: Types.ObjectId | null;

@@ -31,7 +31,7 @@ import { isServed } from "./activation";
  * The fetches here are the same ones the pages make, and Next.js dedupes
  * identical requests within a render, so asking twice costs nothing.
  */
-export async function isIndexable(page: PublicPage): Promise<boolean> {
+export const isIndexable = async (page: PublicPage): Promise<boolean> => {
   // A page the federation has switched off is §11's case by definition: a title
   // and a status line (ADR-0102 §D2). Checked ahead of every per-page rule
   // because there is no page for which "withheld but indexable" is a state, and
@@ -106,10 +106,15 @@ export async function isIndexable(page: PublicPage): Promise<boolean> {
       const response = await fetchPublic<Paginated<unknown>>("/videos/public?page=1&limit=1");
       return Array.isArray(response?.items) && response.items.length > 0;
     }
+    case "seasons": {
+      // The archive's threshold is met the moment one season is published.
+      const seasons = await fetchPublic<unknown[]>(page.apiPath);
+      return Array.isArray(seasons) && seasons.length > 0;
+    }
     default:
       // The remaining six have no content source at all yet. This is not a
       // pessimistic default — it is the accurate one, and it flips per page
       // in the same change that gives that page a list to render.
       return false;
   }
-}
+};

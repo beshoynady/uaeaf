@@ -186,7 +186,13 @@ describe("the application uses roles, not ramp steps (Chapter 7 §7.7)", () => {
    * reason. Empty since ADR-0072 D13: every use has a role. An entry added
    * here names the file, the count and why no role exists, and has to shrink.
    */
-  const PENDING: Record<string, { count: number; reason: string }> = {};
+  const PENDING: Record<string, { count: number; reason: string }> = {
+    "apps/web/src/components/pages/seasons/seasons.css": {
+      count: 5,
+      reason:
+        "Season phase types preparation (neutral-warm 200 ground, 900 ink) and rest (neutral-warm 50 ground, 700 ink, 400 dashed edge): owner decision 2026-09-29 names these steps and no role token carries them. Moves to phase role tokens once the design system defines them.",
+    },
+  };
 
   it("finds no ramp step outside the recorded pending usages", () => {
     const counts: Record<string, number> = {};

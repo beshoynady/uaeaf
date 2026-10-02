@@ -1,0 +1,26 @@
+[
+  {
+    "_id": {
+      "$oid": "6aa5001000000000000000d1"
+    },
+    "createdBy": null,
+    "updatedBy": null,
+    "archivedAt": null,
+    "archivedBy": null,
+    "createdAt": {
+      "$date": "2026-09-12T00:00:00Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-12T00:00:00Z"
+    },
+    "title": {
+      "ar": "رئيس الاتحاد",
+      "en": "President"
+    },
+    "body": "board",
+    "rank": 1,
+    "displayOrder": 1,
+    "maxHolders": 1,
+    "isVisible": true
+  }
+]

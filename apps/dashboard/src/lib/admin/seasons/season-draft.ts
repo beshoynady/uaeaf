@@ -276,7 +276,7 @@ const shared = (draft: SeasonDraft): Record<string, unknown> => ({
 const OPTIONAL_IDS = ["logoId", "bannerId", "shareImageId", "calendarDocumentId"] as const;
 
 /**
- * `POST /seasons`'s body. Always a draft: `Published` is the separate publish
+ * `POST /seasons`'s body. Always a draft: `Live` is the separate publish
  * step, and a season created straight into `Archived` is not something the
  * list or the form offers. Empty optional fields are left out — the create
  * DTO's optional fields are not nullable.

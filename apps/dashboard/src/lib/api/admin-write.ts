@@ -232,6 +232,15 @@ export const PARTIAL_UPDATE_ERROR_CODES = [
   "requiredFieldCleared",
 ] as const;
 
+/**
+ * Failures only the season screens can produce: two records whose days
+ * overlap. Two different fixes, so two codes — `seasonOverlap` moves this
+ * season's dates or the other season's; `seasonPhaseOverlap` moves one of two
+ * same-type phases inside this season; `seasonPhaseOutOfRange` fixes one
+ * phase that leaves the season's days or ends before it starts.
+ */
+export const SEASON_WRITE_ERROR_CODES = ["seasonOverlap", "seasonPhaseOverlap", "seasonPhaseOutOfRange"] as const;
+
 export const SPONSOR_RELATION_ERROR_CODES = [
   "sponsorshipEndsBeforeStart",
   "sponsorshipEndRequired",
@@ -244,6 +253,7 @@ export type WriteErrorCode =
   | (typeof EDITORIAL_ERROR_CODES)[number]
   | (typeof HERO_ERROR_CODES)[number]
   | (typeof SPONSOR_RELATION_ERROR_CODES)[number]
+  | (typeof SEASON_WRITE_ERROR_CODES)[number]
   | (typeof NEWSROOM_ERROR_CODES)[number]
   | (typeof PERMANENT_DELETE_ERROR_CODES)[number]
   | (typeof PARTIAL_UPDATE_ERROR_CODES)[number];
@@ -407,6 +417,9 @@ const FROM_API_CODE: Record<string, WriteErrorCode> = {
   sponsorshipEndRequired: "sponsorshipEndRequired",
   invalidSponsorshipTarget: "invalidSponsorshipTarget",
   organizationNameTooLong: "organizationNameTooLong",
+  seasonOverlap: "seasonOverlap",
+  seasonPhaseOverlap: "seasonPhaseOverlap",
+  seasonPhaseOutOfRange: "seasonPhaseOutOfRange",
   incompleteLtrImage: "incompleteLtrImage",
   incompleteSlide: "incompleteSlide",
   heroTextTooLong: "heroTextTooLong",

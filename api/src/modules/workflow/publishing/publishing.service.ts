@@ -306,6 +306,13 @@ export class PublishingService {
       update.publishDate = publishedAt;
     }
 
+    // Same schema-asks-for-it rule as the date above. `updatedBy` records the
+    // last hand on the record; a type that keeps `publishedBy` wants the
+    // narrower fact — who put this live — which survives later edits.
+    if (model.schema.path('publishedBy')) {
+      update.publishedBy = actorId;
+    }
+
     await model.updateOne({ _id: entityId, archivedAt: null }, { $set: update }).exec();
   }
 

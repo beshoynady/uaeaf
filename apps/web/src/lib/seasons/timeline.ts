@@ -34,6 +34,9 @@ export interface PlacedKeyDate {
   keyDate: SeasonKeyDate;
   /** The grid column of its day. */
   column: number;
+  /** Which way its label reads from the day: away from it in the season's
+   *  first half, back towards it in the second, so it stays on the grid. */
+  side: "start" | "end";
 }
 
 export interface TimelineLayout {
@@ -112,7 +115,7 @@ export const layoutTimeline = (input: TimelineInput, now: Date, locale: AppLocal
       .map((keyDate) => ({ keyDate, index: dayIndex(input.startDate, keyDate.date) }))
       .filter(({ index }) => index >= 0 && index < days)
       .sort((a, b) => a.index - b.index)
-      .map(({ keyDate, index }) => ({ keyDate, column: index + 1 })),
+      .map(({ keyDate, index }) => ({ keyDate, column: index + 1, side: index < days / 2 ? "start" : "end" })),
   };
 };
 

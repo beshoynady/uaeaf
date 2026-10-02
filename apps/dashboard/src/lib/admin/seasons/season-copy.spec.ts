@@ -41,7 +41,8 @@ const staticKeys = [
 ];
 
 const dynamicKeys = [
-  ...["current", "archived", "hidden", "draft", "published"].map((badge) => `badge_${badge}`),
+  ...["current", "archived", "hidden", "unpublished", "draft", "live"].map((badge) => `badge_${badge}`),
+  ...["publish", "submit", "publishApproved"].flatMap((step) => [`step_${step}`, `stepHint_${step}`]),
   ...["notPublished", "closingMissing"].map((kind) => `note_${kind}`),
   ...SEASON_PHASE_TYPES.map((type) => `phaseType_${type}`),
   ...["direct", "approval", "unknown"].map((mode) => `policy_${mode}`),
@@ -71,6 +72,11 @@ describe("the season screens' words", () => {
       (key) => typeof lookup((catalogue as Record<string, unknown>).Seasons, key) !== "string",
     );
     expect(missing).toEqual([]);
+  });
+
+  it("gives a taken-down season its own words, not the draft's", () => {
+    expect(ar.Seasons.state_Unpublished).not.toBe(ar.Seasons.state_Draft);
+    expect(en.Seasons.state_Unpublished).not.toBe(en.Seasons.state_Draft);
   });
 
   it("names the seasons screen and its sidebar group in both languages", () => {

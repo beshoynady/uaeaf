@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { VideosRepository } from './videos.repository.js';
 import type { VideoDocument, VideoStatus } from './schemas/video.schema.js';
@@ -7,6 +7,7 @@ import { UpdateVideoDto } from './dto/update-video.dto.js';
 import { buildPublicVideoFilter } from './videos.public-filter.js';
 import { toPublicVideo } from './dto/video-public-response.dto.js';
 import { resolveVideo } from './resolve/resolve.service.js';
+import { SeasonRangeResolver } from '../seasons/season-range-resolver.js';
 import type { PublicVideoQuery } from './videos.public-filter.js';
 import type { VideoPublicResponseDto } from './dto/video-public-response.dto.js';
 import type { ResolveFallback, ResolvedVideo } from './resolve/resolve.service.js';
@@ -32,7 +33,12 @@ const MAX_PUBLIC_LIMIT = 48;
 
 @Injectable()
 export class VideosService {
-  constructor(private readonly repository: VideosRepository) {}
+  constructor(
+    private readonly repository: VideosRepository,
+    // Optional so a test that never filters by season need not build one;
+    // `VideosModule` always provides it (guarded by `season-range-wiring.spec.ts`).
+    @Optional() private readonly seasonRanges?: SeasonRangeResolver,
+  ) {}
 
   async create(dto: CreateVideoDto): Promise<VideoDocument> {
     return this.repository.create({
@@ -99,8 +105,9 @@ export class VideosService {
     const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
     const safeLimit = Number.isFinite(limit) && limit > 0 ? Math.min(Math.floor(limit), MAX_PUBLIC_LIMIT) : DEFAULT_PUBLIC_LIMIT;
 
+    const season = this.seasonRanges ? await this.seasonRanges.resolve(query.season) : undefined;
     const { items, total } = await this.repository.findPublicPage(
-      buildPublicVideoFilter(query),
+      buildPublicVideoFilter(query, season),
       (safePage - 1) * safeLimit,
       safeLimit,
     );

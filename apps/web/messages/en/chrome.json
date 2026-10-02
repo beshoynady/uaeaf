@@ -75,7 +75,13 @@
     "eventCta": "View the calendar",
     "clubFinderEyebrow": "Athletics Community",
     "clubFinderFallbackTitle": "Find the Nearest Athletics Club",
-    "clubFinderCta": "Search Now"
+    "clubFinderCta": "Search Now",
+    "seasonPickerHeading": "Go to a season",
+    "seasonSearchLabel": "Find a season by year",
+    "seasonSearchPlaceholder": "Search by year, e.g. 2024",
+    "seasonSearchClear": "Clear search",
+    "seasonCurrent": "Current",
+    "seasonNoMatch": "No season matches “{query}”"
   },
   "Search": {
     "dialogLabel": "Site search",

@@ -162,3 +162,11 @@ The technical specification they implement is
 decision: no deletion and no deletion mechanism, with the retention period made
 "explicitly defined", as §3 requires, through a named annual review by a Super
 Admin together with the Federation's data officer, itself recorded in the log.
+
+---
+
+## Seasons — ADR-0127
+
+| ADR | File | What it decides |
+| --- | --- | --- |
+| **0127** | `ADR-0127-Seasons-Days-Publication-And-Phase-Colours.md` | A season's dates are inclusive Asia/Dubai calendar days, compared half-open with the offset read from the zone; a one-day season is valid; phases of one type never share a day. `seasonRange` stays untouched and a season's slug resolves beside it in the album and video filters. Seasons use the platform publication vocabulary, every route into `Live` is governed, and each phase type has one fixed token pair with red excluded under ADR-0050. |

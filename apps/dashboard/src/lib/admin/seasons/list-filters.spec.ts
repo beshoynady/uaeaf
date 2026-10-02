@@ -29,8 +29,8 @@ const season = (overrides: Partial<AdminSeason> = {}): AdminSeason => ({
   calendarDocumentId: null,
   documentIds: [],
   isCurrent: false,
-  publicationState: "Published",
-  publishedAt: null,
+  publicationState: "Live",
+  publishDate: null,
   isVisible: true,
   seo: { metaTitle: null, metaDescription: null, ogImageId: null },
   updatedAt: null,
@@ -77,6 +77,8 @@ describe("badgeOf and noteOf", () => {
     expect(badgeOf(season({ isVisible: false, publicationState: "Draft" }))).toBe("hidden");
     expect(badgeOf(season({ publicationState: "Draft" }))).toBe("draft");
     expect(badgeOf(season({ publicationState: "Archived", isVisible: false }))).toBe("archived");
+    expect(badgeOf(season({ publicationState: "Unpublished" }))).toBe("unpublished");
+    expect(badgeOf(season())).toBe("live");
   });
 
   it("flags a published, ended season whose closing summary is missing", () => {
@@ -86,6 +88,8 @@ describe("badgeOf and noteOf", () => {
 
   it("says an unpublished season is not published yet", () => {
     expect(noteOf(season({ publicationState: "Draft" }), now)).toEqual({ kind: "notPublished" });
+    // Taken down is not "not published yet": it was published, and its badge says so.
+    expect(noteOf(season({ publicationState: "Unpublished" }), now)).toBeNull();
   });
 });
 

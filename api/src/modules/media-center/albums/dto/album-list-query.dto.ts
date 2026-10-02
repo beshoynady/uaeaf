@@ -14,7 +14,7 @@ import { ALBUM_PAGE_SIZE } from '../albums.service.js';
 export class AlbumListQueryDto {
   @ApiPropertyOptional({
     description:
-      'A season label such as `2025–2026`. Not an id: a season is derived from the album’s date, the same as the video library.',
+      'A season label such as `2025–2026` (en dash: 1 September to 1 September, UTC, from the album’s `eventDate`), or a published season’s slug such as `2025-2026` (that season’s own first to last day, inclusive, Asia/Dubai). Ignored when it is neither.',
   })
   @IsOptional()
   @IsString()

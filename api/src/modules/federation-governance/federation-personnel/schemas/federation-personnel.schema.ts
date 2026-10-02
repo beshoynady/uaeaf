@@ -10,6 +10,7 @@ import {
   PersonnelInternalContact,
   PersonnelInternalContactSchema,
 } from './personnel-contact.schema.js';
+import { PersonnelCv, PersonnelCvSchema } from './personnel-cv.schema.js';
 
 export type FederationPersonnelDocument = HydratedDocument<FederationPersonnel>;
 
@@ -29,11 +30,22 @@ export type FederationPersonnelStatus = (typeof FEDERATION_PERSONNEL_STATUSES)[n
  *
  *  Not workflow-governed: no `publicationState`, absent from both Domain 7
  *  closed lists. `status` here is the person's own Active/Inactive
- *  relationship to the federation, unrelated to publication. */
+ *  relationship to the federation, unrelated to publication.
+ *
+ *  `slug` backs the public profile page (`/about/people/{slug}`) and is
+ *  fixed after creation, same reasoning as `committees.slug` (Task 2) — no
+ *  index here; uniqueness is enforced only by `assertSlugFree` in the
+ *  service, pending owner approval for an index. */
 @Schema({ collection: 'federationPersonnel', timestamps: true })
 export class FederationPersonnel extends BaseSchema {
+  @Prop({ type: String, required: true })
+  slug: string;
+
   @Prop({ type: LocalizedTextSchema, required: true })
   fullName: LocalizedText;
+
+  @Prop({ type: LocalizedTextSchema, default: null })
+  honorific: LocalizedText | null;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'MediaAsset', default: null })
   photoId: Types.ObjectId | null;
@@ -53,6 +65,12 @@ export class FederationPersonnel extends BaseSchema {
   @Prop({ type: PersonnelPublicContactSchema, default: null })
   publicContact: PersonnelPublicContact | null;
 
+  /** Whether the public profile page shows `publicContact`. Off by default:
+   *  a record's contact fields being filled in is not itself a decision to
+   *  publish them. */
+  @Prop({ type: Boolean, default: false })
+  showPublicContact: boolean;
+
   @Prop({ type: PersonnelInternalContactSchema, default: null })
   internalContact: PersonnelInternalContact | null;
 
@@ -61,6 +79,9 @@ export class FederationPersonnel extends BaseSchema {
 
   @Prop({ type: [SocialLinkSchema], default: [] })
   socialLinks: SocialLink[];
+
+  @Prop({ type: PersonnelCvSchema, default: () => ({}) })
+  cv: PersonnelCv;
 }
 
 export const FederationPersonnelSchema = SchemaFactory.createForClass(FederationPersonnel);

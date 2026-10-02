@@ -2,20 +2,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Schema as MongooseSchema, Types } from 'mongoose';
 import type { HydratedDocument } from 'mongoose';
 import { BaseSchema } from '../../../../common/schemas/base.schema.js';
-import { LocalizedText, LocalizedTextSchema } from '../../../../common/schemas/localized-text.schema.js';
 
 export type FederationAppointmentDocument = HydratedDocument<FederationAppointment>;
-
-export const APPOINTMENT_ROLE_TYPES = [
-  'President',
-  'BoardMember',
-  'CommitteeChair',
-  'CommitteeMember',
-  'ExecutiveDirector',
-  'Manager',
-  'Other',
-] as const;
-export type AppointmentRoleType = (typeof APPOINTMENT_ROLE_TYPES)[number];
 
 export const APPOINTMENT_STATUSES = [
   'Active',
@@ -26,6 +14,15 @@ export const APPOINTMENT_STATUSES = [
   'Deceased',
 ] as const;
 export type AppointmentStatus = (typeof APPOINTMENT_STATUSES)[number];
+
+export const APPOINTMENT_END_REASONS = [
+  'completed',
+  'resigned',
+  'removed',
+  'transitioned',
+  'deceased',
+] as const;
+export type AppointmentEndReason = (typeof APPOINTMENT_END_REASONS)[number];
 
 /** Implements: federationAppointments collection, Domain 1 — Federation &
  *  Governance (live FigJam Physical Model, re-read fresh 2026-09-03).
@@ -58,21 +55,14 @@ export class FederationAppointment extends BaseSchema {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'FederationAppointment', default: null })
   supersedesAppointmentId: Types.ObjectId | null;
 
-  @Prop({ type: String, enum: APPOINTMENT_ROLE_TYPES, required: true })
-  roleType: AppointmentRoleType;
-
-  /** Free text, e.g. "نائب الرئيس" — the specific title within roleType. */
-  @Prop({ type: LocalizedTextSchema, required: true })
-  positionTitle: LocalizedText;
-
-  /** Populated only for CommitteeChair/CommitteeMember roleTypes. The
-   *  board states no schema-level conditional requirement, so none is
-   *  enforced here. */
+  /** Populated only when the assigned position's `body` is `'committee'`.
+   *  The board states no schema-level conditional requirement, so none is
+   *  enforced here — `AppointmentRulesService` checks it at write time. */
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Committee', default: null })
   committeeId: Types.ObjectId | null;
 
-  /** Populated for President and BoardMember roleTypes (both elected by
-   *  the same cycle). */
+  /** The cycle `AppointmentRulesService` scopes its duplicate/cap checks
+   *  to for this position. */
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'ElectionCycle', default: null })
   electionCycleId: Types.ObjectId | null;
 
@@ -88,6 +78,19 @@ export class FederationAppointment extends BaseSchema {
 
   @Prop({ type: Number, required: true })
   displayOrder: number;
+
+  /** The admin-defined post this appointment fills — the sole source of
+   *  its title, level and order; no role is named anywhere in the code
+   *  that reads it. */
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'FederationPosition', required: true })
+  positionId: Types.ObjectId;
+
+  /** Why the term ended. Null while it is open. */
+  @Prop({ type: String, enum: APPOINTMENT_END_REASONS, default: null })
+  endReason: AppointmentEndReason | null;
+
+  @Prop({ type: Boolean, default: true })
+  isVisible: boolean;
 }
 
 export const FederationAppointmentSchema = SchemaFactory.createForClass(FederationAppointment);

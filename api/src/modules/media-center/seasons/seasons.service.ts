@@ -15,6 +15,7 @@ import {
   dayRangeContains,
   dayRangesOverlap,
   dubaiDayRange,
+  dubaiDayStart,
   dubaiNextDayStart,
 } from '../../../common/utils/dubai-day-range.util.js';
 import type { DayRange } from '../../../common/utils/dubai-day-range.util.js';
@@ -78,12 +79,14 @@ const assertPhasesFit = (phases: Pick<SeasonPhase, 'name' | 'type' | 'from' | 't
     const range = dubaiDayRange(phase.from, phase.to);
     if (!(range.from.getTime() < range.to.getTime())) {
       throw new UnprocessableEntityException({
+        code: 'seasonPhaseOutOfRange',
         message: `Phase "${phase.name.en}" must not end on a day before it starts.`,
         phase: describePhase(phase, index),
       });
     }
     if (!dayRangeContains(season, range)) {
       throw new UnprocessableEntityException({
+        code: 'seasonPhaseOutOfRange',
         message: `Phase "${phase.name.en}" must fall within the season's first and last day.`,
         phase: describePhase(phase, index),
       });
@@ -109,8 +112,9 @@ const assertPhasesFit = (phases: Pick<SeasonPhase, 'name' | 'type' | 'from' | 't
  * Implements: `seasons` collection, Domain 5 — Media Center.
  *
  * Carries no `publish()` of its own (see `season.schema.ts`): moving a
- * season to `Published` is `PublishingService.publishDirect`'s job, so this
- * service is never the sole path into that state.
+ * season to `Live` is `PublishingService`'s job (`publishDirect`, or
+ * `publishApproved` after a review), so this service is never a path into
+ * that state at all.
  */
 @Injectable()
 export class SeasonsService {
@@ -154,7 +158,7 @@ export class SeasonsService {
         documentIds: (dto.documentIds ?? []).map((id) => new Types.ObjectId(id)),
         isCurrent: false,
         publicationState: dto.publicationState,
-        publishedAt: null,
+        publishDate: null,
         publishedBy: null,
         isVisible: dto.isVisible ?? false,
         seo: dto.seo ? toPageSeo(dto.seo) : { metaTitle: null, metaDescription: null, ogImageId: null },
@@ -213,10 +217,18 @@ export class SeasonsService {
     return this.repository.updateById(id, update);
   }
 
-  /** @throws UnprocessableEntityException when `startDate` is not before `endDate`. */
+  /**
+   * The dates are inclusive Dubai calendar days, so a season whose first and
+   * last day are the same lasts one day and is valid — the same way a
+   * one-day phase is. Only a last day that falls BEFORE the first is refused,
+   * and the comparison is between days, not instants: two moments on one
+   * Dubai day are the same day however far apart their clocks are.
+   *
+   * @throws UnprocessableEntityException when the last day precedes the first.
+   */
   private assertValidRange(startDate: Date, endDate: Date): void {
-    if (!(startDate.getTime() < endDate.getTime())) {
-      throw new UnprocessableEntityException('A season must start before it ends.');
+    if (dubaiDayStart(endDate).getTime() < dubaiDayStart(startDate).getTime()) {
+      throw new UnprocessableEntityException('A season must not end on a day before it starts.');
     }
   }
 
@@ -283,7 +295,7 @@ export class SeasonsService {
    *  count: what `remove()` reports in its refusal. */
   private async referrersOf(season: SeasonDocument): Promise<string[]> {
     const days = dubaiDayRange(season.startDate, season.endDate);
-    const range = { $gte: season.startDate, $lt: season.endDate };
+    const range = { $gte: days.from, $lt: days.to };
     const [albums, videos] = await Promise.all([
       this.albumsRepository.findPaginated(0, 1, { eventDate: range }),
       this.videosRepository.findPaginated(0, 1, { publishedAt: range }),
@@ -295,8 +307,32 @@ export class SeasonsService {
     return referrers;
   }
 
+  /**
+   * Brings an archived season back.
+   *
+   * The overlap check reads live seasons only, so while this one was archived
+   * another may have been given its days; restoring it then would put two
+   * live seasons on one day, which `create` and `update` both refuse. Checked
+   * here the same way, against every other live season. A season that is not
+   * archived is answered as it is, as `restore` always has.
+   *
+   * @throws ConflictException (`seasonOverlap`) when another live season now
+   *   shares one of its days.
+   * @throws ConflictException when another live season now holds its slug.
+   */
   async unarchive(id: string): Promise<SeasonDocument | null> {
-    return this.repository.restore(id);
+    const season = await this.repository.findByIdIncludingArchived(id);
+    if (season?.archivedAt) {
+      await this.assertNoOverlap(dubaiDayRange(season.startDate, season.endDate), id);
+    }
+    try {
+      return await this.repository.restore(id);
+    } catch (error) {
+      if (isDuplicateKeyError(error)) {
+        throw new ConflictException(`Duplicate value for ${duplicateKeyField(error) ?? 'slug'}.`);
+      }
+      throw error;
+    }
   }
 
   async findAll(): Promise<SeasonDocument[]> {

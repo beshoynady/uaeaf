@@ -26,10 +26,12 @@ describe("President's Message seed fixture", () => {
 
   let message: Record<string, unknown>;
   let appointments: Record<string, unknown>[];
+  let positions: Record<string, unknown>[];
 
   beforeAll(async () => {
     [message] = await load<Record<string, unknown>>('presidentMessagePage');
     appointments = await load<Record<string, unknown>>('federationAppointments');
+    positions = await load<Record<string, unknown>>('federationPositions');
   });
 
   it('is registered in the seed, after the appointment it points at', () => {
@@ -47,10 +49,20 @@ describe("President's Message seed fixture", () => {
     );
 
     expect(appointment).toBeDefined();
-    expect(appointment!.roleType).toBe('President');
     // The public route resolves the current message through the sitting
     // term (ADR-0069 D3); a Completed appointment would resolve to nothing.
     expect(appointment!.status).toBe('Active');
+  });
+
+  it('holds a position at the top of the board, not a hard-coded name', () => {
+    const appointment = appointments.find(
+      (row) => String(row._id) === String(message.federationAppointmentId),
+    );
+    const position = positions.find((row) => String(row._id) === String(appointment!.positionId));
+
+    expect(position).toBeDefined();
+    expect(position!.body).toBe('board');
+    expect(position!.rank).toBe(1);
   });
 
   it('carries the same body as the content module, character for character', () => {

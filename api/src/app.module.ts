@@ -52,6 +52,7 @@ import { FederationsModule } from './modules/federation-governance/federation/fe
 import { ElectionCyclesModule } from './modules/federation-governance/election-cycles/election-cycles.module.js';
 import { FederationPersonnelsModule } from './modules/federation-governance/federation-personnel/federation-personnel.module.js';
 import { FederationAppointmentsModule } from './modules/federation-governance/federation-appointments/federation-appointments.module.js';
+import { FederationPositionsModule } from './modules/federation-governance/federation-positions/federation-positions.module.js';
 import { CommitteesModule } from './modules/federation-governance/committees/committees.module.js';
 import { OrganizationalStructureNodesModule } from './modules/federation-governance/organizational-structure/organizational-structure.module.js';
 import { GovernanceDocumentsModule } from './modules/federation-governance/governance-documents/governance-documents.module.js';
@@ -148,6 +149,7 @@ import { AppController } from './app.controller.js';
     ElectionCyclesModule,
     FederationPersonnelsModule,
     FederationAppointmentsModule,
+    FederationPositionsModule,
     CommitteesModule,
     OrganizationalStructureNodesModule,
     GovernanceDocumentsModule,

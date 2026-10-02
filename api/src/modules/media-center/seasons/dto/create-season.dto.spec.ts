@@ -30,8 +30,8 @@ describe('CreateSeasonDto', () => {
     expect(aboutErrors?.children?.some((child) => child.property === 'en')).toBe(true);
   });
 
-  it('refuses `publicationState: Published` — reachable only through PATCH /seasons/:id/publish', async () => {
-    const errors = await errorsOf({ ...validBody(), publicationState: 'Published' });
+  it('refuses `publicationState: Live` — reachable only through the publishing routes', async () => {
+    const errors = await errorsOf({ ...validBody(), publicationState: 'Live' });
 
     expect(errors.map((error) => error.property)).toContain('publicationState');
   });

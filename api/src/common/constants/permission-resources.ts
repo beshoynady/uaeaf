@@ -47,6 +47,7 @@ export const PERMISSION_RESOURCES = [
   'federation',
   'federationAppointments',
   'federationPersonnel',
+  'federationPositions',
   'governanceDocuments',
   'heroSlides',
   'mediaAssets',
@@ -108,3 +109,20 @@ export const PERMISSION_RESOURCES = [
 ] as const;
 
 export type PermissionResource = (typeof PERMISSION_RESOURCES)[number];
+
+/**
+ * The resources above that are product groups rather than collections.
+ *
+ * Every other resource names a collection, and the startup check in
+ * `PermissionsService.validateResourceTypes` relies on that to catch a
+ * permission row pointing at a collection nobody registered. These nine
+ * legitimately have no collection: they carry `ViewReports` for a whole
+ * product group (ADR-0103 D1), and the routes that read them are in
+ * `reports.controller.ts`.
+ *
+ * Derived from the list rather than written out again, so a tenth group
+ * cannot be added above and forgotten here.
+ */
+export const REPORT_GROUP_RESOURCES: ReadonlySet<PermissionResource> = new Set(
+  PERMISSION_RESOURCES.filter((resource) => resource.endsWith('Reports')),
+);

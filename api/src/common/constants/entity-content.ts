@@ -171,7 +171,7 @@ export const REVISION_READ_FIELDS: Record<PublicationEntityType, readonly string
   committees: ['name', 'description', 'displayOrder', 'isActive', 'committeeType', 'committeeGroup'],
   documents: ['file', 'documentType', 'ownerType', 'ownerId', 'effectiveDate', 'expiryDate'],
   publicEvents: [],
-  // `publicationState`, `publishedAt`, `publishedBy`, `isCurrent` and
+  // `publicationState`, `publishDate`, `publishedBy`, `isCurrent` and
   // `isVisible` are deliberately absent: they describe where the season
   // stands now, the same reasoning `articles` gives above for
   // `publicationState`/`archived`/`publishDate`.

@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "@uaeaf/design-tokens/build/css/index.css";
 @import "../../styles/motion.css";
+/* The scripted motion of the four governance pages, kept out of the shared
+   sheet because only they use it -- see the file. */
+@import "../../styles/governance-motion.css";
 /* The video system's own dark register, scoped to `.video-system` -- see the
    file for why these are variables rather than design tokens. */
 @import "../../styles/video-system.css";

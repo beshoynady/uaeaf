@@ -17,10 +17,8 @@
       "$oid": "6aa5001000000000000000c1"
     },
     "supersedesAppointmentId": null,
-    "roleType": "President",
-    "positionTitle": {
-      "ar": "رئيس الاتحاد",
-      "en": "President"
+    "positionId": {
+      "$oid": "6aa5001000000000000000d1"
     },
     "committeeId": null,
     "electionCycleId": null,

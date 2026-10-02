@@ -97,3 +97,97 @@ describe('SeasonsController.submit', () => {
     expect(Object.keys(sent).sort()).toEqual(['actor', 'context', 'entityId', 'entityType']);
   });
 });
+
+/**
+ * The half of the approval loop that was missing: a review can be approved,
+ * and then nothing puts the season live. `publishApproved` is a separate act
+ * from approving, on a separate grant.
+ */
+describe('SeasonsController.publishApproved', () => {
+  const seasonId = new Types.ObjectId().toString();
+  const actor = {
+    userId: new Types.ObjectId().toString(),
+    permissions: [{ resourceType: 'seasons', action: 'Publish' }],
+  } as unknown as AuthenticatedUser;
+
+  it('publishes the approved revision through PublishingService', async () => {
+    const publishingService = {
+      publishApproved: jest.fn(async () => ({ revisionId: 'r1', publicationId: 'p1' })),
+    } as unknown as jest.Mocked<PublishingService>;
+    const controller = new SeasonsController({} as unknown as SeasonsService, publishingService);
+
+    await controller.publishApproved(seasonId, actor, {
+      ip: '10.0.0.1',
+      headers: { 'user-agent': 'jest' },
+    } as never);
+
+    expect(publishingService.publishApproved).toHaveBeenCalledWith({
+      entityType: 'seasons',
+      entityId: new Types.ObjectId(seasonId),
+      actor,
+      context: { ipAddress: '10.0.0.1', userAgent: 'jest' },
+    });
+  });
+});
+
+describe('SeasonsController.editorialState', () => {
+  it('reads the state from PublishingService for this caller', async () => {
+    const actor = { userId: new Types.ObjectId().toString() } as unknown as AuthenticatedUser;
+    const seasonId = new Types.ObjectId().toString();
+    const publishingService = {
+      editorialState: jest.fn(async () => ({ publicationState: 'Draft' })),
+    } as unknown as jest.Mocked<PublishingService>;
+    const controller = new SeasonsController({} as unknown as SeasonsService, publishingService);
+
+    await controller.editorialState(seasonId, actor);
+
+    expect(publishingService.editorialState).toHaveBeenCalledWith(
+      'seasons',
+      new Types.ObjectId(seasonId),
+      actor,
+    );
+  });
+});
+
+/**
+ * While a review is running the draft belongs to it. Without this the
+ * approver's decision would attach to content edited after they read it.
+ */
+describe('SeasonsController.update under review', () => {
+  const seasonId = new Types.ObjectId().toString();
+  const actor = { userId: new Types.ObjectId().toString() } as unknown as AuthenticatedUser;
+  const dto = { shortName: 'edited' } as never;
+
+  it('asks whether this caller may edit before saving anything', async () => {
+    const order: string[] = [];
+    const publishingService = {
+      assertCanEdit: jest.fn(async () => {
+        order.push('assertCanEdit');
+      }),
+    } as unknown as jest.Mocked<PublishingService>;
+    const service = {
+      update: jest.fn(async () => {
+        order.push('update');
+        return {} as never;
+      }),
+    } as unknown as jest.Mocked<SeasonsService>;
+
+    await new SeasonsController(service, publishingService).update(seasonId, dto, actor);
+
+    expect(order).toEqual(['assertCanEdit', 'update']);
+  });
+
+  it('saves nothing when the review refuses the edit', async () => {
+    const publishingService = {
+      assertCanEdit: jest.fn(async () => {
+        throw new Error('under review');
+      }),
+    } as unknown as jest.Mocked<PublishingService>;
+    const service = { update: jest.fn() } as unknown as jest.Mocked<SeasonsService>;
+
+    await expect(
+      new SeasonsController(service, publishingService).update(seasonId, dto, actor),
+    ).rejects.toThrow('under review');
+    expect(service.update).not.toHaveBeenCalled();
+  });
+});

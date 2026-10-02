@@ -73,9 +73,26 @@ export class SeasonsController {
     return this.service.findById(id);
   }
 
+  /** Everything the dashboard's status panel draws, including which actions
+   *  THIS caller may take — computed on the server so the dashboard never
+   *  re-derives the rules and disagrees. */
+  @Get(':id/editorial-state')
+  @RequirePermission('seasons', 'Read')
+  editorialState(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.publishingService.editorialState(ENTITY_TYPE, new Types.ObjectId(id), user);
+  }
+
   @Patch(':id')
   @RequirePermission('seasons', 'Update')
-  update(@Param('id') id: string, @Body() dto: UpdateSeasonDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateSeasonDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    // While a review is running the draft belongs to it — only an assignee of
+    // the current step may change it. Otherwise the approval would attach to
+    // content the approver never saw.
+    await this.publishingService.assertCanEdit(ENTITY_TYPE, new Types.ObjectId(id), user);
     return this.service.update(id, dto);
   }
 
@@ -105,7 +122,7 @@ export class SeasonsController {
     });
   }
 
-  /** The only route that may move a season into `Published` — gated by a
+  /** The only direct route that may move a season into `Live` — gated by a
    *  dedicated `Publish` permission, distinct from `Create`/`Update`, and
    *  routed through `PublishingService` so a season's approval policy (or
    *  the absence of one) is the one door into that state (ADR-0125). */
@@ -123,6 +140,21 @@ export class SeasonsController {
       entityId: new Types.ObjectId(id),
       actor: user,
       expectedUpdatedAt: new Date(dto.expectedUpdatedAt),
+      context: extractRequestContext(req),
+    });
+  }
+
+  /** Publishes what a completed review approved — a separate act from
+   *  approving it, and a separate grant from editing it. Without it an
+   *  approved season has no route into `Live` at all. */
+  @Post(':id/publish-approved')
+  @SkipAuditLog()
+  @RequirePermission('seasons', 'Publish')
+  publishApproved(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser, @Req() req: Request) {
+    return this.publishingService.publishApproved({
+      entityType: ENTITY_TYPE,
+      entityId: new Types.ObjectId(id),
+      actor: user,
       context: extractRequestContext(req),
     });
   }

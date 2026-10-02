@@ -1,7 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
-import { APPOINTMENT_ROLE_TYPES } from '../schemas/federation-appointments.schema.js';
-import type { AppointmentRoleType } from '../schemas/federation-appointments.schema.js';
 
 /**
  * One serving officer, as an unauthenticated caller receives them.
@@ -21,11 +19,11 @@ export class AppointmentPublicResponseDto {
   @ApiProperty({ type: LocalizedTextDto })
   fullName: LocalizedTextDto;
 
-  @ApiProperty({ type: LocalizedTextDto, description: 'The specific title within the role, e.g. "نائب الرئيس".' })
+  @ApiProperty({ type: LocalizedTextDto, description: 'The position\'s title, e.g. "نائب الرئيس".' })
   positionTitle: LocalizedTextDto;
 
-  @ApiProperty({ enum: APPOINTMENT_ROLE_TYPES })
-  roleType: AppointmentRoleType;
+  @ApiProperty({ description: 'The position\'s level in the organisational chart; 1 is highest.' })
+  rank: number;
 
   @ApiProperty({ description: 'The order the board set for its own listing.' })
   displayOrder: number;

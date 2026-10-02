@@ -420,13 +420,35 @@ Populate strategy: `targetId` — on-demand (discriminated poly ref, resolve onl
 
 ### `seasons`
 
+**Built** (`api/src/modules/media-center/seasons/schemas/season.schema.ts`, ADR-0127). The
+draft's proposed `status` enum was not built: a season's state is its
+publication state, and "current" is a flag. Extends `BaseSchema` (audit and soft-delete fields).
+
 | Field | Mongoose Type | Required | Default | Validation | Index | Visibility |
 |---|---|---|---|---|---|---|
 | `_id` | ObjectId | auto | auto | — | Primary (auto) | Public |
-| `name` | `{ en: String, ar: String }` | `true` (both) | none | `maxlength: 100` each | None | Public |
-| `startDate` | Date | `true` | none | — | `{ startDate: -1 }` — candidate, "current season" lookup | Public |
-| `endDate` | Date | `true` | none | must be `> startDate` | None | Public |
-| `status` | String, enum | `true` | `'Upcoming'` | **[SCHEMA-READY GAP FILLED]** enum was unlisted — proposed list: `['Upcoming', 'Active', 'Completed']` | `{ status: 1 }` — candidate | Public |
+| `name` | `LocalizedText` | `true` | none | — | None | Public |
+| `shortName` | String | `true` | none | trimmed | None | Public |
+| `slug` | String | `true` | none | trimmed | `{ slug: 1 }` unique, partial `{ archivedAt: null }` | Public |
+| `tagline` | `LocalizedText` | `false` | `null` | — | None | Public |
+| `logoId` · `bannerId` · `shareImageId` | ObjectId, ref `MediaAsset` | `false` | `null` | — | None | Public |
+| `about` | `LocalizedText` | `true` | none | — | None | Public |
+| `closingSummary` | `LocalizedText` | `false` | `null` | Public read returns it only after the last Dubai day has passed | None | Public |
+| `startDate` · `endDate` | Date | `true` | none | Inclusive Asia/Dubai calendar days, stored as Dubai midnight; last day not before the first (one-day season valid); no day shared with another live season (`seasonOverlap`) | `{ startDate: 1, endDate: 1 }` | Public |
+| `phases[]` | `{ name: LocalizedText, type: 'preparation' \| 'domestic' \| 'international' \| 'rest', from: Date, to: Date }` | `false` | `[]` | Each inside the season (`seasonPhaseOutOfRange`); same type never shares a day (`seasonPhaseOverlap`) | None | Public |
+| `keyDates[]` | `{ title: LocalizedText, date: Date }` | `false` | `[]` | — | None | Public |
+| `calendarDocumentId` | ObjectId, ref `Document` | `false` | `null` | — | None | Public |
+| `documentIds` | [ObjectId], ref `Document` | `false` | `[]` | — | None | Public |
+| `isCurrent` | Boolean | `false` | `false` | Set only by `PATCH /seasons/:id/set-current`, in one transaction | `{ isCurrent: 1 }` unique, partial `{ isCurrent: true }` | Public |
+| `publicationState` | String, enum `PUBLICATION_STATES` | `true` | none | `Live` reachable only through `PublishingService` | `{ publicationState: 1, startDate: -1 }` | Public |
+| `publishDate` | Date | `false` | `null` | Written by `PublishingService.markLive` | None | Public |
+| `publishedBy` | ObjectId, ref `User` | `false` | `null` | Written by `PublishingService.markLive` | None | Restricted |
+| `isVisible` | Boolean | `false` | `false` | Public reads require `true` | None | Public |
+| `seo` | `PageSeo` | `false` | `{}` | — | None | Public |
+
+Albums and videos carry **no** `seasonId`: an album's season is derived from `eventDate`, a
+video's from `publishedAt`. The public list filters resolve a `season` slug to the season's
+days at read time (ADR-0127 D5).
 
 ### `championshipSeries`
 

@@ -1,0 +1,76 @@
+{
+  "Seasons": {
+    "archive": {
+      "title": "المواسم الرياضية",
+      "description": "كل موسم بمراحله وفعالياته وصوره وفيديوهاته، من الموسم الحالي إلى المواسم السابقة.",
+      "searchLabel": "ابحث عن موسم بالسنة",
+      "searchPlaceholder": "مثال: 2026",
+      "clearSearch": "مسح البحث",
+      "previousHeading": "المواسم السابقة",
+      "upcomingHeading": "المواسم القادمة",
+      "emptyTitle": "لا توجد مواسم منشورة بعد",
+      "emptyDescription": "تظهر المواسم هنا فور نشرها.",
+      "unavailableTitle": "تعذّر عرض المواسم الآن",
+      "unavailableDescription": "أعد تحميل الصفحة بعد قليل.",
+      "noMatchTitle": "لا يوجد موسم يطابق «{query}»",
+      "noMatchDescription": "جرّب سنة أخرى، أو امسح البحث لعرض كل المواسم.",
+      "resultCount": "{count, plural, =0 {لا مواسم} one {موسم واحد} two {موسمان} few {# مواسم} many {# موسمًا} other {# موسم}}",
+      "openSeason": "عرض {name}"
+    },
+    "badges": {
+      "current": "الموسم الحالي",
+      "phase": "المرحلة الحالية: {name}"
+    },
+    "phaseTypes": {
+      "preparation": "إعداد",
+      "domestic": "داخلي",
+      "international": "خارجي",
+      "rest": "راحة"
+    },
+    "stats": {
+      "label": "الموسم بالأرقام",
+      "events": "فعالية",
+      "albums": "ألبوم صور",
+      "videos": "فيديو"
+    },
+    "timeline": {
+      "heading": "مراحل الموسم",
+      "span": "الموسم من {start} إلى {end}",
+      "phasesLabel": "مراحل الموسم بالترتيب",
+      "legendLabel": "أنواع المراحل",
+      "keyDatesLabel": "مواعيد مهمة",
+      "today": "اليوم",
+      "todayLabel": "اليوم: {date}",
+      "phaseType": "النوع: {type}",
+      "empty": "لم تُحدَّد مراحل هذا الموسم بعد."
+    },
+    "events": {
+      "heading": "فعاليات الموسم",
+      "emptyTitle": "لا توجد فعاليات منشورة لهذا الموسم بعد",
+      "emptyDescription": "تظهر فعاليات الموسم هنا عند نشرها."
+    },
+    "media": {
+      "albumsHeading": "ألبومات الموسم",
+      "videosHeading": "فيديوهات الموسم",
+      "albumsLink": "معرض الصور",
+      "videosLink": "مكتبة الفيديوهات",
+      "albumsEmpty": "لا توجد ألبومات لهذا الموسم بعد",
+      "videosEmpty": "لا توجد فيديوهات لهذا الموسم بعد",
+      "unavailable": "تعذّر عرضها الآن"
+    },
+    "about": {
+      "heading": "عن الموسم",
+      "closingHeading": "ختام الموسم"
+    },
+    "nav": {
+      "label": "التنقل بين المواسم",
+      "previous": "الموسم السابق",
+      "next": "الموسم التالي",
+      "archive": "أرشيف المواسم"
+    },
+    "seo": {
+      "archiveDescription": "أرشيف مواسم اتحاد الإمارات لألعاب القوى: مراحل كل موسم وفعالياته وصوره وفيديوهاته.",
+      "seasonDescription": "{name}: مراحل الموسم ومواعيده المهمة وصوره وفيديوهاته."
+    }
+  }
+}

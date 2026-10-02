@@ -1,5 +1,6 @@
 import { Types } from 'mongoose';
 import { seasonRange } from './season.js';
+import type { SeasonRange } from './season.js';
 import type { VideoCategory, VideoExternalPlatform, VideoKind } from './schemas/video.schema.js';
 
 /**
@@ -89,7 +90,15 @@ const endOfDay = (date: Date): Date => {
   return end;
 };
 
-export const buildPublicVideoFilter = (query: PublicVideoQuery): Record<string, unknown> => {
+/**
+ * @param resolvedSeason `query.season` as `SeasonRangeResolver` read it — a
+ *   label's range or a season record's days. Omitted, the label alone is read
+ *   through `seasonRange`, which is what a caller without the resolver gets.
+ */
+export const buildPublicVideoFilter = (
+  query: PublicVideoQuery,
+  resolvedSeason?: SeasonRange | null,
+): Record<string, unknown> => {
   // Never negotiable, whatever the reader asked for: a draft is not public,
   // and a soft-deleted row is not either.
   const filter: Record<string, unknown> = { status: 'published', archivedAt: null };
@@ -113,9 +122,9 @@ export const buildPublicVideoFilter = (query: PublicVideoQuery): Record<string, 
       ...(to ? { $lte: endOfDay(to) } : {}),
     };
   } else if (query.season) {
-    const range = seasonRange(query.season);
-    // Half-open, matching `seasonRange`'s own contract: `$lt`, not `$lte`, so
-    // a video published at midnight on 1 September belongs to one season only.
+    const range = resolvedSeason !== undefined ? resolvedSeason : seasonRange(query.season);
+    // Half-open, matching both resolutions' contract: `$lt`, not `$lte`, so a
+    // video published exactly at a season boundary belongs to one season only.
     if (range) filter.publishedAt = { $gte: range.from, $lt: range.to };
   }
 

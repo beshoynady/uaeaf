@@ -58,3 +58,23 @@ describe("phaseLanes", () => {
     expect(phaseLanes("2026-09-01", "2027-08-31", [phase("rest", "2027-08-01", "2027-09-15"), phase("", "2026-09-01", "2026-09-02")])).toEqual([]);
   });
 });
+
+describe("the phase treatments", () => {
+  it("uses the owner's identity tokens, one treatment per type", async () => {
+    const { PHASE_TREATMENT } = await import("@/components/admin/seasons/phase-type-chip");
+    expect(PHASE_TREATMENT.preparation).toContain("var(--color-neutral-warm-200)");
+    expect(PHASE_TREATMENT.preparation).toContain("var(--color-neutral-warm-900)");
+    expect(PHASE_TREATMENT.domestic).toContain("var(--color-green-700)");
+    expect(PHASE_TREATMENT.international).toContain("var(--color-brand-black)");
+    expect(PHASE_TREATMENT.rest).toContain("border-dashed");
+    expect(PHASE_TREATMENT.rest).toContain("var(--color-neutral-warm-400)");
+    expect(new Set(Object.values(PHASE_TREATMENT)).size).toBe(4);
+  });
+
+  it("spends no red on routine chrome (ADR-0050)", async () => {
+    const { PHASE_TREATMENT } = await import("@/components/admin/seasons/phase-type-chip");
+    for (const treatment of Object.values(PHASE_TREATMENT)) {
+      expect(treatment).not.toMatch(/red|brand-secondary|semantic-error/);
+    }
+  });
+});

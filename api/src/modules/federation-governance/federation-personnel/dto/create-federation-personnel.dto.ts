@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  IsBoolean,
   IsIn,
   IsMongoId,
   IsOptional,
@@ -10,6 +11,7 @@ import {
 } from 'class-validator';
 import { LocalizedTextDto } from '../../../../common/dto/localized-text.dto.js';
 import { SocialLinkDto } from '../../../people-organizations/clubs/dto/social-link.dto.js';
+import { PersonnelCvDto } from './personnel-cv.dto.js';
 import { FEDERATION_PERSONNEL_STATUSES } from '../schemas/federation-personnel.schema.js';
 import type { FederationPersonnelStatus } from '../schemas/federation-personnel.schema.js';
 
@@ -41,10 +43,20 @@ export class PersonnelInternalContactDto {
 
 /** Request body for POST /federation-personnel. */
 export class CreateFederationPersonnelDto {
+  @ApiProperty({ description: 'Public URL segment for /about/people/{slug}. Fixed after creation.' })
+  @IsString()
+  slug: string;
+
   @ApiProperty({ type: LocalizedTextDto })
   @ValidateNested()
   @Type(() => LocalizedTextDto)
   fullName: LocalizedTextDto;
+
+  @ApiProperty({ type: LocalizedTextDto, required: false })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => LocalizedTextDto)
+  honorific?: LocalizedTextDto;
 
   @ApiProperty({ required: false, description: 'ref → mediaAssets, must be an image.' })
   @IsOptional()
@@ -73,6 +85,11 @@ export class CreateFederationPersonnelDto {
   @Type(() => PersonnelPublicContactDto)
   publicContact?: PersonnelPublicContactDto;
 
+  @ApiProperty({ required: false, description: 'Whether the public page shows publicContact. Defaults to false.' })
+  @IsOptional()
+  @IsBoolean()
+  showPublicContact?: boolean;
+
   @ApiProperty({ type: PersonnelInternalContactDto, required: false })
   @IsOptional()
   @ValidateNested()
@@ -89,4 +106,10 @@ export class CreateFederationPersonnelDto {
   @ValidateNested({ each: true })
   @Type(() => SocialLinkDto)
   socialLinks?: SocialLinkDto[];
+
+  @ApiProperty({ type: PersonnelCvDto, required: false })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => PersonnelCvDto)
+  cv?: PersonnelCvDto;
 }

@@ -24,6 +24,7 @@ const publish = await import("./[id]/publish/route");
 const setCurrent = await import("./[id]/set-current/route");
 const unarchive = await import("./[id]/unarchive/route");
 const submit = await import("./[id]/submit/route");
+const publishApproved = await import("./[id]/publish-approved/route");
 
 const ID = "66f0a1b2c3d4e5f607182901";
 const params = (id = ID) => ({ params: Promise.resolve({ id }) });
@@ -81,8 +82,8 @@ describe("POST /api/admin/seasons", () => {
     expect(init.body).not.toHaveProperty("stray");
   });
 
-  it("refuses Published at creation and forwards nothing", async () => {
-    const response = await list.POST(request({ ...validSeason, slug: "2026-2027", publicationState: "Published" }));
+  it("refuses Live at creation and forwards nothing", async () => {
+    const response = await list.POST(request({ ...validSeason, slug: "2026-2027", publicationState: "Live" }));
     expect(response.status).toBe(400);
     expect(callUpstream).not.toHaveBeenCalled();
   });
@@ -237,6 +238,33 @@ describe("the three season actions", () => {
     callUpstream.mockRejectedValue(new UpstreamError(409, { code: "publishingPolicyMissing" }));
     const response = await submit.POST(request(), params());
     expect(await response.json()).toEqual({ code: "publishingPolicyMissing" });
+  });
+
+  it("puts an approved season live through POST :id/publish-approved, with no body", async () => {
+    await publishApproved.POST(request({ revisionId: "66f0a1b2c3d4e5f607182999" }), params());
+    expect(callUpstream).toHaveBeenCalledWith(`/seasons/${ID}/publish-approved`, { method: "POST", accessToken: "token" });
+  });
+
+  it("refuses publish-approved for a malformed id without calling upstream", async () => {
+    const response = await publishApproved.POST(request(), params("nope"));
+    expect(response.status).toBe(404);
+    expect(callUpstream).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["notApproved", "notApproved"],
+    ["missingRequiredField", "seasonBannerMissing"],
+  ])("names a publish-approved refused with %s as %s", async (apiCode, code) => {
+    callUpstream.mockRejectedValue(new UpstreamError(409, { code: apiCode }));
+    const response = await publishApproved.POST(request(), params());
+    expect(await response.json()).toEqual({ code });
+  });
+
+  it("keeps the phase-out-of-range refusal by name, even as a 422", async () => {
+    callUpstream.mockRejectedValue(new UpstreamError(422, { code: "seasonPhaseOutOfRange" }));
+    const response = await one.PATCH(request(validSeason, "PATCH"), params());
+    expect(response.status).toBe(422);
+    expect(await response.json()).toEqual({ code: "seasonPhaseOutOfRange" });
   });
 
   it("sets the current season", async () => {

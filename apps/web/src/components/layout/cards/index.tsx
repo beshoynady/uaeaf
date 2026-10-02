@@ -1,6 +1,7 @@
 import { useTranslations } from "next-intl";
 import { FeatureCard } from "@/components/layout/cards/feature-card";
 import { ArticleTeaser } from "@/components/layout/cards/article-teaser";
+import { SeasonPicker } from "@/components/layout/cards/season-picker";
 import type { HeaderFeatures } from "@/lib/header/features";
 import type { ReactNode } from "react";
 
@@ -176,11 +177,14 @@ export const panelFeature = (key: string, features: HeaderFeatures): ReactNode =
   }
 };
 
-/** The panel's middle content track (design spec §5/§3.5), or `null` for a
- *  panel with no such slot, or nothing to show in it yet. Only the Media
- *  panel has a live source today; Championships' season summary and
- *  Events & Seasons' season picker (spec §3.3/§3.4) are later projects'. */
+/** The panel's middle content track (design spec §5/§3.4/§3.5), or `null` for
+ *  a panel with no such slot, or nothing to show in it yet: Events & Seasons'
+ *  season picker and Media's latest article. Championships' season summary
+ *  (§3.3) has no source yet. */
 export const panelMiddle = (key: string, features: HeaderFeatures): ReactNode => {
+  if (key === "eventsSeasons") {
+    return features.seasons.length > 0 ? <SeasonPicker seasons={features.seasons} /> : null;
+  }
   if (key !== "media" || !features.latestArticle) return null;
   return (
     <ArticleTeaser

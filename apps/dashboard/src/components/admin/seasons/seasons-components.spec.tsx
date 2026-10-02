@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithIntl } from "@/test/render";
 import type { AdminSeason, SeasonContent } from "@/lib/admin/seasons/types";
 import type { SeasonEditorPermissions } from "@/lib/admin/seasons/editor-screen";
+import type { EditorialState } from "@/lib/admin/editorial-state";
 
 /**
  * The season screens, rendered with the real English catalogue so a missing
@@ -32,6 +33,11 @@ const { SeasonsBoard } = await import("./seasons-board");
 const { SeasonForm } = await import("./season-form");
 
 const fetchMock = vi.fn();
+
+// The form mounts all seven sections; filling a phase re-renders them on each
+// change, which on a loaded machine outruns the 5s default without anything
+// being wrong.
+vi.setConfig({ testTimeout: 15_000 });
 
 const answer = (status: number, body: unknown) =>
   Promise.resolve(new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } }));
@@ -64,7 +70,7 @@ const season = (overrides: Partial<AdminSeason> = {}): AdminSeason => ({
   documentIds: [],
   isCurrent: false,
   publicationState: "Draft",
-  publishedAt: null,
+  publishDate: null,
   isVisible: false,
   seo: { metaTitle: null, metaDescription: null, ogImageId: null },
   updatedAt: "2026-09-29T10:00:00.000Z",
@@ -79,7 +85,7 @@ const CURRENT = season({
   startDate: "2025-08-31T20:00:00.000Z",
   endDate: "2026-08-30T20:00:00.000Z",
   isCurrent: true,
-  publicationState: "Published",
+  publicationState: "Live",
   isVisible: true,
 });
 const NEXT = season();
@@ -173,6 +179,7 @@ const renderForm = (
     record: AdminSeason | null;
     publishMode: "direct" | "approval" | "unknown";
     permissions: SeasonEditorPermissions;
+    editorial: EditorialState | null;
   }> = {},
 ) =>
   renderWithIntl(
@@ -186,6 +193,7 @@ const renderForm = (
       sponsors={[]}
       permissions={overrides.permissions ?? PERMISSIONS}
       publishMode={overrides.publishMode ?? "direct"}
+      editorial={overrides.editorial ?? null}
       locale="en"
       now="2026-10-01T00:00:00.000Z"
     />,
@@ -334,6 +342,77 @@ describe("the season form — documents and search (sections 6–7)", () => {
   });
 });
 
+/** The editorial state as the server answers it, trimmed to what the card
+ *  reads; everything else is the shared shape's own defaults. */
+const editorialState = (overrides: Partial<EditorialState> = {}): EditorialState =>
+  ({
+    publicationState: "Draft",
+    mode: "workflow",
+    blockedReason: null,
+    publishedAt: null,
+    publishedBy: null,
+    workflowInstanceId: null,
+    workflowStatus: null,
+    currentStepId: null,
+    canEdit: true,
+    availableActions: ["save"],
+    blockedByReadiness: [],
+    updatedAt: NEXT.updatedAt,
+    publishBlockers: [],
+    workflow: null,
+    history: [],
+    ...overrides,
+  }) as EditorialState;
+
+describe("the season form — the server's editorial state decides the step", () => {
+  it("offers 'publish the approved version' when a completed approval is waiting, and posts no body", async () => {
+    const user = userEvent.setup();
+    renderForm({ publishMode: "approval", editorial: editorialState({ availableActions: ["save", "publishApproved"] }) });
+    expect(screen.queryByRole("button", { name: "Send for approval" })).toBeNull();
+    await user.click(screen.getByRole("button", { name: "Publish the approved version" }));
+    expect(fetchMock).toHaveBeenCalledWith(`/api/admin/seasons/${NEXT.id}/publish-approved`, { method: "POST" });
+  });
+
+  it("does not offer it when the server does not report it, whatever the policy says", () => {
+    renderForm({ publishMode: "approval", editorial: editorialState({ availableActions: ["save"] }) });
+    expect(screen.queryByRole("button", { name: "Publish the approved version" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Send for approval" })).toBeNull();
+    expect(screen.getByText("There is no publishing step open to you on this season now.")).toBeInTheDocument();
+  });
+
+  it("refuses to put an approval live over unsaved changes, checked at the press", async () => {
+    const user = userEvent.setup();
+    renderForm({ editorial: editorialState({ availableActions: ["save", "publishApproved"] }) });
+    await user.type(screen.getByLabelText(/Short name/), "x");
+    await user.click(screen.getByRole("button", { name: "Publish the approved version" }));
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(screen.getByText(/Save your changes first/)).toBeInTheDocument();
+  });
+
+  it("draws a step held back for readiness disabled, with the banner named", () => {
+    renderForm({ publishMode: "direct", editorial: editorialState({ availableActions: ["save"], blockedByReadiness: ["publish"] }) });
+    expect(screen.getByRole("button", { name: "Publish" })).toBeDisabled();
+    expect(screen.getByText(/Add the season's banner/)).toBeInTheDocument();
+  });
+
+  it("says who published the season and when", () => {
+    renderForm({
+      record: season({ publicationState: "Live" }),
+      editorial: editorialState({
+        publicationState: "Live",
+        publishedAt: "2026-09-15T08:00:00.000Z",
+        publishedBy: { id: "u1", name: { ar: "مريم", en: "Mariam" } },
+      }),
+    });
+    expect(screen.getByText("15 September 2026 — by Mariam")).toBeInTheDocument();
+  });
+
+  it("names a taken-down season as taken down, not as a draft", () => {
+    renderForm({ record: season({ publicationState: "Unpublished" }) });
+    expect(screen.getByText("Taken down")).toBeInTheDocument();
+  });
+});
+
 describe("the season form — publishing", () => {
   it("offers 'publish' under a direct policy and sends the version the editor opened", async () => {
     const user = userEvent.setup();
@@ -351,6 +430,26 @@ describe("the season form — publishing", () => {
     await user.type(screen.getByLabelText(/Short name/), "x");
     await user.click(screen.getByRole("button", { name: "Publish" }));
     expect(fetchMock).not.toHaveBeenCalled();
+    expect(screen.getByText(/Save your changes first/)).toBeInTheDocument();
+  });
+
+  // CLAUDE.md §31: what is typed while a save is in flight is not part of that
+  // save, so the save's success must not mark it saved.
+  it("keeps an edit typed while the save was in flight unsaved, so publish still refuses", async () => {
+    let finish: (response: Response) => void = () => undefined;
+    fetchMock.mockImplementationOnce(() => new Promise<Response>((resolve) => (finish = resolve)));
+    const user = userEvent.setup();
+    renderForm();
+    await user.type(screen.getByLabelText(/Short name/), "x");
+    await user.click(screen.getByRole("button", { name: "Save changes" }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+
+    await user.type(screen.getByLabelText(/Short name/), "y");
+    finish(new Response(JSON.stringify({ _id: "x" }), { status: 200, headers: { "Content-Type": "application/json" } }));
+    await waitFor(() => expect(toastShow).toHaveBeenCalled());
+
+    await user.click(screen.getByRole("button", { name: "Publish" }));
+    expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(screen.getByText(/Save your changes first/)).toBeInTheDocument();
   });
 

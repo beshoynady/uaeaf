@@ -1,6 +1,7 @@
 import { Types } from 'mongoose';
 import type { QueryFilter } from 'mongoose';
 import { seasonRange } from '../videos/season.js';
+import type { SeasonRange } from '../videos/season.js';
 import type { AlbumDocument } from './schemas/album.schema.js';
 
 /**
@@ -34,9 +35,9 @@ import type { AlbumDocument } from './schemas/album.schema.js';
 const REGEX_SPECIALS = /[.*+?^${}()|[\]\\]/g;
 
 export interface AlbumFilterQuery {
-  /** A season label such as `2025–2026`, not an id — this platform derives a
-   *  season from a date and adds no season entity (`videos/season.ts`). The
-   *  same shape the video library's `season` parameter takes. */
+  /** A season label such as `2025–2026`, or a season's slug such as
+   *  `2025-2026` — see `seasons/season-range-resolver.ts`. The same shape the
+   *  video library's `season` parameter takes. */
   season?: string;
   championship?: string;
   competition?: string;
@@ -68,14 +69,21 @@ const endOfDay = (value: Date): Date => {
   return end;
 };
 
-export const buildAlbumFilter = (query: AlbumFilterQuery): QueryFilter<AlbumDocument> => {
+/**
+ * @param resolvedSeason `query.season` as `SeasonRangeResolver` read it — a
+ *   label's range or a season record's days. Omitted, the label alone is read
+ *   through `seasonRange`, which is what a caller without the resolver gets.
+ */
+export const buildAlbumFilter = (
+  query: AlbumFilterQuery,
+  resolvedSeason?: SeasonRange | null,
+): QueryFilter<AlbumDocument> => {
   const filter: QueryFilter<AlbumDocument> = { publicationState: 'Published', archivedAt: null };
 
-  // A season is a range over `eventDate`, resolved by the same helper the
-  // video library uses — one definition of where a season starts, not two.
-  // Half-open, matching `seasonRange`'s own contract: an album dated exactly
-  // at the boundary belongs to one season only.
-  const season = query.season ? seasonRange(query.season) : null;
+  // A season is a half-open range over `eventDate`: an album dated exactly at
+  // the boundary belongs to one season only. The same resolution the video
+  // library uses — one definition of where a season starts, not two.
+  const season = resolvedSeason !== undefined ? resolvedSeason : query.season ? seasonRange(query.season) : null;
   if (season) {
     filter.eventDate = { $gte: season.from, $lt: season.to };
   }

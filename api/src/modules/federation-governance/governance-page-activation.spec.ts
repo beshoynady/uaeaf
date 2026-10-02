@@ -72,7 +72,7 @@ describe('governance page activation', () => {
             { findLive: mock(), getPublicSnapshot: mock() } as never,
             {} as never,
             { resolvePublicImages: mock(), assertUsableImage: mock() } as never,
-            { findActiveByRole: mock() } as never,
+            { findActiveTopOfBoard: mock() } as never,
           ),
       },
       {

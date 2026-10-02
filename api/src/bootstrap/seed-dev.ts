@@ -31,6 +31,9 @@ export const DEV_FIXTURE_SETS: readonly DevFixtureSet[] = [
   { collection: 'mediaAssets', singleton: false },
   { collection: 'federationPersonnel', singleton: false },
   { collection: 'contactMessages', singleton: false },
+  // Before `federationAppointments`: every appointment's positionId must
+  // resolve to a row already written.
+  { collection: 'federationPositions', singleton: false },
   // Before `presidentMessagePage`: the message points at the appointment,
   // and the public route resolves "which message is current" through it.
   { collection: 'federationAppointments', singleton: false },

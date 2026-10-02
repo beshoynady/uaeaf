@@ -1960,7 +1960,8 @@
                 "organizationalStructure",
                 "committees",
                 "documents",
-                "publicEvents"
+                "publicEvents",
+                "seasons"
               ]
             }
           },
@@ -5296,7 +5297,7 @@
             "name": "season",
             "required": false,
             "in": "query",
-            "description": "A season label such as `2025–2026`. Not an id: a season is derived from the album’s date, the same as the video library.",
+            "description": "A season label such as `2025–2026` (en dash: 1 September to 1 September, UTC, from the album’s `eventDate`), or a published season’s slug such as `2025-2026` (that season’s own first to last day, inclusive, Asia/Dubai). Ignored when it is neither.",
             "schema": {
               "type": "string"
             }
@@ -5837,7 +5838,7 @@
             "name": "season",
             "required": false,
             "in": "query",
-            "description": "e.g. \"2025–2026\". Ignored if unparseable.",
+            "description": "A season label such as \"2025–2026\" (en dash: 1 September to 1 September, UTC, over publishedAt), or a published season’s slug such as \"2025-2026\" (that season’s own first to last day, inclusive, Asia/Dubai). Ignored when it is neither.",
             "schema": {
               "type": "string"
             }
@@ -6053,6 +6054,316 @@
         },
         "tags": [
           "videos"
+        ]
+      }
+    },
+    "/api/v1/seasons": {
+      "post": {
+        "operationId": "SeasonsController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSeasonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "seasons"
+        ]
+      },
+      "get": {
+        "operationId": "SeasonsController_findAll_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "seasons"
+        ]
+      }
+    },
+    "/api/v1/seasons/public": {
+      "get": {
+        "operationId": "SeasonsController_listPublic_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "seasons"
+        ]
+      }
+    },
+    "/api/v1/seasons/public/current": {
+      "get": {
+        "operationId": "SeasonsController_getPublicCurrent_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "seasons"
+        ]
+      }
+    },
+    "/api/v1/seasons/public/{slug}": {
+      "get": {
+        "operationId": "SeasonsController_getPublicBySlug_v1",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "seasons"
+        ]
+      }
+    },
+    "/api/v1/seasons/{id}": {
+      "get": {
+        "operationId": "SeasonsController_findOne_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "seasons"
+        ]
+      },
+      "patch": {
+        "operationId": "SeasonsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSeasonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "seasons"
+        ]
+      },
+      "delete": {
+        "operationId": "SeasonsController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "seasons"
+        ]
+      }
+    },
+    "/api/v1/seasons/{id}/editorial-state": {
+      "get": {
+        "operationId": "SeasonsController_editorialState_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "seasons"
+        ]
+      }
+    },
+    "/api/v1/seasons/{id}/set-current": {
+      "patch": {
+        "operationId": "SeasonsController_setCurrent_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "seasons"
+        ]
+      }
+    },
+    "/api/v1/seasons/{id}/submit": {
+      "post": {
+        "operationId": "SeasonsController_submit_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "seasons"
+        ]
+      }
+    },
+    "/api/v1/seasons/{id}/publish": {
+      "patch": {
+        "operationId": "SeasonsController_publish_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishSeasonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "seasons"
+        ]
+      }
+    },
+    "/api/v1/seasons/{id}/publish-approved": {
+      "post": {
+        "operationId": "SeasonsController_publishApproved_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "seasons"
+        ]
+      }
+    },
+    "/api/v1/seasons/{id}/unarchive": {
+      "post": {
+        "operationId": "SeasonsController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "seasons"
         ]
       }
     },
@@ -7000,6 +7311,206 @@
         },
         "tags": [
           "federation-appointments"
+        ]
+      }
+    },
+    "/api/v1/federation-appointments/{id}/close": {
+      "patch": {
+        "operationId": "FederationAppointmentsController_close_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CloseAppointmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "federation-appointments"
+        ]
+      }
+    },
+    "/api/v1/federation-appointments/committees/{committeeId}/chair": {
+      "post": {
+        "operationId": "FederationAppointmentsController_replaceChairOfCommittee_v1",
+        "parameters": [
+          {
+            "name": "committeeId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplaceChairDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "federation-appointments"
+        ]
+      }
+    },
+    "/api/v1/federation-positions": {
+      "post": {
+        "operationId": "FederationPositionsController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFederationPositionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "federation-positions"
+        ]
+      },
+      "get": {
+        "operationId": "FederationPositionsController_findAll_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "federation-positions"
+        ]
+      }
+    },
+    "/api/v1/federation-positions/{id}": {
+      "get": {
+        "operationId": "FederationPositionsController_findOne_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "federation-positions"
+        ]
+      },
+      "patch": {
+        "operationId": "FederationPositionsController_update_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFederationPositionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "federation-positions"
+        ]
+      },
+      "delete": {
+        "operationId": "FederationPositionsController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "federation-positions"
+        ]
+      }
+    },
+    "/api/v1/federation-positions/{id}/unarchive": {
+      "post": {
+        "operationId": "FederationPositionsController_unarchive_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "federation-positions"
         ]
       }
     },
@@ -11773,6 +12284,73 @@
           "articles"
         ]
       }
+    },
+    "/api/v1/search/public": {
+      "get": {
+        "operationId": "SearchController_findPublic_v1",
+        "parameters": [
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "description": "2–80 characters after trim; shorter returns an empty result, not an error.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "ar",
+              "type": "string",
+              "enum": [
+                "ar",
+                "en"
+              ]
+            }
+          },
+          {
+            "name": "types",
+            "required": false,
+            "in": "query",
+            "description": "Comma-separated subset of articles, albums, videos, clubs, athletes, coaches. An unknown value is ignored.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Per type; clamped to 10 upstream.",
+            "schema": {
+              "minimum": 1,
+              "default": 5,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "search"
+        ]
+      }
     }
   },
   "info": {
@@ -11946,6 +12524,7 @@
               "federation",
               "federationAppointments",
               "federationPersonnel",
+              "federationPositions",
               "governanceDocuments",
               "heroSlides",
               "mediaAssets",
@@ -11969,6 +12548,7 @@
               "resultsRankingsPage",
               "revisions",
               "roles",
+              "seasons",
               "siteSettings",
               "sponsors",
               "sponsorships",
@@ -12181,6 +12761,7 @@
               "federation",
               "federationAppointments",
               "federationPersonnel",
+              "federationPositions",
               "governanceDocuments",
               "heroSlides",
               "mediaAssets",
@@ -12204,6 +12785,7 @@
               "resultsRankingsPage",
               "revisions",
               "roles",
+              "seasons",
               "siteSettings",
               "sponsors",
               "sponsorships",
@@ -12958,6 +13540,7 @@
               "federation",
               "federationAppointments",
               "federationPersonnel",
+              "federationPositions",
               "governanceDocuments",
               "heroSlides",
               "mediaAssets",
@@ -12981,6 +13564,7 @@
               "resultsRankingsPage",
               "revisions",
               "roles",
+              "seasons",
               "siteSettings",
               "sponsors",
               "sponsorships",
@@ -13118,7 +13702,8 @@
               "committees",
               "documents",
               "contactMessages",
-              "publicEvents"
+              "publicEvents",
+              "seasons"
             ]
           },
           "isActive": {
@@ -13159,7 +13744,8 @@
               "committees",
               "documents",
               "contactMessages",
-              "publicEvents"
+              "publicEvents",
+              "seasons"
             ]
           },
           "isActive": {
@@ -13258,7 +13844,8 @@
               "organizationalStructure",
               "committees",
               "documents",
-              "publicEvents"
+              "publicEvents",
+              "seasons"
             ]
           },
           "entityId": {
@@ -13386,7 +13973,8 @@
               "committees",
               "documents",
               "contactMessages",
-              "publicEvents"
+              "publicEvents",
+              "seasons"
             ]
           },
           "operation": {
@@ -13498,7 +14086,8 @@
               "committees",
               "documents",
               "contactMessages",
-              "publicEvents"
+              "publicEvents",
+              "seasons"
             ]
           },
           "entityId": {
@@ -15902,6 +16491,254 @@
           }
         }
       },
+      "SeasonPhaseDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "preparation",
+              "domestic",
+              "international",
+              "rest"
+            ]
+          },
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "type",
+          "from",
+          "to"
+        ]
+      },
+      "SeasonKeyDateDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "date": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "date"
+        ]
+      },
+      "PageSeoDto": {
+        "type": "object",
+        "properties": {
+          "metaTitle": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "metaDescription": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "ogImageId": {
+            "type": "string",
+            "description": "ref → mediaAssets, must be an image."
+          }
+        }
+      },
+      "CreateSeasonDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "shortName": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Unique slug for the public season page, e.g. \"2026-2027\"."
+          },
+          "tagline": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "logoId": {
+            "type": "string"
+          },
+          "bannerId": {
+            "type": "string"
+          },
+          "shareImageId": {
+            "type": "string"
+          },
+          "about": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "closingSummary": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "startDate": {
+            "type": "string"
+          },
+          "endDate": {
+            "type": "string"
+          },
+          "phases": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeasonPhaseDto"
+            }
+          },
+          "keyDates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeasonKeyDateDto"
+            }
+          },
+          "calendarDocumentId": {
+            "type": "string"
+          },
+          "documentIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "publicationState": {
+            "type": "string",
+            "enum": [
+              "Draft",
+              "Unpublished",
+              "Archived"
+            ]
+          },
+          "isVisible": {
+            "type": "boolean",
+            "description": "Hidden unless true."
+          },
+          "seo": {
+            "$ref": "#/components/schemas/PageSeoDto"
+          }
+        },
+        "required": [
+          "name",
+          "shortName",
+          "slug",
+          "about",
+          "startDate",
+          "endDate",
+          "publicationState"
+        ]
+      },
+      "UpdateSeasonDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "shortName": {
+            "type": "string"
+          },
+          "about": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "startDate": {
+            "type": "string"
+          },
+          "endDate": {
+            "type": "string"
+          },
+          "phases": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeasonPhaseDto"
+            }
+          },
+          "keyDates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SeasonKeyDateDto"
+            }
+          },
+          "documentIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "publicationState": {
+            "type": "string",
+            "enum": [
+              "Draft",
+              "Unpublished",
+              "Archived"
+            ]
+          },
+          "isVisible": {
+            "type": "boolean",
+            "description": "Hidden unless true."
+          },
+          "seo": {
+            "$ref": "#/components/schemas/PageSeoDto"
+          },
+          "tagline": {
+            "nullable": true,
+            "description": "Pass null to clear.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "logoId": {
+            "type": "object",
+            "nullable": true,
+            "description": "Pass null to clear."
+          },
+          "bannerId": {
+            "type": "object",
+            "nullable": true,
+            "description": "Pass null to clear."
+          },
+          "shareImageId": {
+            "type": "object",
+            "nullable": true,
+            "description": "Pass null to clear."
+          },
+          "closingSummary": {
+            "nullable": true,
+            "description": "Pass null to clear.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "calendarDocumentId": {
+            "type": "object",
+            "nullable": true,
+            "description": "Pass null to clear."
+          }
+        }
+      },
+      "PublishSeasonDto": {
+        "type": "object",
+        "properties": {
+          "expectedUpdatedAt": {
+            "type": "string",
+            "description": "The `updatedAt` the editor was looking at. Publishing a record someone else edited in the meantime publishes an edit nobody chose to publish, so the server compares before freezing."
+          }
+        },
+        "required": [
+          "expectedUpdatedAt"
+        ]
+      },
       "LiveStreamPublicResponseDto": {
         "type": "object",
         "properties": {
@@ -16690,6 +17527,10 @@
           "personId": {
             "type": "string"
           },
+          "positionId": {
+            "type": "string",
+            "description": "The admin-defined post this appointment fills."
+          },
           "supersedesAppointmentId": {
             "type": "string",
             "description": "The specific prior appointment this one succeeds. When set, that appointment is closed (termEnd = this appointment's termStart, status = Completed). Explicit admin choice — no roleType-based auto-close happens without it."
@@ -16802,6 +17643,10 @@
           "personId": {
             "type": "string"
           },
+          "positionId": {
+            "type": "string",
+            "description": "The admin-defined post this appointment fills."
+          },
           "supersedesAppointmentId": {
             "type": "string",
             "description": "The specific prior appointment this one succeeds. When set, that appointment is closed (termEnd = this appointment's termStart, status = Completed). Explicit admin choice — no roleType-based auto-close happens without it."
@@ -16857,6 +17702,196 @@
           }
         }
       },
+      "CloseAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "termEnd": {
+            "type": "string"
+          },
+          "endReason": {
+            "type": "string",
+            "enum": [
+              "completed",
+              "resigned",
+              "removed",
+              "transitioned",
+              "deceased"
+            ]
+          }
+        },
+        "required": [
+          "termEnd",
+          "endReason"
+        ]
+      },
+      "ReplaceChairDto": {
+        "type": "object",
+        "properties": {
+          "cycleId": {
+            "type": "string"
+          },
+          "positionId": {
+            "type": "string"
+          },
+          "personId": {
+            "type": "string"
+          },
+          "positionTitle": {
+            "description": "e.g. \"نائب الرئيس\".",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "roleType": {
+            "type": "string",
+            "enum": [
+              "President",
+              "BoardMember",
+              "CommitteeChair",
+              "CommitteeMember",
+              "ExecutiveDirector",
+              "Manager",
+              "Other"
+            ]
+          },
+          "termStart": {
+            "type": "string"
+          },
+          "endReason": {
+            "type": "string",
+            "enum": [
+              "completed",
+              "resigned",
+              "removed",
+              "transitioned",
+              "deceased"
+            ],
+            "description": "Closes the outgoing chair with this reason."
+          },
+          "displayOrder": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "cycleId",
+          "positionId",
+          "personId",
+          "positionTitle",
+          "roleType",
+          "termStart",
+          "endReason",
+          "displayOrder"
+        ]
+      },
+      "CreateFederationPositionDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "body": {
+            "type": "string",
+            "enum": [
+              "board",
+              "committee"
+            ]
+          },
+          "rank": {
+            "type": "number",
+            "description": "Level in the org chart, 1 being the highest."
+          },
+          "displayOrder": {
+            "type": "number"
+          },
+          "maxHolders": {
+            "type": "object",
+            "nullable": true,
+            "description": "How many people may hold the post at once. Omitted or null is unlimited."
+          },
+          "isVisible": {
+            "type": "boolean",
+            "description": "Defaults to true when omitted."
+          }
+        },
+        "required": [
+          "title",
+          "body",
+          "rank",
+          "displayOrder"
+        ]
+      },
+      "UpdateFederationPositionDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "body": {
+            "type": "string",
+            "enum": [
+              "board",
+              "committee"
+            ]
+          },
+          "rank": {
+            "type": "number",
+            "description": "Level in the org chart, 1 being the highest."
+          },
+          "displayOrder": {
+            "type": "number"
+          },
+          "maxHolders": {
+            "type": "object",
+            "nullable": true,
+            "description": "How many people may hold the post at once. Omitted or null is unlimited."
+          },
+          "isVisible": {
+            "type": "boolean",
+            "description": "Defaults to true when omitted."
+          }
+        }
+      },
+      "CommitteeDutyDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "desc": {
+            "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "order": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "title",
+          "desc",
+          "order"
+        ]
+      },
+      "FormationDecisionDto": {
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "documentId": {
+            "type": "object",
+            "nullable": true,
+            "description": "ref → documents."
+          }
+        },
+        "required": [
+          "number",
+          "date"
+        ]
+      },
       "CreateCommitteeDto": {
         "type": "object",
         "properties": {
@@ -16865,6 +17900,10 @@
           },
           "description": {
             "$ref": "#/components/schemas/LocalizedTextDto"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Unique, e.g. \"medical-committee\"."
           },
           "displayOrder": {
             "type": "number"
@@ -16898,11 +17937,69 @@
               "Unpublished",
               "Archived"
             ]
+          },
+          "summary": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "about": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "duties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommitteeDutyDto"
+            }
+          },
+          "formationDecision": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FormationDecisionDto"
+              }
+            ]
+          },
+          "documentIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isVisible": {
+            "type": "boolean",
+            "description": "The admin's own show/hide switch. Separate from isActive."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "standing",
+              "sub"
+            ],
+            "nullable": true,
+            "description": "Null until an admin classifies the committee."
+          },
+          "parentCommitteeId": {
+            "type": "object",
+            "nullable": true,
+            "description": "ref → committees. Set only on a sub-committee; null there means it follows the board."
           }
         },
         "required": [
           "name",
           "description",
+          "slug",
           "displayOrder",
           "committeeType",
           "committeeGroup",
@@ -16918,6 +18015,10 @@
           "description": {
             "$ref": "#/components/schemas/LocalizedTextDto"
           },
+          "slug": {
+            "type": "string",
+            "description": "Unique, e.g. \"medical-committee\"."
+          },
           "displayOrder": {
             "type": "number"
           },
@@ -16950,6 +18051,68 @@
               "Unpublished",
               "Archived"
             ]
+          },
+          "summary": {
+            "nullable": true,
+            "description": "Pass null to clear.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "about": {
+            "nullable": true,
+            "description": "Pass null to clear.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocalizedTextDto"
+              }
+            ]
+          },
+          "duties": {
+            "description": "Omit to leave unchanged; null is refused.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommitteeDutyDto"
+            }
+          },
+          "formationDecision": {
+            "nullable": true,
+            "description": "Pass null to clear.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/FormationDecisionDto"
+              }
+            ]
+          },
+          "documentIds": {
+            "description": "Omit to leave unchanged; null is refused.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isVisible": {
+            "type": "boolean",
+            "description": "Omit to leave unchanged; null is refused."
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "standing",
+              "sub"
+            ],
+            "nullable": true,
+            "description": "Pass null to clear."
+          },
+          "parentCommitteeId": {
+            "type": "object",
+            "nullable": true,
+            "description": "Pass null to clear."
           }
         }
       },
@@ -17124,21 +18287,6 @@
           "displayOrder",
           "iconKey"
         ]
-      },
-      "PageSeoDto": {
-        "type": "object",
-        "properties": {
-          "metaTitle": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "metaDescription": {
-            "$ref": "#/components/schemas/LocalizedTextDto"
-          },
-          "ogImageId": {
-            "type": "string",
-            "description": "ref → mediaAssets, must be an image."
-          }
-        }
       },
       "CreateVisionMissionPageDto": {
         "type": "object",
@@ -20343,7 +21491,8 @@
             "enum": [
               "Federation",
               "Championship",
-              "Event"
+              "Event",
+              "Season"
             ]
           },
           "targetId": {
@@ -20428,7 +21577,8 @@
             "enum": [
               "Federation",
               "Championship",
-              "Event"
+              "Event",
+              "Season"
             ]
           },
           "targetId": {
@@ -21212,6 +22362,81 @@
         },
         "required": [
           "archived"
+        ]
+      },
+      "SearchHitDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "subtitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "href": {
+            "type": "string",
+            "description": "A public site path, never an API route."
+          },
+          "thumbnailId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "subtitle",
+          "href",
+          "thumbnailId"
+        ]
+      },
+      "SearchGroupDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "articles",
+              "albums",
+              "videos",
+              "clubs",
+              "athletes",
+              "coaches"
+            ]
+          },
+          "total": {
+            "type": "number",
+            "description": "Total matches for this source, independent of how many are returned."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchHitDto"
+            }
+          }
+        },
+        "required": [
+          "type",
+          "total",
+          "items"
+        ]
+      },
+      "SearchResponseDto": {
+        "type": "object",
+        "properties": {
+          "groups": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchGroupDto"
+            }
+          }
+        },
+        "required": [
+          "groups"
         ]
       }
     }

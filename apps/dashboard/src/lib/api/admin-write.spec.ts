@@ -178,3 +178,9 @@ describe("the homepage hero's refusals", () => {
     expect(failureDetails(new Error("offline"))).toEqual({});
   });
 });
+
+describe("the season overlap codes", () => {
+  it.each([["seasonOverlap"], ["seasonPhaseOverlap"], ["seasonPhaseOutOfRange"]])("keeps %s rather than folding it into conflict", (code) => {
+    expect(classifyWriteFailure(new UpstreamError(409, { code }))).toEqual({ status: 409, code });
+  });
+});

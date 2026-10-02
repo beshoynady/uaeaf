@@ -26,6 +26,7 @@ const EMPTY_FEATURES: HeaderFeatures = {
   latestArticle: null,
   latestVideo: null,
   activeLiveStream: null,
+  seasons: [],
 };
 
 vi.mock("@/lib/header/features", () => ({
@@ -532,6 +533,12 @@ const LIVE_FEATURES: HeaderFeatures = {
   },
   latestVideo: { title: "Championship highlights", href: "/media/videos", thumbnailId: null },
   activeLiveStream: { title: "National Championships — Day 1", href: "/media/videos#live" },
+  seasons: [
+    { slug: "2026-2027", name: "Season 2026–2027", shortName: "26/27", isCurrent: true, searchText: "2026 2027 26/27 2026-2027" },
+    { slug: "2025-2026", name: "Season 2025–2026", shortName: "25/26", isCurrent: false, searchText: "2025 2026 25/26 2025-2026" },
+    { slug: "2024-2025", name: "Season 2024–2025", shortName: "24/25", isCurrent: false, searchText: "2024 2025 24/25 2024-2025" },
+    { slug: "2023-2024", name: "Season 2023–2024", shortName: "23/24", isCurrent: false, searchText: "2023 2024 23/24 2023-2024" },
+  ],
 };
 
 describe("HeaderShell — cards render from server data, not a client fetch", () => {
@@ -954,5 +961,70 @@ describe("HeaderShell — Ctrl/Cmd+K opens search", () => {
 
     await user.keyboard("{Escape}");
     expect(dialog).not.toBeInTheDocument();
+  });
+});
+
+describe("HeaderShell — Events & Seasons panel's season picker", () => {
+  const openPanel = async (features: HeaderFeatures, isRow = true) => {
+    const user = userEvent.setup();
+    renderWithIntl(<HeaderShell features={features} activePath="/" isRow={isRow} />, "en");
+    await user.click(screen.getByRole("button", { name: /^Events/ }));
+    return { user, panel: screen.getByRole("region", { name: /Events/i }) };
+  };
+
+  const seasonLinks = (panel: HTMLElement) =>
+    within(within(panel).getByRole("region", { name: "Go to a season" }))
+      .getAllByRole("link")
+      .map((link) => link.getAttribute("href"));
+
+  it("lists the latest three seasons, newest first, each linking to its page, the current one named in words", async () => {
+    const { panel } = await openPanel(LIVE_FEATURES);
+
+    expect(seasonLinks(panel)).toEqual(["/en/seasons/2026-2027", "/en/seasons/2025-2026", "/en/seasons/2024-2025"]);
+    expect(within(panel).getByRole("link", { name: /Season 2026–2027/ })).toHaveTextContent("Current");
+    expect(within(panel).getByRole("link", { name: /Season 2025–2026/ })).not.toHaveTextContent("Current");
+    expect(panel.querySelector("[data-columns]")).toHaveAttribute("data-columns", "2");
+  });
+
+  it("finds an older season by year, beyond the three it lists", async () => {
+    const { user, panel } = await openPanel(LIVE_FEATURES);
+
+    await user.type(within(panel).getByRole("searchbox", { name: "Find a season by year" }), "2023");
+
+    expect(seasonLinks(panel)).toEqual(["/en/seasons/2023-2024"]);
+  });
+
+  it("reads a year typed in Arabic-Indic digits as the same year", async () => {
+    const { user, panel } = await openPanel(LIVE_FEATURES);
+
+    await user.type(within(panel).getByRole("searchbox"), "\u0662\u0660\u0662\u0663");
+
+    expect(seasonLinks(panel)).toEqual(["/en/seasons/2023-2024"]);
+  });
+
+  it("says so when no season matches, and clearing the search brings the three back", async () => {
+    const { user, panel } = await openPanel(LIVE_FEATURES);
+
+    await user.type(within(panel).getByRole("searchbox"), "1999");
+    expect(within(panel).getByText("No season matches “1999”")).toBeInTheDocument();
+    expect(within(within(panel).getByRole("region", { name: "Go to a season" })).queryAllByRole("link")).toEqual([]);
+
+    await user.click(within(panel).getByRole("button", { name: "Clear search" }));
+    expect(seasonLinks(panel)).toHaveLength(3);
+  });
+
+  it("is absent when no season could be read, leaving the panel's links and card", async () => {
+    const { panel } = await openPanel({ ...LIVE_FEATURES, seasons: [] });
+
+    expect(within(panel).queryByRole("region", { name: "Go to a season" })).not.toBeInTheDocument();
+    expect(within(panel).getByRole("link", { name: /Seasons Archive/ })).toBeInTheDocument();
+    expect(panel.querySelector(".feature-card")).not.toBeNull();
+    expect(panel.querySelector("[data-columns]")).toHaveAttribute("data-columns", "1");
+  });
+
+  it("is dropped in the drawer, with the panel's other promotional content", async () => {
+    const { panel } = await openPanel(LIVE_FEATURES, false);
+
+    expect(within(panel).queryByRole("region", { name: "Go to a season" })).not.toBeInTheDocument();
   });
 });

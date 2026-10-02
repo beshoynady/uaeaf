@@ -3,8 +3,21 @@ import { fetchArticles } from "@/lib/api/articles";
 import { fetchPublicMedia } from "@/lib/api/media";
 import { loadActiveLiveStream, loadVideoPage } from "@/lib/video/load";
 import { findPublicPage } from "@/lib/pages/public-pages";
+import { loadSeasonArchive } from "@/lib/seasons/load";
+import { seasonSearchText } from "@/lib/seasons/year-search";
 import type { ArticleCategory, MediaAssetPublic, PresidentMessagePublic } from "@/lib/api/types";
 import type { AppLocale } from "@/i18n/routing";
+
+/** One season in the Events & Seasons panel's picker. `searchText` is what a
+ *  typed year is matched against (`seasonSearchText`), computed here so the
+ *  browser receives no dates it would only use for that. */
+export interface HeaderSeason {
+  slug: string;
+  name: string;
+  shortName: string;
+  isCurrent: boolean;
+  searchText: string;
+}
 
 /** Everything the header's five panels show, in one shape. Every field is
  *  independent: a panel whose own source failed, or does not exist yet,
@@ -27,6 +40,10 @@ export interface HeaderFeatures {
   } | null;
   latestVideo: { title: string; href: string; thumbnailId: string | null } | null;
   activeLiveStream: { title: string; href: string } | null;
+  /** Every public season, newest first: the picker shows the first three and
+   *  searches them all by year. Empty, never `null`, when the archive cannot
+   *  be read — the panel then shows its links alone. */
+  seasons: HeaderSeason[];
 }
 
 const PRESIDENT_PAGE = findPublicPage("president-message")!;
@@ -96,6 +113,23 @@ const readActiveLiveStream = async (
   }
 };
 
+/** The public season archive, for the Events & Seasons panel's picker. The
+ *  same cached read `/seasons` makes. */
+const readSeasons = async (locale: AppLocale): Promise<HeaderSeason[] | null> => {
+  try {
+    const archive = await loadSeasonArchive();
+    return (archive ?? []).map((season) => ({
+      slug: season.slug,
+      name: season.name[locale] || season.name.ar,
+      shortName: season.shortName,
+      isCurrent: season.isCurrent,
+      searchText: seasonSearchText(season),
+    }));
+  } catch {
+    return null;
+  }
+};
+
 const settled = <T,>(result: PromiseSettledResult<T | null>): T | null =>
   result.status === "fulfilled" ? result.value : null;
 
@@ -110,11 +144,12 @@ const settled = <T,>(result: PromiseSettledResult<T | null>): T | null =>
  * without the other leaves a gap.
  */
 export const getHeaderFeatures = async (locale: AppLocale): Promise<HeaderFeatures> => {
-  const [president, article, video, live] = await Promise.allSettled([
+  const [president, article, video, live, seasons] = await Promise.allSettled([
     readPresidentExcerpt(locale),
     readLatestArticle(locale),
     readLatestVideo(locale),
     readActiveLiveStream(locale),
+    readSeasons(locale),
   ]);
 
   return {
@@ -122,6 +157,7 @@ export const getHeaderFeatures = async (locale: AppLocale): Promise<HeaderFeatur
     latestArticle: settled(article),
     latestVideo: settled(video),
     activeLiveStream: settled(live),
+    seasons: settled(seasons) ?? [],
     // No championships/records collection exists yet (owned by a later
     // project); inventing a shape for it here would have to be undone.
     nextChampionship: null,

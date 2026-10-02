@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,8 @@ import type { MediaAssetOption } from "@/components/admin/pages/media-picker";
 import { BackToSeasons } from "./season-links";
 import { SeasonAboutSection } from "./season-about-section";
 import { SeasonPublishingCard, SeasonStatusCard } from "./season-aside";
+import type { SeasonStep } from "./season-aside";
+import type { EditorialState } from "@/lib/admin/editorial-state";
 import { SeasonDocumentsSection } from "./season-documents-section";
 import { SeasonIdentitySection } from "./season-identity-section";
 import { SeasonKeyDatesSection } from "./season-key-dates-section";
@@ -59,6 +61,7 @@ export const SeasonForm = ({
   sponsors,
   permissions,
   publishMode,
+  editorial,
   locale,
   now,
 }: {
@@ -68,6 +71,9 @@ export const SeasonForm = ({
   sponsors: readonly SeasonSponsor[] | null;
   permissions: SeasonEditorPermissions;
   publishMode: PublishMode;
+  /** What the server says this reader may do with the saved season, or
+   *  `null` when it could not be read (a new season has none). */
+  editorial: EditorialState | null;
   locale: "ar" | "en";
   /** The server's clock at render, so the phase shown is the same on both
    *  sides of hydration. */
@@ -85,10 +91,14 @@ export const SeasonForm = ({
   const [showErrors, setShowErrors] = useState(false);
   const [slugEdited, setSlugEdited] = useState(!creating);
   const [leaving, setLeaving] = useState(false);
+  /** Counts the edits made, so a save marks the form saved only when nothing
+   *  was typed while it was in flight (CLAUDE.md §31). */
+  const edits = useRef(0);
 
   useUnsavedGuard(dirty);
 
   const set: SeasonDraftSetter = (key, value) => {
+    edits.current += 1;
     setDirty(true);
     setFailure(null);
     setDraft((current) => {
@@ -109,12 +119,14 @@ export const SeasonForm = ({
       return;
     }
 
+    const sent = edits.current;
     const outcome = creating
       ? await send("/api/admin/seasons", json(toCreateBody(draft)), { refresh: false })
       : await send(`/api/admin/seasons/${record.id}`, json(toPatchBody(draft), "PATCH"));
     if (!outcome.ok) return;
 
-    setDirty(false);
+    // An edit typed after the press was not in that save: it stays unsaved.
+    if (edits.current === sent) setDirty(false);
     setShowErrors(false);
     toast.show({
       tone: "success",
@@ -152,19 +164,29 @@ export const SeasonForm = ({
     }
   };
 
-  const submit = async () => {
+  /** Sending for approval, and putting an approved review live: both act on
+   *  what is stored, take no body, and are refused over unsaved work — read
+   *  at the press, like the publish. */
+  const stored = async (step: "submit" | "publishApproved") => {
     if (!record) return;
-    // Read at the press, like the publish: submitting freezes the saved
-    // record, so unsaved work would be left out of the review without a word.
     if (dirty) {
       setFailure(t("publishNeedsSave"));
       return;
     }
-    const outcome = await send(`/api/admin/seasons/${record.id}/submit`, { method: "POST" });
+    const path = step === "submit" ? "submit" : "publish-approved";
+    const outcome = await send(`/api/admin/seasons/${record.id}/${path}`, { method: "POST" });
     if (outcome.ok) {
-      toast.show({ tone: "success", title: t("submittedToast"), description: name, source: "api", dedupeKey: "seasons:submitted" });
+      toast.show({
+        tone: "success",
+        title: t(step === "submit" ? "submittedToast" : "publishedToast"),
+        description: name,
+        source: "api",
+        dedupeKey: `seasons:${step}`,
+      });
     }
   };
+
+  const takeStep = (step: SeasonStep) => void (step === "publish" ? publish() : stored(step));
 
   const leave = () => {
     // Read now, so work typed after this handler was wired still counts.
@@ -252,11 +274,12 @@ export const SeasonForm = ({
             isVisible={draft.isVisible}
             onVisibleChange={(visible) => set("isVisible", visible)}
             publishMode={publishMode}
+            editorial={editorial}
+            locale={locale}
             canUpdate={permissions.canUpdate}
             canPublish={permissions.canPublish}
             busy={busy}
-            onPublish={() => void publish()}
-            onSubmit={() => void submit()}
+            onStep={takeStep}
           />
         </aside>
       </div>

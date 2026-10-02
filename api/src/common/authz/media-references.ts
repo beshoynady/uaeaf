@@ -80,6 +80,7 @@ export const SCANNED_COLLECTIONS = [
   'federation',
   'federationAppointments',
   'federationPersonnel',
+  'federationPositions',
   'governanceDocuments',
   'heroSlides',
   'liveStreams',

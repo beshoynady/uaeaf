@@ -87,9 +87,31 @@ describe('SeasonsService', () => {
       expect(next.slug).toBe('next');
     });
 
-    it('rejects a range where endDate is not after startDate', async () => {
+    // The dates are inclusive Dubai days, so first day == last day is a
+    // season lasting one day, exactly as a one-day phase is.
+    it('accepts a season whose first and last day are the same', async () => {
+      const oneDay = await service.create(
+        dto({ slug: 'one-day', startDate: day('2026-09-01'), endDate: day('2026-09-01') }),
+      );
+
+      expect(oneDay.slug).toBe('one-day');
+    });
+
+    it('accepts one day however far apart the two instants sit inside it', async () => {
+      const oneDay = await service.create(
+        dto({
+          slug: 'one-long-day',
+          startDate: '2026-09-01T20:00:00.000Z',
+          endDate: '2026-09-02T19:59:00.000Z',
+        }),
+      );
+
+      expect(oneDay.slug).toBe('one-long-day');
+    });
+
+    it('rejects a last day falling before the first', async () => {
       await expect(
-        service.create(dto({ startDate: day('2026-09-01'), endDate: day('2026-09-01') })),
+        service.create(dto({ startDate: day('2026-09-02'), endDate: day('2026-09-01') })),
       ).rejects.toBeInstanceOf(UnprocessableEntityException);
     });
   });
@@ -272,7 +294,7 @@ describe('SeasonsService', () => {
         `${new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Dubai' }).format(new Date())}T00:00:00+04:00`,
       );
       const yesterdayInDubai = new Date(todayInDubai.getTime() - 24 * 60 * 60 * 1000);
-      const visible = { publicationState: 'Published', isVisible: true } as const;
+      const visible = { publicationState: 'Live', isVisible: true } as const;
       await seasonModel.create([
         {
           ...dto({ slug: 'ends-today', startDate: day('2025-09-01') }),
@@ -354,8 +376,9 @@ describe('SeasonsService', () => {
       const { status, body } = await refusal(service.create(withPhases(phase('rest', '2027-08-01', '2027-09-01'))));
 
       expect(status).toBe(422);
-      expect(body.code).toBeUndefined();
-      expect(body).toMatchObject({ phase: { index: 0 } });
+      // Named, so the form can point at the row instead of showing the
+      // editor an unattributed `badRequest`.
+      expect(body).toMatchObject({ code: 'seasonPhaseOutOfRange', phase: { index: 0 } });
     });
 
     it('refuses a phase starting the day before the season first day', async () => {
@@ -390,6 +413,51 @@ describe('SeasonsService', () => {
       );
 
       expect(body).toMatchObject({ code: 'seasonPhaseOverlap', phaseType: 'international' });
+    });
+  });
+
+  // The overlap check reads live seasons only, so an archived season's days
+  // may be taken by a new one. Bringing the archived one back is then a second
+  // season on the same days, refused exactly as a create would be.
+  describe('unarchive — no two seasons may overlap', () => {
+    it('refuses to bring back a season whose days another season now holds', async () => {
+      const archived = await service.create(dto({ slug: 'archived' }));
+      await service.remove(archived._id.toString(), new Types.ObjectId());
+      const successor = await service.create(dto({ slug: 'successor' }));
+
+      const { status, body } = await refusal(service.unarchive(archived._id.toString()));
+
+      expect(status).toBe(409);
+      expect(body).toMatchObject({ code: 'seasonOverlap', conflictingSeasonId: successor._id.toString() });
+      expect((await seasonModel.findById(archived._id).lean())?.archivedAt).not.toBeNull();
+    });
+
+    it('brings back a season whose days are still free', async () => {
+      const archived = await service.create(dto({ slug: 'archived' }));
+      await service.remove(archived._id.toString(), new Types.ObjectId());
+      await service.create(dto({ slug: 'next', startDate: day('2027-09-01'), endDate: day('2028-08-31') }));
+
+      const restored = await service.unarchive(archived._id.toString());
+
+      expect(restored?.archivedAt).toBeNull();
+    });
+
+    it('refuses with 409, not a server error, when another season now holds its address', async () => {
+      const archived = await service.create(dto({ slug: 'shared' }));
+      await service.remove(archived._id.toString(), new Types.ObjectId());
+      await service.create(dto({ slug: 'shared', startDate: day('2027-09-01'), endDate: day('2028-08-31') }));
+
+      const { status } = await refusal(service.unarchive(archived._id.toString()));
+
+      expect(status).toBe(409);
+    });
+
+    it('answers a season that is not archived with itself, checking nothing', async () => {
+      const live = await service.create(dto({ slug: 'live' }));
+
+      const restored = await service.unarchive(live._id.toString());
+
+      expect(restored?._id.toString()).toBe(live._id.toString());
     });
   });
 });

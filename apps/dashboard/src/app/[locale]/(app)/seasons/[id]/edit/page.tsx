@@ -53,7 +53,7 @@ const EditSeasonPage = async ({ params }: { params: Promise<{ locale: string; id
     );
   }
 
-  const { images, documents, sponsors, permissions, publishMode } = screen.data;
+  const { images, documents, sponsors, permissions, publishMode, editorial } = screen.data;
   return (
     <>
       {header}
@@ -64,6 +64,7 @@ const EditSeasonPage = async ({ params }: { params: Promise<{ locale: string; id
         sponsors={sponsors}
         permissions={permissions}
         publishMode={publishMode}
+        editorial={editorial}
         locale={locale}
         now={new Date().toISOString()}
       />

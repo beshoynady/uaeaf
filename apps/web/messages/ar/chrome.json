@@ -75,7 +75,13 @@
     "eventCta": "عرض الروزنامة",
     "clubFinderEyebrow": "مجتمع ألعاب القوى",
     "clubFinderFallbackTitle": "ابحث عن أقرب نادي لألعاب القوى",
-    "clubFinderCta": "ابحث الآن"
+    "clubFinderCta": "ابحث الآن",
+    "seasonPickerHeading": "انتقل إلى موسم",
+    "seasonSearchLabel": "ابحث عن موسم بالسنة",
+    "seasonSearchPlaceholder": "ابحث بالسنة، مثلًا 2024",
+    "seasonSearchClear": "مسح البحث",
+    "seasonCurrent": "الحالي",
+    "seasonNoMatch": "لا يوجد موسم يطابق «{query}»"
   },
   "Search": {
     "dialogLabel": "البحث في الموقع",

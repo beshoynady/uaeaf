@@ -83,4 +83,37 @@ describe('PermissionsService', () => {
 
     await expect(service.validateResourceTypes()).rejects.toThrow(/ghosts/);
   });
+
+  /**
+   * The nine report groups carry `ViewReports` for a whole product group and
+   * own no collection (ADR-0103 D1). The first time the permissions
+   * collection was populated for real, this check read their rows, found no
+   * collection behind them, and refused to start the application.
+   */
+  it('accepts a report group, which names a product group and not a collection', async () => {
+    await repository.create({
+      name: { en: 'View governance reports', ar: 'عرض تقارير الحوكمة' },
+      resourceType: 'governanceReports',
+      action: 'ViewReports',
+    });
+
+    await expect(service.validateResourceTypes()).resolves.toBeUndefined();
+  });
+
+  it('still rejects an unknown resource sitting beside a report group', async () => {
+    await repository.create({
+      name: { en: 'View media reports', ar: 'عرض تقارير الوسائط' },
+      resourceType: 'mediaReports',
+      action: 'ViewReports',
+    });
+    await connection.collection('permissions').insertOne({
+      name: { en: 'View ghosts', ar: 'عرض الأشباح' },
+      resourceType: 'ghosts',
+      action: 'Read',
+    });
+
+    // Named, and the exemption did not widen into "accept anything".
+    await expect(service.validateResourceTypes()).rejects.toThrow(/ghosts/);
+    await expect(service.validateResourceTypes()).rejects.not.toThrow(/mediaReports/);
+  });
 });

@@ -65,4 +65,56 @@ describe("getHeaderFeatures", () => {
     const features = await getHeaderFeatures("en");
     expect(features.presidentExcerpt).toBeNull();
   });
+
+  describe("seasons", () => {
+    /** One public season as `GET /seasons/public` answers it, trimmed to what the picker reads. */
+    const season = (slug: string, startDate: string, endDate: string, isCurrent = false) => ({
+      slug,
+      name: { ar: `موسم ${slug}`, en: `Season ${slug}` },
+      shortName: slug.slice(2, 4) + "/" + slug.slice(7, 9),
+      startDate,
+      endDate,
+      isCurrent,
+    });
+
+    it("reads every public season, newest first, in the requested locale, with the text a year is found by", async () => {
+      fetchPublic.mockImplementation(async (path: string) =>
+        path === "/seasons/public"
+          ? [
+              season("2024-2025", "2024-08-31T20:00:00.000Z", "2025-08-30T20:00:00.000Z"),
+              season("2026-2027", "2026-08-31T20:00:00.000Z", "2027-08-30T20:00:00.000Z", true),
+              season("2025-2026", "2025-08-31T20:00:00.000Z", "2026-08-30T20:00:00.000Z"),
+            ]
+          : null,
+      );
+
+      const features = await getHeaderFeatures("en");
+
+      expect(features.seasons.map((entry) => entry.slug)).toEqual(["2026-2027", "2025-2026", "2024-2025"]);
+      expect(features.seasons[0]).toEqual({
+        slug: "2026-2027",
+        name: "Season 2026-2027",
+        shortName: "26/27",
+        isCurrent: true,
+        searchText: "2026 2027 26/27 2026-2027",
+      });
+    });
+
+    it("is an empty list, not null, when the archive cannot be read, and costs no other field", async () => {
+      fetchPublic.mockImplementation(async (path: string) =>
+        path === "/seasons/public" ? null : { pullQuote: { ar: "اقتباس", en: "A quote" } },
+      );
+
+      const features = await getHeaderFeatures("ar");
+
+      expect(features.seasons).toEqual([]);
+      expect(features.presidentExcerpt?.quote).toBe("اقتباس");
+      expect(features.latestVideo?.title).toBe("فيديو");
+    });
+
+    it("is an empty list when reading the archive throws", async () => {
+      fetchPublic.mockRejectedValue(new Error("network down"));
+      await expect(getHeaderFeatures("ar")).resolves.toMatchObject({ seasons: [] });
+    });
+  });
 });

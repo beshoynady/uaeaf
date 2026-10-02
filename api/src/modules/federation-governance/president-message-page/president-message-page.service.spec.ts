@@ -72,3 +72,59 @@ describe('PresidentMessagePagesService — orphaned media candidates', () => {
     expect(repository.updateById).not.toHaveBeenCalled();
   });
 });
+
+/**
+ * `presidentMessagePage.federationAppointmentId` is validated only as a Mongo
+ * id — nothing in its own schema ties it to a board position — so this is the
+ * one place that stops a row pointed at some other appointment (a board
+ * member's, a committee chair's) from being served at `/about/president`.
+ * `FederationAppointmentsService.findActiveTopOfBoard()` (tested on its own
+ * terms in federation-appointments.public.spec.ts) does the actual
+ * rank/body derivation; these cases pin that `getCurrentPublic()` depends on
+ * exactly that narrowed set and nothing wider.
+ */
+describe('PresidentMessagePagesService.getCurrentPublic — narrowed to the top of the board', () => {
+  const make = (activeTopOfBoard: unknown[]) => {
+    const repository = { find: mock() };
+    const publications = { findLive: mock(), getPublicSnapshot: mock() };
+    const appointmentsService = { findActiveTopOfBoard: jest.fn(async () => activeTopOfBoard) };
+    const service = new PresidentMessagePagesService(
+      repository as unknown as PresidentMessagePagesRepository,
+      publications as unknown as PublicationsService,
+      {} as unknown as RevisionsService,
+      {} as unknown as MediaAssetsService,
+      appointmentsService as unknown as FederationAppointmentsService,
+    );
+    return { service, repository, publications };
+  };
+
+  // The regression this closes: a message row pointing at an Active
+  // appointment that isn't on the board's top post — a board member's, or a
+  // committee chair's — must resolve to nothing, not be served as the
+  // president's. Simulated here as `findActiveTopOfBoard()` excluding it,
+  // which is exactly what it does for a non-top-ranked or committee position.
+  it('returns null, and never even queries this collection, when no appointment is on the top-of-board post', async () => {
+    const { service, repository } = make([]);
+
+    const result = await service.getCurrentPublic();
+
+    expect(result).toBeNull();
+    expect(repository.find).not.toHaveBeenCalled();
+  });
+
+  it('queries only records pointing at the top-of-board appointments, never a wider set', async () => {
+    const topAppointmentId = new Types.ObjectId();
+    const { service, repository, publications } = make([{ _id: topAppointmentId }]);
+    repository.find.mockResolvedValue([]);
+
+    await service.getCurrentPublic();
+
+    expect(repository.find).toHaveBeenCalledWith({
+      federationAppointmentId: { $in: [topAppointmentId] },
+    });
+    // A board member's or committee chair's appointment id is, by
+    // construction, never in that $in list — so a row pointing at one is
+    // unreachable through this query, never merely unpublished.
+    expect(publications.findLive).not.toHaveBeenCalled();
+  });
+});

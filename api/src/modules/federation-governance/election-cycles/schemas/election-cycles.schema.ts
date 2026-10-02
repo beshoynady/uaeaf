@@ -11,10 +11,10 @@ export type ElectionCycleStatus = (typeof ELECTION_CYCLE_STATUSES)[number];
 
 /** Implements: electionCycles collection, Domain 1 — Federation &
  *  Governance (live FigJam Physical Model, re-read fresh 2026-09-03).
- *  A presidential/board election term; `federationAppointments` of
- *  roleType President and BoardMember reference the cycle that elected
- *  them. Not workflow-governed (no `publicationState`, absent from both
- *  Domain 7 closed lists). */
+ *  A presidential/board election term; `federationAppointments` on a
+ *  board-body position reference the cycle that elected them. Not
+ *  workflow-governed (no `publicationState`, absent from both Domain 7
+ *  closed lists). */
 @Schema({ collection: 'electionCycles', timestamps: true })
 export class ElectionCycle extends BaseSchema {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Federation', required: true })

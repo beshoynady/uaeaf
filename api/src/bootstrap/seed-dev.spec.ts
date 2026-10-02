@@ -38,6 +38,10 @@ import {
   FederationPersonnel,
   FederationPersonnelSchema,
 } from '../modules/federation-governance/federation-personnel/schemas/federation-personnel.schema.js';
+import {
+  FederationPosition,
+  FederationPositionSchema,
+} from '../modules/federation-governance/federation-positions/schemas/federation-positions.schema.js';
 import { AlbumsPage, AlbumsPageSchema } from '../modules/media-center/albums-page/schemas/albums-page.schema.js';
 import { MediaAsset, MediaAssetSchema } from '../modules/media-center/media-assets/schemas/media-asset.schema.js';
 import { VideosPage, VideosPageSchema } from '../modules/media-center/videos-page/schemas/videos-page.schema.js';
@@ -89,6 +93,7 @@ const MODELS: Array<[string, Schema]> = [
   [DisciplinesPage.name, DisciplinesPageSchema],
   [FederationAppointment.name, FederationAppointmentSchema],
   [FederationPersonnel.name, FederationPersonnelSchema],
+  [FederationPosition.name, FederationPositionSchema],
   [MediaAsset.name, MediaAssetSchema],
   [NewsPage.name, NewsPageSchema],
   [PresidentMessagePage.name, PresidentMessagePageSchema],

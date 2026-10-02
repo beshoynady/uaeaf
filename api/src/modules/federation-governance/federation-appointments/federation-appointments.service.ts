@@ -1,25 +1,37 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectConnection } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
+import type { Connection } from 'mongoose';
 import { FederationAppointmentsRepository } from './federation-appointments.repository.js';
+import { AppointmentRulesService } from './appointment-rules.service.js';
 import type {
-  AppointmentRoleType,
+  AppointmentEndReason,
+  AppointmentStatus,
   FederationAppointmentDocument,
 } from './schemas/federation-appointments.schema.js';
 import { CreateFederationAppointmentDto } from './dto/create-federation-appointments.dto.js';
 import { UpdateFederationAppointmentDto } from './dto/update-federation-appointments.dto.js';
+import { CloseAppointmentDto } from './dto/close-appointment.dto.js';
+import { ReplaceChairDto } from './dto/replace-chair.dto.js';
 import { FederationPersonnelsService } from '../federation-personnel/federation-personnel.service.js';
+import { FederationPositionsRepository } from '../federation-positions/federation-positions.repository.js';
+import type { FederationPositionDocument } from '../federation-positions/schemas/federation-positions.schema.js';
 import type { LocalizedText } from '../../../common/schemas/localized-text.schema.js';
 import { partialUpdate, setObjectIdField, setDateField } from '../../../common/utils/partial-update.util.js';
 
-/** The roles the federation's own board is made of. Committee posts are the
- *  committees page's subject and are deliberately absent. */
-const LEADERSHIP_ROLES: readonly AppointmentRoleType[] = ['President', 'BoardMember'];
+// The five AppointmentEndReason values capitalize exactly onto AppointmentStatus (schema-guaranteed, not derived here).
+const endReasonToStatus = (reason: AppointmentEndReason): AppointmentStatus =>
+  (reason.charAt(0).toUpperCase() + reason.slice(1)) as AppointmentStatus;
+
+/** Body of `replaceChairOfCommittee`: `ReplaceChairDto` plus the committee
+ *  id, which the route reads from the path, not the request body. */
+export type ReplaceChairInput = ReplaceChairDto & { committeeId: string };
 
 /** One serving officer, in the only shape the public page receives. */
 export interface LeadershipEntry {
   fullName: LocalizedText;
   positionTitle: LocalizedText;
-  roleType: AppointmentRoleType;
+  rank: number;
   displayOrder: number;
   photoId: string | null;
 }
@@ -31,6 +43,9 @@ export class FederationAppointmentsService {
   constructor(
     private readonly repository: FederationAppointmentsRepository,
     private readonly personnel: FederationPersonnelsService,
+    private readonly rules: AppointmentRulesService,
+    @InjectConnection() private readonly connection: Connection,
+    private readonly positions: FederationPositionsRepository,
   ) {}
 
   /** Explicit succession (confirmed decision #3): when
@@ -63,13 +78,22 @@ export class FederationAppointmentsService {
       });
     }
 
+    if (!dto.electionCycleId) {
+      throw new BadRequestException('electionCycleId is required when assigning a positionId.');
+    }
+    await this.rules.assertAssignable({
+      positionId: dto.positionId,
+      committeeId: dto.committeeId ?? null,
+      cycleId: dto.electionCycleId,
+      personId: dto.personId,
+    });
+
     return this.repository.create({
       personId: new Types.ObjectId(dto.personId),
+      positionId: new Types.ObjectId(dto.positionId),
       supersedesAppointmentId: dto.supersedesAppointmentId
         ? new Types.ObjectId(dto.supersedesAppointmentId)
         : null,
-      roleType: dto.roleType,
-      positionTitle: dto.positionTitle,
       committeeId: dto.committeeId ? new Types.ObjectId(dto.committeeId) : null,
       electionCycleId: dto.electionCycleId ? new Types.ObjectId(dto.electionCycleId) : null,
       termStart,
@@ -83,18 +107,55 @@ export class FederationAppointmentsService {
     return this.repository.find();
   }
 
-  /** Every currently-serving appointment of a role.
-   *
-   *  A list rather than one document because only `President` is
-   *  single-holder by convention, and that convention is not enforced by
-   *  the schema — returning one would hide a data problem instead of
-   *  letting the caller see it. */
-  async findActiveByRole(roleType: AppointmentRoleType): Promise<FederationAppointmentDocument[]> {
-    return this.repository.find({ roleType, status: 'Active' });
-  }
-
   async findById(id: string): Promise<FederationAppointmentDocument | null> {
     return this.repository.findById(id);
+  }
+
+  /** Every position these appointments' `positionId`s resolve to, keyed by
+   *  its string id — the one place an appointment's position is looked up,
+   *  reused wherever its body or rank has to be read. */
+  private async resolvePositions(
+    appointments: readonly FederationAppointmentDocument[],
+  ): Promise<Map<string, FederationPositionDocument>> {
+    const ids = [...new Set(appointments.map((appointment) => appointment.positionId.toString()))];
+    const positions = await this.positions.findByIds(ids);
+    return new Map(positions.map((position) => [position._id.toString(), position]));
+  }
+
+  /**
+   * The currently-Active appointment(s) on the board's own highest-ranked
+   * post — never a name, the lowest `rank` among every `body: 'board'`
+   * position that exists (rank 1 is highest by convention, but nothing here
+   * assumes that number specifically: the minimum actually present
+   * decides). Read from every board position, not only ones an appointment
+   * currently holds — the top post being vacant right now must not make a
+   * lower one read as the top.
+   *
+   * `isVisible` plays no part in this: it is a display toggle everywhere
+   * else in this codebase, never an identity decision, and hiding the top
+   * post from a listing must not silently hand the presidency to whoever
+   * holds the next one down.
+   *
+   * This is what keeps `/about/president` from serving a board member's
+   * message: a `presidentMessagePage` row pointed at any appointment other
+   * than the one on this post resolves to nothing, because nothing else is
+   * in the set this method returns.
+   */
+  async findActiveTopOfBoard(): Promise<FederationAppointmentDocument[]> {
+    const [appointments, board] = await Promise.all([
+      this.repository.find({ status: 'Active' }),
+      this.positions.find({ body: 'board' }),
+    ]);
+    if (appointments.length === 0 || board.length === 0) {
+      return [];
+    }
+
+    const topRank = Math.min(...board.map((position) => position.rank));
+    const topPositionIds = new Set(
+      board.filter((position) => position.rank === topRank).map((position) => position._id.toString()),
+    );
+
+    return appointments.filter((appointment) => topPositionIds.has(appointment.positionId.toString()));
   }
 
   /**
@@ -109,30 +170,45 @@ export class FederationAppointmentsService {
    *
    * "As it stands today" is three conditions together, because each alone
    * lets someone through who should not be there: the appointment is still
-   * `Active`, its term has not run out, and its role is one the federation's
-   * own board holds. Committee posts are the committees page's subject.
+   * `Active`, its term has not run out, and its position's `body` is
+   * `'board'` — never a name. Committee posts are the committees page's
+   * subject.
    */
   async currentLeadership(now: Date = new Date()): Promise<LeadershipEntry[]> {
     const appointments = await this.repository.find({ status: 'Active' });
+    const inTerm = appointments.filter(
+      (appointment) => appointment.termEnd === null || appointment.termEnd > now,
+    );
 
-    const serving = appointments
-      .filter((appointment) => LEADERSHIP_ROLES.includes(appointment.roleType))
-      .filter((appointment) => appointment.termEnd === null || appointment.termEnd > now)
-      .sort((left, right) => left.displayOrder - right.displayOrder);
+    if (inTerm.length === 0) {
+      return [];
+    }
+
+    const positionById = await this.resolvePositions(inTerm);
+
+    const serving = inTerm
+      .flatMap((appointment) => {
+        const position = positionById.get(appointment.positionId.toString());
+        return position && position.body === 'board' ? [{ appointment, position }] : [];
+      })
+      .sort(
+        (left, right) =>
+          left.position.rank - right.position.rank || left.appointment.displayOrder - right.appointment.displayOrder,
+      );
 
     if (serving.length === 0) {
       return [];
     }
 
     const people = await this.personnel.findByIds(
-      serving.map((appointment) => appointment.personId.toString()),
+      serving.map(({ appointment }) => appointment.personId.toString()),
     );
     const byId = new Map(people.map((person) => [person._id.toString(), person]));
 
     // An appointment whose person is gone is dropped rather than printed
     // nameless: a card with a title and no one in it reads as a mistake, and
     // it is one.
-    return serving.flatMap((appointment) => {
+    return serving.flatMap(({ appointment, position }) => {
       const person = byId.get(appointment.personId.toString());
       if (!person) {
         return [];
@@ -140,8 +216,8 @@ export class FederationAppointmentsService {
       return [
         {
           fullName: person.fullName,
-          positionTitle: appointment.positionTitle,
-          roleType: appointment.roleType,
+          positionTitle: position.title,
+          rank: position.rank,
           displayOrder: appointment.displayOrder,
           photoId: person.photoId ? person.photoId.toString() : null,
         },
@@ -176,5 +252,98 @@ export class FederationAppointmentsService {
 
   async unarchive(id: string): Promise<FederationAppointmentDocument | null> {
     return this.repository.restore(id);
+  }
+
+  /** Closes a term with a date and a reason — no re-closing, no delete path.
+   *  @throws NotFoundException when no such appointment exists.
+   *  @throws ConflictException when it is already closed. */
+  async close(
+    id: string,
+    dto: CloseAppointmentDto,
+    by: Types.ObjectId,
+  ): Promise<FederationAppointmentDocument> {
+    const appointment = await this.repository.findById(id);
+    if (!appointment) {
+      throw new NotFoundException(`Federation appointment ${id} not found.`);
+    }
+    if (appointment.termEnd !== null) {
+      throw new ConflictException(`Federation appointment ${id} is already closed.`);
+    }
+
+    const updated = await this.repository.updateById(id, {
+      termEnd: new Date(dto.termEnd),
+      endReason: dto.endReason,
+      status: endReasonToStatus(dto.endReason),
+      updatedBy: by,
+    });
+    if (!updated) {
+      throw new NotFoundException(`Federation appointment ${id} not found.`);
+    }
+    return updated;
+  }
+
+  /**
+   * Closes every open appointment on `dto.positionId`/`dto.cycleId` inside
+   * `dto.committeeId`, then opens the new one — one transaction, closing
+   * before `assertAssignable` so the freed seat is visible to the cap check.
+   */
+  async replaceChairOfCommittee(
+    dto: ReplaceChairInput,
+    by: Types.ObjectId,
+  ): Promise<FederationAppointmentDocument> {
+    const session = await this.connection.startSession();
+    try {
+      return await session.withTransaction(async () => {
+        const termEnd = new Date(dto.termStart);
+        const open = await this.repository.findInSession(
+          {
+            committeeId: new Types.ObjectId(dto.committeeId),
+            positionId: new Types.ObjectId(dto.positionId),
+            electionCycleId: new Types.ObjectId(dto.cycleId),
+            termEnd: null,
+          },
+          session,
+        );
+        for (const holder of open) {
+          await this.repository.updateByIdInSession(
+            holder._id.toString(),
+            {
+              termEnd,
+              endReason: dto.endReason,
+              status: endReasonToStatus(dto.endReason),
+              updatedBy: by,
+            },
+            session,
+          );
+        }
+
+        await this.rules.assertAssignable(
+          {
+            positionId: dto.positionId,
+            committeeId: dto.committeeId,
+            cycleId: dto.cycleId,
+            personId: dto.personId,
+          },
+          session,
+        );
+
+        return this.repository.createInSession(
+          {
+            personId: new Types.ObjectId(dto.personId),
+            positionId: new Types.ObjectId(dto.positionId),
+            committeeId: new Types.ObjectId(dto.committeeId),
+            electionCycleId: new Types.ObjectId(dto.cycleId),
+            supersedesAppointmentId: null,
+            termStart: new Date(dto.termStart),
+            termEnd: null,
+            status: 'Active',
+            displayOrder: dto.displayOrder,
+          },
+          session,
+        );
+      });
+    } finally {
+      await session.endSession();
+    }
   }
 }

@@ -68,6 +68,10 @@ describe('audit route coverage', () => {
       { writtenBy: 'PublishingService', reason: 'publishDirect() writes the publication row' },
     ],
     [
+      'POST /seasons/:id/publish-approved',
+      { writtenBy: 'PublishingService', reason: 'publishApproved() writes it' },
+    ],
+    [
       'POST /articles/:id/publish-approved',
       { writtenBy: 'PublishingService', reason: 'publishApproved() writes it' },
     ],

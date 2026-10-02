@@ -3,6 +3,7 @@ import { fetchAsUser, readGrants } from "@/lib/auth/session";
 import { isMongoId } from "@/lib/admin/request-shapes";
 import { toMediaOptions } from "@/lib/admin/media-options";
 import type { MediaAssetOption } from "@/components/admin/pages/media-picker";
+import type { EditorialState } from "@/lib/admin/editorial-state";
 import type { AppLocale } from "@/i18n/routing";
 import { readPublishMode, seasonPermissions } from "./seasons-screen";
 import { toAdminSeason } from "./to-admin-season";
@@ -55,6 +56,9 @@ export type SeasonEditorScreen =
         sponsors: SeasonSponsor[] | null;
         permissions: SeasonEditorPermissions;
         publishMode: PublishMode;
+        /** `GET /seasons/:id/editorial-state`: what this reader may do next,
+         *  decided by the server. `null` for a new season or a failed read. */
+        editorial: EditorialState | null;
       };
     };
 
@@ -130,12 +134,15 @@ export const loadSeasonEditor = async (locale: AppLocale, id: string | null): Pr
   const canReadDocuments = hasPermission(grants, "documents", "Read");
   const canReadSponsors = hasPermission(grants, "sponsorships", "Read") && hasPermission(grants, "sponsors", "Read");
 
-  const [media, documents, sponsorships, sponsors, publishMode] = await Promise.all([
+  const [media, documents, sponsorships, sponsors, publishMode, editorial] = await Promise.all([
     readIf(canReadMedia, "/media-assets", locale),
     readIf(canReadDocuments, "/documents", locale),
     readIf(canReadSponsors && record !== null, "/sponsorships", locale),
     readIf(canReadSponsors && record !== null, "/sponsors", locale),
     readPublishMode(grants, locale),
+    // The same read the article editor makes, typed the same way: the shape
+    // is the shared publishing service's, not the season's.
+    record ? fetchAsUser<EditorialState>(`/seasons/${record.id}/editorial-state`, locale).catch(() => null) : null,
   ]);
 
   const base = seasonPermissions(grants);
@@ -157,6 +164,7 @@ export const loadSeasonEditor = async (locale: AppLocale, id: string | null): Pr
         canReadDocuments: canReadDocuments && documents !== null,
       },
       publishMode,
+      editorial: (editorial as EditorialState | null) ?? null,
     },
   };
 };

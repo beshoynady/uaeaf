@@ -31,6 +31,8 @@ describe('dubaiDayRange — first and last day are inclusive Dubai calendar days
     const early = dubai('2026-09-01T02:00:00');
     expect(early.toISOString()).toBe('2026-08-31T22:00:00.000Z');
     expect(isWithinDayRange(early, season)).toBe(true);
+    // The first day sent as a bare date is 04:00 Dubai, after the event: still the same day.
+    expect(isWithinDayRange(early, dubaiDayRange(new Date('2026-09-01'), dubai('2027-08-31T00:00:00')))).toBe(true);
   });
 
   it('reads a day from whatever time it carries, not from UTC midnight', () => {

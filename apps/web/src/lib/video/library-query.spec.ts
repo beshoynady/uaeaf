@@ -80,6 +80,22 @@ describe("readLibraryQuery", () => {
     expect(readLibraryQuery({ period: "custom", from: "2026-05-01", to: "2026-04-01" }).range).toEqual({});
   });
 
+  it("reads a season as a label (en dash) or as a season's slug (hyphen), and sends it as written", () => {
+    // The select offers the label every video carries; a season's page links
+    // with its slug. The API resolves both, so both must reach it unchanged.
+    for (const season of ["2025\u20132026", "2025-2026"]) {
+      const query = readLibraryQuery({ season });
+      expect(query.season, season).toBe(season);
+      expect(new URLSearchParams(apiQuery(query, 12, NOW)).get("season"), season).toBe(season);
+    }
+  });
+
+  it("drops a season that is neither a label nor a year-pair slug", () => {
+    for (const season of ["2025/2026", "2025 2026", "25-26", "next-season", ""]) {
+      expect(readLibraryQuery({ season }).season, season).toBeUndefined();
+    }
+  });
+
   it("reads a nonsense page as page one", () => {
     expect(readLibraryQuery({ page: "0" }).page).toBe(1);
     expect(readLibraryQuery({ page: "-4" }).page).toBe(1);
