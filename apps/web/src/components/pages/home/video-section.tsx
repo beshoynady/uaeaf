@@ -17,9 +17,7 @@ import type { AppLocale } from "@/i18n/routing";
 import { FOCUS } from "@/components/ui/interactive";
 import { Button } from "@uaeaf/brand-ui";
 
-/** The stage is 16:9 at the container's width, which at desktop is taller
- *  than the screen. Capping its width caps its height, so the whole stage
- *  fits under the sticky header with a small margin above and below. */
+// Limit the video width so its 16:9 height fits on screen under the header.
 const STAGE_FIT = { maxWidth: "calc((100svh - var(--header-height) - 2 * var(--space-6)) * 16 / 9)" };
 
 /**

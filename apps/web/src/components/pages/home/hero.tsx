@@ -57,10 +57,9 @@ import type { NextEvent, Playback } from "@/lib/pages/homepage";
  * `HERO_SCRIM`, the shared one, is a flat wash for heroes whose text covers the
  * whole frame, and it stays untouched. Here:
  *
- * - **Below `md`** the whole frame takes a floor from 64% at the top to 74% by
- *   the middle, as `HERO_SCRIM` measured, deepening to 86% at the foot so the
- *   controls, which have no ground of their own, clear their contrast floors
- *   over a bright picture.
+ * - **Below `md`** 58% at the top, 64% in the middle, 74% at the bottom. The
+ *   text and controls are in the lower half, so they never sit on less than
+ *   64%.
  * - **From `md`** two layers: one across the frame from the reading edge, and
  *   one up from the bottom. Gradients have no logical direction keyword, so
  *   the side is chosen by the document's direction (`ltr:` and `rtl:`).

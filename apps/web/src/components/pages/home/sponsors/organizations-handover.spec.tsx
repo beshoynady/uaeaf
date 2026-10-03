@@ -40,7 +40,9 @@ describe("the seam handover's one place", () => {
     // ancestor. If the band stopped being one, the strip would span something
     // else, silently.
     expect(section?.className.split(" ")).toContain("relative");
-    expect(section?.querySelector(":scope > div")?.firstElementChild?.hasAttribute("data-seam-handover")).toBe(true);
+    // The ink surface renders its mesh first, so skip it.
+    const layers = [...(section?.querySelector(":scope > div")?.children ?? [])].filter((el) => !el.classList.contains("brand-mesh"));
+    expect(layers[0]?.hasAttribute("data-seam-handover")).toBe(true);
   });
 
   it("stands nowhere else: the memberships open on the page's own ground, where there is no colour to carry", async () => {
