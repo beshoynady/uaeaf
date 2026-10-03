@@ -8,12 +8,16 @@
 
 const wash = (percent: number) => `color-mix(in srgb, var(--color-surface-overlay) ${percent}%, transparent)`;
 
+/** The darkest any image overlay on the site goes. Text never sits on less
+ *  than `COVER_SCRIM_MIN`. */
+export const SCRIM_MAX = 74;
+
 /**
  * The hero's own reading ground (owner decisions 2026-09-16).
  *
- * - `narrow` (below `md`): the whole frame takes a floor from 64% to 74% by the
- *   middle, deepening to 86% at the foot, where the controls have no ground of
- *   their own.
+ * - `narrow` (below `md`): 58% at the top, 64% in the middle, 74% at the
+ *   bottom. Text starts below the middle, so it always sits on at least
+ *   `COVER_SCRIM_MIN`.
  * - `wide` (from `md`): one layer across the frame from the side the line starts
  *   from, one up from the foot.
  *
@@ -22,8 +26,8 @@ const wash = (percent: number) => `color-mix(in srgb, var(--color-surface-overla
  */
 export const heroScrim = (width: "narrow" | "wide", dir: "rtl" | "ltr"): string =>
   width === "narrow"
-    ? `linear-gradient(to bottom, ${wash(64)} 0%, ${wash(74)} 50%, ${wash(86)} 100%)`
-    : `linear-gradient(to ${dir === "rtl" ? "left" : "right"}, ${wash(74)} 0%, ${wash(60)} 35%, transparent 68%), linear-gradient(to bottom, transparent 40%, ${wash(80)} 100%)`;
+    ? `linear-gradient(to bottom, ${wash(58)} 0%, ${wash(COVER_SCRIM_MIN)} 50%, ${wash(SCRIM_MAX)} 100%)`
+    : `linear-gradient(to ${dir === "rtl" ? "left" : "right"}, ${wash(SCRIM_MAX)} 0%, ${wash(60)} 35%, transparent 68%), linear-gradient(to bottom, transparent 40%, ${wash(SCRIM_MAX)} 100%)`;
 
 /**
  * The floor a wash must reach before white text may stand on an unknown
@@ -32,8 +36,8 @@ export const heroScrim = (width: "narrow" | "wide", dir: "rtl" | "ltr"): string 
  * Measured, not chosen. White on black at 64% over the lightest possible
  * photograph — pure white — is 6.70:1, comfortably past 4.5:1; at 58% it is
  * 4.79:1, and the margin below that is thinner than the variation between two
- * real photographs. The hero's own narrow wash already starts here, which is
- * why this is the number rather than a second opinion about the same problem.
+ * real photographs. The hero's narrow wash reaches it at the middle, where
+ * its text starts.
  *
  * `cover-scrim.spec.ts` measures every stop against pure white on every build.
  */
@@ -57,7 +61,7 @@ export const COVER_SCRIM_MIN = 64;
  * not read as a box pasted onto the picture.
  */
 export const coverScrim = (): string =>
-  `linear-gradient(to top, ${wash(93)} 0%, ${wash(82)} 55%, ${wash(COVER_SCRIM_MIN)} 100%)`;
+  `linear-gradient(to top, ${wash(SCRIM_MAX)} 0%, ${wash(SCRIM_MAX)} 40%, ${wash(COVER_SCRIM_MIN)} 100%)`;
 
 /** The strip above the text block, carrying the wash out to nothing so its
  *  top edge is a gradient rather than a line. Purely decorative: no text

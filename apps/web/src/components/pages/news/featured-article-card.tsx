@@ -101,13 +101,13 @@ export const FeaturedArticleCard = ({
           <TopicBadge topic={article.topic} />
         </div>
 
-        <h2 className="line-clamp-3 text-h2 text-balance text-[color:var(--color-text-on-brand)]">
+        <h2 className="line-clamp-3 max-w-full text-h3 text-balance text-[color:var(--color-text-on-brand)] md:text-h2">
           <Link href={`/news/${article.slug}`} className={CARD_LINK}>
             {article.title[locale]}
           </Link>
         </h2>
 
-        <p className="line-clamp-2 text-body text-pretty text-[color:var(--color-text-on-brand)]">
+        <p className="line-clamp-2 text-body text-pretty text-[color:var(--color-text-on-brand)] max-md:hidden">
           {article.excerpt[locale]}
         </p>
 

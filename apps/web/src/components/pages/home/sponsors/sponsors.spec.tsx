@@ -245,14 +245,14 @@ describe("OrganizationsSection", () => {
     expect(await OrganizationsSection({ kind: "partners", items: [], section: null, locale: "ar" })).toBeNull();
   });
 
-  it("lists partners on the green register, in display order, as logo and name", async () => {
+  it("lists partners on the black register, in display order, as logo and name", async () => {
     const items = [
       { ...card("b", { ar: null, en: "Beta Demo" }), displayOrder: 2 },
       { ...card("a", { ar: "ألفا التجريبية", en: null }), displayOrder: 1 },
     ];
     const { container } = render((await OrganizationsSection({ kind: "partners", items, section: null, locale: "ar" }))!);
 
-    expect(container.querySelector("section")).toHaveAttribute("data-register", "green");
+    expect(container.querySelector("section")).toHaveAttribute("data-register", "black");
     const names = [...container.querySelectorAll("li")].map((item) => item.textContent);
     expect(names[0]).toContain("ألفا التجريبية");
     expect(names[1]).toContain("Beta Demo");

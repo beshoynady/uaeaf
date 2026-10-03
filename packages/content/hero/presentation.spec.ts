@@ -4,7 +4,7 @@ import { heroFrameLayout, heroScrim, heroType } from "./presentation";
 describe("the reading wash over the picture", () => {
   it("lays a floor over the whole frame below md, deepest at the foot", () => {
     expect(heroScrim("narrow", "rtl")).toBe(
-      "linear-gradient(to bottom, color-mix(in srgb, var(--color-surface-overlay) 64%, transparent) 0%, color-mix(in srgb, var(--color-surface-overlay) 74%, transparent) 50%, color-mix(in srgb, var(--color-surface-overlay) 86%, transparent) 100%)",
+      "linear-gradient(to bottom, color-mix(in srgb, var(--color-surface-overlay) 58%, transparent) 0%, color-mix(in srgb, var(--color-surface-overlay) 64%, transparent) 50%, color-mix(in srgb, var(--color-surface-overlay) 74%, transparent) 100%)",
     );
     expect(heroScrim("narrow", "ltr")).toBe(heroScrim("narrow", "rtl"));
   });
@@ -12,7 +12,7 @@ describe("the reading wash over the picture", () => {
   it("from md, darkens the side the line starts from and the foot", () => {
     expect(heroScrim("wide", "rtl")).toMatch(/^linear-gradient\(to left, /);
     expect(heroScrim("wide", "ltr")).toMatch(/^linear-gradient\(to right, /);
-    expect(heroScrim("wide", "ltr")).toContain("linear-gradient(to bottom, transparent 40%, color-mix(in srgb, var(--color-surface-overlay) 80%, transparent) 100%)");
+    expect(heroScrim("wide", "ltr")).toContain("linear-gradient(to bottom, transparent 40%, color-mix(in srgb, var(--color-surface-overlay) 74%, transparent) 100%)");
   });
 });
 

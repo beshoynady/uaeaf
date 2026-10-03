@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { AA_LARGE_TEXT_OR_NON_TEXT, AA_NORMAL_TEXT, contrastRatio } from "@uaeaf/design-tokens/testing";
-import { COVER_SCRIM_MIN, coverScrim, coverScrimFade } from "@uaeaf/content/hero";
+import { COVER_SCRIM_MIN, SCRIM_MAX, coverScrim, coverScrimFade, heroScrim } from "@uaeaf/content/hero";
 
 /**
  * The cover story's words, measured on the picture that hurts most.
@@ -92,5 +92,14 @@ describe("the cover story's reading wash", () => {
     // is only safe because nothing is drawn on it.
     expect(Math.max(...fade)).toBe(COVER_SCRIM_MIN);
     expect(coverScrimFade()).toContain("transparent");
+  });
+});
+
+describe("one overlay strength across the site", () => {
+  it("never goes darker than SCRIM_MAX", () => {
+    const all = [coverScrim(), coverScrimFade(), heroScrim("narrow", "rtl"), heroScrim("wide", "rtl"), heroScrim("wide", "ltr")];
+    for (const gradient of all) {
+      expect(Math.max(...stopsOf(gradient))).toBeLessThanOrEqual(SCRIM_MAX);
+    }
   });
 });

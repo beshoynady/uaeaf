@@ -17,6 +17,9 @@ import type { AppLocale } from "@/i18n/routing";
 import { FOCUS } from "@/components/ui/interactive";
 import { Button } from "@uaeaf/brand-ui";
 
+// Limit the video width so its 16:9 height fits on screen under the header.
+const STAGE_FIT = { maxWidth: "calc((100svh - var(--header-height) - 2 * var(--space-6)) * 16 / 9)" };
+
 /**
  * The homepage's video section, in its two states.
  *
@@ -118,17 +121,19 @@ export const HomeVideoSection = ({
 
         {live ? (
           <div className="flex flex-col gap-5">
-            <VideoStage
-              platform="youtube"
-              externalId={live.videoId}
-              url={live.url}
-              title={stageTitle}
-              locale={locale}
-              thumbnail={live.thumbnailId ? thumbnails.get(live.thumbnailId) : undefined}
-              labels={{ ...embedLabels, platform: t("platform_youtube"), openOn: t("openOn", { platform: "YouTube" }) }}
-              live
-              liveLabel={t("liveNow")}
-            />
+            <div className="mx-auto w-full" style={STAGE_FIT}>
+              <VideoStage
+                platform="youtube"
+                externalId={live.videoId}
+                url={live.url}
+                title={stageTitle}
+                locale={locale}
+                thumbnail={live.thumbnailId ? thumbnails.get(live.thumbnailId) : undefined}
+                labels={{ ...embedLabels, platform: t("platform_youtube"), openOn: t("openOn", { platform: "YouTube" }) }}
+                live
+                liveLabel={t("liveNow")}
+              />
+            </div>
 
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="flex flex-col gap-1.5">
@@ -164,20 +169,22 @@ export const HomeVideoSection = ({
           </div>
         ) : featured ? (
           <div className="flex flex-col gap-5">
-            <VideoStage
-              platform={featured.platform}
-              externalId={featured.externalId}
-              url={featured.url}
-              title={stageTitle}
-              thumbnail={featured.thumbnailId ? thumbnails.get(featured.thumbnailId) : undefined}
-              locale={locale}
-              labels={{
-                ...embedLabels,
-                platform: t(`platform_${featured.platform}`),
-                openOn: t("openOn", { platform: t(`platform_${featured.platform}`) }),
-              }}
-              kenBurns
-            />
+            <div className="mx-auto w-full" style={STAGE_FIT}>
+              <VideoStage
+                platform={featured.platform}
+                externalId={featured.externalId}
+                url={featured.url}
+                title={stageTitle}
+                thumbnail={featured.thumbnailId ? thumbnails.get(featured.thumbnailId) : undefined}
+                locale={locale}
+                labels={{
+                  ...embedLabels,
+                  platform: t(`platform_${featured.platform}`),
+                  openOn: t("openOn", { platform: t(`platform_${featured.platform}`) }),
+                }}
+                kenBurns
+              />
+            </div>
             <div className="flex flex-col gap-2">
               <h3 className="max-w-3xl text-h3 font-bold leading-tight" style={{ color: "var(--surface-text)" }}>
                 {stageTitle}

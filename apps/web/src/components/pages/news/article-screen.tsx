@@ -100,7 +100,7 @@ export const ArticleScreen = ({
 
             {/* Nothing but a height: the frame's ratio as a floor, overtaken
                 by the panel when a long headline needs more. */}
-            <div aria-hidden="true" className="col-start-1 row-start-1 aspect-[16/9] w-full" />
+            <div aria-hidden="true" className="col-start-1 row-start-1 aspect-[4/3] w-full md:aspect-[16/9]" />
 
             {/* The motif over the picture, away from the words at the foot.
                 The inner element publishes the ink ground's white, which is
@@ -127,7 +127,7 @@ export const ArticleScreen = ({
 
               <TopicBadge topic={article.topic} />
 
-              <h1 className="text-h1 text-balance text-[color:var(--color-text-on-brand)]">
+              <h1 className="max-w-full text-h2 text-balance text-[color:var(--color-text-on-brand)] md:text-h1">
                 {article.title[locale]}
               </h1>
 
