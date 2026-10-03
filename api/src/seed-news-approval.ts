@@ -57,7 +57,7 @@ const main = async (): Promise<void> => {
   try {
     const users = app.get<Model<Record<string, unknown>>>(getModelToken(User.name));
     const approvers = await users
-      .find({ status: 'Active', archivedAt: null })
+      .find({ accountStatus: 'Active', archivedAt: null })
       .select('_id email')
       .lean<{ _id: Types.ObjectId; email: string }[]>();
 
